@@ -6,7 +6,7 @@ All the processing will happen on your local computer, it does not transmit your
 
 This project runs Stable Diffusion in a docker container behind the scenes, using Stable Diffusion's [official Docker image](https://replicate.com/stability-ai/stable-diffusion) on replicate.com.
 
-![Screenshot of tool](shot1.jpg?raw=true)
+![Screenshot of tool](shot.jpg?raw=true)
 
 # System Requirements
 1. Requires `docker` and `python3.6` (or higher). For e.g. install using `sudo apt install docker.io` or `brew install --cask docker`.
