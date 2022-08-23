@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 11pt;
+    }
+    #prompt {
+        width: 50vw;
+        height: 50pt;
+    }
+    @media screen and (max-width: 600px) {
+        #prompt {
+            width: 95%;
+        }
+    }
+    #image {
+        width: 512px;
+        height: 512px;
+    }
+    #footer {
+        margin-top: 5px;
+        padding-top: 5px;
+        font-size: small;
+    }
+    </style>
+</html>
+<body>
+    <h3>Stable Diffusion - Quick UI</h3>
+
+    <div id="status">Server status: <span id="serverStatus">checking..</span> | Request status: <span id="reqStatus">n/a</span></div>
+
+    <br/>
+
+    <b>Prompt:</b><br/>
+    <textarea id="prompt">a photograph of an astronaut riding a horse</textarea><br/>
+
+    <button id="makeImage">Make Image</button> <br/><br/>
+
+    <img id="image" />
+
+    <div id="footer">
+        <p>Please feel free to <a href="mailto:sd@cmdr2.org">email me</a> if you have any problems or suggestions in using this interface.</p>
+        <p><b>Disclaimer:</b> I am not responsible for any images generated using this interface.</p>
+    </div>
+</body>
+
+<script>
+const HEALTH_PING_INTERVAL = 5 // seconds
+
+function setStatus(statusType, msg, msgType) {
+    let el = ''
+
+    if (statusType === 'server') {
+        el = '#serverStatus'
+    } else if (statusType === 'request') {
+        el = '#reqStatus'
+    }
+
+    if (msgType == 'error') {
+        msg = '<span style="color: red">' + msg + '<span>'
+    } else if (msgType == 'success') {
+        msg = '<span style="color: green">' + msg + '<span>'
+    }
+
+    if (el) {
+        document.querySelector(el).innerHTML = msg
+    }
+}
+
+function playSound() {
+    const audio = new Audio('/ding.mp3')
+    audio.play()
+}
+
+async function healthCheck() {
+    try {
+        let res = await fetch('/ping')
+        res = await res.json()
+
+        if (res[0] == 'OK') {
+            setStatus('server', 'online', 'success')
+        } else {
+            setStatus('server', 'offline', 'error')
+        }
+    } catch (e) {
+        setStatus('server', 'offline', 'error')
+    }
+}
+
+async function makeImage() {
+    setStatus('request', 'fetching..')
+
+    let btn = document.querySelector('#makeImage')
+    btn.innerHTML = 'Processing..'
+    btn.disabled = true;
+
+    let prompt = document.querySelector('#prompt').value
+    let res = ''
+
+    try {
+        res = await fetch('/image', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                prompt: prompt,
+                width: 512,
+                height: 512
+            })
+        })
+        res = await res.json()
+    } catch (e) {
+        console.log('request error', e)
+        setStatus('request', 'error', 'error')
+    }
+    
+    btn.innerHTML = 'Make Image'
+    btn.disabled = false;
+
+    playSound()
+
+    if (!res) {
+        return
+    }
+
+    let imgBody = ''
+
+    try {
+        imgBody = res.output[0]
+    } catch (e) {
+        console.log(imgBody)
+        setStatus('request', 'invalid image', 'error')
+        return
+    }
+
+    let img = document.querySelector('#image')
+    img.src = imgBody
+
+    setStatus('request', 'done', 'success')
+}
+
+document.querySelector('#makeImage').addEventListener('click', makeImage)
+
+setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
+</script>
+
+</html>
