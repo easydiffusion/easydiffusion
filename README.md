@@ -13,7 +13,7 @@ This project runs Stable Diffusion in a docker container behind the scenes, usin
 2. Linux or Windows 11 (with WSL) or macOS. Basically if your system can run [Stable Diffusion](https://replicate.com/stability-ai/stable-diffusion).
 
 # Installation
-1. Download [Quick UI](https://github.com/cmdr2/stable-diffusion-ui/archive/refs/heads/main.zip)
+1. Download [Quick UI](https://github.com/cmdr2/stable-diffusion-ui/archive/refs/heads/main.zip) (this project)
 2. Unzip: `unzip main.zip`
 3. Enter: `cd stable-diffusion-ui`
 4. Install dependencies: `pip install fastapi uvicorn` (this is the framework and server used by this UI project)
