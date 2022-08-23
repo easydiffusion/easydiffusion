@@ -10,7 +10,7 @@ This project runs Stable Diffusion in a docker container behind the scenes, usin
 
 # System Requirements
 1. Requires [Docker](https://docs.docker.com/engine/install/) and [Python](https://www.python.org/downloads/) (3.6 or higher).
-2. Linux or Windows 11 (with WSL) or macOS. Basically if your system can run [Stable Diffusion](https://replicate.com/stability-ai/stable-diffusion).
+2. Linux or Windows 11 (with WSL). Basically if your system can run [Stable Diffusion](https://replicate.com/stability-ai/stable-diffusion).
 
 # Installation
 1. Download [Quick UI](https://github.com/cmdr2/stable-diffusion-ui/archive/refs/heads/main.zip) (this project)
