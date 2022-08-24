@@ -158,7 +158,7 @@ async function makeImage() {
             if (serverStatus === 'online') {
                 logError('Stable Diffusion had an error: ' + await res.text() + '. This happens sometimes. Maybe modify the prompt or seed a little bit?', res)
             } else {
-                logError("Stable Diffusion is still starting up, please wait. If this goes on beyond a few minutes, Stable Diffusion has probably crashed. Please check the logs in your command line.", res)
+                logError("Stable Diffusion is still starting up, please wait. If this goes on beyond a few minutes, Stable Diffusion has probably crashed.", res)
             }
             res = undefined
         } else {
