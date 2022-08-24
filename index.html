@@ -92,6 +92,7 @@ function setStatus(statusType, msg, msgType) {
 
 function playSound() {
     const audio = new Audio('/ding.mp3')
+    audio.volume = 0.2
     audio.play()
 }
 
@@ -171,7 +172,7 @@ async function makeImage() {
         console.log('request error', e)
         setStatus('request', 'error', 'error')
     }
-    
+
     btn.innerHTML = 'Make Image'
     btn.disabled = false;
 

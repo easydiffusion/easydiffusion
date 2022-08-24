@@ -1,0 +1,28 @@
+version: '3.3'
+
+services:
+  stability-ai:
+    container_name: sd
+    ports:
+      - '5000:5000'
+    image: 'r8.im/stability-ai/stable-diffusion@sha256:06eb78b36068500c616a7f33c15e6fa40404f8e14b5bfad57ebe0c7fe0f6bdf1'
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+
+  stable-diffusion-ui:
+    container_name: sd-ui
+    ports:
+      - '8000:8000'
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    depends_on:
+      - stability-ai
+
+networks:
+  default:
