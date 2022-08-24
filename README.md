@@ -46,4 +46,4 @@ This was built in a few hours for fun. So if there are any problems or suggestio
 Also, please feel free to submit a pull request, if you have any code contributions in mind.
 
 # Disclaimer
-I am not responsible for any images generated using this interface.
+I (and the authors of this project) are not responsible for any images generated using this interface.
