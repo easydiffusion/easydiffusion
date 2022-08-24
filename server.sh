@@ -9,4 +9,7 @@ fi
 echo "Using docker image $IMAGE_NAME"
 docker run --name sd -d -p 5000:5000 --gpus all $IMAGE_NAME
 
-uvicorn main:app --reload
+echo "Please open http://localhost:8000 in your favorite web browser!"
+
+uvicorn main:app
+
