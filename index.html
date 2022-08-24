@@ -52,7 +52,7 @@
         <label for="width">Width:</label> <select id="width" name="width" value="512"><option value="128">128</option><option value="256">256</option><option value="512" selected>512</option><option value="768">768</option><option value="1024">1024</option></select><br/>
         <label for="height">Height:</label> <select id="height" name="height" value="512"><option value="128">128</option><option value="256">256</option><option value="512" selected>512</option><option value="768">768</option></select><br/>
         <label for="num_inference_steps">Number of inference steps:</label> <input id="num_inference_steps" name="num_inference_steps" value="50"><br/>
-        <label for="guidance_scale">Guidance Scale:</label> <input id="guidance_scale" name="guidance_scale" value="7.5"><br/>
+        <label for="guidance_scale">Guidance Scale:</label> <input id="guidance_scale" name="guidance_scale" value="75" type="range" min="10" max="200"> <span id="guidance_scale_value"></span></span><br/>
     </div>
 
     <button id="makeImage">Make Image</button> <br/><br/>
@@ -123,7 +123,7 @@ async function makeImage() {
         prompt: document.querySelector('#prompt').value,
         num_outputs: document.querySelector('#num_outputs').value,
         num_inference_steps: document.querySelector('#num_inference_steps').value,
-        guidance_scale: document.querySelector('#guidance_scale').value,
+        guidance_scale: document.querySelector('#guidance_scale').value / 10,
         width: document.querySelector('#width').value,
         height: document.querySelector('#height').value,
         seed: document.querySelector('#seed').value,
@@ -206,6 +206,15 @@ document.querySelector('#configToggleBtn').addEventListener('click', function() 
     document.querySelector('#configToggleBtn').innerHTML = (config.style.display === 'none' ? 'show' : 'hide')
     return false
 })
+
+let guidanceScale = document.querySelector('#guidance_scale')
+function updateGuidanceScale() {
+    let label = document.querySelector('#guidance_scale_value')
+    label.innerHTML = guidanceScale.value / 10
+}
+
+guidanceScale.addEventListener('input', updateGuidanceScale)
+updateGuidanceScale()
 
 setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
 </script>

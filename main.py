@@ -41,6 +41,7 @@ async def image(req : ImageRequest):
             "width": req.width,
             "height": req.height,
             "seed": req.seed,
+            "guidance_scale": req.guidance_scale,
         }
     }
 
