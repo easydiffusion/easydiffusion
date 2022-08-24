@@ -10,7 +10,7 @@ All the processing will happen on your local computer, it does not transmit your
 ![Screenshot of tool](shot-v1.jpg?raw=true)
 
 # System Requirements
-1. Requires [Docker](https://docs.docker.com/engine/install/), [docker-compose v1.29](https://docs.docker.com/compose/install/) [nvidia-container-toolkit](https://stackoverflow.com/a/58432877) and [Python](https://www.python.org/downloads/) (3.6 or higher).
+1. Requires [Docker](https://docs.docker.com/engine/install/), [docker-compose v1.29](https://docs.docker.com/compose/install/), [nvidia-container-toolkit](https://stackoverflow.com/a/58432877) and [Python](https://www.python.org/downloads/) (3.6 or higher).
 2. Linux or Windows 11 (with [WSL](https://docs.microsoft.com/en-us/windows/wsl/install)). Basically if your system can run [Stable Diffusion](https://replicate.com/stability-ai/stable-diffusion).
 
 # Installation
