@@ -49,7 +49,6 @@ async def image(req : ImageRequest):
         del data['input']['seed']
 
     res = requests.post(PREDICT_URL, json=data)
-    print(res)
     return res.json()
 
 @app.get('/ding.mp3')

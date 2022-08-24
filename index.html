@@ -119,6 +119,12 @@ async function makeImage() {
 
     let outputMsg = document.querySelector('#outputMsg')
 
+    function logError(msg, res) {
+        outputMsg.innerHTML = '<span style="color: red">Error: ' + msg + '</span>'
+        console.log('request error', res)
+        setStatus('request', 'error', 'error')
+    }
+
     let reqBody = {
         prompt: document.querySelector('#prompt').value,
         num_outputs: document.querySelector('#num_outputs').value,
@@ -139,18 +145,23 @@ async function makeImage() {
             },
             body: JSON.stringify(reqBody)
         })
-        res = await res.json()
 
-        if (res.status !== 'succeeded') {
-            if (res.detail !== undefined) {
-                outputMsg.innerHTML = 'Error: ' + res.detail[0].msg + " in " + JSON.stringify(res.detail[0].loc)
-            } else {
-                outputMsg.innerHTML = 'Error: ' + res
-            }
-            outputMsg.innerHTML = '<span style="color: red">' + outputMsg.innerHTML + '</span>'
-            console.log('request error', res)
-            setStatus('request', 'error', 'error')
+        if (res.status != 200) {
+            logError('Stable Diffusion had an error: ' + await res.text() + '. This happens some times. Maybe modify the prompt or seed a bit?', res)
             res = undefined
+        } else {
+            res = await res.json()
+
+            if (res.status !== 'succeeded') {
+                let msg = ''
+                if (res.detail !== undefined) {
+                    msg = res.detail[0].msg + " in " + JSON.stringify(res.detail[0].loc)
+                } else {
+                    msg = res
+                }
+                logError(msg, res)
+                res = undefined
+            }
         }
     } catch (e) {
         console.log('request error', e)
