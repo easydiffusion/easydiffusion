@@ -14,14 +14,12 @@ All the processing will happen on your local computer, it does not transmit your
 2. Linux or Windows 11 (with [WSL](https://docs.microsoft.com/en-us/windows/wsl/install)). Basically if your system can run [Stable Diffusion](https://replicate.com/stability-ai/stable-diffusion).
 
 # Installation
-1. Download [Quick UI](https://github.com/cmdr2/stable-diffusion-ui/archive/refs/heads/main.zip) (this project)
-2. Unzip: `unzip main.zip`
-3. Enter: `cd stable-diffusion-ui-main`
-4. Run: `docker-compose up &` (warning: this will take some time during the first run, since it'll download Stable Diffusion's [docker image](https://replicate.com/stability-ai/stable-diffusion), nearly 17 GiB)
-5. Open http://localhost:8000 in your browser
+1. Clone this repository: `git clone git@github.com:cmdr2/stable-diffusion-ui.git` or [download the zip file](https://github.com/cmdr2/stable-diffusion-ui/archive/refs/heads/main.zip) and unzip.
+2. Open your terminal, and in the project directory run: `docker-compose up &` (warning: this will take some time during the first run, since it'll download Stable Diffusion's [docker image](https://replicate.com/stability-ai/stable-diffusion), nearly 17 GiB)
+3. Open http://localhost:8000 in your browser
 
 # Usage
-1. Open http://localhost:8000 in your browser (after running `docker-compose up &` from step 4 previously)
+1. Open http://localhost:8000 in your browser (after running `docker-compose up &` from step 2 previously)
 2. Enter a text prompt, like `a photograph of an astronaut riding a horse` in the textbox.
 3. Press `Make Image`. This will take some time, depending on your system's processing power.
 4. See the image generated using your prompt. If there's an error, the status message at the top will show 'error' in red.
