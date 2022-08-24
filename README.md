@@ -10,19 +10,18 @@ All the processing will happen on your local computer, it does not transmit your
 ![Screenshot of tool](shot-v1.jpg?raw=true)
 
 # System Requirements
-1. Requires [Docker](https://docs.docker.com/engine/install/), [nvidia-container-toolkit](https://stackoverflow.com/a/58432877) and [Python](https://www.python.org/downloads/) (3.6 or higher).
+1. Requires [Docker](https://docs.docker.com/engine/install/), [docker-compose v1.29](https://docs.docker.com/compose/install/) [nvidia-container-toolkit](https://stackoverflow.com/a/58432877) and [Python](https://www.python.org/downloads/) (3.6 or higher).
 2. Linux or Windows 11 (with [WSL](https://docs.microsoft.com/en-us/windows/wsl/install)). Basically if your system can run [Stable Diffusion](https://replicate.com/stability-ai/stable-diffusion).
 
 # Installation
 1. Download [Quick UI](https://github.com/cmdr2/stable-diffusion-ui/archive/refs/heads/main.zip) (this project)
 2. Unzip: `unzip main.zip`
 3. Enter: `cd stable-diffusion-ui-main`
-4. Install dependencies: `pip install fastapi uvicorn` (this is the framework and server used by this UI project)
-5. Run: `./server.sh` (warning: this will take some time during the first run, since it'll download Stable Diffusion's [docker image](https://replicate.com/stability-ai/stable-diffusion), nearly 17 GiB)
-6. Open http://localhost:8000 in your browser
+4. Run: `docker-compose up` (warning: this will take some time during the first run, since it'll download Stable Diffusion's [docker image](https://replicate.com/stability-ai/stable-diffusion), nearly 17 GiB)
+5. Open http://localhost:8000 in your browser
 
 # Usage
-1. Open http://localhost:8000 in your browser (after running `./server.sh` from step 5 previously)
+1. Open http://localhost:8000 in your browser (after running `docker-compose up` from step 4 previously)
 2. Enter a text prompt, like `a photograph of an astronaut riding a horse` in the textbox.
 3. Press `Make Image`. This will take some time, depending on your system's processing power.
 4. See the image generated using your prompt. If there's an error, the status message at the top will show 'error' in red.
