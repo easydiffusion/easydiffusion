@@ -7,7 +7,7 @@ Two things:
 
 All the processing will happen on your local computer, it does not transmit your prompts or process on any remote server.
 
-![Screenshot of tool](media/shot-v1.jpg?raw=true)
+<img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/shot-v2.jpg" height="500" alt="Screenshot of tool">
 
 # System Requirements
 1. Linux or Windows 11 (with [WSL](https://docs.microsoft.com/en-us/windows/wsl/install)). And if your computer can run [Stable Diffusion](https://replicate.com/stability-ai/stable-diffusion).
