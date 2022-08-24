@@ -70,11 +70,14 @@
 <script>
 const HEALTH_PING_INTERVAL = 5 // seconds
 
+let serverStatus = 'offline'
+
 function setStatus(statusType, msg, msgType) {
     let el = ''
 
     if (statusType === 'server') {
         el = '#serverStatus'
+        serverStatus = msg
     } else if (statusType === 'request') {
         el = '#reqStatus'
     }
@@ -152,7 +155,11 @@ async function makeImage() {
         })
 
         if (res.status != 200) {
-            logError('Stable Diffusion had an error: ' + await res.text() + '. This happens some times. Maybe modify the prompt or seed a bit?', res)
+            if (serverStatus === 'online') {
+                logError('Stable Diffusion had an error: ' + await res.text() + '. This happens sometimes. Maybe modify the prompt or seed a little bit?', res)
+            } else {
+                logError("Stable Diffusion is still starting up, please wait. If this goes on beyond a few minutes, Stable Diffusion has probably crashed. Please check the logs in your command line.", res)
+            }
             res = undefined
         } else {
             res = await res.json()
