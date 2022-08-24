@@ -51,6 +51,6 @@ async def image(req : ImageRequest):
     res = requests.post(PREDICT_URL, json=data)
     return res.json()
 
-@app.get('/ding.mp3')
+@app.get('/media/ding.mp3')
 def read_root():
-    return FileResponse('ding.mp3')
+    return FileResponse('media/ding.mp3')

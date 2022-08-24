@@ -7,7 +7,7 @@ Two things:
 
 All the processing will happen on your local computer, it does not transmit your prompts or process on any remote server.
 
-![Screenshot of tool](shot-v1.jpg?raw=true)
+![Screenshot of tool](media/shot-v1.jpg?raw=true)
 
 # System Requirements
 1. Requires [Docker](https://docs.docker.com/engine/install/), [docker-compose v1.29](https://docs.docker.com/compose/install/), [nvidia-container-toolkit](https://stackoverflow.com/a/58432877) and [Python](https://www.python.org/downloads/) (3.6 or higher).
@@ -35,7 +35,7 @@ You can also set the configuration like `seed`, `width`, `height`, `num_outputs`
 
 Use the same `seed` number to get the same image for a certain prompt. This is useful for refining a prompt without losing the basic image design. Use a seed of `-1` to get random images.
 
-![Screenshot of advanced settings](config-v1.jpg?raw=true)
+![Screenshot of advanced settings](media/config-v1.jpg?raw=true)
 
 # Behind the scenes
 This project is a quick way to get started with Stable Diffusion. You do not need to have Stable Diffusion already installed, and do not need any API keys. This project will automatically download Stable Diffusion's docker image, the first time it is run.
