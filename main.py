@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 import requests
 
-LOCAL_SERVER_URL = 'http://localhost:5000'
+LOCAL_SERVER_URL = 'http://stability-ai:5000'
 PREDICT_URL = LOCAL_SERVER_URL + '/predictions'
 
 app = FastAPI()
