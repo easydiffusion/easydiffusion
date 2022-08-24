@@ -41,7 +41,7 @@ This project is a quick way to get started with Stable Diffusion. You do not nee
 This project runs Stable Diffusion in a docker container behind the scenes, using Stable Diffusion's [official Docker image](https://replicate.com/stability-ai/stable-diffusion) on replicate.com.
 
 # Bugs reports and code contributions welcome
-This was built in a few hours for fun. So if there are any problems or suggestions, please feel free to [email me](mailto:sd@cmdr2.org) or [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues).
+This was built in a few hours for fun. So if there are any problems or suggestions, please feel free to [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues) or [email me](mailto:sd@cmdr2.org).
 
 Also, please feel free to submit a pull request, if you have any code contributions in mind.
 
