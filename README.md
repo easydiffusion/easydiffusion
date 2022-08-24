@@ -19,10 +19,10 @@ All the processing will happen on your local computer, it does not transmit your
 3. Open http://localhost:8000 in your browser
 
 # Usage
-1. Open http://localhost:8000 in your browser (after running `docker-compose up &` from step 2 previously)
+1. Open http://localhost:8000 in your browser (after running `docker-compose up &` from step 2 previously).
 2. Enter a text prompt, like `a photograph of an astronaut riding a horse` in the textbox.
 3. Press `Make Image`. This will take some time, depending on your system's processing power.
-4. See the image generated using your prompt. If there's an error, the status message at the top will show 'error' in red.
+4. See the image generated using your prompt.
 
 Please [let me know](mailto:sd@cmdr2.org) if this worked (or didn't) for you!
 
