@@ -203,9 +203,6 @@ async function makeImage() {
 
     outputMsg.innerHTML = 'Processed in ' + time + ' seconds. Seed: ' + seed
 
-    // let images = document.querySelector('#images')
-    // images.innerHTML = ''
-
     for (let idx in res.output) {
         let imgBody = ''
 
@@ -234,6 +231,8 @@ async function makeImage() {
 }
 
 async function handleMakeImage() {
+    images.innerHTML = '';
+
     const numBatches = document.querySelector('#num_batches').value; 
 
     for(i = 0; i < numBatches; i++) {
