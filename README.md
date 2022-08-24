@@ -38,7 +38,7 @@ Use the same `seed` number to get the same image for a certain prompt. This is u
 # Behind the scenes
 This project is a quick way to get started with Stable Diffusion. You do not need to have Stable Diffusion already installed, and do not need any API keys. This project will automatically download Stable Diffusion's docker image, the first time it is run.
 
-This project runs Stable Diffusion in a docker container behind the scenes, using Stable Diffusion's [official Docker image](https://replicate.com/stability-ai/stable-diffusion) on replicate.com.
+This project runs Stable Diffusion in a docker container behind the scenes, using Stable Diffusion's [Docker image](https://replicate.com/stability-ai/stable-diffusion) on replicate.com.
 
 # Bugs reports and code contributions welcome
 This was built in a few hours for fun. So if there are any problems or suggestions, please feel free to [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues) or [email me](mailto:sd@cmdr2.org).
