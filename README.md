@@ -27,6 +27,8 @@ All the processing will happen on your local computer, it does not transmit your
 3. Press `Make Image`. This will take some time, depending on your system's processing power.
 4. See the image generated using your prompt. If there's an error, the status message at the top will show 'error' in red.
 
+Please [let me know](mailto:sd@cmdr2.org) if this worked (or didn't) for you!
+
 # Advanced Settings
 You can also set the configuration like `seed`, `width`, `height`, `num_outputs`, `num_inference_steps` and `guidance_scale` using the 'show' button next to 'Advanced settings'.
 
