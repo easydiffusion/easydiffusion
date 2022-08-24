@@ -1,4 +1,4 @@
-A simple browser UI for generating images from text prompts, using [Stable Diffusion](https://replicate.com/stability-ai/stable-diffusion). Designed for running locally on your computer. Just enter the text prompt, and see the generated image.
+A simple way to install and use [Stable Diffusion](https://replicate.com/stability-ai/stable-diffusion) on your local computer. Provides a browser UI for generating images from text prompts. Just enter your text prompt, and see the generated image.
 
 # What does this do?
 Two things:
