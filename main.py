@@ -9,10 +9,15 @@ PREDICT_URL = LOCAL_SERVER_URL + '/predictions'
 
 app = FastAPI()
 
+# defaults from https://huggingface.co/blog/stable_diffusion
 class ImageRequest(BaseModel):
     prompt: str
-    width: int = 512
-    height: int = 512
+    num_outputs: str = "1"
+    num_inference_steps: str = "50"
+    guidance_scale: str = "7.5"
+    width: str = "512"
+    height: str = "512"
+    seed: str = "30000"
 
 @app.get('/')
 def read_root():
@@ -28,13 +33,22 @@ async def ping():
 
 @app.post('/image')
 async def image(req : ImageRequest):
-    res = requests.post(PREDICT_URL, json={
+    data = {
         "input": {
             "prompt": req.prompt,
-            "width": str(req.width),
-            "height": str(req.height),
+            "num_outputs": req.num_outputs,
+            "num_inference_steps": req.num_inference_steps,
+            "width": req.width,
+            "height": req.height,
+            "seed": req.seed,
         }
-    })
+    }
+
+    if req.seed == "-1":
+        del data['input']['seed']
+
+    res = requests.post(PREDICT_URL, json=data)
+    print(res)
     return res.json()
 
 @app.get('/ding.mp3')

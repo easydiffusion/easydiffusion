@@ -7,7 +7,7 @@ Two things:
 
 All the processing will happen on your local computer, it does not transmit your prompts or process on any remote server.
 
-![Screenshot of tool](shot.jpg?raw=true)
+![Screenshot of tool](shot-v1.jpg?raw=true)
 
 # System Requirements
 1. Requires [Docker](https://docs.docker.com/engine/install/) and [Python](https://www.python.org/downloads/) (3.6 or higher).
@@ -26,6 +26,13 @@ All the processing will happen on your local computer, it does not transmit your
 2. Enter a text prompt, like `a photograph of an astronaut riding a horse` in the textbox.
 3. Press `Make Image`. This will take a while, depending on your system's processing power.
 4. See the image generated using your prompt. If there's an error, the status message at the top will show 'error' in red.
+
+# Advanced Settings
+You can also set the configuration like `seed`, `width`, `height`, `num_outputs`, `num_inference_steps` and `guidance_scale` using the 'show' button next to 'Advanced settings'.
+
+Use the same `seed` number to get the same image for a certain prompt. This is useful for refining a prompt without losing the basic image design. Use a seed of `-1` to get random images.
+
+![Screenshot of advanced settings](config-v1.jpg?raw=true)
 
 # Behind the scenes
 This project is a quick way to get started with Stable Diffusion. You do not need to have Stable Diffusion already installed, and do not need any API keys. This project will automatically download Stable Diffusion's docker image, the first time it is run.

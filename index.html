@@ -15,9 +15,18 @@
             width: 95%;
         }
     }
-    #image {
-        width: 512px;
-        height: 512px;
+    #configHeader {
+        margin-top: 5px;
+        margin-bottom: 5px;
+        font-size: 10pt;
+    }
+    #config {
+        font-size: 9pt;
+        margin-bottom: 5px;
+        padding-left: 10px;
+    }
+    #outputMsg {
+        font-size: small;
     }
     #footer {
         margin-top: 5px;
@@ -36,9 +45,21 @@
     <b>Prompt:</b><br/>
     <textarea id="prompt">a photograph of an astronaut riding a horse</textarea><br/>
 
+    <div id="configHeader"><b>Advanced settings:</b> [<a id="configToggleBtn" href="#">show</a>]</div>
+    <div id="config">
+        <label for="seed">Seed:</label> <input id="seed" name="seed" value="30000"> <small>(use -1 for random seed)</small><br/>
+        <label for="num_outputs">Number of outputs:</label> <select id="num_outputs" name="num_outputs" value="1"><option value="1" selected>1</option><option value="4">4</option></select><br/>
+        <label for="width">Width:</label> <select id="width" name="width" value="512"><option value="128">128</option><option value="256">256</option><option value="512" selected>512</option><option value="768">768</option><option value="1024">1024</option></select><br/>
+        <label for="height">Height:</label> <select id="height" name="height" value="512"><option value="128">128</option><option value="256">256</option><option value="512" selected>512</option><option value="768">768</option></select><br/>
+        <label for="num_inference_steps">Number of inference steps:</label> <input id="num_inference_steps" name="num_inference_steps" value="50"><br/>
+        <label for="guidance_scale">Guidance Scale:</label> <input id="guidance_scale" name="guidance_scale" value="7.5"><br/>
+    </div>
+
     <button id="makeImage">Make Image</button> <br/><br/>
 
-    <img id="image" />
+    <div id="outputMsg"></div>
+
+    <div id="images"></div>
 
     <div id="footer">
         <p>Please feel free to <a href="https://github.com/cmdr2/stable-diffusion-ui/issues/new">file an issue</a> if you have any problems or suggestions in using this interface.</p>
@@ -96,8 +117,19 @@ async function makeImage() {
     btn.innerHTML = 'Processing..'
     btn.disabled = true;
 
-    let prompt = document.querySelector('#prompt').value
+    let outputMsg = document.querySelector('#outputMsg')
+
+    let reqBody = {
+        prompt: document.querySelector('#prompt').value,
+        num_outputs: document.querySelector('#num_outputs').value,
+        num_inference_steps: document.querySelector('#num_inference_steps').value,
+        guidance_scale: document.querySelector('#guidance_scale').value,
+        width: document.querySelector('#width').value,
+        height: document.querySelector('#height').value,
+        seed: document.querySelector('#seed').value,
+    }
     let res = ''
+    let time = new Date().getTime()
 
     try {
         res = await fetch('/image', {
@@ -105,13 +137,21 @@ async function makeImage() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                prompt: prompt,
-                width: 512,
-                height: 512
-            })
+            body: JSON.stringify(reqBody)
         })
         res = await res.json()
+
+        if (res.status !== 'succeeded') {
+            if (res.detail !== undefined) {
+                outputMsg.innerHTML = 'Error: ' + res.detail[0].msg + " in " + JSON.stringify(res.detail[0].loc)
+            } else {
+                outputMsg.innerHTML = 'Error: ' + res
+            }
+            outputMsg.innerHTML = '<span style="color: red">' + outputMsg.innerHTML + '</span>'
+            console.log('request error', res)
+            setStatus('request', 'error', 'error')
+            res = undefined
+        }
     } catch (e) {
         console.log('request error', e)
         setStatus('request', 'error', 'error')
@@ -126,23 +166,46 @@ async function makeImage() {
         return
     }
 
-    let imgBody = ''
+    time = new Date().getTime() - time
+    time /= 1000
 
-    try {
-        imgBody = res.output[0]
-    } catch (e) {
-        console.log(imgBody)
-        setStatus('request', 'invalid image', 'error')
-        return
+    outputMsg.innerHTML = 'Processed in ' + time + ' seconds'
+
+    let images = document.querySelector('#images')
+    images.innerHTML = ''
+
+    for (let idx in res.output) {
+        let imgBody = ''
+
+        try {
+            imgBody = res.output[idx]
+        } catch (e) {
+            console.log(imgBody)
+            setStatus('request', 'invalid image', 'error')
+            return
+        }
+
+        let img = document.createElement('img')
+        img.width = parseInt(reqBody.width)
+        img.height = parseInt(reqBody.height)
+        img.src = imgBody
+
+        images.appendChild(img)
     }
-
-    let img = document.querySelector('#image')
-    img.src = imgBody
 
     setStatus('request', 'done', 'success')
 }
 
 document.querySelector('#makeImage').addEventListener('click', makeImage)
+
+let config = document.querySelector('#config')
+config.style.display = 'none'
+
+document.querySelector('#configToggleBtn').addEventListener('click', function() {
+    config.style.display = (config.style.display === 'none' ? 'block' : 'none')
+    document.querySelector('#configToggleBtn').innerHTML = (config.style.display === 'none' ? 'show' : 'hide')
+    return false
+})
 
 setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
 </script>
