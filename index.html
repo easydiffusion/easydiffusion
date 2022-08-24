@@ -45,6 +45,7 @@
 
     <div id="configHeader"><b>Advanced settings:</b> [<a id="configToggleBtn" href="#">show</a>]</div>
     <div id="config">
+        <input id="sound_toggle" name="sound_toggle" type="checkbox" checked> <label for="sound_toggle">Enable Sound</label><br/>
         <label for="seed">Seed:</label> <input id="seed" name="seed" value="30000"> <input id="random_seed" name="random_seed" type="checkbox" checked> <label for="random_seed">Random Image</label> <br/>
         <label for="num_outputs">Number of outputs:</label> <select id="num_outputs" name="num_outputs" value="1"><option value="1" selected>1</option><option value="4">4</option></select><br/>
         <label for="width">Width:</label> <select id="width" name="width" value="512"><option value="128">128</option><option value="256">256</option><option value="512" selected>512</option><option value="768">768</option><option value="1024">1024</option></select><br/>
@@ -183,7 +184,12 @@ async function makeImage() {
     btn.innerHTML = 'Make Image'
     btn.disabled = false;
 
-    playSound()
+
+    const shouldPlaySound = document.querySelector('#sound_toggle').checked
+
+    if (shouldPlaySound) {
+        playSound()
+    }
 
     if (!res) {
         return
