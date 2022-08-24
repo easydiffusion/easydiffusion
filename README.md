@@ -10,13 +10,13 @@ All the processing will happen on your local computer, it does not transmit your
 ![Screenshot of tool](media/shot-v1.jpg?raw=true)
 
 # System Requirements
-1. Requires [Docker](https://docs.docker.com/engine/install/), [docker-compose v1.29](https://docs.docker.com/compose/install/), [nvidia-container-toolkit](https://stackoverflow.com/a/58432877) and [Python](https://www.python.org/downloads/) (3.6 or higher).
-2. Linux or Windows 11 (with [WSL](https://docs.microsoft.com/en-us/windows/wsl/install)). Basically if your system can run [Stable Diffusion](https://replicate.com/stability-ai/stable-diffusion).
+1. Linux or Windows 11 (with [WSL](https://docs.microsoft.com/en-us/windows/wsl/install)). And if your computer can run [Stable Diffusion](https://replicate.com/stability-ai/stable-diffusion).
+2. Requires [Docker](https://docs.docker.com/engine/install/), [docker-compose v1.29](https://docs.docker.com/compose/install/), [nvidia-container-toolkit](https://stackoverflow.com/a/58432877) and [Python](https://www.python.org/downloads/) (3.6 or higher).
 
 # Installation
 1. Clone this repository: `git clone git@github.com:cmdr2/stable-diffusion-ui.git` or [download the zip file](https://github.com/cmdr2/stable-diffusion-ui/archive/refs/heads/main.zip) and unzip.
 2. Open your terminal, and in the project directory run: `docker-compose up &` (warning: this will take some time during the first run, since it'll download Stable Diffusion's [docker image](https://replicate.com/stability-ai/stable-diffusion), nearly 17 GiB)
-3. Open http://localhost:8000 in your browser
+3. Open http://localhost:8000 in your browser. That's it!
 
 # Usage
 1. Open http://localhost:8000 in your browser (after running `docker-compose up &` from step 2 previously).
