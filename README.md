@@ -9,7 +9,7 @@ Two things:
 
 All the processing will happen on your local computer, it does not transmit your prompts or process on any remote server.
 
-<img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/shot-v3.jpg" height="500" alt="Screenshot of tool">
+<img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/shot-v4.jpg" height="500" alt="Screenshot of tool">
 
 # System Requirements
 1. Computer capable of running Stable Diffusion.
@@ -30,6 +30,9 @@ If you're getting errors, please check the [Troubleshooting](#troubleshooting) s
 2. Enter a text prompt, like `a photograph of an astronaut riding a horse` in the textbox.
 3. Press `Make Image`. This will take some time, depending on your system's processing power.
 4. See the image generated using your prompt.
+5. **New!** img2img: You can also choose an `initial image`, to generate an image based on that. An optional text prompt can help you refine this image.
+
+**Pro tip:** You can also click `Use as Input` on a generated image, to use it as the input image for your next generation. This can be useful for sequentially refining the generated image with a single click.
 
 Please [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues) if this did not work for you (after trying the common [troubleshooting](#troubleshooting) steps)!
 
@@ -38,7 +41,7 @@ To stop the server, please run `docker-compose down`
 # Advanced Settings
 You can also set the configuration like `seed`, `width`, `height`, `num_outputs`, `num_inference_steps` and `guidance_scale` using the 'show' button next to 'Advanced settings'.
 
-Use the same `seed` number to get the same image for a certain prompt. This is useful for refining a prompt without losing the basic image design. Use a seed of `-1` to get random images.
+Use the same `seed` number to get the same image for a certain prompt. This is useful for refining a prompt without losing the basic image design. Enable the `random images` checkbox to get random images.
 
 ![Screenshot of advanced settings](media/config-v2.jpg?raw=true)
 
