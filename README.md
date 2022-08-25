@@ -27,7 +27,7 @@ All the processing will happen on your local computer, it does not transmit your
 3. Press `Make Image`. This will take some time, depending on your system's processing power.
 4. See the image generated using your prompt.
 
-Please [let me know](mailto:sd@cmdr2.org) if this worked (or didn't) for you! If you're getting errors, please check the [Troubleshooting](#troubleshooting) section below first.
+Please [let me know](mailto:sd@cmdr2.org) if this worked (or didn't) for you! If you're getting errors, please check the [Troubleshooting](#troubleshooting) section below.
 
 To stop the server, please run `docker-compose down`
 
