@@ -7,7 +7,7 @@ Two things:
 
 All the processing will happen on your local computer, it does not transmit your prompts or process on any remote server.
 
-<img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/shot-v2.jpg" height="500" alt="Screenshot of tool">
+<img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/shot-v3.jpg" height="500" alt="Screenshot of tool">
 
 # System Requirements
 1. Computer capable of running Stable Diffusion.
