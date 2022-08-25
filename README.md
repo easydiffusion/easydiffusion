@@ -61,6 +61,6 @@ If there are any problems or suggestions, please feel free to [file an issue](ht
 Also, please feel free to submit a pull request, if you have any code contributions in mind.
 
 # Disclaimer
-The authors of this project are not responsible for any images generated using this interface.
+The authors of this project are not responsible for any content generated using this interface.
 
 This license of this software forbids you from sharing any content that violates any laws, produce any harm to a person, disseminate any personal information that would be meant for harm, spread misinformation and target vulnerable groups. For the full list of restrictions please read [the license](LICENSE).
