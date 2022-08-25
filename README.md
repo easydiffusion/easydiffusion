@@ -10,7 +10,8 @@ All the processing will happen on your local computer, it does not transmit your
 <img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/shot-v2.jpg" height="500" alt="Screenshot of tool">
 
 # System Requirements
-1. Linux or Windows 11 (with [WSL](https://docs.microsoft.com/en-us/windows/wsl/install)). And if your computer can run [Stable Diffusion](https://replicate.com/stability-ai/stable-diffusion).
+1. Computer capable of running Stable Diffusion.
+2. Linux or Windows 11 (with [WSL](https://docs.microsoft.com/en-us/windows/wsl/install)) or Windows 10 version 2004 and higher (Build 19041 and higher) with [WSL](https://docs.microsoft.com/en-us/windows/wsl/install).
 2. Requires [Docker](https://docs.docker.com/engine/install/), [docker-compose v1.29](https://docs.docker.com/compose/install/), and [nvidia-container-toolkit](https://stackoverflow.com/a/58432877).
 
 **Important:** If you're using Windows, please install docker inside your [WSL](https://docs.microsoft.com/en-us/windows/wsl/install)'s Linux. Install docker for the Linux distro in your WSL. **Don't install Docker for Windows.**
@@ -36,6 +37,16 @@ You can also set the configuration like `seed`, `width`, `height`, `num_outputs`
 Use the same `seed` number to get the same image for a certain prompt. This is useful for refining a prompt without losing the basic image design. Use a seed of `-1` to get random images.
 
 ![Screenshot of advanced settings](media/config-v2.jpg?raw=true)
+
+# Troubleshooting
+## './docker-compose.yml' is invalid:
+> ERROR: The Compose file './docker-compose.yml' is invalid because:
+> services.stability-ai.deploy.resources.reservations value Additional properties are not allowed ('devices' was unexpected)
+
+Please ensure you have `docker-compose` version 1.29 or higher. Check `docker-compose --version`, and if required [update it to 1.29](https://docs.docker.com/compose/install/).
+
+## RuntimeError: Found no NVIDIA driver on your system:
+If you have an NVIDIA GPU and the latest [NVIDIA driver](http://www.nvidia.com/Download/index.aspx), please ensure that you've installed [nvidia-container-toolkit](https://stackoverflow.com/a/58432877).
 
 # Behind the scenes
 This project is a quick way to get started with Stable Diffusion. You do not need to have Stable Diffusion already installed, and do not need any API keys. This project will automatically download Stable Diffusion's docker image, the first time it is run.
