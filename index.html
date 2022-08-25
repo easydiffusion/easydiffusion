@@ -51,6 +51,7 @@
         <label for="height">Height:</label> <select id="height" name="height" value="512"><option value="128">128</option><option value="256">256</option><option value="512" selected>512</option><option value="768">768</option></select><br/>
         <label for="num_inference_steps">Number of inference steps:</label> <input id="num_inference_steps" name="num_inference_steps" value="50"><br/>
         <label for="guidance_scale">Guidance Scale:</label> <input id="guidance_scale" name="guidance_scale" value="75" type="range" min="10" max="200"> <span id="guidance_scale_value"></span></span><br/>
+        <input id="sound_toggle" name="sound_toggle" type="checkbox" checked> <label for="sound_toggle">Play sound on task completion</label><br/>
     </div>
 
     <button id="makeImage">Make Image</button> <br/><br/>
@@ -68,9 +69,17 @@
 </body>
 
 <script>
+const SOUND_ENABLED_KEY = "soundEnabled"
 const HEALTH_PING_INTERVAL = 5 // seconds
 
 let serverStatus = 'offline'
+
+function isSoundEnabled() {
+    if (localStorage.getItem(SOUND_ENABLED_KEY) === 'false') {
+        return false
+    }
+    return true
+}
 
 function setStatus(statusType, msg, msgType) {
     let el = ''
@@ -183,7 +192,9 @@ async function makeImage() {
     btn.innerHTML = 'Make Image'
     btn.disabled = false;
 
-    playSound()
+    if (isSoundEnabled()) {
+        playSound()
+    }
 
     if (!res) {
         return
@@ -224,7 +235,15 @@ async function makeImage() {
     }
 }
 
+function handleAudioEnabledChange(e) {
+    localStorage.setItem(SOUND_ENABLED_KEY, e.target.checked.toString())
+}
+
+document.querySelector('#sound_toggle').addEventListener('click', handleAudioEnabledChange)
+
 document.querySelector('#makeImage').addEventListener('click', makeImage)
+
+document.querySelector('#sound_toggle').checked = isSoundEnabled();
 
 let config = document.querySelector('#config')
 config.style.display = 'none'
