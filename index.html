@@ -69,9 +69,19 @@
 </body>
 
 <script>
+const SOUND_ENABLED_KEY = "soundEnabled"
+document.querySelector('#sound_toggle').checked = isSoundEnabled();
+
 const HEALTH_PING_INTERVAL = 5 // seconds
 
 let serverStatus = 'offline'
+
+function isSoundEnabled() {
+    if (localStorage.getItem(SOUND_ENABLED_KEY) === 'false') {
+        return false
+    }
+    return true
+}
 
 function setStatus(statusType, msg, msgType) {
     let el = ''
@@ -229,6 +239,12 @@ async function makeImage() {
         seedEl.value = seed
     }
 }
+
+function handleAudioEnabledChange(e) {
+    localStorage.setItem(SOUND_ENABLED_KEY, e.target.checked.toString())
+}
+
+document.querySelector('#sound_toggle').addEventListener('click', handleAudioEnabledChange)
 
 document.querySelector('#makeImage').addEventListener('click', makeImage)
 
