@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from starlette.responses import FileResponse
 from pydantic import BaseModel
 
@@ -12,6 +12,7 @@ app = FastAPI()
 # defaults from https://huggingface.co/blog/stable_diffusion
 class ImageRequest(BaseModel):
     prompt: str
+    init_image: str = None # base64
     num_outputs: str = "1"
     num_inference_steps: str = "50"
     guidance_scale: str = "7.5"
@@ -45,10 +46,16 @@ async def image(req : ImageRequest):
         }
     }
 
+    if req.init_image is not None:
+        data['input']['init_image'] = req.init_image
+
     if req.seed == "-1":
         del data['input']['seed']
 
     res = requests.post(PREDICT_URL, json=data)
+    if res.status_code != 200:
+        raise HTTPException(status_code=500, detail=res.text)
+
     return res.json()
 
 @app.get('/media/ding.mp3')

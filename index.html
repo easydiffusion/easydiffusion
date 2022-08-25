@@ -6,6 +6,9 @@
         font-family: Arial, Helvetica, sans-serif;
         font-size: 11pt;
     }
+    label {
+        font-size: 10pt;
+    }
     #prompt {
         width: 50vw;
         height: 50pt;
@@ -14,6 +17,23 @@
         #prompt {
             width: 95%;
         }
+    }
+    #init_image_preview_container {
+        display: none;
+    }
+    #init_image_clear {
+        position: absolute;
+        transform: translateX(-50%);
+        background: black;
+        color: white;
+        border: 2pt solid #ccc;
+        padding: 0;
+        cursor: pointer;
+        outline: inherit;
+        border-radius: 8pt;
+        width: 16pt;
+        height: 16pt;
+        font-size: 10pt;
     }
     #configHeader {
         margin-top: 5px;
@@ -29,9 +49,20 @@
         font-size: small;
     }
     #footer {
-        margin-top: 5px;
-        padding-top: 5px;
+        border-top: 1px solid #999;
+        margin-top: 10px;
+        padding-top: 10px;
         font-size: small;
+    }
+    .imgUseBtn {
+        position: absolute;
+        transform: translateX(-100%);
+        margin-top: 5pt;
+        margin-left: -5pt;
+    }
+    .imgItem {
+        display: inline;
+        padding-right: 10px;
     }
     </style>
 </html>
@@ -42,6 +73,12 @@
 
     <b>Prompt:</b><br/>
     <textarea id="prompt">a photograph of an astronaut riding a horse</textarea><br/>
+
+    <label for="init_image"><b>Initial Image:</b> (optional) </label> <input id="init_image" name="init_image" type="file" /> </button><br/>
+    <div id="init_image_preview_container">
+        <img id="init_image_preview" src="" width="100" height="100" />
+        <button id="init_image_clear">X</button>
+    </div>
 
     <div id="configHeader"><b>Advanced settings:</b> [<a id="configToggleBtn" href="#">show</a>]</div>
     <div id="config">
@@ -69,6 +106,28 @@
 
 <script>
 const HEALTH_PING_INTERVAL = 5 // seconds
+
+let promptField = document.querySelector('#prompt')
+let numOutputsField = document.querySelector('#num_outputs')
+let numInferenceStepsField = document.querySelector('#num_inference_steps')
+let guidanceScaleField = document.querySelector('#guidance_scale')
+let guidanceScaleValueLabel = document.querySelector('#guidance_scale_value')
+let randomSeedField = document.querySelector("#random_seed")
+let seedField = document.querySelector('#seed')
+let widthField = document.querySelector('#width')
+let heightField = document.querySelector('#height')
+let initImageSelector = document.querySelector("#init_image")
+let initImagePreview = document.querySelector("#init_image_preview")
+
+let makeImageBtn = document.querySelector('#makeImage')
+
+let imagesContainer = document.querySelector('#images')
+let initImagePreviewContainer = document.querySelector('#init_image_preview_container')
+let initImageClearBtn = document.querySelector('#init_image_clear')
+
+let showConfigToggle = document.querySelector('#configToggleBtn')
+let configBox = document.querySelector('#config')
+let outputMsg = document.querySelector('#outputMsg')
 
 let serverStatus = 'offline'
 
@@ -117,11 +176,9 @@ async function healthCheck() {
 async function makeImage() {
     setStatus('request', 'fetching..')
 
-    let btn = document.querySelector('#makeImage')
-    btn.innerHTML = 'Processing..'
-    btn.disabled = true;
+    makeImageBtn.innerHTML = 'Processing..'
+    makeImageBtn.disabled = true
 
-    let outputMsg = document.querySelector('#outputMsg')
     outputMsg.innerHTML = 'Fetching..'
 
     function logError(msg, res) {
@@ -130,18 +187,22 @@ async function makeImage() {
         setStatus('request', 'error', 'error')
     }
 
-    let random_seed = document.querySelector("#random_seed")
-    let seed = (random_seed.checked ? Math.floor(Math.random() * 10000) : document.querySelector('#seed').value)
+    let seed = (randomSeedField.checked ? Math.floor(Math.random() * 10000) : seedField.value)
 
     let reqBody = {
-        prompt: document.querySelector('#prompt').value,
-        num_outputs: document.querySelector('#num_outputs').value,
-        num_inference_steps: document.querySelector('#num_inference_steps').value,
-        guidance_scale: document.querySelector('#guidance_scale').value / 10,
-        width: document.querySelector('#width').value,
-        height: document.querySelector('#height').value,
+        prompt: promptField.value,
+        num_outputs: numOutputsField.value,
+        num_inference_steps: numInferenceStepsField.value,
+        guidance_scale: guidanceScaleField.value / 10,
+        width: widthField.value,
+        height: heightField.value,
         seed: seed,
     }
+
+    if (initImagePreview.src.indexOf('data:image/png;base64') !== -1) {
+        reqBody['init_image'] = initImagePreview.src
+    }
+
     let res = ''
     let time = new Date().getTime()
 
@@ -180,8 +241,8 @@ async function makeImage() {
         setStatus('request', 'error', 'error')
     }
 
-    btn.innerHTML = 'Make Image'
-    btn.disabled = false;
+    makeImageBtn.innerHTML = 'Make Image'
+    makeImageBtn.disabled = false
 
     playSound()
 
@@ -194,8 +255,7 @@ async function makeImage() {
 
     outputMsg.innerHTML = 'Processed in ' + time + ' seconds. Seed: ' + seed
 
-    let images = document.querySelector('#images')
-    images.innerHTML = ''
+    imagesContainer.innerHTML = ''
 
     for (let idx in res.output) {
         let imgBody = ''
@@ -208,54 +268,96 @@ async function makeImage() {
             return
         }
 
+        let imgItem = document.createElement('div')
+        imgItem.className = 'imgItem'
+
         let img = document.createElement('img')
         img.width = parseInt(reqBody.width)
         img.height = parseInt(reqBody.height)
         img.src = imgBody
 
-        images.appendChild(img)
+        let imgUseBtn = document.createElement('button')
+        imgUseBtn.className = 'imgUseBtn'
+        imgUseBtn.innerHTML = 'Use as Input'
+
+        imgItem.appendChild(img)
+        imgItem.appendChild(imgUseBtn)
+        imagesContainer.appendChild(imgItem)
+
+        imgUseBtn.addEventListener('click', function() {
+            initImageSelector.value = null
+            initImagePreview.src = imgBody
+
+            initImagePreviewContainer.style.display = 'block'
+
+            randomSeedField.checked = false
+            seedField.value = seed
+            seedField.disabled = false
+        })
     }
 
     setStatus('request', 'done', 'success')
 
-    if (random_seed.checked) {
-        let seedEl = document.querySelector("#seed")
-        seedEl.value = seed
+    if (randomSeedField.checked) {
+        seedField.value = seed
     }
 }
 
-document.querySelector('#makeImage').addEventListener('click', makeImage)
+makeImageBtn.addEventListener('click', makeImage)
 
-let config = document.querySelector('#config')
-config.style.display = 'none'
+configBox.style.display = 'none'
 
-document.querySelector('#configToggleBtn').addEventListener('click', function() {
-    config.style.display = (config.style.display === 'none' ? 'block' : 'none')
-    document.querySelector('#configToggleBtn').innerHTML = (config.style.display === 'none' ? 'show' : 'hide')
+showConfigToggle.addEventListener('click', function() {
+    configBox.style.display = (configBox.style.display === 'none' ? 'block' : 'none')
+    showConfigToggle.innerHTML = (configBox.style.display === 'none' ? 'show' : 'hide')
     return false
 })
 
-let guidanceScale = document.querySelector('#guidance_scale')
 function updateGuidanceScale() {
-    let label = document.querySelector('#guidance_scale_value')
-    label.innerHTML = guidanceScale.value / 10
+    guidanceScaleValueLabel.innerHTML = guidanceScaleField.value / 10
 }
 
-guidanceScale.addEventListener('input', updateGuidanceScale)
+guidanceScaleField.addEventListener('input', updateGuidanceScale)
 updateGuidanceScale()
 
-let random_seed = document.querySelector("#random_seed")
 function checkRandomSeed() {
-    let seed = document.querySelector("#seed")
-    if (random_seed.checked) {
-        seed.disabled = true
-        seed.value = "random"
+    if (randomSeedField.checked) {
+        seedField.disabled = true
+        seedField.value = "random"
     } else {
-        seed.disabled = false
+        seedField.disabled = false
     }
 }
-random_seed.addEventListener('input', checkRandomSeed)
+randomSeedField.addEventListener('input', checkRandomSeed)
 checkRandomSeed()
+
+function showInitImagePreview() {
+    if (initImageSelector.files.length === 0) {
+        initImagePreviewContainer.style.display = 'none'
+        return
+    }
+
+    let reader = new FileReader()
+    let file = initImageSelector.files[0]
+
+    reader.addEventListener('load', function() {
+        // console.log(file.name, reader.result)
+        initImagePreview.src = reader.result
+        initImagePreviewContainer.style.display = 'block'
+    })
+
+    if (file) {
+        reader.readAsDataURL(file)
+    }
+}
+initImageSelector.addEventListener('change', showInitImagePreview)
+showInitImagePreview()
+
+initImageClearBtn.addEventListener('click', function() {
+    initImageSelector.value = null
+    initImagePreview.src = ''
+    initImagePreviewContainer.style.display = 'none'
+})
 
 setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
 </script>
