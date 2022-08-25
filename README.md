@@ -45,10 +45,10 @@ Use the same `seed` number to get the same image for a certain prompt. This is u
 > ERROR: The Compose file './docker-compose.yml' is invalid because:
 > services.stability-ai.deploy.resources.reservations value Additional properties are not allowed ('devices' was unexpected)
 
-Please ensure you have `docker-compose` version 1.29 or higher. Check `docker-compose --version`, and if required [update it to 1.29](https://docs.docker.com/compose/install/).
+Please ensure you have `docker-compose` version 1.29 or higher. Check `docker-compose --version`, and if required [update it to 1.29](https://docs.docker.com/compose/install/). (Thanks [u/exintrovert420](https://www.reddit.com/user/exintrovert420/))
 
 ## RuntimeError: Found no NVIDIA driver on your system:
-If you have an NVIDIA GPU and the latest [NVIDIA driver](http://www.nvidia.com/Download/index.aspx), please ensure that you've installed [nvidia-container-toolkit](https://stackoverflow.com/a/58432877).
+If you have an NVIDIA GPU and the latest [NVIDIA driver](http://www.nvidia.com/Download/index.aspx), please ensure that you've installed [nvidia-container-toolkit](https://stackoverflow.com/a/58432877). (Thanks [HVRyan](https://github.com/HVRyan))
 
 # Behind the scenes
 This project is a quick way to get started with Stable Diffusion. You do not need to have Stable Diffusion already installed, and do not need any API keys. This project will automatically download Stable Diffusion's docker image, the first time it is run.
