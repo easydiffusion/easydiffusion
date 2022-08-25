@@ -19,6 +19,7 @@ class ImageRequest(BaseModel):
     width: str = "512"
     height: str = "512"
     seed: str = "30000"
+    prompt_strength: str = "0.8"
 
 @app.get('/')
 def read_root():
@@ -48,6 +49,7 @@ async def image(req : ImageRequest):
 
     if req.init_image is not None:
         data['input']['init_image'] = req.init_image
+        data['input']['prompt_strength'] = req.prompt_strength
 
     if req.seed == "-1":
         del data['input']['seed']

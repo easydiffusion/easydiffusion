@@ -87,7 +87,8 @@
         <label for="width">Width:</label> <select id="width" name="width" value="512"><option value="128">128</option><option value="256">256</option><option value="512" selected>512</option><option value="768">768</option><option value="1024">1024</option></select><br/>
         <label for="height">Height:</label> <select id="height" name="height" value="512"><option value="128">128</option><option value="256">256</option><option value="512" selected>512</option><option value="768">768</option></select><br/>
         <label for="num_inference_steps">Number of inference steps:</label> <input id="num_inference_steps" name="num_inference_steps" value="50"><br/>
-        <label for="guidance_scale">Guidance Scale:</label> <input id="guidance_scale" name="guidance_scale" value="75" type="range" min="10" max="200"> <span id="guidance_scale_value"></span></span><br/>
+        <label for="guidance_scale">Guidance Scale:</label> <input id="guidance_scale" name="guidance_scale" value="75" type="range" min="10" max="200"> <span id="guidance_scale_value"></span><br/>
+        <span id="prompt_strength_container"><label for="prompt_strength">Prompt Strength:</label> <input id="prompt_strength" name="prompt_strength" value="8" type="range" min="0" max="10"> <span id="prompt_strength_value"></span><br/></span>
     </div>
 
     <button id="makeImage">Make Image</button> <br/><br/>
@@ -118,12 +119,15 @@ let widthField = document.querySelector('#width')
 let heightField = document.querySelector('#height')
 let initImageSelector = document.querySelector("#init_image")
 let initImagePreview = document.querySelector("#init_image_preview")
+let promptStrengthField = document.querySelector('#prompt_strength')
+let promptStrengthValueLabel = document.querySelector('#prompt_strength_value')
 
 let makeImageBtn = document.querySelector('#makeImage')
 
 let imagesContainer = document.querySelector('#images')
 let initImagePreviewContainer = document.querySelector('#init_image_preview_container')
 let initImageClearBtn = document.querySelector('#init_image_clear')
+let promptStrengthContainer = document.querySelector('#prompt_strength_container')
 
 let showConfigToggle = document.querySelector('#configToggleBtn')
 let configBox = document.querySelector('#config')
@@ -201,6 +205,7 @@ async function makeImage() {
 
     if (initImagePreview.src.indexOf('data:image/png;base64') !== -1) {
         reqBody['init_image'] = initImagePreview.src
+        reqBody['prompt_strength'] = promptStrengthField.value / 10
     }
 
     let res = ''
@@ -289,6 +294,7 @@ async function makeImage() {
             initImagePreview.src = imgBody
 
             initImagePreviewContainer.style.display = 'block'
+            promptStrengthContainer.style.display = 'block'
 
             randomSeedField.checked = false
             seedField.value = seed
@@ -320,6 +326,13 @@ function updateGuidanceScale() {
 guidanceScaleField.addEventListener('input', updateGuidanceScale)
 updateGuidanceScale()
 
+function updatePromptStrength() {
+    promptStrengthValueLabel.innerHTML = promptStrengthField.value / 10
+}
+
+promptStrengthField.addEventListener('input', updatePromptStrength)
+updatePromptStrength()
+
 function checkRandomSeed() {
     if (randomSeedField.checked) {
         seedField.disabled = true
@@ -334,6 +347,7 @@ checkRandomSeed()
 function showInitImagePreview() {
     if (initImageSelector.files.length === 0) {
         initImagePreviewContainer.style.display = 'none'
+        promptStrengthContainer.style.display = 'none'
         return
     }
 
@@ -344,6 +358,7 @@ function showInitImagePreview() {
         // console.log(file.name, reader.result)
         initImagePreview.src = reader.result
         initImagePreviewContainer.style.display = 'block'
+        promptStrengthContainer.style.display = 'block'
     })
 
     if (file) {
@@ -357,6 +372,7 @@ initImageClearBtn.addEventListener('click', function() {
     initImageSelector.value = null
     initImagePreview.src = ''
     initImagePreviewContainer.style.display = 'none'
+    promptStrengthContainer.style.display = 'none'
 })
 
 setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
