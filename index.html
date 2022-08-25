@@ -194,10 +194,7 @@ async function makeImage() {
     btn.innerHTML = 'Make Image'
     btn.disabled = false;
 
-
-    const shouldPlaySound = document.querySelector('#sound_toggle').checked
-
-    if (shouldPlaySound) {
+    if (isSoundEnabled()) {
         playSound()
     }
 
