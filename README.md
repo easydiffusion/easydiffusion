@@ -12,7 +12,7 @@ All the processing will happen on your local computer, it does not transmit your
 # System Requirements
 1. Computer capable of running Stable Diffusion.
 2. Linux or Windows 11 (with [WSL](https://docs.microsoft.com/en-us/windows/wsl/install)) or Windows 10 v2004+ (Build 19041+) with [WSL](https://docs.microsoft.com/en-us/windows/wsl/install).
-2. Requires [Docker](https://docs.docker.com/engine/install/), [docker-compose v1.29](https://docs.docker.com/compose/install/), and [nvidia-container-toolkit](https://stackoverflow.com/a/58432877).
+3. Requires (a) [Docker](https://docs.docker.com/engine/install/), (b) [docker-compose v1.29](https://docs.docker.com/compose/install/), and (c) [nvidia-container-toolkit](https://stackoverflow.com/a/58432877).
 
 **Important:** If you're using Windows, please install docker inside your [WSL](https://docs.microsoft.com/en-us/windows/wsl/install)'s Linux. Install docker for the Linux distro in your WSL. **Don't install Docker for Windows.**
 
