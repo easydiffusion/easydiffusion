@@ -45,13 +45,13 @@
 
     <div id="configHeader"><b>Advanced settings:</b> [<a id="configToggleBtn" href="#">show</a>]</div>
     <div id="config">
-        <input id="sound_toggle" name="sound_toggle" type="checkbox" checked> <label for="sound_toggle">Enable Sound</label><br/>
         <label for="seed">Seed:</label> <input id="seed" name="seed" value="30000"> <input id="random_seed" name="random_seed" type="checkbox" checked> <label for="random_seed">Random Image</label> <br/>
         <label for="num_outputs">Number of outputs:</label> <select id="num_outputs" name="num_outputs" value="1"><option value="1" selected>1</option><option value="4">4</option></select><br/>
         <label for="width">Width:</label> <select id="width" name="width" value="512"><option value="128">128</option><option value="256">256</option><option value="512" selected>512</option><option value="768">768</option><option value="1024">1024</option></select><br/>
         <label for="height">Height:</label> <select id="height" name="height" value="512"><option value="128">128</option><option value="256">256</option><option value="512" selected>512</option><option value="768">768</option></select><br/>
         <label for="num_inference_steps">Number of inference steps:</label> <input id="num_inference_steps" name="num_inference_steps" value="50"><br/>
         <label for="guidance_scale">Guidance Scale:</label> <input id="guidance_scale" name="guidance_scale" value="75" type="range" min="10" max="200"> <span id="guidance_scale_value"></span></span><br/>
+        <input id="sound_toggle" name="sound_toggle" type="checkbox" checked> <label for="sound_toggle">Play sound on task completion</label><br/>
     </div>
 
     <button id="makeImage">Make Image</button> <br/><br/>
@@ -70,8 +70,6 @@
 
 <script>
 const SOUND_ENABLED_KEY = "soundEnabled"
-document.querySelector('#sound_toggle').checked = isSoundEnabled();
-
 const HEALTH_PING_INTERVAL = 5 // seconds
 
 let serverStatus = 'offline'
@@ -244,6 +242,8 @@ function handleAudioEnabledChange(e) {
 document.querySelector('#sound_toggle').addEventListener('click', handleAudioEnabledChange)
 
 document.querySelector('#makeImage').addEventListener('click', makeImage)
+
+document.querySelector('#sound_toggle').checked = isSoundEnabled();
 
 let config = document.querySelector('#config')
 config.style.display = 'none'
