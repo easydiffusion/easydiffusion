@@ -19,7 +19,7 @@ All the processing will happen on your local computer, it does not transmit your
 **Important:** If you're using Windows, please install docker inside your [WSL](https://docs.microsoft.com/en-us/windows/wsl/install)'s Linux. Install docker for the Linux distro in your WSL. **Don't install Docker for Windows.**
 
 # Installation
-1. Clone this repository: `git clone git@github.com:cmdr2/stable-diffusion-ui.git` or [download the zip file](https://github.com/cmdr2/stable-diffusion-ui/archive/refs/heads/main.zip) and unzip.
+1. Clone this repository: `git clone https://github.com/cmdr2/stable-diffusion-ui.git` or [download the zip file](https://github.com/cmdr2/stable-diffusion-ui/archive/refs/heads/main.zip) and unzip.
 2. Open your terminal, and in the project directory run: `docker-compose up &` (warning: this will take some time during the first run, since it'll download Stable Diffusion's [docker image](https://replicate.com/stability-ai/stable-diffusion), nearly 17 GiB)
 3. Open http://localhost:8000 in your browser. That's it!
 

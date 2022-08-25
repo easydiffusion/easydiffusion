@@ -87,8 +87,13 @@
         <label for="width">Width:</label> <select id="width" name="width" value="512"><option value="128">128</option><option value="256">256</option><option value="512" selected>512</option><option value="768">768</option><option value="1024">1024</option></select><br/>
         <label for="height">Height:</label> <select id="height" name="height" value="512"><option value="128">128</option><option value="256">256</option><option value="512" selected>512</option><option value="768">768</option></select><br/>
         <label for="num_inference_steps">Number of inference steps:</label> <input id="num_inference_steps" name="num_inference_steps" value="50"><br/>
+<<<<<<< HEAD
         <label for="guidance_scale">Guidance Scale:</label> <input id="guidance_scale" name="guidance_scale" value="75" type="range" min="10" max="200"> <span id="guidance_scale_value"></span><br/>
         <span id="prompt_strength_container"><label for="prompt_strength">Prompt Strength:</label> <input id="prompt_strength" name="prompt_strength" value="8" type="range" min="0" max="10"> <span id="prompt_strength_value"></span><br/></span>
+=======
+        <label for="guidance_scale">Guidance Scale:</label> <input id="guidance_scale" name="guidance_scale" value="75" type="range" min="10" max="200"> <span id="guidance_scale_value"></span></span><br/>
+        <input id="sound_toggle" name="sound_toggle" type="checkbox" checked> <label for="sound_toggle">Play sound on task completion</label><br/>
+>>>>>>> 493116300f03ece00eb585f5f35ecbe978412974
     </div>
 
     <button id="makeImage">Make Image</button> <br/><br/>
@@ -106,6 +111,7 @@
 </body>
 
 <script>
+const SOUND_ENABLED_KEY = "soundEnabled"
 const HEALTH_PING_INTERVAL = 5 // seconds
 
 let promptField = document.querySelector('#prompt')
@@ -133,7 +139,16 @@ let showConfigToggle = document.querySelector('#configToggleBtn')
 let configBox = document.querySelector('#config')
 let outputMsg = document.querySelector('#outputMsg')
 
+let soundToggle = document.querySelector('#sound_toggle')
+
 let serverStatus = 'offline'
+
+function isSoundEnabled() {
+    if (localStorage.getItem(SOUND_ENABLED_KEY) === 'false') {
+        return false
+    }
+    return true
+}
 
 function setStatus(statusType, msg, msgType) {
     let el = ''
@@ -249,7 +264,9 @@ async function makeImage() {
     makeImageBtn.innerHTML = 'Make Image'
     makeImageBtn.disabled = false
 
-    playSound()
+    if (isSoundEnabled()) {
+        playSound()
+    }
 
     if (!res) {
         return
@@ -308,6 +325,13 @@ async function makeImage() {
         seedField.value = seed
     }
 }
+
+function handleAudioEnabledChange(e) {
+    localStorage.setItem(SOUND_ENABLED_KEY, e.target.checked.toString())
+}
+
+soundToggle.addEventListener('click', handleAudioEnabledChange)
+soundToggle.checked = isSoundEnabled();
 
 makeImageBtn.addEventListener('click', makeImage)
 
