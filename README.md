@@ -29,7 +29,7 @@ If you're getting errors, please check the [Troubleshooting](#troubleshooting) s
 3. Press `Make Image`. This will take some time, depending on your system's processing power.
 4. See the image generated using your prompt.
 
-Please [let me know](mailto:sd@cmdr2.org) if this worked (or didn't) for you!
+Please [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues) if this did not work for you (after trying the common [troubleshooting](#troubleshooting) steps)!
 
 To stop the server, please run `docker-compose down`
 
@@ -56,9 +56,9 @@ This project is a quick way to get started with Stable Diffusion. You do not nee
 This project runs Stable Diffusion in a docker container behind the scenes, using Stable Diffusion's [Docker image](https://replicate.com/stability-ai/stable-diffusion) on replicate.com.
 
 # Bugs reports and code contributions welcome
-This was built in a few hours for fun. So if there are any problems or suggestions, please feel free to [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues) or [email me](mailto:sd@cmdr2.org).
+If there are any problems or suggestions, please feel free to [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues).
 
 Also, please feel free to submit a pull request, if you have any code contributions in mind.
 
 # Disclaimer
-I (and the authors of this project) are not responsible for any images generated using this interface.
+The authors of this project are not responsible for any images generated using this interface.
