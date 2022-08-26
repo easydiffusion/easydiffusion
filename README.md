@@ -28,14 +28,14 @@ All the processing will happen on your computer locally, it does not transmit yo
 # Installation
 1. Clone this repository: `git clone https://github.com/cmdr2/stable-diffusion-ui.git` or [download the zip file](https://github.com/cmdr2/stable-diffusion-ui/archive/refs/heads/main.zip) and unzip.
 2. Open your terminal, and in the project directory run: `./server` (warning: this will take some time during the first run, since it'll download Stable Diffusion's [docker image](https://replicate.com/stability-ai/stable-diffusion), nearly 17 GiB)
-3. Open http://localhost:8000 in your browser. That's it!
+3. Open http://localhost:9000 in your browser. That's it!
 
 If you're getting errors, please check the [Troubleshooting](#troubleshooting) section below.
 
 To stop the server, please run `./server stop`
 
 # Usage
-Open http://localhost:8000 in your browser (after running `./server` from step 2 previously).
+Open http://localhost:9000 in your browser (after running `./server` from step 2 previously).
 
 ## With a text description
 1. Enter a text prompt, like `a photograph of an astronaut riding a horse` in the textbox.
@@ -73,8 +73,8 @@ Please ensure you have `docker-compose` version 1.29 or higher. Check `docker-co
 ## RuntimeError: Found no NVIDIA driver on your system:
 If you have an NVIDIA GPU and the latest [NVIDIA driver](http://www.nvidia.com/Download/index.aspx), please ensure that you've installed [nvidia-container-toolkit](https://stackoverflow.com/a/58432877). (Thanks [u/exintrovert420](https://www.reddit.com/user/exintrovert420/))
 
-## Some other process is already running at port 8000 / port 8000 could not be bound
-You can override the port used. Please change `docker-compose.yml` inside the project directory, and update the line `8000:8000` to `1337:8000` (or where 1337 is whichever port number you want).
+## Some other process is already running at port 9000 / port 9000 could not be bound
+You can override the port used. Please change `docker-compose.yml` inside the project directory, and update the line `9000:9000` to `1337:9000` (where 1337 is whichever port number you want).
 
 After doing this, please restart your server, by running `./server restart`.
 

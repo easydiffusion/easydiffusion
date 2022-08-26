@@ -15,7 +15,7 @@ services:
   stable-diffusion-ui:
     container_name: sd-ui
     ports:
-      - '8000:8000'
+      - '9000:9000'
     build:
       context: .
       dockerfile: Dockerfile
@@ -23,6 +23,16 @@ services:
       - .:/app
     depends_on:
       - stability-ai
+
+  stable-diffusion-old-port-redirect:
+    container_name: sd-old-port-redirect
+    ports:
+      - '8000:8000'
+    build:
+      context: .
+      dockerfile: OldPortDockerfile
+    volumes:
+      - .:/app
 
 networks:
   default:

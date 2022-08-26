@@ -10,6 +10,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-EXPOSE 9000
+EXPOSE 8000
 
-ENTRYPOINT ["uvicorn", "main:app", "--reload", "--host", "0.0.0.0", "--port", "9000"]
+ENTRYPOINT ["uvicorn", "old_port_main:app", "--host", "0.0.0.0", "--port", "8000"]
