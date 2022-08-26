@@ -3,7 +3,7 @@
 
 ---
 
-🎉 **New!** `img2img` is now supported! You can provide an image to generate new images based on it (and an optional text prompt). You can also use the generated image as the new input image in 1-click, to refine it further. (Thanks [Andreas](https://github.com/andreasjansson)!)
+🎉 **New!** `img2img` and `inpaint` (masking) are now supported! You can provide an image to generate new images based on it (and an optional text prompt). You can also use the generated image as the new input image in 1-click, to refine it further. (Thanks [Andreas](https://github.com/andreasjansson)!)
 
 # What does this do?
 Two things:
@@ -42,6 +42,8 @@ Open http://localhost:8000 in your browser (after running `docker-compose up &` 
 1. Click `Browse..` next to `Initial Image`. Select your desired image.
 2. An optional text prompt can help you further describe the kind of image you want to generate.
 3. Press `Make Image`. See the image generated using your prompt.
+
+You can also set an `Image Mask` for telling Stable Diffusion to draw in only the black areas in your image mask. White areas in your mask will be ignored.
 
 **Pro tip:** You can also click `Use as Input` on a generated image, to use it as the input image for your next generation. This can be useful for sequentially refining the generated image with a single click.
 
