@@ -6,6 +6,12 @@
         font-family: Arial, Helvetica, sans-serif;
         font-size: 11pt;
     }
+    @media (prefers-color-scheme: dark) {
+        body {
+            background-color: rgb(32, 33, 36);
+            color: #eee;
+        }
+    }
     label {
         font-size: 10pt;
     }
@@ -87,13 +93,9 @@
         <label for="width">Width:</label> <select id="width" name="width" value="512"><option value="128">128</option><option value="256">256</option><option value="512" selected>512</option><option value="768">768</option><option value="1024">1024</option></select><br/>
         <label for="height">Height:</label> <select id="height" name="height" value="512"><option value="128">128</option><option value="256">256</option><option value="512" selected>512</option><option value="768">768</option></select><br/>
         <label for="num_inference_steps">Number of inference steps:</label> <input id="num_inference_steps" name="num_inference_steps" value="50"><br/>
-<<<<<<< HEAD
         <label for="guidance_scale">Guidance Scale:</label> <input id="guidance_scale" name="guidance_scale" value="75" type="range" min="10" max="200"> <span id="guidance_scale_value"></span><br/>
-        <span id="prompt_strength_container"><label for="prompt_strength">Prompt Strength:</label> <input id="prompt_strength" name="prompt_strength" value="8" type="range" min="0" max="10"> <span id="prompt_strength_value"></span><br/></span>
-=======
-        <label for="guidance_scale">Guidance Scale:</label> <input id="guidance_scale" name="guidance_scale" value="75" type="range" min="10" max="200"> <span id="guidance_scale_value"></span></span><br/>
+        <span id="prompt_strength_container"><label for="prompt_strength">Prompt Strength:</label> <input id="prompt_strength" name="prompt_strength" value="8" type="range" min="0" max="10"> <span id="prompt_strength_value"></span><br/></span><br/>
         <input id="sound_toggle" name="sound_toggle" type="checkbox" checked> <label for="sound_toggle">Play sound on task completion</label><br/>
->>>>>>> 493116300f03ece00eb585f5f35ecbe978412974
     </div>
 
     <button id="makeImage">Make Image</button> <br/><br/>
