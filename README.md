@@ -55,6 +55,13 @@ Please ensure you have `docker-compose` version 1.29 or higher. Check `docker-co
 ## RuntimeError: Found no NVIDIA driver on your system:
 If you have an NVIDIA GPU and the latest [NVIDIA driver](http://www.nvidia.com/Download/index.aspx), please ensure that you've installed [nvidia-container-toolkit](https://stackoverflow.com/a/58432877). (Thanks [u/exintrovert420](https://www.reddit.com/user/exintrovert420/))
 
+## Some other process is already running at port 8000 / port 8000 could not be bound
+You can override the port used. Please change `docker-compose.yml` inside the project directory, and update the line `8000:8000` to `1337:8000` (or where 1337 is whichever port number you want).
+
+After doing this, please restart your server, by running `docker-compose down` and then `docker-compose up &`.
+
+After this, you can access the server at `http://localhost:1337` (where 1337 is the new port you specified earlier).
+
 # Behind the scenes
 This project is a quick way to get started with Stable Diffusion. You do not need to have Stable Diffusion already installed, and do not need any API keys. This project will automatically download Stable Diffusion's docker image, the first time it is run.
 
