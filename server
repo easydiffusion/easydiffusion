@@ -6,8 +6,8 @@ if [ -z "$1" ]; then
 fi
 
 start_server() {
-  docker-compose up -d stable-diffusion-old-port-redirect > /dev/null 2>&1 # old port 8000 server, show redirect notice
-  docker-compose up stability-ai stable-diffusion-ui &
+  docker-compose up -d stable-diffusion-old-port-redirect # old port 8000 server, show redirect notice
+  docker-compose up stability-ai stable-diffusion-ui
 }
 
 stop_server() {
