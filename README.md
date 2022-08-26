@@ -14,7 +14,7 @@ All the processing will happen on your computer locally, it does not transmit yo
 
 <p float="left">
   <img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/shot-v3.jpg" height="500" />
-  <img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/shot-v5.jpg" height="500" /> 
+  <img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/shot-v6.jpg" height="500" /> 
 </p>
 
 
