@@ -3,7 +3,7 @@
 
 ---
 
-🎉 **New!** `img2img` is now supported! You can provide an image to generate new images based on it (and an optional text prompt). You can also use the generated image as the new input image in 1-click, to refine it further.
+🎉 **New!** `img2img` is now supported! You can provide an image to generate new images based on it (and an optional text prompt). You can also use the generated image as the new input image in 1-click, to refine it further. (Thanks [Andreas](https://github.com/andreasjansson)!)
 
 # What does this do?
 Two things:
