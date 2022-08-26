@@ -13,6 +13,7 @@ app = FastAPI()
 class ImageRequest(BaseModel):
     prompt: str
     init_image: str = None # base64
+    mask: str = None # base64
     num_outputs: str = "1"
     num_inference_steps: str = "50"
     guidance_scale: str = "7.5"
@@ -50,6 +51,9 @@ async def image(req : ImageRequest):
     if req.init_image is not None:
         data['input']['init_image'] = req.init_image
         data['input']['prompt_strength'] = req.prompt_strength
+
+        if req.mask is not None:
+            data['input']['mask'] = req.mask
 
     if req.seed == "-1":
         del data['input']['seed']
