@@ -13,8 +13,8 @@ Two things:
 All the processing will happen on your computer locally, it does not transmit your prompts or process on any remote server.
 
 <p float="left">
-  <img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/shot-v3.jpg" height="500" />
-  <img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/shot-v6.jpg" height="500" /> 
+  <img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/shot-v3a.jpg" height="500" />
+  <img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/shot-v6a.jpg" height="500" />
 </p>
 
 
