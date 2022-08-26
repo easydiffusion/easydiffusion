@@ -72,6 +72,12 @@
         margin-top: 5pt;
         margin-left: -5pt;
     }
+    .imgSaveBtn {
+        position: absolute;
+        transform: translateX(-100%);
+        margin-top: 30pt;
+        margin-left: -5pt;
+    }
     .imgItem {
         display: inline;
         padding-right: 10px;
@@ -328,8 +334,13 @@ async function makeImage() {
         imgUseBtn.className = 'imgUseBtn'
         imgUseBtn.innerHTML = 'Use as Input'
 
+        let imgSaveBtn = document.createElement('button')
+        imgSaveBtn.className = 'imgSaveBtn'
+        imgSaveBtn.innerHTML = 'Download'
+
         imgItem.appendChild(img)
         imgItem.appendChild(imgUseBtn)
+        imgItem.appendChild(imgSaveBtn)
         imagesContainer.appendChild(imgItem)
 
         imgUseBtn.addEventListener('click', function() {
@@ -345,6 +356,13 @@ async function makeImage() {
             seedField.value = seed
             seedField.disabled = false
         })
+
+        imgSaveBtn.addEventListener('click', function() {
+            let imgDownload = document.createElement('a')
+            imgDownload.download = generateUUID() + '.png'
+            imgDownload.href = imgBody
+            imgDownload.click()
+        })
     }
 
     setStatus('request', 'done', 'success')
@@ -352,6 +370,22 @@ async function makeImage() {
     if (randomSeedField.checked) {
         seedField.value = seed
     }
+}
+
+function generateUUID() { // Public Domain/MIT
+    var d = new Date().getTime();//Timestamp
+    var d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now()*1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16;//random number between 0 and 16
+        if(d > 0){//Use timestamp until depleted
+            r = (d + r)%16 | 0;
+            d = Math.floor(d/16);
+        } else {//Use microseconds since page-load if supported
+            r = (d2 + r)%16 | 0;
+            d2 = Math.floor(d2/16);
+        }
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
 }
 
 function handleAudioEnabledChange(e) {
