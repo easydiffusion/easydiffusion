@@ -30,7 +30,7 @@ If you're getting errors, please check the [Troubleshooting](#troubleshooting) s
 2. Enter a text prompt, like `a photograph of an astronaut riding a horse` in the textbox.
 3. Press `Make Image`. This will take some time, depending on your system's processing power.
 4. See the image generated using your prompt.
-5. **New!** img2img: You can also choose an `initial image`, to generate an image based on that. An optional text prompt can help you refine this image.
+5. 🎉 **New!** img2img: You can provide an image to generate new images based on it. An optional text prompt can help you refine this image.
 
 **Pro tip:** You can also click `Use as Input` on a generated image, to use it as the input image for your next generation. This can be useful for sequentially refining the generated image with a single click.
 
