@@ -25,18 +25,27 @@ All the processing will happen on your local computer, it does not transmit your
 
 If you're getting errors, please check the [Troubleshooting](#troubleshooting) section below.
 
+To stop the server, please run `docker-compose down`
+
 # Usage
-1. Open http://localhost:8000 in your browser (after running `docker-compose up &` from step 2 previously).
-2. Enter a text prompt, like `a photograph of an astronaut riding a horse` in the textbox.
-3. Press `Make Image`. This will take some time, depending on your system's processing power.
-4. See the image generated using your prompt.
-5. 🎉 **New!** img2img: You can provide an image to generate new images based on it. An optional text prompt can help you refine this image.
+Open http://localhost:8000 in your browser (after running `docker-compose up &` from step 2 previously).
+
+## With a text description
+1. Enter a text prompt, like `a photograph of an astronaut riding a horse` in the textbox.
+2. Press `Make Image`. This will take some time, depending on your system's processing power.
+3. See the image generated using your prompt.
+
+## With an image
+1. Click `Browse..` next to `Initial Image`. Select your desired image.
+2. An optional text prompt can help you further describe the kind of image you want to generate.
+3. Press `Make Image`. See the image generated using your prompt.
 
 **Pro tip:** You can also click `Use as Input` on a generated image, to use it as the input image for your next generation. This can be useful for sequentially refining the generated image with a single click.
 
-Please [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues) if this did not work for you (after trying the common [troubleshooting](#troubleshooting) steps)!
+**Another tip:** Images with the same aspect ratio of your generated image work best. E.g. 1:1 if you're generating images sized 512x512.
 
-To stop the server, please run `docker-compose down`
+## Problems?
+Please [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues) if this did not work for you (after trying the common [troubleshooting](#troubleshooting) steps)!
 
 # Advanced Settings
 You can also set the configuration like `seed`, `width`, `height`, `num_outputs`, `num_inference_steps` and `guidance_scale` using the 'show' button next to 'Advanced settings'.
