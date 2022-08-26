@@ -1,16 +1,16 @@
 # Stable Diffusion UI
-### A simple way to install and use [Stable Diffusion](https://replicate.com/stability-ai/stable-diffusion) on your local computer
+### A simple way to install and use [Stable Diffusion](https://replicate.com/stability-ai/stable-diffusion) on your own computer
 
 ---
 
-🎉 **New!** `img2img` is now supported! You can provide an image to generate new images based on it (and an optional text prompt). You can also use the generated image as the new input image in 1-click, to refine it further.
+🎉 **New!** `img2img` is now supported! You can provide an image to generate new images based on it (and an optional text prompt). You can also use the generated image as the new input image in 1-click, to refine it further. (Thanks [Andreas](https://github.com/andreasjansson)!)
 
 # What does this do?
 Two things:
-1. Automatically downloads and installs Stable Diffusion on your local computer (no need to mess with conda or environments)
+1. Automatically downloads and installs Stable Diffusion on your own computer (no need to mess with conda or environments)
 2. Gives you a simple browser-based UI to talk to your local Stable Diffusion. Enter text prompts and view the generated image. No API keys required.
 
-All the processing will happen on your local computer, it does not transmit your prompts or process on any remote server.
+All the processing will happen on your computer locally, it does not transmit your prompts or process on any remote server.
 
 <img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/shot-v4.jpg" height="500" alt="Screenshot of tool">
 
