@@ -5,7 +5,7 @@ services:
     container_name: sd
     ports:
       - '5000:5000'
-    image: 'r8.im/stability-ai/stable-diffusion@sha256:3080f37ef32771c9984d65033cbe71caa96c69680008bae64cf691724a6df04c'
+    image: 'r8.im/stability-ai/stable-diffusion@sha256:be04660a5b93ef2aff61e3668dedb4cbeb14941e62a3fd5998364a32d613e35e'
     deploy:
       resources:
         reservations:
