@@ -30,7 +30,7 @@ All the processing will happen on your computer locally, it does not transmit yo
 2. Open your terminal, and in the project directory run: `./server` (warning: this will take some time during the first run, since it'll download Stable Diffusion's [docker image](https://replicate.com/stability-ai/stable-diffusion), nearly 17 GiB)
 3. Open http://localhost:9000 in your browser. That's it!
 
-If you're getting errors, please check the [Troubleshooting](#troubleshooting) section below.
+If you're getting errors, please check the [Troubleshooting](https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting) page.
 
 To stop the server, please run `./server stop`
 
@@ -64,21 +64,7 @@ Use the same `seed` number to get the same image for a certain prompt. This is u
 ![Screenshot of advanced settings](media/config-v2.jpg?raw=true)
 
 # Troubleshooting
-## './docker-compose.yml' is invalid:
-> ERROR: The Compose file './docker-compose.yml' is invalid because:
-> services.stability-ai.deploy.resources.reservations value Additional properties are not allowed ('devices' was unexpected)
-
-Please ensure you have `docker-compose` version 1.29 or higher. Check `docker-compose --version`, and if required [update it to 1.29](https://docs.docker.com/compose/install/). (Thanks [HVRyan](https://github.com/HVRyan))
-
-## RuntimeError: Found no NVIDIA driver on your system:
-If you have an NVIDIA GPU and the latest [NVIDIA driver](http://www.nvidia.com/Download/index.aspx), please ensure that you've installed [nvidia-container-toolkit](https://stackoverflow.com/a/58432877). (Thanks [u/exintrovert420](https://www.reddit.com/user/exintrovert420/))
-
-## Some other process is already running at port 9000 / port 9000 could not be bound
-You can override the port used. Please change `docker-compose.yml` inside the project directory, and update the line `9000:9000` to `1337:9000` (where 1337 is whichever port number you want).
-
-After doing this, please restart your server, by running `./server restart`.
-
-After this, you can access the server at `http://localhost:1337` (where 1337 is the new port you specified earlier).
+The [Troubleshooting wiki page](https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting) contains some common errors and their solutions. Please check that, and if it doesn't work, feel free to [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues).
 
 # Behind the scenes
 This project is a quick way to get started with Stable Diffusion. You do not need to have Stable Diffusion already installed, and do not need any API keys. This project will automatically download Stable Diffusion's docker image, the first time it is run.
