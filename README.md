@@ -1,5 +1,5 @@
 # Stable Diffusion UI
-### A simple way to install and use [Stable Diffusion](https://replicate.com/stability-ai/stable-diffusion) on your local computer.
+### A simple way to install and use [Stable Diffusion](https://replicate.com/stability-ai/stable-diffusion) on your local computer
 
 ---
 
