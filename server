@@ -1,26 +1,3 @@
 #!/bin/bash
 
-CMD="$1"
-if [ -z "$1" ]; then
-  CMD="start"
-fi
-
-start_server() {
-  docker-compose up -d stable-diffusion-old-port-redirect # old port 8000 server, show redirect notice
-  docker-compose up stability-ai stable-diffusion-ui
-}
-
-stop_server() {
-  docker-compose down
-}
-
-if [ "$CMD" == "start" ]; then
-  start_server
-elif [ "$CMD" == "stop" ]; then
-  stop_server
-elif [ "$CMD" == "restart" ]; then
-  stop_server
-  start_server
-else
-  echo "Unknown option: $1 (Expected start or stop)"
-fi
+echo "Please use 'docker-compose up &' to start the server, and 'docker-compose down' to stop the server"

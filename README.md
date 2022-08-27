@@ -27,15 +27,15 @@ All the processing will happen on your computer locally, it does not transmit yo
 
 # Installation
 1. Clone this repository: `git clone https://github.com/cmdr2/stable-diffusion-ui.git` or [download the zip file](https://github.com/cmdr2/stable-diffusion-ui/archive/refs/heads/main.zip) and unzip.
-2. Open your terminal, and in the project directory run: `./server` (warning: this will take some time during the first run, since it'll download Stable Diffusion's [docker image](https://replicate.com/stability-ai/stable-diffusion), nearly 17 GiB)
+2. Open your terminal, and in the project directory run: `docker-compose up &` (warning: this will take some time during the first run, since it'll download Stable Diffusion's [docker image](https://replicate.com/stability-ai/stable-diffusion), nearly 17 GiB)
 3. Open http://localhost:9000 in your browser. That's it!
 
 If you're getting errors, please check the [Troubleshooting](https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting) page.
 
-To stop the server, please run `./server stop`
+To stop the server, please run `docker-compose down`
 
 # Usage
-Open http://localhost:9000 in your browser (after running `./server` from step 2 previously).
+Open http://localhost:9000 in your browser (after running `docker-compose up &` from step 2 previously).
 
 ## With a text description
 1. Enter a text prompt, like `a photograph of an astronaut riding a horse` in the textbox.
