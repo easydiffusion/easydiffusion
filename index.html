@@ -95,6 +95,9 @@
         display: inline;
         padding-right: 10px;
     }
+    .imgItemInfo {
+        opacity: 0.5;
+    }
     </style>
 </html>
 <body>
@@ -303,6 +306,9 @@ async function doMakeImage(reqBody) {
         img.height = parseInt(reqBody.height)
         img.src = imgBody
 
+        let imgItemInfo = document.createElement('span')
+        imgItemInfo.className = 'imgItemInfo'
+
         let imgSeedLabel = document.createElement('span')
         imgSeedLabel.className = 'imgSeedLabel'
         imgSeedLabel.innerHTML = 'Seed: ' + seed
@@ -316,9 +322,10 @@ async function doMakeImage(reqBody) {
         imgSaveBtn.innerHTML = 'Download'
 
         imgItem.appendChild(img)
-        imgItem.appendChild(imgSeedLabel)
-        imgItem.appendChild(imgUseBtn)
-        imgItem.appendChild(imgSaveBtn)
+        imgItem.appendChild(imgItemInfo)
+        imgItemInfo.appendChild(imgSeedLabel)
+        imgItemInfo.appendChild(imgUseBtn)
+        imgItemInfo.appendChild(imgSaveBtn)
         imagesContainer.appendChild(imgItem)
 
         imgUseBtn.addEventListener('click', function() {
@@ -340,6 +347,14 @@ async function doMakeImage(reqBody) {
             imgDownload.download = generateUUID() + '.png'
             imgDownload.href = imgBody
             imgDownload.click()
+        })
+
+        imgItem.addEventListener('mouseenter', function() {
+            imgItemInfo.style.opacity = 1
+        })
+
+        imgItem.addEventListener('mouseleave', function() {
+            imgItemInfo.style.opacity = 0.5
         })
     }
 }
