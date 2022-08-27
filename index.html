@@ -367,6 +367,7 @@ async function makeImage() {
 
     outputMsg.innerHTML = 'Fetching..'
 
+    const imageRegex = new RegExp('data:image/[A-Za-z]+;base64')
     let seed = (randomSeedField.checked ? Math.floor(Math.random() * 10000) : parseInt(seedField.value))
     let numOutputsTotal = parseInt(numOutputsTotalField.value)
     let numOutputsParallel = parseInt(numOutputsParallelField.value)
@@ -382,11 +383,11 @@ async function makeImage() {
         height: heightField.value,
     }
 
-    if (initImagePreview.src.indexOf('data:image/png;base64') !== -1) {
+    if (imageRegex.test(initImagePreview.src)) {
         reqBody['init_image'] = initImagePreview.src
         reqBody['prompt_strength'] = parseInt(promptStrengthField.value) / 10
 
-        if (maskImagePreview.src.indexOf('data:image/png;base64') !== -1) {
+        if (imageRegex.test(maskImagePreview.src)) {
             reqBody['mask'] = maskImagePreview.src
         }
     }
