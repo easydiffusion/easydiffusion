@@ -3,6 +3,10 @@ version: '3.3'
 services:
   stability-ai:
     container_name: sd
+    volumes:
+      - ${PWD}/volume/src/predict_custom.py:/src/predict.py:ro
+      - ${PWD}/volume/src/inpainting_custom.py:/src/inpainting.py:ro
+      - ${PWD}/volume/src/image_to_image_custom.py:/src/image_to_image.py:ro
     ports:
       - '5000:5000'
     image: 'r8.im/stability-ai/stable-diffusion@sha256:be04660a5b93ef2aff61e3668dedb4cbeb14941e62a3fd5998364a32d613e35e'
