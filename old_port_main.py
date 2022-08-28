@@ -30,8 +30,6 @@ def read_root():
     </style>
     <h4>The UI has moved to <a href="http://localhost:9000">http://localhost:9000</a>. The current address that you used (ending with :8000) will be removed in the future, so please use <a href="http://localhost:9000">http://localhost:9000</a> going ahead (and in any bookmarks you've saved).</h4>
 
-    <h4>Also, please use <pre>./server</pre> instead of <pre>docker-compose up &amp;</pre>. To stop, please use <pre>./server stop</pre>. This will help the project better manage the startup process in the future.</h4>
-
     <h3>Why has the address changed?</h3>
     <p>The previously used port (8000) is often used by other servers, which results in port conflicts. So the project's port number has been changed, while the project is still young. Otherwise port-conflicts with 8000 will be a common source of new-user issues in the future.</p>
     <p>Sorry about this, and apologies for the inconvenience :)</p>
