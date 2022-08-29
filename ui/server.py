@@ -4,9 +4,6 @@ from pydantic import BaseModel
 
 import requests
 
-LOCAL_SERVER_URL = 'http://stability-ai:5000'
-PREDICT_URL = LOCAL_SERVER_URL + '/predictions'
-
 app = FastAPI()
 
 # defaults from https://huggingface.co/blog/stable_diffusion
@@ -29,7 +26,7 @@ def read_root():
 @app.get('/ping')
 async def ping():
     try:
-        requests.get(LOCAL_SERVER_URL)
+        # check if SD is present
         return {'OK'}
     except:
         return {'ERROR'}
@@ -58,12 +55,17 @@ async def image(req : ImageRequest):
     if req.seed == "-1":
         del data['input']['seed']
 
-    res = requests.post(PREDICT_URL, json=data)
-    if res.status_code != 200:
-        raise HTTPException(status_code=500, detail=res.text)
+    return {'OK'}
 
-    return res.json()
+    # res = requests.post(PREDICT_URL, json=data)
+    # if res.status_code != 200:
+    #     raise HTTPException(status_code=500, detail=res.text)
+
+    # return res.json()
 
 @app.get('/media/ding.mp3')
 def read_root():
     return FileResponse('media/ding.mp3')
+
+# start the browser ui
+import webbrowser; webbrowser.open('http://localhost:9000')

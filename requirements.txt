@@ -1,3 +1,0 @@
-requests
-fastapi==0.80.0
-uvicorn==0.18.2

@@ -1,0 +1,1 @@
+installer\Scripts\activate.bat
