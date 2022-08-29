@@ -1,11 +1,16 @@
+import json
+import requests
+import base64
+import uuid
+
 from fastapi import FastAPI, HTTPException
 from starlette.responses import FileResponse
 from pydantic import BaseModel
 
-import requests
 
 LOCAL_SERVER_URL = 'http://stability-ai:5000'
 PREDICT_URL = LOCAL_SERVER_URL + '/predictions'
+OUTPUT_DIR = "/app/output"
 
 app = FastAPI()
 
@@ -61,6 +66,14 @@ async def image(req : ImageRequest):
     res = requests.post(PREDICT_URL, json=data)
     if res.status_code != 200:
         raise HTTPException(status_code=500, detail=res.text)
+
+    unique_filename = str(uuid.uuid4())
+    with open(f'{OUTPUT_DIR}/{unique_filename}.metadata', 'w') as f:
+        f.write(json.dumps(data))
+
+    with open(f'{OUTPUT_DIR}/{unique_filename}.png', "wb") as fh:
+        data_img = res.json()['output'][0].replace("data:image/png;base64,", "")
+        fh.write(base64.b64decode(data_img))
 
     return res.json()
 
