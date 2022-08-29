@@ -3,11 +3,12 @@ import cv2
 import torch
 import numpy as np
 from omegaconf import OmegaConf
+import PIL
 from PIL import Image
 from tqdm import tqdm, trange
 from imwatermark import WatermarkEncoder
 from itertools import islice
-from einops import rearrange
+from einops import rearrange, repeat
 from torchvision.utils import make_grid
 import time
 from pytorch_lightning import seed_everything
@@ -52,11 +53,11 @@ def load_model(config="configs/stable-diffusion/v1-inference.yaml", ckpt="models
     sampler_plms = PLMSSampler(model)
     sampler_ddim = DDIMSampler(model)
 
-def txt2img(req: Request):
+def mk_img(req: Request):
     res = Response()
     res.images = []
 
-    sampler = sampler_plms
+    sampler = sampler_ddim
 
     opt_prompt = req.prompt
     opt_seed = req.seed
@@ -70,7 +71,9 @@ def txt2img(req: Request):
     opt_ddim_steps = req.num_inference_steps
     opt_ddim_eta = 0.0
     opt_precision = "autocast"
+    opt_strength = req.prompt_strength
     opt_skip_save = False
+    opt_init_img = req.init_image
 
     print(opt_prompt, ': seed', opt_seed, 'num_inference_steps', opt_ddim_steps, 'guidance_scale', opt_scale, 'w', opt_W, 'h', opt_H, 'allow_nsfw', req.allow_nsfw)
 
@@ -81,7 +84,24 @@ def txt2img(req: Request):
     assert prompt is not None
     data = [batch_size * [prompt]]
 
-    start_code = None
+    if req.init_image is None:
+        handler = _txt2img
+
+        init_latent = None
+        t_enc = None
+    else:
+        handler = _img2img
+
+        init_image = load_img(req.init_image)
+        init_image = init_image.to(device)
+        init_image = repeat(init_image, '1 ... -> b ...', b=batch_size)
+        init_latent = model.get_first_stage_encoding(model.encode_first_stage(init_image))  # move to latent space
+
+        assert 0. <= opt_strength <= 1., 'can only work with strength in [0.0, 1.0]'
+        t_enc = int(opt_strength * opt_ddim_steps)
+        print(f"target t_enc is {t_enc} steps")
+
+    sampler.make_schedule(ddim_num_steps=opt_ddim_steps, ddim_eta=opt_ddim_eta, verbose=False)
 
     precision_scope = autocast if opt_precision=="autocast" else nullcontext
     with torch.no_grad():
@@ -96,26 +116,17 @@ def txt2img(req: Request):
                             prompts = list(prompts)
                         c = model.get_learned_conditioning(prompts)
 
-                        # this part is specific to txt2img
-                        shape = [opt_C, opt_H // opt_f, opt_W // opt_f]
-                        samples_ddim, _ = sampler.sample(S=opt_ddim_steps,
-                                                         conditioning=c,
-                                                         batch_size=opt_n_samples,
-                                                         shape=shape,
-                                                         verbose=False,
-                                                         unconditional_guidance_scale=opt_scale,
-                                                         unconditional_conditioning=uc,
-                                                         eta=opt_ddim_eta,
-                                                         x_T=start_code)
-
-                        x_samples_ddim = model.decode_first_stage(samples_ddim)
-                        x_samples_ddim = torch.clamp((x_samples_ddim + 1.0) / 2.0, min=0.0, max=1.0)
-                        x_samples_ddim = x_samples_ddim.cpu().permute(0, 2, 3, 1).numpy()
-
-                        if req.allow_nsfw:
-                            x_checked_image = x_samples_ddim
+                        # run the handler
+                        if handler == _txt2img:
+                            x_samples = _txt2img(opt_W, opt_H, opt_n_samples, opt_ddim_steps, opt_scale, None, opt_C, opt_f, opt_ddim_eta, c, uc)
                         else:
-                            x_checked_image, has_nsfw_concept = check_safety(x_samples_ddim)
+                            x_samples = _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc)
+
+                        # process the generated images
+                        if req.allow_nsfw:
+                            x_checked_image = x_samples
+                        else:
+                            x_checked_image, has_nsfw_concept = check_safety(x_samples)
 
                         x_checked_image_torch = torch.from_numpy(x_checked_image).permute(0, 3, 1, 2)
 
@@ -129,10 +140,41 @@ def txt2img(req: Request):
 
     return res
 
-def img2img(req: Request):
-    res = Response()
-    res.images = [ResponseImage(data="haha2", is_nsfw=False)]
-    return res
+def _txt2img(opt_W, opt_H, opt_n_samples, opt_ddim_steps, opt_scale, start_code, opt_C, opt_f, opt_ddim_eta, c, uc):
+    sampler = sampler_plms
+
+    shape = [opt_C, opt_H // opt_f, opt_W // opt_f]
+    samples_ddim, _ = sampler.sample(S=opt_ddim_steps,
+                                        conditioning=c,
+                                        batch_size=opt_n_samples,
+                                        shape=shape,
+                                        verbose=False,
+                                        unconditional_guidance_scale=opt_scale,
+                                        unconditional_conditioning=uc,
+                                        eta=opt_ddim_eta,
+                                        x_T=start_code)
+
+    x_samples_ddim = model.decode_first_stage(samples_ddim)
+    x_samples_ddim = torch.clamp((x_samples_ddim + 1.0) / 2.0, min=0.0, max=1.0)
+    x_samples_ddim = x_samples_ddim.cpu().permute(0, 2, 3, 1).numpy()
+
+    return x_samples_ddim
+
+def _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc):
+    sampler = sampler_ddim
+
+    # this part is specific to img2img
+    # encode (scaled latent)
+    z_enc = sampler.stochastic_encode(init_latent, torch.tensor([t_enc]*batch_size).to(device))
+    # decode it
+    samples = sampler.decode(z_enc, c, t_enc, unconditional_guidance_scale=opt_scale,
+                                unconditional_conditioning=uc,)
+
+    x_samples = model.decode_first_stage(samples)
+    x_samples = torch.clamp((x_samples + 1.0) / 2.0, min=0.0, max=1.0)
+    x_samples = x_samples.cpu().permute(0, 2, 3, 1).numpy() # extra
+
+    return x_samples
 
 # internal
 
@@ -201,6 +243,17 @@ def check_safety(x_image):
             x_checked_image[i] = load_replacement(x_checked_image[i])
     return x_checked_image, has_nsfw_concept
 
+def load_img(img_str):
+    image = base64_str_to_img(img_str).convert("RGB")
+    w, h = image.size
+    print(f"loaded input image of size ({w}, {h}) from base64")
+    w, h = map(lambda x: x - x % 32, (w, h))  # resize to integer multiple of 32
+    image = image.resize((w, h), resample=PIL.Image.LANCZOS)
+    image = np.array(image).astype(np.float32) / 255.0
+    image = image[None].transpose(0, 3, 1, 2)
+    image = torch.from_numpy(image)
+    return 2.*image - 1.
+
 # https://stackoverflow.com/a/61114178
 def img_to_base64_str(img):
     buffered = BytesIO()
@@ -209,3 +262,10 @@ def img_to_base64_str(img):
     img_byte = buffered.getvalue()
     img_str = "data:image/png;base64," + base64.b64encode(img_byte).decode()
     return img_str
+
+def base64_str_to_img(img_str):
+    img_str = img_str[len("data:image/png;base64,"):]
+    data = base64.b64decode(img_str)
+    buffered = BytesIO(data)
+    img = Image.open(buffered)
+    return img

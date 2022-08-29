@@ -80,8 +80,7 @@ async def image(req : ImageRequest):
     r.allow_nsfw = req.allow_nsfw
 
     try:
-        generator = runtime.txt2img if req.init_image is None else runtime.img2img
-        res: Response = generator(r)
+        res: Response = runtime.mk_img(r)
 
         return res.json()
     except Exception as e:
