@@ -20,7 +20,9 @@
 
 @call tar -xf ..\..\installer.tar -C installer
 
-@copy ..\..\scripts\on_env_start.bat .
+@mkdir scripts
+
+@copy ..\..\scripts\on_env_start.bat scripts\
 @copy ..\..\scripts\stable-diffusion-ui.cmd .
 @xcopy ..\..\ui ui /s /i
 
