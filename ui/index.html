@@ -114,13 +114,13 @@
         <button id="init_image_clear" class="image_clear_btn">X</button>
     </div><br/>
 
-    <div id="mask_setting">
+    <!--div id="mask_setting">
         <label for="mask"><b>Image Mask:</b> (optional) </label> <input id="mask" name="mask" type="file" /> </button><br/>
         <div id="mask_preview_container" class="image_preview_container">
             <img id="mask_preview" src="" width="100" height="100" />
             <button id="mask_clear" class="image_clear_btn">X</button>
         </div>
-    </div>
+    </div-->
 
     <div id="configHeader"><b>Advanced settings:</b> [<a id="configToggleBtn" href="#">show</a>]</div>
     <div id="config">
@@ -165,8 +165,8 @@ let widthField = document.querySelector('#width')
 let heightField = document.querySelector('#height')
 let initImageSelector = document.querySelector("#init_image")
 let initImagePreview = document.querySelector("#init_image_preview")
-let maskImageSelector = document.querySelector("#mask")
-let maskImagePreview = document.querySelector("#mask_preview")
+// let maskImageSelector = document.querySelector("#mask")
+// let maskImagePreview = document.querySelector("#mask_preview")
 let allowNSFWField = document.querySelector("#allow_nsfw")
 let promptStrengthField = document.querySelector('#prompt_strength')
 let promptStrengthValueLabel = document.querySelector('#prompt_strength_value')
@@ -178,9 +178,9 @@ let initImagePreviewContainer = document.querySelector('#init_image_preview_cont
 let initImageClearBtn = document.querySelector('#init_image_clear')
 let promptStrengthContainer = document.querySelector('#prompt_strength_container')
 
-let maskSetting = document.querySelector('#mask_setting')
-let maskImagePreviewContainer = document.querySelector('#mask_preview_container')
-let maskImageClearBtn = document.querySelector('#mask_clear')
+// let maskSetting = document.querySelector('#mask_setting')
+// let maskImagePreviewContainer = document.querySelector('#mask_preview_container')
+// let maskImageClearBtn = document.querySelector('#mask_clear')
 
 let showConfigToggle = document.querySelector('#configToggleBtn')
 let configBox = document.querySelector('#config')
@@ -338,7 +338,7 @@ async function doMakeImage(reqBody) {
             initImagePreviewContainer.style.display = 'block'
             promptStrengthContainer.style.display = 'block'
 
-            maskSetting.style.display = 'block'
+            // maskSetting.style.display = 'block'
 
             randomSeedField.checked = false
             seedField.value = seed
@@ -398,9 +398,9 @@ async function makeImage() {
         reqBody['init_image'] = initImagePreview.src
         reqBody['prompt_strength'] = parseInt(promptStrengthField.value) / 10
 
-        if (imageRegex.test(maskImagePreview.src)) {
-            reqBody['mask'] = maskImagePreview.src
-        }
+        // if (imageRegex.test(maskImagePreview.src)) {
+        //     reqBody['mask'] = maskImagePreview.src
+        // }
     }
 
     let time = new Date().getTime()
@@ -502,7 +502,7 @@ function showInitImagePreview() {
     if (initImageSelector.files.length === 0) {
         initImagePreviewContainer.style.display = 'none'
         promptStrengthContainer.style.display = 'none'
-        maskSetting.style.display = 'none'
+        // maskSetting.style.display = 'none'
         return
     }
 
@@ -515,7 +515,7 @@ function showInitImagePreview() {
         initImagePreviewContainer.style.display = 'block'
         promptStrengthContainer.style.display = 'block'
 
-        maskSetting.style.display = 'block'
+        // maskSetting.style.display = 'block'
     })
 
     if (file) {
@@ -527,45 +527,45 @@ showInitImagePreview()
 
 initImageClearBtn.addEventListener('click', function() {
     initImageSelector.value = null
-    maskImageSelector.value = null
+    // maskImageSelector.value = null
 
     initImagePreview.src = ''
-    maskImagePreview.src = ''
+    // maskImagePreview.src = ''
 
     initImagePreviewContainer.style.display = 'none'
-    maskImagePreviewContainer.style.display = 'none'
+    // maskImagePreviewContainer.style.display = 'none'
 
-    maskSetting.style.display = 'none'
+    // maskSetting.style.display = 'none'
 
     promptStrengthContainer.style.display = 'none'
 })
 
-function showMaskImagePreview() {
-    if (maskImageSelector.files.length === 0) {
-        maskImagePreviewContainer.style.display = 'none'
-        return
-    }
+// function showMaskImagePreview() {
+//     if (maskImageSelector.files.length === 0) {
+//         maskImagePreviewContainer.style.display = 'none'
+//         return
+//     }
 
-    let reader = new FileReader()
-    let file = maskImageSelector.files[0]
+//     let reader = new FileReader()
+//     let file = maskImageSelector.files[0]
 
-    reader.addEventListener('load', function() {
-        maskImagePreview.src = reader.result
-        maskImagePreviewContainer.style.display = 'block'
-    })
+//     reader.addEventListener('load', function() {
+//         maskImagePreview.src = reader.result
+//         maskImagePreviewContainer.style.display = 'block'
+//     })
 
-    if (file) {
-        reader.readAsDataURL(file)
-    }
-}
-maskImageSelector.addEventListener('change', showMaskImagePreview)
-showMaskImagePreview()
+//     if (file) {
+//         reader.readAsDataURL(file)
+//     }
+// }
+// maskImageSelector.addEventListener('change', showMaskImagePreview)
+// showMaskImagePreview()
 
-maskImageClearBtn.addEventListener('click', function() {
-    maskImageSelector.value = null
-    maskImagePreview.src = ''
-    maskImagePreviewContainer.style.display = 'none'
-})
+// maskImageClearBtn.addEventListener('click', function() {
+//     maskImageSelector.value = null
+//     maskImagePreview.src = ''
+//     maskImagePreviewContainer.style.display = 'none'
+// })
 
 setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
 healthCheck()
