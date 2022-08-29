@@ -21,7 +21,10 @@ from ldm.models.diffusion.plms import PLMSSampler
 from diffusers.pipelines.stable_diffusion.safety_checker import StableDiffusionSafetyChecker
 from transformers import AutoFeatureExtractor
 
+# my stuff
 from . import Request, Response, Image as ResponseImage
+import base64
+from io import BytesIO
 
 
 # load safety model
@@ -51,7 +54,79 @@ def load_model(config="configs/stable-diffusion/v1-inference.yaml", ckpt="models
 
 def txt2img(req: Request):
     res = Response()
-    res.images = [ResponseImage(data="haha", is_nsfw=False)]
+    res.images = []
+
+    sampler = sampler_plms
+
+    opt_prompt = req.prompt
+    opt_seed = req.seed
+    opt_n_samples = req.num_outputs
+    opt_n_iter = 1
+    opt_scale = req.guidance_scale
+    opt_C = 4
+    opt_H = req.height
+    opt_W = req.width
+    opt_f = 8
+    opt_ddim_steps = req.num_inference_steps
+    opt_ddim_eta = 0.0
+    opt_precision = "autocast"
+    opt_skip_save = False
+
+    print(opt_prompt, ': seed', opt_seed, 'num_inference_steps', opt_ddim_steps, 'guidance_scale', opt_scale, 'w', opt_W, 'h', opt_H, 'allow_nsfw', req.allow_nsfw)
+
+    seed_everything(opt_seed)
+
+    batch_size = opt_n_samples
+    prompt = opt_prompt
+    assert prompt is not None
+    data = [batch_size * [prompt]]
+
+    start_code = None
+
+    precision_scope = autocast if opt_precision=="autocast" else nullcontext
+    with torch.no_grad():
+        with precision_scope("cuda"):
+            with model.ema_scope():
+                for n in trange(opt_n_iter, desc="Sampling"):
+                    for prompts in tqdm(data, desc="data"):
+                        uc = None
+                        if opt_scale != 1.0:
+                            uc = model.get_learned_conditioning(batch_size * [""])
+                        if isinstance(prompts, tuple):
+                            prompts = list(prompts)
+                        c = model.get_learned_conditioning(prompts)
+
+                        # this part is specific to txt2img
+                        shape = [opt_C, opt_H // opt_f, opt_W // opt_f]
+                        samples_ddim, _ = sampler.sample(S=opt_ddim_steps,
+                                                         conditioning=c,
+                                                         batch_size=opt_n_samples,
+                                                         shape=shape,
+                                                         verbose=False,
+                                                         unconditional_guidance_scale=opt_scale,
+                                                         unconditional_conditioning=uc,
+                                                         eta=opt_ddim_eta,
+                                                         x_T=start_code)
+
+                        x_samples_ddim = model.decode_first_stage(samples_ddim)
+                        x_samples_ddim = torch.clamp((x_samples_ddim + 1.0) / 2.0, min=0.0, max=1.0)
+                        x_samples_ddim = x_samples_ddim.cpu().permute(0, 2, 3, 1).numpy()
+
+                        if req.allow_nsfw:
+                            x_checked_image = x_samples_ddim
+                        else:
+                            x_checked_image, has_nsfw_concept = check_safety(x_samples_ddim)
+
+                        x_checked_image_torch = torch.from_numpy(x_checked_image).permute(0, 3, 1, 2)
+
+                        if not opt_skip_save:
+                            for i, x_sample in enumerate(x_checked_image_torch):
+                                x_sample = 255. * rearrange(x_sample.cpu().numpy(), 'c h w -> h w c')
+                                img = Image.fromarray(x_sample.astype(np.uint8))
+                                img_data = img_to_base64_str(img)
+
+                                res.images.append(ResponseImage(data=img_data))
+
     return res
 
 def img2img(req: Request):
@@ -126,3 +201,11 @@ def check_safety(x_image):
             x_checked_image[i] = load_replacement(x_checked_image[i])
     return x_checked_image, has_nsfw_concept
 
+# https://stackoverflow.com/a/61114178
+def img_to_base64_str(img):
+    buffered = BytesIO()
+    img.save(buffered, format="PNG")
+    buffered.seek(0)
+    img_byte = buffered.getvalue()
+    img_str = "data:image/png;base64," + base64.b64encode(img_byte).decode()
+    return img_str

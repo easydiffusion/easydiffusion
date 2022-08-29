@@ -101,7 +101,7 @@
     </style>
 </html>
 <body>
-    <div id="status">Server status: <span id="serverStatus">checking..</span> | Request status: <span id="reqStatus">n/a</span></div>
+    <div id="status">Server status: <span id="serverStatus"><span style="color: rgb(161, 97, 0)">starting up..</span></span> | Request status: <span id="reqStatus">n/a</span></div>
 
     <br/>
 
@@ -131,6 +131,7 @@
         <label for="num_inference_steps">Number of inference steps:</label> <input id="num_inference_steps" name="num_inference_steps" size="4" value="50"><br/>
         <label for="guidance_scale">Guidance Scale:</label> <input id="guidance_scale" name="guidance_scale" value="75" type="range" min="10" max="200"> <span id="guidance_scale_value"></span><br/>
         <span id="prompt_strength_container"><label for="prompt_strength">Prompt Strength:</label> <input id="prompt_strength" name="prompt_strength" value="8" type="range" min="0" max="10"> <span id="prompt_strength_value"></span><br/></span><br/>
+        <input id="allow_nsfw" name="allow_nsfw" type="checkbox"> <label for="allow_nsfw">Allow NSFW Content (You confirm you are above 18 years of age)</label><br/>
         <input id="sound_toggle" name="sound_toggle" type="checkbox" checked> <label for="sound_toggle">Play sound on task completion</label><br/>
     </div>
 
@@ -166,6 +167,7 @@ let initImageSelector = document.querySelector("#init_image")
 let initImagePreview = document.querySelector("#init_image_preview")
 let maskImageSelector = document.querySelector("#mask")
 let maskImagePreview = document.querySelector("#mask_preview")
+let allowNSFWField = document.querySelector("#allow_nsfw")
 let promptStrengthField = document.querySelector('#prompt_strength')
 let promptStrengthValueLabel = document.querySelector('#prompt_strength_value')
 
@@ -270,7 +272,7 @@ async function doMakeImage(reqBody) {
             if (res.status !== 'succeeded') {
                 let msg = ''
                 if (res.detail !== undefined) {
-                    msg = res.detail[0].msg + " in " + JSON.stringify(res.detail[0].loc)
+                    msg = res.detail
                 } else {
                     msg = res
                 }
@@ -284,7 +286,7 @@ async function doMakeImage(reqBody) {
     }
 
     if (!res) {
-        return
+        return false
     }
 
     for (let idx in res.output) {
@@ -358,6 +360,8 @@ async function doMakeImage(reqBody) {
             imgItemInfo.style.opacity = 0.5
         })
     }
+
+    return true
 }
 
 async function makeImage() {
@@ -387,6 +391,7 @@ async function makeImage() {
         guidance_scale: parseInt(guidanceScaleField.value) / 10,
         width: widthField.value,
         height: heightField.value,
+        allow_nsfw: allowNSFWField.checked,
     }
 
     if (imageRegex.test(initImagePreview.src)) {
@@ -401,12 +406,17 @@ async function makeImage() {
     let time = new Date().getTime()
     imagesContainer.innerHTML = ''
 
+    let successCount = 0
+
     for (let i = 0; i < batchCount; i++) {
         reqBody['seed'] = seed + i
 
-        await doMakeImage(reqBody)
+        let success = await doMakeImage(reqBody)
 
-        outputMsg.innerHTML = 'Processed batch ' + (i+1) + '/' + batchCount
+        if (success) {
+            outputMsg.innerHTML = 'Processed batch ' + (i+1) + '/' + batchCount
+            successCount++
+        }
     }
 
     makeImageBtn.innerHTML = 'Make Image'
@@ -419,9 +429,11 @@ async function makeImage() {
     time = new Date().getTime() - time
     time /= 1000
 
-    outputMsg.innerHTML = 'Processed ' + numOutputsTotal + ' images in ' + time + ' seconds'
+    if (successCount === batchCount) {
+        outputMsg.innerHTML = 'Processed ' + numOutputsTotal + ' images in ' + time + ' seconds'
 
-    setStatus('request', 'done', 'success')
+        setStatus('request', 'done', 'success')
+    }
 
     if (randomSeedField.checked) {
         seedField.value = seed

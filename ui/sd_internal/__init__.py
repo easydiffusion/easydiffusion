@@ -1,7 +1,7 @@
 import json
 
 class Request:
-    prompt: str
+    prompt: str = ""
     init_image: str = None # base64
     mask: str = None # base64
     num_outputs: int = 1
@@ -11,19 +11,18 @@ class Request:
     height: int = 512
     seed: int = 42
     prompt_strength: float = 0.8
+    allow_nsfw: bool = False
 
 class Image:
     data: str # base64
     is_nsfw: bool
 
-    def __init__(self, data, is_nsfw):
+    def __init__(self, data):
         self.data = data
-        self.is_nsfw = is_nsfw
 
     def json(self):
         return {
             "data": self.data,
-            "is_nsfw": self.is_nsfw,
         }
 
 class Response:
