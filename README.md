@@ -17,6 +17,13 @@ Note: This version is not optimized, so it may cause CUDA Out of Memory errors. 
 
 **I would love to know if this works (or fails). Please [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues/26), thanks!**
 
+### What is this? Why no Docker?
+This version is a 1-click installer. You don't need WSL or Docker or anything beyond a working NVIDIA GPU with an updated driver. You don't need to use the command-line at all.
+
+It'll download the necessary files from the original [Stable Diffusion](https://github.com/CompVis/stable-diffusion) git repository, and set it up. It'll then start the browser-based interface like before.
+
+An NSFW option is present in the interface, for those people who are unable to run their prompts without hitting the NSFW filter incorrectly.
+
 # Bugs reports and code contributions welcome
 If there are any problems or suggestions, please feel free to [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues/26).
 
