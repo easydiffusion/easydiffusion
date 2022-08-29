@@ -44,6 +44,8 @@
 
 @echo. & echo "Ready to rock!" & echo.
 
-@cd ..\ui
+@set SD_UI_PATH=%cd%\..\ui
 
-@uvicorn server:app --port 9000
+@uvicorn server:app --app-dir "%SD_UI_PATH%" --port 9000
+
+@pause

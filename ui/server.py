@@ -1,71 +1,73 @@
+import traceback
+
+import sys
+import os
+
+SCRIPT_DIR = os.getcwd()
+print('started in ', SCRIPT_DIR)
+
+SD_UI_DIR = os.getenv('SD_UI_PATH', None)
+sys.path.append(os.path.dirname(SD_UI_DIR))
+
 from fastapi import FastAPI, HTTPException
 from starlette.responses import FileResponse
 from pydantic import BaseModel
 
-import requests
+from sd_internal import Request, Response
 
 app = FastAPI()
 
+model_loaded = False
+model_is_loading = False
+
 # defaults from https://huggingface.co/blog/stable_diffusion
-class ImageRequest(BaseModel):
-    prompt: str
-    init_image: str = None # base64
-    mask: str = None # base64
-    num_outputs: str = "1"
-    num_inference_steps: str = "50"
-    guidance_scale: str = "7.5"
-    width: str = "512"
-    height: str = "512"
-    seed: str = "30000"
-    prompt_strength: str = "0.8"
+class ImageRequest(BaseModel, Request):
+    pass
 
 @app.get('/')
 def read_root():
-    return FileResponse('index.html')
+    return FileResponse(os.path.join(SD_UI_DIR, 'index.html'))
 
 @app.get('/ping')
 async def ping():
+    global model_loaded, model_is_loading
+
     try:
-        # check if SD is present
+        if model_loaded:
+            return {'OK'}
+
+        if model_is_loading:
+            return {'ERROR'}
+
+        model_is_loading = True
+
+        from sd_internal import runtime
+        runtime.load_model(ckpt="sd-v1-4.ckpt")
+
+        model_loaded = True
+        model_is_loading = False
+
         return {'OK'}
-    except:
-        return {'ERROR'}
+    except Exception as e:
+        traceback.print_exception(e)
+        return HTTPException(status_code=500, detail=str(e))
 
 @app.post('/image')
 async def image(req : ImageRequest):
-    data = {
-        "input": {
-            "prompt": req.prompt,
-            "num_outputs": req.num_outputs,
-            "num_inference_steps": req.num_inference_steps,
-            "width": req.width,
-            "height": req.height,
-            "seed": req.seed,
-            "guidance_scale": req.guidance_scale,
-        }
-    }
+    from sd_internal import runtime
 
-    if req.init_image is not None:
-        data['input']['init_image'] = req.init_image
-        data['input']['prompt_strength'] = req.prompt_strength
+    try:
+        generator = runtime.txt2img if req.init_image is None else runtime.img2img
+        res: Response = generator(req)
 
-        if req.mask is not None:
-            data['input']['mask'] = req.mask
-
-    if req.seed == "-1":
-        del data['input']['seed']
-
-    return {'OK'}
-
-    # res = requests.post(PREDICT_URL, json=data)
-    # if res.status_code != 200:
-    #     raise HTTPException(status_code=500, detail=res.text)
-
-    # return res.json()
+        return res.json()
+    except Exception as e:
+        traceback.print_exception(e)
+        return HTTPException(status_code=500, detail=str(e))
 
 @app.get('/media/ding.mp3')
 def read_root():
-    return FileResponse('media/ding.mp3')
+    return FileResponse(os.path.join(SD_UI_DIR, 'media/ding.mp3'))
 
 # start the browser ui
 import webbrowser; webbrowser.open('http://localhost:9000')

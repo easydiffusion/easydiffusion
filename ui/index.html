@@ -291,7 +291,8 @@ async function doMakeImage(reqBody) {
         let imgBody = ''
 
         try {
-            imgBody = res.output[idx]
+            let imgData = res.output[idx]
+            imgBody = imgData.data
         } catch (e) {
             console.log(imgBody)
             setStatus('request', 'invalid image', 'error')
@@ -360,6 +361,11 @@ async function doMakeImage(reqBody) {
 }
 
 async function makeImage() {
+    if (serverStatus !== 'online') {
+        logError('The server is still starting up..')
+        return
+    }
+
     setStatus('request', 'fetching..')
 
     makeImageBtn.innerHTML = 'Processing..'
@@ -550,6 +556,7 @@ maskImageClearBtn.addEventListener('click', function() {
 })
 
 setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
+healthCheck()
 </script>
 
 </html>
