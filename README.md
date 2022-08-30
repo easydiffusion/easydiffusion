@@ -1,8 +1,22 @@
 # Stable Diffusion UI
 ### A simple way to install and use [Stable Diffusion](https://github.com/CompVis/stable-diffusion) on your own computer
 
-## v2 Version - Try the development version
+# Features in the new v2 Version! Try the development version
+- 1-click install for Windows 10 and 11. **No dependencies**, no need for WSL or Docker or Conda. Just download and run!
+- A library of **modifier tags** like *"Realistic"*, *"Pencil Sketch"*, *"ArtStation"* etc. Experiment with various styles quickly.
+- **New UI** with cleaner design
+- Supports "**Text to Image**" and "**Image to Image**"
+- A setting in the UI to control **NSFW content**
 
+<img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/shot-v7.jpg" height="500" />
+
+# System Requirements
+1. Windows 10 or 11. Support for Linux and (experimentally) Mac is coming soon.
+2. An NVIDIA graphics card, preferably with 8GB or more of VRAM. Working is being done to reduce the memory requirements.
+
+You no longer need anything else. No need for WSL or Docker or Conda. The installer will take care of it.
+
+# Installation
 1. Download [for Windows](https://drive.google.com/file/d/1cEuOcb9OaldXcc2XzEMqEdvAr_w-KJ_p/view?usp=sharing) (this will be hosted on GitHub in the future).
 
 2. After unzipping the file, please run `stable-diffusion-ui.cmd` by double-clicking it.
@@ -13,7 +27,7 @@ The installation will take some time, due to the large number of dependencies. I
 
 This version is currently only built for Windows 10 and 11. WSL is not required.
 
-Note: This version is not optimized, so it may cause CUDA Out of Memory errors. Please try reducing your image size for now.
+Note: This version is not optimized, so it may cause `CUDA Out of Memory` errors. Please try reducing your image size for now.
 
 **I would love to know if this works (or fails). Please [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues/26), thanks!**
 
