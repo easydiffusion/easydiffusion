@@ -20,6 +20,8 @@ app = FastAPI()
 model_loaded = False
 model_is_loading = False
 
+modifiers_cache = None
+
 # defaults from https://huggingface.co/blog/stable_diffusion
 class ImageRequest(BaseModel):
     prompt: str = ""
@@ -88,8 +90,12 @@ async def image(req : ImageRequest):
         return HTTPException(status_code=500, detail=str(e))
 
 @app.get('/media/ding.mp3')
-def read_root():
+def read_ding():
     return FileResponse(os.path.join(SD_UI_DIR, 'media/ding.mp3'))
+
+@app.get('/modifiers.json')
+def read_modifiers():
+    return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'))
 
 # start the browser ui
 import webbrowser; webbrowser.open('http://localhost:9000')
