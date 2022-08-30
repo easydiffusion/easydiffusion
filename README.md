@@ -23,6 +23,7 @@ You no longer need anything else. No need for WSL or Docker or Conda. The instal
 
 3. This will automatically install Stable Diffusion, set it up, and start the interface. No additional steps are needed.
 
+## Some notes
 The installation will take some time, due to the large number of dependencies. It'll install the original [Stable Diffusion](https://github.com/CompVis/stable-diffusion) git repository.
 
 This version is currently only built for Windows 10 and 11. WSL is not required.
@@ -31,7 +32,7 @@ Note: This version is not optimized, so it may cause `CUDA Out of Memory` errors
 
 **I would love to know if this works (or fails). Please [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues/26), thanks!**
 
-### What is this? Why no Docker?
+# What is this? Why no Docker?
 This version is a 1-click installer. You don't need WSL or Docker or anything beyond a working NVIDIA GPU with an updated driver. You don't need to use the command-line at all.
 
 It'll download the necessary files from the original [Stable Diffusion](https://github.com/CompVis/stable-diffusion) git repository, and set it up. It'll then start the browser-based interface like before.
