@@ -144,6 +144,8 @@
         background: rgb(80, 0, 185);
         border: 2px solid rgb(40, 0, 78);
         color: rgb(255, 221, 255);
+        width: 100%;
+        height: 30pt;
     }
     #makeImage:hover {
         background: rgb(93, 0, 214);
@@ -196,6 +198,7 @@
         color: black;
         line-height: 25pt;
         float: left;
+        font-size: 9pt;
     }
     .prompt-modifier-tag:hover {
         background: black;
@@ -205,6 +208,7 @@
         background: #110f0f;
         color: rgb(212, 212, 212);
         margin-bottom: 4pt;
+        font-size: 10pt;
     }
     #editor-modifiers-entries .prompt-modifier-tag:hover {
         background: rgb(163, 163, 163);
@@ -265,10 +269,7 @@
             <div id="editor-inputs">
                 <div id="editor-inputs-prompt" class="row">
                     <label for="prompt">Prompt</label>
-                    <div class="flex-container">
-                        <textarea id="prompt" class="col-free">a photograph of an astronaut riding a horse</textarea>
-                        <button id="makeImage">Make Image</button>
-                    </div>
+                    <textarea id="prompt" class="col-free">a photograph of an astronaut riding a horse</textarea>
                 </div>
 
                 <div id="editor-inputs-init-image" class="row">
@@ -284,6 +285,8 @@
                     <div id="editor-inputs-tags-list">
                     </div>
                 </div>
+
+                <button id="makeImage">Make Image</button>
             </div>
 
             <div class="line-separator">&nbsp;</div>
