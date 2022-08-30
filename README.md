@@ -1,14 +1,14 @@
 # Stable Diffusion UI - v2 (beta)
 ### A simple way to install and use [Stable Diffusion](https://github.com/CompVis/stable-diffusion) on your own computer
 
-# Features in the new v2 Version! Try the development build
+# Features in the new v2 Version:
 - **No Dependencies**: 1-click install for Windows 10 and 11. *No dependencies*, no need for WSL or Docker or Conda. Just download and run!
 - **Image Modifiers**: A library of *modifier tags* like *"Realistic"*, *"Pencil Sketch"*, *"ArtStation"* etc. Experiment with various styles quickly.
 - **New UI**: with cleaner design
 - Supports "*Text to Image*" and "*Image to Image*"
 - **NSFW Setting**: A setting in the UI to control *NSFW content*
 
-<img src="https://github.com/cmdr2/stable-diffusion-ui/raw/v2/media/shot-v7.jpg" height="600" />
+<img src="https://github.com/cmdr2/stable-diffusion-ui/raw/v2/media/shot-v8.jpg" height="600" />
 
 # System Requirements
 1. Windows 10 or 11. Support for Linux and (experimentally) Mac is coming soon.
