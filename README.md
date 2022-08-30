@@ -3,7 +3,7 @@
 
 ---
 
-🎉 **New!** `img2img` and `inpaint` (masking) are now supported! You can provide an image to generate new images based on it (and an optional text prompt). You can also use the generated image as the new input image in 1-click, to refine it further. (Thanks [Andreas](https://github.com/andreasjansson)!)
+🎉 **New!** Version 2 is available in beta for Windows 10 and 11. Features in v2: *1-click install* (no dependencies, no WSL or Docker or Conda required), a library of *Image Modifiers* like *"Realistic"*, *"Ink Pencil"* etc, a setting to control *NSFW content* and more! You can try it [here](https://github.com/cmdr2/stable-diffusion-ui/blob/v2/README.md) if you're interested!
 
 # What does this do?
 Two things:
