@@ -1,4 +1,4 @@
-# Stable Diffusion UI
+# Stable Diffusion UI - v2 (beta)
 ### A simple way to install and use [Stable Diffusion](https://github.com/CompVis/stable-diffusion) on your own computer
 
 # Features in the new v2 Version! Try the development build
