@@ -3,8 +3,6 @@
 
 ---
 
-🎉 **New!** `img2img` and `inpaint` (masking) are now supported! You can provide an image to generate new images based on it (and an optional text prompt). You can also use the generated image as the new input image in 1-click, to refine it further. (Thanks [Andreas](https://github.com/andreasjansson)!)
-
 # What does this do?
 Two things:
 1. Automatically downloads and installs Stable Diffusion on your own computer (no need to mess with conda or environments)
@@ -12,10 +10,7 @@ Two things:
 
 All the processing will happen on your computer locally, it does not transmit your prompts or process on any remote server.
 
-<p float="left">
-  <img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/shot-v3a.jpg" height="500" />
-  <img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/shot-v6a.jpg" height="500" />
-</p>
+<img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/shot-v8.jpg" height="600" />
 
 
 # System Requirements
@@ -61,7 +56,7 @@ You can also set the configuration like `seed`, `width`, `height`, `num_outputs`
 
 Use the same `seed` number to get the same image for a certain prompt. This is useful for refining a prompt without losing the basic image design. Enable the `random images` checkbox to get random images.
 
-![Screenshot of advanced settings](media/config-v3.jpg?raw=true)
+![Screenshot of advanced settings](media/config-v4.jpg?raw=true)
 
 # Troubleshooting
 The [Troubleshooting wiki page](https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting) contains some common errors and their solutions. Please check that, and if it doesn't work, feel free to [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues).
