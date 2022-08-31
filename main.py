@@ -67,3 +67,7 @@ async def image(req : ImageRequest):
 @app.get('/media/ding.mp3')
 def read_root():
     return FileResponse('media/ding.mp3')
+
+@app.get('/modifiers.json')
+def read_modifiers():
+    return FileResponse('modifiers.json')
