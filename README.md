@@ -3,8 +3,6 @@
 
 ---
 
-🎉 **New!** **Version 2** is available in beta for Windows 10 and 11! Features in v2: *1-click install* (no dependencies, no WSL or Docker or Conda required), a library of *Image Modifiers* like *"Realistic"*, *"Ink Pencil"* etc, a setting to control *NSFW content* and more! You can try it [here](https://github.com/cmdr2/stable-diffusion-ui/blob/v2/README.md) if you're interested!
-
 # What does this do?
 Two things:
 1. Automatically downloads and installs Stable Diffusion on your own computer (no need to mess with conda or environments)
