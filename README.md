@@ -1,6 +1,8 @@
 # Stable Diffusion UI - v2 (beta)
 ### A simple way to install and use [Stable Diffusion](https://github.com/CompVis/stable-diffusion) on your own computer
 
+[![Discord Server](https://badgen.net/badge/icon/discord?icon=discord&label)](https://discord.com/invite/u9yhsFmEkB) (for support, and development discussion)
+
 # Features in the new v2 Version:
 - **No Dependencies or Technical Knowledge Required**: 1-click install for Windows 10 and 11. *No dependencies*, no need for WSL or Docker or Conda or technical setup. Just download and run!
 - **Image Modifiers**: A library of *modifier tags* like *"Realistic"*, *"Pencil Sketch"*, *"ArtStation"* etc. Experiment with various styles quickly.
