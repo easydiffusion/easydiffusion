@@ -23,7 +23,10 @@
 @mkdir scripts
 
 @copy ..\..\scripts\on_env_start.bat scripts\
-@copy ..\..\scripts\stable-diffusion-ui.cmd .
+@copy "..\..\scripts\Start Stable Diffusion UI.cmd" .
+@copy ..\..\LICENSE .
+@copy ..\..\CreativeML Open RAIL-M License .
+@copy "..\..\How to install and run.txt" .
 @xcopy ..\..\ui ui /s /i
 
 @echo "Build ready. Zip the 'dist\stable-diffusion-ui' folder."
