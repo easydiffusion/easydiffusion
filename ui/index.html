@@ -237,9 +237,9 @@
         float: right;
     }
     #server-status-color {
-        width: 10pt;
-        height: 10pt;
-        border-radius: 5pt;
+        width: 8pt;
+        height: 8pt;
+        border-radius: 4pt;
         background-color: rgb(128, 87, 0);
         /* background-color: rgb(197, 1, 1); */
         float: left;
@@ -248,6 +248,7 @@
     #server-status-msg {
         color: rgb(128, 87, 0);
         padding-left: 2pt;
+        font-size: 10pt;
     }
     #preview-prompt {
         font-size: 16pt;
@@ -262,7 +263,7 @@
             <div id="meta">
                 <div id="server-status">
                     <div id="server-status-color">&nbsp;</div>
-                    <span id="server-status-msg">server starting..</span>
+                    <span id="server-status-msg">Stable Diffusion is starting..</span>
                 </div>
                 <h1>Stable Diffusion UI <small>v2 (beta)</small></h1>
             </div>
@@ -403,12 +404,12 @@ function setStatus(statusType, msg, msgType) {
         // msg = '<span style="color: red">' + msg + '<span>'
         serverStatusColor.style.backgroundColor = 'red'
         serverStatusMsg.style.color = 'red'
-        serverStatusMsg.innerHTML = 'server offline'
+        serverStatusMsg.innerHTML = 'Stable Diffusion has stopped'
     } else if (msgType == 'success') {
         // msg = '<span style="color: green">' + msg + '<span>'
         serverStatusColor.style.backgroundColor = 'green'
         serverStatusMsg.style.color = 'green'
-        serverStatusMsg.innerHTML = 'server online'
+        serverStatusMsg.innerHTML = 'Stable Diffusion is ready'
         serverStatus = 'online'
     }
 }
