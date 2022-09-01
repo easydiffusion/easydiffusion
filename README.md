@@ -1,6 +1,8 @@
 # Stable Diffusion UI
 ### A simple way to install and use [Stable Diffusion](https://replicate.com/stability-ai/stable-diffusion) on your own computer
 
+[![Discord Server](https://badgen.net/badge/icon/discord?icon=discord&label)](https://discord.com/invite/u9yhsFmEkB)
+
 ---
 
 # What does this do?
