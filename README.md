@@ -14,7 +14,7 @@
 
 # System Requirements
 1. Windows 10 or 11. Support for Linux and (experimentally) Mac is coming soon.
-2. An NVIDIA graphics card, preferably with 8GB or more of VRAM. Working is being done to reduce the memory requirements.
+2. An NVIDIA graphics card, preferably with 6GB or more of VRAM.
 
 You no longer need anything else. No need for WSL or Docker or Conda. The installer will take care of it.
 
@@ -29,8 +29,6 @@ You no longer need anything else. No need for WSL or Docker or Conda. The instal
 The installation will take some time, due to the large number of dependencies. It'll install the original [Stable Diffusion](https://github.com/CompVis/stable-diffusion) git repository.
 
 This version is currently only built for Windows 10 and 11. WSL is not required.
-
-Note: This version is not optimized, so it may cause `CUDA Out of Memory` errors. Please try reducing your image size for now.
 
 **I would love to know if this works (or fails). Please [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues/26), thanks!**
 
