@@ -10,7 +10,7 @@
 - Supports "*Text to Image*" and "*Image to Image*"
 - **NSFW Setting**: A setting in the UI to control *NSFW content*
 
-<img src="https://github.com/cmdr2/stable-diffusion-ui/raw/v2/media/shot-v8.jpg" height="600" />
+![Screenshot](media/shot-v8.jpg?raw=true)
 
 # System Requirements
 1. Windows 10 or 11. Support for Linux and (experimentally) Mac is coming soon.
