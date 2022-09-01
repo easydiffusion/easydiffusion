@@ -3,6 +3,8 @@
 
 [![Discord Server](https://badgen.net/badge/icon/discord?icon=discord&label)](https://discord.com/invite/u9yhsFmEkB) (for support, and development discussion)
 
+🎉 **New!** **Version 2** is available in beta for Windows 10 and 11! Features in v2: *1-click install* (no dependencies, no Docker or Conda or WSL required), a library of *Image Modifiers* like *"Realistic"*, *"Ink Pencil"* etc, a setting to control *NSFW content*, lower memory requirement and more! You can try it [here](https://github.com/cmdr2/stable-diffusion-ui/tree/v2#installation) if you're interested!
+
 ---
 
 # What does this do?
