@@ -69,7 +69,7 @@ This project runs Stable Diffusion in a docker container behind the scenes, usin
 # Bugs reports and code contributions welcome
 If there are any problems or suggestions, please feel free to [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues).
 
-Also, please feel free to submit a pull request, if you have any code contributions in mind.
+Also, please feel free to submit a pull request, if you have any code contributions in mind. Join the [discord server](https://discord.com/invite/u9yhsFmEkB) for development-related discussions, and for helping other users.
 
 # Disclaimer
 The authors of this project are not responsible for any content generated using this interface.
