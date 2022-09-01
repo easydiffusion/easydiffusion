@@ -1,6 +1,8 @@
 # Stable Diffusion UI
 ### A simple way to install and use [Stable Diffusion](https://replicate.com/stability-ai/stable-diffusion) on your own computer
 
+[![Discord Server](https://badgen.net/badge/icon/discord?icon=discord&label)](https://discord.com/invite/u9yhsFmEkB) (for support, and development discussion)
+
 ---
 
 # What does this do?
@@ -10,7 +12,7 @@ Two things:
 
 All the processing will happen on your computer locally, it does not transmit your prompts or process on any remote server.
 
-<img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/shot-v8.jpg" height="600" />
+![Screenshot](media/shot-v8.jpg?raw=true)
 
 
 # System Requirements
