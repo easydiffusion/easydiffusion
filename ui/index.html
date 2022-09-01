@@ -296,15 +296,19 @@
                 <h4 class="collapsible">Advanced Settings</h4>
                 <ul id="editor-settings-entries" class="collapsible-content">
                     <li><label for="seed">Seed:</label> <input id="seed" name="seed" size="10" value="30000"> <input id="random_seed" name="random_seed" type="checkbox" checked> <label for="random_seed">Random Image</label></li>
-                    <li><label for="num_outputs_total">Number of outputs:</label> <input id="num_outputs_total" name="num_outputs_total" value="1" size="4"> <label for="num_outputs_parallel">Generate in parallel:</label> <select id="num_outputs_parallel" name="num_outputs_parallel" value="1"><option value="1" selected>1 image at a time</option><option value="4">4 images at a time</option></select></li>
+                    <li><label for="num_outputs_total">Number of images to make:</label> <input id="num_outputs_total" name="num_outputs_total" value="1" size="4"> <label for="num_outputs_parallel">Generate in parallel:</label> <input id="num_outputs_parallel" name="num_outputs_parallel" value="1" size="4"> (images at once)</li>
                     <li><label for="width">Width:</label> <select id="width" name="width" value="512"><option value="128">128</option><option value="256">256</option><option value="512" selected>512</option><option value="768">768</option><option value="1024">1024</option></select></li>
                     <li><label for="height">Height:</label> <select id="height" name="height" value="512"><option value="128">128</option><option value="256">256</option><option value="512" selected>512</option><option value="768">768</option></select></li>
                     <li><label for="num_inference_steps">Number of inference steps:</label> <input id="num_inference_steps" name="num_inference_steps" size="4" value="50"></li>
                     <li><label for="guidance_scale">Guidance Scale:</label> <input id="guidance_scale" name="guidance_scale" value="75" type="range" min="10" max="200"> <span id="guidance_scale_value"></span></li>
                     <li><span id="prompt_strength_container"><label for="prompt_strength">Prompt Strength:</label> <input id="prompt_strength" name="prompt_strength" value="8" type="range" min="0" max="10"> <span id="prompt_strength_value"></span><br/></span></li>
                     <li>&nbsp;</li>
-                    <li><input id="allow_nsfw" name="allow_nsfw" type="checkbox"> <label for="allow_nsfw">Allow NSFW Content (You confirm you are above 18 years of age)</label></li>
+                    <li><input id="save_to_disk" name="save_to_disk" type="checkbox"> <label for="save_to_disk">Automatically save to disk <span id="diskPath"></span></label></li>
                     <li><input id="sound_toggle" name="sound_toggle" type="checkbox" checked> <label for="sound_toggle">Play sound on task completion</label></li>
+                    <li><input id="turbo" name="turbo" type="checkbox" checked> <label for="turbo">Turbo mode (generates images faster, but uses an additional 1 GB of GPU memory)</label></li>
+                    <li><input id="use_cpu" name="use_cpu" type="checkbox"> <label for="use_cpu">Use CPU instead of GPU (warning: this will be *very* slow)</label></li>
+                    <li><input id="use_full_precision" name="use_full_precision" type="checkbox"> <label for="use_full_precision">Use full precision (for GPU-only. warning: this will consume more VRAM)</label></li>
+                    <!-- <li><input id="allow_nsfw" name="allow_nsfw" type="checkbox"> <label for="allow_nsfw">Allow NSFW Content (You confirm you are above 18 years of age)</label></li> -->
                 </ul>
             </div>
 
@@ -355,7 +359,11 @@ let initImageSelector = document.querySelector("#init_image")
 let initImagePreview = document.querySelector("#init_image_preview")
 // let maskImageSelector = document.querySelector("#mask")
 // let maskImagePreview = document.querySelector("#mask_preview")
-let allowNSFWField = document.querySelector("#allow_nsfw")
+let turboField = document.querySelector('#turbo')
+let useCPUField = document.querySelector('#use_cpu')
+let useFullPrecisionField = document.querySelector('#use_full_precision')
+let saveToDiskField = document.querySelector('#save_to_disk')
+// let allowNSFWField = document.querySelector("#allow_nsfw")
 let promptStrengthField = document.querySelector('#prompt_strength')
 let promptStrengthValueLabel = document.querySelector('#prompt_strength_value')
 
@@ -595,7 +603,11 @@ async function makeImage() {
         guidance_scale: parseInt(guidanceScaleField.value) / 10,
         width: widthField.value,
         height: heightField.value,
-        allow_nsfw: allowNSFWField.checked,
+        // allow_nsfw: allowNSFWField.checked,
+        save_to_disk: saveToDiskField.checked,
+        turbo: turboField.checked,
+        use_cpu: useCPUField.checked,
+        use_full_precision: useFullPrecisionField.checked
     }
 
     if (imageRegex.test(initImagePreview.src)) {
@@ -830,6 +842,20 @@ function refreshTagsList() {
     editorModifierTagsList.appendChild(brk)
 }
 
+async function getDiskPath() {
+    try {
+        let res = await fetch('/output_dir')
+        if (res.status === 200) {
+            res = await res.json()
+            res = res[0]
+
+            document.querySelector('#diskPath').innerHTML = '(to ' + res + ')'
+        }
+    } catch (e) {
+        console.log('error fetching output dir path', e)
+    }
+}
+
 async function loadModifiers() {
     try {
         let res = await fetch('/modifiers.json')
@@ -883,6 +909,7 @@ async function loadModifiers() {
 
 async function init() {
     await loadModifiers()
+    await getDiskPath()
 
     setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
     healthCheck()
