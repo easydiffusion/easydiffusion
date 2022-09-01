@@ -11,18 +11,40 @@ class Request:
     height: int = 512
     seed: int = 42
     prompt_strength: float = 0.8
-    allow_nsfw: bool = False
+    # allow_nsfw: bool = False
+    precision: str = "autocast" # or "full"
+    save_to_disk_path: str = None
+    turbo: bool = True
+    use_cpu: bool = False
+    use_full_precision: bool = False
+
+    def to_string(self):
+        return f'''
+    prompt: {self.prompt}
+    seed: {self.seed}
+    num_inference_steps: {self.num_inference_steps}
+    guidance_scale: {self.guidance_scale}
+    w: {self.width}
+    h: {self.height}
+    precision: {self.precision}
+    save_to_disk_path: {self.save_to_disk_path}
+    turbo: {self.turbo}
+    use_cpu: {self.use_cpu}
+    use_full_precision: {self.use_full_precision}'''
 
 class Image:
     data: str # base64
+    seed: int
     is_nsfw: bool
 
-    def __init__(self, data):
+    def __init__(self, data, seed):
         self.data = data
+        self.seed = seed
 
     def json(self):
         return {
             "data": self.data,
+            "seed": self.seed,
         }
 
 class Response:

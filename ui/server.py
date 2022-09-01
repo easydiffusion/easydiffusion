@@ -9,6 +9,8 @@ print('started in ', SCRIPT_DIR)
 SD_UI_DIR = os.getenv('SD_UI_PATH', None)
 sys.path.append(os.path.dirname(SD_UI_DIR))
 
+OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder
+
 from fastapi import FastAPI, HTTPException
 from starlette.responses import FileResponse
 from pydantic import BaseModel
@@ -21,6 +23,7 @@ model_loaded = False
 model_is_loading = False
 
 modifiers_cache = None
+outpath = os.path.join(os.path.expanduser("~"), OUTPUT_DIRNAME)
 
 # defaults from https://huggingface.co/blog/stable_diffusion
 class ImageRequest(BaseModel):
@@ -34,7 +37,11 @@ class ImageRequest(BaseModel):
     height: int = 512
     seed: int = 42
     prompt_strength: float = 0.8
-    allow_nsfw: bool = False
+    # allow_nsfw: bool = False
+    save_to_disk: bool = False
+    turbo: bool = True
+    use_cpu: bool = False
+    use_full_precision: bool = False
 
 @app.get('/')
 def read_root():
@@ -54,7 +61,7 @@ async def ping():
         model_is_loading = True
 
         from sd_internal import runtime
-        runtime.load_model(ckpt="sd-v1-4.ckpt")
+        runtime.load_model(ckpt_to_use="sd-v1-4.ckpt")
 
         model_loaded = True
         model_is_loading = False
@@ -79,7 +86,13 @@ async def image(req : ImageRequest):
     r.height = req.height
     r.seed = req.seed
     r.prompt_strength = req.prompt_strength
-    r.allow_nsfw = req.allow_nsfw
+    # r.allow_nsfw = req.allow_nsfw
+    r.turbo = req.turbo
+    r.use_cpu = req.use_cpu
+    r.use_full_precision = req.use_full_precision
+
+    if req.save_to_disk:
+        r.save_to_disk_path = outpath
 
     try:
         res: Response = runtime.mk_img(r)
@@ -96,6 +109,10 @@ def read_ding():
 @app.get('/modifiers.json')
 def read_modifiers():
     return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'))
+
+@app.get('/output_dir')
+def read_home_dir():
+    return {outpath}
 
 # start the browser ui
 import webbrowser; webbrowser.open('http://localhost:9000')
