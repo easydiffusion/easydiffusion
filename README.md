@@ -12,7 +12,7 @@ Two things:
 
 All the processing will happen on your computer locally, it does not transmit your prompts or process on any remote server.
 
-<img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/shot-v8.jpg" height="600" />
+![Screenshot](media/shot-v8.jpg?raw=true)
 
 
 # System Requirements
