@@ -24,7 +24,7 @@
     )
 )
 
-@xcopy sd-ui-files\ui ui /s /i
-@xcopy sd-ui-files\scripts scripts /s /i
+@xcopy sd-ui-files\ui ui /s /i /Y
+@xcopy sd-ui-files\scripts scripts /s /i /Y
 
 @call scripts\on_sd_start.bat
