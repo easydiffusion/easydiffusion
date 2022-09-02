@@ -4,6 +4,8 @@ mkdir -p dist/stable-diffusion-ui
 
 echo "Downloading components for the installer.."
 
+source ~/miniconda3/etc/profile.d/conda.sh
+
 conda env create --prefix installer -f environment.yaml
 conda activate ./installer
 
