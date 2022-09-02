@@ -94,10 +94,10 @@
         pause
         exit /b
     )
-)
-@echo sd_weights_downloaded >> ..\scripts\install_status.txt
 
-@echo sd_install_complete >> ..\scripts\install_status.txt
+    @echo sd_weights_downloaded >> ..\scripts\install_status.txt
+    @echo sd_install_complete >> ..\scripts\install_status.txt
+)
 
 @echo. & echo "Stable Diffusion is ready!" & echo.
 
