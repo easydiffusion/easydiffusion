@@ -19,7 +19,7 @@
 You no longer need anything else. No need for WSL or Docker or Conda. The installer will take care of it.
 
 # Installation
-1. Download [for Windows](https://drive.google.com/file/d/1toxjWESE0S2iUb-MWRf3WQ8S98Mr3Lex/view?usp=sharing) (this will be hosted on GitHub in the future).
+1. Download [for Windows](https://drive.google.com/file/d/1MY5gzsQHV_KREbYs3gw33QL4gGIlQRqj/view?usp=sharing) (this will be hosted on GitHub in the future).
 
 2. After unzipping the file, please run `stable-diffusion-ui.cmd` by double-clicking it.
 
