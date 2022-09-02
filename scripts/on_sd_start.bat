@@ -46,10 +46,6 @@
         @set cmd_had_error=T
     )
 
-    if "%ERRORLEVEL%" NEQ "0" (
-        @set cmd_had_error=T
-    )
-
     if "%cmd_had_error%"=="T" (
         echo "Error installing the packages necessary for Stable Diffusion. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues"
         pause
