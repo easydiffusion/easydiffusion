@@ -2,45 +2,75 @@
 
 @cd ..
 
-@set new_install=F
-
-@if not exist "stable-diffusion\" (
-    @set new_install=T
+@>nul grep -c "sd_git_cloned" scripts\install_status.txt
+@if "%ERRORLEVEL%" EQU "0" (
+    @echo "Stable Diffusion's git repository was already installed"
+) else (
     @echo. & echo "Downloading Stable Diffusion.." & echo.
-    @call git clone https://github.com/basujindal/stable-diffusion.git
+
+    @call git clone https://github.com/basujindal/stable-diffusion.git && (
+        @echo sd_git_cloned >> scripts\install_status.txt
+    ) || (
+        @echo "Error downloading Stable Diffusion. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues"
+        pause
+        @exit /b
+    )
 )
 
 @cd stable-diffusion
 
-@if not exist "env\" (
+@>nul grep -c "conda_sd_env_created" ..\scripts\install_status.txt
+@if "%ERRORLEVEL%" EQU "0" (
+    @echo "Packages necessary for Stable Diffusion were already installed"
+) else (
     @echo. & echo "Downloading packages necessary for Stable Diffusion.." & echo. & echo "***** This will take some time (depending on the speed of the Internet connection) and may appear to be stuck, but please be patient ***** .." & echo.
 
-    @call conda env create --prefix env -f environment.yaml
-    @call conda activate .\env
+    @rmdir /s /q .\env
 
+    @call conda env create --prefix env -f environment.yaml && (
+        @echo conda_sd_env_created >> ..\scripts\install_status.txt
+    ) || (
+        echo "Error installing the packages necessary for Stable Diffusion. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues"
+        pause
+        exit /b
+    )
+)
+
+@call conda activate .\env
+
+@>nul grep -c "conda_sd_ui_deps_installed" ..\scripts\install_status.txt
+@if "%ERRORLEVEL%" EQU "0" (
+    echo "Packages necessary for Stable Diffusion UI were already installed"
+) else (
     @echo. & echo "Downloading packages necessary for Stable Diffusion UI.." & echo.
 
-    @call conda install -c conda-forge -y --prefix env uvicorn fastapi
+    @call conda install -c conda-forge -y --prefix env uvicorn fastapi && (
+        @echo conda_sd_ui_deps_installed >> ..\scripts\install_status.txt
+    ) || (
+        echo "Error installing the packages necessary for Stable Diffusion UI. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues"
+        pause
+        exit /b
+    )
+)
 
-    @rem "Check if everything was installed, by running it once more"
-
-    @call conda env update --prefix .\env --file environment.yaml
+@if exist "sd-v1-4.ckpt" (
+    echo "Data files (weights) necessary for Stable Diffusion were already downloaded"
 ) else (
-    @call conda activate .\env
-)
-
-@if not exist "sd-v1-4.ckpt" (
     @echo. & echo "Downloading data files (weights) for Stable Diffusion.." & echo.
+
     @call curl https://www.googleapis.com/storage/v1/b/aai-blog-files/o/sd-v1-4.ckpt?alt=media > sd-v1-4.ckpt
+
+    @if not exist "sd-v1-4.ckpt" (
+        echo "Error downloading the data files (weights) for Stable Diffusion. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues"
+        pause
+        exit /b
+    )
 )
+@echo sd_weights_downloaded >> ..\scripts\install_status.txt
 
-@if "%new_install%"=="T" (
-    @echo. & echo "Checking your new installation of Stable Diffusion.." & echo.
+@echo sd_install_complete >> ..\scripts\install_status.txt
 
-    @call conda env update --prefix .\env --file environment.yaml
-)
-
-@echo. & echo "Ready to rock!" & echo.
+@echo. & echo "Stable Diffusion is ready!" & echo.
 
 @set SD_UI_PATH=%cd%\..\ui
 
