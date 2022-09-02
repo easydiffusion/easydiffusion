@@ -103,8 +103,6 @@
 
 @set SD_UI_PATH=%cd%\..\ui
 
-@call ..\config.bat
-
-@uvicorn server:app --app-dir "%SD_UI_PATH%" --port %SD_PORT% --host %SD_HOST%
+@uvicorn server:app --app-dir "%SD_UI_PATH%" --port 9000 --host 0.0.0.0
 
 @pause
