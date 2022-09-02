@@ -21,9 +21,9 @@ You no longer need anything else. No need for WSL or Docker or Conda. The instal
 # Installation
 1. Download [for Windows](https://drive.google.com/file/d/1MY5gzsQHV_KREbYs3gw33QL4gGIlQRqj/view?usp=sharing) (this will be hosted on GitHub in the future).
 
-2. After unzipping the file, please run `stable-diffusion-ui.cmd` by double-clicking it.
+2. After unzipping the file, please move the `stable-diffusion-ui` folder to your `C:` (or any drive like D: at the top root level). For e.g. `C:\stable-diffusion-ui`. This will avoid a common problem with Windows (of file path length limits).
 
-3. This will automatically install Stable Diffusion, set it up, and start the interface. No additional steps are needed.
+3. Run `Start Stable Diffusion UI.cmd` by double-clicking it. This will automatically install Stable Diffusion, set it up, and start the interface. No additional steps are needed.
 
 ## Some notes
 The installation will take some time, due to the large number of dependencies. It'll install the original [Stable Diffusion](https://github.com/CompVis/stable-diffusion) git repository.
