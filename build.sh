@@ -24,12 +24,11 @@ tar -xf ../../installer.tar -C installer
 
 mkdir scripts
 
-cp ../../scripts/on_env_start.bat scripts/
+cp ../../scripts/on_env_start.sh scripts/
 cp "../../scripts/Start Stable Diffusion UI.sh" .
 cp ../../LICENSE .
 cp "../../CreativeML Open RAIL-M License" .
 cp "../../How to install and run.txt" .
-cp -Rf ../../ui ui
 
 echo "Build ready. Zip the 'dist/stable-diffusion-ui' folder."
 
