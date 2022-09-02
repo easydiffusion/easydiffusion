@@ -22,6 +22,8 @@ mkdir installer
 
 tar -xf ../../installer.tar -C installer
 
+chmod u+x installer/bin/activate
+
 mkdir scripts
 
 cp ../../scripts/on_env_start.sh scripts/

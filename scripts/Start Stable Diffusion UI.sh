@@ -1,1 +1,1 @@
-./installer/Scripts/activate.sh
+./installer/bin/activate
