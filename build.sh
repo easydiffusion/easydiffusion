@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mkdir dist/stable-diffusion-ui
+mkdir -p dist/stable-diffusion-ui
 
 echo "Downloading components for the installer.."
 
