@@ -24,6 +24,6 @@ else
 fi
 
 cp -Rf sd-ui-files/ui ui
-cp -Rf sd-ui-files/scripts scripts
+cp -Rf sd-ui-files/scripts/* scripts/
 
 ./scripts/on_sd_start.sh
