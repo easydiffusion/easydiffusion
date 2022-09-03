@@ -1,6 +1,6 @@
 printf "\n\nStable Diffusion UI\n\n"
 
-if [ `grep -c sd_ui_git_cloned scripts/install_status.txt` -gt "0" ]; then
+if [ -f "scripts/install_status.txt" ] && [ `grep -c sd_ui_git_cloned scripts/install_status.txt` -gt "0" ]; then
     echo "Stable Diffusion UI's git repository was already installed. Updating.."
 
     cd sd-ui-files
