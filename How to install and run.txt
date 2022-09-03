@@ -1,10 +1,14 @@
 Congrats on downloading Stable Diffusion UI, version 2!
 
-Please double-click the "Start Stable Diffusion UI.cmd" file inside the "stable-diffusion-ui" folder.
+Windows:
+- Please double-click the "Start Stable Diffusion UI.cmd" file inside the "stable-diffusion-ui" folder.
+
+Linux:
+- Please open a terminal, and go to the "stable-diffusion-ui" directory. Then run ./start.sh
 
 That file will automatically install everything. After that it will start the Stable Diffusion interface in a web browser.
 
-To start the UI in the future, please run the same "Start Stable Diffusion UI.cmd" file.
+To start the UI in the future, please run the same command mentioned above.
 
 
 If you have any problems, please:
