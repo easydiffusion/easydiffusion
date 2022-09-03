@@ -8,12 +8,12 @@ if [ `grep -c sd_git_cloned scripts/install_status.txt` -gt "0" ]; then
 
     cd ..
 else
-    echo "\nDownloading Stable Diffusion..\n"
+    printf "\n\nDownloading Stable Diffusion..\n\n"
 
     if git clone https://github.com/basujindal/stable-diffusion.git ; then
         echo sd_git_cloned >> scripts/install_status.txt
     else
-        echo "\nError downloading Stable Diffusion. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\n"
+        printf "\n\nError downloading Stable Diffusion. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\n\n"
         read -p "Press any key to continue"
         exit
     fi
@@ -24,13 +24,13 @@ cd stable-diffusion
 if [ `grep -c conda_sd_env_created ../scripts/install_status.txt` -gt "0" ]; then
     echo "Packages necessary for Stable Diffusion were already installed"
 else
-    echo "Downloading packages necessary for Stable Diffusion.."
-    echo "***** This will take some time (depending on the speed of the Internet connection) and may appear to be stuck, but please be patient ***** .."
+    printf "\n\nDownloading packages necessary for Stable Diffusion..\n"
+    printf "\n\n***** This will take some time (depending on the speed of the Internet connection) and may appear to be stuck, but please be patient ***** ..\n\n"
 
     if conda env create --prefix env --force -f environment.yaml ; then
         echo conda_sd_env_created >> ../scripts/install_status.txt
     else
-        echo "\nError installing the packages necessary for Stable Diffusion. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\n"
+        printf "\n\nError installing the packages necessary for Stable Diffusion. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\n\n"
         read -p "Press any key to continue"
         exit
     fi
@@ -41,12 +41,12 @@ conda activate ./env
 if [ `grep -c conda_sd_ui_deps_installed ../scripts/install_status.txt` -gt "0" ]; then
     echo "Packages necessary for Stable Diffusion UI were already installed"
 else
-    echo "\nDownloading packages necessary for Stable Diffusion UI..\n"
+    printf "\n\nDownloading packages necessary for Stable Diffusion UI..\n\n"
 
     if conda install -c conda-forge --prefix ./env -y uvicorn fastapi ; then
         echo conda_sd_ui_deps_installed >> ../scripts/install_status.txt
     else
-        echo "\nError installing the packages necessary for Stable Diffusion UI. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\n"
+        printf "\n\nError installing the packages necessary for Stable Diffusion UI. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\n\n"
         read -p "Press any key to continue"
         exit
     fi
@@ -60,7 +60,7 @@ else
     curl https://www.googleapis.com/storage/v1/b/aai-blog-files/o/sd-v1-4.ckpt?alt=media > sd-v1-4.ckpt
 
     if [ ! -f "sd-v1-4.ckpt" ]; then
-        echo "\nError downloading the data files (weights) for Stable Diffusion. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\n"
+        printf "\n\nError downloading the data files (weights) for Stable Diffusion. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\n\n"
         read -p "Press any key to continue"
         exit
     fi
@@ -69,7 +69,7 @@ else
     echo sd_install_complete >> ../scripts/install_status.txt
 fi
 
-echo "\nStable Diffusion is ready!\n"
+printf "\n\nStable Diffusion is ready!\n\n"
 
 export SD_UI_PATH=`pwd`/../ui
 
