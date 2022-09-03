@@ -1,1 +1,1 @@
-./installer/bin/activate
+source installer/bin/activate

@@ -6,6 +6,8 @@ echo "Downloading components for the installer.."
 
 source ~/miniconda3/etc/profile.d/conda.sh
 
+conda install -c conda-forge -y conda-pack
+
 conda env create --prefix installer -f environment.yaml
 conda activate ./installer
 
@@ -16,7 +18,6 @@ cp scripts/post_activate.sh installer/etc/conda/activate.d/
 
 echo "Creating a distributable package.."
 
-conda install -c conda-forge -y conda-pack
 conda pack --n-threads -1 --prefix installer --format tar
 
 cd dist/stable-diffusion-ui

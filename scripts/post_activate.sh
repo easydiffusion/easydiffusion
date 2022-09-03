@@ -1,3 +1,5 @@
+conda-unpack
+
 conda --version
 git --version
 
