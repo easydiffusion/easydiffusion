@@ -19,6 +19,7 @@
       "8-bit",
       "16-bit",
       "Anaglyph",
+      "Anime",
       "Cartoon",
       "CGI",
       "Comic Book",
@@ -35,7 +36,8 @@
       "Photo",
       "Realistic",
       "Street Art",
-      "Visual Novel"
+      "Visual Novel",
+      "Watercolor"
     ]
   ],
   [
@@ -64,16 +66,22 @@
   [
     "Camera",
     [
+      "Aerial View",
+      "Cinematic",
       "Color Grading",
+      "Dramatic",
       "Film Grain",
+      "Fisheye Lens",
       "Glamor Shot",
       "Golden Hour",
-      "Lens Flare",
       "HD",
+      "Lens Flare",
+      "Macro",
       "Polaroid",
       "Vintage",
       "War Photography",
-      "White Balance"
+      "White Balance",
+      "Wildlife Photography"
     ]
   ],
   [
@@ -83,6 +91,7 @@
       "Colorful",
       "Electric Colors",
       "Infrared",
+      "Synthwave",
       "Warm Color Palette"
     ]
   ],
