@@ -27,9 +27,7 @@ else
     echo "Downloading packages necessary for Stable Diffusion.."
     echo "***** This will take some time (depending on the speed of the Internet connection) and may appear to be stuck, but please be patient ***** .."
 
-    rm -rf ./env
-
-    if conda env create --prefix env -f environment.yaml ; then
+    if conda env create -f environment.yaml ; then
         echo conda_sd_env_created >> ../scripts/install_status.txt
     else
         echo "\nError installing the packages necessary for Stable Diffusion. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\n"
@@ -38,14 +36,14 @@ else
     fi
 fi
 
-conda activate ./env
+conda activate ldm
 
 if [ `grep -c conda_sd_ui_deps_installed ../scripts/install_status.txt` -gt "0" ]; then
     echo "Packages necessary for Stable Diffusion UI were already installed"
 else
     echo "\nDownloading packages necessary for Stable Diffusion UI..\n"
 
-    if conda install -c conda-forge -y --prefix env uvicorn fastapi ; then
+    if conda install -c conda-forge -y uvicorn fastapi ; then
         echo conda_sd_ui_deps_installed >> ../scripts/install_status.txt
     else
         echo "\nError installing the packages necessary for Stable Diffusion UI. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\n"
