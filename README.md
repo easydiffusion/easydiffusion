@@ -28,7 +28,7 @@ You no longer need anything else. No need for WSL or Docker or Conda. The instal
 
 3. Run:
   - For Windows: `Start Stable Diffusion UI.cmd` by double-clicking it.
-  - For Linux: In the terminal, run `./Start\ Stable\ Diffusion\ UI.sh` (basically press a tab after `./S`)
+  - For Linux: In the terminal, run `./start.sh`
   
 This will automatically install Stable Diffusion, set it up, and start the interface. No additional steps are needed.
   
