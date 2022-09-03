@@ -23,7 +23,7 @@ tar -xf ../../installer.tar -C installer
 mkdir scripts
 
 cp ../../scripts/on_env_start.sh scripts/
-cp "../../scripts/Start Stable Diffusion UI.sh" .
+cp "../../scripts/start.sh" .
 cp ../../LICENSE .
 cp "../../CreativeML Open RAIL-M License" .
 cp "../../How to install and run.txt" .
