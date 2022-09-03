@@ -307,7 +307,7 @@
                     <li><input id="sound_toggle" name="sound_toggle" type="checkbox" checked> <label for="sound_toggle">Play sound on task completion</label></li>
                     <li><input id="turbo" name="turbo" type="checkbox" checked> <label for="turbo">Turbo mode (generates images faster, but uses an additional 1 GB of GPU memory)</label></li>
                     <li><input id="use_cpu" name="use_cpu" type="checkbox"> <label for="use_cpu">Use CPU instead of GPU (warning: this will be *very* slow)</label></li>
-                    <li><input id="use_full_precision" name="use_full_precision" type="checkbox"> <label for="use_full_precision">Use full precision (for GPU-only. warning: this will consume more VRAM)</label></li>
+                    <li><input id="use_full_precision" name="use_full_precision" type="checkbox"> <label for="use_full_precision">Use full precision (for GPU-only. warning: this will consume more VRAM. Use this for NVIDIA 1650 and 1660)</label></li>
                     <!-- <li><input id="allow_nsfw" name="allow_nsfw" type="checkbox"> <label for="allow_nsfw">Allow NSFW Content (You confirm you are above 18 years of age)</label></li> -->
                 </ul>
             </div>
@@ -343,6 +343,9 @@
 
 <script>
 const SOUND_ENABLED_KEY = "soundEnabled"
+const USE_CPU_KEY = "useCPU"
+const USE_FULL_PRECISION_KEY = "useFullPrecision"
+const USE_TURBO_MODE_KEY = "useTurboMode"
 const HEALTH_PING_INTERVAL = 5 // seconds
 
 let promptField = document.querySelector('#prompt')
@@ -396,11 +399,44 @@ let serverStatusMsg = document.querySelector('#server-status-msg')
 let serverStatus = 'offline'
 let activeTags = []
 
-function isSoundEnabled() {
-    if (localStorage.getItem(SOUND_ENABLED_KEY) === 'false') {
-        return false
+function getLocalStorageItem(key, fallback) {
+    let item = localStorage.getItem(key)
+    if (item === null) {
+        return fallback
     }
-    return true
+
+    return item
+}
+
+function getLocalStorageBoolItem(key, fallback) {
+    let item = localStorage.getItem(key)
+    if (item === null) {
+        return fallback
+    }
+
+    return (item === 'true' ? true : false)
+}
+
+function handleBoolSettingChange(key) {
+    return function(e) {
+        localStorage.setItem(key, e.target.checked.toString())
+    }
+}
+
+function isSoundEnabled() {
+    return getLocalStorageBoolItem(SOUND_ENABLED_KEY, true)
+}
+
+function isUseCPUEnabled() {
+    return getLocalStorageBoolItem(USE_CPU_KEY, false)
+}
+
+function isUseFullPrecisionEnabled() {
+    return getLocalStorageBoolItem(USE_FULL_PRECISION_KEY, false)
+}
+
+function isUseTurboModeEnabled() {
+    return getLocalStorageBoolItem(USE_TURBO_MODE_KEY, true)
 }
 
 function setStatus(statusType, msg, msgType) {
@@ -672,22 +708,20 @@ function generateUUID() { // Public Domain/MIT
     });
 }
 
-function handleAudioEnabledChange(e) {
-    localStorage.setItem(SOUND_ENABLED_KEY, e.target.checked.toString())
-}
+soundToggle.addEventListener('click', handleBoolSettingChange(SOUND_ENABLED_KEY))
+soundToggle.checked = isSoundEnabled()
 
-soundToggle.addEventListener('click', handleAudioEnabledChange)
-soundToggle.checked = isSoundEnabled();
+useCPUField.addEventListener('click', handleBoolSettingChange(USE_CPU_KEY))
+useCPUField.checked = isUseCPUEnabled()
+
+useFullPrecisionField.addEventListener('click', handleBoolSettingChange(USE_FULL_PRECISION_KEY))
+useFullPrecisionField.checked = isUseFullPrecisionEnabled()
+
+turboField.addEventListener('click', handleBoolSettingChange(USE_TURBO_MODE_KEY))
+turboField.checked = isUseTurboModeEnabled()
 
 makeImageBtn.addEventListener('click', makeImage)
 
-// configBox.style.display = 'none'
-
-// showConfigToggle.addEventListener('click', function() {
-//     configBox.style.display = (configBox.style.display === 'none' ? 'block' : 'none')
-//     showConfigToggle.innerHTML = (configBox.style.display === 'none' ? 'show' : 'hide')
-//     return false
-// })
 
 function updateGuidanceScale() {
     guidanceScaleValueLabel.innerHTML = guidanceScaleField.value / 10
