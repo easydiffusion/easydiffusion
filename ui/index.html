@@ -661,7 +661,7 @@ async function makeImage() {
 function createFileName() {
 
     // Most important information is the prompt
-    const underscoreName = promptField.value = promptField.value.replace(/[^a-zA-Z0-9]/g, '_');
+    const underscoreName = promptField.value.replace(/[^a-zA-Z0-9]/g, '_');
     const seed = seedField.value;
     const steps = numInferenceStepsField.value;
     const guidance =  guidanceScaleField.value; 
