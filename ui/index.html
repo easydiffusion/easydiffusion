@@ -265,7 +265,7 @@
                     <div id="server-status-color">&nbsp;</div>
                     <span id="server-status-msg">Stable Diffusion is starting..</span>
                 </div>
-                <h1>Stable Diffusion UI <small>v2.03 (beta)</small></h1>
+                <h1>Stable Diffusion UI <small>v2.04 (beta)</small></h1>
             </div>
             <div id="editor-inputs">
                 <div id="editor-inputs-prompt" class="row">
@@ -297,8 +297,44 @@
                 <ul id="editor-settings-entries" class="collapsible-content">
                     <li><label for="seed">Seed:</label> <input id="seed" name="seed" size="10" value="30000"> <input id="random_seed" name="random_seed" type="checkbox" checked> <label for="random_seed">Random Image</label></li>
                     <li><label for="num_outputs_total">Number of images to make:</label> <input id="num_outputs_total" name="num_outputs_total" value="1" size="4"> <label for="num_outputs_parallel">Generate in parallel:</label> <input id="num_outputs_parallel" name="num_outputs_parallel" value="1" size="4"> (images at once)</li>
-                    <li><label for="width">Width:</label> <select id="width" name="width" value="512"><option value="128">128</option><option value="256">256</option><option value="512" selected>512</option><option value="768">768</option><option value="1024">1024</option></select></li>
-                    <li><label for="height">Height:</label> <select id="height" name="height" value="512"><option value="128">128</option><option value="256">256</option><option value="512" selected>512</option><option value="768">768</option></select></li>
+                    <li><label for="width">Width:</label> 
+                        <select id="width" name="width" value="512">
+                            <option value="128">128 (*)</option>
+                            <option value="192">192</option>
+                            <option value="256">256 (*)</option>
+                            <option value="320">320</option>
+                            <option value="384">384</option>
+                            <option value="448">448</option>
+                            <option value="512" selected>512 (*)</option>
+                            <option value="576">576</option>
+                            <option value="640">640</option>
+                            <option value="704">704</option>
+                            <option value="768">768 (*)</option>
+                            <option value="832">832</option>
+                            <option value="896">896</option>
+                            <option value="960">960</option>
+                            <option value="1024">1024 (*)</option>
+                        </select>
+                    </li>
+                    <li><label for="height">Height:</label> 
+                        <select id="height" name="height" value="512">
+                            <option value="128">128 (*)</option>
+                            <option value="192">192</option>
+                            <option value="256">256 (*)</option>
+                            <option value="320">320</option>
+                            <option value="384">384</option>
+                            <option value="448">448</option>
+                            <option value="512" selected>512 (*)</option>
+                            <option value="576">576</option>
+                            <option value="640">640</option>
+                            <option value="704">704</option>
+                            <option value="768">768 (*)</option>
+                            <option value="832">832</option>
+                            <option value="896">896</option>
+                            <option value="960">960</option>
+                            <option value="1024">1024 (*)</option>
+                        </select>
+                    </li>
                     <li><label for="num_inference_steps">Number of inference steps:</label> <input id="num_inference_steps" name="num_inference_steps" size="4" value="50"></li>
                     <li><label for="guidance_scale">Guidance Scale:</label> <input id="guidance_scale" name="guidance_scale" value="75" type="range" min="10" max="200"> <span id="guidance_scale_value"></span></li>
                     <li><span id="prompt_strength_container"><label for="prompt_strength">Prompt Strength:</label> <input id="prompt_strength" name="prompt_strength" value="8" type="range" min="0" max="10"> <span id="prompt_strength_value"></span><br/></span></li>
