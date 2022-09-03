@@ -75,6 +75,6 @@ printf "\n\nStable Diffusion is ready!\n\n"
 
 export SD_UI_PATH=`pwd`/../ui
 
-uvicorn server:app --app-dir "%SD_UI_PATH%" --port 9000 --host 0.0.0.0
+uvicorn server:app --app-dir "$SD_UI_PATH" --port 9000 --host 0.0.0.0
 
 read -p "Press any key to continue"
