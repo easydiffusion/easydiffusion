@@ -23,6 +23,6 @@ fi
 
 cp -Rf sd-ui-files/ui ui
 cp -Rf sd-ui-files/scripts/* scripts/
-cp "scripts/Start Stable Diffusion UI.sh" .
+cp "scripts/start.sh" .
 
 ./scripts/on_sd_start.sh
