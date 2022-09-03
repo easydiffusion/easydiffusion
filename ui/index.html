@@ -551,7 +551,7 @@ async function doMakeImage(reqBody) {
 
         imgSaveBtn.addEventListener('click', function() {
             let imgDownload = document.createElement('a')
-            imgDownload.download = generateUUID() + '.png'
+            imgDownload.download = createFileName();
             imgDownload.href = imgBody
             imgDownload.click()
         })
@@ -656,20 +656,39 @@ async function makeImage() {
     }
 }
 
-function generateUUID() { // Public Domain/MIT
-    var d = new Date().getTime();//Timestamp
-    var d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now()*1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16;//random number between 0 and 16
-        if(d > 0){//Use timestamp until depleted
-            r = (d + r)%16 | 0;
-            d = Math.floor(d/16);
-        } else {//Use microseconds since page-load if supported
-            r = (d2 + r)%16 | 0;
-            d2 = Math.floor(d2/16);
-        }
-        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-    });
+// create a file name with embedded prompt and metadata
+// for easier cateloging and comparison
+function createFileName() {
+
+    // Most important information is the prompt
+    const underscoreName = promptField.value.replace(/[^a-zA-Z0-9]/g, '_');
+    const seed = seedField.value;
+    const steps = numInferenceStepsField.value;
+    const guidance =  guidanceScaleField.value; 
+
+    // name and the top level metadata
+    let fileName = `sd_${underscoreName}_Seed:${seed}_Steps:${steps}_Guidance:${guidance}`;
+
+    // add the tags
+    let tags = [];
+    let tagString = '';
+    document.querySelectorAll(modifyTagsSelector).forEach(function(tag) {
+        tags.push(tag.innerHTML);
+    })
+
+    // join the tags with a pipe
+    if (tags.length > 0) {
+        tagString = '_Tags:';
+        tagString += tags.join('|');
+    }
+
+    // append empty or populated tags
+    fileName += `${tagString}`;
+
+    // add the file extension
+    fileName += `.png`;
+
+    return fileName;
 }
 
 function handleAudioEnabledChange(e) {
