@@ -434,6 +434,7 @@ let serverStatusMsg = document.querySelector('#server-status-msg')
 
 let serverStatus = 'offline'
 let activeTags = []
+let lastPromptUsed = ''
 
 function getLocalStorageItem(key, fallback) {
     let item = localStorage.getItem(key)
@@ -564,6 +565,8 @@ async function doMakeImage(reqBody) {
     if (!res) {
         return false
     }
+
+    lastPromptUsed = reqBody['prompt']
 
     for (let idx in res.output) {
         let imgBody = ''
@@ -733,7 +736,7 @@ async function makeImage() {
 function createFileName() {
 
     // Most important information is the prompt
-    const underscoreName = promptField.value.replace(/[^a-zA-Z0-9]/g, '_');
+    const underscoreName = lastPromptUsed.replace(/[^a-zA-Z0-9]/g, '_');
     const seed = seedField.value;
     const steps = numInferenceStepsField.value;
     const guidance =  guidanceScaleField.value; 
@@ -742,20 +745,20 @@ function createFileName() {
     let fileName = `sd_${underscoreName}_Seed-${seed}_Steps-${steps}_Guidance-${guidance}`;
 
     // add the tags
-    let tags = [];
-    let tagString = '';
-    document.querySelectorAll(modifyTagsSelector).forEach(function(tag) {
-        tags.push(tag.innerHTML);
-    })
+    // let tags = [];
+    // let tagString = '';
+    // document.querySelectorAll(modifyTagsSelector).forEach(function(tag) {
+    //     tags.push(tag.innerHTML);
+    // })
 
     // join the tags with a pipe
-    if (tags.length > 0) {
-        tagString = '_Tags-';
-        tagString += tags.join('|');
-    }
+    // if (activeTags.length > 0) {
+    //     tagString = '_Tags-';
+    //     tagString += tags.join('|');
+    // }
 
-    // append empty or populated tags
-    fileName += `${tagString}`;
+    // // append empty or populated tags
+    // fileName += `${tagString}`;
 
     // add the file extension
     fileName += `.png`;
