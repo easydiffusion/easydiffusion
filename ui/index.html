@@ -739,7 +739,7 @@ function createFileName() {
     const guidance =  guidanceScaleField.value; 
 
     // name and the top level metadata
-    let fileName = `sd_${underscoreName}_Seed:${seed}_Steps:${steps}_Guidance:${guidance}`;
+    let fileName = `sd_${underscoreName}_Seed-${seed}_Steps-${steps}_Guidance-${guidance}`;
 
     // add the tags
     let tags = [];
@@ -750,7 +750,7 @@ function createFileName() {
 
     // join the tags with a pipe
     if (tags.length > 0) {
-        tagString = '_Tags:';
+        tagString = '_Tags-';
         tagString += tags.join('|');
     }
 
