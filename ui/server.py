@@ -62,8 +62,6 @@ def read_scripts():
 def read_styles():
     return FileResponse(os.path.join(SD_UI_DIR, 'dist/index.css'))
 
-
-
 @app.get('/ping')
 async def ping():
     global model_loaded, model_is_loading
