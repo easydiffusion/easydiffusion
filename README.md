@@ -47,8 +47,6 @@ Open http://localhost:9000 in your browser (after running step 3 previously).
 2. An optional text prompt can help you further describe the kind of image you want to generate.
 3. Press `Make Image`. See the image generated using your prompt.
 
-You can also set an `Image Mask` for telling Stable Diffusion to draw in only the black areas in your image mask. White areas in your mask will be ignored.
-
 **Pro tip:** You can also click `Use as Input` on a generated image, to use it as the input image for your next generation. This can be useful for sequentially refining the generated image with a single click.
 
 **Another tip:** Images with the same aspect ratio of your generated image work best. E.g. 1:1 if you're generating images sized 512x512.
