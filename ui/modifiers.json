@@ -20,6 +20,7 @@
       "16-bit",
       "Anaglyph",
       "Anime",
+      "Manga",
       "Cartoon",
       "CGI",
       "Comic Book",
@@ -88,6 +89,7 @@
     "Color",
     [
       "Beautiful Lighting",
+      "Dynamic Lighting",
       "Colorful",
       "Electric Colors",
       "Infrared",
@@ -100,11 +102,14 @@
     [
       "Angry",
       "Evil",
-      "Excited",
-      "Good",
+      "Fear",
       "Happy",
       "Lonely",
-      "Sad"
+      "Sad",
+      "Disgusted",
+      "Embarrassed",
+      "Surprised",
+      "Excited"
     ]
   ],
   [
@@ -121,20 +126,22 @@
       "by David Mann",
       "by Frida Kahlo",
       "by H.R. Giger",
-      "by Hayao Mizaki",
+      "by Hayao Miyazaki",
       "by Ivan Shishkin",
       "by Johannes Vermeer",
       "by Katsushika Hokusai",
       "by Ko Young Hoon",
-      "by Leonardo Da Vinci",
+      "by Leonardo da Vinci",
       "by Lisa Frank",
-      "by Mahmoud Sai",
+      "by Mahmoud Saïd",
       "by Mark Brooks",
       "by Pablo Picasso",
       "by Richard Dadd",
-      "by Salvador Dali",
+      "by Salvador Dalí",
       "by Tivadar Csontváry Kosztka",
-      "by Yoshitaka Amano"
+      "by Yoshitaka Amano",
+      "by John William Waterhouse",
+      "by Banksy"
     ]
   ]
 ]
