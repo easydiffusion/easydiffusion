@@ -43,10 +43,6 @@ class ImageRequest(BaseModel):
     use_cpu: bool = False
     use_full_precision: bool = False
 
-# @app.get('/')
-# def read_root():
-#     return FileResponse(os.path.join(SD_UI_DIR, 'index.html'))
-
 
 @app.get('/')
 def read_root():
