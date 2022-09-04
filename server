@@ -1,3 +1,0 @@
-#!/bin/bash
-
-echo "Please use 'docker-compose up &' to start the server, and 'docker-compose down' to stop the server"
