@@ -1,35 +1,38 @@
-# Stable Diffusion UI
-### A simple way to install and use [Stable Diffusion](https://replicate.com/stability-ai/stable-diffusion) on your own computer
+# Stable Diffusion UI - v2 (beta)
+### A simple way to install and use [Stable Diffusion](https://github.com/CompVis/stable-diffusion) on your own computer (Win 10/11, Linux). No dependencies or technical knowledge required.
 
 [![Discord Server](https://badgen.net/badge/icon/discord?icon=discord&label)](https://discord.com/invite/u9yhsFmEkB) (for support, and development discussion)
 
----
-
-# What does this do?
-Two things:
-1. Automatically downloads and installs Stable Diffusion on your own computer (no need to mess with conda or environments)
-2. Gives you a simple browser-based UI to talk to your local Stable Diffusion. Enter text prompts and view the generated image. No API keys required.
-
-All the processing will happen on your computer locally, it does not transmit your prompts or process on any remote server.
+# Features in the new v2 Version:
+- **No Dependencies or Technical Knowledge Required**: 1-click install for Windows 10/11 and Linux. *No dependencies*, no need for WSL or Docker or Conda or technical setup. Just download and run!
+- **Image Modifiers**: A library of *modifier tags* like *"Realistic"*, *"Pencil Sketch"*, *"ArtStation"* etc. Experiment with various styles quickly.
+- **New UI**: with cleaner design
+- Supports "*Text to Image*" and "*Image to Image*"
+- **NSFW Setting**: A setting in the UI to control *NSFW content*
+- **Use CPU setting**: If you don't have a compatible graphics card, but still want to run it on your CPU.
+- **Auto-updater**: Gets you the latest improvements and bug-fixes to a rapidly evolving project.
 
 ![Screenshot](media/shot-v8.jpg?raw=true)
 
-
 # System Requirements
-1. Computer capable of running Stable Diffusion.
-2. Linux or Windows 11 (with [WSL](https://docs.microsoft.com/en-us/windows/wsl/install)) or Windows 10 v2004+ (Build 19041+) with [WSL](https://docs.microsoft.com/en-us/windows/wsl/install).
-3. Requires (a) [Docker](https://docs.docker.com/engine/install/), (b) [docker-compose v1.29](https://docs.docker.com/compose/install/), and (c) [nvidia-container-toolkit](https://stackoverflow.com/a/58432877).
+1. Windows 10/11, or Linux. Experimental support for Mac is coming soon.
+2. An NVIDIA graphics card, preferably with 6GB or more of VRAM. But if you don't have a compatible graphics card, you can still use it with a "Use CPU" setting. It'll be very slow, but it should still work.
 
-**Important:** If you're using Windows, please install docker inside your [WSL](https://docs.microsoft.com/en-us/windows/wsl/install)'s Linux. Install docker for the Linux distro in your WSL. **Don't install Docker for Windows.**
+You do not need anything else. You do not need WSL, Docker or Conda. The installer will take care of it.
 
 # Installation
-1. Clone this repository: `git clone https://github.com/cmdr2/stable-diffusion-ui.git` or [download the zip file](https://github.com/cmdr2/stable-diffusion-ui/archive/refs/heads/main.zip) and unzip.
-2. Open your terminal, and in the project directory run: `docker-compose up &` (warning: this will take some time during the first run, since it'll download Stable Diffusion's [docker image](https://replicate.com/stability-ai/stable-diffusion), nearly 17 GiB)
-3. Open http://localhost:9000 in your browser. That's it!
+1. Download [for Windows](https://drive.google.com/file/d/1MY5gzsQHV_KREbYs3gw33QL4gGIlQRqj/view?usp=sharing) or [for Linux](https://drive.google.com/file/d/1Gwz1LVQUCart8HhCjrmXkS6TWKbTsLsR/view?usp=sharing) (this will be hosted on GitHub in the future).
 
-If you're getting errors, please check the [Troubleshooting](https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting) page.
+2. Extract:
+  - For Windows: After unzipping the file, please move the `stable-diffusion-ui` folder to your `C:` (or any drive like D: at the top root level). For e.g. `C:\stable-diffusion-ui`. This will avoid a common problem with Windows (of file path length limits).
+  - For Linux: After extracting the .tar.xz file, please open a terminal, and go to the `stable-diffusion-ui` directory.
 
-To stop the server, please run `docker-compose down`
+3. Run:
+  - For Windows: `Start Stable Diffusion UI.cmd` by double-clicking it.
+  - For Linux: In the terminal, run `./start.sh` (or `bash start.sh`)
+
+This will automatically install Stable Diffusion, set it up, and start the interface. No additional steps are needed.
+
 
 # Usage
 Open http://localhost:9000 in your browser (after running `docker-compose up &` from step 2 previously).
@@ -58,18 +61,20 @@ You can also set the configuration like `seed`, `width`, `height`, `num_outputs`
 
 Use the same `seed` number to get the same image for a certain prompt. This is useful for refining a prompt without losing the basic image design. Enable the `random images` checkbox to get random images.
 
-![Screenshot of advanced settings](media/config-v4.jpg?raw=true)
+![Screenshot of advanced settings](media/config-v5.jpg?raw=true)
 
 # Troubleshooting
-The [Troubleshooting wiki page](https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting) contains some common errors and their solutions. Please check that, and if it doesn't work, feel free to [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues).
+The [Troubleshooting wiki page](https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting) contains some common errors and their solutions. Please check that, and if it doesn't work, feel free to ask on the [discord server](https://discord.com/invite/u9yhsFmEkB) or [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues).
 
-# Behind the scenes
-This project is a quick way to get started with Stable Diffusion. You do not need to have Stable Diffusion already installed, and do not need any API keys. This project will automatically download Stable Diffusion's docker image, the first time it is run.
+# What is this? Why no Docker?
+This version is a 1-click installer. You don't need WSL or Docker or anything beyond a working NVIDIA GPU with an updated driver. You don't need to use the command-line at all.
 
-This project runs Stable Diffusion in a docker container behind the scenes, using Stable Diffusion's [Docker image](https://replicate.com/stability-ai/stable-diffusion) on replicate.com.
+It'll download the necessary files from the original [Stable Diffusion](https://github.com/CompVis/stable-diffusion) git repository, and set it up. It'll then start the browser-based interface like before.
+
+The NSFW option is currently off (temporarily), so it'll allow NSFW images, for those people who are unable to run their prompts without hitting the NSFW filter incorrectly.
 
 # Bugs reports and code contributions welcome
-If there are any problems or suggestions, please feel free to [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues).
+If there are any problems or suggestions, please feel free to ask on the [discord server](https://discord.com/invite/u9yhsFmEkB) or [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues).
 
 Also, please feel free to submit a pull request, if you have any code contributions in mind. Join the [discord server](https://discord.com/invite/u9yhsFmEkB) for development-related discussions, and for helping other users.
 
