@@ -1,92 +1,140 @@
 [
-    ["Drawing Style", [
-        "Sketch",
-        "Doodle",
-        "Children's Drawing",
-        "Line Art",
-        "Dot Art",
-        "Crosshatch",
-        "Detailed and Intricate",
-        "Cel Shading"
-    ]],
-    ["Visual Style", [
-        "2D",
-        "Cartoon",
-        "8-bit",
-        "16-bit",
-        "Graphic Novel",
-        "Visual Novel",
-        "Street Art",
-        "Fantasy",
-        "Realistic",
-        "Photo",
-        "Hard Edge Painting",
-        "Mural",
-        "Mosaic",
-        "Hydrodipped",
-        "Modern Art",
-        "Concept Art",
-        "Digital Art",
-        "CGI",
-        "Anaglyph",
-        "Comic Book",
-        "Lithography"
-    ]],
-    ["Pen", [
-        "Graphite",
-        "Colored Pencil",
-        "Ink",
-        "Chalk",
-        "Pastel Art",
-        "Oil Paint"
-    ]],
-    ["Carving and Etching", [
-        "Etching",
-        "Wood-Carving",
-        "Papercutting",
-        "Paper-Mache",
-        "Paper Model",
-        "Linocut",
-        "Pyrography"
-    ]],
-    ["Camera", [
-        "HD",
-        "Color Grading",
-        "Film Grain",
-        "White Balance",
-        "Golden Hour",
-        "Glamor Shot",
-        "War Photography",
-        "Lens Flare",
-        "Polaroid",
-        "Vintage"
-    ]],
-    ["Color", [
-        "Colorful",
-        "Electric Colors",
-        "Warm Color Palette",
-        "Infrared",
-        "Beautiful Lighting"
-    ]],
-    ["Emotions", [
-        "Happy",
-        "Excited",
-        "Sad",
-        "Lonely",
-        "Angry",
-        "Good",
-        "Evil"
-    ]],
-    ["Style of an artist or community", [
-        "by Andy Warhol",
-        "Artstation",
-        "by Asaf Hanuka",
-        "by Aubrey Beardsley",
-        "by H.R. Giger",
-        "by Hayao Mizaki",
-        "by Salvador Dali",
-        "by Tivadar Csontváry Kosztka",
-        "by Lisa Frank",
-        "by Pablo Piccaso"
-    ]]
+  [
+    "Drawing Style",
+    [
+      "Cel Shading",
+      "Children's Drawing",
+      "Crosshatch",
+      "Detailed and Intricate",
+      "Doodle",
+      "Dot Art",
+      "Line Art",
+      "Sketch"
+    ]
+  ],
+  [
+    "Visual Style",
+    [
+      "2D",
+      "8-bit",
+      "16-bit",
+      "Anaglyph",
+      "Anime",
+      "Cartoon",
+      "CGI",
+      "Comic Book",
+      "Concept Art",
+      "Digital Art",
+      "Fantasy",
+      "Graphic Novel",
+      "Hard Edge Painting",
+      "Hydrodipped",
+      "Lithography",
+      "Modern Art",
+      "Mosaic",
+      "Mural",
+      "Photo",
+      "Realistic",
+      "Street Art",
+      "Visual Novel",
+      "Watercolor"
+    ]
+  ],
+  [
+    "Pen",
+    [
+      "Chalk",
+      "Colored Pencil",
+      "Graphite",
+      "Ink",
+      "Oil Paint",
+      "Pastel Art"
+    ]
+  ],
+  [
+    "Carving and Etching",
+    [
+      "Etching",
+      "Linocut",
+      "Paper Model",
+      "Paper-Mache",
+      "Papercutting",
+      "Pyrography",
+      "Wood-Carving"
+    ]
+  ],
+  [
+    "Camera",
+    [
+      "Aerial View",
+      "Cinematic",
+      "Color Grading",
+      "Dramatic",
+      "Film Grain",
+      "Fisheye Lens",
+      "Glamor Shot",
+      "Golden Hour",
+      "HD",
+      "Lens Flare",
+      "Macro",
+      "Polaroid",
+      "Vintage",
+      "War Photography",
+      "White Balance",
+      "Wildlife Photography"
+    ]
+  ],
+  [
+    "Color",
+    [
+      "Beautiful Lighting",
+      "Colorful",
+      "Electric Colors",
+      "Infrared",
+      "Synthwave",
+      "Warm Color Palette"
+    ]
+  ],
+  [
+    "Emotions",
+    [
+      "Angry",
+      "Evil",
+      "Excited",
+      "Good",
+      "Happy",
+      "Lonely",
+      "Sad"
+    ]
+  ],
+  [
+    "Style of an artist or community",
+    [
+      "Artstation",
+      "by Agnes Lawrence Pelton",
+      "by Akihito Yoshida",
+      "by Andy Warhol",
+      "by Asaf Hanuka",
+      "by Aubrey Beardsley",
+      "by Ben Enwonwu",
+      "by Caravaggio Michelangelo Merisi",
+      "by David Mann",
+      "by Frida Kahlo",
+      "by H.R. Giger",
+      "by Hayao Mizaki",
+      "by Ivan Shishkin",
+      "by Johannes Vermeer",
+      "by Katsushika Hokusai",
+      "by Ko Young Hoon",
+      "by Leonardo Da Vinci",
+      "by Lisa Frank",
+      "by Mahmoud Sai",
+      "by Mark Brooks",
+      "by Pablo Picasso",
+      "by Richard Dadd",
+      "by Salvador Dali",
+      "by Tivadar Csontváry Kosztka",
+      "by Yoshitaka Amano"
+    ]
+  ]
 ]
