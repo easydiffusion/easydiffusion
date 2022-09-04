@@ -35,7 +35,7 @@ This will automatically install Stable Diffusion, set it up, and start the inter
 
 
 # Usage
-Open http://localhost:9000 in your browser (after running `docker-compose up &` from step 2 previously).
+Open http://localhost:9000 in your browser (after running step 3 previously).
 
 ## With a text description
 1. Enter a text prompt, like `a photograph of an astronaut riding a horse` in the textbox.
