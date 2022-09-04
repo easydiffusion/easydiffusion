@@ -43,9 +43,26 @@ class ImageRequest(BaseModel):
     use_cpu: bool = False
     use_full_precision: bool = False
 
+# @app.get('/')
+# def read_root():
+#     return FileResponse(os.path.join(SD_UI_DIR, 'index.html'))
+
+
 @app.get('/')
 def read_root():
-    return FileResponse(os.path.join(SD_UI_DIR, 'index.html'))
+    return FileResponse(os.path.join(SD_UI_DIR, 'dist/index.html'))
+
+# then get the js files
+@app.get('/index.js')
+def read_scripts():
+    return FileResponse(os.path.join(SD_UI_DIR, 'dist/index.js'))
+
+#then get the css files
+@app.get('/index.css')
+def read_styles():
+    return FileResponse(os.path.join(SD_UI_DIR, 'dist/index.css'))
+
+
 
 @app.get('/ping')
 async def ping():
@@ -102,10 +119,14 @@ async def image(req : ImageRequest):
         print(traceback.format_exc())
         return HTTPException(status_code=500, detail=str(e))
 
+
+# probably want to move this to the public folder
+# since it is a part of the front end code
 @app.get('/media/ding.mp3')
 def read_ding():
     return FileResponse(os.path.join(SD_UI_DIR, 'media/ding.mp3'))
 
+#same for the modifiers
 @app.get('/modifiers.json')
 def read_modifiers():
     return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'))
