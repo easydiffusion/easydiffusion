@@ -73,7 +73,11 @@ fi
 
 printf "\n\nStable Diffusion is ready!\n\n"
 
-export SD_UI_PATH=`pwd`/../ui
+cd ..
+
+export SD_UI_PATH=`pwd`/ui
+
+cd stable-diffusion
 
 uvicorn server:app --app-dir "$SD_UI_PATH" --port 9000 --host 0.0.0.0
 

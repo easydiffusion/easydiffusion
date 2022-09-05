@@ -97,7 +97,9 @@
 
 @echo. & echo "Stable Diffusion is ready!" & echo.
 
-@set SD_UI_PATH=%cd%\..\ui
+@cd ..
+@set SD_UI_PATH=%cd%\ui
+@cd stable-diffusion
 
 @uvicorn server:app --app-dir "%SD_UI_PATH%" --port 9000 --host 0.0.0.0
 
