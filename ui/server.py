@@ -104,6 +104,10 @@ async def image(req : ImageRequest):
 def read_ding():
     return FileResponse(os.path.join(SD_UI_DIR, 'media/ding.mp3'))
 
+@app.get('/media/kofi.png')
+def read_modifiers():
+    return FileResponse(os.path.join(SD_UI_DIR, 'media/kofi.png'))
+
 @app.get('/modifiers.json')
 def read_modifiers():
     return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'))
