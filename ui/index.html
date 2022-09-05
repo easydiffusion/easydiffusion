@@ -339,7 +339,7 @@
                     <li><label for="guidance_scale">Guidance Scale:</label> <input id="guidance_scale" name="guidance_scale" value="75" type="range" min="10" max="200"> <span id="guidance_scale_value"></span></li>
                     <li><span id="prompt_strength_container"><label for="prompt_strength">Prompt Strength:</label> <input id="prompt_strength" name="prompt_strength" value="8" type="range" min="0" max="10"> <span id="prompt_strength_value"></span><br/></span></li>
                     <li>&nbsp;</li>
-                    <li><input id="save_to_disk" name="save_to_disk" type="checkbox"> <label for="save_to_disk">Automatically save to disk <span id="diskPath"></span></label></li>
+                    <li><input id="save_to_disk" name="save_to_disk" type="checkbox"> <label for="save_to_disk">Automatically save to <input id="diskPath" name="diskPath" size="40" disabled></label></li>
                     <li><input id="sound_toggle" name="sound_toggle" type="checkbox" checked> <label for="sound_toggle">Play sound on task completion</label></li>
                     <li><input id="turbo" name="turbo" type="checkbox" checked> <label for="turbo">Turbo mode (generates images faster, but uses an additional 1 GB of GPU memory)</label></li>
                     <li><input id="use_cpu" name="use_cpu" type="checkbox"> <label for="use_cpu">Use CPU instead of GPU (warning: this will be *very* slow)</label></li>
@@ -382,6 +382,7 @@ const SOUND_ENABLED_KEY = "soundEnabled"
 const USE_CPU_KEY = "useCPU"
 const USE_FULL_PRECISION_KEY = "useFullPrecision"
 const USE_TURBO_MODE_KEY = "useTurboMode"
+const DISK_PATH_KEY = "diskPath"
 const HEALTH_PING_INTERVAL = 5 // seconds
 const MAX_INIT_IMAGE_DIMENSION = 768
 
@@ -405,6 +406,7 @@ let turboField = document.querySelector('#turbo')
 let useCPUField = document.querySelector('#use_cpu')
 let useFullPrecisionField = document.querySelector('#use_full_precision')
 let saveToDiskField = document.querySelector('#save_to_disk')
+let diskPathField = document.querySelector('#diskPath')
 // let allowNSFWField = document.querySelector("#allow_nsfw")
 let promptStrengthField = document.querySelector('#prompt_strength')
 let promptStrengthValueLabel = document.querySelector('#prompt_strength_value')
@@ -463,6 +465,12 @@ function handleBoolSettingChange(key) {
     }
 }
 
+function handleStringSettingChange(key) {
+    return function(e) {
+        localStorage.setItem(key, e.target.value.toString())
+    }
+}
+
 function isSoundEnabled() {
     return getLocalStorageBoolItem(SOUND_ENABLED_KEY, true)
 }
@@ -477,6 +485,10 @@ function isUseFullPrecisionEnabled() {
 
 function isUseTurboModeEnabled() {
     return getLocalStorageBoolItem(USE_TURBO_MODE_KEY, true)
+}
+
+function getSavedDiskPath() {
+    return getLocalStorageItem(DISK_PATH_KEY, '')
 }
 
 function setStatus(statusType, msg, msgType) {
@@ -728,7 +740,6 @@ async function makeImage() {
         width: widthField.value,
         height: heightField.value,
         // allow_nsfw: allowNSFWField.checked,
-        save_to_disk: saveToDiskField.checked,
         turbo: turboField.checked,
         use_cpu: useCPUField.checked,
         use_full_precision: useFullPrecisionField.checked
@@ -741,6 +752,10 @@ async function makeImage() {
         // if (IMAGE_REGEX.test(maskImagePreview.src)) {
         //     reqBody['mask'] = maskImagePreview.src
         // }
+    }
+
+    if (saveToDiskField.checked && diskPathField.value.trim() !== '') {
+        reqBody['save_to_disk_path'] = diskPathField.value.trim()
     }
 
     let time = new Date().getTime()
@@ -827,6 +842,12 @@ useFullPrecisionField.checked = isUseFullPrecisionEnabled()
 
 turboField.addEventListener('click', handleBoolSettingChange(USE_TURBO_MODE_KEY))
 turboField.checked = isUseTurboModeEnabled()
+
+diskPathField.addEventListener('change', handleStringSettingChange(DISK_PATH_KEY))
+
+saveToDiskField.addEventListener('click', function() {
+    diskPathField.disabled = !this.checked
+})
 
 makeImageBtn.addEventListener('click', makeImage)
 
@@ -986,12 +1007,19 @@ function refreshTagsList() {
 
 async function getDiskPath() {
     try {
+        let diskPath = getSavedDiskPath()
+
+        if (diskPath !== '') {
+            diskPathField.value = diskPath
+            return
+        }
+
         let res = await fetch('/output_dir')
         if (res.status === 200) {
             res = await res.json()
             res = res[0]
 
-            document.querySelector('#diskPath').innerHTML = '(to ' + res + ')'
+            document.querySelector('#diskPath').value = res
         }
     } catch (e) {
         console.log('error fetching output dir path', e)
