@@ -1,5 +1,10 @@
-# Stable Diffusion UI - v2 (beta)
-### A simple 1-click way to install and use [Stable Diffusion](https://github.com/CompVis/stable-diffusion) on your own computer (Win 10/11, Linux). No dependencies or technical knowledge required.
+# Stable Diffusion UI v2
+### A simple 1-click way to install and use [Stable Diffusion](https://github.com/CompVis/stable-diffusion) on your own computer. No dependencies or technical knowledge required.
+
+<p float="left">
+  <a href="#installation"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/develop/media/download-win.png" width="200" /></a>
+  <a href="#installation"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/develop/media/download-linux.png" width="200" /></a>
+</p>
 
 [![Discord Server](https://badgen.net/badge/icon/discord?icon=discord&label)](https://discord.com/invite/u9yhsFmEkB) (for support, and development discussion)
 
@@ -21,13 +26,13 @@
 You do not need anything else. You do not need WSL, Docker or Conda. The installer will take care of it.
 
 # Installation
-1. Download [for Windows](https://drive.google.com/file/d/1MY5gzsQHV_KREbYs3gw33QL4gGIlQRqj/view?usp=sharing) or [for Linux](https://drive.google.com/file/d/1Gwz1LVQUCart8HhCjrmXkS6TWKbTsLsR/view?usp=sharing) (this will be hosted on GitHub in the future).
+1. **Download** [for Windows](https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.05/stable-diffusion-ui-win64.zip) or [for Linux](https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.05/stable-diffusion-ui-linux.tar.xz).
 
-2. Extract:
+2. **Extract**:
   - For Windows: After unzipping the file, please move the `stable-diffusion-ui` folder to your `C:` (or any drive like D: at the top root level). For e.g. `C:\stable-diffusion-ui`. This will avoid a common problem with Windows (of file path length limits).
   - For Linux: After extracting the .tar.xz file, please open a terminal, and go to the `stable-diffusion-ui` directory.
 
-3. Run:
+3. **Run**:
   - For Windows: `Start Stable Diffusion UI.cmd` by double-clicking it.
   - For Linux: In the terminal, run `./start.sh` (or `bash start.sh`)
 
