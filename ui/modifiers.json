@@ -15,14 +15,13 @@
   [
     "Visual Style",
     [
+      "16-bit",
       "2D",
       "8-bit",
-      "16-bit",
       "Anaglyph",
       "Anime",
-      "Manga",
-      "Cartoon",
       "CGI",
+      "Cartoon",
       "Comic Book",
       "Concept Art",
       "Digital Art",
@@ -31,6 +30,7 @@
       "Hard Edge Painting",
       "Hydrodipped",
       "Lithography",
+      "Manga",
       "Modern Art",
       "Mosaic",
       "Mural",
@@ -68,7 +68,9 @@
     "Camera",
     [
       "Aerial View",
+      "Canon50",
       "Cinematic",
+      "Close-up",
       "Color Grading",
       "Dramatic",
       "Film Grain",
@@ -89,8 +91,8 @@
     "Color",
     [
       "Beautiful Lighting",
-      "Dynamic Lighting",
       "Colorful",
+      "Dynamic Lighting",
       "Electric Colors",
       "Infrared",
       "Synthwave",
@@ -101,15 +103,15 @@
     "Emotions",
     [
       "Angry",
+      "Disgusted",
+      "Embarrassed",
       "Evil",
+      "Excited",
       "Fear",
       "Happy",
       "Lonely",
       "Sad",
-      "Disgusted",
-      "Embarrassed",
-      "Surprised",
-      "Excited"
+      "Surprised"
     ]
   ],
   [
@@ -119,8 +121,10 @@
       "by Agnes Lawrence Pelton",
       "by Akihito Yoshida",
       "by Andy Warhol",
+      "by Artgerm",
       "by Asaf Hanuka",
       "by Aubrey Beardsley",
+      "by Banksy",
       "by Ben Enwonwu",
       "by Caravaggio Michelangelo Merisi",
       "by David Mann",
@@ -129,6 +133,7 @@
       "by Hayao Miyazaki",
       "by Ivan Shishkin",
       "by Johannes Vermeer",
+      "by John William Waterhouse",
       "by Katsushika Hokusai",
       "by Ko Young Hoon",
       "by Leonardo da Vinci",
@@ -140,8 +145,7 @@
       "by Salvador Dalí",
       "by Tivadar Csontváry Kosztka",
       "by Yoshitaka Amano",
-      "by John William Waterhouse",
-      "by Banksy"
+      "by wlop"
     ]
   ]
 ]
