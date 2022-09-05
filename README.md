@@ -1,6 +1,11 @@
 # Stable Diffusion UI - v2 (beta)
 ### A simple 1-click way to install and use [Stable Diffusion](https://github.com/CompVis/stable-diffusion) on your own computer (Win 10/11, Linux). No dependencies or technical knowledge required.
 
+<p float="left">
+  <a href="#installation"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/develop/media/download-win.png" width="200" /></a>
+  <a href="#installation"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/develop/media/download-linux.png" width="200" /></a>
+</p>
+
 [![Discord Server](https://badgen.net/badge/icon/discord?icon=discord&label)](https://discord.com/invite/u9yhsFmEkB) (for support, and development discussion)
 
 # Features in the new v2 Version:
