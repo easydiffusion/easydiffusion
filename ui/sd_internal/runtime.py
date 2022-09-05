@@ -1,4 +1,5 @@
 import os, re
+import traceback
 import torch
 import numpy as np
 from omegaconf import OmegaConf
@@ -28,7 +29,7 @@ import base64
 from io import BytesIO
 
 # local
-session_id = str(uuid.uuid4())
+session_id = str(uuid.uuid4())[-8:]
 
 ckpt = None
 model = None
@@ -188,7 +189,7 @@ def mk_img(req: Request):
         print(f"target t_enc is {t_enc} steps")
 
     if opt_save_to_disk_path is not None:
-        session_out_path = os.path.join(opt_save_to_disk_path, 'session-' + session_id)
+        session_out_path = os.path.join(opt_save_to_disk_path, session_id)
         os.makedirs(session_out_path, exist_ok=True)
     else:
         session_out_path = None
@@ -197,9 +198,6 @@ def mk_img(req: Request):
     with torch.no_grad():
         for n in trange(opt_n_iter, desc="Sampling"):
             for prompts in tqdm(data, desc="data"):
-
-                if opt_save_to_disk_path is not None:
-                    base_count = len(os.listdir(session_out_path))
 
                 with precision_scope("cuda"):
                     modelCS.to(device)
@@ -242,19 +240,23 @@ def mk_img(req: Request):
                         res.images.append(ResponseImage(data=img_data, seed=opt_seed))
 
                         if opt_save_to_disk_path is not None:
-                            prompt_flattened = "_".join(re.split(":| ", prompts[0]))
-                            prompt_flattened = prompt_flattened[:150]
+                            try:
+                                prompt_flattened = "_".join(re.split(":| ", prompts[0]))
+                                prompt_flattened = prompt_flattened.replace(',', '')
+                                prompt_flattened = prompt_flattened[:50]
 
-                            file_path = f"sd_{prompt_flattened}_Seed-{opt_seed}_Steps-{opt_ddim_steps}_Guidance-{opt_scale}_{base_count:05}"
-                            img_out_path = os.path.join(session_out_path, f"{file_path}.{opt_format}")
-                            meta_out_path = os.path.join(session_out_path, f"{file_path}.txt")
+                                img_id = str(uuid.uuid4())[-8:]
 
-                            metadata = f"{prompts[0]}\nSeed: {opt_seed}\nSteps: {opt_ddim_steps}\nGuidance Scale: {opt_scale}"
-                            img.save(img_out_path)
-                            with open(meta_out_path, 'w') as f:
-                                f.write(metadata)
+                                file_path = f"{prompt_flattened}_{img_id}"
+                                img_out_path = os.path.join(session_out_path, f"{file_path}.{opt_format}")
+                                meta_out_path = os.path.join(session_out_path, f"{file_path}.txt")
 
-                            base_count += 1
+                                metadata = f"{prompts[0]}\nWidth: {opt_W}\nHeight: {opt_H}\nSeed: {opt_seed}\nSteps: {opt_ddim_steps}\nGuidance Scale: {opt_scale}"
+                                img.save(img_out_path)
+                                with open(meta_out_path, 'w') as f:
+                                    f.write(metadata)
+                            except:
+                                print('could not save the file', traceback.format_exc())
 
                         seeds += str(opt_seed) + ","
                         opt_seed += 1
