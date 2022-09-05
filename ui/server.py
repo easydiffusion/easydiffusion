@@ -38,7 +38,7 @@ class ImageRequest(BaseModel):
     seed: int = 42
     prompt_strength: float = 0.8
     # allow_nsfw: bool = False
-    save_to_disk: bool = False
+    save_to_disk_path: str = None
     turbo: bool = True
     use_cpu: bool = False
     use_full_precision: bool = False
@@ -90,9 +90,7 @@ async def image(req : ImageRequest):
     r.turbo = req.turbo
     r.use_cpu = req.use_cpu
     r.use_full_precision = req.use_full_precision
-
-    if req.save_to_disk:
-        r.save_to_disk_path = outpath
+    r.save_to_disk_path = req.save_to_disk_path
 
     try:
         res: Response = runtime.mk_img(r)
