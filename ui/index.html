@@ -265,7 +265,7 @@
                     <div id="server-status-color">&nbsp;</div>
                     <span id="server-status-msg">Stable Diffusion is starting..</span>
                 </div>
-                <h1>Stable Diffusion UI <small>v2.05 (beta)</small></h1>
+                <h1>Stable Diffusion UI <small>v2.06 (beta)</small></h1>
             </div>
             <div id="editor-inputs">
                 <div id="editor-inputs-prompt" class="row">
@@ -383,6 +383,9 @@ const USE_CPU_KEY = "useCPU"
 const USE_FULL_PRECISION_KEY = "useFullPrecision"
 const USE_TURBO_MODE_KEY = "useTurboMode"
 const HEALTH_PING_INTERVAL = 5 // seconds
+const MAX_INIT_IMAGE_DIMENSION = 768
+
+const IMAGE_REGEX = new RegExp('data:image/[A-Za-z]+;base64')
 
 let promptField = document.querySelector('#prompt')
 let numOutputsTotalField = document.querySelector('#num_outputs_total')
@@ -495,8 +498,21 @@ function setStatus(statusType, msg, msgType) {
     }
 }
 
+function logMsg(msg, level) {
+    if (level === 'error') {
+        outputMsg.innerHTML = '<span style="color: red">Error: ' + msg + '</span>'
+    } else if (level === 'warn') {
+        outputMsg.innerHTML = '<span style="color: orange">Warning: ' + msg + '</span>'
+    } else {
+        outputMsg.innerHTML = msg
+    }
+
+    console.log(level, msg)
+}
+
 function logError(msg, res) {
-    outputMsg.innerHTML = '<span style="color: red">Error: ' + msg + '</span>'
+    logMsg(msg, 'error')
+
     console.log('request error', res)
     setStatus('request', 'error', 'error')
 }
@@ -550,6 +566,15 @@ async function doMakeImage(reqBody) {
                 let msg = ''
                 if (res.detail !== undefined) {
                     msg = res.detail
+
+                    if (msg.toLowerCase().includes('out of memory')) {
+                        msg += `<br/><br/>
+                                <b>Suggestions</b>:
+                                <br/>
+                                1. If you have set an initial image, please try reducing its dimension to ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION} or smaller.<br/>
+                                2. Try disabling the '<em>Turbo mode</em>' under '<em>Advanced Settings</em>'.<br/>
+                                3. Try generating a smaller image.<br/>`
+                    }
                 } else {
                     msg = res
                 }
@@ -643,10 +668,37 @@ async function doMakeImage(reqBody) {
     return true
 }
 
+function validateInput() {
+    let width = parseInt(widthField.value)
+    let height = parseInt(heightField.value)
+
+    if (IMAGE_REGEX.test(initImagePreview.src)) {
+        if (initImagePreview.naturalWidth > MAX_INIT_IMAGE_DIMENSION || initImagePreview.naturalHeight > MAX_INIT_IMAGE_DIMENSION) {
+            return {'isValid': false, 'warning': `The dimensions of your initial image are very large, and can cause 'Out of Memory' errors! Please ensure that its dimensions are equal (or smaller) than the desired output image.
+                    <br/><br/>
+                    Your initial image size is ${initImagePreview.naturalWidth}x${initImagePreview.naturalHeight} pixels. Please try to keep it smaller than ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION}.`}
+        }
+    }
+
+    return {'isValid': true}
+}
+
 async function makeImage() {
     if (serverStatus !== 'online') {
         logError('The server is still starting up..')
         return
+    }
+
+    let validation = validateInput()
+    if (validation['isValid']) {
+        outputMsg.innerHTML = 'Fetching..'
+    } else {
+        if (validation['error']) {
+            logError(validation['error'])
+            return
+        } else if (validation['warning']) {
+            logMsg(validation['warning'], 'warn')
+        }
     }
 
     setStatus('request', 'fetching..')
@@ -654,9 +706,6 @@ async function makeImage() {
     makeImageBtn.innerHTML = 'Processing..'
     makeImageBtn.disabled = true
 
-    outputMsg.innerHTML = 'Fetching..'
-
-    const imageRegex = new RegExp('data:image/[A-Za-z]+;base64')
     let seed = (randomSeedField.checked ? Math.floor(Math.random() * 10000) : parseInt(seedField.value))
     let numOutputsTotal = parseInt(numOutputsTotalField.value)
     let numOutputsParallel = parseInt(numOutputsParallelField.value)
@@ -685,11 +734,11 @@ async function makeImage() {
         use_full_precision: useFullPrecisionField.checked
     }
 
-    if (imageRegex.test(initImagePreview.src)) {
+    if (IMAGE_REGEX.test(initImagePreview.src)) {
         reqBody['init_image'] = initImagePreview.src
         reqBody['prompt_strength'] = parseInt(promptStrengthField.value) / 10
 
-        // if (imageRegex.test(maskImagePreview.src)) {
+        // if (IMAGE_REGEX.test(maskImagePreview.src)) {
         //     reqBody['mask'] = maskImagePreview.src
         // }
     }
