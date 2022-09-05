@@ -383,6 +383,7 @@ const USE_CPU_KEY = "useCPU"
 const USE_FULL_PRECISION_KEY = "useFullPrecision"
 const USE_TURBO_MODE_KEY = "useTurboMode"
 const HEALTH_PING_INTERVAL = 5 // seconds
+const MAX_INIT_IMAGE_DIMENSION = 768
 
 const IMAGE_REGEX = new RegExp('data:image/[A-Za-z]+;base64')
 
@@ -565,6 +566,15 @@ async function doMakeImage(reqBody) {
                 let msg = ''
                 if (res.detail !== undefined) {
                     msg = res.detail
+
+                    if (msg.toLowerCase().includes('out of memory')) {
+                        msg += `<br/><br/>
+                                <b>Suggestions</b>:
+                                <br/>
+                                1. If you have set an initial image, please try reducing its dimension to ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION} or smaller.<br/>
+                                2. Try disabling the '<em>Turbo mode</em>' under '<em>Advanced Settings</em>'.<br/>
+                                3. Try generating a smaller image.<br/>`
+                    }
                 } else {
                     msg = res
                 }
@@ -659,8 +669,6 @@ async function doMakeImage(reqBody) {
 }
 
 function validateInput() {
-    const MAX_INIT_IMAGE_DIMENSION = 768
-
     let width = parseInt(widthField.value)
     let height = parseInt(heightField.value)
 
