@@ -77,7 +77,7 @@ export const useQueueStore = defineStore('queue', () => {
     };
 
     const imageFilename = await generateImage(buildMergeImgWithConfigs(first.value, configParams));
-
+    console.log('imageFilename', imageFilename);
     first.value.imageUrl = `${API_URL}/ai-images/data/file/${imageFilename}`;
     first.value.imageFilename = imageFilename;
     first.value.createdAt = Date.now();

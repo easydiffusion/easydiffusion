@@ -44,7 +44,12 @@ export const generateImage = async (data: GeneratedImageData) => {
       },
       body: JSON.stringify(buildGenerateImagePayload(data)),
     })
-    const responseData: GenerateImageResponseType = await response.json()
+
+    console.log('generateImage response', response);
+    const responseData: GenerateImageResponseType = await response.json();
+    // console.log('responseData', responseData);
+    console.log('responseData.output', responseData.output[0].data);
+
     const imageUrl = responseData.filename;
     return imageUrl;
   } catch (error) {
