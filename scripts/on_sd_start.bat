@@ -1,4 +1,4 @@
-@set cmd_had_error=F
+@echo off
 
 @>nul grep -c "sd_git_cloned" scripts\install_status.txt
 @if "%ERRORLEVEL%" EQU "0" (
@@ -16,10 +16,6 @@
     @call git clone https://github.com/basujindal/stable-diffusion.git && (
         @echo sd_git_cloned >> scripts\install_status.txt
     ) || (
-        @set cmd_had_error=T
-    )
-
-    if "%cmd_had_error%"=="T" (
         @echo "Error downloading Stable Diffusion. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues"
         pause
         @exit /b
@@ -39,10 +35,6 @@
     @call conda env create --prefix env -f environment.yaml && (
         @echo conda_sd_env_created >> ..\scripts\install_status.txt
     ) || (
-        @set cmd_had_error=T
-    )
-
-    if "%cmd_had_error%"=="T" (
         echo "Error installing the packages necessary for Stable Diffusion. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues"
         pause
         exit /b
@@ -60,14 +52,6 @@
     @call conda install -c conda-forge -y --prefix env uvicorn fastapi && (
         @echo conda_sd_ui_deps_installed >> ..\scripts\install_status.txt
     ) || (
-        @set cmd_had_error=T
-    )
-
-    if "%ERRORLEVEL%" NEQ "0" (
-        @set cmd_had_error=T
-    )
-
-    if "%cmd_had_error%"=="T" (
         echo "Error installing the packages necessary for Stable Diffusion UI. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues"
         pause
         exit /b
@@ -75,14 +59,28 @@
 )
 
 @if exist "sd-v1-4.ckpt" (
-    echo "Data files (weights) necessary for Stable Diffusion were already downloaded"
-) else (
+    for %%I in ("sd-v1-4.ckpt") do if %%~zI GTR 400000000 (
+        echo "Data files (weights) necessary for Stable Diffusion were already downloaded"
+    ) else (
+        echo. & echo "The model file present at %cd%\sd-v1-4.ckpt is invalid. It is only %%~zI bytes in size. Re-downloading.." & echo.
+        del "sd-v1-4.ckpt"
+    )
+)
+
+@if not exist "sd-v1-4.ckpt" (
     @echo. & echo "Downloading data files (weights) for Stable Diffusion.." & echo.
 
-    @call curl -L https://me.cmdr2.org/stable-diffusion-ui/sd-v1-4.ckpt > sd-v1-4.ckpt
+    @call curl -L -k https://me.cmdr2.org/stable-diffusion-ui/sd-v1-4.ckpt > sd-v1-4.ckpt
 
-    @if not exist "sd-v1-4.ckpt" (
-        echo "Error downloading the data files (weights) for Stable Diffusion. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues"
+    @if exist "sd-v1-4.ckpt" (
+        for %%I in ("sd-v1-4.ckpt") do if %%~zI LSS 400000000 (
+            echo. & echo "Error: The downloaded model file was invalid! Bytes downloaded: %%~zI" & echo.
+            echo. & echo "Error downloading the data files (weights) for Stable Diffusion. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo.
+            pause
+            exit /b
+        )
+    ) else (
+        @echo. & echo "Error downloading the data files (weights) for Stable Diffusion. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo.
         pause
         exit /b
     )
