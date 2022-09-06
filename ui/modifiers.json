@@ -225,7 +225,7 @@
       "Octane Render",
       "PBR",
       "Glass Caustics",
-      "Global Illumination"
+      "Global Illumination",
       "Subsurface Scattering"
     ]
   ]
