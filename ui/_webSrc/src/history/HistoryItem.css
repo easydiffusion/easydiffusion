@@ -1,0 +1,89 @@
+.history-item {
+	border-bottom-left-radius: 0.5rem;
+	border-bottom-right-radius: 0.5rem;
+	background-color: rgb(255,255,255,0.1);
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
+}
+.history-item:hover {
+	background-color: rgb(255,255,255,0.2);
+}
+
+.history-item,
+.history-item__body-wrapper {
+	position: relative;
+}
+
+.history-item__toggle-details-btn,
+.history-item__details {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+}
+
+.history-item__toggle-details-btn {
+	background-color: transparent;
+	border: 0 none;
+	padding: 0;
+	border-radius: 0;
+	z-index: 2;
+}
+
+.history-item img {
+	width: 100%;
+	box-shadow: none;
+}
+
+.history-item__details {
+	background: rgba(0, 0, 0, 0.61);
+	box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+	backdrop-filter: blur(5px);
+	color: #fff;
+	z-index: 3;
+	display: flex;
+	flex-direction: column;
+}
+
+.history-item__details-body {
+	flex: 1 1 auto;
+	margin: 0;
+	padding-left: 0.5em;
+	padding-right: 0.5em;
+}
+.history-item__details-body dt {
+	display: inline-block;
+	float: left;
+	clear: both;
+}
+.history-item__details-body dd {
+	margin-left: auto;
+	font-weight: bold;
+	display: inline-block;
+	float: right;
+}
+
+.history-item__details-actions {
+	display: flex;
+	justify-content: space-between;
+}
+
+.history-item__details-actions > button {
+	background-color: transparent;
+	padding: 0.6rem 1.2rem;
+	color: #fff;
+	font-size: 2rem;
+}
+
+.history-item__details-actions-delete:hover  {
+	color: tomato;
+}
+
+.history-item__details-actions-favourite--active {
+	color: gold !important;
+}
+
+.history-item__prompt {
+	padding: 0.5rem;
+	text-align: center;
+}

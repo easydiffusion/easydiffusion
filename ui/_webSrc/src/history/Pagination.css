@@ -1,0 +1,22 @@
+.pagination {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	align-items: center;
+	margin-top: 2rem;
+	margin-bottom: 4rem;
+}
+
+.pagination > ul {
+	list-style: none;
+	padding: 0;
+}
+
+.pagination > ul > li {
+	display: inline-block;
+	margin-right: 0.25rem;
+}
+
+.pagination > ul > li:last-child {
+	margin-right: 0;
+}

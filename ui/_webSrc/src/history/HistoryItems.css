@@ -1,0 +1,25 @@
+.history-items {
+	display: flex;
+	flex-direction: column;
+}
+
+.history-items__grid {
+	list-style: none;
+	padding: 0;
+	margin: 0 auto;
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fit, minmax(256px, 1fr));
+}
+
+/*@media (min-width: 600px) {*/
+/*	.history-items__grid {*/
+/*		grid-template-columns: repeat(2, 1fr);*/
+/*	}*/
+/*}*/
+
+/*@media (min-width: 900px) {*/
+/*	.history-items__grid {*/
+/*		grid-template-columns: repeat(3, 1fr);*/
+/*	}*/
+/*}*/

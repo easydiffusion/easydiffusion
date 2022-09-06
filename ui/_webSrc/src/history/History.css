@@ -1,0 +1,30 @@
+.history-view--temp-overlay {
+	/* TODO restyle this once we know how this history view is going to integrate with the rest of the UI (sidebar? modal? clientside route? tabs?). For now, it's an overlay kinda thing. */
+	position: absolute;
+	top: 55px;
+	left: 0;
+	min-height: calc(100vh - 100px);
+	width: calc(100vw - 40px);
+	z-index: 1;
+	background-color: rgb(32, 33, 36);
+}
+
+.history-view {
+	display: flex;
+	flex-direction: column;
+	padding: 1rem;
+}
+
+.history-view__filters {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+}
+
+.history-view__filters input {
+	padding: 0.125rem 0.5rem;
+}
+
+.history-view__body {
+	flex: 1 1 auto;
+}

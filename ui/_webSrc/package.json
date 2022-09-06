@@ -1,14 +1,17 @@
 {
-  "name": "react-ts",
+  "name": "stable-diffusion-ui",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "build:watch": "concurrently --names \"tsc ,vite\" \"tsc --watch\" \"vite build --emptyOutDir --watch\"",
     "build": "tsc && vite build --emptyOutDir",
     "preview": "vite preview"
   },
   "dependencies": {
+    "dexie": "^3.2.2",
+    "dexie-react-hooks": "^1.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
@@ -16,6 +19,7 @@
     "@types/react": "^18.0.17",
     "@types/react-dom": "^18.0.6",
     "@vitejs/plugin-react": "^2.0.1",
+    "concurrently": "^7.3.0",
     "typescript": "^4.6.4",
     "vite": "^3.0.7"
   }
