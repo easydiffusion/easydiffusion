@@ -1,9 +1,13 @@
 Congrats on downloading Stable Diffusion UI, version 2!
 
-Windows:
+If you haven't downloaded Stable Diffusion UI yet, please download from https://github.com/cmdr2/stable-diffusion-ui
+
+After downloading, to install please follow these instructions:
+
+For Windows:
 - Please double-click the "Start Stable Diffusion UI.cmd" file inside the "stable-diffusion-ui" folder.
 
-Linux:
+For Linux:
 - Please open a terminal, and go to the "stable-diffusion-ui" directory. Then run ./start.sh
 
 That file will automatically install everything. After that it will start the Stable Diffusion interface in a web browser.

@@ -38,11 +38,10 @@ class ImageRequest(BaseModel):
     seed: int = 42
     prompt_strength: float = 0.8
     # allow_nsfw: bool = False
-    save_to_disk: bool = False
+    save_to_disk_path: str = None
     turbo: bool = True
     use_cpu: bool = False
     use_full_precision: bool = False
-
 
 @app.get('/')
 def read_root():
@@ -101,9 +100,7 @@ async def image(req : ImageRequest):
     r.turbo = req.turbo
     r.use_cpu = req.use_cpu
     r.use_full_precision = req.use_full_precision
-
-    if req.save_to_disk:
-        r.save_to_disk_path = outpath
+    r.save_to_disk_path = req.save_to_disk_path
 
     try:
         res: Response = runtime.mk_img(r)
@@ -119,6 +116,10 @@ async def image(req : ImageRequest):
 @app.get('/media/ding.mp3')
 def read_ding():
     return FileResponse(os.path.join(SD_UI_DIR, 'media/ding.mp3'))
+
+@app.get('/media/kofi.png')
+def read_modifiers():
+    return FileResponse(os.path.join(SD_UI_DIR, 'media/kofi.png'))
 
 #same for the modifiers
 @app.get('/modifiers.json')

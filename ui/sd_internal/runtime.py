@@ -1,4 +1,5 @@
 import os, re
+import traceback
 import torch
 import numpy as np
 from omegaconf import OmegaConf
@@ -15,6 +16,8 @@ from ldm.util import instantiate_from_config
 from optimizedSD.optimUtils import split_weighted_subprompts
 from transformers import logging
 
+import uuid
+
 logging.set_verbosity_error()
 
 # consts
@@ -26,6 +29,8 @@ import base64
 from io import BytesIO
 
 # local
+session_id = str(uuid.uuid4())[-8:]
+
 ckpt = None
 model = None
 modelCS = None
@@ -140,7 +145,7 @@ def mk_img(req: Request):
     opt_init_img = req.init_image
     opt_format = 'png'
 
-    print(req.to_string(), 'device', device)
+    print(req.to_string(), '\n    device', device)
 
     seed_everything(opt_seed)
 
@@ -183,15 +188,16 @@ def mk_img(req: Request):
         t_enc = int(opt_strength * opt_ddim_steps)
         print(f"target t_enc is {t_enc} steps")
 
+    if opt_save_to_disk_path is not None:
+        session_out_path = os.path.join(opt_save_to_disk_path, session_id)
+        os.makedirs(session_out_path, exist_ok=True)
+    else:
+        session_out_path = None
+
     seeds = ""
     with torch.no_grad():
         for n in trange(opt_n_iter, desc="Sampling"):
             for prompts in tqdm(data, desc="data"):
-
-                if opt_save_to_disk_path is not None:
-                    sample_path = os.path.join(opt_save_to_disk_path, "_".join(re.split(":| ", prompts[0])))[:150]
-                    os.makedirs(sample_path, exist_ok=True)
-                    base_count = len(os.listdir(sample_path))
 
                 with precision_scope("cuda"):
                     modelCS.to(device)
@@ -234,10 +240,23 @@ def mk_img(req: Request):
                         res.images.append(ResponseImage(data=img_data, seed=opt_seed))
 
                         if opt_save_to_disk_path is not None:
-                            img.save(
-                                os.path.join(sample_path, "seed_" + str(opt_seed) + "_" + f"{base_count:05}.{opt_format}")
-                            )
-                            base_count += 1
+                            try:
+                                prompt_flattened = "_".join(re.split(":| ", prompts[0]))
+                                prompt_flattened = prompt_flattened.replace(',', '')
+                                prompt_flattened = prompt_flattened[:50]
+
+                                img_id = str(uuid.uuid4())[-8:]
+
+                                file_path = f"{prompt_flattened}_{img_id}"
+                                img_out_path = os.path.join(session_out_path, f"{file_path}.{opt_format}")
+                                meta_out_path = os.path.join(session_out_path, f"{file_path}.txt")
+
+                                metadata = f"{prompts[0]}\nWidth: {opt_W}\nHeight: {opt_H}\nSeed: {opt_seed}\nSteps: {opt_ddim_steps}\nGuidance Scale: {opt_scale}"
+                                img.save(img_out_path)
+                                with open(meta_out_path, 'w') as f:
+                                    f.write(metadata)
+                            except:
+                                print('could not save the file', traceback.format_exc())
 
                         seeds += str(opt_seed) + ","
                         opt_seed += 1

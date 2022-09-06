@@ -1,6 +1,9 @@
 __pycache__
 installer
 installer.tar
+dist
+installer
+installer.tar
 
 # Editor directories and files
 .vscode/*
