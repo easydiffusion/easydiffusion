@@ -14,10 +14,23 @@ OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder
 from fastapi import FastAPI, HTTPException
 from starlette.responses import FileResponse
 from pydantic import BaseModel
+# this is needed for development.
+from fastapi.middleware.cors import CORSMiddleware
 
 from sd_internal import Request, Response
 
 app = FastAPI()
+
+# we need to be able to run a local server for the UI
+# and still be able to hit our python port
+origins = ["*"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 model_loaded = False
 model_is_loading = False
@@ -43,9 +56,22 @@ class ImageRequest(BaseModel):
     use_cpu: bool = False
     use_full_precision: bool = False
 
-@app.get('/')
+# @app.get('/')
+# def read_root():
+#     return FileResponse(os.path.join(SD_UI_DIR, 'index.html'))
+
 def read_root():
-    return FileResponse(os.path.join(SD_UI_DIR, 'index.html'))
+    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/dist/index.html'))
+
+# then get the js files
+@app.get('/index.js')
+def read_scripts():
+    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/dist/index.js'))
+
+#then get the css files
+@app.get('/index.css')
+def read_styles():
+    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/dist/index.css'))
 
 @app.get('/ping')
 async def ping():
@@ -100,13 +126,13 @@ async def image(req : ImageRequest):
         print(traceback.format_exc())
         return HTTPException(status_code=500, detail=str(e))
 
-@app.get('/media/ding.mp3')
+@app.get('/ding.mp3')
 def read_ding():
-    return FileResponse(os.path.join(SD_UI_DIR, 'media/ding.mp3'))
+    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/dist/ding.mp3'))
 
-@app.get('/media/kofi.png')
+@app.get('/kofi.png')
 def read_modifiers():
-    return FileResponse(os.path.join(SD_UI_DIR, 'media/kofi.png'))
+    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/dist/kofi.png'))
 
 @app.get('/modifiers.json')
 def read_modifiers():
