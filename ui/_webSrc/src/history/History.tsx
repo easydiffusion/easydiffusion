@@ -1,10 +1,10 @@
-import React, {useState} from 'react'
+import React, { useState } from 'react'
 import './History.css'
-import {useLiveQuery} from "dexie-react-hooks";
-import {historyDb, Item} from "./history-db";
-import {HistoryFooter} from "./HistoryFooter";
-import {HistoryItems} from "./HistoryItems";
-import {Pagination} from "./Pagination";
+import { useLiveQuery } from "dexie-react-hooks";
+import { historyDb, Item } from "./history-db";
+import { HistoryFooter } from "./HistoryFooter";
+import { HistoryItems } from "./HistoryItems";
+import { Pagination } from "./Pagination";
 
 export function History() {
 	const [perPage, _setPerPageTODO] = useState(25);
@@ -47,20 +47,23 @@ export function History() {
 				<h2>History</h2>
 				<div className="history-view__filters">
 					<label>
-						<input type="checkbox" checked={showFavouritesOnly} onChange={e => setShowFavouritesOnly(e.target.checked)} />
+						<input type="checkbox" checked={showFavouritesOnly}
+							   onChange={e => setShowFavouritesOnly(e.target.checked)}/>
 						Favourites only
 					</label>
 					<label>
-						<input type="search" placeholder="Filter history" value={filterQuery} onChange={e => setFilterQuery(e.target.value)} />
+						<input type="search" placeholder="Filter history" value={filterQuery}
+							   onChange={e => setFilterQuery(e.target.value)}/>
 						<span className="visually-hidden">Filter history</span>
 					</label>
 				</div>
 			</div>
 			<div className="history-view__body">
 				<HistoryItems items={historyItems} clearFilters={onClearFilters}/>
-				<Pagination perPage={perPage} currentPage={currentPage} totalItems={totalItems} onPageChange={newPage => setCurrentPage(newPage)} />
+				<Pagination perPage={perPage} currentPage={currentPage} totalItems={totalItems}
+							onPageChange={newPage => setCurrentPage(newPage)}/>
 			</div>
-			<HistoryFooter />
+			<HistoryFooter/>
 		</section>
 	)
 }

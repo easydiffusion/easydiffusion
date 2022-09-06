@@ -1,4 +1,4 @@
-import Dexie, {Table} from 'dexie';
+import Dexie, { Table } from 'dexie';
 
 export interface ResponseItem {
 	data?: string; // base64 image data

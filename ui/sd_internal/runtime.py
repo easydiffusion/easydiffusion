@@ -189,9 +189,11 @@ def mk_img(req: Request):
         print(f"target t_enc is {t_enc} steps")
 
     if opt_save_to_disk_path is not None:
-        session_out_path = os.path.join(opt_save_to_disk_path, session_id)
+        session_out_dir = session_id
+        session_out_path = os.path.join(opt_save_to_disk_path, session_out_dir)
         os.makedirs(session_out_path, exist_ok=True)
     else:
+        session_out_dir = None
         session_out_path = None
 
     seeds = ""
@@ -237,7 +239,7 @@ def mk_img(req: Request):
                         img = Image.fromarray(x_sample.astype(np.uint8))
 
                         img_data = img_to_base64_str(img)
-                        res.images.append(ResponseImage(data=img_data, seed=opt_seed))
+                        response_image = ResponseImage(data=img_data, seed=opt_seed)
 
                         if opt_save_to_disk_path is not None:
                             try:
@@ -248,16 +250,19 @@ def mk_img(req: Request):
                                 img_id = str(uuid.uuid4())[-8:]
 
                                 file_path = f"{prompt_flattened}_{img_id}"
-                                img_out_path = os.path.join(session_out_path, f"{file_path}.{opt_format}")
+                                file_name = f"{file_path}.{opt_format}"
+                                img_out_path = os.path.join(session_out_path, file_name)
                                 meta_out_path = os.path.join(session_out_path, f"{file_path}.txt")
 
                                 metadata = f"{prompts[0]}\nWidth: {opt_W}\nHeight: {opt_H}\nSeed: {opt_seed}\nSteps: {opt_ddim_steps}\nGuidance Scale: {opt_scale}"
+                                response_image.url = f"{session_out_dir}/{file_name}"
                                 img.save(img_out_path)
                                 with open(meta_out_path, 'w') as f:
                                     f.write(metadata)
                             except:
                                 print('could not save the file', traceback.format_exc())
 
+                        res.images.append(response_image)
                         seeds += str(opt_seed) + ","
                         opt_seed += 1
 

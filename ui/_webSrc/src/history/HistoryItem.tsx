@@ -1,9 +1,9 @@
-import React, {useState} from 'react'
+import React, { useState } from 'react'
 import './HistoryItem.css';
-import {historyDb, Item} from "./history-db";
-import {CloseIcon, DownloadIcon} from "../icons";
-import {TrashIcon} from "../icons/TrashIcon";
-import {StarIcon} from "../icons/StarIcon";
+import { historyDb, Item } from "./history-db";
+import { CloseIcon, DownloadIcon } from "../icons";
+import { TrashIcon } from "../icons/TrashIcon";
+import { StarIcon } from "../icons/StarIcon";
 
 export interface HistoryItemProps {
 	item: Item;
@@ -43,7 +43,7 @@ You will not be able to recover this data.`;
 	}
 
 	function onDownloadImage() {
-		console.log('TODO');
+		alert('Not implemented yet! Right click -> Save As for now...');
 	}
 
 	return (

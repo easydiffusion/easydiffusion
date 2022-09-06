@@ -1,11 +1,12 @@
 .history-item {
 	border-bottom-left-radius: 0.5rem;
 	border-bottom-right-radius: 0.5rem;
-	background-color: rgb(255,255,255,0.1);
+	background-color: rgb(255, 255, 255, 0.1);
 	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
 }
+
 .history-item:hover {
-	background-color: rgb(255,255,255,0.2);
+	background-color: rgb(255, 255, 255, 0.2);
 }
 
 .history-item,
@@ -51,11 +52,13 @@
 	padding-left: 0.5em;
 	padding-right: 0.5em;
 }
+
 .history-item__details-body dt {
 	display: inline-block;
 	float: left;
 	clear: both;
 }
+
 .history-item__details-body dd {
 	margin-left: auto;
 	font-weight: bold;
@@ -75,7 +78,7 @@
 	font-size: 2rem;
 }
 
-.history-item__details-actions-delete:hover  {
+.history-item__details-actions-delete:hover {
 	color: tomato;
 }
 

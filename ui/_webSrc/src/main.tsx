@@ -5,7 +5,7 @@ import './index.css'
 
 // application entry point
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
+	<React.StrictMode>
+		<App/>
+	</React.StrictMode>
 )

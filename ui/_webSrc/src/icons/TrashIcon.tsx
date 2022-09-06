@@ -1,5 +1,5 @@
 import React from "react";
-import {IconProps} from "./index";
+import { IconProps } from "./index";
 
 export function TrashIcon(props: IconProps) {
 	const {label} = props;

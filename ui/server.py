@@ -81,6 +81,10 @@ async def ping():
         print(traceback.format_exc())
         return HTTPException(status_code=500, detail=str(e))
 
+@app.get('/image/{session}/{filename}')
+def images(session: str, filename: str):
+    return FileResponse(os.path.join(outpath, session, filename))
+
 @app.post('/image')
 async def image(req : ImageRequest):
     from sd_internal import runtime

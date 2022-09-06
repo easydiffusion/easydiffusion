@@ -18,8 +18,10 @@ NOTE: This does NOT remove image data from your local folder, you will need to r
 	return (
 		<div className="history-view__footer">
 			Your history is stored locally in this browser. Images are stored on disk at your configured location.
-			<br />
-			<button type="button" className="history-view__clear-history-btn" onClick={onClearAllHistory}>Clear all history</button>
+			<br/>
+			<button type="button" className="history-view__clear-history-btn" onClick={onClearAllHistory}>Clear all
+				history
+			</button>
 		</div>
 	)
 }

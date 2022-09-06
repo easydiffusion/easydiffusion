@@ -1,5 +1,5 @@
 import React from "react";
-import {IconProps} from "./index";
+import { IconProps } from "./index";
 
 export interface StarIconProps extends IconProps {
 	filled: boolean;
@@ -11,6 +11,6 @@ export function StarIcon(props: StarIconProps) {
 	const aria = label ? {'aria-label': label} : {'aria-hidden': true};
 
 	return (
-		<span { ...aria } className="icon">{ filled ? <>&#9733;</> : <>&#9734;</> }</span>
+		<span {...aria} className="icon">{filled ? <>&#9733;</> : <>&#9734;</>}</span>
 	)
 }

@@ -35,16 +35,19 @@ class Request:
 class Image:
     data: str # base64
     seed: int
+    url: str
     is_nsfw: bool
 
-    def __init__(self, data, seed):
+    def __init__(self, data, seed, url = None):
         self.data = data
         self.seed = seed
+        self.url = url
 
     def json(self):
         return {
             "data": self.data,
             "seed": self.seed,
+            "url": self.url,
         }
 
 class Response:
