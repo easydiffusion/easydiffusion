@@ -15,9 +15,22 @@ from fastapi import FastAPI, HTTPException
 from starlette.responses import FileResponse
 from pydantic import BaseModel
 
+from fastapi.middleware.cors import CORSMiddleware
+
 from sd_internal import Request, Response
 
 app = FastAPI()
+
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 model_loaded = False
 model_is_loading = False
@@ -43,9 +56,24 @@ class ImageRequest(BaseModel):
     use_cpu: bool = False
     use_full_precision: bool = False
 
+# @app.get('/')
+# def read_root():
+#     return FileResponse(os.path.join(SD_UI_DIR, 'index.html'))
+
 @app.get('/')
 def read_root():
-    return FileResponse(os.path.join(SD_UI_DIR, 'index.html'))
+    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/dist/index.html'))
+
+# then get the js files
+@app.get('/index.js')
+def read_scripts():
+    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/dist/index.js'))
+
+#then get the css files
+@app.get('/index.css')
+def read_styles():
+    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/dist/index.css'))
+
 
 @app.get('/ping')
 async def ping():

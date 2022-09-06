@@ -1,0 +1,22 @@
+{
+  "common": {
+    "primaryColor": "rgba(99, 148, 226, 1)",
+    "primaryColorHover": "#5590FFFF",
+    "primaryColorPressed": "#5A9CCEFF",
+    "primaryColorSuppl": "rgba(42, 129, 148, 1)"
+  },
+  "Button": {
+    "colorPrimary": "#002d74",
+    "colorHoverPrimary": "#0b2752FF",
+    "textColorPrimary": "#FFFFFFDB",
+    "textColorHoverPrimary": "#FFFFFFF7",
+    "textColorPressedPrimary": "#FFFFFFFF",
+    "textColorFocusPrimary": "#FFFFFFFF",
+    "textColorDisabledPrimary": "#FFFFFFFF"
+  },
+  "Slider": {
+    "fillColor": "rgba(25, 69, 163, 1)",
+    "fillColorHover": "rgba(35, 98, 198, 1)",
+    "handleColor": "#BCD0FFFF"
+  }
+}
