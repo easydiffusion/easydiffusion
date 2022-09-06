@@ -27,21 +27,29 @@
 @>nul grep -c "conda_sd_env_created" ..\scripts\install_status.txt
 @if "%ERRORLEVEL%" EQU "0" (
     @echo "Packages necessary for Stable Diffusion were already installed"
+
+    @call conda activate .\env
 ) else (
     @echo. & echo "Downloading packages necessary for Stable Diffusion.." & echo. & echo "***** This will take some time (depending on the speed of the Internet connection) and may appear to be stuck, but please be patient ***** .." & echo.
 
     @rmdir /s /q .\env
 
-    @call conda env create --prefix env -f environment.yaml && (
-        @echo conda_sd_env_created >> ..\scripts\install_status.txt
-    ) || (
-        echo "Error installing the packages necessary for Stable Diffusion. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues"
+    @call conda env create --prefix env -f environment.yaml || (
+        @echo. & echo "Error installing the packages necessary for Stable Diffusion. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo.
         pause
         exit /b
     )
-)
 
-@call conda activate .\env
+    @call conda activate .\env
+
+    for /f "tokens=*" %%a in ('python -c "import torch; import ldm; import transformers; import numpy; print(42)"') do if "%%a" NEQ "42" (
+        @echo. & echo "Dependency test failed! Error installing the packages necessary for Stable Diffusion. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo.
+        pause
+        exit /b
+    )
+
+    @echo conda_sd_env_created >> ..\scripts\install_status.txt
+)
 
 @>nul grep -c "conda_sd_ui_deps_installed" ..\scripts\install_status.txt
 @if "%ERRORLEVEL%" EQU "0" (
@@ -49,13 +57,24 @@
 ) else (
     @echo. & echo "Downloading packages necessary for Stable Diffusion UI.." & echo.
 
-    @call conda install -c conda-forge -y --prefix env uvicorn fastapi && (
-        @echo conda_sd_ui_deps_installed >> ..\scripts\install_status.txt
-    ) || (
+    @call conda install -c conda-forge -y --prefix env uvicorn fastapi || (
         echo "Error installing the packages necessary for Stable Diffusion UI. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues"
         pause
         exit /b
     )
+)
+
+call WHERE uvicorn > .tmp
+@>nul grep -c "uvicorn" .tmp
+@if "%ERRORLEVEL%" NEQ "0" (
+    @echo. & echo "UI packages not found! Error installing the packages necessary for Stable Diffusion. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo.
+    pause
+    exit /b
+)
+
+@>nul grep -c "conda_sd_ui_deps_installed" ..\scripts\install_status.txt
+@if "%ERRORLEVEL%" NEQ "0" (
+    @echo conda_sd_ui_deps_installed >> ..\scripts\install_status.txt
 )
 
 @if exist "sd-v1-4.ckpt" (
