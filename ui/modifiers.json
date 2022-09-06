@@ -2,7 +2,7 @@
   [
     "Drawing Style",
     [
-      "Cel Shading",
+      "Cell Shading",
       "Children's Drawing",
       "Crosshatch",
       "Detailed and Intricate",
@@ -21,11 +21,13 @@
       "Anaglyph",
       "Anime",
       "Art Nouveau",
+      "Bauhaus",
       "Baroque",
       "CGI",
       "Cartoon",
       "Comic Book",
       "Concept Art",
+      "Constructivist",
       "Cubist",
       "Digital Art",
       "Dadaist",
@@ -48,8 +50,10 @@
       "Neoclassical",
       "Photo",
       "Realistic",
+      "Rococo",
       "Romantic",
       "Street Art",
+      "Symbolist",
       "Stuckist",
       "Surrealist",
       "Visual Novel",
@@ -110,9 +114,10 @@
       "Dynamic Lighting",
       "Electric Colors",
       "Infrared",
+      "Pastel",
+      "Neon",
       "Synthwave",
-      "Warm Color Palette",
-      "Pastel"
+      "Warm Color Palette"
     ]
   ],
   [
@@ -160,11 +165,13 @@
       "by Leonardo da Vinci",
       "by Lisa Frank",
       "by Mahmoud Saïd",
+      "by Makoto Shinkai",
       "by Mark Brooks",
       "by Pablo Picasso",
       "by Richard Dadd",
       "by Salvador Dalí",
       "by Tivadar Csontváry Kosztka",
+      "by Thomas Kinkade",
       "by Yoshitaka Amano",
       "by wlop"
     ]
