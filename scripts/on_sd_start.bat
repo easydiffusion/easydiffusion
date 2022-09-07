@@ -78,7 +78,7 @@ call WHERE uvicorn > .tmp
 )
 
 @if exist "sd-v1-4.ckpt" (
-    for %%I in ("sd-v1-4.ckpt") do if %%~zI GTR 400000000 (
+    for %%I in ("sd-v1-4.ckpt") do if "%%~zI" EQU "4265380512" (
         echo "Data files (weights) necessary for Stable Diffusion were already downloaded"
     ) else (
         echo. & echo "The model file present at %cd%\sd-v1-4.ckpt is invalid. It is only %%~zI bytes in size. Re-downloading.." & echo.
@@ -92,7 +92,7 @@ call WHERE uvicorn > .tmp
     @call curl -L -k https://me.cmdr2.org/stable-diffusion-ui/sd-v1-4.ckpt > sd-v1-4.ckpt
 
     @if exist "sd-v1-4.ckpt" (
-        for %%I in ("sd-v1-4.ckpt") do if %%~zI LSS 400000000 (
+        for %%I in ("sd-v1-4.ckpt") do if "%%~zI" NEQ "4265380512" (
             echo. & echo "Error: The downloaded model file was invalid! Bytes downloaded: %%~zI" & echo.
             echo. & echo "Error downloading the data files (weights) for Stable Diffusion. Please try re-running this installer. If it doesn't work, please copy the messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB or file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo.
             pause
