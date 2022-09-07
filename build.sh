@@ -7,7 +7,7 @@ printf "If you are actually a developer of this project, please type Y and press
 
 read -p "Are you a developer of this project (Y/N) " yn
 case $yn in
-    [Yy]* ) break;;
+    [Yy]* ) ;;
     * ) exit;;
 esac
 
