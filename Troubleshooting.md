@@ -1,9 +1,7 @@
 Common issues and their solutions. If these solutions don't work, please feel free to ask at the [discord server](https://discord.com/invite/u9yhsFmEkB) or [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues).
 
 ## Green image generated
-This usually happens if you're running NVIDIA 1650 or 1660 Super. To solve this, please upgrade to v2 by following the installation steps here: https://github.com/cmdr2/stable-diffusion-ui/tree/v2#installation
-
-And then enable `Full precision` in the `Advanced settings`. This will prevent green images from being generated.
+This usually happens if you're running NVIDIA 1650 or 1660 Super. To solve this, please close and run the Stable Diffusion command on your computer. If you're using the older Docker-based solution (v1), please upgrade to v2: https://github.com/cmdr2/stable-diffusion-ui/tree/v2#installation
 
 ## No module found
 This can happen if you're hitting the Windows file path length limitation. To solve this, please upgrade to v2 by following the installation steps here: https://github.com/cmdr2/stable-diffusion-ui/tree/v2#installation , and ensure that you've placed the `stable-diffusion-ui` folder in `C:` or `D:` (or any top-level location).
