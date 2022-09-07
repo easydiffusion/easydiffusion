@@ -384,6 +384,7 @@
 
 <script>
 const SOUND_ENABLED_KEY = "soundEnabled"
+const SAVE_TO_DISK_KEY = "saveToDisk"
 const USE_CPU_KEY = "useCPU"
 const USE_FULL_PRECISION_KEY = "useFullPrecision"
 const USE_TURBO_MODE_KEY = "useTurboMode"
@@ -478,6 +479,10 @@ function handleStringSettingChange(key) {
 
 function isSoundEnabled() {
     return getLocalStorageBoolItem(SOUND_ENABLED_KEY, true)
+}
+
+function isSaveToDiskEnabled() {
+    return getLocalStorageBoolItem(SAVE_TO_DISK_KEY, false)
 }
 
 function isUseCPUEnabled() {
@@ -839,6 +844,9 @@ function createFileName() {
 soundToggle.addEventListener('click', handleBoolSettingChange(SOUND_ENABLED_KEY))
 soundToggle.checked = isSoundEnabled()
 
+saveToDiskField.checked = isSaveToDiskEnabled()
+diskPathField.disabled = !saveToDiskField.checked
+
 useCPUField.addEventListener('click', handleBoolSettingChange(USE_CPU_KEY))
 useCPUField.checked = isUseCPUEnabled()
 
@@ -850,8 +858,9 @@ turboField.checked = isUseTurboModeEnabled()
 
 diskPathField.addEventListener('change', handleStringSettingChange(DISK_PATH_KEY))
 
-saveToDiskField.addEventListener('click', function() {
+saveToDiskField.addEventListener('click', function(e) {
     diskPathField.disabled = !this.checked
+    handleBoolSettingChange(SAVE_TO_DISK_KEY)(e)
 })
 
 makeImageBtn.addEventListener('click', makeImage)
