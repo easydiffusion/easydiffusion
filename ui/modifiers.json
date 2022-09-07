@@ -97,9 +97,13 @@
       "Glamor Shot",
       "Golden Hour",
       "HD",
+      "Landscape",
       "Lens Flare",
       "Macro",
       "Polaroid",
+      "Photoshoot",
+      "Portrait",
+      "Studio Lighting",
       "Vintage",
       "War Photography",
       "White Balance",
@@ -110,6 +114,7 @@
     "Color",
     [
       "Beautiful Lighting",
+      "Cold Color Palette",
       "Colorful",
       "Dynamic Lighting",
       "Electric Colors",
@@ -144,6 +149,7 @@
     "Style of an artist or community",
     [
       "Artstation",
+      "trending on Artstation",
       "by Agnes Lawrence Pelton",
       "by Akihito Yoshida",
       "by Andy Warhol",
@@ -156,6 +162,7 @@
       "by Claude Monet",
       "by David Mann",
       "by Diego Velázquez",
+      "by Disney Animation Studios",
       "by Édouard Manet",
       "by Frida Kahlo",
       "by Georgia O'Keeffe",
@@ -177,8 +184,11 @@
       "by Paul Klee",
       "by Pablo Picasso",
       "by Pierre-Auguste Renoir",
+      "by Pixar Animation Studios",
       "by Rembrandt",
       "by Richard Dadd",
+      "by Rossdraws",
+      "by Sam Does Arts",
       "by Sandro Botticelli",
       "by Salvador Dalí",
       "by Tivadar Csontváry Kosztka",
@@ -186,6 +196,37 @@
       "by Yoshitaka Amano",
       "by Vincent van Gogh",
       "by wlop"
+    ]
+  ],
+  [
+    "CGI Software",
+    [
+      "3D Model",
+      "3D Sculpt",
+      "3Ds Max Model",
+      "Blender Model",
+      "Cinema4d Model",
+      "Maya Model",
+      "Unreal Engine",
+      "Zbrush Sculpt"
+    ]
+  ],
+  [
+    "CGI Rendering",
+    [
+      "3D Render",
+      "Corona Render",
+      "Creature Design",
+      "Cycles Render",
+      "Detailed Render",
+      "Environment Design",
+      "Intricate Environment",
+      "LSD Render",
+      "Octane Render",
+      "PBR",
+      "Glass Caustics",
+      "Global Illumination",
+      "Subsurface Scattering"
     ]
   ]
 ]
