@@ -1,4 +1,4 @@
-@echo. & echo "Stable Diffusion UI - v2" & echo.
+@echo. & echo "Stable Diffusion UI - v2 " & echo.
 
 @cd ..
 
