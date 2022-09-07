@@ -103,7 +103,10 @@ call WHERE uvicorn > .tmp
         pause
         exit /b
     )
+)
 
+@>nul grep -c "sd_install_complete" ..\scripts\install_status.txt
+@if "%ERRORLEVEL%" NEQ "0" (
     @echo sd_weights_downloaded >> ..\scripts\install_status.txt
     @echo sd_install_complete >> ..\scripts\install_status.txt
 )
