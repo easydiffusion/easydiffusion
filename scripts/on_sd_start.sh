@@ -41,7 +41,7 @@ else
 
     conda activate ./env
 
-    out_test=`python -c "import torch; import ldm; import transformers; import numpy; print(42)"`
+    out_test=`python -c "import torch; import ldm; import transformers; import numpy; import antlr4; print(42)"`
     if [ "$out_test" != "42" ]; then
         printf "\n\nDependency test failed! Error installing the packages necessary for Stable Diffusion. Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/blob/main/Troubleshooting.md\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
         read -p "Press any key to continue"
