@@ -389,6 +389,8 @@ const USE_CPU_KEY = "useCPU"
 const USE_FULL_PRECISION_KEY = "useFullPrecision"
 const USE_TURBO_MODE_KEY = "useTurboMode"
 const DISK_PATH_KEY = "diskPath"
+const ADVANCED_PANEL_OPEN_KEY = "advancedPanelOpen"
+const MODIFIERS_PANEL_OPEN_KEY = "modifiersPanelOpen"
 const HEALTH_PING_INTERVAL = 5 // seconds
 const MAX_INIT_IMAGE_DIMENSION = 768
 
@@ -442,6 +444,9 @@ let soundToggle = document.querySelector('#sound_toggle')
 
 let serverStatusColor = document.querySelector('#server-status-color')
 let serverStatusMsg = document.querySelector('#server-status-msg')
+
+let advancedPanelHandle = document.querySelector("#editor-settings .collapsible")
+let modifiersPanelHandle = document.querySelector("#editor-modifiers .collapsible")
 
 let serverStatus = 'offline'
 let activeTags = []
@@ -499,6 +504,14 @@ function isUseTurboModeEnabled() {
 
 function getSavedDiskPath() {
     return getLocalStorageItem(DISK_PATH_KEY, '')
+}
+
+function isAdvancedPanelOpenEnabled() {
+    return getLocalStorageBoolItem(ADVANCED_PANEL_OPEN_KEY, false)
+}
+
+function isModifiersPanelOpenEnabled() {
+    return getLocalStorageBoolItem(MODIFIERS_PANEL_OPEN_KEY, false)
 }
 
 function setStatus(statusType, msg, msgType) {
@@ -863,6 +876,20 @@ saveToDiskField.addEventListener('click', function(e) {
     handleBoolSettingChange(SAVE_TO_DISK_KEY)(e)
 })
 
+function setPanelOpen(panelHandle) {
+    let panelContents = panelHandle.nextElementSibling
+    panelHandle.classList.add('active')
+    panelContents.style.display = 'block'
+}
+
+if (isAdvancedPanelOpenEnabled()) {
+    setPanelOpen(advancedPanelHandle)
+}
+
+if (isModifiersPanelOpenEnabled()) {
+    setPanelOpen(modifiersPanelHandle)
+}
+
 makeImageBtn.addEventListener('click', makeImage)
 
 
@@ -970,7 +997,12 @@ function createCollapsibles(node) {
     collapsibles.forEach(function(c) {
         let handle = document.createElement('span')
         handle.className = 'collapsible-handle'
-        handle.innerHTML = '&#x2795;'
+
+        if (c.className.indexOf('active') !== -1) {
+            handle.innerHTML = '&#x2796;' // minus
+        } else {
+            handle.innerHTML = '&#x2795;' // plus
+        }
         c.insertBefore(handle, c.firstChild)
 
         c.addEventListener('click', function() {
@@ -982,6 +1014,14 @@ function createCollapsibles(node) {
             } else {
                 content.style.display = "block"
                 handle.innerHTML = '&#x2796;' // minus
+            }
+
+            if (this == advancedPanelHandle) {
+                let state = (content.style.display === 'block' ? 'true' : 'false')
+                localStorage.setItem(ADVANCED_PANEL_OPEN_KEY, state)
+            } else if (this == modifiersPanelHandle) {
+                let state = (content.style.display === 'block' ? 'true' : 'false')
+                localStorage.setItem(MODIFIERS_PANEL_OPEN_KEY, state)
             }
         })
     })
