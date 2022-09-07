@@ -22,7 +22,7 @@ else
 fi
 
 cp -Rf sd-ui-files/ui ui
-cp -Rf sd-ui-files/scripts/* scripts/
-cp "scripts/start.sh" .
+cp sd-ui-files/scripts/on_sd_start.sh scripts/
+cp sd-ui-files/scripts/start.sh .
 
 ./scripts/on_sd_start.sh

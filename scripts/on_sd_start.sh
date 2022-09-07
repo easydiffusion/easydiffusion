@@ -1,6 +1,8 @@
+cp sd-ui-files/scripts/on_env_start.sh scripts/
+
 source installer/etc/profile.d/conda.sh
 
-if [ `grep -c sd_git_cloned scripts/install_status.txt` -gt "0" ]; then
+if [ -e "scripts/install_status.txt" ] && [ `grep -c sd_git_cloned scripts/install_status.txt` -gt "0" ]; then
     echo "Stable Diffusion's git repository was already installed. Updating.."
 
     cd stable-diffusion
