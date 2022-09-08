@@ -1,5 +1,3 @@
-#!/bin/bash
-
 source installer/bin/activate
 
 conda-unpack
