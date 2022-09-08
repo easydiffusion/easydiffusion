@@ -271,7 +271,7 @@
                     <div id="server-status-color">&nbsp;</div>
                     <span id="server-status-msg">Stable Diffusion is starting..</span>
                 </div>
-                <h1>Stable Diffusion UI <small>v2.07 (beta)</small></h1>
+                <h1>Stable Diffusion UI <small>v2.08 (beta)</small></h1>
             </div>
             <div id="editor-inputs">
                 <div id="editor-inputs-prompt" class="row">
@@ -349,7 +349,7 @@
                     <li><input id="sound_toggle" name="sound_toggle" type="checkbox" checked> <label for="sound_toggle">Play sound on task completion</label></li>
                     <li><input id="turbo" name="turbo" type="checkbox" checked> <label for="turbo">Turbo mode (generates images faster, but uses an additional 1 GB of GPU memory)</label></li>
                     <li><input id="use_cpu" name="use_cpu" type="checkbox"> <label for="use_cpu">Use CPU instead of GPU (warning: this will be *very* slow)</label></li>
-                    <li><input id="use_full_precision" name="use_full_precision" type="checkbox"> <label for="use_full_precision">Use full precision (for GPU-only. warning: this will consume more VRAM. Use this for NVIDIA 1650 and 1660)</label></li>
+                    <li><input id="use_full_precision" name="use_full_precision" type="checkbox"> <label for="use_full_precision">Use full precision (for GPU-only. warning: this will consume more VRAM)</label></li>
                     <!-- <li><input id="allow_nsfw" name="allow_nsfw" type="checkbox"> <label for="allow_nsfw">Allow NSFW Content (You confirm you are above 18 years of age)</label></li> -->
                 </ul>
             </div>
@@ -385,10 +385,13 @@
 
 <script>
 const SOUND_ENABLED_KEY = "soundEnabled"
+const SAVE_TO_DISK_KEY = "saveToDisk"
 const USE_CPU_KEY = "useCPU"
 const USE_FULL_PRECISION_KEY = "useFullPrecision"
 const USE_TURBO_MODE_KEY = "useTurboMode"
 const DISK_PATH_KEY = "diskPath"
+const ADVANCED_PANEL_OPEN_KEY = "advancedPanelOpen"
+const MODIFIERS_PANEL_OPEN_KEY = "modifiersPanelOpen"
 const HEALTH_PING_INTERVAL = 5 // seconds
 const MAX_INIT_IMAGE_DIMENSION = 768
 
@@ -443,6 +446,9 @@ let soundToggle = document.querySelector('#sound_toggle')
 let serverStatusColor = document.querySelector('#server-status-color')
 let serverStatusMsg = document.querySelector('#server-status-msg')
 
+let advancedPanelHandle = document.querySelector("#editor-settings .collapsible")
+let modifiersPanelHandle = document.querySelector("#editor-modifiers .collapsible")
+
 let serverStatus = 'offline'
 let activeTags = []
 let lastPromptUsed = ''
@@ -481,6 +487,10 @@ function isSoundEnabled() {
     return getLocalStorageBoolItem(SOUND_ENABLED_KEY, true)
 }
 
+function isSaveToDiskEnabled() {
+    return getLocalStorageBoolItem(SAVE_TO_DISK_KEY, false)
+}
+
 function isUseCPUEnabled() {
     return getLocalStorageBoolItem(USE_CPU_KEY, false)
 }
@@ -495,6 +505,14 @@ function isUseTurboModeEnabled() {
 
 function getSavedDiskPath() {
     return getLocalStorageItem(DISK_PATH_KEY, '')
+}
+
+function isAdvancedPanelOpenEnabled() {
+    return getLocalStorageBoolItem(ADVANCED_PANEL_OPEN_KEY, false)
+}
+
+function isModifiersPanelOpenEnabled() {
+    return getLocalStorageBoolItem(MODIFIERS_PANEL_OPEN_KEY, false)
 }
 
 function setStatus(statusType, msg, msgType) {
@@ -770,7 +788,7 @@ async function makeImage() {
     let successCount = 0
 
     for (let i = 0; i < batchCount; i++) {
-        reqBody['seed'] = seed + i
+        reqBody['seed'] = seed + (i * batchSize)
 
         let success = await doMakeImage(reqBody)
 
@@ -840,6 +858,9 @@ function createFileName() {
 soundToggle.addEventListener('click', handleBoolSettingChange(SOUND_ENABLED_KEY))
 soundToggle.checked = isSoundEnabled()
 
+saveToDiskField.checked = isSaveToDiskEnabled()
+diskPathField.disabled = !saveToDiskField.checked
+
 useCPUField.addEventListener('click', handleBoolSettingChange(USE_CPU_KEY))
 useCPUField.checked = isUseCPUEnabled()
 
@@ -851,9 +872,24 @@ turboField.checked = isUseTurboModeEnabled()
 
 diskPathField.addEventListener('change', handleStringSettingChange(DISK_PATH_KEY))
 
-saveToDiskField.addEventListener('click', function() {
+saveToDiskField.addEventListener('click', function(e) {
     diskPathField.disabled = !this.checked
+    handleBoolSettingChange(SAVE_TO_DISK_KEY)(e)
 })
+
+function setPanelOpen(panelHandle) {
+    let panelContents = panelHandle.nextElementSibling
+    panelHandle.classList.add('active')
+    panelContents.style.display = 'block'
+}
+
+if (isAdvancedPanelOpenEnabled()) {
+    setPanelOpen(advancedPanelHandle)
+}
+
+if (isModifiersPanelOpenEnabled()) {
+    setPanelOpen(modifiersPanelHandle)
+}
 
 makeImageBtn.addEventListener('click', makeImage)
 
@@ -962,7 +998,12 @@ function createCollapsibles(node) {
     collapsibles.forEach(function(c) {
         let handle = document.createElement('span')
         handle.className = 'collapsible-handle'
-        handle.innerHTML = '&#x2795;'
+
+        if (c.className.indexOf('active') !== -1) {
+            handle.innerHTML = '&#x2796;' // minus
+        } else {
+            handle.innerHTML = '&#x2795;' // plus
+        }
         c.insertBefore(handle, c.firstChild)
 
         c.addEventListener('click', function() {
@@ -974,6 +1015,14 @@ function createCollapsibles(node) {
             } else {
                 content.style.display = "block"
                 handle.innerHTML = '&#x2796;' // minus
+            }
+
+            if (this == advancedPanelHandle) {
+                let state = (content.style.display === 'block' ? 'true' : 'false')
+                localStorage.setItem(ADVANCED_PANEL_OPEN_KEY, state)
+            } else if (this == modifiersPanelHandle) {
+                let state = (content.style.display === 'block' ? 'true' : 'false')
+                localStorage.setItem(MODIFIERS_PANEL_OPEN_KEY, state)
             }
         })
     })

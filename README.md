@@ -6,7 +6,7 @@
   <a href="#installation"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/develop/media/download-linux.png" width="200" /></a>
 </p>
 
-[![Discord Server](https://badgen.net/badge/icon/discord?icon=discord&label)](https://discord.com/invite/u9yhsFmEkB) (for support, and development discussion)
+[![Discord Server](https://badgen.net/badge/icon/discord?icon=discord&label)](https://discord.com/invite/u9yhsFmEkB) (for support, and development discussion) | [Troubleshooting guide for common problems](Troubleshooting.md)
 
 # Features in the new v2 Version:
 - **No Dependencies or Technical Knowledge Required**: 1-click install for Windows 10/11 and Linux. *No dependencies*, no need for WSL or Docker or Conda or technical setup. Just download and run!
@@ -56,8 +56,8 @@ Open http://localhost:9000 in your browser (after running step 3 previously).
 
 **Another tip:** Images with the same aspect ratio of your generated image work best. E.g. 1:1 if you're generating images sized 512x512.
 
-## Problems?
-Please ask on the new [discord server](https://discord.com/invite/u9yhsFmEkB), or [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues) if this did not work for you (after trying the common [troubleshooting](#troubleshooting) steps)!
+## Problems? Troubleshooting
+Please try the common [troubleshooting](Troubleshooting.md) steps. If that doesn't fix it, please ask on the [discord server](https://discord.com/invite/u9yhsFmEkB), or [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues).
 
 # Advanced Settings
 You can also set the configuration like `seed`, `width`, `height`, `num_outputs`, `num_inference_steps` and `guidance_scale` using the 'show' button next to 'Advanced settings'.
@@ -65,9 +65,6 @@ You can also set the configuration like `seed`, `width`, `height`, `num_outputs`
 Use the same `seed` number to get the same image for a certain prompt. This is useful for refining a prompt without losing the basic image design. Enable the `random images` checkbox to get random images.
 
 ![Screenshot of advanced settings](media/config-v5.jpg?raw=true)
-
-# Troubleshooting
-The [Troubleshooting wiki page](https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting) contains some common errors and their solutions. Please check that, and if it doesn't work, feel free to ask on the [discord server](https://discord.com/invite/u9yhsFmEkB) or [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues).
 
 # What is this? Why no Docker?
 This version is a 1-click installer. You don't need WSL or Docker or anything beyond a working NVIDIA GPU with an updated driver. You don't need to use the command-line at all. Even if you don't have a compatible GPU, you can run it on your CPU (albeit very slowly).

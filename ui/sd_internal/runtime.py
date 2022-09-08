@@ -43,13 +43,22 @@ precision = 'autocast'
 sampler_plms = None
 sampler_ddim = None
 
+force_full_precision = False
+try:
+    gpu_name = torch.cuda.get_device_name(torch.cuda.current_device())
+    force_full_precision = ('nvidia' in gpu_name.lower()) and (' 1660' in gpu_name or ' 1650' in gpu_name) # otherwise these NVIDIA cards create green images
+    if force_full_precision:
+        print('forcing full precision on NVIDIA 16xx cards, to avoid green images')
+except:
+    pass
+
 # api
 def load_model(ckpt_to_use, device_to_use='cuda', turbo=False, unet_bs_to_use=1, precision_to_use='autocast', half_model_fs=False):
     global ckpt, model, modelCS, modelFS, model_is_half, device, unet_bs, precision, model_fs_is_half
 
     ckpt = ckpt_to_use
     device = device_to_use
-    precision = precision_to_use
+    precision = precision_to_use if not force_full_precision else 'full'
     unet_bs = unet_bs_to_use
 
     sd = load_model_from_config(f"{ckpt}")
@@ -119,9 +128,9 @@ def mk_img(req: Request):
         device = 'cuda'
 
         if (precision == 'autocast' and (req.use_full_precision or not model_is_half)) or \
-            (precision == 'full' and not req.use_full_precision) or \
+            (precision == 'full' and not req.use_full_precision and not force_full_precision) or \
             (req.init_image is None and model_fs_is_half) or \
-            (req.init_image is not None and not model_fs_is_half):
+            (req.init_image is not None and not model_fs_is_half and not force_full_precision):
 
             print('reloading model for cuda')
             load_model(ckpt, device, model.turbo, unet_bs, ('full' if req.use_full_precision else 'autocast'), half_model_fs=(req.init_image is not None and not req.use_full_precision))
@@ -146,6 +155,8 @@ def mk_img(req: Request):
     opt_format = 'png'
 
     print(req.to_string(), '\n    device', device)
+
+    print('\n\n    Using precision:', precision)
 
     seed_everything(opt_seed)
 

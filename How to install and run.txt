@@ -1,6 +1,6 @@
 Congrats on downloading Stable Diffusion UI, version 2!
 
-If you haven't downloaded Stable Diffusion UI yet, please download from https://github.com/cmdr2/stable-diffusion-ui
+If you haven't downloaded Stable Diffusion UI yet, please download from https://github.com/cmdr2/stable-diffusion-ui#installation
 
 After downloading, to install please follow these instructions:
 
