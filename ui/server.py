@@ -14,6 +14,7 @@ OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder
 from fastapi import FastAPI, HTTPException
 from starlette.responses import FileResponse
 from pydantic import BaseModel
+import logging
 
 from sd_internal import Request, Response
 
@@ -42,6 +43,9 @@ class ImageRequest(BaseModel):
     turbo: bool = True
     use_cpu: bool = False
     use_full_precision: bool = False
+    use_face_correction: str = None # or "GFPGANv1.3"
+    use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
+    show_only_filtered_image: bool = False
 
 @app.get('/')
 def read_root():
@@ -61,7 +65,7 @@ async def ping():
         model_is_loading = True
 
         from sd_internal import runtime
-        runtime.load_model(ckpt_to_use="sd-v1-4.ckpt")
+        runtime.load_model_ckpt(ckpt_to_use="sd-v1-4")
 
         model_loaded = True
         model_is_loading = False
@@ -91,6 +95,9 @@ async def image(req : ImageRequest):
     r.use_cpu = req.use_cpu
     r.use_full_precision = req.use_full_precision
     r.save_to_disk_path = req.save_to_disk_path
+    r.use_upscale: str = req.use_upscale
+    r.use_face_correction = req.use_face_correction
+    r.show_only_filtered_image = req.show_only_filtered_image
 
     try:
         res: Response = runtime.mk_img(r)
@@ -115,6 +122,13 @@ def read_modifiers():
 @app.get('/output_dir')
 def read_home_dir():
     return {outpath}
+
+# don't log /ping requests
+class HealthCheckLogFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        return record.getMessage().find('/ping') == -1
+
+logging.getLogger('uvicorn.access').addFilter(HealthCheckLogFilter())
 
 # start the browser ui
 import webbrowser; webbrowser.open('http://localhost:9000')
