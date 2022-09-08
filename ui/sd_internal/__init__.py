@@ -17,9 +17,6 @@ class Request:
     turbo: bool = True
     use_cpu: bool = False
     use_full_precision: bool = False
-    use_face_correction: str = None # or "GFPGANv1.3"
-    use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
-    show_only_filtered_image: bool = False
 
     def to_string(self):
         return f'''
@@ -33,10 +30,7 @@ class Request:
     save_to_disk_path: {self.save_to_disk_path}
     turbo: {self.turbo}
     use_cpu: {self.use_cpu}
-    use_full_precision: {self.use_full_precision}
-    use_face_correction: {self.use_face_correction}
-    use_upscale: {self.use_upscale}
-    show_only_filtered_image: {self.show_only_filtered_image}'''
+    use_full_precision: {self.use_full_precision}'''
 
 class Image:
     data: str # base64
