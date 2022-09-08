@@ -1,3 +1,5 @@
+#!/bin/bash
+
 cp sd-ui-files/scripts/on_env_start.sh scripts/
 
 source installer/etc/profile.d/conda.sh
