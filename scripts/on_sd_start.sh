@@ -14,6 +14,7 @@ if [ -e "scripts/install_status.txt" ] && [ `grep -c sd_git_cloned scripts/insta
 
     git reset --hard
     git pull
+    git checkout d154155d4c0b43e13ec1f00eb72b7ff9d522fcf9
 
     cd ..
 else
@@ -26,6 +27,10 @@ else
         read -p "Press any key to continue"
         exit
     fi
+
+    cd stable-diffusion
+    git checkout d154155d4c0b43e13ec1f00eb72b7ff9d522fcf9
+    cd ..
 fi
 
 cd stable-diffusion

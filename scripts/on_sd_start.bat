@@ -11,6 +11,7 @@
 
     @call git reset --hard
     @call git pull
+    @call git checkout d154155d4c0b43e13ec1f00eb72b7ff9d522fcf9
 
     @cd ..
 ) else (
@@ -23,6 +24,10 @@
         pause
         @exit /b
     )
+
+    @cd stable-diffusion
+    @call git checkout d154155d4c0b43e13ec1f00eb72b7ff9d522fcf9
+    @cd ..
 )
 
 @cd stable-diffusion
