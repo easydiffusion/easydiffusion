@@ -9,3 +9,4 @@ To develop on the UI, run `npm install` from this folder to install dependencies
 Then start up the stable-diffusion-ui server like normal, but browse to `localhost:9001` to get the development environment.
 
 When you are ready, run `npm run build` to get a production build of the frontend code build and copied into the `./dist` folder.
+You should commit these built `./dist` files along with your code changes.
