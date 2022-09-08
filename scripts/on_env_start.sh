@@ -1,3 +1,5 @@
+#!/bin/bash
+
 printf "\n\nStable Diffusion UI\n\n"
 
 if [ -f "scripts/install_status.txt" ] && [ `grep -c sd_ui_git_cloned scripts/install_status.txt` -gt "0" ]; then
