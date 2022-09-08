@@ -30,7 +30,7 @@ or for Windows
 Check the `ui/frontend/build/README.md` for instructions on running and building the React code.
 
 ## Development environment for Installer changes
-Build the Windows installer using Windows, and the Linux installer using Linux. Don't mix the two, and don't use WSL.
+Build the Windows installer using Windows, and the Linux installer using Linux. Don't mix the two, and don't use WSL. An Ubuntu VM is fine for building the Linux installer on a Windows host.
 
 1. Install Miniconda 3 or Anaconda.
 2. Install `conda install -c conda-forge -y conda-pack`
