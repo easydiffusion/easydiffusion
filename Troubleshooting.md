@@ -1,5 +1,14 @@
 Common issues and their solutions. If these solutions don't work, please feel free to ask at the [discord server](https://discord.com/invite/u9yhsFmEkB) or [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues).
 
+## RuntimeError: CUDA out of memory
+This can happen if your PC has less than 6GB of VRAM.
+
+Try disabling the "Turbo mode" setting under "Advanced Settings", since that takes an additional 1 GB of VRAM (to increase the speed).
+
+Additionally, a common reason for this error is that you're using an initial image larger than 768x768 pixels. Try using a smaller initial image.
+
+Also try generating smaller sized images.
+
 ## Green image generated
 This usually happens if you're running NVIDIA 1650 or 1660 Super. To solve this, please close and run the Stable Diffusion command on your computer. If you're using the older Docker-based solution (v1), please upgrade to v2: https://github.com/cmdr2/stable-diffusion-ui/tree/v2#installation
 
