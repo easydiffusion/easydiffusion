@@ -269,7 +269,7 @@
                     <div id="server-status-color">&nbsp;</div>
                     <span id="server-status-msg">Stable Diffusion is starting..</span>
                 </div>
-                <h1>Stable Diffusion UI <small>v2.08 (beta)</small></h1>
+                <h1>Stable Diffusion UI <small>v2.1 (beta)</small></h1>
             </div>
             <div id="editor-inputs">
                 <div id="editor-inputs-prompt" class="row">
@@ -299,6 +299,16 @@
             <div id="editor-settings" class="panel-box">
                 <h4 class="collapsible">Advanced Settings</h4>
                 <ul id="editor-settings-entries" class="collapsible-content">
+                    <li><input id="use_face_correction" name="use_face_correction" type="checkbox" checked> <label for="use_face_correction">Fix incorrect faces and eyes (uses GFPGAN)</label></li>
+                    <li>
+                        <input id="use_upscale" name="use_upscale" type="checkbox"> <label for="use_upscale">Upscale the image to 4x resolution using </label>
+                        <select id="upscale_model" name="upscale_model">
+                            <option value="RealESRGAN_x4plus" selected>RealESRGAN_x4plus</option>
+                            <option value="RealESRGAN_x4plus_anime_6B">RealESRGAN_x4plus_anime_6B</option>
+                        </select>
+                    </li>
+                    <li><input id="show_only_filtered_image" name="show_only_filtered_image" type="checkbox"> <label for="show_only_filtered_image">Show only the corrected/upscaled image</label></li>
+                    <br/>
                     <li><label for="seed">Seed:</label> <input id="seed" name="seed" size="10" value="30000"> <input id="random_seed" name="random_seed" type="checkbox" checked> <label for="random_seed">Random Image</label></li>
                     <li><label for="num_outputs_total">Number of images to make:</label> <input id="num_outputs_total" name="num_outputs_total" value="1" size="4"> <label for="num_outputs_parallel">Generate in parallel:</label> <input id="num_outputs_parallel" name="num_outputs_parallel" value="1" size="4"> (images at once)</li>
                     <li><label for="width">Width:</label> 
@@ -391,6 +401,9 @@ const USE_TURBO_MODE_KEY = "useTurboMode"
 const DISK_PATH_KEY = "diskPath"
 const ADVANCED_PANEL_OPEN_KEY = "advancedPanelOpen"
 const MODIFIERS_PANEL_OPEN_KEY = "modifiersPanelOpen"
+const USE_FACE_CORRECTION_KEY = "useFaceCorrection"
+const USE_UPSCALING_KEY = "useUpscaling"
+const SHOW_ONLY_FILTERED_IMAGE_KEY = "showOnlyFilteredImage"
 const HEALTH_PING_INTERVAL = 5 // seconds
 const MAX_INIT_IMAGE_DIMENSION = 768
 
@@ -418,6 +431,10 @@ let diskPathField = document.querySelector('#diskPath')
 // let allowNSFWField = document.querySelector("#allow_nsfw")
 let promptStrengthField = document.querySelector('#prompt_strength')
 let promptStrengthValueLabel = document.querySelector('#prompt_strength_value')
+let useFaceCorrectionField = document.querySelector("#use_face_correction")
+let useUpscalingField = document.querySelector("#use_upscale")
+let upscaleModelField = document.querySelector("#upscale_model")
+let showOnlyFilteredImageField = document.querySelector("#show_only_filtered_image")
 
 let makeImageBtn = document.querySelector('#makeImage')
 
@@ -484,6 +501,18 @@ function handleStringSettingChange(key) {
 
 function isSoundEnabled() {
     return getLocalStorageBoolItem(SOUND_ENABLED_KEY, true)
+}
+
+function isFaceCorrectionEnabled() {
+    return getLocalStorageBoolItem(USE_FACE_CORRECTION_KEY, false)
+}
+
+function isUpscalingEnabled() {
+    return getLocalStorageBoolItem(USE_UPSCALING_KEY, false)
+}
+
+function isShowOnlyFilteredImageEnabled() {
+    return getLocalStorageBoolItem(SHOW_ONLY_FILTERED_IMAGE_KEY, false)
 }
 
 function isSaveToDiskEnabled() {
@@ -781,6 +810,18 @@ async function makeImage() {
         reqBody['save_to_disk_path'] = diskPathField.value.trim()
     }
 
+    if (useFaceCorrectionField.checked) {
+        reqBody['use_face_correction'] = 'GFPGANv1.3'
+    }
+
+    if (useUpscalingField.checked) {
+        reqBody['use_upscale'] = upscaleModelField.value
+    }
+
+    if (showOnlyFilteredImageField.checked && (useUpscalingField.checked || useFaceCorrectionField.checked)) {
+        reqBody['show_only_filtered_image'] = showOnlyFilteredImageField.checked
+    }
+
     let time = new Date().getTime()
     imagesContainer.innerHTML = ''
 
@@ -823,13 +864,14 @@ async function makeImage() {
 function createFileName() {
 
     // Most important information is the prompt
-    const underscoreName = lastPromptUsed.replace(/[^a-zA-Z0-9]/g, '_');
+    let underscoreName = lastPromptUsed.replace(/[^a-zA-Z0-9]/g, '_')
+    underscoreName = underscoreName.substring(0, 100)
     const seed = seedField.value;
     const steps = numInferenceStepsField.value;
     const guidance =  guidanceScaleField.value; 
 
     // name and the top level metadata
-    let fileName = `sd_${underscoreName}_Seed-${seed}_Steps-${steps}_Guidance-${guidance}`;
+    let fileName = `${underscoreName}_Seed-${seed}_Steps-${steps}_Guidance-${guidance}`
 
     // add the tags
     // let tags = [];
@@ -848,9 +890,9 @@ function createFileName() {
     // fileName += `${tagString}`;
 
     // add the file extension
-    fileName += `.png`;
+    fileName += `.png`
 
-    return fileName;
+    return fileName
 }
 
 
@@ -859,6 +901,15 @@ soundToggle.checked = isSoundEnabled()
 
 saveToDiskField.checked = isSaveToDiskEnabled()
 diskPathField.disabled = !saveToDiskField.checked
+
+useFaceCorrectionField.addEventListener('click', handleBoolSettingChange(USE_FACE_CORRECTION_KEY))
+useFaceCorrectionField.checked = isFaceCorrectionEnabled()
+
+useUpscalingField.checked = isUpscalingEnabled()
+upscaleModelField.disabled = !useUpscalingField.checked
+
+showOnlyFilteredImageField.addEventListener('click', handleBoolSettingChange(SHOW_ONLY_FILTERED_IMAGE_KEY))
+showOnlyFilteredImageField.checked = isShowOnlyFilteredImageEnabled()
 
 useCPUField.addEventListener('click', handleBoolSettingChange(USE_CPU_KEY))
 useCPUField.checked = isUseCPUEnabled()
@@ -874,6 +925,11 @@ diskPathField.addEventListener('change', handleStringSettingChange(DISK_PATH_KEY
 saveToDiskField.addEventListener('click', function(e) {
     diskPathField.disabled = !this.checked
     handleBoolSettingChange(SAVE_TO_DISK_KEY)(e)
+})
+
+useUpscalingField.addEventListener('click', function(e) {
+    upscaleModelField.disabled = !this.checked
+    handleBoolSettingChange(USE_UPSCALING_KEY)(e)
 })
 
 function setPanelOpen(panelHandle) {
@@ -1137,6 +1193,8 @@ async function init() {
 
     setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
     healthCheck()
+
+    playSound()
 }
 
 init()
