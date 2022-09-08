@@ -23,7 +23,7 @@ This is in-flux, but one way to get a development environment running for editin
 8) Now make a symlink between the repository clone (where you will be making changes) and this archive (where you will be running stable diffusion):
 `ln -s /projects/stable-diffusion-ui-repo/ui /projects/stable-diffusion-ui-archive/ui`
 or for Windows
-`mklink /projects/stable-diffusion-ui-repo/ui /projects/stable-diffusion-ui-archive/ui`
+`mklink /D \projects\stable-diffusion-ui-archive\ui \projects\stable-diffusion-ui-repo\ui` (link name first, source repo dir second)
 9) Run the archive again `start.sh` and ensure you can still use the UI.
 10) Congrats, now any changes you make in your repo `ui` folder are linked to this running archive of the app and can be previewed in the browser.
 
