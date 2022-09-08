@@ -828,7 +828,7 @@ async function makeImage() {
     let successCount = 0
 
     for (let i = 0; i < batchCount; i++) {
-        reqBody['seed'] = seed + i
+        reqBody['seed'] = seed + (i * batchSize)
 
         let success = await doMakeImage(reqBody)
 

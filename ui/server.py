@@ -14,6 +14,7 @@ OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder
 from fastapi import FastAPI, HTTPException
 from starlette.responses import FileResponse
 from pydantic import BaseModel
+import logging
 
 from sd_internal import Request, Response
 
@@ -121,6 +122,13 @@ def read_modifiers():
 @app.get('/output_dir')
 def read_home_dir():
     return {outpath}
+
+# don't log /ping requests
+class HealthCheckLogFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        return record.getMessage().find('/ping') == -1
+
+logging.getLogger('uvicorn.access').addFilter(HealthCheckLogFilter())
 
 # start the browser ui
 import webbrowser; webbrowser.open('http://localhost:9000')
