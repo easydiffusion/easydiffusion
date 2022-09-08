@@ -25,6 +25,7 @@
     @cd sd-ui-files
 
     @call git reset --hard
+    @call git checkout main
     @call git pull
 
     @cd ..

@@ -8,6 +8,7 @@ if [ -f "scripts/install_status.txt" ] && [ `grep -c sd_ui_git_cloned scripts/in
     cd sd-ui-files
 
     git reset --hard
+    git checkout main
     git pull
 
     cd ..
