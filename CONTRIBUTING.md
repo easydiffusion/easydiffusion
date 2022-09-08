@@ -1,9 +1,9 @@
-Hi there,
-These instructions are meant for the developers of this project.
+Hi there, these instructions are meant for the developers of this project.
 
 If you only want to use the Stable Diffusion UI, you've downloaded the wrong file.
 
 Please download and follow the instructions at https://github.com/cmdr2/stable-diffusion-ui#installation
+
 Thanks
 
 # For developers:
