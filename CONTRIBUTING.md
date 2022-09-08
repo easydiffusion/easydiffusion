@@ -9,7 +9,7 @@ Thanks
 If you would like to contribute to this project, there is a discord for dicussion:
 [![Discord Server](https://badgen.net/badge/icon/discord?icon=discord&label)](https://discord.com/invite/u9yhsFmEkB)
 
-## Development environment
+## Development environment for UI (frontend and server) changes
 This is in-flux, but one way to get a development environment running for editing the UI of this project is:
 (swap `.sh` or `.bat` in instructions depending on your environment, and be sure to adjust any paths to match where you're working)
 
@@ -28,3 +28,13 @@ or for Windows
 10) Congrats, now any changes you make in your repo `ui` folder are linked to this running archive of the app and can be previewed in the browser.
 
 Check the `ui/frontend/build/README.md` for instructions on running and building the React code.
+
+## Development environment for Installer changes
+Build the Windows installer using Windows, and the Linux installer using Linux. Don't mix the two, and don't use WSL.
+
+1. Install Miniconda 3 or Anaconda.
+2. Install `conda install -c conda-forge -y conda-pack`
+3. Open the Anaconda Prompt. Do not use WSL if you're building for Windows.
+4. Run `build.bat` or `./build.sh` depending on whether you're in Windows or Linux.
+5. Compress the `stable-diffusion-ui` folder created inside the `dist` folder. Make a `zip` for Windows, and `tar.xz` for Linux (smaller files, and Linux users already have tar).
+6. Make a new GitHub release and upload the Windows and Linux installer builds.
