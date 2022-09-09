@@ -4,6 +4,14 @@
 
 @cd ..
 
+if exist "scripts\config.bat" (
+    @call scripts\config.bat
+)
+
+if "%update_branch%"=="" (
+    set update_branch="main"
+)
+
 @>nul grep -c "conda_sd_ui_deps_installed" scripts\install_status.txt
 @if "%ERRORLEVEL%" NEQ "0" (
     for /f "tokens=*" %%a in ('python -c "import os; parts = os.getcwd().split(os.path.sep); print(len(parts))"') do if "%%a" NEQ "2" (
@@ -20,19 +28,20 @@
 
 @>nul grep -c "sd_ui_git_cloned" scripts\install_status.txt
 @if "%ERRORLEVEL%" EQU "0" (
-    @echo "Stable Diffusion UI's git repository was already installed. Updating.."
+    @echo "Stable Diffusion UI's git repository was already installed. Updating from %update_branch%.."
 
     @cd sd-ui-files
 
     @call git reset --hard
-    @call git checkout main
+    @call git checkout "%update_branch%"
     @call git pull
 
     @cd ..
 ) else (
     @echo. & echo "Downloading Stable Diffusion UI.." & echo.
+    @echo "Using the %update_branch% channel" & echo.
 
-    @call git clone https://github.com/cmdr2/stable-diffusion-ui.git sd-ui-files && (
+    @call git clone -b "%update_branch%" https://github.com/cmdr2/stable-diffusion-ui.git sd-ui-files && (
         @echo sd_ui_git_cloned >> scripts\install_status.txt
     ) || (
         @echo "Error downloading Stable Diffusion UI. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/blob/main/Troubleshooting.md" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
