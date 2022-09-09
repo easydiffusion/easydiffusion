@@ -1,3 +1,4 @@
+import json
 import traceback
 
 import sys
@@ -8,6 +9,8 @@ print('started in ', SCRIPT_DIR)
 
 SD_UI_DIR = os.getenv('SD_UI_PATH', None)
 sys.path.append(os.path.dirname(SD_UI_DIR))
+
+CONFIG_DIR = os.path.join(SD_UI_DIR, '..', 'scripts')
 
 OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder
 
@@ -42,6 +45,9 @@ class ImageRequest(BaseModel):
     turbo: bool = True
     use_cpu: bool = False
     use_full_precision: bool = False
+
+class SetAppConfigRequest(BaseModel):
+    update_branch: str = "main"
 
 @app.get('/')
 def read_root():
@@ -96,6 +102,48 @@ async def image(req : ImageRequest):
         res: Response = runtime.mk_img(r)
 
         return res.json()
+    except Exception as e:
+        print(traceback.format_exc())
+        return HTTPException(status_code=500, detail=str(e))
+
+@app.post('/app_config')
+async def setAppConfig(req : SetAppConfigRequest):
+    try:
+        config = {
+            'update_branch': req.update_branch
+        }
+
+        config_json_str = json.dumps(config)
+        config_bat_str = f'@set update_branch={req.update_branch}'
+        config_sh_str = f'export update_branch={req.update_branch}'
+
+        config_json_path = os.path.join(CONFIG_DIR, 'config.json')
+        config_bat_path = os.path.join(CONFIG_DIR, 'config.bat')
+        config_sh_path = os.path.join(CONFIG_DIR, 'config.sh')
+
+        with open(config_json_path, 'w') as f:
+            f.write(config_json_str)
+
+        with open(config_bat_path, 'w') as f:
+            f.write(config_bat_str)
+
+        with open(config_sh_path, 'w') as f:
+            f.write(config_sh_str)
+
+        return {'OK'}
+    except Exception as e:
+        print(traceback.format_exc())
+        return HTTPException(status_code=500, detail=str(e))
+
+@app.get('/app_config')
+def getAppConfig():
+    try:
+        config_json_path = os.path.join(CONFIG_DIR, 'config.json')
+
+        with open(config_json_path, 'r') as f:
+            config_json_str = f.read()
+            config = json.loads(config_json_str)
+            return config
     except Exception as e:
         print(traceback.format_exc())
         return HTTPException(status_code=500, detail=str(e))
