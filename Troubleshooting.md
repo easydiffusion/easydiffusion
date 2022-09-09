@@ -3,6 +3,8 @@ Common issues and their solutions. If these solutions don't work, please feel fr
 ## Green image generated
 This usually happens if you're running NVIDIA 1650 or 1660 Super. To solve this, please close and run the Stable Diffusion command on your computer. If you're using the older Docker-based solution (v1), please upgrade to v2: https://github.com/cmdr2/stable-diffusion-ui/tree/v2#installation
 
+If you're still seeing this error, please try enabling "Full Precision" under "Advanced Settings" in the Stable Diffusion UI.
+
 ## No module found
 This can happen if you're hitting the Windows file path length limitation. To solve this, please upgrade to v2 by following the installation steps here: https://github.com/cmdr2/stable-diffusion-ui/tree/v2#installation , and ensure that you've placed the `stable-diffusion-ui` folder in `C:` or `D:` (or any top-level location).
 
