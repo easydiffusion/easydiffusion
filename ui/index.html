@@ -773,7 +773,7 @@ async function makeImage() {
     makeImageBtn.innerHTML = 'Processing..'
     makeImageBtn.disabled = true
 
-    let seed = (randomSeedField.checked ? Math.floor(Math.random() * 10000) : parseInt(seedField.value))
+    let seed = (randomSeedField.checked ? Math.floor(Math.random() * 10000000) : parseInt(seedField.value))
     let numOutputsTotal = parseInt(numOutputsTotalField.value)
     let numOutputsParallel = parseInt(numOutputsParallelField.value)
     let batchCount = Math.ceil(numOutputsTotal / numOutputsParallel)
@@ -1005,7 +1005,7 @@ async function getAppConfig() {
 function checkRandomSeed() {
     if (randomSeedField.checked) {
         seedField.disabled = true
-        seedField.value = "random"
+        seedField.value = "0"
     } else {
         seedField.disabled = false
     }
