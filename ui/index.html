@@ -911,6 +911,13 @@ promptStrengthField.addEventListener('input', updatePromptStrength)
 updatePromptStrength()
 
 useBetaChannelField.addEventListener('click', async function(e) {
+    if (serverStatus !== 'online') {
+        logError('The server is still starting up..')
+        alert('The server is still starting up..')
+        e.preventDefault()
+        return false
+    }
+
     let updateBranch = (this.checked ? 'beta' : 'main')
 
     try {
