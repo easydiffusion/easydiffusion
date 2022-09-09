@@ -148,6 +148,9 @@ def getAppConfig():
     try:
         config_json_path = os.path.join(CONFIG_DIR, 'config.json')
 
+        if not os.path.exists(config_json_path):
+            return HTTPException(status_code=500, detail="No config file")
+
         with open(config_json_path, 'r') as f:
             config_json_str = f.read()
             config = json.loads(config_json_str)
