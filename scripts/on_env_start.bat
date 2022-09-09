@@ -9,7 +9,7 @@ if exist "scripts\config.bat" (
 )
 
 if "%update_branch%"=="" (
-    set update_branch="main"
+    set update_branch=main
 )
 
 @>nul grep -c "conda_sd_ui_deps_installed" scripts\install_status.txt
