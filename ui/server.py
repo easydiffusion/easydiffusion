@@ -55,7 +55,8 @@ class SetAppConfigRequest(BaseModel):
 
 @app.get('/')
 def read_root():
-    return FileResponse(os.path.join(SD_UI_DIR, 'index.html'))
+    headers = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
+    return FileResponse(os.path.join(SD_UI_DIR, 'index.html'), headers=headers)
 
 @app.get('/ping')
 async def ping():
