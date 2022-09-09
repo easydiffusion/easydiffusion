@@ -269,7 +269,7 @@
                     <div id="server-status-color">&nbsp;</div>
                     <span id="server-status-msg">Stable Diffusion is starting..</span>
                 </div>
-                <h1>Stable Diffusion UI <small>v2.08 (beta)</small></h1>
+                <h1>Stable Diffusion UI <small>v2.09</small></h1>
             </div>
             <div id="editor-inputs">
                 <div id="editor-inputs-prompt" class="row">
@@ -349,6 +349,8 @@
                     <li><input id="use_cpu" name="use_cpu" type="checkbox"> <label for="use_cpu">Use CPU instead of GPU (warning: this will be *very* slow)</label></li>
                     <li><input id="use_full_precision" name="use_full_precision" type="checkbox"> <label for="use_full_precision">Use full precision (for GPU-only. warning: this will consume more VRAM)</label></li>
                     <!-- <li><input id="allow_nsfw" name="allow_nsfw" type="checkbox"> <label for="allow_nsfw">Allow NSFW Content (You confirm you are above 18 years of age)</label></li> -->
+                    <br/>
+                    <li><input id="use_beta_channel" name="use_beta_channel" type="checkbox"> <label for="use_beta_channel">🔥Beta channel. Get the latest features immediately (but could be less stable). Please restart the program after changing this.</label></li>
                 </ul>
             </div>
 
@@ -416,6 +418,7 @@ let useFullPrecisionField = document.querySelector('#use_full_precision')
 let saveToDiskField = document.querySelector('#save_to_disk')
 let diskPathField = document.querySelector('#diskPath')
 // let allowNSFWField = document.querySelector("#allow_nsfw")
+let useBetaChannelField = document.querySelector("#use_beta_channel")
 let promptStrengthField = document.querySelector('#prompt_strength')
 let promptStrengthValueLabel = document.querySelector('#prompt_strength_value')
 
@@ -907,6 +910,42 @@ function updatePromptStrength() {
 promptStrengthField.addEventListener('input', updatePromptStrength)
 updatePromptStrength()
 
+useBetaChannelField.addEventListener('click', async function(e) {
+    let updateBranch = (this.checked ? 'beta' : 'main')
+
+    try {
+        let res = await fetch('/app_config', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                'update_branch': updateBranch
+            })
+        })
+        res = await res.json()
+
+        console.log('set config status response', res)
+    } catch (e) {
+        console.log('set config status error', e)
+    }
+})
+
+async function getAppConfig() {
+    try {
+        let res = await fetch('/app_config')
+        config = await res.json()
+
+        if (config.update_branch === 'beta') {
+            useBetaChannelField.checked = true
+        }
+
+        console.log('get config status response', config)
+    } catch (e) {
+        console.log('get config status error', e)
+    }
+}
+
 function checkRandomSeed() {
     if (randomSeedField.checked) {
         seedField.disabled = true
@@ -1134,6 +1173,7 @@ async function loadModifiers() {
 async function init() {
     await loadModifiers()
     await getDiskPath()
+    await getAppConfig()
 
     setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
     healthCheck()
