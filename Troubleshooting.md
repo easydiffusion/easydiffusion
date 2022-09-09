@@ -9,7 +9,7 @@ Additionally, a common reason for this error is that you're using an initial ima
 
 Also try generating smaller sized images.
 
-## ClobberError: This transaction has incompatible packages due to a shared path
+## No ldm found, or antlr4 or any other missing module, or ClobberError: This transaction has incompatible packages due to a shared path
 On Windows, please ensure that you had placed the `stable-diffusion-ui` folder after unzipping to the root of C: or D: (or any drive). For e.g. `C:\stable-diffusion-ui`. **Note:** This has to be done **before** you start the installation process. If you have already installed (and are facing this error), please delete the installed folder, and start fresh by unzipping and placing the folder at the top of your drive.
 
 This error can also be caused if you already have conda/miniconda/anaconda installed, due to package conflicts. Please open your Anaconda Prompt, and run `conda clean --all` to clean up unused packages.
@@ -18,9 +18,6 @@ This error can also be caused if you already have conda/miniconda/anaconda insta
 This usually happens if you're running NVIDIA 1650 or 1660 Super. To solve this, please close and run the Stable Diffusion command on your computer. If you're using the older Docker-based solution (v1), please upgrade to v2: https://github.com/cmdr2/stable-diffusion-ui/tree/v2#installation
 
 If you're still seeing this error, please try enabling "Full Precision" under "Advanced Settings" in the Stable Diffusion UI.
-
-## No module found
-This can happen if you're hitting the Windows file path length limitation. To solve this, please upgrade to v2 by following the installation steps here: https://github.com/cmdr2/stable-diffusion-ui/tree/v2#installation , and ensure that you've placed the `stable-diffusion-ui` folder in `C:` or `D:` (or any top-level location).
 
 ## './docker-compose.yml' is invalid:
 > ERROR: The Compose file './docker-compose.yml' is invalid because:
