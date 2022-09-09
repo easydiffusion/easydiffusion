@@ -31,7 +31,8 @@ else
     fi
 fi
 
-cp -Rf sd-ui-files/ui ui
+rm -rf ui
+cp -Rf sd-ui-files/ui .
 cp sd-ui-files/scripts/on_sd_start.sh scripts/
 cp sd-ui-files/scripts/start.sh .
 
