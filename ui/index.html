@@ -307,7 +307,7 @@
                             <option value="RealESRGAN_x4plus_anime_6B">RealESRGAN_x4plus_anime_6B</option>
                         </select>
                     </li>
-                    <li><input id="show_only_filtered_image" name="show_only_filtered_image" type="checkbox"> <label for="show_only_filtered_image">Show only the corrected/upscaled image</label></li>
+                    <li><input id="show_only_filtered_image" name="show_only_filtered_image" type="checkbox" checked> <label for="show_only_filtered_image">Show only the corrected/upscaled image</label></li>
                     <br/>
                     <li><label for="seed">Seed:</label> <input id="seed" name="seed" size="10" value="30000"> <input id="random_seed" name="random_seed" type="checkbox" checked> <label for="random_seed">Random Image</label></li>
                     <li><label for="num_outputs_total">Number of images to make:</label> <input id="num_outputs_total" name="num_outputs_total" value="1" size="4"> <label for="num_outputs_parallel">Generate in parallel:</label> <input id="num_outputs_parallel" name="num_outputs_parallel" value="1" size="4"> (images at once)</li>
@@ -515,7 +515,7 @@ function isUpscalingEnabled() {
 }
 
 function isShowOnlyFilteredImageEnabled() {
-    return getLocalStorageBoolItem(SHOW_ONLY_FILTERED_IMAGE_KEY, false)
+    return getLocalStorageBoolItem(SHOW_ONLY_FILTERED_IMAGE_KEY, true)
 }
 
 function isSaveToDiskEnabled() {
