@@ -38,6 +38,8 @@ You do not need anything else. You do not need WSL, Docker or Conda. The install
 
 This will automatically install Stable Diffusion, set it up, and start the interface. No additional steps are needed.
 
+**To Uninstall:* Just delete the `stable-diffusion-ui` folder, to uninstall all the downloaded packages.
+
 
 # Usage
 Open http://localhost:9000 in your browser (after running step 3 previously).
