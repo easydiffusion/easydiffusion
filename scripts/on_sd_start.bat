@@ -1,5 +1,7 @@
 @echo off
 
+@copy sd-ui-files\scripts\on_env_start.bat scripts\ /Y
+
 @>nul grep -c "sd_git_cloned" scripts\install_status.txt
 @if "%ERRORLEVEL%" EQU "0" (
     @echo "Stable Diffusion's git repository was already installed. Updating.."
