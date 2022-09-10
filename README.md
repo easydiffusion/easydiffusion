@@ -8,7 +8,7 @@
 
 [![Discord Server](https://badgen.net/badge/icon/discord?icon=discord&label)](https://discord.com/invite/u9yhsFmEkB) (for support, and development discussion) | [Troubleshooting guide for common problems](Troubleshooting.md)
 
-️‍🔥🎉 **New!** Face Correction (GFPGAN) and Upscaling (RealESRGAN) is now available!
+️‍🔥🎉 **New!** Face Correction (GFPGAN) and Upscaling (RealESRGAN) have been added!
 
 # Features in the new v2 Version:
 - **No Dependencies or Technical Knowledge Required**: 1-click install for Windows 10/11 and Linux. *No dependencies*, no need for WSL or Docker or Conda or technical setup. Just download and run!
