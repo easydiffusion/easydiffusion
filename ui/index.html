@@ -254,6 +254,10 @@
         font-size: 16pt;
         margin-bottom: 10pt;
     }
+    #coffeeButton {
+        height: 23px;
+        transform: translateY(25%);
+    }
     </style>
 </html>
 <body>
@@ -265,7 +269,7 @@
                     <div id="server-status-color">&nbsp;</div>
                     <span id="server-status-msg">Stable Diffusion is starting..</span>
                 </div>
-                <h1>Stable Diffusion UI <small>v2.05 (beta)</small></h1>
+                <h1>Stable Diffusion UI <small>v2.1 <span id="updateBranchLabel"></span></small></h1>
             </div>
             <div id="editor-inputs">
                 <div id="editor-inputs-prompt" class="row">
@@ -295,6 +299,16 @@
             <div id="editor-settings" class="panel-box">
                 <h4 class="collapsible">Advanced Settings</h4>
                 <ul id="editor-settings-entries" class="collapsible-content">
+                    <li><input id="use_face_correction" name="use_face_correction" type="checkbox" checked> <label for="use_face_correction">Fix incorrect faces and eyes (uses GFPGAN)</label></li>
+                    <li>
+                        <input id="use_upscale" name="use_upscale" type="checkbox"> <label for="use_upscale">Upscale the image to 4x resolution using </label>
+                        <select id="upscale_model" name="upscale_model">
+                            <option value="RealESRGAN_x4plus" selected>RealESRGAN_x4plus</option>
+                            <option value="RealESRGAN_x4plus_anime_6B">RealESRGAN_x4plus_anime_6B</option>
+                        </select>
+                    </li>
+                    <li><input id="show_only_filtered_image" name="show_only_filtered_image" type="checkbox" checked> <label for="show_only_filtered_image">Show only the corrected/upscaled image</label></li>
+                    <br/>
                     <li><label for="seed">Seed:</label> <input id="seed" name="seed" size="10" value="30000"> <input id="random_seed" name="random_seed" type="checkbox" checked> <label for="random_seed">Random Image</label></li>
                     <li><label for="num_outputs_total">Number of images to make:</label> <input id="num_outputs_total" name="num_outputs_total" value="1" size="4"> <label for="num_outputs_parallel">Generate in parallel:</label> <input id="num_outputs_parallel" name="num_outputs_parallel" value="1" size="4"> (images at once)</li>
                     <li><label for="width">Width:</label> 
@@ -339,12 +353,14 @@
                     <li><label for="guidance_scale">Guidance Scale:</label> <input id="guidance_scale" name="guidance_scale" value="75" type="range" min="10" max="200"> <span id="guidance_scale_value"></span></li>
                     <li><span id="prompt_strength_container"><label for="prompt_strength">Prompt Strength:</label> <input id="prompt_strength" name="prompt_strength" value="8" type="range" min="0" max="10"> <span id="prompt_strength_value"></span><br/></span></li>
                     <li>&nbsp;</li>
-                    <li><input id="save_to_disk" name="save_to_disk" type="checkbox"> <label for="save_to_disk">Automatically save to disk <span id="diskPath"></span></label></li>
+                    <li><input id="save_to_disk" name="save_to_disk" type="checkbox"> <label for="save_to_disk">Automatically save to <input id="diskPath" name="diskPath" size="40" disabled></label></li>
                     <li><input id="sound_toggle" name="sound_toggle" type="checkbox" checked> <label for="sound_toggle">Play sound on task completion</label></li>
                     <li><input id="turbo" name="turbo" type="checkbox" checked> <label for="turbo">Turbo mode (generates images faster, but uses an additional 1 GB of GPU memory)</label></li>
                     <li><input id="use_cpu" name="use_cpu" type="checkbox"> <label for="use_cpu">Use CPU instead of GPU (warning: this will be *very* slow)</label></li>
-                    <li><input id="use_full_precision" name="use_full_precision" type="checkbox"> <label for="use_full_precision">Use full precision (for GPU-only. warning: this will consume more VRAM. Use this for NVIDIA 1650 and 1660)</label></li>
+                    <li><input id="use_full_precision" name="use_full_precision" type="checkbox"> <label for="use_full_precision">Use full precision (for GPU-only. warning: this will consume more VRAM)</label></li>
                     <!-- <li><input id="allow_nsfw" name="allow_nsfw" type="checkbox"> <label for="allow_nsfw">Allow NSFW Content (You confirm you are above 18 years of age)</label></li> -->
+                    <br/>
+                    <li><input id="use_beta_channel" name="use_beta_channel" type="checkbox"> <label for="use_beta_channel">🔥Beta channel. Get the latest features immediately (but could be less stable). Please restart the program after changing this.</label></li>
                 </ul>
             </div>
 
@@ -367,7 +383,8 @@
     <div class="line-separator">&nbsp;</div>
 
     <div id="footer" class="panel-box">
-        <p>Please feel free to <a href="https://github.com/cmdr2/stable-diffusion-ui/issues" target="_blank">file an issue</a> if you have any problems or suggestions in using this interface.</p>
+        <p>If you found this project useful and want to help keep it alive, please <a href="https://ko-fi.com/cmdr2_stablediffusion_ui" target="_blank"><img src="media/kofi.png" id="coffeeButton"></a> to help cover the cost of development and maintenance! Thank you for your support!</p>
+        <p>Please feel free to join the <a href="https://discord.com/invite/u9yhsFmEkB" target="_blank">discord community</a> or <a href="https://github.com/cmdr2/stable-diffusion-ui/issues" target="_blank">file an issue</a> if you have any problems or suggestions in using this interface.</p>
         <div id="footer-legal">
             <p><b>Disclaimer:</b> The authors of this project are not responsible for any content generated using this interface.</p>
             <p>This license of this software forbids you from sharing any content that violates any laws, produce any harm to a person, disseminate any personal information that would be meant for harm, <br/>spread misinformation and target vulnerable groups. For the full list of restrictions please read <a href="https://github.com/cmdr2/stable-diffusion-ui/blob/main/LICENSE" target="_blank">the license</a>.</p>
@@ -379,10 +396,20 @@
 
 <script>
 const SOUND_ENABLED_KEY = "soundEnabled"
+const SAVE_TO_DISK_KEY = "saveToDisk"
 const USE_CPU_KEY = "useCPU"
 const USE_FULL_PRECISION_KEY = "useFullPrecision"
 const USE_TURBO_MODE_KEY = "useTurboMode"
+const DISK_PATH_KEY = "diskPath"
+const ADVANCED_PANEL_OPEN_KEY = "advancedPanelOpen"
+const MODIFIERS_PANEL_OPEN_KEY = "modifiersPanelOpen"
+const USE_FACE_CORRECTION_KEY = "useFaceCorrection"
+const USE_UPSCALING_KEY = "useUpscaling"
+const SHOW_ONLY_FILTERED_IMAGE_KEY = "showOnlyFilteredImage"
 const HEALTH_PING_INTERVAL = 5 // seconds
+const MAX_INIT_IMAGE_DIMENSION = 768
+
+const IMAGE_REGEX = new RegExp('data:image/[A-Za-z]+;base64')
 
 let promptField = document.querySelector('#prompt')
 let numOutputsTotalField = document.querySelector('#num_outputs_total')
@@ -402,9 +429,16 @@ let turboField = document.querySelector('#turbo')
 let useCPUField = document.querySelector('#use_cpu')
 let useFullPrecisionField = document.querySelector('#use_full_precision')
 let saveToDiskField = document.querySelector('#save_to_disk')
+let diskPathField = document.querySelector('#diskPath')
 // let allowNSFWField = document.querySelector("#allow_nsfw")
+let useBetaChannelField = document.querySelector("#use_beta_channel")
 let promptStrengthField = document.querySelector('#prompt_strength')
 let promptStrengthValueLabel = document.querySelector('#prompt_strength_value')
+let useFaceCorrectionField = document.querySelector("#use_face_correction")
+let useUpscalingField = document.querySelector("#use_upscale")
+let upscaleModelField = document.querySelector("#upscale_model")
+let showOnlyFilteredImageField = document.querySelector("#show_only_filtered_image")
+let updateBranchLabel = document.querySelector("#updateBranchLabel")
 
 let makeImageBtn = document.querySelector('#makeImage')
 
@@ -431,6 +465,9 @@ let soundToggle = document.querySelector('#sound_toggle')
 
 let serverStatusColor = document.querySelector('#server-status-color')
 let serverStatusMsg = document.querySelector('#server-status-msg')
+
+let advancedPanelHandle = document.querySelector("#editor-settings .collapsible")
+let modifiersPanelHandle = document.querySelector("#editor-modifiers .collapsible")
 
 let serverStatus = 'offline'
 let activeTags = []
@@ -460,8 +497,30 @@ function handleBoolSettingChange(key) {
     }
 }
 
+function handleStringSettingChange(key) {
+    return function(e) {
+        localStorage.setItem(key, e.target.value.toString())
+    }
+}
+
 function isSoundEnabled() {
     return getLocalStorageBoolItem(SOUND_ENABLED_KEY, true)
+}
+
+function isFaceCorrectionEnabled() {
+    return getLocalStorageBoolItem(USE_FACE_CORRECTION_KEY, false)
+}
+
+function isUpscalingEnabled() {
+    return getLocalStorageBoolItem(USE_UPSCALING_KEY, false)
+}
+
+function isShowOnlyFilteredImageEnabled() {
+    return getLocalStorageBoolItem(SHOW_ONLY_FILTERED_IMAGE_KEY, true)
+}
+
+function isSaveToDiskEnabled() {
+    return getLocalStorageBoolItem(SAVE_TO_DISK_KEY, false)
 }
 
 function isUseCPUEnabled() {
@@ -474,6 +533,18 @@ function isUseFullPrecisionEnabled() {
 
 function isUseTurboModeEnabled() {
     return getLocalStorageBoolItem(USE_TURBO_MODE_KEY, true)
+}
+
+function getSavedDiskPath() {
+    return getLocalStorageItem(DISK_PATH_KEY, '')
+}
+
+function isAdvancedPanelOpenEnabled() {
+    return getLocalStorageBoolItem(ADVANCED_PANEL_OPEN_KEY, false)
+}
+
+function isModifiersPanelOpenEnabled() {
+    return getLocalStorageBoolItem(MODIFIERS_PANEL_OPEN_KEY, false)
 }
 
 function setStatus(statusType, msg, msgType) {
@@ -495,8 +566,21 @@ function setStatus(statusType, msg, msgType) {
     }
 }
 
+function logMsg(msg, level) {
+    if (level === 'error') {
+        outputMsg.innerHTML = '<span style="color: red">Error: ' + msg + '</span>'
+    } else if (level === 'warn') {
+        outputMsg.innerHTML = '<span style="color: orange">Warning: ' + msg + '</span>'
+    } else {
+        outputMsg.innerHTML = msg
+    }
+
+    console.log(level, msg)
+}
+
 function logError(msg, res) {
-    outputMsg.innerHTML = '<span style="color: red">Error: ' + msg + '</span>'
+    logMsg(msg, 'error')
+
     console.log('request error', res)
     setStatus('request', 'error', 'error')
 }
@@ -550,6 +634,15 @@ async function doMakeImage(reqBody) {
                 let msg = ''
                 if (res.detail !== undefined) {
                     msg = res.detail
+
+                    if (msg.toLowerCase().includes('out of memory')) {
+                        msg += `<br/><br/>
+                                <b>Suggestions</b>:
+                                <br/>
+                                1. If you have set an initial image, please try reducing its dimension to ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION} or smaller.<br/>
+                                2. Try disabling the '<em>Turbo mode</em>' under '<em>Advanced Settings</em>'.<br/>
+                                3. Try generating a smaller image.<br/>`
+                    }
                 } else {
                     msg = res
                 }
@@ -643,10 +736,37 @@ async function doMakeImage(reqBody) {
     return true
 }
 
+function validateInput() {
+    let width = parseInt(widthField.value)
+    let height = parseInt(heightField.value)
+
+    if (IMAGE_REGEX.test(initImagePreview.src)) {
+        if (initImagePreview.naturalWidth > MAX_INIT_IMAGE_DIMENSION || initImagePreview.naturalHeight > MAX_INIT_IMAGE_DIMENSION) {
+            return {'isValid': false, 'warning': `The dimensions of your initial image are very large, and can cause 'Out of Memory' errors! Please ensure that its dimensions are equal (or smaller) than the desired output image.
+                    <br/><br/>
+                    Your initial image size is ${initImagePreview.naturalWidth}x${initImagePreview.naturalHeight} pixels. Please try to keep it smaller than ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION}.`}
+        }
+    }
+
+    return {'isValid': true}
+}
+
 async function makeImage() {
     if (serverStatus !== 'online') {
         logError('The server is still starting up..')
         return
+    }
+
+    let validation = validateInput()
+    if (validation['isValid']) {
+        outputMsg.innerHTML = 'Fetching..'
+    } else {
+        if (validation['error']) {
+            logError(validation['error'])
+            return
+        } else if (validation['warning']) {
+            logMsg(validation['warning'], 'warn')
+        }
     }
 
     setStatus('request', 'fetching..')
@@ -654,10 +774,7 @@ async function makeImage() {
     makeImageBtn.innerHTML = 'Processing..'
     makeImageBtn.disabled = true
 
-    outputMsg.innerHTML = 'Fetching..'
-
-    const imageRegex = new RegExp('data:image/[A-Za-z]+;base64')
-    let seed = (randomSeedField.checked ? Math.floor(Math.random() * 10000) : parseInt(seedField.value))
+    let seed = (randomSeedField.checked ? Math.floor(Math.random() * 10000000) : parseInt(seedField.value))
     let numOutputsTotal = parseInt(numOutputsTotalField.value)
     let numOutputsParallel = parseInt(numOutputsParallelField.value)
     let batchCount = Math.ceil(numOutputsTotal / numOutputsParallel)
@@ -679,19 +796,34 @@ async function makeImage() {
         width: widthField.value,
         height: heightField.value,
         // allow_nsfw: allowNSFWField.checked,
-        save_to_disk: saveToDiskField.checked,
         turbo: turboField.checked,
         use_cpu: useCPUField.checked,
         use_full_precision: useFullPrecisionField.checked
     }
 
-    if (imageRegex.test(initImagePreview.src)) {
+    if (IMAGE_REGEX.test(initImagePreview.src)) {
         reqBody['init_image'] = initImagePreview.src
         reqBody['prompt_strength'] = parseInt(promptStrengthField.value) / 10
 
-        // if (imageRegex.test(maskImagePreview.src)) {
+        // if (IMAGE_REGEX.test(maskImagePreview.src)) {
         //     reqBody['mask'] = maskImagePreview.src
         // }
+    }
+
+    if (saveToDiskField.checked && diskPathField.value.trim() !== '') {
+        reqBody['save_to_disk_path'] = diskPathField.value.trim()
+    }
+
+    if (useFaceCorrectionField.checked) {
+        reqBody['use_face_correction'] = 'GFPGANv1.3'
+    }
+
+    if (useUpscalingField.checked) {
+        reqBody['use_upscale'] = upscaleModelField.value
+    }
+
+    if (showOnlyFilteredImageField.checked && (useUpscalingField.checked || useFaceCorrectionField.checked)) {
+        reqBody['show_only_filtered_image'] = showOnlyFilteredImageField.checked
     }
 
     let time = new Date().getTime()
@@ -700,7 +832,7 @@ async function makeImage() {
     let successCount = 0
 
     for (let i = 0; i < batchCount; i++) {
-        reqBody['seed'] = seed + i
+        reqBody['seed'] = seed + (i * batchSize)
 
         let success = await doMakeImage(reqBody)
 
@@ -736,13 +868,14 @@ async function makeImage() {
 function createFileName() {
 
     // Most important information is the prompt
-    const underscoreName = lastPromptUsed.replace(/[^a-zA-Z0-9]/g, '_');
+    let underscoreName = lastPromptUsed.replace(/[^a-zA-Z0-9]/g, '_')
+    underscoreName = underscoreName.substring(0, 100)
     const seed = seedField.value;
     const steps = numInferenceStepsField.value;
     const guidance =  guidanceScaleField.value; 
 
     // name and the top level metadata
-    let fileName = `sd_${underscoreName}_Seed-${seed}_Steps-${steps}_Guidance-${guidance}`;
+    let fileName = `${underscoreName}_Seed-${seed}_Steps-${steps}_Guidance-${guidance}`
 
     // add the tags
     // let tags = [];
@@ -761,14 +894,26 @@ function createFileName() {
     // fileName += `${tagString}`;
 
     // add the file extension
-    fileName += `.png`;
+    fileName += `.png`
 
-    return fileName;
+    return fileName
 }
 
 
 soundToggle.addEventListener('click', handleBoolSettingChange(SOUND_ENABLED_KEY))
 soundToggle.checked = isSoundEnabled()
+
+saveToDiskField.checked = isSaveToDiskEnabled()
+diskPathField.disabled = !saveToDiskField.checked
+
+useFaceCorrectionField.addEventListener('click', handleBoolSettingChange(USE_FACE_CORRECTION_KEY))
+useFaceCorrectionField.checked = isFaceCorrectionEnabled()
+
+useUpscalingField.checked = isUpscalingEnabled()
+upscaleModelField.disabled = !useUpscalingField.checked
+
+showOnlyFilteredImageField.addEventListener('click', handleBoolSettingChange(SHOW_ONLY_FILTERED_IMAGE_KEY))
+showOnlyFilteredImageField.checked = isShowOnlyFilteredImageEnabled()
 
 useCPUField.addEventListener('click', handleBoolSettingChange(USE_CPU_KEY))
 useCPUField.checked = isUseCPUEnabled()
@@ -778,6 +923,32 @@ useFullPrecisionField.checked = isUseFullPrecisionEnabled()
 
 turboField.addEventListener('click', handleBoolSettingChange(USE_TURBO_MODE_KEY))
 turboField.checked = isUseTurboModeEnabled()
+
+diskPathField.addEventListener('change', handleStringSettingChange(DISK_PATH_KEY))
+
+saveToDiskField.addEventListener('click', function(e) {
+    diskPathField.disabled = !this.checked
+    handleBoolSettingChange(SAVE_TO_DISK_KEY)(e)
+})
+
+useUpscalingField.addEventListener('click', function(e) {
+    upscaleModelField.disabled = !this.checked
+    handleBoolSettingChange(USE_UPSCALING_KEY)(e)
+})
+
+function setPanelOpen(panelHandle) {
+    let panelContents = panelHandle.nextElementSibling
+    panelHandle.classList.add('active')
+    panelContents.style.display = 'block'
+}
+
+if (isAdvancedPanelOpenEnabled()) {
+    setPanelOpen(advancedPanelHandle)
+}
+
+if (isModifiersPanelOpenEnabled()) {
+    setPanelOpen(modifiersPanelHandle)
+}
 
 makeImageBtn.addEventListener('click', makeImage)
 
@@ -796,10 +967,54 @@ function updatePromptStrength() {
 promptStrengthField.addEventListener('input', updatePromptStrength)
 updatePromptStrength()
 
+useBetaChannelField.addEventListener('click', async function(e) {
+    if (serverStatus !== 'online') {
+        logError('The server is still starting up..')
+        alert('The server is still starting up..')
+        e.preventDefault()
+        return false
+    }
+
+    let updateBranch = (this.checked ? 'beta' : 'main')
+
+    try {
+        let res = await fetch('/app_config', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                'update_branch': updateBranch
+            })
+        })
+        res = await res.json()
+
+        console.log('set config status response', res)
+    } catch (e) {
+        console.log('set config status error', e)
+    }
+})
+
+async function getAppConfig() {
+    try {
+        let res = await fetch('/app_config')
+        config = await res.json()
+
+        if (config.update_branch === 'beta') {
+            useBetaChannelField.checked = true
+            updateBranchLabel.innerHTML = "(beta)"
+        }
+
+        console.log('get config status response', config)
+    } catch (e) {
+        console.log('get config status error', e)
+    }
+}
+
 function checkRandomSeed() {
     if (randomSeedField.checked) {
         seedField.disabled = true
-        seedField.value = "random"
+        seedField.value = "0"
     } else {
         seedField.disabled = false
     }
@@ -886,7 +1101,12 @@ function createCollapsibles(node) {
     collapsibles.forEach(function(c) {
         let handle = document.createElement('span')
         handle.className = 'collapsible-handle'
-        handle.innerHTML = '&#x2795;'
+
+        if (c.className.indexOf('active') !== -1) {
+            handle.innerHTML = '&#x2796;' // minus
+        } else {
+            handle.innerHTML = '&#x2795;' // plus
+        }
         c.insertBefore(handle, c.firstChild)
 
         c.addEventListener('click', function() {
@@ -898,6 +1118,14 @@ function createCollapsibles(node) {
             } else {
                 content.style.display = "block"
                 handle.innerHTML = '&#x2796;' // minus
+            }
+
+            if (this == advancedPanelHandle) {
+                let state = (content.style.display === 'block' ? 'true' : 'false')
+                localStorage.setItem(ADVANCED_PANEL_OPEN_KEY, state)
+            } else if (this == modifiersPanelHandle) {
+                let state = (content.style.display === 'block' ? 'true' : 'false')
+                localStorage.setItem(MODIFIERS_PANEL_OPEN_KEY, state)
             }
         })
     })
@@ -937,12 +1165,19 @@ function refreshTagsList() {
 
 async function getDiskPath() {
     try {
+        let diskPath = getSavedDiskPath()
+
+        if (diskPath !== '') {
+            diskPathField.value = diskPath
+            return
+        }
+
         let res = await fetch('/output_dir')
         if (res.status === 200) {
             res = await res.json()
             res = res[0]
 
-            document.querySelector('#diskPath').innerHTML = '(to ' + res + ')'
+            document.querySelector('#diskPath').value = res
         }
     } catch (e) {
         console.log('error fetching output dir path', e)
@@ -1003,9 +1238,12 @@ async function loadModifiers() {
 async function init() {
     await loadModifiers()
     await getDiskPath()
+    await getAppConfig()
 
     setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
     healthCheck()
+
+    playSound()
 }
 
 init()

@@ -1,3 +1,4 @@
+import json
 import traceback
 
 import sys
@@ -9,11 +10,14 @@ print('started in ', SCRIPT_DIR)
 SD_UI_DIR = os.getenv('SD_UI_PATH', None)
 sys.path.append(os.path.dirname(SD_UI_DIR))
 
+CONFIG_DIR = os.path.join(SD_UI_DIR, '..', 'scripts')
+
 OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder
 
 from fastapi import FastAPI, HTTPException
 from starlette.responses import FileResponse
 from pydantic import BaseModel
+import logging
 
 from sd_internal import Request, Response
 
@@ -38,14 +42,21 @@ class ImageRequest(BaseModel):
     seed: int = 42
     prompt_strength: float = 0.8
     # allow_nsfw: bool = False
-    save_to_disk: bool = False
+    save_to_disk_path: str = None
     turbo: bool = True
     use_cpu: bool = False
     use_full_precision: bool = False
+    use_face_correction: str = None # or "GFPGANv1.3"
+    use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
+    show_only_filtered_image: bool = False
+
+class SetAppConfigRequest(BaseModel):
+    update_branch: str = "main"
 
 @app.get('/')
 def read_root():
-    return FileResponse(os.path.join(SD_UI_DIR, 'index.html'))
+    headers = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
+    return FileResponse(os.path.join(SD_UI_DIR, 'index.html'), headers=headers)
 
 @app.get('/ping')
 async def ping():
@@ -61,7 +72,7 @@ async def ping():
         model_is_loading = True
 
         from sd_internal import runtime
-        runtime.load_model(ckpt_to_use="sd-v1-4.ckpt")
+        runtime.load_model_ckpt(ckpt_to_use="sd-v1-4")
 
         model_loaded = True
         model_is_loading = False
@@ -90,9 +101,10 @@ async def image(req : ImageRequest):
     r.turbo = req.turbo
     r.use_cpu = req.use_cpu
     r.use_full_precision = req.use_full_precision
-
-    if req.save_to_disk:
-        r.save_to_disk_path = outpath
+    r.save_to_disk_path = req.save_to_disk_path
+    r.use_upscale: str = req.use_upscale
+    r.use_face_correction = req.use_face_correction
+    r.show_only_filtered_image = req.show_only_filtered_image
 
     try:
         res: Response = runtime.mk_img(r)
@@ -102,9 +114,58 @@ async def image(req : ImageRequest):
         print(traceback.format_exc())
         return HTTPException(status_code=500, detail=str(e))
 
+@app.post('/app_config')
+async def setAppConfig(req : SetAppConfigRequest):
+    try:
+        config = {
+            'update_branch': req.update_branch
+        }
+
+        config_json_str = json.dumps(config)
+        config_bat_str = f'@set update_branch={req.update_branch}'
+        config_sh_str = f'export update_branch={req.update_branch}'
+
+        config_json_path = os.path.join(CONFIG_DIR, 'config.json')
+        config_bat_path = os.path.join(CONFIG_DIR, 'config.bat')
+        config_sh_path = os.path.join(CONFIG_DIR, 'config.sh')
+
+        with open(config_json_path, 'w') as f:
+            f.write(config_json_str)
+
+        with open(config_bat_path, 'w') as f:
+            f.write(config_bat_str)
+
+        with open(config_sh_path, 'w') as f:
+            f.write(config_sh_str)
+
+        return {'OK'}
+    except Exception as e:
+        print(traceback.format_exc())
+        return HTTPException(status_code=500, detail=str(e))
+
+@app.get('/app_config')
+def getAppConfig():
+    try:
+        config_json_path = os.path.join(CONFIG_DIR, 'config.json')
+
+        if not os.path.exists(config_json_path):
+            return HTTPException(status_code=500, detail="No config file")
+
+        with open(config_json_path, 'r') as f:
+            config_json_str = f.read()
+            config = json.loads(config_json_str)
+            return config
+    except Exception as e:
+        print(traceback.format_exc())
+        return HTTPException(status_code=500, detail=str(e))
+
 @app.get('/media/ding.mp3')
 def read_ding():
     return FileResponse(os.path.join(SD_UI_DIR, 'media/ding.mp3'))
+
+@app.get('/media/kofi.png')
+def read_modifiers():
+    return FileResponse(os.path.join(SD_UI_DIR, 'media/kofi.png'))
 
 @app.get('/modifiers.json')
 def read_modifiers():
@@ -113,6 +174,13 @@ def read_modifiers():
 @app.get('/output_dir')
 def read_home_dir():
     return {outpath}
+
+# don't log /ping requests
+class HealthCheckLogFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        return record.getMessage().find('/ping') == -1
+
+logging.getLogger('uvicorn.access').addFilter(HealthCheckLogFilter())
 
 # start the browser ui
 import webbrowser; webbrowser.open('http://localhost:9000')
