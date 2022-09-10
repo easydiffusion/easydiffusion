@@ -269,7 +269,7 @@
                     <div id="server-status-color">&nbsp;</div>
                     <span id="server-status-msg">Stable Diffusion is starting..</span>
                 </div>
-                <h1>Stable Diffusion UI <small>v2.1 (beta)</small></h1>
+                <h1>Stable Diffusion UI <small>v2.1 <span id="updateBranchLabel"></span></small></h1>
             </div>
             <div id="editor-inputs">
                 <div id="editor-inputs-prompt" class="row">
@@ -438,6 +438,7 @@ let useFaceCorrectionField = document.querySelector("#use_face_correction")
 let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
 let showOnlyFilteredImageField = document.querySelector("#show_only_filtered_image")
+let updateBranchLabel = document.querySelector("#updateBranchLabel")
 
 let makeImageBtn = document.querySelector('#makeImage')
 
@@ -1001,6 +1002,7 @@ async function getAppConfig() {
 
         if (config.update_branch === 'beta') {
             useBetaChannelField.checked = true
+            updateBranchLabel.innerHTML = "(beta)"
         }
 
         console.log('get config status response', config)
