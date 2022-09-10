@@ -8,8 +8,11 @@
 
 [![Discord Server](https://badgen.net/badge/icon/discord?icon=discord&label)](https://discord.com/invite/u9yhsFmEkB) (for support, and development discussion) | [Troubleshooting guide for common problems](Troubleshooting.md)
 
+️‍🔥🎉 **New!** Face Correction (GFPGAN) and Upscaling (RealESRGAN) is now available!
+
 # Features in the new v2 Version:
 - **No Dependencies or Technical Knowledge Required**: 1-click install for Windows 10/11 and Linux. *No dependencies*, no need for WSL or Docker or Conda or technical setup. Just download and run!
+- **Face Correction (GFPGAN) and Upscaling (RealESRGAN)**
 - **Image Modifiers**: A library of *modifier tags* like *"Realistic"*, *"Pencil Sketch"*, *"ArtStation"* etc. Experiment with various styles quickly.
 - **New UI**: with cleaner design
 - Supports "*Text to Image*" and "*Image to Image*"
@@ -53,6 +56,8 @@ Open http://localhost:9000 in your browser (after running step 3 previously).
 1. Click `Browse..` next to `Initial Image`. Select your desired image.
 2. An optional text prompt can help you further describe the kind of image you want to generate.
 3. Press `Make Image`. See the image generated using your prompt.
+
+You can use Face Correction or Upscaling to improve the image further.
 
 **Pro tip:** You can also click `Use as Input` on a generated image, to use it as the input image for your next generation. This can be useful for sequentially refining the generated image with a single click.
 
