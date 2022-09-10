@@ -1,3 +1,5 @@
+#!/bin/bash
+
 printf "\n\nStable Diffusion UI\n\n"
 
 if [ -f "scripts/config.sh" ]; then
