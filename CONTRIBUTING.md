@@ -18,7 +18,21 @@ This is in-flux, but one way to get a development environment running for editin
 3) `cd /projects/stable-diffusion-ui-archive` and run the script to set up and start the project, e.g. `start.sh`
 4) Check you can view and generate images on `localhost:9000`
 5) Close the server, and edit `/projects/stable-diffusion-ui-archive/scripts/on_env_start.sh`
-6) Comment out the line near the bottom that copies the `files/ui` folder, e.g. `cp -Rf sd-ui-files/ui ui` for `.sh` or `@xcopy sd-ui-files\ui ui /s /i /Y` for `.bat`
+6) Comment out the lines near the bottom that copies the `files/ui` folder, e.g:
+  
+  for `.sh`
+```
+# rm -rf ui
+# cp -Rf sd-ui-files/ui .
+# cp sd-ui-files/scripts/on_sd_start.sh scripts/
+# cp sd-ui-files/scripts/start.sh .
+``` 
+for `.bat`
+```
+REM @xcopy sd-ui-files\ui ui /s /i /Y
+REM @copy sd-ui-files\scripts\on_sd_start.bat scripts\ /Y
+REM @copy "sd-ui-files\scripts\Start Stable Diffusion UI.cmd" . /Y
+``` 
 7) Comment out the line at the top of `/projects/stable-diffusion-ui-archive/scripts/on_sd_start.sh` that copies `on_env_start`. For e.g. `@copy sd-ui-files\scripts\on_env_start.bat scripts\ /Y`
 8) Delete the current `ui` folder at `/projects/stable-diffusion-ui-archive/ui`
 9) Now make a symlink between the repository clone (where you will be making changes) and this archive (where you will be running stable diffusion):
