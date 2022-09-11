@@ -34,7 +34,7 @@ You do not need anything else. You do not need WSL, Docker or Conda. The install
 1. **Download** [for Windows](https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.05/stable-diffusion-ui-win64.zip) or [for Linux](https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.05/stable-diffusion-ui-linux.tar.xz).
 
 2. **Extract**:
-  - For Windows: After unzipping the file, please move the `stable-diffusion-ui` folder to your `C:` (or any drive like D: at the top root level). For e.g. `C:\stable-diffusion-ui`. This will avoid a common problem with Windows (of file path length limits).
+  - For Windows: After unzipping the file, please move the `stable-diffusion-ui` folder to your `C:` (or any drive like D:, at the top root level), e.g. `C:\stable-diffusion-ui`. This will avoid a common problem with Windows (file path length limits).
   - For Linux: After extracting the .tar.xz file, please open a terminal, and go to the `stable-diffusion-ui` directory.
 
 3. **Run**:
@@ -43,11 +43,11 @@ You do not need anything else. You do not need WSL, Docker or Conda. The install
 
 This will automatically install Stable Diffusion, set it up, and start the interface. No additional steps are needed.
 
-**To Uninstall:** Just delete the `stable-diffusion-ui` folder, to uninstall all the downloaded packages.
+**To Uninstall:** Just delete the `stable-diffusion-ui` folder to uninstall all the downloaded packages.
 
 
 # Usage
-Open http://localhost:9000 in your browser (after running step 3 previously).
+Open http://localhost:9000 in your browser (after running step 3 previously). It may take a few moments for the back-end to be ready.
 
 ## With a text description
 1. Enter a text prompt, like `a photograph of an astronaut riding a horse` in the textbox.
@@ -90,4 +90,4 @@ Also, please feel free to submit a pull request, if you have any code contributi
 # Disclaimer
 The authors of this project are not responsible for any content generated using this interface.
 
-This license of this software forbids you from sharing any content that violates any laws, produce any harm to a person, disseminate any personal information that would be meant for harm, spread misinformation and target vulnerable groups. For the full list of restrictions please read [the license](LICENSE).
+The license of this software forbids you from sharing any content that violates any laws, produce any harm to a person, disseminate any personal information that would be meant for harm, spread misinformation, or target vulnerable groups. For the full list of restrictions please read [the license](LICENSE). You agree to these terms by using this software.
