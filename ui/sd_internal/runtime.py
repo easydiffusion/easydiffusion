@@ -57,11 +57,19 @@ sampler_ddim = None
 has_valid_gpu = False
 force_full_precision = False
 try:
-    gpu_name = torch.cuda.get_device_name(torch.cuda.current_device())
-    has_valid_gpu = True
+    gpu = torch.cuda.current_device()
+    gpu_name = torch.cuda.get_device_name(gpu)
     force_full_precision = ('nvidia' in gpu_name.lower()) and ('1660' in gpu_name or ' 1650' in gpu_name) # otherwise these NVIDIA cards create green images
     if force_full_precision:
         print('forcing full precision on NVIDIA 16xx cards, to avoid green images. GPU detected: ', gpu_name)
+
+    mem_free, mem_total = torch.cuda.mem_get_info(gpu)
+    mem_total /= float(10**9)
+    if mem_total < 3.0:
+        print("GPUs with less than 3 GB of VRAM are not compatible with Stable Diffusion")
+        raise Exception()
+
+    has_valid_gpu = True
 except:
     print('WARNING: No compatible GPU found. Using the CPU, but this will be very slow!')
     pass
