@@ -59,7 +59,7 @@ force_full_precision = False
 try:
     gpu = torch.cuda.current_device()
     gpu_name = torch.cuda.get_device_name(gpu)
-    force_full_precision = ('nvidia' in gpu_name.lower()) and ('1660' in gpu_name or ' 1650' in gpu_name) # otherwise these NVIDIA cards create green images
+    force_full_precision = ('nvidia' in gpu_name.lower() or 'geforce' in gpu_name.lower()) and (' 1660' in gpu_name or ' 1650' in gpu_name) # otherwise these NVIDIA cards create green images
     if force_full_precision:
         print('forcing full precision on NVIDIA 16xx cards, to avoid green images. GPU detected: ', gpu_name)
 
