@@ -45,6 +45,9 @@ else
     printf "\n\nDownloading packages necessary for Stable Diffusion..\n"
     printf "\n\n***** This will take some time (depending on the speed of the Internet connection) and may appear to be stuck, but please be patient ***** ..\n\n"
 
+    # prevent conda from using packages from the user's home directory, to avoid conflicts
+    export PYTHONNOUSERSITE=1
+
     if conda env create --prefix env --force -f environment.yaml ; then
         echo "Installed. Testing.."
     else
@@ -70,6 +73,8 @@ if [ `grep -c conda_sd_gfpgan_deps_installed ../scripts/install_status.txt` -gt 
 else
     printf "\n\nDownloading packages necessary for GFPGAN (Face Correction)..\n"
 
+    export PYTHONNOUSERSITE=1
+
     if pip install -e git+https://github.com/TencentARC/GFPGAN#egg=GFPGAN ; then
         echo "Installed. Testing.."
     else
@@ -93,6 +98,8 @@ if [ `grep -c conda_sd_esrgan_deps_installed ../scripts/install_status.txt` -gt 
 else
     printf "\n\nDownloading packages necessary for ESRGAN (Resolution Upscaling)..\n"
 
+    export PYTHONNOUSERSITE=1
+
     if pip install -e git+https://github.com/xinntao/Real-ESRGAN#egg=realesrgan ; then
         echo "Installed. Testing.."
     else
@@ -115,6 +122,8 @@ if [ `grep -c conda_sd_ui_deps_installed ../scripts/install_status.txt` -gt "0" 
     echo "Packages necessary for Stable Diffusion UI were already installed"
 else
     printf "\n\nDownloading packages necessary for Stable Diffusion UI..\n\n"
+
+    export PYTHONNOUSERSITE=1
 
     if conda install -c conda-forge --prefix ./env -y uvicorn fastapi ; then
         echo "Installed. Testing.."
