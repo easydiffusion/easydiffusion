@@ -278,6 +278,13 @@ call WHERE uvicorn > .tmp
 
 @echo. & echo "Stable Diffusion is ready!" & echo.
 
+@set SD_DIR=%cd%
+
+@cd env\lib\site-packages
+@set PYTHONPATH=%SD_DIR%;%cd%
+@cd ..\..\..
+@echo PYTHONPATH=%PYTHONPATH%
+
 @cd ..
 @set SD_UI_PATH=%cd%\ui
 @cd stable-diffusion
