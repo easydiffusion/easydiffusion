@@ -147,7 +147,7 @@ fi
 if [ -f "sd-v1-4.ckpt" ]; then
     model_size=`ls -l sd-v1-4.ckpt | awk '{print $5}'`
 
-    if [ "$model_size" -eq "4265380512" ]; then
+    if [ ! "$model_size" == "4265380512" ] && [ ! "$model_size" == "7703807346" ] && [ ! "$model_size" == "7703810927" ]; then
         echo "Data files (weights) necessary for Stable Diffusion were already downloaded"
     else
         printf "\n\nThe model file present at $PWD/sd-v1-4.ckpt is invalid. It is only $model_size bytes in size. Re-downloading.."
