@@ -147,7 +147,7 @@ fi
 if [ -f "sd-v1-4.ckpt" ]; then
     model_size=`ls -l sd-v1-4.ckpt | awk '{print $5}'`
 
-    if [ ! "$model_size" == "4265380512" ] && [ ! "$model_size" == "7703807346" ] && [ ! "$model_size" == "7703810927" ]; then
+    if [ "$model_size" -eq "4265380512" ] || [ "$model_size" -eq "7703807346" ] || [ "$model_size" -eq "7703810927" ]; then
         echo "Data files (weights) necessary for Stable Diffusion were already downloaded"
     else
         printf "\n\nThe model file present at $PWD/sd-v1-4.ckpt is invalid. It is only $model_size bytes in size. Re-downloading.."
@@ -162,7 +162,7 @@ if [ ! -f "sd-v1-4.ckpt" ]; then
 
     if [ -f "sd-v1-4.ckpt" ]; then
         model_size=`ls -l sd-v1-4.ckpt | awk '{print $5}'`
-        if [ ! "$model_size" == "4265380512" ] && [ ! "$model_size" == "7703807346" ] && [ ! "$model_size" == "7703810927" ]; then
+        if [ ! "$model_size" == "4265380512" ]; then
             printf "\n\nError: The downloaded model file was invalid! Bytes downloaded: $model_size\n\n"
             printf "\n\nError downloading the data files (weights) for Stable Diffusion. Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/blob/main/Troubleshooting.md\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
             read -p "Press any key to continue"
