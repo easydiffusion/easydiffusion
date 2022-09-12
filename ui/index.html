@@ -671,10 +671,12 @@ async function doMakeImage(reqBody) {
 
     for (let idx in res.output) {
         let imgBody = ''
+        let seed = 0
 
         try {
             let imgData = res.output[idx]
             imgBody = imgData.data
+            seed = imgData.seed
         } catch (e) {
             console.log(imgBody)
             setStatus('request', 'invalid image', 'error')
