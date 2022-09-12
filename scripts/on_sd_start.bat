@@ -149,8 +149,12 @@ call WHERE uvicorn > .tmp
         for %%J in ("sd-v1-4.ckpt") do if "%%~zJ" EQU "7703807346" (
             echo "Data files (weights) necessary for Stable Diffusion were already downloaded"
         ) else (
-            echo. & echo "The model file present at %cd%\sd-v1-4.ckpt is invalid. It is only %%~zJ bytes in size. Re-downloading.." & echo.
-            del "sd-v1-4.ckpt"
+            for %%K in ("sd-v1-4.ckpt") do if "%%~zK" EQU "7703810927" (
+                echo "Data files (weights) necessary for Stable Diffusion were already downloaded"
+            ) else (
+                echo. & echo "The model file present at %cd%\sd-v1-4.ckpt is invalid. It is only %%~zK bytes in size. Re-downloading.." & echo.
+                del "sd-v1-4.ckpt"
+            )
         )
     )
 )
