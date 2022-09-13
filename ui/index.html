@@ -877,6 +877,8 @@ async function makeImage() {
 
     makeImageBtn.innerHTML = 'Make Image'
     makeImageBtn.disabled = false
+    makeImageBtn.style.display = 'block'
+    stopImageBtn.style.display = 'none'
 
     if (isSoundEnabled()) {
         playSound()
