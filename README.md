@@ -73,7 +73,7 @@ You can also set the configuration like `seed`, `width`, `height`, `num_outputs`
 
 Use the same `seed` number to get the same image for a certain prompt. This is useful for refining a prompt without losing the basic image design. Enable the `random images` checkbox to get random images.
 
-![Screenshot of advanced settings](media/config-v5.jpg?raw=true)
+![Screenshot of advanced settings](media/config-v6.png?raw=true)
 
 # What is this? Why no Docker?
 This version is a 1-click installer. You don't need WSL or Docker or anything beyond a working NVIDIA GPU with an updated driver. You don't need to use the command-line at all. Even if you don't have a compatible GPU, you can run it on your CPU (albeit very slowly).
