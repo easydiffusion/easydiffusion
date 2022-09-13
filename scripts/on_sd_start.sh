@@ -287,6 +287,8 @@ cd ..
 export SD_UI_PATH=`pwd`/ui
 cd stable-diffusion
 
+python --version
+
 uvicorn server:app --app-dir "$SD_UI_PATH" --port 9000 --host 0.0.0.0
 
 read -p "Press any key to continue"
