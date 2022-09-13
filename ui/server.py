@@ -83,7 +83,7 @@ async def ping():
         return HTTPException(status_code=500, detail=str(e))
 
 @app.post('/image')
-async def image(req : ImageRequest):
+def image(req : ImageRequest):
     from sd_internal import runtime
 
     r = Request()
@@ -110,6 +110,20 @@ async def image(req : ImageRequest):
         res: Response = runtime.mk_img(r)
 
         return res.json()
+    except Exception as e:
+        print(traceback.format_exc())
+        return HTTPException(status_code=500, detail=str(e))
+
+@app.get('/image/stop')
+def stop():
+    try:
+        if model_is_loading:
+            return {'ERROR'}
+
+        from sd_internal import runtime
+        runtime.stop_processing = True
+
+        return {'OK'}
     except Exception as e:
         print(traceback.format_exc())
         return HTTPException(status_code=500, detail=str(e))

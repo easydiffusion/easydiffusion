@@ -17,6 +17,8 @@
     @call git pull
     @call git checkout d154155d4c0b43e13ec1f00eb72b7ff9d522fcf9
 
+    @call git apply ..\ui\sd_internal\ddim_callback.patch
+
     @cd ..
 ) else (
     @echo. & echo "Downloading Stable Diffusion.." & echo.
@@ -31,6 +33,9 @@
 
     @cd stable-diffusion
     @call git checkout d154155d4c0b43e13ec1f00eb72b7ff9d522fcf9
+
+    @call git apply ..\ui\sd_internal\ddim_callback.patch
+
     @cd ..
 )
 
