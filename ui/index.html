@@ -495,6 +495,7 @@ let modifiersPanelHandle = document.querySelector("#editor-modifiers .collapsibl
 let serverStatus = 'offline'
 let activeTags = []
 let lastPromptUsed = ''
+let taskStopped = true
 
 function getLocalStorageItem(key, fallback) {
     let item = localStorage.getItem(key)
@@ -631,6 +632,10 @@ async function healthCheck() {
 
 // makes a single image. don't call this directly, use makeImage() instead
 async function doMakeImage(reqBody) {
+    if (taskStopped) {
+        return
+    }
+
     let res = ''
     let seed = reqBody['seed']
 
@@ -800,6 +805,8 @@ async function makeImage() {
     makeImageBtn.style.display = 'none'
     stopImageBtn.style.display = 'block'
 
+    taskStopped = false
+
     let seed = (randomSeedField.checked ? Math.floor(Math.random() * 10000000) : parseInt(seedField.value))
     let numOutputsTotal = parseInt(numOutputsTotalField.value)
     let numOutputsParallel = parseInt(numOutputsParallelField.value)
@@ -934,6 +941,8 @@ stopImageBtn.addEventListener('click', async function() {
 
     stopImageBtn.style.display = 'none'
     makeImageBtn.style.display = 'block'
+
+    taskStopped = true
 })
 
 soundToggle.addEventListener('click', handleBoolSettingChange(SOUND_ENABLED_KEY))
