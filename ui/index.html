@@ -150,6 +150,19 @@
     #makeImage:hover {
         background: rgb(93, 0, 214);
     }
+    #stopImage {
+        flex: 0 0 70px;
+        background: rgb(185, 12, 0);
+        border: 2px solid rgb(122, 29, 0);
+        color: rgb(255, 221, 255);
+        width: 100%;
+        height: 30pt;
+        border-radius: 6px;
+        display: none;
+    }
+    #stopImage:hover {
+        background: rgb(214, 32, 0);
+    }
     .flex-container {
         display: flex;
     }
@@ -292,6 +305,7 @@
                 </div>
 
                 <button id="makeImage">Make Image</button>
+                <button id="stopImage">Stop</button>
             </div>
 
             <div class="line-separator">&nbsp;</div>
@@ -449,6 +463,7 @@ let showOnlyFilteredImageField = document.querySelector("#show_only_filtered_ima
 let updateBranchLabel = document.querySelector("#updateBranchLabel")
 
 let makeImageBtn = document.querySelector('#makeImage')
+let stopImageBtn = document.querySelector('#stopImage')
 
 let imagesContainer = document.querySelector('#current-images')
 let initImagePreviewContainer = document.querySelector('#init_image_preview_container')
@@ -782,7 +797,8 @@ async function makeImage() {
     setStatus('request', 'fetching..')
 
     makeImageBtn.innerHTML = 'Processing..'
-    makeImageBtn.disabled = true
+    makeImageBtn.style.display = 'none'
+    stopImageBtn.style.display = 'block'
 
     let seed = (randomSeedField.checked ? Math.floor(Math.random() * 10000000) : parseInt(seedField.value))
     let numOutputsTotal = parseInt(numOutputsTotalField.value)
@@ -909,6 +925,16 @@ function createFileName() {
     return fileName
 }
 
+stopImageBtn.addEventListener('click', async function() {
+    try {
+        let res = await fetch('/image/stop')
+    } catch (e) {
+        console.log(e)
+    }
+
+    stopImageBtn.style.display = 'none'
+    makeImageBtn.style.display = 'block'
+})
 
 soundToggle.addEventListener('click', handleBoolSettingChange(SOUND_ENABLED_KEY))
 soundToggle.checked = isSoundEnabled()
