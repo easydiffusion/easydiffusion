@@ -3,11 +3,10 @@ import { useImageQueue } from "../../store/imageQueueStore";
 
 import { ImageRequest, useImageCreate } from "../../store/imageCreateStore";
 
-import {useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import {doMakeImage, MakeImageKey } from "../../api";
+import { doMakeImage, MakeImageKey } from "../../api";
 
-import CurrentImage from "./currentImage";
 import AudioDing from "./audioDing";
 
 import GeneratedImage from "./generatedImage";
@@ -18,7 +17,6 @@ type CompletedImagesType = {
   info: ImageRequest;
 };
 export default function DisplayPanel() {
-
   const dingRef = useRef<HTMLAudioElement>(null);
   const isSoundEnabled = useImageCreate((state) => state.isSoundEnabled());
 
@@ -39,14 +37,13 @@ export default function DisplayPanel() {
     if (status === "success") {
       // check to make sure that the image was created
       if (data.status === "succeeded") {
-        if(isSoundEnabled) {
+        if (isSoundEnabled) {
           dingRef.current?.play();
         }
         removeFirstInQueue();
       }
     }
   }, [status, data, removeFirstInQueue, dingRef, isSoundEnabled]);
-
 
   /* COMPLETED IMAGES */
 
@@ -83,11 +80,10 @@ export default function DisplayPanel() {
         })
         .flat()
         .reverse();
-        setCompletedImages(temp);
+      setCompletedImages(temp);
     } else {
       setCompletedImages([]);
     }
-
   }, [setCompletedImages, queryClient, completedIds]);
 
   return (
@@ -95,7 +91,6 @@ export default function DisplayPanel() {
       <h1>Display Panel</h1>
       <div>
         <AudioDing ref={dingRef}></AudioDing>
-        {/* <CurrentImage /> */}
         {completedImages.map((image, index) => {
           // if(index == 0){
           //   return null;

@@ -29,7 +29,7 @@ function SettingsList() {
   const toggleUseFaceCorrection = useImageCreate(
     (state) => state.toggleUseFaceCorrection
   );
-  
+
   const isUsingFaceCorrection = useImageCreate((state) =>
     state.isUsingFaceCorrection()
   );
