@@ -1,0 +1,22 @@
+.display-panel {
+  padding: 10px;
+}
+
+#display-container {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+#previous-images {
+  margin-left: 30px;
+  display: flex;
+  flex: auto;
+  flex-wrap: wrap;
+}
+
+.previous-image {
+  margin: 0 10px;
+}
