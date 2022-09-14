@@ -1,16 +1,15 @@
 import React from "react";
 import { useImageCreate } from "../../../store/imageCreateStore";
 
-
 type ModifierTagProps = {
   name: string;
-}
+};
 
-export default function ModifierTag({name}: ModifierTagProps) {
-
-  const hasTag = useImageCreate((state) => state.hasTag(name)) ? "selected" : "";
+export default function ModifierTag({ name }: ModifierTagProps) {
+  const hasTag = useImageCreate((state) => state.hasTag(name))
+    ? "selected"
+    : "";
   const toggleTag = useImageCreate((state) => state.toggleTag);
-
 
   const _toggleTag = () => {
     toggleTag(name);

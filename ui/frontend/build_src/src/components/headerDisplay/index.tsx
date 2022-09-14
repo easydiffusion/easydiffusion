@@ -2,7 +2,7 @@ import React from "react";
 
 import StatusDisplay from "./statusDisplay";
 
-import './headerDisplay.css';
+import "./headerDisplay.css";
 
 export default function HeaderDisplay() {
   return (
@@ -11,4 +11,4 @@ export default function HeaderDisplay() {
       <StatusDisplay className="status-display"></StatusDisplay>
     </div>
   );
-};
+}

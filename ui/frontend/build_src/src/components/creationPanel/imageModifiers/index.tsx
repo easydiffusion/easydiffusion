@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 import { loadModifications } from "../../../api";
@@ -7,23 +7,22 @@ import { useImageCreate } from "../../../store/imageCreateStore";
 
 import ModifierTag from "../modierTag";
 
-
 type ModifierListProps = {
   tags: string[];
-}
+};
 
-function ModifierList({tags}: ModifierListProps) {
+function ModifierList({ tags }: ModifierListProps) {
   // const setImageOptions = useImageCreate((state) => state.setImageOptions);
   // const imageOptions = useImageCreate((state) => state.imageOptions);
-  return(
+  return (
     <ul className="modifier-list">
       {tags.map((tag) => (
-        <li key={tag} >
+        <li key={tag}>
           <ModifierTag name={tag} />
         </li>
       ))}
     </ul>
-  ) 
+  );
 }
 
 type ModifierGroupingProps = {
@@ -31,12 +30,10 @@ type ModifierGroupingProps = {
   tags: string[];
 };
 
-function ModifierGrouping({title, tags}: ModifierGroupingProps) {
-
+function ModifierGrouping({ title, tags }: ModifierGroupingProps) {
   // doing this localy for now, but could move to a store
   // and persist if we wanted to
   const [isExpanded, setIsExpanded] = useState(false);
-
 
   const _toggleExpand = () => {
     setIsExpanded(!isExpanded);
@@ -53,7 +50,7 @@ function ModifierGrouping({title, tags}: ModifierGroupingProps) {
 }
 
 export default function ImageModifers() {
-  const {status, data} = useQuery(["modifications"], loadModifications);
+  const { status, data } = useQuery(["modifications"], loadModifications);
 
   const imageModifierIsOpen = useImageCreate(
     (state) => state.uiOptions.imageModifierIsOpen
@@ -61,7 +58,6 @@ export default function ImageModifers() {
   const toggleImageModifiersIsOpen = useImageCreate(
     (state) => state.toggleImageModifiersIsOpen
   );
-
 
   const handleClick = () => {
     toggleImageModifiersIsOpen();
@@ -79,11 +75,13 @@ export default function ImageModifers() {
       </button>
 
       {/* @ts-ignore */}
-      {imageModifierIsOpen && data.map((item, index) => {
-        return (
-          <ModifierGrouping key={item[0]} title={item[0]} tags={item[1]}/>
-        )
-      })}
+      {imageModifierIsOpen &&
+        // @ts-ignore
+        data.map((item, index) => {
+          return (
+            <ModifierGrouping key={item[0]} title={item[0]} tags={item[1]} />
+          );
+        })}
     </div>
   );
 }

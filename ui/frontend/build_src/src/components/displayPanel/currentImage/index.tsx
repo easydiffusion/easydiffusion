@@ -8,13 +8,12 @@ import GeneratedImage from "../generatedImage";
 
 // TODO move this logic to the display panel
 export default function CurrentImage() {
-
   const [imageData, setImageData] = useState(null);
   // @ts-ignore
-  const {id, options} = useImageQueue((state) => state.firstInQueue());
+  const { id, options } = useImageQueue((state) => state.firstInQueue());
 
   const removeFirstInQueue = useImageQueue((state) => state.removeFirstInQueue);
-  
+
   const { status, data } = useQuery(
     [MakeImageKey, id],
     () => doMakeImage(options),
@@ -23,20 +22,16 @@ export default function CurrentImage() {
     }
   );
 
-    useEffect(() => {
+  useEffect(() => {
     // query is done
-    if(status === 'success') {
-
+    if (status === "success") {
       // check to make sure that the image was created
-      if(data.status === 'succeeded') {
+      if (data.status === "succeeded") {
         setImageData(data.output[0].data);
         removeFirstInQueue();
       }
     }
-
   }, [status, data, removeFirstInQueue]);
-
-
 
   return (
     <></>
@@ -45,4 +40,4 @@ export default function CurrentImage() {
     //   {imageData && <GeneratedImage imageData={imageData} />}
     // </div>
   );
-};
+}

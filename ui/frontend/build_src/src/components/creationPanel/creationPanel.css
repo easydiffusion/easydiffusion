@@ -1,48 +1,48 @@
 .panel-box-toggle-btn {
-    display: block;
-    width: 100%;
-    text-align: left;
-    background-color: transparent;
-    color: #fff;
-    border: 0 none;
-    cursor: pointer;
+  display: block;
+  width: 100%;
+  text-align: left;
+  background-color: transparent;
+  color: #fff;
+  border: 0 none;
+  cursor: pointer;
 }
 
 .selected-tags {
-    margin: 10px 0;
+  margin: 10px 0;
 }
 
 .selected-tags ul {
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
 }
 
 li {
-    list-style: none;
+  list-style: none;
 }
 
-.modifier-list{
-    display: flex;
-    flex-wrap: wrap;
-    margin: 0;
-    padding: 0;
+.modifier-list {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
 }
 
 .modifierTag {
-    display: inline-block;
-    padding: 6px;
-    background-color: rgb(38, 77, 141);
-    color: #fff;
-    border-radius: 5px;
-    margin: 5px;
+  display: inline-block;
+  padding: 6px;
+  background-color: rgb(38, 77, 141);
+  color: #fff;
+  border-radius: 5px;
+  margin: 5px;
 }
 
 .modifierTag.selected {
-    background-color: rgb(131, 11, 121);
+  background-color: rgb(131, 11, 121);
 }
 
 .modifierTag p {
-    margin: 0;
+  margin: 0;
 }

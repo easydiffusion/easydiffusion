@@ -8,12 +8,15 @@ import ModifierTag from "./modierTag";
 
 import { useImageCreate } from "../../store/imageCreateStore";
 
-import './creationPanel.css';
+import "./creationPanel.css";
 
 export default function CreationPanel() {
-
-  const promptText = useImageCreate((state) => state.getValueForRequestKey("prompt"));
-  const init_image = useImageCreate((state) => state.getValueForRequestKey("init_image"));
+  const promptText = useImageCreate((state) =>
+    state.getValueForRequestKey("prompt")
+  );
+  const init_image = useImageCreate((state) =>
+    state.getValueForRequestKey("init_image")
+  );
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
   const selectedtags = useImageCreate((state) => state.selectedTags());
 
@@ -49,15 +52,29 @@ export default function CreationPanel() {
           <input type="file" accept="image/*" />
         </div> */}
 
-
         <div id="editor-inputs-init-image" className="row">
-          <label ><b>Initial Image:</b> (optional) </label> 
-            <input id="init_image" name="init_image" type="file"  onChange={_handleFileSelect}/><br/>
+          <label>
+            <b>Initial Image:</b> (optional){" "}
+          </label>
+          <input
+            id="init_image"
+            name="init_image"
+            type="file"
+            onChange={_handleFileSelect}
+          />
+          <br />
           <div id="init_image_preview" className="image_preview">
-            { init_image && 
-              <img id="init_image_preview" src={init_image} width="100" height="100" /> 
-            }
-            <button id="init_image_clear" className="image_clear_btn">X</button>
+            {init_image && (
+              <img
+                id="init_image_preview"
+                src={init_image}
+                width="100"
+                height="100"
+              />
+            )}
+            <button id="init_image_clear" className="image_clear_btn">
+              X
+            </button>
           </div>
         </div>
 
