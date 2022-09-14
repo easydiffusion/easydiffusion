@@ -54,7 +54,7 @@
     #editor-settings-entries li {
         padding-bottom: 3pt;
     }
-    #guidance_scale {
+    #guidance_scale_slider {
         transform: translateY(30%);
     }
     #outputMsg {
@@ -372,7 +372,7 @@
                         </select>
                     </li>
                     <li><label for="num_inference_steps">Number of inference steps:</label> <input id="num_inference_steps" name="num_inference_steps" size="4" value="50"></li>
-                    <li><label for="guidance_scale">Guidance Scale:</label> <input id="guidance_scale" name="guidance_scale" value="75" type="range" min="10" max="200"> <span id="guidance_scale_value"></span></li>
+                    <li><label for="guidance_scale_slider">Guidance Scale:</label> <input id="guidance_scale_slider" name="guidance_scale_slider" value="75" type="range" min="10" max="200"> <input id="guidance_scale" name="guidance_scale" size="4"></li>
                     <li><span id="prompt_strength_container"><label for="prompt_strength">Prompt Strength:</label> <input id="prompt_strength" name="prompt_strength" value="8" type="range" min="0" max="10"> <span id="prompt_strength_value"></span><br/></span></li>
                     <li>&nbsp;</li>
                     <li><input id="save_to_disk" name="save_to_disk" type="checkbox"> <label for="save_to_disk">Automatically save to <input id="diskPath" name="diskPath" size="40" disabled></label></li>
@@ -437,8 +437,8 @@ let promptField = document.querySelector('#prompt')
 let numOutputsTotalField = document.querySelector('#num_outputs_total')
 let numOutputsParallelField = document.querySelector('#num_outputs_parallel')
 let numInferenceStepsField = document.querySelector('#num_inference_steps')
+let guidanceScaleSlider = document.querySelector('#guidance_scale_slider')
 let guidanceScaleField = document.querySelector('#guidance_scale')
-let guidanceScaleValueLabel = document.querySelector('#guidance_scale_value')
 let randomSeedField = document.querySelector("#random_seed")
 let seedField = document.querySelector('#seed')
 let widthField = document.querySelector('#width')
@@ -825,7 +825,7 @@ async function makeImage() {
         prompt: prompt,
         num_outputs: batchSize,
         num_inference_steps: numInferenceStepsField.value,
-        guidance_scale: parseInt(guidanceScaleField.value) / 10,
+        guidance_scale: guidanceScaleField.value,
         width: widthField.value,
         height: heightField.value,
         // allow_nsfw: allowNSFWField.checked,
@@ -905,9 +905,9 @@ function createFileName() {
     // Most important information is the prompt
     let underscoreName = lastPromptUsed.replace(/[^a-zA-Z0-9]/g, '_')
     underscoreName = underscoreName.substring(0, 100)
-    const seed = seedField.value;
-    const steps = numInferenceStepsField.value;
-    const guidance =  guidanceScaleField.value; 
+    const seed = seedField.value
+    const steps = numInferenceStepsField.value
+    const guidance =  guidanceScaleField.value
 
     // name and the top level metadata
     let fileName = `${underscoreName}_Seed-${seed}_Steps-${steps}_Guidance-${guidance}`
@@ -1001,10 +1001,21 @@ makeImageBtn.addEventListener('click', makeImage)
 
 
 function updateGuidanceScale() {
-    guidanceScaleValueLabel.innerHTML = guidanceScaleField.value / 10
+    guidanceScaleField.value = guidanceScaleSlider.value / 10
 }
 
-guidanceScaleField.addEventListener('input', updateGuidanceScale)
+function updateGuidanceScaleSlider() {
+    if (guidanceScaleField.value < 0) {
+        guidanceScaleField.value = 0
+    } else if (guidanceScaleField.value > 20) {
+        guidanceScaleField.value = 20
+    }
+
+    guidanceScaleSlider.value = guidanceScaleField.value * 10
+}
+
+guidanceScaleSlider.addEventListener('input', updateGuidanceScale)
+guidanceScaleField.addEventListener('input', updateGuidanceScaleSlider)
 updateGuidanceScale()
 
 function updatePromptStrength() {
