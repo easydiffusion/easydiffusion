@@ -676,7 +676,7 @@ async function doMakeImage(reqBody, batchCount) {
                         let percent = 100 * (overallStepCount / totalSteps)
                         percent = percent.toFixed(0)
                         outputMsg.innerHTML = `Batch ${batchesDone+1} of ${batchCount}`
-                        progressBar.innerHTML = `Generating image: ${percent}%`
+                        progressBar.innerHTML = `Generating image(s): ${percent}%`
                         progressBar.style.display = 'block'
                     }
                 } catch (e) {
