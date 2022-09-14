@@ -31,6 +31,7 @@ outpath = os.path.join(os.path.expanduser("~"), OUTPUT_DIRNAME)
 
 # defaults from https://huggingface.co/blog/stable_diffusion
 class ImageRequest(BaseModel):
+    session_id: str = "session"
     prompt: str = ""
     init_image: str = None # base64
     mask: str = None # base64
@@ -51,6 +52,7 @@ class ImageRequest(BaseModel):
     show_only_filtered_image: bool = False
 
     stream_progress_updates: bool = False
+    stream_image_progress: bool = False
 
 class SetAppConfigRequest(BaseModel):
     update_branch: str = "main"
@@ -89,6 +91,7 @@ def image(req : ImageRequest):
     from sd_internal import runtime
 
     r = Request()
+    r.session_id = req.session_id
     r.prompt = req.prompt
     r.init_image = req.init_image
     r.mask = req.mask
@@ -109,6 +112,7 @@ def image(req : ImageRequest):
     r.show_only_filtered_image = req.show_only_filtered_image
 
     r.stream_progress_updates = req.stream_progress_updates
+    r.stream_image_progress = req.stream_image_progress
 
     try:
         res = runtime.mk_img(r)
@@ -134,6 +138,13 @@ def stop():
     except Exception as e:
         print(traceback.format_exc())
         return HTTPException(status_code=500, detail=str(e))
+
+@app.get('/image/tmp/{session_id}/{img_id}')
+def get_image(session_id, img_id):
+    from sd_internal import runtime
+    buf = runtime.temp_images[session_id + '/' + img_id]
+    buf.seek(0)
+    return StreamingResponse(buf, media_type='image/jpeg')
 
 @app.post('/app_config')
 async def setAppConfig(req : SetAppConfigRequest):
