@@ -113,7 +113,7 @@ export const useImageCreate = create<ImageCreateState>(
       use_cpu: false,
       use_full_precision: true,
       save_to_disk_path: "null",
-      use_face_correction: null,
+      use_face_correction: 'GFPGANv1.3',
       use_upscale: "RealESRGAN_x4plus",
       show_only_filtered_image: false,
     } as ImageRequest,
@@ -184,6 +184,7 @@ export const useImageCreate = create<ImageCreateState>(
       if (!state.uiOptions.isCheckUseFaceCorrection) {
         request.use_face_correction = null;
       }
+
       // if we arent using upscaling clear the upscaling
       if (!state.uiOptions.isCheckedUseUpscaling) {
         request.use_upscale = null;
@@ -238,7 +239,7 @@ export const useImageCreate = create<ImageCreateState>(
           state.requestOptions.use_upscale = state.uiOptions
             .isCheckedUseUpscaling
             ? "RealESRGAN_x4plus"
-            : null;
+            : undefined;
           localStorage.setItem(
             "ui:isCheckedUseUpscaling",
             state.uiOptions.isCheckedUseUpscaling
@@ -259,10 +260,10 @@ export const useImageCreate = create<ImageCreateState>(
           state.use_face_correction = state.uiOptions.isCheckUseFaceCorrection
             ? "GFPGANv1.3"
             : null;
-          localStorage.setItem(
-            "ui:isCheckUseFaceCorrection",
-            state.uiOptions.isCheckUseFaceCorrection
-          );
+          // localStorage.setItem(
+          //   "ui:isCheckUseFaceCorrection",
+          //   state.uiOptions.isCheckUseFaceCorrection
+          // );
         })
       );
     },

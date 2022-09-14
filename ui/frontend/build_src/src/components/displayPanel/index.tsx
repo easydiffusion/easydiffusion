@@ -50,10 +50,11 @@ export default function DisplayPanel() {
         })
         .flat()
         .reverse();
-      setCompletedImages(temp);
+        setCompletedImages(temp);
     } else {
       setCompletedImages([]);
     }
+
   }, [setCompletedImages, queryClient, completedIds]);
 
   return (
