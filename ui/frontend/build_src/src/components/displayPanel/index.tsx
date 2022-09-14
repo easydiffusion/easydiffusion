@@ -39,6 +39,7 @@ export default function DisplayPanel() {
       const temp = completedQueries.map((query, index ) => {
         // debugger;
         if(void 0 !== query) {
+          //@ts-ignore
           return query.output.map((data)=>{
             return {id: `${completedIds[index]}-${data.seed}`, data: data.data}
           })

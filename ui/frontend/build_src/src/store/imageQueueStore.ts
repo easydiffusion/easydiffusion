@@ -2,14 +2,14 @@ import create from 'zustand';
 import produce from 'immer';
 import { useRandomSeed } from '../utils';
 
-import { imageOptions } from './imageCreateStore';
+import { ImageRequest } from './imageCreateStore';
 
 interface ImageQueueState {
-  images : imageOptions[];
+  images : ImageRequest[];
   completedImageIds: string[];
-  addNewImage: (id:string, imageOptions: imageOptions) => void
+  addNewImage: (id:string, imgRec: ImageRequest) => void
   hasQueuedImages: () => boolean;
-  firstInQueue: () => imageOptions | [];
+  firstInQueue: () => ImageRequest | [];
   removeFirstInQueue: () => void;
 }
 
@@ -19,15 +19,14 @@ export const useImageQueue = create<ImageQueueState>((set, get) => ({
   images: new Array(),
   completedImageIds: new Array(),
   // use produce to make sure we don't mutate state
-  addNewImage: (id: string, imageOptions: any) => {
+  addNewImage: (id: string, imgRec: ImageRequest, isRandom= false) => {
     set( produce((state) => {
 
-      let { seed } = imageOptions;
-      if (imageOptions.isSeedRandom) {
+      let { seed } = imgRec;
+      if (isRandom) {
         seed = useRandomSeed();
       }
-
-      state.images.push({ id, options: {...imageOptions, seed} });
+      state.images.push({ id, options: {...imgRec, seed} });
     }));
   },
   
@@ -35,7 +34,7 @@ export const useImageQueue = create<ImageQueueState>((set, get) => ({
     return get().images.length > 0;
   },
   firstInQueue: () => {
-    return get().images[0] as imageOptions || []; 
+    return get().images[0] as ImageRequest || []; 
   },
   
   removeFirstInQueue: () => {

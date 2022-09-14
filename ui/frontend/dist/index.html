@@ -12,8 +12,11 @@
         <div id="root"></div>
         
 
-        <!--- the original code for the working application -->
-        <!-- moved the styles into the body for complication purposes -->
+        <!-- ORIGINAL CODE BELOW FOR REFENCE -->
+
+        <!--  KEEP FOR NOW -->  
+        <!-- THE STYLES ARE BEING USED IN THE REACT APP  -->
+        <!-- WE NEED TO PORT OVER THE STYLES OVER TO THE REACT COMPONENTS -->
         <style>
             body {
                 font-family: Arial, Helvetica, sans-serif;
@@ -273,8 +276,10 @@
             }
         </style>
 
+        <!-- ALL OF THIS IS HERE FOR REFERNCE FOR THE TIME BEING BUT CAN BE SAFLEY REMOVED -->
+
         <!-- All of the original DOM -->
-        <div id="container">
+        <div id="container" style="display: none;">
             <div class="flex-container">
                 <div id="editor" class="col-50">
                     <div id="meta">
@@ -1248,15 +1253,14 @@
             }
         }
         
+        /* TURNED OFF */
         async function init() {
-            await loadModifiers()
-            await getDiskPath()
-            await getAppConfig()
-        
-            setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
-            healthCheck()
-        
-            playSound()
+            // await loadModifiers()
+            // await getDiskPath()
+            // await getAppConfig()
+            // setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
+            // healthCheck()
+            // playSound()
         }
         
         init()

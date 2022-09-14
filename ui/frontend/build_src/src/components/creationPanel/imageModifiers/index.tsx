@@ -13,8 +13,8 @@ type ModifierListProps = {
 }
 
 function ModifierList({tags}: ModifierListProps) {
-  const setImageOptions = useImageCreate((state) => state.setImageOptions);
-  const imageOptions = useImageCreate((state) => state.imageOptions);
+  // const setImageOptions = useImageCreate((state) => state.setImageOptions);
+  // const imageOptions = useImageCreate((state) => state.imageOptions);
   return(
     <ul className="modifier-list">
       {tags.map((tag) => (

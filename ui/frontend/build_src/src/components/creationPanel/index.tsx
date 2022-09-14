@@ -23,6 +23,7 @@ export default function CreationPanel() {
 
   const _handleFileSelect = (event: ChangeEvent<HTMLInputElement>) => {
     //console.log("file select", event);
+    //@ts-ignore
     const file = event.target.files[0];
 
     // console.log("file", file);

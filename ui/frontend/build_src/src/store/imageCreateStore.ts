@@ -14,7 +14,6 @@ export type ImageCreationUiOptions = {
   isSoundEnabled: boolean;
 }
 
-
 export type ImageRequest = {
   prompt: string;
   seed: number;
