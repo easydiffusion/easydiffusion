@@ -209,15 +209,15 @@ def getAppConfig():
 # TODO: change the vite config for public files
 @app.get('/ding.mp3')
 def read_ding():
-    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/dist/ding.mp3'))
+    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/assets/ding.mp3'))
 
 @app.get('/kofi.png')
 def read_modifiers():
-    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/dist/kofi.png'))
+    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/assets/kofi.png'))
 
 @app.get('/modifiers.json')
 def read_modifiers():
-    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/dist/modifiers.json'))
+    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/assets/modifiers.json'))
 
 @app.get('/output_dir')
 def read_home_dir():
