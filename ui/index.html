@@ -669,7 +669,9 @@ async function doMakeImage(reqBody, batchCount) {
                 try {
                     let stepUpdate = JSON.parse(jsonStr)
 
-                    if (stepUpdate.step !== undefined) {
+                    if (stepUpdate.step === undefined) {
+                        finalJSON += jsonStr
+                    } else {
                         let batchSize = parseInt(reqBody['num_inference_steps'])
                         let overallStepCount = stepUpdate.step + batchesDone * batchSize
                         let totalSteps = batchCount * batchSize
