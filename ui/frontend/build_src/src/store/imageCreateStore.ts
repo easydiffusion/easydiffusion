@@ -184,7 +184,6 @@ export const useImageCreate = create<ImageCreateState>(
       if (!state.uiOptions.isCheckUseFaceCorrection) {
         request.use_face_correction = null;
       }
-      debugger;
 
       // if we arent using upscaling clear the upscaling
       if (!state.uiOptions.isCheckedUseUpscaling) {

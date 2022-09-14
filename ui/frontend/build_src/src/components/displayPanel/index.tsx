@@ -50,7 +50,6 @@ export default function DisplayPanel() {
         })
         .flat()
         .reverse();
-        debugger;
         setCompletedImages(temp);
     } else {
       setCompletedImages([]);
