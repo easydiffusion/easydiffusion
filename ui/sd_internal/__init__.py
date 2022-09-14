@@ -21,6 +21,20 @@ class Request:
     use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
     show_only_filtered_image: bool = False
 
+    def json(self):
+        return {
+            "prompt": self.prompt,
+            "num_outputs": self.num_outputs,
+            "num_inference_steps": self.num_inference_steps,
+            "guidance_scale": self.guidance_scale,
+            "width": self.width,
+            "height": self.height,
+            "seed": self.seed,
+            "prompt_strength": self.prompt_strength,
+            "use_face_correction": self.use_face_correction,
+            "use_upscale": self.use_upscale,
+        }
+
     def to_string(self):
         return f'''
     prompt: {self.prompt}
@@ -42,6 +56,7 @@ class Image:
     data: str # base64
     seed: int
     is_nsfw: bool
+    path_abs: str = None
 
     def __init__(self, data, seed):
         self.data = data
@@ -51,14 +66,19 @@ class Image:
         return {
             "data": self.data,
             "seed": self.seed,
+            "path_abs": self.path_abs,
         }
 
 class Response:
+    request: Request
+    session_id: str
     images: list
 
     def json(self):
         res = {
             "status": 'succeeded',
+            "session_id": self.session_id,
+            "request": self.request.json(),
             "output": [],
         }
 

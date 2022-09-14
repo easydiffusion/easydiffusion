@@ -191,6 +191,8 @@ def mk_img(req: Request):
     stop_processing = False
 
     res = Response()
+    res.session_id = session_id
+    res.request = req
     res.images = []
 
     model.turbo = req.turbo
@@ -373,7 +375,11 @@ def mk_img(req: Request):
 
                         if not opt_show_only_filtered:
                             img_data = img_to_base64_str(img)
-                            res.images.append(ResponseImage(data=img_data, seed=opt_seed))
+                            res_image_orig = ResponseImage(data=img_data, seed=opt_seed)
+                            res.images.append(res_image_orig)
+
+                            if opt_save_to_disk_path is not None:
+                                res_image_orig.path_abs = img_out_path
 
                         if (opt_use_face_correction is not None and opt_use_face_correction.startswith('GFPGAN')) or \
                             (opt_use_upscale is not None and opt_use_upscale.startswith('RealESRGAN')):
@@ -394,13 +400,15 @@ def mk_img(req: Request):
                             filtered_image = Image.fromarray(x_sample)
 
                             filtered_img_data = img_to_base64_str(filtered_image)
-                            res.images.append(ResponseImage(data=filtered_img_data, seed=opt_seed))
+                            res_image_filtered = ResponseImage(data=filtered_img_data, seed=opt_seed)
+                            res.images.append(res_image_filtered)
 
                             filters_applied = "_".join(filters_applied)
 
                             if opt_save_to_disk_path is not None:
                                 filtered_img_out_path = os.path.join(session_out_path, f"{file_path}_{filters_applied}.{opt_format}")
                                 save_image(filtered_image, filtered_img_out_path)
+                                res_image_filtered.path_abs = filtered_img_out_path
 
                         seeds += str(opt_seed) + ","
                         opt_seed += 1
