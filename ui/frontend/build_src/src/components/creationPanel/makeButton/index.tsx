@@ -10,6 +10,8 @@ export default function MakeButton() {
   const parallelCount = useImageCreate((state) => state.parallelCount);
   const builtRequest = useImageCreate((state) => state.builtRequest);
   const addNewImage = useImageQueue((state) => state.addNewImage);
+  const isRandomSeed = useImageCreate((state) => state.isRandomSeed());
+  const setRequestOption = useImageCreate((state) => state.setRequestOptions);
 
   const makeImages = () => {
     // the request that we have built
@@ -57,6 +59,13 @@ export default function MakeButton() {
         seed: seed,
       });
     });
+
+    // potentially update the seed
+    if (isRandomSeed) {
+      // update the seed for the next time we click the button
+      setRequestOption("seed", useRandomSeed());
+    }
+
   };
 
   return <button onClick={makeImages}>Make</button>;

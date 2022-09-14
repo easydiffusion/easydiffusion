@@ -32,7 +32,6 @@ export default function CreationPanel() {
       const reader = new FileReader();
       reader.onload = (e) => {
         if (e.target) {
-          debugger;
           setRequestOption("init_image", e.target.result);
         }
       };

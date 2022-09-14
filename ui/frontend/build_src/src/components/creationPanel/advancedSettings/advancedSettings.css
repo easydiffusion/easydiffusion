@@ -2,6 +2,6 @@ input[size="4"] {
   width: 4.5rem;
 }
 
-#File-Body>#File-For {
+#File-Body > #File-For {
   display: none;
 }

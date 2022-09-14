@@ -83,7 +83,6 @@ export default function DisplayPanel() {
         .flat()
         .reverse();
       setCompletedImages(temp);
-      debugger;
     } else {
       setCompletedImages([]);
     }
@@ -95,7 +94,6 @@ export default function DisplayPanel() {
       <AudioDing ref={dingRef}></AudioDing>
       {completedImages.length > 0 && (
         <div id="display-container">
-
           <GeneratedImage
             key={completedImages[0].id}
             imageData={completedImages[0].data}
@@ -106,6 +104,7 @@ export default function DisplayPanel() {
             {completedImages.map((image, index) => {
 
               if (void 0 !== image) {
+                debugger;
                 if(index == 0){
                     return null;
                   }

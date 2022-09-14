@@ -52,5 +52,5 @@ li {
 
 input[type="file"] {
   /* Dont show the file name */
-  color:transparent;
+  color: transparent;
 }

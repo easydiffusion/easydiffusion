@@ -2,7 +2,7 @@ import React, { useCallback } from "react";
 
 import { ImageRequest, useImageCreate } from "../../../store/imageCreateStore";
 
-import './generatedImage.css';
+import "./generatedImage.css";
 
 type GeneretaedImageProps = {
   imageData: string;
@@ -62,21 +62,22 @@ export default function GeneratedImage({
   };
 
   const _handleUseAsInput = () => {
-
     setRequestOption("init_image", imageData);
-
   };
 
   // className={[statusClass, className].join(" ")}
 
   return (
-
     <div className={["generated-image", className].join(" ")}>
       <p>{metadata.prompt}</p>
       <div className="image-contain">
         <img src={imageData} alt="generated" />
-        <button id="save-button" onClick={_handleSave}>Save</button>
-        <button id="use-button" onClick={_handleUseAsInput}>Use as Input</button>
+        <button id="save-button" onClick={_handleSave}>
+          Save
+        </button>
+        <button id="use-button" onClick={_handleUseAsInput}>
+          Use as Input
+        </button>
       </div>
     </div>
   );
