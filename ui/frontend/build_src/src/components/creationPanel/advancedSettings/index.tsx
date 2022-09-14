@@ -112,6 +112,9 @@ function SettingsList() {
             name="upscale_model"
             disabled={!isUsingUpscaling}
             value={use_upscale}
+            onChange={(e) => {
+              setRequestOption("use_upscale", e.target.value);
+            }}
           >
             <option value="RealESRGAN_x4plus">RealESRGAN_x4plus</option>
             <option value="RealESRGAN_x4plus_anime_6B">

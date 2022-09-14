@@ -239,7 +239,7 @@ export const useImageCreate = create<ImageCreateState>(
           state.requestOptions.use_upscale = state.uiOptions
             .isCheckedUseUpscaling
             ? "RealESRGAN_x4plus"
-            : null;
+            : undefined;
           localStorage.setItem(
             "ui:isCheckedUseUpscaling",
             state.uiOptions.isCheckedUseUpscaling
