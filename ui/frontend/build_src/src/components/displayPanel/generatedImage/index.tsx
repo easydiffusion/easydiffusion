@@ -2,14 +2,18 @@ import React, { useCallback } from "react";
 
 import { ImageRequest, useImageCreate } from "../../../store/imageCreateStore";
 
+import './generatedImage.css';
+
 type GeneretaedImageProps = {
   imageData: string;
   metadata: ImageRequest;
+  className?: string;
 };
 
 export default function GeneratedImage({
   imageData,
   metadata,
+  className,
 }: GeneretaedImageProps) {
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
 
@@ -59,32 +63,21 @@ export default function GeneratedImage({
 
   const _handleUseAsInput = () => {
 
-    debugger;
     setRequestOption("init_image", imageData);
-    // initImageSelector.value = null
-    // initImagePreview.src = imgBody
 
-    // imgUseBtn.addEventListener('click', function() {
-    //   initImageSelector.value = null
-    //   initImagePreview.src = imgBody
-
-    //   initImagePreviewContainer.style.display = 'block'
-    //   promptStrengthContainer.style.display = 'block'
-
-    //   // maskSetting.style.display = 'block'
-
-    //   randomSeedField.checked = false
-    //   seedField.value = seed
-    //   seedField.disabled = false
-    // })
   };
 
+  // className={[statusClass, className].join(" ")}
+
   return (
-    <div className="generated-image">
-      <p>Your image</p>
-      <img src={imageData} alt="generated" />
-      <button onClick={_handleSave}>Save</button>
-      <button onClick={_handleUseAsInput}>Use as Input</button>
+
+    <div className={["generated-image", className].join(" ")}>
+      <p>{metadata.prompt}</p>
+      <div className="image-contain">
+        <img src={imageData} alt="generated" />
+        <button id="save-button" onClick={_handleSave}>Save</button>
+        <button id="use-button" onClick={_handleUseAsInput}>Use as Input</button>
+      </div>
     </div>
   );
 }

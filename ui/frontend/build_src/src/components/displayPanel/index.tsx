@@ -11,6 +11,8 @@ import AudioDing from "./audioDing";
 
 import GeneratedImage from "./generatedImage";
 
+import './displayPanel.css';
+
 type CompletedImagesType = {
   id: string;
   data: string;
@@ -81,6 +83,7 @@ export default function DisplayPanel() {
         .flat()
         .reverse();
       setCompletedImages(temp);
+      debugger;
     } else {
       setCompletedImages([]);
     }
@@ -89,26 +92,42 @@ export default function DisplayPanel() {
   return (
     <div className="display-panel">
       <h1>Display Panel</h1>
-      <div>
-        <AudioDing ref={dingRef}></AudioDing>
-        {completedImages.map((image, index) => {
-          // if(index == 0){
-          //   return null;
-          // }
-          if (void 0 !== image) {
-            return (
-              <GeneratedImage
-                key={image.id}
-                imageData={image.data}
-                metadata={image.info}
-              />
-            );
-          } else {
-            console.warn("image is undefined", image, index);
-            return null;
-          }
-        })}
-      </div>
+      <AudioDing ref={dingRef}></AudioDing>
+      {completedImages.length > 0 && (
+        <div id="display-container">
+
+          <GeneratedImage
+            key={completedImages[0].id}
+            imageData={completedImages[0].data}
+            metadata={completedImages[0].info}
+          />
+
+          <div id="previous-images">
+            {completedImages.map((image, index) => {
+
+              if (void 0 !== image) {
+                if(index == 0){
+                    return null;
+                  }
+
+                return (
+                  <GeneratedImage
+                    className="previous-image"
+                    key={image.id}
+                    imageData={image.data}
+                    metadata={image.info}
+                  />
+                );
+        
+              } else {
+                  console.warn("image is undefined", image, index);
+                  return null;
+              }
+            })}
+          </div>
+
+        </div>
+      )}
     </div>
   );
 }
