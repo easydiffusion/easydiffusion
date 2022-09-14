@@ -1,0 +1,18 @@
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+#root {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  /* pointer-events: none; */
+
+  /* this are used while we still have the original app code in the index.html */
+  /* display: none; */
+  z-index: 1;
+}

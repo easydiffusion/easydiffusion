@@ -1,0 +1,10 @@
+.header-display {
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-display {
+  margin-left: 10px;
+}

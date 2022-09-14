@@ -2,3 +2,6 @@ __pycache__
 installer
 installer.tar
 dist
+
+# built code for the front end
+!/ui/frontend/dist
