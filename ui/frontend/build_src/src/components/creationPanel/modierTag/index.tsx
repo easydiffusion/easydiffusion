@@ -11,7 +11,6 @@ export default function ModifierTag({name}: ModifierTagProps) {
   const hasTag = useImageCreate((state) => state.hasTag(name)) ? "selected" : "";
   const toggleTag = useImageCreate((state) => state.toggleTag);
 
-  console.log('has tag', hasTag)
 
   const _toggleTag = () => {
     toggleTag(name);

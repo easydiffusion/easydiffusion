@@ -201,7 +201,6 @@ function SettingsList() {
         <input
           value={steps}
           onChange={(e) => {
-            console.log('ON CHNAGE num_inference_steps', e.target.value)
             setRequestOption("num_inference_steps", e.target.value)
           }}
           size={4}
