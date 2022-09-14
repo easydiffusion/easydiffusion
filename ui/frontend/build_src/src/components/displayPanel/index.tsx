@@ -8,6 +8,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { MakeImageKey } from "../../api";
 
 import CurrentImage from "./currentImage";
+import AudioDing from "./audioDing";
 
 import GeneratedImage from "./generatedImage";
 
@@ -61,6 +62,7 @@ export default function DisplayPanel() {
     <div className="display-panel">
       <h1>Display Panel</h1>
       <div>
+        <AudioDing></AudioDing>
         <CurrentImage />
         {completedImages.map((image, index) => {
           // if(index == 0){
