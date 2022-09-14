@@ -35,11 +35,11 @@ export type ImageRequest = {
  };
 
 interface ImageCreateState {
-  requestCount: number;
+  parallelCount: number;
   requestOptions: ImageRequest;
   tags: string[];
 
-  setRequestCount: (count: number) => void;
+  setParallelCount: (count: number) => void;
   setRequestOptions: (key: keyof ImageRequest, value: any) => void;
   getValueForRequestKey: (key: keyof ImageRequest) => any;
 
@@ -67,7 +67,7 @@ interface ImageCreateState {
 // @ts-ignore
 export const useImageCreate = create<ImageCreateState>(devtools((set, get) => ({
   
-  requestCount: 1,
+  parallelCount: 1,
 
   requestOptions:{
     prompt: 'a photograph of an astronaut riding a horse',
@@ -90,8 +90,8 @@ export const useImageCreate = create<ImageCreateState>(devtools((set, get) => ({
 
   tags: [] as string[],
 
-  setRequestCount: (count: number) => set(produce((state) => {
-    state.requestCount = count;
+  setParallelCount: (count: number) => set(produce((state) => {
+    state.parallelCount = count;
   })),
 
   setRequestOptions: (key: keyof ImageRequest, value: any) => {
@@ -127,14 +127,12 @@ export const useImageCreate = create<ImageCreateState>(devtools((set, get) => ({
   // this is a computed value, just adding the tags to the request
   builtRequest: () => {
 
-    console.log('builtRequest');
     const state = get();
     const requestOptions = state.requestOptions;
     const tags = state.tags;  
 
     // join all the tags with a comma and add it to the prompt
     const prompt = `${requestOptions.prompt} ${tags.join(',')}`;
-    console.log('builtRequest return1');
 
     const request = {
       ...requestOptions,
@@ -146,22 +144,15 @@ export const useImageCreate = create<ImageCreateState>(devtools((set, get) => ({
       // TODO check this
       request.save_to_disk_path = null;
     }
-    console.log('builtRequest return2');
     // if we arent using face correction clear the face correction
     if(!state.uiOptions.isCheckUseFaceCorrection){
       request.use_face_correction = null;
     }
-    console.log('builtRequest return3');
     // if we arent using upscaling clear the upscaling
     if(!state.uiOptions.isCheckedUseUpscaling){
       request.use_upscale = null;
     }
 
-    // const request = {
-    //   ...requestOptions,
-    //   prompt
-    // }
-    console.log('builtRequest return last');
     return request;
   },
 
