@@ -17,6 +17,8 @@
     @call git pull
     @call git checkout d154155d4c0b43e13ec1f00eb72b7ff9d522fcf9
 
+    @call git apply ..\ui\sd_internal\ddim_callback.patch
+
     @cd ..
 ) else (
     @echo. & echo "Downloading Stable Diffusion.." & echo.
@@ -31,6 +33,9 @@
 
     @cd stable-diffusion
     @call git checkout d154155d4c0b43e13ec1f00eb72b7ff9d522fcf9
+
+    @call git apply ..\ui\sd_internal\ddim_callback.patch
+
     @cd ..
 )
 
@@ -294,6 +299,8 @@ call WHERE uvicorn > .tmp
 @cd ..
 @set SD_UI_PATH=%cd%\ui
 @cd stable-diffusion
+
+@call python --version
 
 @uvicorn server:app --app-dir "%SD_UI_PATH%" --port 9000 --host 0.0.0.0
 

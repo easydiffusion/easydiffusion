@@ -35,6 +35,7 @@ from io import BytesIO
 
 # local
 session_id = str(uuid.uuid4())[-8:]
+stop_processing = False
 
 ckpt_file = None
 gfpgan_file = None
@@ -185,8 +186,13 @@ def load_model_real_esrgan(real_esrgan_to_use):
 def mk_img(req: Request):
     global modelFS, device
     global model_gfpgan, model_real_esrgan
+    global stop_processing
+
+    stop_processing = False
 
     res = Response()
+    res.session_id = session_id
+    res.request = req
     res.images = []
 
     model.turbo = req.turbo
@@ -267,7 +273,7 @@ def mk_img(req: Request):
     else:
         handler = _img2img
 
-        init_image = load_img(req.init_image)
+        init_image = load_img(req.init_image, opt_W, opt_H)
         init_image = init_image.to(device)
 
         if device != "cpu" and precision == "autocast":
@@ -320,11 +326,26 @@ def mk_img(req: Request):
                     else:
                         c = modelCS.get_learned_conditioning(prompts)
 
+                    partial_x_samples = None
+                    def img_callback(x_samples, i):
+                        nonlocal partial_x_samples
+
+                        partial_x_samples = x_samples
+
+                        if stop_processing:
+                            raise UserInitiatedStop("User requested that we stop processing")
+
                     # run the handler
-                    if handler == _txt2img:
-                        x_samples = _txt2img(opt_W, opt_H, opt_n_samples, opt_ddim_steps, opt_scale, None, opt_C, opt_f, opt_ddim_eta, c, uc, opt_seed)
-                    else:
-                        x_samples = _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc, opt_ddim_steps, opt_ddim_eta, opt_seed)
+                    try:
+                        if handler == _txt2img:
+                            x_samples = _txt2img(opt_W, opt_H, opt_n_samples, opt_ddim_steps, opt_scale, None, opt_C, opt_f, opt_ddim_eta, c, uc, opt_seed, img_callback)
+                        else:
+                            x_samples = _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc, opt_ddim_steps, opt_ddim_eta, opt_seed, img_callback)
+                    except UserInitiatedStop:
+                        if partial_x_samples is None:
+                            continue
+
+                        x_samples = partial_x_samples
 
                     modelFS.to(device)
 
@@ -354,7 +375,11 @@ def mk_img(req: Request):
 
                         if not opt_show_only_filtered:
                             img_data = img_to_base64_str(img)
-                            res.images.append(ResponseImage(data=img_data, seed=opt_seed))
+                            res_image_orig = ResponseImage(data=img_data, seed=opt_seed)
+                            res.images.append(res_image_orig)
+
+                            if opt_save_to_disk_path is not None:
+                                res_image_orig.path_abs = img_out_path
 
                         if (opt_use_face_correction is not None and opt_use_face_correction.startswith('GFPGAN')) or \
                             (opt_use_upscale is not None and opt_use_upscale.startswith('RealESRGAN')):
@@ -375,13 +400,15 @@ def mk_img(req: Request):
                             filtered_image = Image.fromarray(x_sample)
 
                             filtered_img_data = img_to_base64_str(filtered_image)
-                            res.images.append(ResponseImage(data=filtered_img_data, seed=opt_seed))
+                            res_image_filtered = ResponseImage(data=filtered_img_data, seed=opt_seed)
+                            res.images.append(res_image_filtered)
 
                             filters_applied = "_".join(filters_applied)
 
                             if opt_save_to_disk_path is not None:
                                 filtered_img_out_path = os.path.join(session_out_path, f"{file_path}_{filters_applied}.{opt_format}")
                                 save_image(filtered_image, filtered_img_out_path)
+                                res_image_filtered.path_abs = filtered_img_out_path
 
                         seeds += str(opt_seed) + ","
                         opt_seed += 1
@@ -411,7 +438,7 @@ def save_metadata(meta_out_path, prompts, opt_seed, opt_W, opt_H, opt_ddim_steps
     except:
         print('could not save the file', traceback.format_exc())
 
-def _txt2img(opt_W, opt_H, opt_n_samples, opt_ddim_steps, opt_scale, start_code, opt_C, opt_f, opt_ddim_eta, c, uc, opt_seed):
+def _txt2img(opt_W, opt_H, opt_n_samples, opt_ddim_steps, opt_scale, start_code, opt_C, opt_f, opt_ddim_eta, c, uc, opt_seed, img_callback):
     shape = [opt_n_samples, opt_C, opt_H // opt_f, opt_W // opt_f]
 
     if device != "cpu":
@@ -430,12 +457,13 @@ def _txt2img(opt_W, opt_H, opt_n_samples, opt_ddim_steps, opt_scale, start_code,
         unconditional_conditioning=uc,
         eta=opt_ddim_eta,
         x_T=start_code,
+        img_callback=img_callback,
         sampler = 'plms',
     )
 
     return samples_ddim
 
-def _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc, opt_ddim_steps, opt_ddim_eta, opt_seed):
+def _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc, opt_ddim_steps, opt_ddim_eta, opt_seed, img_callback):
     # encode (scaled latent)
     z_enc = model.stochastic_encode(
         init_latent,
@@ -451,6 +479,7 @@ def _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc, opt_ddim_steps, o
         z_enc,
         unconditional_guidance_scale=opt_scale,
         unconditional_conditioning=uc,
+        img_callback=img_callback,
         sampler = 'ddim'
     )
 
@@ -479,13 +508,18 @@ def load_model_from_config(ckpt, verbose=False):
     return sd
 
 # utils
+class UserInitiatedStop(Exception):
+    pass
 
-def load_img(img_str):
+def load_img(img_str, w0, h0):
     image = base64_str_to_img(img_str).convert("RGB")
     w, h = image.size
     print(f"loaded input image of size ({w}, {h}) from base64")
+    if h0 is not None and w0 is not None:
+        h, w = h0, w0
+
     w, h = map(lambda x: x - x % 64, (w, h))  # resize to integer multiple of 64
-    image = image.resize((w, h), resample=Image.LANCZOS)
+    image = image.resize((w, h), resample=Image.Resampling.LANCZOS)
     image = np.array(image).astype(np.float32) / 255.0
     image = image[None].transpose(0, 3, 1, 2)
     image = torch.from_numpy(image)
