@@ -15,18 +15,12 @@ export default function StatusDisplay({className}: {className?: string}) {
   const [statusClass, setStatusClass] = useState('starting');
 
 
-  // doing this here for the time being, to show the data getting loaded
   // but this will be moved to the status display when it is created
   const {status, data} = useQuery(['health'], healthPing, {refetchInterval: HEALTH_PING_INTERVAL});
-  useEffect(() => {
-    console.log('health data', data);
-  }, [data]);
 
 
-  // const data = {};
 
   useEffect(() => {
-    console.log('status', status);
 
     if (status === 'loading') {
       setStatusMessage(startingMessage);

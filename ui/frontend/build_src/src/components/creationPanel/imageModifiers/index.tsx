@@ -37,10 +37,8 @@ function ModifierGrouping({title, tags}: ModifierGroupingProps) {
   // and persist if we wanted to
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // console.log('grouping', title, tags)
 
   const _toggleExpand = () => {
-    // console.log('toggle expand')
     setIsExpanded(!isExpanded);
   };
 
@@ -64,13 +62,8 @@ export default function ImageModifers() {
     (state) => state.toggleImageModifiersIsOpen
   );
 
-  // useEffect(() => {
-  //   console.log("imageModifers", status, data);
-  // }, [status, data]);
-
 
   const handleClick = () => {
-    // debugger;
     toggleImageModifiersIsOpen();
   };
 

@@ -1,15 +1,59 @@
-import React from "react";
+import React, {useCallback} from "react";
 
 
-import { useImageCreate } from "../../../store/imageCreateStore";
+import { ImageRequest, useImageCreate } from "../../../store/imageCreateStore";
 
-export default function GeneratedImage({ imageData }: { imageData: string }) {
+type GeneretaedImageProps = {
+  imageData: string;
+  metadata: ImageRequest;
+}
 
+
+export default function GeneratedImage({ imageData, metadata}: GeneretaedImageProps) {
 
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
+  
+  const createFileName = () => {
+
+    const { 
+      prompt, 
+      seed, 
+      num_inference_steps, 
+      guidance_scale, 
+      use_face_correction, 
+      use_upscale,
+      width,
+      height,
+    } = metadata;
+
+    //Most important information is the prompt
+    let underscoreName = prompt.replace(/[^a-zA-Z0-9]/g, '_')
+    underscoreName = underscoreName.substring(0, 100)
+
+    // name and the top level metadata
+    let fileName = `${underscoreName}_Seed-${seed}_Steps-${num_inference_steps}_Guidance-${guidance_scale}`;
+
+    // Add the face correction and upscale
+    if(use_face_correction) {
+      fileName += `_FaceCorrection-${use_face_correction}`;
+    }
+    if(use_upscale) {
+      fileName += `_Upscale-${use_upscale}`;
+    }
+
+    // Add the width and height
+    fileName += `_${width}x${height}`;
+
+    // add the file extension
+    fileName += `.png`
+
+    // return fileName
+    return fileName;
+  }
+  
   const _handleSave = () => {
     const link = document.createElement("a");
-    link.download = "image.png";
+    link.download = createFileName();
     link.href = imageData;
     link.click();
   };

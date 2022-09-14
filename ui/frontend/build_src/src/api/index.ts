@@ -22,10 +22,7 @@ export const healthPing = async () => {
  * the local list of modifications
  */
 export const loadModifications = async () => {
-  const url = `${API_URL}/modifiers.json`;
-
-  console.log('loadModifications', url);
-  const response = await fetch(url);
+  const response = await fetch(`${API_URL}/modifiers.json`);
   const data = await response.json();
   return data;
 }

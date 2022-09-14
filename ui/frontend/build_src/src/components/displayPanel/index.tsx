@@ -16,6 +16,7 @@ import GeneratedImage from "./generatedImage";
 type CompletedImagesType = {
   id: string;
   data: string;
+  info: ImageRequest;
 }
 export default function DisplayPanel() {
 
@@ -31,17 +32,15 @@ export default function DisplayPanel() {
       return imageData;
     });
 
-    console.log('completedQueries', completedQueries);
-
     if (completedQueries.length > 0) {
       // map the completedImagesto a new array 
       // and then set the state
       const temp = completedQueries.map((query, index ) => {
-        // debugger;
         if(void 0 !== query) {
           //@ts-ignore
           return query.output.map((data)=>{
-            return {id: `${completedIds[index]}-${data.seed}`, data: data.data}
+            // @ts-ignore
+            return {id: `${completedIds[index]}-${data.seed}`, data: data.data, info: {...query.request, seed:data.seed } }
           })
         }
         
@@ -61,11 +60,11 @@ export default function DisplayPanel() {
       <div>
         <CurrentImage />
         {completedImages.map((image, index) => {
-          if(index == 0){
-            return null;
-          }
+          // if(index == 0){
+          //   return null;
+          // }
           if(void 0 !== image) {
-            return <GeneratedImage key={image.id} imageData={image.data} />;
+            return <GeneratedImage key={image.id} imageData={image.data} metadata={image.info}/>;
           }
           else {
             console.warn('image is undefined', image, index);
