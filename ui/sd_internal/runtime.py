@@ -273,7 +273,7 @@ def mk_img(req: Request):
     else:
         handler = _img2img
 
-        init_image = load_img(req.init_image)
+        init_image = load_img(req.init_image, opt_W, opt_H)
         init_image = init_image.to(device)
 
         if device != "cpu" and precision == "autocast":
@@ -511,12 +511,15 @@ def load_model_from_config(ckpt, verbose=False):
 class UserInitiatedStop(Exception):
     pass
 
-def load_img(img_str):
+def load_img(img_str, w0, h0):
     image = base64_str_to_img(img_str).convert("RGB")
     w, h = image.size
     print(f"loaded input image of size ({w}, {h}) from base64")
+    if h0 is not None and w0 is not None:
+        h, w = h0, w0
+
     w, h = map(lambda x: x - x % 64, (w, h))  # resize to integer multiple of 64
-    image = image.resize((w, h), resample=Image.LANCZOS)
+    image = image.resize((w, h), resample=Image.Resampling.LANCZOS)
     image = np.array(image).astype(np.float32) / 255.0
     image = image[None].transpose(0, 3, 1, 2)
     image = torch.from_numpy(image)
