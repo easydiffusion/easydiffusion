@@ -58,8 +58,8 @@ export default function GeneratedImage({
   };
 
   const _handleUseAsInput = () => {
-    console.log(" TODO : use as input");
 
+    debugger;
     setRequestOption("init_image", imageData);
     // initImageSelector.value = null
     // initImagePreview.src = imgBody

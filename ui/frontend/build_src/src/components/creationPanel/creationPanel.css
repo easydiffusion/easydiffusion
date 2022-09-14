@@ -46,3 +46,8 @@ li {
 .modifierTag p {
   margin: 0;
 }
+
+input[type="file"] {
+  /* Dont show the file name */
+  color:transparent;
+}

@@ -32,11 +32,16 @@ export default function CreationPanel() {
       const reader = new FileReader();
       reader.onload = (e) => {
         if (e.target) {
+          debugger;
           setRequestOption("init_image", e.target.result);
         }
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const _handleClearImage = () => {
+    setRequestOption("init_image", undefined);
   };
 
   return (
@@ -46,11 +51,6 @@ export default function CreationPanel() {
           <p>Prompt </p>
           <textarea value={promptText} onChange={handlePromptChange}></textarea>
         </div>
-
-        {/* <div className="seed-image">
-          <p>Seed Image</p>
-          <input type="file" accept="image/*" />
-        </div> */}
 
         <div id="editor-inputs-init-image" className="row">
           <label>
@@ -63,19 +63,21 @@ export default function CreationPanel() {
             onChange={_handleFileSelect}
           />
           <br />
+          {init_image && (
           <div id="init_image_preview" className="image_preview">
-            {init_image && (
               <img
                 id="init_image_preview"
                 src={init_image}
                 width="100"
                 height="100"
               />
-            )}
-            <button id="init_image_clear" className="image_clear_btn">
+
+            <button id="init_image_clear" className="image_clear_btn" onClick={_handleClearImage}>
               X
             </button>
+         
           </div>
+          )}
         </div>
 
         <MakeButton></MakeButton>

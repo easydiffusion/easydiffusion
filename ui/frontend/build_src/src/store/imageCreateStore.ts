@@ -202,7 +202,7 @@ export const useImageCreate = create<ImageCreateState>(
       isCheckUseFaceCorrection: true,
       isUseRandomSeed: true,
       isUseAutoSave: false,
-      isSoundEnabled: true,
+      isSoundEnabled: false,
     },
 
     toggleAdvancedSettingsIsOpen: () => {
