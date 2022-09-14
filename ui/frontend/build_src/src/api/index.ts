@@ -41,7 +41,6 @@ export const MakeImageKey = 'MakeImage';
 export const doMakeImage = async (reqBody: ImageRequest) => {
 
   const {seed, num_outputs} = reqBody;
-  console.log('doMakeImage', seed, num_outputs);
 
   const res = await fetch(`${API_URL}/image`, {
     method: 'POST',

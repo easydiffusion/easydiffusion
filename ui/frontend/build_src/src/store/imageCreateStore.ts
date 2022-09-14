@@ -67,13 +67,13 @@ interface ImageCreateState {
 // @ts-ignore
 export const useImageCreate = create<ImageCreateState>(devtools((set, get) => ({
   
-  parallelCount: 2,
+  parallelCount: 1,
 
   requestOptions:{
     prompt: 'a photograph of an astronaut riding a horse',
     seed: useRandomSeed(),
-    num_outputs: 2,
-    num_inference_steps: 5,
+    num_outputs: 1,
+    num_inference_steps: 50,
     guidance_scale: 7.5,
     width: 512,
     height: 512,
