@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useImageQueue } from "../../store/imageQueueStore";
 
-import { ImageRequest } from "../../store/imageCreateStore";
+import { ImageRequest, useImageCreate } from "../../store/imageCreateStore";
 
-import { useQueryClient } from "@tanstack/react-query";
+import {useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { MakeImageKey } from "../../api";
+import {doMakeImage, MakeImageKey } from "../../api";
 
 import CurrentImage from "./currentImage";
 import AudioDing from "./audioDing";
@@ -18,6 +18,38 @@ type CompletedImagesType = {
   info: ImageRequest;
 };
 export default function DisplayPanel() {
+
+  const dingRef = useRef<HTMLAudioElement>(null);
+  const isSoundEnabled = useImageCreate((state) => state.isSoundEnabled());
+
+  /* FETCHING  */
+  // @ts-ignore
+  const { id, options } = useImageQueue((state) => state.firstInQueue());
+  const removeFirstInQueue = useImageQueue((state) => state.removeFirstInQueue);
+  const { status, data } = useQuery(
+    [MakeImageKey, id],
+    () => doMakeImage(options),
+    {
+      enabled: void 0 !== id,
+    }
+  );
+
+  useEffect(() => {
+    // query is done
+    if (status === "success") {
+      // check to make sure that the image was created
+      if (data.status === "succeeded") {
+        if(isSoundEnabled) {
+          dingRef.current?.play();
+        }
+        removeFirstInQueue();
+      }
+    }
+  }, [status, data, removeFirstInQueue, dingRef, isSoundEnabled]);
+
+
+  /* COMPLETED IMAGES */
+
   const queryClient = useQueryClient();
   const [completedImages, setCompletedImages] = useState<CompletedImagesType[]>(
     []
@@ -62,8 +94,8 @@ export default function DisplayPanel() {
     <div className="display-panel">
       <h1>Display Panel</h1>
       <div>
-        <AudioDing></AudioDing>
-        <CurrentImage />
+        <AudioDing ref={dingRef}></AudioDing>
+        {/* <CurrentImage /> */}
         {completedImages.map((image, index) => {
           // if(index == 0){
           //   return null;

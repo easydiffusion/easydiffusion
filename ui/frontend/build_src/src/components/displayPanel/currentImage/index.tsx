@@ -8,7 +8,7 @@ import GeneratedImage from "../generatedImage";
 
 // TODO move this logic to the display panel
 export default function CurrentImage() {
-  const [imageData, setImageData] = useState(null);
+  // const [imageData, setImageData] = useState(null);
   // @ts-ignore
   const { id, options } = useImageQueue((state) => state.firstInQueue());
 

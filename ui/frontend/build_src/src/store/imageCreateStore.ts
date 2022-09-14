@@ -115,7 +115,7 @@ export const useImageCreate = create<ImageCreateState>(
       save_to_disk_path: "null",
       use_face_correction: 'GFPGANv1.3',
       use_upscale: "RealESRGAN_x4plus",
-      show_only_filtered_image: false,
+      show_only_filtered_image: true,
     } as ImageRequest,
 
     tags: [] as string[],
