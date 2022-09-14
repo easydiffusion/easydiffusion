@@ -14,7 +14,6 @@ export default function CurrentImage() {
   const {id, options} = useImageQueue((state) => state.firstInQueue());
   console.log('CurrentImage id', id)
 
-
   const removeFirstInQueue = useImageQueue((state) => state.removeFirstInQueue);
   
   const { status, data } = useQuery(

@@ -23,8 +23,8 @@ const IMAGE_DIMENSIONS = [
 
 function SettingsList() {
 
-  const requestCount = useImageCreate((state) => state.requestCount);
-  const setRequestCount = useImageCreate((state) => state.setRequestCount);
+  const parallelCount = useImageCreate((state) => state.parallelCount);
+  const setParallelCount = useImageCreate((state) => state.setParallelCount);
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
 
  
@@ -134,9 +134,9 @@ function SettingsList() {
         Number of images to make:{" "}
         <input
           type="number"
-          value={requestCount}
+          value={num_outputs}
           onChange={(e) =>
-            setRequestCount(parseInt(e.target.value, 10))
+            setRequestOption("num_outputs", parseInt(e.target.value, 10))
           }
           size={4}
         />
@@ -145,9 +145,9 @@ function SettingsList() {
         Generate in parallel:
         <input
           type="number"
-          value={num_outputs}
+          value={parallelCount}
           onChange={(e) =>
-            setRequestOption("num_outputs", parseInt(e.target.value, 10))
+            setParallelCount(parseInt(e.target.value, 10))
           }
           size={4}
         />
