@@ -17,9 +17,10 @@ OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder
 from fastapi import FastAPI, HTTPException
 from starlette.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
-import logging
 # this is needed for development.
 from fastapi.middleware.cors import CORSMiddleware
+import logging
+
 from sd_internal import Request, Response
 
 app = FastAPI()
@@ -71,7 +72,6 @@ class SetAppConfigRequest(BaseModel):
 @app.get('/')
 def read_root():
     headers = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
-    #return FileResponse(os.path.join(SD_UI_DIR, 'index.html'), headers=headers)
     return FileResponse(os.path.join(SD_UI_DIR,'frontend/dist/index.html'), headers=headers)
 
 # then get the js files
@@ -83,6 +83,7 @@ def read_scripts():
 @app.get('/index.css')
 def read_styles():
     return FileResponse(os.path.join(SD_UI_DIR, 'frontend/dist/index.css'))
+
 
 @app.get('/ping')
 async def ping():
@@ -216,7 +217,7 @@ def read_modifiers():
 
 @app.get('/modifiers.json')
 def read_modifiers():
-    return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'))
+    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/dist/modifiers.json'))
 
 @app.get('/output_dir')
 def read_home_dir():
