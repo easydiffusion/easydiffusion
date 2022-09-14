@@ -21,6 +21,8 @@ class Request:
     use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
     show_only_filtered_image: bool = False
 
+    stream_progress_updates: bool = False
+
     def json(self):
         return {
             "prompt": self.prompt,
@@ -50,7 +52,9 @@ class Request:
     use_full_precision: {self.use_full_precision}
     use_face_correction: {self.use_face_correction}
     use_upscale: {self.use_upscale}
-    show_only_filtered_image: {self.show_only_filtered_image}'''
+    show_only_filtered_image: {self.show_only_filtered_image}
+
+    stream_progress_updates: {self.stream_progress_updates}'''
 
 class Image:
     data: str # base64

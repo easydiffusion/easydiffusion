@@ -15,7 +15,7 @@ CONFIG_DIR = os.path.join(SD_UI_DIR, '..', 'scripts')
 OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder
 
 from fastapi import FastAPI, HTTPException
-from starlette.responses import FileResponse
+from starlette.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 import logging
 
@@ -49,6 +49,8 @@ class ImageRequest(BaseModel):
     use_face_correction: str = None # or "GFPGANv1.3"
     use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
     show_only_filtered_image: bool = False
+
+    stream_progress_updates: bool = False
 
 class SetAppConfigRequest(BaseModel):
     update_branch: str = "main"
@@ -106,10 +108,15 @@ def image(req : ImageRequest):
     r.use_face_correction = req.use_face_correction
     r.show_only_filtered_image = req.show_only_filtered_image
 
-    try:
-        res: Response = runtime.mk_img(r)
+    r.stream_progress_updates = req.stream_progress_updates
 
-        return res.json()
+    try:
+        res = runtime.mk_img(r)
+
+        if r.stream_progress_updates:
+            return StreamingResponse(res, media_type='application/json')
+        else:
+            return res.json()
     except Exception as e:
         print(traceback.format_exc())
         return HTTPException(status_code=500, detail=str(e))

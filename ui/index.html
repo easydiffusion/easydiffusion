@@ -60,6 +60,9 @@
     #outputMsg {
         font-size: small;
     }
+    #progressBar {
+        font-size: small;
+    }
     #footer {
         font-size: small;
         padding-left: 10pt;
@@ -397,6 +400,7 @@
             <div id="preview-prompt">Type a prompt and press the "Make Image" button.<br/><br/>You can set an "Initial Image" if you want to guide the AI.<br/><br/>You can also add modifiers like "Realistic", "Pencil Sketch", "ArtStation" etc by browsing through the "Image Modifiers" section and selecting the desired modifiers.<br/><br/>Click "Advanced Settings" for additional settings like seed, image size, number of images to generate etc.<br/><br/>Enjoy! :)</div>
 
             <div id="outputMsg"></div>
+            <div id="progressBar"></div>
             <div id="current-images" class="img-preview">
             </div>
         </div>
@@ -483,6 +487,7 @@ let previewPrompt = document.querySelector('#preview-prompt')
 let showConfigToggle = document.querySelector('#configToggleBtn')
 // let configBox = document.querySelector('#config')
 let outputMsg = document.querySelector('#outputMsg')
+let progressBar = document.querySelector("#progressBar")
 
 let soundToggle = document.querySelector('#sound_toggle')
 
@@ -496,6 +501,7 @@ let serverStatus = 'offline'
 let activeTags = []
 let lastPromptUsed = ''
 let taskStopped = true
+let batchesDone = 0
 
 function getLocalStorageItem(key, fallback) {
     let item = localStorage.getItem(key)
@@ -631,7 +637,7 @@ async function healthCheck() {
 }
 
 // makes a single image. don't call this directly, use makeImage() instead
-async function doMakeImage(reqBody) {
+async function doMakeImage(reqBody, batchCount) {
     if (taskStopped) {
         return
     }
@@ -648,6 +654,41 @@ async function doMakeImage(reqBody) {
             body: JSON.stringify(reqBody)
         })
 
+        let reader = res.body.getReader()
+        let textDecoder = new TextDecoder()
+        let finalJSON = ''
+        while (true) {
+            try {
+                const {value, done} = await reader.read()
+                if (done) {
+                    break
+                }
+
+                let jsonStr = textDecoder.decode(value)
+
+                try {
+                    let stepUpdate = JSON.parse(jsonStr)
+
+                    if (stepUpdate.step !== undefined) {
+                        let batchSize = parseInt(reqBody['num_inference_steps'])
+                        let overallStepCount = stepUpdate.step + batchesDone * batchSize
+                        let totalSteps = batchCount * batchSize
+                        let percent = 100 * (overallStepCount / totalSteps)
+                        percent = percent.toFixed(0)
+                        outputMsg.innerHTML = `Batch ${batchesDone+1} of ${batchCount}`
+                        progressBar.innerHTML = `Generating image: ${percent}%`
+                        progressBar.style.display = 'block'
+                    }
+                } catch (e) {
+                    finalJSON += jsonStr
+                }
+            } catch (e) {
+                logError('Stable Diffusion had an error. Please check the logs in the command-line window. This happens sometimes. Maybe modify the prompt or seed a little bit?', res)
+                res = undefined
+                throw e
+            }
+        }
+
         if (res.status != 200) {
             if (serverStatus === 'online') {
                 logError('Stable Diffusion had an error: ' + await res.text() + '. This happens sometimes. Maybe modify the prompt or seed a little bit?', res)
@@ -655,8 +696,10 @@ async function doMakeImage(reqBody) {
                 logError("Stable Diffusion is still starting up, please wait. If this goes on beyond a few minutes, Stable Diffusion has probably crashed.", res)
             }
             res = undefined
+            progressBar.style.display = 'none'
         } else {
-            res = await res.json()
+            res = JSON.parse(finalJSON)
+            progressBar.style.display = 'none'
 
             if (res.status !== 'succeeded') {
                 let msg = ''
@@ -680,7 +723,9 @@ async function doMakeImage(reqBody) {
         }
     } catch (e) {
         console.log('request error', e)
+        logError('Stable Diffusion had an error. Please check the logs in the command-line window. This happens sometimes. Maybe modify the prompt or seed a little bit?', res)
         setStatus('request', 'error', 'error')
+        progressBar.style.display = 'none'
     }
 
     if (!res) {
@@ -789,7 +834,7 @@ async function makeImage() {
 
     let validation = validateInput()
     if (validation['isValid']) {
-        outputMsg.innerHTML = 'Fetching..'
+        outputMsg.innerHTML = 'Starting..'
     } else {
         if (validation['error']) {
             logError(validation['error'])
@@ -806,6 +851,7 @@ async function makeImage() {
     stopImageBtn.style.display = 'block'
 
     taskStopped = false
+    batchesDone = 0
 
     let seed = (randomSeedField.checked ? Math.floor(Math.random() * 10000000) : parseInt(seedField.value))
     let numOutputsTotal = parseInt(numOutputsTotalField.value)
@@ -831,7 +877,8 @@ async function makeImage() {
         // allow_nsfw: allowNSFWField.checked,
         turbo: turboField.checked,
         use_cpu: useCPUField.checked,
-        use_full_precision: useFullPrecisionField.checked
+        use_full_precision: useFullPrecisionField.checked,
+        stream_progress_updates: true
     }
 
     if (IMAGE_REGEX.test(initImagePreview.src)) {
@@ -867,7 +914,8 @@ async function makeImage() {
     for (let i = 0; i < batchCount; i++) {
         reqBody['seed'] = seed + (i * batchSize)
 
-        let success = await doMakeImage(reqBody)
+        let success = await doMakeImage(reqBody, batchCount)
+        batchesDone++
 
         if (success) {
             outputMsg.innerHTML = 'Processed batch ' + (i+1) + '/' + batchCount
