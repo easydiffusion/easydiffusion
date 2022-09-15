@@ -11,7 +11,7 @@ import AudioDing from "./audioDing";
 
 import GeneratedImage from "./generatedImage";
 
-import './displayPanel.css';
+import "./displayPanel.css";
 
 type CompletedImagesType = {
   id: string;
@@ -102,12 +102,11 @@ export default function DisplayPanel() {
 
           <div id="previous-images">
             {completedImages.map((image, index) => {
-
               if (void 0 !== image) {
                 debugger;
-                if(index == 0){
-                    return null;
-                  }
+                if (index == 0) {
+                  return null;
+                }
 
                 return (
                   <GeneratedImage
@@ -117,14 +116,12 @@ export default function DisplayPanel() {
                     metadata={image.info}
                   />
                 );
-        
               } else {
-                  console.warn("image is undefined", image, index);
-                  return null;
+                console.warn("image is undefined", image, index);
+                return null;
               }
             })}
           </div>
-
         </div>
       )}
     </div>

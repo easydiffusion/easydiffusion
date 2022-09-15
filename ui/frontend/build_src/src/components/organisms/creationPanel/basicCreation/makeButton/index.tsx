@@ -6,11 +6,9 @@ import { v4 as uuidv4 } from "uuid";
 
 import { useRandomSeed } from "../../../../../utils";
 
-import { 
-  MakeButtonStyle 
-} from // @ts-ignore
-"./makeButton.css.ts";
-
+import {
+  MakeButtonStyle, // @ts-ignore
+} from "./makeButton.css.ts";
 
 export default function MakeButton() {
   const parallelCount = useImageCreate((state) => state.parallelCount);
@@ -71,8 +69,11 @@ export default function MakeButton() {
       // update the seed for the next time we click the button
       setRequestOption("seed", useRandomSeed());
     }
-
   };
 
-  return <button className={MakeButtonStyle} onClick={makeImages}>Make</button>;
+  return (
+    <button className={MakeButtonStyle} onClick={makeImages}>
+      Make
+    </button>
+  );
 }

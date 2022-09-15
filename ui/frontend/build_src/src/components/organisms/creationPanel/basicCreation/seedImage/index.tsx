@@ -1,21 +1,18 @@
-import React , {useRef, ChangeEvent} from "react";
+import React, { useRef, ChangeEvent } from "react";
 
-import { 
-  ImageInputDisplay, 
+import {
+  ImageInputDisplay,
   InputLabel,
   ImageInput,
   ImageInputButton,
-  ImageFixer, 
-  XButton
-} from // @ts-ignore
-"./seedImage.css.ts";
+  ImageFixer,
+  XButton, // @ts-ignore
+} from "./seedImage.css.ts";
 import { useImageCreate } from "../../../../../store/imageCreateStore";
-
 
 // TODO : figure out why this needs props to be passed in.. fixes a type error
 // when the component is used in the parent component
-export default function SeedImage(_props:any) {
-
+export default function SeedImage(_props: any) {
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   const init_image = useImageCreate((state) =>
@@ -25,7 +22,7 @@ export default function SeedImage(_props:any) {
 
   const _startFileSelect = () => {
     imageInputRef.current?.click();
-  }
+  };
   const _handleFileSelect = (event: ChangeEvent<HTMLInputElement>) => {
     //@ts-ignore
     const file = event.target.files[0];
@@ -41,14 +38,12 @@ export default function SeedImage(_props:any) {
     }
   };
 
-
   const _handleClearImage = () => {
     setRequestOption("init_image", undefined);
   };
 
   return (
     <div className={ImageInputDisplay}>
-
       <div>
         <label className={InputLabel}>
           <b>Initial Image:</b> (optional)
@@ -60,28 +55,22 @@ export default function SeedImage(_props:any) {
           type="file"
           onChange={_handleFileSelect}
         />
-          <button className={ImageInputButton} onClick={_startFileSelect}>
-            Select File
-          </button>
+        <button className={ImageInputButton} onClick={_startFileSelect}>
+          Select File
+        </button>
       </div>
 
       <div className={ImageFixer}>
         {init_image && (
           <>
-            <img
-              src={init_image}
-              width="100"
-              height="100"
-            />
+            <img src={init_image} width="100" height="100" />
 
-          <button className={XButton} onClick={_handleClearImage}>
-            X
-          </button>
-        </>
+            <button className={XButton} onClick={_handleClearImage}>
+              X
+            </button>
+          </>
         )}
       </div>
-
-
     </div>
   );
-};
+}

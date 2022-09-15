@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 
-import { 
+import {
   AppLayout,
   HeaderLayout,
   CreateLayout,
   DisplayLayout,
-  FooterLayout
-} // @ts-ignore
-from './app.css.ts';
+  FooterLayout, // @ts-ignore
+} from "./app.css.ts";
 
 import { useQuery } from "@tanstack/react-query";
 import { getSaveDirectory } from "../../api";

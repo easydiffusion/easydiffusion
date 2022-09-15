@@ -1,21 +1,16 @@
-
-import React, {ChangeEvent} from "react";
+import React, { ChangeEvent } from "react";
 import { useImageCreate } from "../../../../store/imageCreateStore";
-
-
 
 import {
   CreationBasicMain,
-  PromptDisplay,
-} // @ts-ignore 
-from "./basicCreation.css.ts";
+  PromptDisplay, // @ts-ignore
+} from "./basicCreation.css.ts";
 
 import SeedImage from "./seedImage";
 import ActiveTags from "./activeTags";
 import MakeButton from "./makeButton";
 
 export default function BasicCreation() {
-
   const promptText = useImageCreate((state) =>
     state.getValueForRequestKey("prompt")
   );
@@ -27,17 +22,16 @@ export default function BasicCreation() {
 
   return (
     <div className={CreationBasicMain}>
-      
-    <div className={PromptDisplay}>
-      <p>Prompt </p>
-      <textarea value={promptText} onChange={handlePromptChange}></textarea>
+      <div className={PromptDisplay}>
+        <p>Prompt </p>
+        <textarea value={promptText} onChange={handlePromptChange}></textarea>
+      </div>
+
+      <SeedImage></SeedImage>
+
+      <ActiveTags></ActiveTags>
+
+      <MakeButton></MakeButton>
     </div>
-
-    <SeedImage></SeedImage>
-
-    <ActiveTags></ActiveTags>
-
-    <MakeButton></MakeButton>
-  </div>
-  )
+  );
 }
