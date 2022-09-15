@@ -1,18 +1,3 @@
-.App {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  pointer-events: auto;
-  display: grid;
-  background-color: rgb(32, 33, 36);
-  grid-template-columns: 360px 1fr;
-  grid-template-rows: 100px 1fr 300px;
-  grid-template-areas:
-    "header header header"
-    "create display display"
-    "footer footer footer";
-}
-
 /* Very basic mobile stacked UI*/
 @media screen and (max-width: 768px) {
   .App {

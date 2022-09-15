@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import "./App.css";
+
+
+import { 
+  AppLayout,
+  HeaderLayout,
+  CreateLayout,
+  DisplayLayout,
+  FooterLayout
+} 
+from './app.css.ts';
 
 import { useQuery } from "@tanstack/react-query";
 import { getSaveDirectory } from "./api";
@@ -22,17 +31,17 @@ function App() {
   }, [setRequestOption, status, data]);
 
   return (
-    <div className="App">
-      <header className="header-layout">
+    <div className={AppLayout}>
+      <header className={HeaderLayout}>
         <HeaderDisplay></HeaderDisplay>
       </header>
-      <nav className="create-layout">
+      <nav className={CreateLayout}>
         <CreationPanel></CreationPanel>
       </nav>
-      <main className="display-layout">
+      <main className={DisplayLayout}>
         <DisplayPanel></DisplayPanel>
       </main>
-      <footer className="footer-layout">
+      <footer className={FooterLayout}>
         <FooterDisplay></FooterDisplay>
       </footer>
     </div>
