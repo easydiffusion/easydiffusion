@@ -8,17 +8,14 @@
 set /p answer=Are you a developer of this project (Y/N)?
 if /i "%answer:~,1%" NEQ "Y" exit /b
 
+@set PYTHONNOUSERSITE=1
+
 @mkdir dist\stable-diffusion-ui
 
 @echo "Downloading components for the installer.."
 
 @call conda env create --prefix installer -f environment.yaml
 @call conda activate .\installer
-
-@echo "Setting up startup scripts.."
-
-@mkdir installer\etc\conda\activate.d
-@copy scripts\post_activate.bat installer\etc\conda\activate.d\
 
 @echo "Creating a distributable package.."
 
@@ -37,6 +34,7 @@ if /i "%answer:~,1%" NEQ "Y" exit /b
 @copy ..\..\LICENSE .
 @copy "..\..\CreativeML Open RAIL-M License" .
 @copy "..\..\How to install and run.txt" .
+@echo "" > scripts\install_status.txt
 
 @echo "Build ready. Zip the 'dist\stable-diffusion-ui' folder."
 
