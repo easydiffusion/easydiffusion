@@ -6,8 +6,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import { enableMapSet } from "immer";
-import App from "./App";
-import "./index.css";
+import App from "./components/layouts/App";
+
+import './styles.css.ts';
 
 const queryClient = new QueryClient({
   defaultOptions: {

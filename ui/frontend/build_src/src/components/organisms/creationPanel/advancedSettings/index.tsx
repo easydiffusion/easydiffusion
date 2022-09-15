@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
-import { useImageCreate } from "../../../store/imageCreateStore";
-import "./advancedSettings.css";
+import { useImageCreate } from "../../../../store/imageCreateStore";
+// import "./advancedSettings.css";
 
 // todo: move this someplace more global
 const IMAGE_DIMENSIONS = [

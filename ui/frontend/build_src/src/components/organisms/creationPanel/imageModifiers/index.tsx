@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
-import { loadModifications } from "../../../api";
+import { loadModifications } from "../../../../api";
 
-import { useImageCreate } from "../../../store/imageCreateStore";
+import { useImageCreate } from "../../../../store/imageCreateStore";
 
-import ModifierTag from "../modierTag";
+import ModifierTag from "../../../atoms/modifierTag";
 
 type ModifierListProps = {
   tags: string[];

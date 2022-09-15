@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import { healthPing, HEALTH_PING_INTERVAL } from "../../../api";
+import { healthPing, HEALTH_PING_INTERVAL } from "../../../../api";
 
 const startingMessage = "Stable Diffusion is starting...";
 const successMessage = "Stable Diffusion is ready to use!";

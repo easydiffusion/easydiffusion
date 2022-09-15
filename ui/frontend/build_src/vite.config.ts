@@ -1,12 +1,20 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin';
+
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    vanillaExtractPlugin({
+      // configuration
+    })
+  ],
   server: {
     port: 9001,
   },
+ 
   build: {
     // make sure everythign is in the same directory
     outDir: "../dist",
@@ -18,6 +26,7 @@ export default defineConfig({
         chunkFileNames: `[name].js`,
         assetFileNames: `[name].[ext]`,
       },
+      
     },
   },
 });

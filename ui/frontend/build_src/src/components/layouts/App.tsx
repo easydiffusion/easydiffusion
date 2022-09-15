@@ -1,15 +1,23 @@
 import React, { useEffect, useState } from "react";
-import "./App.css";
+
+import { 
+  AppLayout,
+  HeaderLayout,
+  CreateLayout,
+  DisplayLayout,
+  FooterLayout
+} // @ts-ignore
+from './app.css.ts';
 
 import { useQuery } from "@tanstack/react-query";
-import { getSaveDirectory } from "./api";
-import { useImageCreate } from "./store/imageCreateStore";
+import { getSaveDirectory } from "../../api";
+import { useImageCreate } from "../../store/imageCreateStore";
 
 // Todo - import components here
-import HeaderDisplay from "./components/headerDisplay";
-import CreationPanel from "./components/creationPanel";
-import DisplayPanel from "./components/displayPanel";
-import FooterDisplay from "./components/footerDisplay";
+import HeaderDisplay from "../organisms/headerDisplay";
+import CreationPanel from "../organisms/creationPanel";
+import DisplayPanel from "../organisms/displayPanel";
+import FooterDisplay from "../organisms/footerDisplay";
 
 function App() {
   // Get the original save directory
@@ -22,17 +30,17 @@ function App() {
   }, [setRequestOption, status, data]);
 
   return (
-    <div className="App">
-      <header className="header-layout">
+    <div className={AppLayout}>
+      <header className={HeaderLayout}>
         <HeaderDisplay></HeaderDisplay>
       </header>
-      <nav className="create-layout">
+      <nav className={CreateLayout}>
         <CreationPanel></CreationPanel>
       </nav>
-      <main className="display-layout">
+      <main className={DisplayLayout}>
         <DisplayPanel></DisplayPanel>
       </main>
-      <footer className="footer-layout">
+      <footer className={FooterLayout}>
         <FooterDisplay></FooterDisplay>
       </footer>
     </div>
