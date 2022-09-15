@@ -15,6 +15,7 @@ CONFIG_DIR = os.path.join(SD_UI_DIR, '..', 'scripts')
 OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder
 
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 import logging
@@ -56,6 +57,8 @@ class ImageRequest(BaseModel):
 
 class SetAppConfigRequest(BaseModel):
     update_branch: str = "main"
+
+app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'media/')), name="media")
 
 @app.get('/')
 def read_root():
@@ -190,14 +193,6 @@ def getAppConfig():
     except Exception as e:
         print(traceback.format_exc())
         return HTTPException(status_code=500, detail=str(e))
-
-@app.get('/media/ding.mp3')
-def read_ding():
-    return FileResponse(os.path.join(SD_UI_DIR, 'media/ding.mp3'))
-
-@app.get('/media/kofi.png')
-def read_modifiers():
-    return FileResponse(os.path.join(SD_UI_DIR, 'media/kofi.png'))
 
 @app.get('/modifiers.json')
 def read_modifiers():

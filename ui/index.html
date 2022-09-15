@@ -27,7 +27,7 @@
         }
     }
     .image_preview_container {
-        display: none;
+        /* display: none; */
         margin-top: 10pt;
     }
     .image_clear_btn {
@@ -274,7 +274,24 @@
         height: 23px;
         transform: translateY(25%);
     }
+    #inpaintingEditor {
+        width: 300pt;
+        height: 300pt;
+        margin-top: 5pt;
+    }
+    .drawing-board-canvas-wrapper {
+        background-size: 100% 100%;
+    }
+    #inpaintingEditor canvas {
+        opacity: 0.6;
+    }
+    #enable_mask {
+        margin-top: 8pt;
+    }
     </style>
+    <link rel="stylesheet" href="/media/drawingboard.min.css">
+    <script src="/media/jquery-3.6.1.min.js"></script>
+    <script src="/media/drawingboard.min.js"></script>
 </html>
 <body>
 <div id="container">
@@ -295,17 +312,14 @@
 
                 <div id="editor-inputs-init-image" class="row">
                     <label for="init_image"><b>Initial Image:</b> (optional) </label> <input id="init_image" name="init_image" type="file" /><br/>
+
                     <div id="init_image_preview_container" class="image_preview_container">
                         <img id="init_image_preview" src="" width="100" height="100" />
-                        <button id="init_image_clear" class="image_clear_btn">X</button>
-                    </div>
-                </div>
+                        <button class="init_image_clear image_clear_btn">X</button>
 
-                <div id="editor-inputs-mask_setting">
-                    <label for="mask"><b>Image Mask:</b> (optional) </label> <input id="mask" name="mask" type="file" /><br/>
-                    <div id="mask_preview_container" class="image_preview_container">
-                        <img id="mask_preview" src="" width="100" height="100" />
-                        <button id="mask_clear" class="image_clear_btn">X</button>
+                        <br/>
+                        <input id="enable_mask" name="enable_mask" type="checkbox"> <label for="enable_mask">In-Painting (select the area which the AI will paint into)</label>
+                        <div id="inpaintingEditor"></div>
                     </div>
                 </div>
 
@@ -484,12 +498,13 @@ let stopImageBtn = document.querySelector('#stopImage')
 
 let imagesContainer = document.querySelector('#current-images')
 let initImagePreviewContainer = document.querySelector('#init_image_preview_container')
-let initImageClearBtn = document.querySelector('#init_image_clear')
+let initImageClearBtn = document.querySelector('.init_image_clear')
 let promptStrengthContainer = document.querySelector('#prompt_strength_container')
 
-let maskSetting = document.querySelector('#editor-inputs-mask_setting')
-let maskImagePreviewContainer = document.querySelector('#mask_preview_container')
-let maskImageClearBtn = document.querySelector('#mask_clear')
+// let maskSetting = document.querySelector('#editor-inputs-mask_setting')
+// let maskImagePreviewContainer = document.querySelector('#mask_preview_container')
+// let maskImageClearBtn = document.querySelector('#mask_clear')
+let maskSetting = document.querySelector('#enable_mask')
 
 let editorModifierEntries = document.querySelector('#editor-modifiers-entries')
 let editorModifierTagsList = document.querySelector('#editor-inputs-tags-list')
@@ -509,6 +524,29 @@ let serverStatusMsg = document.querySelector('#server-status-msg')
 
 let advancedPanelHandle = document.querySelector("#editor-settings .collapsible")
 let modifiersPanelHandle = document.querySelector("#editor-modifiers .collapsible")
+let inpaintingEditorContainer = document.querySelector('#inpaintingEditor')
+let inpaintingEditor = new DrawingBoard.Board('inpaintingEditor', {
+    color: "#ffffff",
+    background: false,
+    size: 30,
+    webStorage: false,
+    controls: [{'DrawingMode': {'filler': false}}, 'Size', 'Navigation']
+})
+let inpaintingEditorCanvasBackground = document.querySelector('.drawing-board-canvas-wrapper')
+// let inpaintingEditorControls = document.querySelector('.drawing-board-controls')
+
+// let inpaintingEditorMetaControl = document.createElement('div')
+// inpaintingEditorMetaControl.className = 'drawing-board-control'
+// let initImageClearBtnToolbar = document.createElement('button')
+// initImageClearBtnToolbar.className = 'init_image_clear'
+// initImageClearBtnToolbar.innerHTML = 'Remove Image'
+// inpaintingEditorMetaControl.appendChild(initImageClearBtnToolbar)
+// inpaintingEditorControls.appendChild(inpaintingEditorMetaControl)
+
+let maskResetButton = document.querySelector('.drawing-board-control-navigation-reset')
+maskResetButton.innerHTML = 'Clear'
+maskResetButton.style.fontWeight = 'normal'
+maskResetButton.style.fontSize = '10pt'
 
 let serverStatus = 'offline'
 let activeTags = []
@@ -850,9 +888,11 @@ async function doMakeImage(reqBody, batchCount) {
             initImagePreview.src = imgBody
 
             initImagePreviewContainer.style.display = 'block'
+            inpaintingEditorContainer.style.display = 'none'
             promptStrengthContainer.style.display = 'block'
+            maskSetting.checked = false
 
-            maskSetting.style.display = 'block'
+            // maskSetting.style.display = 'block'
 
             randomSeedField.checked = false
             seedField.value = seed
@@ -957,8 +997,11 @@ async function makeImage() {
         reqBody['init_image'] = initImagePreview.src
         reqBody['prompt_strength'] = promptStrengthField.value
 
-        if (IMAGE_REGEX.test(maskImagePreview.src)) {
-            reqBody['mask'] = maskImagePreview.src
+        // if (IMAGE_REGEX.test(maskImagePreview.src)) {
+        //     reqBody['mask'] = maskImagePreview.src
+        // }
+        if (maskSetting.checked) {
+            reqBody['mask'] = inpaintingEditor.getImg()
         }
     }
 
@@ -1217,8 +1260,9 @@ checkRandomSeed()
 function showInitImagePreview() {
     if (initImageSelector.files.length === 0) {
         initImagePreviewContainer.style.display = 'none'
+        // inpaintingEditorContainer.style.display = 'none'
         promptStrengthContainer.style.display = 'none'
-        maskSetting.style.display = 'none'
+        // maskSetting.style.display = 'none'
         return
     }
 
@@ -1229,9 +1273,9 @@ function showInitImagePreview() {
         // console.log(file.name, reader.result)
         initImagePreview.src = reader.result
         initImagePreviewContainer.style.display = 'block'
+        inpaintingEditorContainer.style.display = 'none'
         promptStrengthContainer.style.display = 'block'
-
-        maskSetting.style.display = 'block'
+        // maskSetting.checked = false
     })
 
     if (file) {
@@ -1241,47 +1285,59 @@ function showInitImagePreview() {
 initImageSelector.addEventListener('change', showInitImagePreview)
 showInitImagePreview()
 
+initImagePreview.addEventListener('load', function() {
+    inpaintingEditorCanvasBackground.style.backgroundImage = "url('" + this.src + "')"
+    // maskSetting.style.display = 'block'
+    // inpaintingEditorContainer.style.display = 'block'
+})
+
 initImageClearBtn.addEventListener('click', function() {
     initImageSelector.value = null
-    maskImageSelector.value = null
+    // maskImageSelector.value = null
 
     initImagePreview.src = ''
-    maskImagePreview.src = ''
+    // maskImagePreview.src = ''
+    maskSetting.checked = false
 
     initImagePreviewContainer.style.display = 'none'
-    maskImagePreviewContainer.style.display = 'none'
+    // inpaintingEditorContainer.style.display = 'none'
+    // maskImagePreviewContainer.style.display = 'none'
 
-    maskSetting.style.display = 'none'
+    // maskSetting.style.display = 'none'
 
     promptStrengthContainer.style.display = 'none'
 })
 
-function showMaskImagePreview() {
-    if (maskImageSelector.files.length === 0) {
-        maskImagePreviewContainer.style.display = 'none'
-        return
-    }
-
-    let reader = new FileReader()
-    let file = maskImageSelector.files[0]
-
-    reader.addEventListener('load', function() {
-        maskImagePreview.src = reader.result
-        maskImagePreviewContainer.style.display = 'block'
-    })
-
-    if (file) {
-        reader.readAsDataURL(file)
-    }
-}
-maskImageSelector.addEventListener('change', showMaskImagePreview)
-showMaskImagePreview()
-
-maskImageClearBtn.addEventListener('click', function() {
-    maskImageSelector.value = null
-    maskImagePreview.src = ''
-    maskImagePreviewContainer.style.display = 'none'
+maskSetting.addEventListener('click', function() {
+    inpaintingEditorContainer.style.display = (this.checked ? 'block' : 'none')
 })
+
+// function showMaskImagePreview() {
+//     if (maskImageSelector.files.length === 0) {
+//         // maskImagePreviewContainer.style.display = 'none'
+//         return
+//     }
+
+//     let reader = new FileReader()
+//     let file = maskImageSelector.files[0]
+
+//     reader.addEventListener('load', function() {
+//         // maskImagePreview.src = reader.result
+//         // maskImagePreviewContainer.style.display = 'block'
+//     })
+
+//     if (file) {
+//         reader.readAsDataURL(file)
+//     }
+// }
+// maskImageSelector.addEventListener('change', showMaskImagePreview)
+// showMaskImagePreview()
+
+// maskImageClearBtn.addEventListener('click', function() {
+//     maskImageSelector.value = null
+//     maskImagePreview.src = ''
+//     // maskImagePreviewContainer.style.display = 'none'
+// })
 
 // https://stackoverflow.com/a/8212878
 function millisecondsToStr(milliseconds) {
@@ -1464,5 +1520,4 @@ async function init() {
 
 init()
 </script>
-
 </html>
