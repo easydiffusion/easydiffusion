@@ -10,7 +10,6 @@ import Editor from "./components/layouts/Home";
 
 import App from "./App";
 
-
 import "./styles.css.ts";
 
 const queryClient = new QueryClient({
