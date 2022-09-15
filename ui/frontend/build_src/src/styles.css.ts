@@ -19,7 +19,9 @@ globalStyle(`*`, {
   boxSizing: "border-box",
 });
 
-globalStyle(`p`, {
+
+/** RESET  */
+globalStyle(`p, h3, h4`, {
   margin: 0,
 });
 

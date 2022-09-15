@@ -1,10 +1,9 @@
 import React, { useEffect } from "react";
 import { useImageCreate } from "../../../../store/imageCreateStore";
-import { 
+import {
   AdvancedSettingsList,
-  AdvancedSettingItem
-} // @ts-ignore 
-from "./advancedsettings.css.ts";
+  AdvancedSettingItem, // @ts-ignore
+} from "./advancedsettings.css.ts";
 
 import ImprovementSettings from "./improvementSettings";
 import PropertySettings from "./propertySettings";
@@ -12,7 +11,6 @@ import WorkflowSettings from "./workflowSettings";
 import GpuSettings from "./gpuSettings";
 
 function SettingsList() {
-
   return (
     <ul className={AdvancedSettingsList}>
       <li className={AdvancedSettingItem}>
