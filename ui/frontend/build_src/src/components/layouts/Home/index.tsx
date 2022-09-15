@@ -6,19 +6,19 @@ import {
   CreateLayout,
   DisplayLayout,
   FooterLayout, // @ts-ignore
-} from "./app.css.ts";
+} from "./home.css.ts";
 
 import { useQuery } from "@tanstack/react-query";
-import { getSaveDirectory } from "../../api";
-import { useImageCreate } from "../../store/imageCreateStore";
+import { getSaveDirectory } from "../../../api";
+import { useImageCreate } from "../../../store/imageCreateStore";
 
 // Todo - import components here
-import HeaderDisplay from "../organisms/headerDisplay";
-import CreationPanel from "../organisms/creationPanel";
-import DisplayPanel from "../organisms/displayPanel";
-import FooterDisplay from "../organisms/footerDisplay";
+import HeaderDisplay from "../../organisms/headerDisplay";
+import CreationPanel from "../../organisms/creationPanel";
+import DisplayPanel from "../../organisms/displayPanel";
+import FooterDisplay from "../../organisms/footerDisplay";
 
-function App() {
+function Editor() {
   // Get the original save directory
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
   const { status, data } = useQuery(["SaveDir"], getSaveDirectory);
@@ -46,4 +46,4 @@ function App() {
   );
 }
 
-export default App;
+export default Editor;
