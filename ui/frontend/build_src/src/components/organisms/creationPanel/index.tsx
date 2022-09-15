@@ -15,11 +15,8 @@ export default function CreationPanel() {
   return (
     <div className={CreationPaneMain}>
       <BasicCreation></BasicCreation>
-
-      <div className="advanced-create">
-        <AdvancedSettings></AdvancedSettings>
-        <ImageModifiers></ImageModifiers>
-      </div>
+      <AdvancedSettings></AdvancedSettings>
+      <ImageModifiers></ImageModifiers>
     </div>
   );
 }

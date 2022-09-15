@@ -64,7 +64,6 @@ export default function SeedImage(_props: any) {
         {init_image && (
           <>
             <img src={init_image} width="100" height="100" />
-
             <button className={XButton} onClick={_handleClearImage}>
               X
             </button>

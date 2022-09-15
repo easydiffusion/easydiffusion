@@ -2,13 +2,15 @@ import React from "react";
 
 import "./footerDisplay.css";
 
+import { API_URL } from "../../../api";
+
 export default function FooterDisplay() {
   return (
     <div id="footer" className="panel-box">
       <p>
         If you found this project useful and want to help keep it alive, please{" "}
         <a href="https://ko-fi.com/cmdr2_stablediffusion_ui" target="_blank">
-          <img src="./kofi.png" id="coffeeButton" />
+          <img src={`${API_URL}/kofi.png`} id="coffeeButton" />
         </a>{" "}
         to help cover the cost of development and maintenance! Thank you for
         your support!
