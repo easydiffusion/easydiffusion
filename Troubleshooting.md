@@ -16,6 +16,9 @@ This error can also be caused if you already have conda/miniconda/anaconda insta
 
 If nothing works, this could be due to a corrupted installation. Please try reinstalling this, by deleting the installed folder, and unzipping from the downloaded zip file.
 
+## Killed uvicorn server:app --app-dir "$SD_UI_PATH" --port 9000 --host 0.0.0.0
+This happens if your PC ran out of RAM. Stable Diffusion requires a lot of RAM, and requires atleast 10 GB of RAM to work well. You can also try closing all other applications before running Stable Diffusion UI.
+
 ## Green image generated
 This usually happens if you're running NVIDIA 1650 or 1660 Super. To solve this, please close and run the Stable Diffusion command on your computer. If you're using the older Docker-based solution (v1), please upgrade to v2: https://github.com/cmdr2/stable-diffusion-ui/tree/v2#installation
 
