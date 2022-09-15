@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { useImageCreate } from "../../../../../store/imageCreateStore";
 
-import { MenuButton } 
-from //@ts-ignore
-'../advancedsettings.css.ts';
-
+import {
+  MenuButton, //@ts-ignore
+} from "../advancedsettings.css.ts";
 
 export default function WorkflowSettings() {
   const num_outputs = useImageCreate((state) =>
@@ -32,11 +31,7 @@ export default function WorkflowSettings() {
 
   return (
     <div>
-      <button
-        type="button"
-        className={MenuButton}
-        onClick={toggleWorkflowOpen}
-      >
+      <button type="button" className={MenuButton} onClick={toggleWorkflowOpen}>
         <h4>Workflow Settings</h4>
       </button>
       {workflowOpen && (

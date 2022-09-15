@@ -103,7 +103,6 @@ export default function DisplayPanel() {
           <div id="previous-images">
             {completedImages.map((image, index) => {
               if (void 0 !== image) {
-                debugger;
                 if (index == 0) {
                   return null;
                 }

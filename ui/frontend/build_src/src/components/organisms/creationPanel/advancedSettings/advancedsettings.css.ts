@@ -29,9 +29,6 @@ export const MenuButton = style({
 });
 
 globalStyle(`${MenuButton}> h4`, {
-  color: '#e7ba71',
-  marginTop:"5px !important",
-
+  color: "#e7ba71",
+  marginTop: "5px !important",
 });
-
-

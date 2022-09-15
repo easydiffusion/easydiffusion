@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { useImageCreate } from "../../../../../store/imageCreateStore";
 
-import { MenuButton } 
-from //@ts-ignore
-'../advancedsettings.css.ts'
-
+import {
+  MenuButton, //@ts-ignore
+} from "../advancedsettings.css.ts";
 
 export default function GpuSettings() {
   const turbo = useImageCreate((state) => state.getValueForRequestKey("turbo"));
@@ -25,11 +24,7 @@ export default function GpuSettings() {
 
   return (
     <div>
-      <button
-        type="button"
-        className={MenuButton}
-        onClick={toggleGpuOpen}
-      >
+      <button type="button" className={MenuButton} onClick={toggleGpuOpen}>
         <h4>GPU Settings</h4>
       </button>
       {gpuOpen && (

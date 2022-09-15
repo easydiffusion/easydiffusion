@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useImageCreate } from "../../../../../store/imageCreateStore";
 
-import { MenuButton } 
-from //@ts-ignore
-'../advancedsettings.css.ts'
+import {
+  MenuButton, //@ts-ignore
+} from "../advancedsettings.css.ts";
 // todo: move this someplace more global
 const IMAGE_DIMENSIONS = [
   { value: 128, label: "128 (*)" },
@@ -53,11 +53,7 @@ export default function PropertySettings() {
 
   return (
     <div>
-      <button
-        type="button"
-        className={MenuButton}
-        onClick={togglePropertyOpen}
-      >
+      <button type="button" className={MenuButton} onClick={togglePropertyOpen}>
         <h4>Property Settings</h4>
       </button>
       {propertyOpen && (

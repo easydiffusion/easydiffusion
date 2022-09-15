@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useImageCreate } from "../../../../../store/imageCreateStore";
 
-import { MenuButton } 
-from //@ts-ignore
-'../advancedsettings.css.ts';
+import {
+  MenuButton, //@ts-ignore
+} from "../advancedsettings.css.ts";
 
 export default function ImprovementSettings() {
   // these are conditionals that should be retired and inferred from the store
