@@ -1,24 +1,23 @@
 import React, { useEffect, useState } from "react";
 
-
 import { 
   AppLayout,
   HeaderLayout,
   CreateLayout,
   DisplayLayout,
   FooterLayout
-} 
+} // @ts-ignore
 from './app.css.ts';
 
 import { useQuery } from "@tanstack/react-query";
-import { getSaveDirectory } from "./api";
-import { useImageCreate } from "./store/imageCreateStore";
+import { getSaveDirectory } from "../../api";
+import { useImageCreate } from "../../store/imageCreateStore";
 
 // Todo - import components here
-import HeaderDisplay from "./components/headerDisplay";
-import CreationPanel from "./components/creationPanel";
-import DisplayPanel from "./components/displayPanel";
-import FooterDisplay from "./components/footerDisplay";
+import HeaderDisplay from "../organisms/headerDisplay";
+import CreationPanel from "../organisms/creationPanel";
+import DisplayPanel from "../organisms/displayPanel";
+import FooterDisplay from "../organisms/footerDisplay";
 
 function App() {
   // Get the original save directory

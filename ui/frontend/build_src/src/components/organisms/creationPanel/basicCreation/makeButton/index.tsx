@@ -1,10 +1,16 @@
 import React, { useEffect, useState } from "react";
 
-import { useImageCreate } from "../../../store/imageCreateStore";
-import { useImageQueue } from "../../../store/imageQueueStore";
+import { useImageCreate } from "../../../../../store/imageCreateStore";
+import { useImageQueue } from "../../../../../store/imageQueueStore";
 import { v4 as uuidv4 } from "uuid";
 
-import { useRandomSeed } from "../../../utils";
+import { useRandomSeed } from "../../../../../utils";
+
+import { 
+  MakeButtonStyle 
+} from // @ts-ignore
+"./makeButton.css.ts";
+
 
 export default function MakeButton() {
   const parallelCount = useImageCreate((state) => state.parallelCount);
@@ -68,5 +74,5 @@ export default function MakeButton() {
 
   };
 
-  return <button onClick={makeImages}>Make</button>;
+  return <button className={MakeButtonStyle} onClick={makeImages}>Make</button>;
 }

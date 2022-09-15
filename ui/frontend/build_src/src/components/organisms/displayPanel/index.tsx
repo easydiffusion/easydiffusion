@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useImageQueue } from "../../store/imageQueueStore";
+import { useImageQueue } from "../../../store/imageQueueStore";
 
-import { ImageRequest, useImageCreate } from "../../store/imageCreateStore";
+import { ImageRequest, useImageCreate } from "../../../store/imageCreateStore";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { doMakeImage, MakeImageKey } from "../../api";
+import { doMakeImage, MakeImageKey } from "../../../api";
 
 import AudioDing from "./audioDing";
 

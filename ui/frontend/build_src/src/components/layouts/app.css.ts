@@ -7,13 +7,26 @@ export const AppLayout = style({
   pointerEvents: 'auto',
   display: 'grid',
   backgroundColor: 'rgb(32, 33, 36)',
-  gridTemplateColumns: '360px 1fr',
+  gridTemplateColumns: '400px 1fr',
   gridTemplateRows: '100px 1fr 50px',
   gridTemplateAreas: `
     "header header header"
     "create display display"
-    "footer footer footer"
+    "create footer footer"
   `,
+
+  '@media': {
+    'screen and (max-width: 800px)': {
+      gridTemplateColumns: '1fr',
+      gridTemplateRows: '100px 1fr 1fr 50px',
+      gridTemplateAreas: `
+        "header"
+        "create"
+        "display"
+        "footer"
+      `,
+    },
+  },
 });
 
 export const HeaderLayout = style({
@@ -22,10 +35,12 @@ export const HeaderLayout = style({
 
 export const CreateLayout = style({ 
   gridArea: 'create',
+  overflow: 'auto',
 });
 
 export const DisplayLayout = style({
   gridArea: 'display',
+  overflow: 'auto',
 });
 
 export const FooterLayout = style({
