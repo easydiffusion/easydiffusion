@@ -906,6 +906,7 @@ async function makeImage() {
     setStatus('request', 'fetching..')
 
     makeImageBtn.innerHTML = 'Processing..'
+    makeImageBtn.disabled = true
     makeImageBtn.style.display = 'none'
     stopImageBtn.style.display = 'block'
 
