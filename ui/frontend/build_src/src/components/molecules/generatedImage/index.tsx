@@ -3,9 +3,16 @@ import React, { useCallback } from "react";
 import {
   ImageRequest,
   useImageCreate,
-} from "../../../../store/imageCreateStore";
+} from "../../../store/imageCreateStore";
 
-import "./generatedImage.css";
+import {
+  generatedImage,
+  imageContain,
+  image,
+  saveButton,
+  useButton,
+} from //@ts-ignore
+"./generatedImage.css.ts";
 
 type GeneretaedImageProps = {
   imageData: string;
@@ -35,10 +42,8 @@ export default function GeneratedImage({
     //Most important information is the prompt
     let underscoreName = prompt.replace(/[^a-zA-Z0-9]/g, "_");
     underscoreName = underscoreName.substring(0, 100);
-
     // name and the top level metadata
     let fileName = `${underscoreName}_Seed-${seed}_Steps-${num_inference_steps}_Guidance-${guidance_scale}`;
-
     // Add the face correction and upscale
     if (use_face_correction) {
       fileName += `_FaceCorrection-${use_face_correction}`;
@@ -46,13 +51,10 @@ export default function GeneratedImage({
     if (use_upscale) {
       fileName += `_Upscale-${use_upscale}`;
     }
-
     // Add the width and height
     fileName += `_${width}x${height}`;
-
     // add the file extension
     fileName += `.png`;
-
     // return fileName
     return fileName;
   };
@@ -71,14 +73,14 @@ export default function GeneratedImage({
   // className={[statusClass, className].join(" ")}
 
   return (
-    <div className={["generated-image", className].join(" ")}>
+    <div className={[generatedImage, className].join(" ")}>
       <p>{metadata.prompt}</p>
-      <div className="image-contain">
-        <img src={imageData} alt="generated" />
-        <button id="save-button" onClick={_handleSave}>
+      <div className={imageContain}>
+        <img className={image} src={imageData} alt="generated" />
+        <button className={saveButton} onClick={_handleSave}>
           Save
         </button>
-        <button id="use-button" onClick={_handleUseAsInput}>
+        <button className={useButton} onClick={_handleUseAsInput}>
           Use as Input
         </button>
       </div>
