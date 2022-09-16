@@ -1,5 +1,7 @@
-import React, { useState } from "react";
-import { useImageCreate } from "../../../../../store/imageCreateStore";
+import React from "react";
+import { useImageCreate } from "../../../../../stores/imageCreateStore";
+
+import { useCreateUI } from "../../creationPanelUIStore";
 
 import {
   MenuButton, //@ts-ignore
@@ -23,11 +25,10 @@ export default function WorkflowSettings() {
     (state) => state.toggleSoundEnabled
   );
 
-  const [workflowOpen, setWorkflowOpen] = useState(true);
+  const workflowOpen = useCreateUI((state) => state.isOpenAdvWorkflowSettings);
+  const toggleWorkflowOpen = useCreateUI((state) => state.toggleAdvWorkflowSettings);
 
-  const toggleWorkflowOpen = () => {
-    setWorkflowOpen(!workflowOpen);
-  };
+
 
   return (
     <div>

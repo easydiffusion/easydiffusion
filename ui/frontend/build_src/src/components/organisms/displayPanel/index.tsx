@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useImageQueue } from "../../../store/imageQueueStore";
+import { useImageQueue } from "../../../stores/imageQueueStore";
 
-import { ImageRequest, useImageCreate } from "../../../store/imageCreateStore";
+import { ImageRequest, useImageCreate } from "../../../stores/imageCreateStore";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -19,7 +19,7 @@ import {
   previousImages,
   previousImage
 } from //@ts-ignore
-"./displayPanel.css.ts";
+  "./displayPanel.css.ts";
 
 type CompletedImagesType = {
   id: string;

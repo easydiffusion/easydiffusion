@@ -1,5 +1,5 @@
 import React from "react";
-import { useImageCreate } from "../../../store/imageCreateStore";
+import { useImageCreate } from "../../../stores/imageCreateStore";
 
 type ModifierTagProps = {
   name: string;

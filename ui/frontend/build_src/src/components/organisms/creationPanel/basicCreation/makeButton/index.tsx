@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
-import { useImageCreate } from "../../../../../store/imageCreateStore";
-import { useImageQueue } from "../../../../../store/imageQueueStore";
+import { useImageCreate } from "../../../../../stores/imageCreateStore";
+import { useImageQueue } from "../../../../../stores/imageQueueStore";
 import { v4 as uuidv4 } from "uuid";
 
 import { useRandomSeed } from "../../../../../utils";

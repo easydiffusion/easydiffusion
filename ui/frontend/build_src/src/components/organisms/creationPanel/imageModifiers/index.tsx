@@ -3,7 +3,9 @@ import React, { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { loadModifications } from "../../../../api";
 
-import { useImageCreate } from "../../../../store/imageCreateStore";
+import { useImageCreate } from "../../../../stores/imageCreateStore";
+import { useCreateUI } from "../creationPanelUIStore";
+
 
 import ModifierTag from "../../../atoms/modifierTag";
 
@@ -12,8 +14,7 @@ type ModifierListProps = {
 };
 
 function ModifierList({ tags }: ModifierListProps) {
-  // const setImageOptions = useImageCreate((state) => state.setImageOptions);
-  // const imageOptions = useImageCreate((state) => state.imageOptions);
+
   return (
     <ul className="modifier-list">
       {tags.map((tag) => (
@@ -50,14 +51,26 @@ function ModifierGrouping({ title, tags }: ModifierGroupingProps) {
 }
 
 export default function ImageModifers() {
-  const { status, data } = useQuery(["modifications"], loadModifications);
+  // const { status, data } = useQuery(["modifications"], loadModifications);
 
-  const imageModifierIsOpen = useImageCreate(
-    (state) => state.uiOptions.imageModifierIsOpen
+  // const imageModifierIsOpen = useImageCreate(
+  //   (state) => state.uiOptions.imageModifierIsOpen
+  // );
+  // const toggleImageModifiersIsOpen = useImageCreate(
+  //   (state) => state.toggleImageModifiersIsOpen
+  // );
+
+  const allModifiers = useImageCreate((state) => state.allModifiers);
+
+  console.log("allModifiers", allModifiers);
+
+  const imageModifierIsOpen = useCreateUI(
+    (state) => state.isOpenImageModifier
   );
-  const toggleImageModifiersIsOpen = useImageCreate(
-    (state) => state.toggleImageModifiersIsOpen
+  const toggleImageModifiersIsOpen = useCreateUI(
+    (state) => state.toggleImageModifier
   );
+
 
   const handleClick = () => {
     toggleImageModifiersIsOpen();
@@ -77,8 +90,9 @@ export default function ImageModifers() {
       {/* @ts-ignore */}
       {imageModifierIsOpen &&
         // @ts-ignore
-        data.map((item, index) => {
+        allModifiers.map((item, index) => {
           return (
+            // @ts-ignore
             <ModifierGrouping key={item[0]} title={item[0]} tags={item[1]} />
           );
         })}

@@ -3,7 +3,7 @@ import React, { useCallback } from "react";
 import {
   ImageRequest,
   useImageCreate,
-} from "../../../store/imageCreateStore";
+} from "../../../stores/imageCreateStore";
 
 import {
   generatedImage,
@@ -12,7 +12,7 @@ import {
   saveButton,
   useButton,
 } from //@ts-ignore
-"./generatedImage.css.ts";
+  "./generatedImage.css.ts";
 
 type GeneretaedImageProps = {
   imageData: string;

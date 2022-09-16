@@ -5,8 +5,6 @@ import { devtools } from "zustand/middleware";
 import { useRandomSeed } from "../utils";
 
 export type ImageCreationUiOptions = {
-  advancedSettingsIsOpen: boolean;
-  imageModifierIsOpen: boolean;
   isCheckedUseUpscaling: boolean;
   isCheckUseFaceCorrection: boolean;
   isUseRandomSeed: boolean;
@@ -21,37 +19,37 @@ export type ImageRequest = {
   num_inference_steps: number;
   guidance_scale: number;
   width:
-    | 128
-    | 192
-    | 256
-    | 320
-    | 384
-    | 448
-    | 512
-    | 576
-    | 640
-    | 704
-    | 768
-    | 832
-    | 896
-    | 960
-    | 1024;
+  | 128
+  | 192
+  | 256
+  | 320
+  | 384
+  | 448
+  | 512
+  | 576
+  | 640
+  | 704
+  | 768
+  | 832
+  | 896
+  | 960
+  | 1024;
   height:
-    | 128
-    | 192
-    | 256
-    | 320
-    | 384
-    | 448
-    | 512
-    | 576
-    | 640
-    | 704
-    | 768
-    | 832
-    | 896
-    | 960
-    | 1024;
+  | 128
+  | 192
+  | 256
+  | 320
+  | 384
+  | 448
+  | 512
+  | 576
+  | 640
+  | 704
+  | 768
+  | 832
+  | 896
+  | 960
+  | 1024;
   // allow_nsfw: boolean;
   turbo: boolean;
   use_cpu: boolean;
@@ -64,23 +62,29 @@ export type ImageRequest = {
   prompt_strength: undefined | number;
 };
 
+type ModifiersList = string[];
+type ModifiersOptions = string | ModifiersList[];
+type ModifiersOptionList = ModifiersOptions[];
+
+
 interface ImageCreateState {
   parallelCount: number;
   requestOptions: ImageRequest;
+  allModifiers: ModifiersOptionList;
   tags: string[];
 
   setParallelCount: (count: number) => void;
   setRequestOptions: (key: keyof ImageRequest, value: any) => void;
   getValueForRequestKey: (key: keyof ImageRequest) => any;
+  setAllModifiers: (modifiers: ModifiersOptionList) => void;
 
+  setModifierOptions: (key: string, value: any) => void;
   toggleTag: (tag: string) => void;
   hasTag: (tag: string) => boolean;
   selectedTags: () => string[];
   builtRequest: () => ImageRequest;
 
   uiOptions: ImageCreationUiOptions;
-  toggleAdvancedSettingsIsOpen: () => void;
-  toggleImageModifiersIsOpen: () => void;
   toggleUseUpscaling: () => void;
   isUsingUpscaling: () => boolean;
   toggleUseFaceCorrection: () => void;
@@ -120,6 +124,8 @@ export const useImageCreate = create<ImageCreateState>(
 
     tags: [] as string[],
 
+    allModifiers: [[[]]] as ModifiersOptionList,
+
     setParallelCount: (count: number) =>
       set(
         produce((state) => {
@@ -138,6 +144,15 @@ export const useImageCreate = create<ImageCreateState>(
     getValueForRequestKey: (key: keyof ImageRequest) => {
       return get().requestOptions[key];
     },
+
+    setAllModifiers: (modifiers: ModifiersOptionList) => {
+      set(
+        produce((state) => {
+          state.allModifiers = modifiers;
+        })
+      );
+    },
+
 
     toggleTag: (tag: string) => {
       set(
@@ -196,8 +211,7 @@ export const useImageCreate = create<ImageCreateState>(
     uiOptions: {
       // TODO proper persistence of all UI / user settings centrally somewhere?
       // localStorage.getItem('ui:advancedSettingsIsOpen') === 'true',
-      advancedSettingsIsOpen: false,
-      imageModifierIsOpen: false,
+
       isCheckedUseUpscaling: false,
       isCheckUseFaceCorrection: true,
       isUseRandomSeed: true,
@@ -205,31 +219,6 @@ export const useImageCreate = create<ImageCreateState>(
       isSoundEnabled: false,
     },
 
-    toggleAdvancedSettingsIsOpen: () => {
-      set(
-        produce((state) => {
-          state.uiOptions.advancedSettingsIsOpen =
-            !state.uiOptions.advancedSettingsIsOpen;
-          localStorage.setItem(
-            "ui:advancedSettingsIsOpen",
-            state.uiOptions.advancedSettingsIsOpen
-          );
-        })
-      );
-    },
-
-    toggleImageModifiersIsOpen: () => {
-      set(
-        produce((state) => {
-          state.uiOptions.imageModifierIsOpen =
-            !state.uiOptions.imageModifierIsOpen;
-          localStorage.setItem(
-            "ui:imageModifierIsOpen",
-            state.uiOptions.imageModifierIsOpen
-          );
-        })
-      );
-    },
 
     toggleUseUpscaling: () => {
       set(

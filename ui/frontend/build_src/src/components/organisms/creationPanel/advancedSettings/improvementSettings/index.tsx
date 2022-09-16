@@ -1,5 +1,8 @@
-import React, { useState } from "react";
-import { useImageCreate } from "../../../../../store/imageCreateStore";
+import React from "react";
+import { useImageCreate } from "../../../../../stores/imageCreateStore";
+
+import { useCreateUI } from "../../creationPanelUIStore";
+
 
 import {
   MenuButton, //@ts-ignore
@@ -30,11 +33,8 @@ export default function ImprovementSettings() {
 
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
 
-  const [improvementOpen, setImprovementOpen] = useState(true);
-
-  const toggleImprovementOpen = () => {
-    setImprovementOpen(!improvementOpen);
-  };
+  const improvementOpen = useCreateUI((state) => state.isOpenAdvImprovementSettings);
+  const toggleImprovementOpen = useCreateUI((state) => state.toggleAdvImprovementSettings);
 
   return (
     <div>
