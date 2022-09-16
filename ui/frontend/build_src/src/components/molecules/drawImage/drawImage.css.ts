@@ -11,6 +11,7 @@ globalStyle(`${DrawImageMain} > canvas`, {
   position: "absolute",
   top: "0",
   left: "0",
+  opacity: "0.5",
 });
 
 globalStyle(`${DrawImageMain} > img`, {
