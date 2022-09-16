@@ -1,4 +1,5 @@
-import React, {useRef, useEffect} from "react";
+// @ts-nocheck
+import React, { useRef, useEffect } from "react";
 
 // https://github.com/embiem/react-canvas-draw
 
@@ -6,9 +7,7 @@ type DrawImageProps = {
   imageData: string;
 };
 
-
-export default function DrawImage({imageData}: DrawImageProps) {
-
+export default function DrawImage({ imageData }: DrawImageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const draw = (ctx: CanvasRenderingContext2D) => {
@@ -19,8 +18,7 @@ export default function DrawImage({imageData}: DrawImageProps) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (canvas) {
-    
-      if(imageData){
+      if (imageData) {
         const ctx = canvas.getContext("2d");
         if (ctx) {
           const img = new Image();
@@ -29,37 +27,40 @@ export default function DrawImage({imageData}: DrawImageProps) {
           };
           img.src = imageData;
         }
-      }
-      else {
+      } else {
         const ctx = canvas.getContext("2d");
         if (ctx) {
           draw(ctx);
         }
       }
-    }
-    else {
+    } else {
       console.log("canvas is null");
     }
   }, [imageData, draw]);
 
-
-  const _handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
+  const _handleMouseDown = (
+    e: React.MouseEvent<HTMLCanvasElement, MouseEvent>
+  ) => {
     console.log("mouse down", e);
     const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext("2d");
-      ctx.strokeStyle = '#ff0000';
-      const {nativeEvent: {x, y}} = e;
+      ctx.strokeStyle = "#ff0000";
+      const {
+        nativeEvent: { x, y },
+      } = e;
 
       console.log("x: " + x + " y: " + y);
 
-      ctx.moveTo(x,y);
-      ctx.lineTo(x+1,y+1);
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + 1, y + 1);
       ctx.stroke();
     }
   };
 
-  const _handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
+  const _handleMouseUp = (
+    e: React.MouseEvent<HTMLCanvasElement, MouseEvent>
+  ) => {
     console.log("mouse up");
     const canvas = canvasRef.current;
     if (canvas) {
@@ -67,25 +68,25 @@ export default function DrawImage({imageData}: DrawImageProps) {
       // if (ctx) {
       //   draw(ctx);
       // }
-      const {nativeEvent: {x, y}} = e;
-
-      ctx.moveTo(x,y);
-      ctx.lineTo(x+1,y+1);
+      const {
+        nativeEvent: { x, y },
+      } = e;
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + 1, y + 1);
       ctx.stroke();
       ctx.closePath();
     }
   };
 
-
   return (
     <div>
-        <canvas
-          ref={canvasRef}
-          width={512}
-          height={512}
-          onMouseDown={_handleMouseDown}
-          onMouseUp={_handleMouseUp}
-        ></canvas>
+      <canvas
+        ref={canvasRef}
+        width={512}
+        height={512}
+        onMouseDown={_handleMouseDown}
+        onMouseUp={_handleMouseUp}
+      ></canvas>
     </div>
   );
 }

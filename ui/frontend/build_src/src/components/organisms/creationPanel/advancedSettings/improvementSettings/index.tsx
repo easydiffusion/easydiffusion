@@ -3,14 +3,12 @@ import { useImageCreate } from "../../../../../stores/imageCreateStore";
 
 import { useCreateUI } from "../../creationPanelUIStore";
 
-
 import {
   MenuButton, //@ts-ignore
 } from "../advancedsettings.css.ts";
 
 export default function ImprovementSettings() {
   // these are conditionals that should be retired and inferred from the store
-  const isUsingUpscaling = useImageCreate((state) => state.isUsingUpscaling());
   const isUsingFaceCorrection = useImageCreate((state) =>
     state.isUsingFaceCorrection()
   );
@@ -27,14 +25,14 @@ export default function ImprovementSettings() {
     (state) => state.toggleUseFaceCorrection
   );
 
-  const toggleUseUpscaling = useImageCreate(
-    (state) => state.toggleUseUpscaling
-  );
-
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
 
-  const improvementOpen = useCreateUI((state) => state.isOpenAdvImprovementSettings);
-  const toggleImprovementOpen = useCreateUI((state) => state.toggleAdvImprovementSettings);
+  const improvementOpen = useCreateUI(
+    (state) => state.isOpenAdvImprovementSettings
+  );
+  const toggleImprovementOpen = useCreateUI(
+    (state) => state.toggleAdvImprovementSettings
+  );
 
   return (
     <div>
@@ -59,21 +57,16 @@ export default function ImprovementSettings() {
           </div>
           <div>
             <label>
-              <input
-                type="checkbox"
-                checked={isUsingUpscaling}
-                onChange={(e) => toggleUseUpscaling()}
-              />
               Upscale the image to 4x resolution using
               <select
                 id="upscale_model"
                 name="upscale_model"
-                disabled={!isUsingUpscaling}
                 value={use_upscale}
                 onChange={(e) => {
                   setRequestOption("use_upscale", e.target.value);
                 }}
               >
+                <option value="">No Uscaling</option>
                 <option value="RealESRGAN_x4plus">RealESRGAN_x4plus</option>
                 <option value="RealESRGAN_x4plus_anime_6B">
                   RealESRGAN_x4plus_anime_6B

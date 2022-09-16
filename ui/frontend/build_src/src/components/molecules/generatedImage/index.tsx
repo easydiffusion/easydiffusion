@@ -1,18 +1,14 @@
 import React, { useCallback } from "react";
 
-import {
-  ImageRequest,
-  useImageCreate,
-} from "../../../stores/imageCreateStore";
+import { ImageRequest, useImageCreate } from "../../../stores/imageCreateStore";
 
 import {
   generatedImage,
   imageContain,
   image,
   saveButton,
-  useButton,
-} from //@ts-ignore
-  "./generatedImage.css.ts";
+  useButton, //@ts-ignore
+} from "./generatedImage.css.ts";
 
 type GeneretaedImageProps = {
   imageData: string;

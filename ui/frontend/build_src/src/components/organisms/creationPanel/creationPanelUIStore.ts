@@ -1,11 +1,9 @@
 import create from "zustand";
 import produce from "immer";
-import { persist } from 'zustand/middleware'
+import { persist } from "zustand/middleware";
 import { devtools } from "zustand/middleware";
 
-
 export type ImageCreationUIOptions = {
-  
   isOpenAdvancedSettings: boolean;
   isOpenAdvImprovementSettings: boolean;
   isOpenAdvPropertySettings: boolean;
@@ -23,14 +21,12 @@ export type ImageCreationUIOptions = {
 
   toggleImageModifier: () => void;
   // addImageModifier: (modifier: string) => void;
-
 };
-
 
 export const useCreateUI = create<ImageCreationUIOptions>(
   //@ts-ignore
   persist(
-    (set, get ) => ({
+    (set, get) => ({
       isOpenAdvancedSettings: false,
       isOpenAdvImprovementSettings: false,
       isOpenAdvPropertySettings: false,
@@ -50,7 +46,8 @@ export const useCreateUI = create<ImageCreationUIOptions>(
       toggleAdvImprovementSettings: () => {
         set(
           produce((state) => {
-            state.isOpenAdvImprovementSettings = !state.isOpenAdvImprovementSettings;
+            state.isOpenAdvImprovementSettings =
+              !state.isOpenAdvImprovementSettings;
           })
         );
       },
@@ -63,7 +60,7 @@ export const useCreateUI = create<ImageCreationUIOptions>(
         );
       },
 
-      toggleAdvWorkflowSettings: () => { 
+      toggleAdvWorkflowSettings: () => {
         set(
           produce((state) => {
             state.isOpenAdvWorkflowSettings = !state.isOpenAdvWorkflowSettings;
@@ -86,10 +83,10 @@ export const useCreateUI = create<ImageCreationUIOptions>(
           })
         );
       },
-
-  }),
-  {
-    name: 'createUI',
-    // getStorage: () => localStorage,
-  }
-));
+    }),
+    {
+      name: "createUI",
+      // getStorage: () => localStorage,
+    }
+  )
+);

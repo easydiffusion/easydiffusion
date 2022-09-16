@@ -10,16 +10,15 @@ import { doMakeImage, MakeImageKey } from "../../../api";
 import AudioDing from "./audioDing";
 
 import GeneratedImage from "../../molecules/generatedImage";
-import DrawImage from "../../molecules/drawImage";
+// import DrawImage from "../../molecules/drawImage";
 
 import {
   displayPanel,
   displayContainer,
   CurrentDisplay,
   previousImages,
-  previousImage
-} from //@ts-ignore
-  "./displayPanel.css.ts";
+  previousImage, //@ts-ignore
+} from "./displayPanel.css.ts";
 
 type CompletedImagesType = {
   id: string;
@@ -101,7 +100,6 @@ export default function DisplayPanel() {
       <AudioDing ref={dingRef}></AudioDing>
       {completedImages.length > 0 && (
         <div className={displayContainer}>
-
           <div className={CurrentDisplay}>
             {/* TODO Put the in painting controls here */}
             {/* <DrawImage imageData={completedImages[0].data}></DrawImage> */}
@@ -111,8 +109,6 @@ export default function DisplayPanel() {
               imageData={completedImages[0].data}
               metadata={completedImages[0].info}
             />
-
-
           </div>
 
           <div className={previousImages}>

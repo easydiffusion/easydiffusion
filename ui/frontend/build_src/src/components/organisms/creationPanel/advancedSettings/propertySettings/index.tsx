@@ -47,7 +47,9 @@ export default function PropertySettings() {
   );
 
   const propertyOpen = useCreateUI((state) => state.isOpenAdvPropertySettings);
-  const togglePropertyOpen = useCreateUI((state) => state.toggleAdvPropertySettings);
+  const togglePropertyOpen = useCreateUI(
+    (state) => state.toggleAdvPropertySettings
+  );
 
   return (
     <div>

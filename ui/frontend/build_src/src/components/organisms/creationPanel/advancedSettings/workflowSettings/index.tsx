@@ -26,9 +26,9 @@ export default function WorkflowSettings() {
   );
 
   const workflowOpen = useCreateUI((state) => state.isOpenAdvWorkflowSettings);
-  const toggleWorkflowOpen = useCreateUI((state) => state.toggleAdvWorkflowSettings);
-
-
+  const toggleWorkflowOpen = useCreateUI(
+    (state) => state.toggleAdvWorkflowSettings
+  );
 
   return (
     <div>

@@ -31,7 +31,6 @@ function SettingsList() {
 }
 
 export default function AdvancedSettings() {
-
   const advancedSettingsIsOpen = useCreateUI(
     (state) => state.isOpenAdvancedSettings
   );

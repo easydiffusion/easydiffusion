@@ -6,7 +6,6 @@ import { loadModifications } from "../../../../api";
 import { useImageCreate } from "../../../../stores/imageCreateStore";
 import { useCreateUI } from "../creationPanelUIStore";
 
-
 import ModifierTag from "../../../atoms/modifierTag";
 
 type ModifierListProps = {
@@ -14,7 +13,6 @@ type ModifierListProps = {
 };
 
 function ModifierList({ tags }: ModifierListProps) {
-
   return (
     <ul className="modifier-list">
       {tags.map((tag) => (
@@ -64,13 +62,10 @@ export default function ImageModifers() {
 
   console.log("allModifiers", allModifiers);
 
-  const imageModifierIsOpen = useCreateUI(
-    (state) => state.isOpenImageModifier
-  );
+  const imageModifierIsOpen = useCreateUI((state) => state.isOpenImageModifier);
   const toggleImageModifiersIsOpen = useCreateUI(
     (state) => state.toggleImageModifier
   );
-
 
   const handleClick = () => {
     toggleImageModifiersIsOpen();

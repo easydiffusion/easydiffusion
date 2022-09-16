@@ -24,8 +24,14 @@ function Editor() {
   // Get the original save directory
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
 
-  const { status: statusSave, data: dataSave } = useQuery(["SaveDir"], getSaveDirectory);
-  const { status: statusMods, data: dataMoads } = useQuery(["modifications"], loadModifications);
+  const { status: statusSave, data: dataSave } = useQuery(
+    ["SaveDir"],
+    getSaveDirectory
+  );
+  const { status: statusMods, data: dataMoads } = useQuery(
+    ["modifications"],
+    loadModifications
+  );
 
   const setAllModifiers = useImageCreate((state) => state.setAllModifiers);
 
@@ -38,8 +44,7 @@ function Editor() {
   useEffect(() => {
     if (statusMods === "success") {
       setAllModifiers(dataMoads);
-    }
-    else if (statusMods === "error") {
+    } else if (statusMods === "error") {
       // @ts-ignore
       setAllModifiers(Mockifiers);
     }

@@ -9,20 +9,10 @@ const Mockifiers = [
       "Doodle",
       "Dot Art",
       "Line Art",
-      "Sketch"
-    ]
+      "Sketch",
+    ],
   ],
-  [
-    "Visual Style",
-    [
-      "2D",
-      "8-bit",
-      "16-bit",
-      "Anaglyph",
-      "Anime",
-      "CGI",
-    ]
-  ],
+  ["Visual Style", ["2D", "8-bit", "16-bit", "Anaglyph", "Anime", "CGI"]],
 ];
 
 export default Mockifiers;
