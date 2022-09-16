@@ -66,7 +66,6 @@ type ModifiersList = string[];
 type ModifiersOptions = string | ModifiersList[];
 type ModifiersOptionList = ModifiersOptions[];
 
-
 interface ImageCreateState {
   parallelCount: number;
   requestOptions: ImageRequest;

@@ -103,14 +103,16 @@ export default function DisplayPanel() {
         <div className={displayContainer}>
 
           <div className={CurrentDisplay}>
+            {/* TODO Put the in painting controls here */}
+            {/* <DrawImage imageData={completedImages[0].data}></DrawImage> */}
+
             <GeneratedImage
               key={completedImages[0].id}
               imageData={completedImages[0].data}
               metadata={completedImages[0].info}
             />
 
-            {/* TODO Put the in painting controls here */}
-            <DrawImage imageData={completedImages[0].data}></DrawImage>
+
           </div>
 
           <div className={previousImages}>

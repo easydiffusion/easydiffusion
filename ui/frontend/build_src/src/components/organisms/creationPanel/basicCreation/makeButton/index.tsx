@@ -14,6 +14,7 @@ export default function MakeButton() {
   const parallelCount = useImageCreate((state) => state.parallelCount);
   const builtRequest = useImageCreate((state) => state.builtRequest);
   const addNewImage = useImageQueue((state) => state.addNewImage);
+  const hasQueue = useImageQueue((state) => state.hasQueuedImages());
   const isRandomSeed = useImageCreate((state) => state.isRandomSeed());
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
 
@@ -72,7 +73,11 @@ export default function MakeButton() {
   };
 
   return (
-    <button className={MakeButtonStyle} onClick={makeImages}>
+    <button
+      className={MakeButtonStyle}
+      onClick={makeImages}
+      disabled={hasQueue}
+    >
       Make
     </button>
   );
