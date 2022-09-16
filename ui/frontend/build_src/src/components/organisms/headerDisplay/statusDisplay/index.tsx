@@ -7,11 +7,15 @@ const startingMessage = "Stable Diffusion is starting...";
 const successMessage = "Stable Diffusion is ready to use!";
 const errorMessage = "Stable Diffusion is not running!";
 
-import "./statusDisplay.css";
+import {
+  StartingStatus,
+  ErrorStatus,
+  SuccessStatus,
+} from "./statusDisplay.css";
 
 export default function StatusDisplay({ className }: { className?: string }) {
   const [statusMessage, setStatusMessage] = useState(startingMessage);
-  const [statusClass, setStatusClass] = useState("starting");
+  const [statusClass, setStatusClass] = useState(StartingStatus);
 
   // but this will be moved to the status display when it is created
   const { status, data } = useQuery(["health"], healthPing, {
@@ -21,17 +25,17 @@ export default function StatusDisplay({ className }: { className?: string }) {
   useEffect(() => {
     if (status === "loading") {
       setStatusMessage(startingMessage);
-      setStatusClass("starting");
+      setStatusClass(StartingStatus);
     } else if (status === "error") {
       setStatusMessage(errorMessage);
-      setStatusClass("error");
+      setStatusClass(ErrorStatus);
     } else if (status === "success") {
       if (data[0] === "OK") {
         setStatusMessage(successMessage);
-        setStatusClass("success");
+        setStatusClass(SuccessStatus);
       } else {
         setStatusMessage(errorMessage);
-        setStatusClass("error");
+        setStatusClass(ErrorStatus);
       }
     }
   }, [status, data]);

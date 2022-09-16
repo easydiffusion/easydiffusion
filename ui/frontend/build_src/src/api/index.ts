@@ -31,6 +31,15 @@ export const getSaveDirectory = async () => {
   return data[0];
 };
 
+
+export const getConfig = async () => {
+  const response = await fetch(`${API_URL}/app_config`);
+  console.log('getConfig response', response);
+  const data = await response.json();
+  return data;
+};
+
+
 /**
  * post a new request for an image
  */
