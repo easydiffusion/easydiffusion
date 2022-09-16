@@ -115,9 +115,6 @@ export default function DisplayPanel() {
         {completedImages.length > 0 && (
           <>
             <div className={CurrentDisplay}>
-
-
-
               <GeneratedImage
                 key={completedImages[0].id}
                 imageData={completedImages[0].data}

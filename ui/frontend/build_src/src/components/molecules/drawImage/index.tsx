@@ -7,6 +7,11 @@ type DrawImageProps = {
   imageData: string;
 };
 
+import {
+  DrawImageMain
+} from //@ts-ignore
+  './drawImage.css.ts';
+
 export default function DrawImage({ imageData }: DrawImageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -15,28 +20,28 @@ export default function DrawImage({ imageData }: DrawImageProps) {
     ctx.fillRect(0, 0, 100, 100);
   };
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (canvas) {
-      if (imageData) {
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          const img = new Image();
-          img.onload = () => {
-            ctx.drawImage(img, 0, 0);
-          };
-          img.src = imageData;
-        }
-      } else {
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          draw(ctx);
-        }
-      }
-    } else {
-      console.log("canvas is null");
-    }
-  }, [imageData, draw]);
+  // useEffect(() => {
+  //   const canvas = canvasRef.current;
+  //   if (canvas) {
+  //     if (imageData) {
+  //       const ctx = canvas.getContext("2d");
+  //       if (ctx) {
+  //         const img = new Image();
+  //         img.onload = () => {
+  //           ctx.drawImage(img, 0, 0);
+  //         };
+  //         img.src = imageData;
+  //       }
+  //     } else {
+  //       const ctx = canvas.getContext("2d");
+  //       if (ctx) {
+  //         draw(ctx);
+  //       }
+  //     }
+  //   } else {
+  //     console.log("canvas is null");
+  //   }
+  // }, [imageData, draw]);
 
   const _handleMouseDown = (
     e: React.MouseEvent<HTMLCanvasElement, MouseEvent>
@@ -45,16 +50,16 @@ export default function DrawImage({ imageData }: DrawImageProps) {
     const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext("2d");
-      ctx.strokeStyle = "#ff0000";
+      ctx.strokeStyle = "#red";
       const {
-        nativeEvent: { x, y },
+        nativeEvent: { offsetX, offsetY },
       } = e;
 
-      console.log("x: " + x + " y: " + y);
-
-      ctx.moveTo(x, y);
-      ctx.lineTo(x + 1, y + 1);
-      ctx.stroke();
+      // console.log("x: " + x + " y: " + y);
+      ctx.beginPath();
+      ctx.moveTo(offsetX, offsetY);
+      // ctx.lineTo(x + 1, y + 1);
+      // ctx.stroke();
     }
   };
 
@@ -65,21 +70,25 @@ export default function DrawImage({ imageData }: DrawImageProps) {
     const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext("2d");
-      // if (ctx) {
-      //   draw(ctx);
-      // }
+      if (ctx) {
+        // draw(ctx);
+      }
       const {
-        nativeEvent: { x, y },
+        nativeEvent: { offsetX, offsetY },
       } = e;
-      ctx.moveTo(x, y);
-      ctx.lineTo(x + 1, y + 1);
+
+      // console.log("x: " + x + " y: " + y);
+
+      // ctx.moveTo(x, y);
+      ctx?.lineTo(offsetX, offsetY);
       ctx.stroke();
       ctx.closePath();
     }
   };
 
   return (
-    <div>
+    <div className={DrawImageMain}>
+      <img src={imageData} />
       <canvas
         ref={canvasRef}
         width={512}
