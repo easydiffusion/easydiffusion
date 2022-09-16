@@ -18,6 +18,10 @@ export default function SeedImage(_props: any) {
   const init_image = useImageCreate((state) =>
     state.getValueForRequestKey("init_image")
   );
+
+  const isInPaintingMode = useImageCreate((state) => state.isInpainting);
+
+
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
 
   const _startFileSelect = () => {
@@ -38,9 +42,16 @@ export default function SeedImage(_props: any) {
     }
   };
 
+  const toggleInpainting = useImageCreate((state) => state.toggleInpainting);
+
   const _handleClearImage = () => {
     setRequestOption("init_image", undefined);
-  };
+
+    if (isInPaintingMode) {
+      toggleInpainting();
+    };
+
+  }
 
   return (
     <div className={ImageInputDisplay}>
@@ -63,10 +74,23 @@ export default function SeedImage(_props: any) {
       <div className={ImageFixer}>
         {init_image && (
           <>
-            <img src={init_image} width="100" height="100" />
-            <button className={XButton} onClick={_handleClearImage}>
-              X
-            </button>
+            <div>
+              <img src={init_image} width="100" height="100" />
+              <button className={XButton} onClick={_handleClearImage}>
+                X
+              </button>
+            </div>
+            <label>
+              <input
+                type="checkbox"
+                onChange={(e) => {
+                  toggleInpainting()
+                }}
+                checked={isInPaintingMode}
+              >
+              </input>
+              Use for Inpainting
+            </label>
           </>
         )}
       </div>

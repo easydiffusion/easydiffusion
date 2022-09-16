@@ -5,8 +5,6 @@ import { devtools } from "zustand/middleware";
 import { useRandomSeed } from "../utils";
 
 export type ImageCreationUiOptions = {
-  // isCheckedUseUpscaling: boolean;
-  // isCheckUseFaceCorrection: boolean;
   isUseRandomSeed: boolean;
   isUseAutoSave: boolean;
   isSoundEnabled: boolean;
@@ -19,37 +17,37 @@ export type ImageRequest = {
   num_inference_steps: number;
   guidance_scale: number;
   width:
-    | 128
-    | 192
-    | 256
-    | 320
-    | 384
-    | 448
-    | 512
-    | 576
-    | 640
-    | 704
-    | 768
-    | 832
-    | 896
-    | 960
-    | 1024;
+  | 128
+  | 192
+  | 256
+  | 320
+  | 384
+  | 448
+  | 512
+  | 576
+  | 640
+  | 704
+  | 768
+  | 832
+  | 896
+  | 960
+  | 1024;
   height:
-    | 128
-    | 192
-    | 256
-    | 320
-    | 384
-    | 448
-    | 512
-    | 576
-    | 640
-    | 704
-    | 768
-    | 832
-    | 896
-    | 960
-    | 1024;
+  | 128
+  | 192
+  | 256
+  | 320
+  | 384
+  | 448
+  | 512
+  | 576
+  | 640
+  | 704
+  | 768
+  | 832
+  | 896
+  | 960
+  | 1024;
   // allow_nsfw: boolean;
   turbo: boolean;
   use_cpu: boolean;
@@ -71,6 +69,7 @@ interface ImageCreateState {
   requestOptions: ImageRequest;
   allModifiers: ModifiersOptionList;
   tags: string[];
+  isInpainting: boolean;
 
   setParallelCount: (count: number) => void;
   setRequestOptions: (key: keyof ImageRequest, value: any) => void;
@@ -94,6 +93,7 @@ interface ImageCreateState {
   isUseAutoSave: () => boolean;
   toggleSoundEnabled: () => void;
   isSoundEnabled: () => boolean;
+  toggleInpainting: () => void;
 }
 
 // devtools breaks TS
@@ -133,6 +133,8 @@ export const useImageCreate = create<ImageCreateState>(
     },
 
     allModifiers: [[[]]] as ModifiersOptionList,
+
+    isInpainting: false,
 
     setParallelCount: (count: number) =>
       set(
@@ -217,7 +219,7 @@ export const useImageCreate = create<ImageCreateState>(
         produce((state) => {
           const isSeting =
             typeof state.getValueForRequestKey("use_face_correction") ===
-            "string"
+              "string"
               ? null
               : "GFPGANv1.3";
           state.requestOptions.use_face_correction = isSeting;
@@ -280,5 +282,14 @@ export const useImageCreate = create<ImageCreateState>(
     isSoundEnabled: () => {
       return get().uiOptions.isSoundEnabled;
     },
+
+    toggleInpainting: () => {
+      set(
+        produce((state) => {
+          state.isInpainting = !state.isInpainting;
+        })
+      );
+    }
+
   }))
 );

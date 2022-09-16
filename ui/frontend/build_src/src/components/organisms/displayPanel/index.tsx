@@ -10,7 +10,7 @@ import { doMakeImage, MakeImageKey } from "../../../api";
 import AudioDing from "./audioDing";
 
 import GeneratedImage from "../../molecules/generatedImage";
-// import DrawImage from "../../molecules/drawImage";
+import DrawImage from "../../molecules/drawImage";
 
 import {
   displayPanel,
@@ -28,6 +28,9 @@ type CompletedImagesType = {
 export default function DisplayPanel() {
   const dingRef = useRef<HTMLAudioElement>(null);
   const isSoundEnabled = useImageCreate((state) => state.isSoundEnabled());
+
+  const isInPaintingMode = useImageCreate((state) => state.isInpainting);
+
 
   /* FETCHING  */
   // @ts-ignore
@@ -61,6 +64,11 @@ export default function DisplayPanel() {
     []
   );
   const completedIds = useImageQueue((state) => state.completedImageIds);
+
+
+  const init_image = useImageCreate((state) =>
+    state.getValueForRequestKey("init_image")
+  );
 
   useEffect(() => {
     const testReq = {} as ImageRequest;
@@ -98,42 +106,51 @@ export default function DisplayPanel() {
   return (
     <div className={displayPanel}>
       <AudioDing ref={dingRef}></AudioDing>
-      {completedImages.length > 0 && (
-        <div className={displayContainer}>
-          <div className={CurrentDisplay}>
-            {/* TODO Put the in painting controls here */}
-            {/* <DrawImage imageData={completedImages[0].data}></DrawImage> */}
+      <div className={displayContainer}>
+        {isInPaintingMode &&
+          <DrawImage imageData={init_image}></DrawImage>
 
-            <GeneratedImage
-              key={completedImages[0].id}
-              imageData={completedImages[0].data}
-              metadata={completedImages[0].info}
-            />
-          </div>
+        }
 
-          <div className={previousImages}>
-            {completedImages.map((image, index) => {
-              if (void 0 !== image) {
-                if (index == 0) {
+        {completedImages.length > 0 && (
+          <>
+            <div className={CurrentDisplay}>
+
+
+
+              <GeneratedImage
+                key={completedImages[0].id}
+                imageData={completedImages[0].data}
+                metadata={completedImages[0].info}
+              />
+            </div>
+
+            <div className={previousImages}>
+              {completedImages.map((image, index) => {
+                if (void 0 !== image) {
+                  if (index == 0) {
+                    return null;
+                  }
+
+                  return (
+                    <GeneratedImage
+                      className={previousImage}
+                      key={image.id}
+                      imageData={image.data}
+                      metadata={image.info}
+                    />
+                  );
+                } else {
+                  console.warn("image is undefined", image, index);
                   return null;
                 }
+              })}
+            </div>
+          </>
+        )}
 
-                return (
-                  <GeneratedImage
-                    className={previousImage}
-                    key={image.id}
-                    imageData={image.data}
-                    metadata={image.info}
-                  />
-                );
-              } else {
-                console.warn("image is undefined", image, index);
-                return null;
-              }
-            })}
-          </div>
-        </div>
-      )}
+      </div>
+
     </div>
   );
 }
