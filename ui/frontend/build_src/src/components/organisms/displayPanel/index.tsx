@@ -10,6 +10,7 @@ import { doMakeImage, MakeImageKey } from "../../../api";
 import AudioDing from "./audioDing";
 
 import GeneratedImage from "../../molecules/generatedImage";
+import DrawImage from "../../molecules/drawImage";
 
 import {
   displayPanel,
@@ -109,6 +110,7 @@ export default function DisplayPanel() {
             />
 
             {/* TODO Put the in painting controls here */}
+            <DrawImage imageData={completedImages[0].data}></DrawImage>
           </div>
 
           <div className={previousImages}>
