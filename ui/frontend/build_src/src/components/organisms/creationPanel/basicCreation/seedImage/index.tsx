@@ -21,7 +21,6 @@ export default function SeedImage(_props: any) {
 
   const isInPaintingMode = useImageCreate((state) => state.isInpainting);
 
-
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
 
   const _startFileSelect = () => {
@@ -49,9 +48,8 @@ export default function SeedImage(_props: any) {
 
     if (isInPaintingMode) {
       toggleInpainting();
-    };
-
-  }
+    }
+  };
 
   return (
     <div className={ImageInputDisplay}>
@@ -84,11 +82,10 @@ export default function SeedImage(_props: any) {
               <input
                 type="checkbox"
                 onChange={(e) => {
-                  toggleInpainting()
+                  toggleInpainting();
                 }}
                 checked={isInPaintingMode}
-              >
-              </input>
+              ></input>
               Use for Inpainting
             </label>
           </>

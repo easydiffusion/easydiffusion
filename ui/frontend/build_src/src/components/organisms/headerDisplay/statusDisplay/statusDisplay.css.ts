@@ -1,6 +1,5 @@
 import { style } from "@vanilla-extract/css";
 
-
 // TODO  MOVE TO GLOBAL CSS
 export const StartingStatus = style({
   color: "#f0ad4e",

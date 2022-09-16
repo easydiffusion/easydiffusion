@@ -8,9 +8,8 @@ type DrawImageProps = {
 };
 
 import {
-  DrawImageMain
-} from //@ts-ignore
-  './drawImage.css.ts';
+  DrawImageMain, //@ts-ignore
+} from "./drawImage.css.ts";
 
 export default function DrawImage({ imageData }: DrawImageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -25,7 +24,6 @@ export default function DrawImage({ imageData }: DrawImageProps) {
     const {
       nativeEvent: { offsetX, offsetY },
     } = e;
-
 
     setIsDrawing(true);
   };
@@ -45,7 +43,6 @@ export default function DrawImage({ imageData }: DrawImageProps) {
   const _handleMouseMove = (
     e: React.MouseEvent<HTMLCanvasElement, MouseEvent>
   ) => {
-
     if (isDrawing) {
       const canvas = canvasRef.current;
       if (canvas) {
@@ -61,9 +58,9 @@ export default function DrawImage({ imageData }: DrawImageProps) {
 
         // Sets the end of the lines drawn
         // to a round shape.
-        ctx.lineCap = 'round';
+        ctx.lineCap = "round";
 
-        ctx.strokeStyle = 'white';
+        ctx.strokeStyle = "white";
         // The cursor to start drawing
         // moves to this coordinate
         ctx.moveTo(offsetX, offsetY);
@@ -76,7 +73,6 @@ export default function DrawImage({ imageData }: DrawImageProps) {
         ctx.stroke();
       }
     }
-
   };
 
   return (

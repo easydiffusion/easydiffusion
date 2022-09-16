@@ -17,37 +17,37 @@ export type ImageRequest = {
   num_inference_steps: number;
   guidance_scale: number;
   width:
-  | 128
-  | 192
-  | 256
-  | 320
-  | 384
-  | 448
-  | 512
-  | 576
-  | 640
-  | 704
-  | 768
-  | 832
-  | 896
-  | 960
-  | 1024;
+    | 128
+    | 192
+    | 256
+    | 320
+    | 384
+    | 448
+    | 512
+    | 576
+    | 640
+    | 704
+    | 768
+    | 832
+    | 896
+    | 960
+    | 1024;
   height:
-  | 128
-  | 192
-  | 256
-  | 320
-  | 384
-  | 448
-  | 512
-  | 576
-  | 640
-  | 704
-  | 768
-  | 832
-  | 896
-  | 960
-  | 1024;
+    | 128
+    | 192
+    | 256
+    | 320
+    | 384
+    | 448
+    | 512
+    | 576
+    | 640
+    | 704
+    | 768
+    | 832
+    | 896
+    | 960
+    | 1024;
   // allow_nsfw: boolean;
   turbo: boolean;
   use_cpu: boolean;
@@ -219,7 +219,7 @@ export const useImageCreate = create<ImageCreateState>(
         produce((state) => {
           const isSeting =
             typeof state.getValueForRequestKey("use_face_correction") ===
-              "string"
+            "string"
               ? null
               : "GFPGANv1.3";
           state.requestOptions.use_face_correction = isSeting;
@@ -289,7 +289,6 @@ export const useImageCreate = create<ImageCreateState>(
           state.isInpainting = !state.isInpainting;
         })
       );
-    }
-
+    },
   }))
 );

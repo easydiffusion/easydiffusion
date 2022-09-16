@@ -1,6 +1,5 @@
 import { style, globalStyle } from "@vanilla-extract/css";
 
-
 export const DrawImageMain = style({
   position: "relative",
   width: "512px",

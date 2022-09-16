@@ -31,7 +31,6 @@ export default function DisplayPanel() {
 
   const isInPaintingMode = useImageCreate((state) => state.isInpainting);
 
-
   /* FETCHING  */
   // @ts-ignore
   const { id, options } = useImageQueue((state) => state.firstInQueue());
@@ -64,7 +63,6 @@ export default function DisplayPanel() {
     []
   );
   const completedIds = useImageQueue((state) => state.completedImageIds);
-
 
   const init_image = useImageCreate((state) =>
     state.getValueForRequestKey("init_image")
@@ -107,10 +105,7 @@ export default function DisplayPanel() {
     <div className={displayPanel}>
       <AudioDing ref={dingRef}></AudioDing>
       <div className={displayContainer}>
-        {isInPaintingMode &&
-          <DrawImage imageData={init_image}></DrawImage>
-
-        }
+        {isInPaintingMode && <DrawImage imageData={init_image}></DrawImage>}
 
         {completedImages.length > 0 && (
           <>
@@ -145,9 +140,7 @@ export default function DisplayPanel() {
             </div>
           </>
         )}
-
       </div>
-
     </div>
   );
 }
