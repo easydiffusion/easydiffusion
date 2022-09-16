@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
-import { useImageCreate } from "../../../../../store/imageCreateStore";
-import { useImageQueue } from "../../../../../store/imageQueueStore";
+import { useImageCreate } from "../../../../../stores/imageCreateStore";
+import { useImageQueue } from "../../../../../stores/imageQueueStore";
 import { v4 as uuidv4 } from "uuid";
 
 import { useRandomSeed } from "../../../../../utils";
@@ -14,6 +14,7 @@ export default function MakeButton() {
   const parallelCount = useImageCreate((state) => state.parallelCount);
   const builtRequest = useImageCreate((state) => state.builtRequest);
   const addNewImage = useImageQueue((state) => state.addNewImage);
+  const hasQueue = useImageQueue((state) => state.hasQueuedImages());
   const isRandomSeed = useImageCreate((state) => state.isRandomSeed());
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
 
@@ -72,7 +73,11 @@ export default function MakeButton() {
   };
 
   return (
-    <button className={MakeButtonStyle} onClick={makeImages}>
+    <button
+      className={MakeButtonStyle}
+      onClick={makeImages}
+      disabled={hasQueue}
+    >
       Make
     </button>
   );

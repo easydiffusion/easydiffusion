@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from "react";
-import { useImageCreate } from "../../../../store/imageCreateStore";
+import { useImageCreate } from "../../../../stores/imageCreateStore";
 
 import {
   CreationBasicMain,

@@ -8,7 +8,7 @@ import {
   ImageFixer,
   XButton, // @ts-ignore
 } from "./seedImage.css.ts";
-import { useImageCreate } from "../../../../../store/imageCreateStore";
+import { useImageCreate } from "../../../../../stores/imageCreateStore";
 
 // TODO : figure out why this needs props to be passed in.. fixes a type error
 // when the component is used in the parent component

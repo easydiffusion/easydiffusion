@@ -8,4 +8,8 @@ export const MakeButtonStyle = style({
   color: "white",
   padding: "8px",
   borderRadius: "5px",
+
+  ":disabled": {
+    backgroundColor: "rgb(38, 77, 141, 0.5)",
+  },
 });

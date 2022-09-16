@@ -2,7 +2,7 @@
  * basic server health
  */
 
-import type { ImageRequest } from "../store/imageCreateStore";
+import type { ImageRequest } from "../stores/imageCreateStore";
 
 // when we are on dev we want to specifiy 9000 as the port for the backend
 // when we are on prod we want be realtive to the current url

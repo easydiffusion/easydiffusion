@@ -1,6 +1,6 @@
 import React from "react";
 
-import { useImageCreate } from "../../../../../store/imageCreateStore";
+import { useImageCreate } from "../../../../../stores/imageCreateStore";
 import ModifierTag from "../../../../atoms/modifierTag";
 
 export default function ActiveTags() {

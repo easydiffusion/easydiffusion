@@ -1,7 +1,7 @@
 import { ReactLocation, Router } from "@tanstack/react-location";
 
-import Home from "./components/layouts/Home";
-import Settings from "./components/layouts/Settings";
+import Home from "./pages/Home";
+import Settings from "./pages/Settings";
 
 const location = new ReactLocation();
 

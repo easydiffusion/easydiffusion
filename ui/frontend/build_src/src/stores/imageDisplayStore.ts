@@ -1,8 +1,6 @@
 import create from "zustand";
 import produce from "immer";
 
-// import { devtools } from 'zustand/middleware'
-
 interface ImageDisplayState {
   imageOptions: Map<string, any>;
   currentImage: object | null;

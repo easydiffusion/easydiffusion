@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { useImageCreate } from "../../../../../store/imageCreateStore";
+import { useImageCreate } from "../../../../../stores/imageCreateStore";
+import { useCreateUI } from "../../creationPanelUIStore";
 
 import {
   MenuButton, //@ts-ignore
@@ -45,11 +46,10 @@ export default function PropertySettings() {
     state.getValueForRequestKey("height")
   );
 
-  const [propertyOpen, setPropertyOpen] = useState(true);
-
-  const togglePropertyOpen = () => {
-    setPropertyOpen(!propertyOpen);
-  };
+  const propertyOpen = useCreateUI((state) => state.isOpenAdvPropertySettings);
+  const togglePropertyOpen = useCreateUI(
+    (state) => state.toggleAdvPropertySettings
+  );
 
   return (
     <div>

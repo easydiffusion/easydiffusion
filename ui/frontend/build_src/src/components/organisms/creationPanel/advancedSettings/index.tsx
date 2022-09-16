@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
-import { useImageCreate } from "../../../../store/imageCreateStore";
+import { useCreateUI } from "../creationPanelUIStore";
+
 import {
   AdvancedSettingsList,
   AdvancedSettingItem, // @ts-ignore
@@ -30,12 +31,12 @@ function SettingsList() {
 }
 
 export default function AdvancedSettings() {
-  const advancedSettingsIsOpen = useImageCreate(
-    (state) => state.uiOptions.advancedSettingsIsOpen
+  const advancedSettingsIsOpen = useCreateUI(
+    (state) => state.isOpenAdvancedSettings
   );
 
-  const toggleAdvancedSettingsIsOpen = useImageCreate(
-    (state) => state.toggleAdvancedSettingsIsOpen
+  const toggleAdvancedSettingsIsOpen = useCreateUI(
+    (state) => state.toggleAdvancedSettings
   );
 
   return (

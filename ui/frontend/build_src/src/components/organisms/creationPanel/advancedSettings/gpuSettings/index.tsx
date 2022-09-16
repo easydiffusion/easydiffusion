@@ -1,5 +1,7 @@
-import React, { useState } from "react";
-import { useImageCreate } from "../../../../../store/imageCreateStore";
+import React from "react";
+import { useImageCreate } from "../../../../../stores/imageCreateStore";
+
+import { useCreateUI } from "../../creationPanelUIStore";
 
 import {
   MenuButton, //@ts-ignore
@@ -16,11 +18,8 @@ export default function GpuSettings() {
 
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
 
-  const [gpuOpen, setGpuOpen] = useState(false);
-
-  const toggleGpuOpen = () => {
-    setGpuOpen(!gpuOpen);
-  };
+  const gpuOpen = useCreateUI((state) => state.isOpenAdvGPUSettings);
+  const toggleGpuOpen = useCreateUI((state) => state.toggleAdvGPUSettings);
 
   return (
     <div>

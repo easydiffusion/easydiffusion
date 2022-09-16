@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useImageQueue } from "../../../store/imageQueueStore";
+import { useImageQueue } from "../../../stores/imageQueueStore";
 
-import { ImageRequest, useImageCreate } from "../../../store/imageCreateStore";
+import { ImageRequest, useImageCreate } from "../../../stores/imageCreateStore";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -9,9 +9,16 @@ import { doMakeImage, MakeImageKey } from "../../../api";
 
 import AudioDing from "./audioDing";
 
-import GeneratedImage from "./generatedImage";
+import GeneratedImage from "../../molecules/generatedImage";
+// import DrawImage from "../../molecules/drawImage";
 
-import "./displayPanel.css";
+import {
+  displayPanel,
+  displayContainer,
+  CurrentDisplay,
+  previousImages,
+  previousImage, //@ts-ignore
+} from "./displayPanel.css.ts";
 
 type CompletedImagesType = {
   id: string;
@@ -89,18 +96,22 @@ export default function DisplayPanel() {
   }, [setCompletedImages, queryClient, completedIds]);
 
   return (
-    <div className="display-panel">
-      <h1>Display Panel</h1>
+    <div className={displayPanel}>
       <AudioDing ref={dingRef}></AudioDing>
       {completedImages.length > 0 && (
-        <div id="display-container">
-          <GeneratedImage
-            key={completedImages[0].id}
-            imageData={completedImages[0].data}
-            metadata={completedImages[0].info}
-          />
+        <div className={displayContainer}>
+          <div className={CurrentDisplay}>
+            {/* TODO Put the in painting controls here */}
+            {/* <DrawImage imageData={completedImages[0].data}></DrawImage> */}
 
-          <div id="previous-images">
+            <GeneratedImage
+              key={completedImages[0].id}
+              imageData={completedImages[0].data}
+              metadata={completedImages[0].info}
+            />
+          </div>
+
+          <div className={previousImages}>
             {completedImages.map((image, index) => {
               if (void 0 !== image) {
                 if (index == 0) {
@@ -109,7 +120,7 @@ export default function DisplayPanel() {
 
                 return (
                   <GeneratedImage
-                    className="previous-image"
+                    className={previousImage}
                     key={image.id}
                     imageData={image.data}
                     metadata={image.info}

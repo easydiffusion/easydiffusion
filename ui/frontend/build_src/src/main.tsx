@@ -6,9 +6,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import { enableMapSet } from "immer";
-import Editor from "./components/layouts/Home";
+import Editor from "./pages/Home";
 
-import App from "./App";
+import App from "./app";
 
 import "./styles.css.ts";
 
