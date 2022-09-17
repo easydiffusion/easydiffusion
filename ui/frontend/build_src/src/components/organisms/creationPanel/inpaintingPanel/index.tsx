@@ -1,22 +1,19 @@
-import React, { useRef, useState, ChangeEvent } from "react";
+import React, { useRef, useState, ChangeEvent, MouseEventHandler } from "react";
 import DrawImage from "../../../molecules/drawImage";
 
 import { useImageCreate } from "../../../../stores/imageCreateStore";
 
-
 import {
   InpaintingPanelMain,
   InpaintingControls,
-  InpaintingControlRow,
-} from // @ts-ignore
-  "./inpaintingPanel.css.ts";
+  InpaintingControlRow, // @ts-ignore
+} from "./inpaintingPanel.css.ts";
 
 export default function InpaintingPanel() {
-
   // no idea if this is the right typing
   const drawingRef = useRef(null);
 
-  const [brushSize, setBrushSize] = useState('20');
+  const [brushSize, setBrushSize] = useState("20");
   const [brushShape, setBrushShape] = useState("round");
   const [brushColor, setBrushColor] = useState("#fff");
   const [isErasing, setIsErasing] = useState(false);
@@ -43,24 +40,9 @@ export default function InpaintingPanel() {
     console.log("clear all");
   };
 
-  const _handleBrushSize = (e: ChangeEvent<HTMLInputElement>) => {
-    setBrushSize(e.target.value);
+  const _handleBrushSize = (event: ChangeEvent<HTMLInputElement>) => {
+    setBrushSize(event.target.value);
   };
-
-  // const _handleBrushShape = (e: ) => {
-  //   console.log("brush shape", e.target.value);
-  //   setBrushShape(e.target.value);
-  // };
-
-  const _handleBrushShape = (e: ChangeEvent<HTMLInputElement>) => {
-    setBrushShape(e.target.value);
-  };
-
-  const _handleBrushColor = (e: ChangeEvent<HTMLInputElement>) => {
-    console.log("brush color", e.target.value);
-    setBrushColor(e.target.value);
-  };
-
 
   return (
     <div className={InpaintingPanelMain}>
@@ -74,31 +56,16 @@ export default function InpaintingPanel() {
       />
       <div className={InpaintingControls}>
         <div className={InpaintingControlRow}>
-          <button
-            onClick={_handleBrushMask}
-          >
-            Mask
-          </button>
-          <button
-            onClick={_handleBrushErase}
-          >
-            Erase
-          </button>
-          <button
-            disabled
-            onClick={_handleFillMask}
-          >
+          <button onClick={_handleBrushMask}>Mask</button>
+          <button onClick={_handleBrushErase}>Erase</button>
+          <button disabled onClick={_handleFillMask}>
             Fill
           </button>
-          <button
-            disabled
-            onClick={_handleClearAll}
-          >
+          <button disabled onClick={_handleClearAll}>
             Clear
           </button>
 
-          <label
-          >
+          <label>
             Brush Size
             <input
               type="range"
@@ -106,42 +73,42 @@ export default function InpaintingPanel() {
               max="100"
               value={brushSize}
               onChange={_handleBrushSize}
-            >
-            </input>
+            ></input>
           </label>
         </div>
 
         <div className={InpaintingControlRow}>
           <button
-            value={"round"}
-            onClick={_handleBrushShape}
+            onClick={() => {
+              setBrushShape("round");
+            }}
           >
             Cirle Brush
           </button>
           <button
-            value={"square"}
-            onClick={_handleBrushShape}
+            onClick={() => {
+              setBrushShape("square");
+            }}
           >
             Square Brush
           </button>
 
           <button
-            value={"#000"}
-            onClick={_handleBrushColor}
+            onClick={() => {
+              setBrushColor("#000");
+            }}
           >
             Dark Brush
           </button>
           <button
-            value={"#fff"}
-            onClick={_handleBrushColor}
+            onClick={() => {
+              setBrushColor("#fff");
+            }}
           >
             Light Brush
           </button>
-
-
         </div>
-
       </div>
     </div>
   );
-};
+}

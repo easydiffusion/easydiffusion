@@ -10,15 +10,12 @@ import "./creationPanel.css";
 
 import {
   CreationPaneMain,
-  InpaintingSlider
-} from // @ts-ignore
-  "./creationpane.css.ts";
+  InpaintingSlider, // @ts-ignore
+} from "./creationpane.css.ts";
 
 import BasicCreation from "./basicCreation";
 
 export default function CreationPanel() {
-
-
   const isInPaintingMode = useImageCreate((state) => state.isInpainting);
   return (
     <>
@@ -29,7 +26,6 @@ export default function CreationPanel() {
       </div>
 
       {isInPaintingMode && (
-
         <div className={InpaintingSlider}>
           <InpaintingPanel></InpaintingPanel>
         </div>

@@ -26,7 +26,6 @@ type CompletedImagesType = {
   info: ImageRequest;
 };
 
-
 export default function DisplayPanel() {
   const dingRef = useRef<HTMLAudioElement>(null);
   const isSoundEnabled = useImageCreate((state) => state.isSoundEnabled());

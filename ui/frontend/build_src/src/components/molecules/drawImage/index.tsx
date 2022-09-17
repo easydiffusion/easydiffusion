@@ -10,15 +10,19 @@ type DrawImageProps = {
   brushShape: string;
   brushColor: string;
   isErasing: boolean;
-
 };
 
 import {
   DrawImageMain, //@ts-ignore
 } from "./drawImage.css.ts";
 
-export default function DrawImage({ imageData, brushSize, brushShape, brushColor, isErasing }: DrawImageProps) {
-
+export default function DrawImage({
+  imageData,
+  brushSize,
+  brushShape,
+  brushColor,
+  isErasing,
+}: DrawImageProps) {
   const drawingRef = useRef<HTMLCanvasElement>(null);
   const cursorRef = useRef<HTMLCanvasElement>(null);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -26,22 +30,18 @@ export default function DrawImage({ imageData, brushSize, brushShape, brushColor
   const [canvasWidth, setCanvasWidth] = useState(512);
   const [canvasHeight, setCanvasHeight] = useState(512);
 
-
   useEffect(() => {
     console.log(imageData);
     const img = new Image();
     img.onload = () => {
       setCanvasWidth(img.width);
       setCanvasHeight(img.height);
-
-    }
+    };
     img.src = imageData;
-
   }, [imageData]);
 
-
   useEffect(() => {
-    // when the brush color changes, change the color of all the 
+    // when the brush color changes, change the color of all the
     // drawn pixels to the new color
     if (drawingRef.current) {
       const ctx = drawingRef.current.getContext("2d");
@@ -56,7 +56,6 @@ export default function DrawImage({ imageData, brushSize, brushShape, brushColor
       }
       ctx.putImageData(imageData, 0, 0);
     }
-
   }, [brushColor]);
 
   const _handleMouseDown = (
@@ -87,12 +86,10 @@ export default function DrawImage({ imageData, brushSize, brushShape, brushColor
     if (canvas) {
       const ctx = canvas.getContext("2d");
       if (isErasing) {
-
         // stack overflow https://stackoverflow.com/questions/10396991/clearing-circular-regions-from-html5-canvas
 
         const offset = brushSize / 2;
         ctx.clearRect(x - offset, y - offset, brushSize, brushSize);
-
       } else {
         ctx.beginPath();
         ctx.lineWidth = brushSize;
@@ -116,7 +113,7 @@ export default function DrawImage({ imageData, brushSize, brushShape, brushColor
         const offset = brushSize / 2;
         // draw a quare
         ctx.lineWidth = 2;
-        ctx.lineCap = 'butt';
+        ctx.lineCap = "butt";
         ctx.strokeStyle = brushColor;
         ctx.moveTo(x - offset, y - offset);
         ctx.lineTo(x + offset, y - offset);
@@ -124,9 +121,7 @@ export default function DrawImage({ imageData, brushSize, brushShape, brushColor
         ctx.lineTo(x - offset, y + offset);
         ctx.lineTo(x - offset, y - offset);
         ctx.stroke();
-
       } else {
-
         ctx.lineWidth = brushSize;
         ctx.lineCap = brushShape;
         ctx.strokeStyle = brushColor;
@@ -135,13 +130,11 @@ export default function DrawImage({ imageData, brushSize, brushShape, brushColor
         ctx.stroke();
       }
     }
-
   };
 
   const _handleMouseMove = (
     e: React.MouseEvent<HTMLCanvasElement, MouseEvent>
   ) => {
-
     const {
       nativeEvent: { offsetX: x, offsetY: y },
     } = e;
