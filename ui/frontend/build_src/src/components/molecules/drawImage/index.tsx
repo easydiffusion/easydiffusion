@@ -1,22 +1,27 @@
 // @ts-nocheck
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useCallback, useEffect } from "react";
 
 // https://github.com/embiem/react-canvas-draw
 
 type DrawImageProps = {
   imageData: string;
+  brushSize: string;
+
+  brushShape: string;
+  brushColor: string;
+  isErasing: boolean;
+
 };
 
 import {
   DrawImageMain, //@ts-ignore
 } from "./drawImage.css.ts";
 
-export default function DrawImage({ imageData }: DrawImageProps) {
+export default function DrawImage({ imageData, brushSize, brushShape, brushColor, isErasing }: DrawImageProps) {
 
   const drawingRef = useRef<HTMLCanvasElement>(null);
   const cursorRef = useRef<HTMLCanvasElement>(null);
-
-  const [isDrawing, setIsDrawing] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const _handleMouseDown = (
     e: React.MouseEvent<HTMLCanvasElement, MouseEvent>
@@ -27,95 +32,100 @@ export default function DrawImage({ imageData }: DrawImageProps) {
       nativeEvent: { offsetX, offsetY },
     } = e;
 
-    setIsDrawing(true);
+    setIsUpdating(true);
   };
 
   const _handleMouseUp = (
     e: React.MouseEvent<HTMLCanvasElement, MouseEvent>
   ) => {
-    setIsDrawing(false);
-
+    setIsUpdating(false);
     const canvas = drawingRef.current;
     if (canvas) {
       const data = canvas.toDataURL();
-      console.log("data", data);
+      // TODO: SEND THIS TO THE STATE
     }
   };
 
-  const _handleMouseMove = (
-    e: React.MouseEvent<HTMLCanvasElement, MouseEvent>
-  ) => {
-    if (isDrawing) {
-      const canvas = drawingRef.current;
-      if (canvas) {
-        const ctx = canvas.getContext("2d");
-        ctx.strokeStyle = "red";
-        const {
-          nativeEvent: { offsetX, offsetY },
-        } = e;
+  const _drawCanvas = (x, y, brushSize, brushShape, brushColor) => {
+    const canvas = drawingRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext("2d");
+      if (isErasing) {
 
+        // stack overflow https://stackoverflow.com/questions/10396991/clearing-circular-regions-from-html5-canvas
+
+        const offset = brushSize / 2;
+        ctx.clearRect(x - offset, y - offset, brushSize, brushSize);
+
+      } else {
         ctx.beginPath();
-
-        ctx.lineWidth = 20;
-
-        // Sets the end of the lines drawn
-        // to a round shape.
-        ctx.lineCap = "round";
-
-        ctx.strokeStyle = "white";
-        // The cursor to start drawing
-        // moves to this coordinate
-        ctx.moveTo(offsetX, offsetY);
-
-        // A line is traced from start
-        // coordinate to this coordinate
-        ctx.lineTo(offsetX, offsetY);
-
-        // Draws the line.
+        ctx.lineWidth = brushSize;
+        ctx.lineCap = brushShape;
+        ctx.strokeStyle = brushColor;
+        ctx.moveTo(x, y);
+        ctx.lineTo(x, y);
         ctx.stroke();
       }
     }
   };
 
-  const _handleCursorMove = (
-    e: React.MouseEvent<HTMLCanvasElement, MouseEvent>
-  ) => {
-    console.log("cursor move");
-
-
+  const _drawCursor = (x, y, brushSize, brushShape, brushColor) => {
     const canvas = cursorRef.current;
     if (canvas) {
       const ctx = canvas.getContext("2d");
-      ctx.strokeStyle = "red";
-      const {
-        nativeEvent: { offsetX, offsetY },
-      } = e;
-
       ctx.beginPath();
-
-
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      ctx.lineWidth = 20;
+      if (isErasing) {
+        const offset = brushSize / 2;
+        // draw a quare outline
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'butt';
+        ctx.strokeStyle = brushColor;
+        ctx.moveTo(x - offset, y - offset);
+        ctx.lineTo(x + offset, y - offset);
+        ctx.lineTo(x + offset, y + offset);
+        ctx.lineTo(x - offset, y + offset);
+        ctx.lineTo(x - offset, y - offset);
+        ctx.stroke();
 
-      // Sets the end of the lines drawn
-      // to a round shape.
-      ctx.lineCap = "round";
+      } else {
 
-      ctx.strokeStyle = "white";
-      // The cursor to start drawing
-      // moves to this coordinate
-      ctx.moveTo(offsetX, offsetY);
+        ctx.lineWidth = brushSize;
+        ctx.lineCap = brushShape;
+        ctx.strokeStyle = brushColor;
+        ctx.moveTo(x, y);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+      }
+    }
 
-      // A line is traced from start
-      // coordinate to this coordinate
-      ctx.lineTo(offsetX, offsetY);
+  };
 
-      // Draws the line.
-      ctx.stroke();
+  const _handleMouseMove = (
+    e: React.MouseEvent<HTMLCanvasElement, MouseEvent>
+  ) => {
+
+    const {
+      nativeEvent: { offsetX: x, offsetY: y },
+    } = e;
+
+    _drawCursor(x, y, brushSize, brushShape, brushColor);
+
+    if (isUpdating) {
+      _drawCanvas(x, y, brushSize, brushShape, brushColor);
     }
   };
 
+  // function for external use
+  const fillCanvas = () => {
+    const canvas = drawingRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = brushColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+  };
 
   return (
     <div className={DrawImageMain}>
@@ -124,17 +134,15 @@ export default function DrawImage({ imageData }: DrawImageProps) {
         ref={drawingRef}
         width={512}
         height={512}
-        onMouseDown={_handleMouseDown}
-        onMouseMove={_handleMouseMove}
-        onMouseUp={_handleMouseUp}
       ></canvas>
       <canvas
         ref={cursorRef}
         width={512}
         height={512}
-        onMouseMove={_handleCursorMove}
+        onMouseDown={_handleMouseDown}
+        onMouseUp={_handleMouseUp}
+        onMouseMove={_handleMouseMove}
       ></canvas>
-
     </div>
   );
 }

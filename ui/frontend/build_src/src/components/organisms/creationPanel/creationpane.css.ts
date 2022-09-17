@@ -12,8 +12,6 @@ export const InpaintingSlider = style({
   position: "absolute",
   top: "10px",
   left: "400px",
-  width: "200px",
-  height: "20px",
   zIndex: 1,
   backgroundColor: "rgba(0, 0, 0, 0.5)",
 });
