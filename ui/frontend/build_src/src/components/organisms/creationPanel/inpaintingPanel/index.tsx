@@ -53,7 +53,6 @@ export default function InpaintingPanel() {
   // };
 
   const _handleBrushShape = (e: ChangeEvent<HTMLInputElement>) => {
-    console.log("brush shape", e.target.value);
     setBrushShape(e.target.value);
   };
 

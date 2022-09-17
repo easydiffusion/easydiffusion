@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useRef, useState, useCallback, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 
 // https://github.com/embiem/react-canvas-draw
 
@@ -22,6 +22,42 @@ export default function DrawImage({ imageData, brushSize, brushShape, brushColor
   const drawingRef = useRef<HTMLCanvasElement>(null);
   const cursorRef = useRef<HTMLCanvasElement>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const [canvasWidth, setCanvasWidth] = useState(512);
+  const [canvasHeight, setCanvasHeight] = useState(512);
+
+
+  useEffect(() => {
+    console.log(imageData);
+    const img = new Image();
+    img.onload = () => {
+      setCanvasWidth(img.width);
+      setCanvasHeight(img.height);
+
+    }
+    img.src = imageData;
+
+  }, [imageData]);
+
+
+  useEffect(() => {
+    // when the brush color changes, change the color of all the 
+    // drawn pixels to the new color
+    if (drawingRef.current) {
+      const ctx = drawingRef.current.getContext("2d");
+      const imageData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+      const data = imageData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        if (data[i + 3] > 0) {
+          data[i] = parseInt(brushColor, 16);
+          data[i + 1] = parseInt(brushColor, 16);
+          data[i + 2] = parseInt(brushColor, 16);
+        }
+      }
+      ctx.putImageData(imageData, 0, 0);
+    }
+
+  }, [brushColor]);
 
   const _handleMouseDown = (
     e: React.MouseEvent<HTMLCanvasElement, MouseEvent>
@@ -78,7 +114,7 @@ export default function DrawImage({ imageData, brushSize, brushShape, brushColor
 
       if (isErasing) {
         const offset = brushSize / 2;
-        // draw a quare outline
+        // draw a quare
         ctx.lineWidth = 2;
         ctx.lineCap = 'butt';
         ctx.strokeStyle = brushColor;
@@ -132,13 +168,13 @@ export default function DrawImage({ imageData, brushSize, brushShape, brushColor
       <img src={imageData} />
       <canvas
         ref={drawingRef}
-        width={512}
-        height={512}
+        width={canvasWidth}
+        height={canvasHeight}
       ></canvas>
       <canvas
         ref={cursorRef}
-        width={512}
-        height={512}
+        width={canvasWidth}
+        height={canvasHeight}
         onMouseDown={_handleMouseDown}
         onMouseUp={_handleMouseUp}
         onMouseMove={_handleMouseMove}
