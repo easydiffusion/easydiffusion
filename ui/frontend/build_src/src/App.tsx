@@ -1,17 +1,25 @@
+import React, { useState } from "react";
 import { ReactLocation, Router } from "@tanstack/react-location";
 
 import Home from "./pages/Home";
 import Settings from "./pages/Settings";
+import { darkTheme, lightTheme } from "./styles/theme.css";
 
 const location = new ReactLocation();
 
 function App() {
+
+  // just check for the theme one 1 time
+  // var { matches } = window.matchMedia('(prefers-color-scheme: dark)')
+  const matches = true;
+  const themeClass = matches ? darkTheme : lightTheme;
+
   return (
     <Router
       location={location}
       routes={[
-        { path: "/", element: <Home /> },
-        { path: "settings", element: <Settings /> },
+        { path: "/", element: <Home className={themeClass} /> },
+        { path: "settings", element: <Settings className={themeClass} /> },
       ]}
     ></Router>
   );

@@ -1,12 +1,15 @@
 import { style } from "@vanilla-extract/css";
+// @ts-ignore
+import { vars } from "../../styles/theme.css.ts";
 
 export const AppLayout = style({
   position: "relative",
+  backgroundColor: vars.colors.background,
   width: "100%",
   height: "100%",
   pointerEvents: "auto",
   display: "grid",
-  backgroundColor: "rgb(32, 33, 36)",
+  // backgroundColor: "rgb(32, 33, 36)",
   gridTemplateColumns: "400px 1fr",
   gridTemplateRows: "100px 1fr 50px",
   gridTemplateAreas: `
