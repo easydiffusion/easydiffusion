@@ -20,7 +20,7 @@ import CreationPanel from "../../components/organisms/creationPanel";
 import DisplayPanel from "../../components/organisms/displayPanel";
 import FooterDisplay from "../../components/organisms/footerDisplay";
 
-function Editor() {
+function Home({ className }: { className: any }) {
   // Get the original save directory
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
 
@@ -51,7 +51,7 @@ function Editor() {
   }, [setRequestOption, statusMods, dataMoads]);
 
   return (
-    <div className={AppLayout}>
+    <div className={[AppLayout, className].join(" ")}>
       <header className={HeaderLayout}>
         <HeaderDisplay></HeaderDisplay>
       </header>
@@ -68,4 +68,4 @@ function Editor() {
   );
 }
 
-export default Editor;
+export default Home;

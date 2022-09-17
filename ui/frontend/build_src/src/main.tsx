@@ -9,7 +9,7 @@ import { enableMapSet } from "immer";
 
 import App from "./app";
 
-import "./styles.css.ts";
+import "./styles/index.css.ts";
 
 const queryClient = new QueryClient({
   defaultOptions: {
