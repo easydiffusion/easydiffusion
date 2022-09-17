@@ -38,9 +38,18 @@ export default function PropertySettings() {
   const guidance_scale = useImageCreate((state) =>
     state.getValueForRequestKey("guidance_scale")
   );
+
+
+  const init_image = useImageCreate((state) =>
+    state.getValueForRequestKey("init_image")
+  );
+
+
   const prompt_strength = useImageCreate((state) =>
     state.getValueForRequestKey("prompt_strength")
   );
+
+
   const width = useImageCreate((state) => state.getValueForRequestKey("width"));
   const height = useImageCreate((state) =>
     state.getValueForRequestKey("height")
@@ -109,23 +118,24 @@ export default function PropertySettings() {
             <span>{guidance_scale}</span>
           </div>
 
-          <div className="mb-4">
-            <label>
-              Prompt Strength:{" "}
-              <input
-                value={prompt_strength}
-                onChange={(e) =>
-                  // setImageOptions({ promptStrength: Number(e.target.value) })
-                  setRequestOption("prompt_strength", e.target.value)
-                }
-                type="range"
-                min="0"
-                max="1"
-                step=".05"
-              />
-            </label>
-            <span>{prompt_strength}</span>
-          </div>
+          {init_image && (
+            <div>
+              <label>
+                Prompt Strength:{" "}
+                <input
+                  value={prompt_strength}
+                  onChange={(e) =>
+                    setRequestOption("prompt_strength", e.target.value)
+                  }
+                  type="range"
+                  min="0"
+                  max="1"
+                  step=".05"
+                />
+              </label>
+              <span>{prompt_strength}</span>
+            </div>
+          )}
 
           <div>
             <label>
