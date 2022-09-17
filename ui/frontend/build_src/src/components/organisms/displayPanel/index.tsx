@@ -10,7 +10,7 @@ import { doMakeImage, MakeImageKey } from "../../../api";
 import AudioDing from "./audioDing";
 
 import GeneratedImage from "../../molecules/generatedImage";
-import DrawImage from "../../molecules/drawImage";
+// import DrawImage from "../../molecules/drawImage";
 
 import {
   displayPanel,
@@ -25,6 +25,8 @@ type CompletedImagesType = {
   data: string;
   info: ImageRequest;
 };
+
+
 export default function DisplayPanel() {
   const dingRef = useRef<HTMLAudioElement>(null);
   const isSoundEnabled = useImageCreate((state) => state.isSoundEnabled());
@@ -105,7 +107,7 @@ export default function DisplayPanel() {
     <div className={displayPanel}>
       <AudioDing ref={dingRef}></AudioDing>
       <div className={displayContainer}>
-        {isInPaintingMode && <DrawImage imageData={init_image}></DrawImage>}
+        {/* {isInPaintingMode && <DrawImage imageData={init_image}></DrawImage>} */}
 
         {completedImages.length > 0 && (
           <>
