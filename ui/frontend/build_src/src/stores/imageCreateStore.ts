@@ -5,8 +5,6 @@ import { devtools } from "zustand/middleware";
 import { useRandomSeed } from "../utils";
 
 export type ImageCreationUiOptions = {
-  // isCheckedUseUpscaling: boolean;
-  // isCheckUseFaceCorrection: boolean;
   isUseRandomSeed: boolean;
   isUseAutoSave: boolean;
   isSoundEnabled: boolean;
@@ -71,6 +69,7 @@ interface ImageCreateState {
   requestOptions: ImageRequest;
   allModifiers: ModifiersOptionList;
   tags: string[];
+  isInpainting: boolean;
 
   setParallelCount: (count: number) => void;
   setRequestOptions: (key: keyof ImageRequest, value: any) => void;
@@ -94,6 +93,7 @@ interface ImageCreateState {
   isUseAutoSave: () => boolean;
   toggleSoundEnabled: () => void;
   isSoundEnabled: () => boolean;
+  toggleInpainting: () => void;
 }
 
 // devtools breaks TS
@@ -133,6 +133,8 @@ export const useImageCreate = create<ImageCreateState>(
     },
 
     allModifiers: [[[]]] as ModifiersOptionList,
+
+    isInpainting: false,
 
     setParallelCount: (count: number) =>
       set(
@@ -279,6 +281,14 @@ export const useImageCreate = create<ImageCreateState>(
 
     isSoundEnabled: () => {
       return get().uiOptions.isSoundEnabled;
+    },
+
+    toggleInpainting: () => {
+      set(
+        produce((state) => {
+          state.isInpainting = !state.isInpainting;
+        })
+      );
     },
   }))
 );

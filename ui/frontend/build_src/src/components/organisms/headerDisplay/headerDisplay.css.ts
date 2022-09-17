@@ -12,4 +12,3 @@ globalStyle(`${HeaderDisplayMain} > h1`, {
   fontWeight: "bold",
   marginRight: "10px",
 });
-

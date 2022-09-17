@@ -35,7 +35,7 @@ export const HeaderLayout = style({
 
 export const CreateLayout = style({
   gridArea: "create",
-  overflow: "auto",
+  position: "relative",
 });
 
 export const DisplayLayout = style({
