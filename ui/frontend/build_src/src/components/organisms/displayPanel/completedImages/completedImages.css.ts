@@ -14,7 +14,7 @@ export const completedImagesMain = style({
 });
 
 export const imageContain = style({
-  width: "112px",
+  width: "206px",
   backgroundColor: "black",
   display: "flex",
   justifyContent: "center",
@@ -22,6 +22,8 @@ export const imageContain = style({
   flexShrink: 0,
   border: "0 none",
   padding: "0",
+  marginLeft: vars.spacing.medium,
+  cursor: "pointer",
 });
 
 globalStyle(`${imageContain} img`, {

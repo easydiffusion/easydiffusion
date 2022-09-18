@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useImageCreate } from "../../../../../stores/imageCreateStore";
 
 import { useCreateUI } from "../../creationPanelUIStore";
@@ -12,6 +12,8 @@ export default function ImprovementSettings() {
   const isUsingFaceCorrection = useImageCreate((state) =>
     state.isUsingFaceCorrection()
   );
+
+  const isUsingUpscaling = useImageCreate((state) => state.isUsingUpscaling());
 
   const use_upscale = useImageCreate((state) =>
     state.getValueForRequestKey("use_upscale")
@@ -30,9 +32,24 @@ export default function ImprovementSettings() {
   const improvementOpen = useCreateUI(
     (state) => state.isOpenAdvImprovementSettings
   );
+
   const toggleImprovementOpen = useCreateUI(
     (state) => state.toggleAdvImprovementSettings
   );
+
+  const [isFilteringDisabled, setIsFilteringDisabled] = useState(false);
+  // should probably be a store selector
+  useEffect(() => {
+    console.log("isUsingUpscaling", isUsingUpscaling);
+    console.log("isUsingFaceCorrection", isUsingFaceCorrection);
+
+    // if either are true we arent disabled
+    if (isUsingFaceCorrection || use_upscale) {
+      setIsFilteringDisabled(false);
+    } else {
+      setIsFilteringDisabled(true);
+    }
+  }, [isUsingFaceCorrection, isUsingUpscaling, setIsFilteringDisabled]);
 
   return (
     <div>
@@ -77,6 +94,7 @@ export default function ImprovementSettings() {
           <div>
             <label>
               <input
+                disabled={isFilteringDisabled}
                 type="checkbox"
                 checked={show_only_filtered_image}
                 onChange={(e) =>

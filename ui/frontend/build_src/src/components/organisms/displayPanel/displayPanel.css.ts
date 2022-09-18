@@ -18,5 +18,5 @@ export const displayContainer = style({
 });
 
 export const previousImages = style({
-  height: "150px",
+  // height: "150px",
 });
