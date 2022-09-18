@@ -34,7 +34,6 @@ export const getSaveDirectory = async () => {
 export const KEY_CONFIG = "config";
 export const getConfig = async () => {
   const response = await fetch(`${API_URL}/app_config`);
-  console.log("getConfig response", response);
   const data = await response.json();
   return data;
 };

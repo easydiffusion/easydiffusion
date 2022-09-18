@@ -31,7 +31,6 @@ export default function DrawImage({
   const [canvasHeight, setCanvasHeight] = useState(512);
 
   useEffect(() => {
-    console.log(imageData);
     const img = new Image();
     img.onload = () => {
       setCanvasWidth(img.width);
@@ -61,7 +60,6 @@ export default function DrawImage({
   const _handleMouseDown = (
     e: React.MouseEvent<HTMLCanvasElement, MouseEvent>
   ) => {
-    console.log("mouse down", e);
 
     const {
       nativeEvent: { offsetX, offsetY },
