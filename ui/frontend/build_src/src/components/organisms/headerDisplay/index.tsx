@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
-import { getConfig } from "../../../api";
+import { KEY_CONFIG, getConfig } from "../../../api";
 
 import StatusDisplay from "./statusDisplay";
 
@@ -10,12 +10,14 @@ import {
 } from "./headerDisplay.css.ts";
 
 export default function HeaderDisplay() {
-  // but this will be moved to the status display when it is created
-  const { status, data } = useQuery(["config"], getConfig);
+
+  const { status, data } = useQuery([KEY_CONFIG], getConfig);
 
   const [version, setVersion] = useState("2.1.0");
   const [release, setRelease] = useState("");
 
+  // this is also in the Beta Mode
+  // TODO: make this a custom hook
   useEffect(() => {
     if (status === "success") {
       // TODO also pass down the actual version
