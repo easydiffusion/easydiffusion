@@ -1,15 +1,31 @@
 import { style } from "@vanilla-extract/css";
 
+// @ts-ignore
+import { vars } from "../../../../../styles/theme/index.css.ts";
+
 export const MakeButtonStyle = style({
   width: "100%",
-  backgroundColor: "rgb(38, 77, 141)",
-  fontSize: "1.5em",
+  backgroundColor: vars.colors.brand,
+  fontSize: vars.fonts.sizes.Headline,
   fontWeight: "bold",
-  color: "white",
-  padding: "8px",
-  borderRadius: "5px",
+  color: vars.colors.text.normal,
+  padding: vars.spacing.small,
+  borderRadius: vars.trim.smallBorderRadius,
+
+  ":hover": {
+    backgroundColor: vars.colors.brandHover,
+  },
+
+  ":active": {
+    backgroundColor: vars.colors.brandActive,
+  },
 
   ":disabled": {
-    backgroundColor: "rgb(38, 77, 141, 0.5)",
+    backgroundColor: vars.colors.brandDimmed,
+    color: vars.colors.text.dimmed,
+  },
+
+  ":focus": {
+    outline: "none",
   },
 });

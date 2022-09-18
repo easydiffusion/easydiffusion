@@ -39,16 +39,13 @@ export default function PropertySettings() {
     state.getValueForRequestKey("guidance_scale")
   );
 
-
   const init_image = useImageCreate((state) =>
     state.getValueForRequestKey("init_image")
   );
 
-
   const prompt_strength = useImageCreate((state) =>
     state.getValueForRequestKey("prompt_strength")
   );
-
 
   const width = useImageCreate((state) => state.getValueForRequestKey("width"));
   const height = useImageCreate((state) =>

@@ -1,19 +1,17 @@
 import { style, globalStyle } from "@vanilla-extract/css";
 
-export const AdvancedSettingsList = style({
-  // font-size: 9pt;
-  // margin-bottom: 5px;
-  // padding-left: 10px;
-  // list-style-type: none;
+// @ts-ignore
+import { vars } from "../../../../styles/theme/index.css.ts";
 
-  fontSize: "9pt",
-  marginBottom: "5px",
-  paddingLeft: "10px",
+export const AdvancedSettingsList = style({
+  fontSize: vars.fonts.sizes.Body,
+  marginBottom: vars.spacing.small,
+  paddingLeft: vars.spacing.medium,
   listStyleType: "none",
 });
 
 export const AdvancedSettingItem = style({
-  paddingBottom: "5px",
+  paddingBottom: vars.spacing.small,
 });
 
 export const MenuButton = style({
@@ -21,11 +19,11 @@ export const MenuButton = style({
   width: "100%",
   textAlign: "left",
   backgroundColor: "transparent",
-  color: "#fff",
+  color: vars.colors.text.normal,
   border: "0 none",
   cursor: "pointer",
   padding: "0",
-  marginBottom: "10px",
+  marginBottom: vars.spacing.small,
 });
 
 globalStyle(`${MenuButton}> h4`, {

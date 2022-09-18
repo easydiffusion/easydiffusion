@@ -7,50 +7,49 @@ import {
 /**
  * Colors are all the same across the themes, this is just to set up a contract
  * Colors can be decided later. I am just the architect.
- * Tried to pull things from the original app. 
- * 
+ * Tried to pull things from the original app.
+ *
  * Lots of these arent used yet, but once they are defined and useable then they can be set.
  */
 
+// Link color 0, 102, 204
+
 const colors = createThemeContract({
+  brand: null,
+  brandDimmed: null,
+  brandHover: null,
+  brandActive: null,
+  brandAccent: null,
+  brandAccentDimmed: null,
+  brandAccentActive: null,
 
-  brand: '##5000b9', // purple
-  brandDimmed: '#5000b9', // purple
-  brandHover: '5d00d6', // bringhter purple
-  brandHoverDimmed: '#5d00d6', // bringhter purple
-  brandActive: '#5d00d6', // bringhter purple
-  brandActiveDimmed: '#5d00d6', // bringhter purple
-  brandAccent: '#28004e', // darker purple
-  brandAccentDimmed: '#28004e', // darker purple
-  brandAccentActive: '#28004e', // darker purple
+  secondary: null,
+  secondaryDimmed: null,
+  secondaryHover: null,
+  secondaryActive: null,
+  secondaryAccent: null,
+  secondaryAccentDimmed: null,
+  secondaryAccentActive: null,
 
-  secondary: '#0b8334', // green
-  secondaryDimmed: '#0b8334', // green
-  secondaryHover: '#0b8334', // green
-  secondaryHoverDimmed: '#0b8334', // green
-  secondaryActive: '#0b8334', // green
-  secondaryActiveDimmed: '#0b8334', // green
-  secondaryAccent: '#0b8334', // green
-  secondaryAccentDimmed: '#0b8334', // green
-  secondaryAccentActive: '#0b8334', // green
-
-  background: '#202124', // dark grey
-  backgroundAccent: ' #383838', // lighter grey
-  backgroundAlt: '#2c2d30', // med grey
-  backgroundAltAccent: '#383838', // lighter grey
+  background: null,
+  backgroundAccent: null,
+  backgroundAlt: null,
+  backgroundAltAccent: null,
 
   text: {
-    normal: '#ffffff', // white
-    dimmed: '#d1d5db', // off white
+    normal: null,
+    dimmed: null,
 
-    secondary: '#e7ba71', // orange
-    secondaryDimmed: '#7d6641', // muted orange
+    secondary: null,
+    secondaryDimmed: null,
+
+    accent: null,
+    accentDimmed: null,
   },
 
-  warning: "yellow",
-  error: "red",
-  success: "green",
-
+  warning: null,
+  error: null,
+  success: null,
 });
 
 const app = createGlobalTheme(":root", {
@@ -59,95 +58,99 @@ const app = createGlobalTheme(":root", {
     medium: "10px",
     large: "25px",
   },
+
+  trim: {
+    smallBorderRadius: "5px",
+  },
+
   fonts: {
     body: "Arial, Helvetica, sans-serif;",
+    sizes: {
+      Title: "2em",
+      Headline: "1.5em",
+      Subheadline: "1.20em",
+      Body: "1em",
+      Caption: ".75em",
+      Overline: ".5em",
+    },
   },
   colors: colors,
 });
 
-
-export const lightTheme = createTheme(colors, {
-  brand: '##5000b9', // purple
-  brandDimmed: '#5000b9', // purple
-  brandHover: '5d00d6', // bringhter purple
-  brandHoverDimmed: '#5d00d6', // bringhter purple
-  brandActive: '#5d00d6', // bringhter purple
-  brandActiveDimmed: '#5d00d6', // bringhter purple
-  brandAccent: '#28004e', // darker purple
-  brandAccentDimmed: '#28004e', // darker purple
-  brandAccentActive: '#28004e', // darker purple
-
-  secondary: '#0b8334', // green
-  secondaryDimmed: '#0b8334', // green
-  secondaryHover: '#0b8334', // green
-  secondaryHoverDimmed: '#0b8334', // green
-  secondaryActive: '#0b8334', // green
-  secondaryActiveDimmed: '#0b8334', // green
-  secondaryAccent: '#0b8334', // green
-  secondaryAccentDimmed: '#0b8334', // green
-  secondaryAccentActive: '#0b8334', // green
-
-  background: '#202124', // dark grey
-  backgroundAccent: ' #383838', // lighter grey
-  backgroundAlt: '#2c2d30', // med grey
-  backgroundAltAccent: '#383838', // lighter grey
-
-  text: {
-    normal: '#ffffff', // white
-    dimmed: '#d1d5db', // off white
-
-    secondary: '#e7ba71', // orange
-    secondaryDimmed: '#7d6641', // muted orange
-  },
-
-  warning: "yellow",
-  error: "red",
-  success: "green",
-
-});
-
-
 export const darkTheme = createTheme(colors, {
-  brand: '##5000b9', // purple
-  brandDimmed: '#5000b9', // purple
-  brandHover: '5d00d6', // bringhter purple
-  brandHoverDimmed: '#5d00d6', // bringhter purple
-  brandActive: '#5d00d6', // bringhter purple
-  brandActiveDimmed: '#5d00d6', // bringhter purple
-  brandAccent: '#28004e', // darker purple
-  brandAccentDimmed: '#28004e', // darker purple
-  brandAccentActive: '#28004e', // darker purple
+  brand: "#5000b9", // purple
+  brandDimmed: "#433852", // muted purple
+  brandHover: "#5d00d6", // bringhter purple
+  brandActive: "#5d00d6", // bringhter purple
+  brandAccent: "#28004e", // darker purple
+  brandAccentDimmed: "#28004e", // darker purple
+  brandAccentActive: "#28004e", // darker purple
 
-  secondary: '#0b8334', // green
-  secondaryDimmed: '#0b8334', // green
-  secondaryHover: '#0b8334', // green
-  secondaryHoverDimmed: '#0b8334', // green
-  secondaryActive: '#0b8334', // green
-  secondaryActiveDimmed: '#0b8334', // green
-  secondaryAccent: '#0b8334', // green
-  secondaryAccentDimmed: '#0b8334', // green
-  secondaryAccentActive: '#0b8334', // green
+  secondary: "#0b8334", // green
+  secondaryDimmed: "#0b8334", // green
+  secondaryHover: "#0b8334", // green
+  secondaryActive: "#0b8334", // green
+  secondaryAccent: "#0b8334", // green
+  secondaryAccentDimmed: "#0b8334", // green
+  secondaryAccentActive: "#0b8334", // green
 
-  background: '#202124', // dark grey
-  backgroundAccent: ' #383838', // lighter grey
-  backgroundAlt: '#2c2d30', // med grey
-  backgroundAltAccent: '#383838', // lighter grey
+  background: "#202124", // dark grey
+  backgroundAccent: " #383838", // lighter grey
+  backgroundAlt: "#2c2d30", // med grey
+  backgroundAltAccent: "#383838", // lighter grey
 
   text: {
-    normal: '#ffffff', // white
-    dimmed: '#d1d5db', // off white
+    normal: "#ffffff", // white
+    dimmed: "#d1d5db", // off white
 
-    secondary: '#e7ba71', // orange
-    secondaryDimmed: '#7d6641', // muted orange
+    secondary: "#ffffff", // white
+    secondaryDimmed: "#d1d5db", // off white
+
+    accent: "#e7ba71", // orange
+    accentDimmed: "#7d6641", // muted orange
+  },
+
+  warning: "#f0ad4e",
+  error: "#d9534f",
+  success: "#5cb85c",
+});
+
+// Generated by co-pilot
+export const lightTheme = createTheme(colors, {
+  brand: "#1E40AF",
+  brandDimmed: "#1E40AF",
+  brandHover: "#1E40AF",
+  brandActive: "#1E40AF",
+  brandAccent: "#1E40AF",
+  brandAccentDimmed: "#1E40AF",
+  brandAccentActive: "#1E40AF",
+
+  secondary: "#DB2777",
+  secondaryDimmed: "#DB2777",
+  secondaryHover: "#DB2777",
+  secondaryActive: "#DB2777",
+  secondaryAccent: "#DB2777",
+  secondaryAccentDimmed: "#DB2777",
+  secondaryAccentActive: "#DB2777",
+
+  background: "#EFF6FF",
+  backgroundAccent: "#EFF6FF",
+  backgroundAlt: "#EFF6FF",
+  backgroundAltAccent: "#EFF6FF",
+  text: {
+    normal: "#1F2937",
+    dimmed: "#6B7280",
+
+    secondary: "#1F2937",
+    secondaryDimmed: "#6B7280",
+
+    accent: "#1F2937",
+    accentDimmed: "#6B7280",
   },
 
   warning: "yellow",
   error: "red",
   success: "green",
-
 });
-
-
-
 
 export const vars = { ...app, colors };

@@ -20,11 +20,10 @@ globalStyle("#root", {
   overflow: "hidden",
 });
 
-// border box all 
+// border box all
 globalStyle(`*`, {
   boxSizing: "border-box",
 });
-
 
 /** RESETS */
 globalStyle(`p, h3, h4`, {

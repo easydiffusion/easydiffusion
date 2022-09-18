@@ -1,9 +1,10 @@
 import { style } from "@vanilla-extract/css";
 
+// @ts-ignore
+import { vars } from "../../../styles/theme/index.css.ts";
+
 export const displayPanel = style({
-  padding: "10px",
-  // width: '512px',
-  // height: '512px',
+  padding: vars.spacing.medium,
 });
 
 export const displayContainer = style({
@@ -20,12 +21,12 @@ export const CurrentDisplay = style({
 });
 
 export const previousImages = style({
-  marginLeft: "30px",
+  marginLeft: vars.spacing.large,
   display: "flex",
   flex: "auto",
   flexWrap: "wrap",
 });
 
 export const previousImage = style({
-  margin: "0 10px",
+  margin: `0 ${vars.spacing.small}`,
 });
