@@ -1,5 +1,10 @@
 {
   "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@stores": ["src/stores"]
+    },
+
     "target": "ESNext",
     "useDefineForClassFields": true,
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
