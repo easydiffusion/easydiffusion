@@ -32,7 +32,6 @@ function SettingsList() {
       <li className={AdvancedSettingItem}>
         <BetaMode />
       </li>
-
     </ul>
   );
 }

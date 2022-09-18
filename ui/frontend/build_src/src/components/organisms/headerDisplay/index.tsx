@@ -10,7 +10,6 @@ import {
 } from "./headerDisplay.css.ts";
 
 export default function HeaderDisplay() {
-
   const { status, data } = useQuery([KEY_CONFIG], getConfig);
 
   const [version, setVersion] = useState("2.1.0");

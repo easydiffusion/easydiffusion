@@ -44,12 +44,11 @@ export const toggleBetaConfig = async (branch: string) => {
   const response = await fetch(`${API_URL}/app_config`, {
     method: "POST",
     headers: {
-      'Content-Type': 'application/json'
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      'update_branch': branch
-    })
-
+      update_branch: branch,
+    }),
   });
   const data = await response.json();
   return data;
