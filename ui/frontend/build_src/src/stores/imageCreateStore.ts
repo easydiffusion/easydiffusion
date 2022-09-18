@@ -87,6 +87,7 @@ interface ImageCreateState {
   // isUsingUpscaling: () => boolean;
   toggleUseFaceCorrection: () => void;
   isUsingFaceCorrection: () => boolean;
+  isUsingUpscaling: () => boolean;
   toggleUseRandomSeed: () => void;
   isRandomSeed: () => boolean;
   toggleUseAutoSave: () => void;
@@ -205,14 +206,25 @@ export const useImageCreate = create<ImageCreateState>(
         request.save_to_disk_path = null;
       }
 
+      if (void 0 === request.init_image) {
+        request.prompt_strength = undefined;
+      }
+
       // a bit of a hack. figure out what a clean value to pass to the server is
       // if we arent using upscaling clear the upscaling
       if (request.use_upscale === "") {
         request.use_upscale = null;
       }
 
-      if (void 0 === requestOptions.init_image) {
-        request.prompt_strength = undefined;
+      // make sure you look above for the "null" value
+      // this patches over a a backend issue if you dont ask for a filtered image
+      // you get nothing back
+
+      if (
+        null === request.use_upscale &&
+        null === request.use_face_correction
+      ) {
+        request.show_only_filtered_image = false;
       }
 
       return request;
@@ -234,6 +246,11 @@ export const useImageCreate = create<ImageCreateState>(
     isUsingFaceCorrection: () => {
       const isUsing =
         typeof get().getValueForRequestKey("use_face_correction") === "string";
+      return isUsing;
+    },
+
+    isUsingUpscaling: () => {
+      const isUsing = get().getValueForRequestKey("use_upscale") != "";
       return isUsing;
     },
 

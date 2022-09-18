@@ -11,7 +11,7 @@ export const AppLayout = style({
   display: "grid",
   // backgroundColor: "rgb(32, 33, 36)",
   gridTemplateColumns: "400px 1fr",
-  gridTemplateRows: "100px 1fr 50px",
+  gridTemplateRows: "100px 1fr 115px",
   gridTemplateAreas: `
     "header header header"
     "create display display"
@@ -21,7 +21,7 @@ export const AppLayout = style({
   "@media": {
     "screen and (max-width: 800px)": {
       gridTemplateColumns: "1fr",
-      gridTemplateRows: "100px 1fr 1fr 50px",
+      gridTemplateRows: "100px 300px 1fr 100px",
       gridTemplateAreas: `
         "header"
         "create"
