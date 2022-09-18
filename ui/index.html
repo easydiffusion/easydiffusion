@@ -1172,12 +1172,9 @@ function showInitImagePreview() {
     let file = initImageSelector.files[0]
 
     reader.addEventListener('load', function() {
-        // console.log(file.name, reader.result)
         initImagePreview.src = reader.result
         initImagePreviewContainer.style.display = 'block'
         promptStrengthContainer.style.display = 'block'
-
-        // maskSetting.style.display = 'block'
     })
 
     if (file) {

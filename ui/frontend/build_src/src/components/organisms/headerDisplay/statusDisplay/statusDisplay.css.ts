@@ -1,14 +1,16 @@
 import { style } from "@vanilla-extract/css";
 
-// TODO  MOVE TO GLOBAL CSS
+// @ts-ignore
+import { vars } from "../../../../styles/theme/index.css.ts";
+
 export const StartingStatus = style({
-  color: "#f0ad4e",
+  color: vars.colors.warning,
 });
 
 export const ErrorStatus = style({
-  color: "#d9534f",
+  color: vars.colors.error,
 });
 
 export const SuccessStatus = style({
-  color: "#5cb85c",
+  color: vars.colors.success,
 });

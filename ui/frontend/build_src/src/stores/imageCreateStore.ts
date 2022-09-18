@@ -211,6 +211,10 @@ export const useImageCreate = create<ImageCreateState>(
         request.use_upscale = null;
       }
 
+      if (void 0 === requestOptions.init_image) {
+        request.prompt_strength = undefined;
+      }
+
       return request;
     },
 

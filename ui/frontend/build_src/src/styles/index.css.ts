@@ -1,11 +1,16 @@
 import { globalStyle } from "@vanilla-extract/css";
+// @ts-ignore
+import { vars } from "./theme/index.css.ts";
 
+// baisc body style
 globalStyle("body", {
   margin: 0,
   minWidth: "320px",
   minHeight: "100vh",
+  fontFamily: vars.fonts.body,
 });
 
+// single page style
 globalStyle("#root", {
   position: "absolute",
   top: 0,
@@ -15,11 +20,12 @@ globalStyle("#root", {
   overflow: "hidden",
 });
 
+// border box all
 globalStyle(`*`, {
   boxSizing: "border-box",
 });
 
-/** RESET  */
+/** RESETS */
 globalStyle(`p, h3, h4`, {
   margin: 0,
 });

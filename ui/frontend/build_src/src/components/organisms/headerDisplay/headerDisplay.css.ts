@@ -1,14 +1,16 @@
 import { style, globalStyle } from "@vanilla-extract/css";
+//@ts-ignore
+import { vars } from "../../../styles/theme/index.css.ts";
 
 export const HeaderDisplayMain = style({
-  color: "#ffffff",
+  color: vars.colors.text.normal,
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
 });
 
 globalStyle(`${HeaderDisplayMain} > h1`, {
-  fontSize: "1.5em",
+  fontSize: vars.fonts.sizes.Title,
   fontWeight: "bold",
-  marginRight: "10px",
+  marginRight: vars.spacing.medium,
 });

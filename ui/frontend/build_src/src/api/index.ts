@@ -31,9 +31,24 @@ export const getSaveDirectory = async () => {
   return data[0];
 };
 
+export const KEY_CONFIG = "config";
 export const getConfig = async () => {
   const response = await fetch(`${API_URL}/app_config`);
-  console.log("getConfig response", response);
+  const data = await response.json();
+  return data;
+};
+
+export const KEY_TOGGLE_CONFIG = "toggle_config";
+export const toggleBetaConfig = async (branch: string) => {
+  const response = await fetch(`${API_URL}/app_config`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      update_branch: branch,
+    }),
+  });
   const data = await response.json();
   return data;
 };
