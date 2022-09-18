@@ -4,6 +4,9 @@ import AdvancedSettings from "./advancedSettings";
 import ImageModifiers from "./imageModifiers";
 import InpaintingPanel from "./inpaintingPanel";
 
+// this works but causes type errors so its not worth it for now
+// import { useImageCreate } from "@stores/imageCreateStore.ts";
+
 import { useImageCreate } from "../../../stores/imageCreateStore";
 
 import "./creationPanel.css";

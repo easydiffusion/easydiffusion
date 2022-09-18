@@ -4,29 +4,19 @@ import { style } from "@vanilla-extract/css";
 import { vars } from "../../../styles/theme/index.css.ts";
 
 export const displayPanel = style({
-  padding: vars.spacing.medium,
+  height: "100%",
+  display: "flex",
+  flexDirection: "column",
 });
 
 export const displayContainer = style({
+  flexGrow: 1,
   display: "flex",
-  flexDirection: "row",
-  height: "100%",
-  width: "100%",
-  overflow: "hidden",
-});
-
-export const CurrentDisplay = style({
-  width: "512px",
-  height: "100%",
+  flexDirection: "column",
+  justifyContent: "center",
+  alignItems: "center",
 });
 
 export const previousImages = style({
-  marginLeft: vars.spacing.large,
-  display: "flex",
-  flex: "auto",
-  flexWrap: "wrap",
-});
-
-export const previousImage = style({
-  margin: `0 ${vars.spacing.small}`,
+  height: "150px",
 });

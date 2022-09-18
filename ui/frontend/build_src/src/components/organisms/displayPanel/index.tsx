@@ -9,18 +9,21 @@ import { doMakeImage, MakeImageKey } from "../../../api";
 
 import AudioDing from "./audioDing";
 
-import GeneratedImage from "../../molecules/generatedImage";
+// import GeneratedImage from "../../molecules/generatedImage";
 // import DrawImage from "../../molecules/drawImage";
+
+import CurrentDisplay from "./currentDisplay";
+import CompletedImages from "./completedImages";
 
 import {
   displayPanel,
   displayContainer,
-  CurrentDisplay,
+  // CurrentDisplay,
   previousImages,
   previousImage, //@ts-ignore
 } from "./displayPanel.css.ts";
 
-type CompletedImagesType = {
+export type CompletedImagesType = {
   id: string;
   data: string;
   info: ImageRequest;
@@ -29,13 +32,13 @@ type CompletedImagesType = {
 export default function DisplayPanel() {
   const dingRef = useRef<HTMLAudioElement>(null);
   const isSoundEnabled = useImageCreate((state) => state.isSoundEnabled());
-
-  const isInPaintingMode = useImageCreate((state) => state.isInpainting);
-
-  /* FETCHING  */
   // @ts-ignore
   const { id, options } = useImageQueue((state) => state.firstInQueue());
   const removeFirstInQueue = useImageQueue((state) => state.removeFirstInQueue);
+  const [currentImage, setCurrentImage] = useState<CompletedImagesType | null>(
+    null
+  );
+
   const { status, data } = useQuery(
     [MakeImageKey, id],
     () => doMakeImage(options),
@@ -58,16 +61,15 @@ export default function DisplayPanel() {
   }, [status, data, removeFirstInQueue, dingRef, isSoundEnabled]);
 
   /* COMPLETED IMAGES */
-
   const queryClient = useQueryClient();
   const [completedImages, setCompletedImages] = useState<CompletedImagesType[]>(
     []
   );
   const completedIds = useImageQueue((state) => state.completedImageIds);
 
-  const init_image = useImageCreate((state) =>
-    state.getValueForRequestKey("init_image")
-  );
+  // const init_image = useImageCreate((state) =>
+  //   state.getValueForRequestKey("init_image")
+  // );
 
   useEffect(() => {
     const testReq = {} as ImageRequest;
@@ -97,50 +99,24 @@ export default function DisplayPanel() {
         .flat()
         .reverse();
       setCompletedImages(temp);
+      setCurrentImage(temp[0] || null);
     } else {
       setCompletedImages([]);
+      setCurrentImage(null);
     }
-  }, [setCompletedImages, queryClient, completedIds]);
+  }, [setCompletedImages, setCurrentImage, queryClient, completedIds]);
 
   return (
     <div className={displayPanel}>
       <AudioDing ref={dingRef}></AudioDing>
       <div className={displayContainer}>
-        {/* {isInPaintingMode && <DrawImage imageData={init_image}></DrawImage>} */}
-
-        {completedImages.length > 0 && (
-          <>
-            <div className={CurrentDisplay}>
-              <GeneratedImage
-                key={completedImages[0].id}
-                imageData={completedImages[0].data}
-                metadata={completedImages[0].info}
-              />
-            </div>
-
-            <div className={previousImages}>
-              {completedImages.map((image, index) => {
-                if (void 0 !== image) {
-                  if (index == 0) {
-                    return null;
-                  }
-
-                  return (
-                    <GeneratedImage
-                      className={previousImage}
-                      key={image.id}
-                      imageData={image.data}
-                      metadata={image.info}
-                    />
-                  );
-                } else {
-                  console.warn("image is undefined", image, index);
-                  return null;
-                }
-              })}
-            </div>
-          </>
-        )}
+        <CurrentDisplay image={currentImage}></CurrentDisplay>
+      </div>
+      <div className={previousImages}>
+        <CompletedImages
+          images={completedImages}
+          setCurrentDisplay={setCurrentImage}
+        ></CompletedImages>
       </div>
     </div>
   );
