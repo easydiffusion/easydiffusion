@@ -1,6 +1,9 @@
 import React from "react";
 import GeneratedImage from "../../../molecules/generatedImage";
-import { ImageRequest, useImageCreate } from "../../../../stores/imageCreateStore";
+import {
+  ImageRequest,
+  useImageCreate,
+} from "../../../../stores/imageCreateStore";
 
 import { CompletedImagesType } from "../index";
 
@@ -8,9 +11,7 @@ type CurrentDisplayProps = {
   image: CompletedImagesType | null;
 };
 
-
 export default function CurrentDisplay({ image }: CurrentDisplayProps) {
-
   const { info, data } = image || { info: null, data: null };
 
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
@@ -58,33 +59,20 @@ export default function CurrentDisplay({ image }: CurrentDisplayProps) {
     setRequestOption("init_image", data);
   };
 
-
-
   return (
     <div className="current-display">
-      {image &&
+      {image && (
         <div>
           <p> {info!.prompt}</p>
-          <GeneratedImage
-            imageData={data!}
-            metadata={info!}
-          >
-          </GeneratedImage>
+          <GeneratedImage imageData={data!} metadata={info!}></GeneratedImage>
 
           <div>
-            <button onClick={_handleSave}>
-              Save
-            </button>
-            <button onClick={_handleUseAsInput}>
-              Use as Input
-            </button>
+            <button onClick={_handleSave}>Save</button>
+            <button onClick={_handleUseAsInput}>Use as Input</button>
           </div>
         </div>
-      }
-      <div>
-      </div>
+      )}
+      <div></div>
     </div>
   );
 }
-
-

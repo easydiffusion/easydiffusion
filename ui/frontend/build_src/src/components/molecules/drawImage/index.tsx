@@ -60,7 +60,6 @@ export default function DrawImage({
   const _handleMouseDown = (
     e: React.MouseEvent<HTMLCanvasElement, MouseEvent>
   ) => {
-
     const {
       nativeEvent: { offsetX, offsetY },
     } = e;

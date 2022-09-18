@@ -4,15 +4,14 @@ import { ImageRequest, useImageCreate } from "../../../stores/imageCreateStore";
 
 import {
   generatedImageMain,
-  image,
-} from //@ts-ignore
-  "./generatedImage.css.ts";
+  image, //@ts-ignore
+} from "./generatedImage.css.ts";
 
 type GeneretaedImageProps = {
   imageData: string;
   metadata: ImageRequest;
   className?: string;
-  children: never[];
+  // children: never[];
 };
 
 export default function GeneratedImage({
@@ -20,7 +19,6 @@ export default function GeneratedImage({
   metadata,
   className,
 }: GeneretaedImageProps) {
-
   return (
     <div className={[generatedImageMain, className].join(" ")}>
       <img className={image} src={imageData} alt={metadata.prompt} />

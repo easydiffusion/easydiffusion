@@ -12,7 +12,6 @@ import AudioDing from "./audioDing";
 // import GeneratedImage from "../../molecules/generatedImage";
 // import DrawImage from "../../molecules/drawImage";
 
-
 import CurrentDisplay from "./currentDisplay";
 import CompletedImages from "./completedImages";
 
@@ -31,13 +30,14 @@ export type CompletedImagesType = {
 };
 
 export default function DisplayPanel() {
-
   const dingRef = useRef<HTMLAudioElement>(null);
   const isSoundEnabled = useImageCreate((state) => state.isSoundEnabled());
   // @ts-ignore
   const { id, options } = useImageQueue((state) => state.firstInQueue());
   const removeFirstInQueue = useImageQueue((state) => state.removeFirstInQueue);
-  const [currentImage, setCurrentImage] = useState<CompletedImagesType | null>(null);
+  const [currentImage, setCurrentImage] = useState<CompletedImagesType | null>(
+    null
+  );
 
   const { status, data } = useQuery(
     [MakeImageKey, id],
@@ -113,9 +113,11 @@ export default function DisplayPanel() {
         <CurrentDisplay image={currentImage}></CurrentDisplay>
       </div>
       <div className={previousImages}>
-        <CompletedImages images={completedImages} setCurrentDisplay={setCurrentImage}></CompletedImages>
+        <CompletedImages
+          images={completedImages}
+          setCurrentDisplay={setCurrentImage}
+        ></CompletedImages>
       </div>
     </div>
   );
 }
-

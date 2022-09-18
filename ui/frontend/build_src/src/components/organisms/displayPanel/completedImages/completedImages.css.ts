@@ -1,22 +1,17 @@
-
-
 import { style, globalStyle } from "@vanilla-extract/css";
 
 // @ts-ignore
 import { vars } from "../../../../styles/theme/index.css.ts";
 
-
 export const completedImagesMain = style({
-  display: 'flex',
-  flexDirection: 'row',
-  flexWrap: 'nowrap',
-  height: '100%',
-  width: '100%',
-  overflow: 'auto',
+  display: "flex",
+  flexDirection: "row",
+  flexWrap: "nowrap",
+  height: "100%",
+  width: "100%",
+  overflow: "auto",
   paddingBottom: vars.spacing.medium,
-
 });
-
 
 export const imageContain = style({
   width: "112px",
@@ -25,14 +20,13 @@ export const imageContain = style({
   justifyContent: "center",
   alignItems: "center",
   flexShrink: 0,
-  border: '0 none',
-  padding: '0',
+  border: "0 none",
+  padding: "0",
 });
 
 globalStyle(`${imageContain} img`, {
   width: "100%",
   objectFit: "contain",
-
 });
 
 globalStyle(`${completedImagesMain} > ${imageContain}:first-of-type`, {
