@@ -97,8 +97,11 @@ export default function DisplayPanel() {
           }
         })
         .flat()
-        .reverse();
+        .reverse()
+        .filter((item) => void 0 !== item); // remove undefined items
+
       setCompletedImages(temp);
+      debugger;
       setCurrentImage(temp[0] || null);
     } else {
       setCompletedImages([]);
@@ -113,6 +116,7 @@ export default function DisplayPanel() {
         <CurrentDisplay image={currentImage}></CurrentDisplay>
       </div>
       <div className={previousImages}>
+
         <CompletedImages
           images={completedImages}
           setCurrentDisplay={setCurrentImage}
