@@ -70,9 +70,8 @@ const app = createGlobalTheme(":root", {
       Title: "2em",
       Headline: "1.5em",
       Subheadline: "1.20em",
-      SubSubheadline: "1.1em",
+      SubSubheadline: "1em",
       Body: "1em",
-      Plain: "0.8em",
       Caption: ".75em",
       Overline: ".5em",
 

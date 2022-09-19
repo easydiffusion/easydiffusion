@@ -6,7 +6,7 @@ import { PanelBox } from "../../../../styles/shared.css.ts";
 
 import {
   AdvancedSettingsList,
-  AdvancedSettingItem, // @ts-expect-error
+  AdvancedSettingGrouping, // @ts-expect-error
 } from "./advancedsettings.css.ts";
 
 import ImprovementSettings from "./improvementSettings";
@@ -19,20 +19,20 @@ import BetaMode from "../../../molecules/betaMode";
 function SettingsList() {
   return (
     <ul className={AdvancedSettingsList}>
-      <li className={AdvancedSettingItem}>
+      <li className={AdvancedSettingGrouping}>
         <ImprovementSettings />
       </li>
-      <li className={AdvancedSettingItem}>
+      <li className={AdvancedSettingGrouping}>
         <PropertySettings />
       </li>
-      <li className={AdvancedSettingItem}>
+      <li className={AdvancedSettingGrouping}>
         <WorkflowSettings />
       </li>
-      <li className={AdvancedSettingItem}>
+      <li className={AdvancedSettingGrouping}>
         <GpuSettings />
       </li>
 
-      <li className={AdvancedSettingItem}>
+      <li className={AdvancedSettingGrouping}>
         <BetaMode />
       </li>
     </ul>

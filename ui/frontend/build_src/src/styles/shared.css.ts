@@ -5,7 +5,7 @@ import { vars } from "./theme/index.css.ts";
 export const PanelBox = style({
   background: vars.colors.backgroundAlt,
   color: vars.colors.text.normal,
-  padding: vars.spacing.small,
+  padding: vars.spacing.medium,
   borderRadius: vars.trim.smallBorderRadius,
   marginBottom: vars.spacing.medium,
   boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15)",
@@ -23,4 +23,8 @@ globalStyle(`${PanelBox} .panel-box-toggle-btn`, {
   cursor: "pointer",
   padding: "0",
   marginBottom: vars.spacing.small,
+});
+
+export const SettingItem = style({
+  marginBottom: vars.spacing.medium,
 });

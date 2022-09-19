@@ -18,9 +18,6 @@ globalStyle(`${PromptDisplay} > p`, {
 });
 
 globalStyle(`${PromptDisplay} > textarea`, {
-  fontSize: "1.2em",
-  fontWeight: "bold",
-  fontFamily: "Arial",
   width: "100%",
   resize: "vertical",
   height: "100px",

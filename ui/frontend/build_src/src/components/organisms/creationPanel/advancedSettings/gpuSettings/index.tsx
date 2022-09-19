@@ -4,6 +4,11 @@ import { useImageCreate } from "../../../../../stores/imageCreateStore";
 import { useCreateUI } from "../../creationPanelUIStore";
 
 import {
+  SettingItem // @ts-expect-error
+} from "../../../../../styles/shared.css.ts";
+
+
+import {
   MenuButton, // @ts-expect-error
 } from "../advancedsettings.css.ts";
 
@@ -28,7 +33,7 @@ export default function GpuSettings() {
       </button>
       {gpuOpen && (
         <>
-          <div>
+          <div className={SettingItem}>
             <label>
               <input
                 checked={turbo}
@@ -39,7 +44,7 @@ export default function GpuSettings() {
               of GPU memory)
             </label>
           </div>
-          <div>
+          <div className={SettingItem}>
             <label>
               <input
                 type="checkbox"
@@ -49,7 +54,7 @@ export default function GpuSettings() {
               Use CPU instead of GPU (warning: this will be *very* slow)
             </label>
           </div>
-          <div>
+          <div className={SettingItem}>
             <label>
               <input
                 checked={use_full_precision}

@@ -3,6 +3,10 @@ import { useImageCreate } from "../../../../../stores/imageCreateStore";
 import { useCreateUI } from "../../creationPanelUIStore";
 
 import {
+  SettingItem // @ts-expect-error
+} from "../../../../../styles/shared.css.ts";
+
+import {
   MenuButton, // @ts-expect-error
 } from "../advancedsettings.css.ts";
 // todo: move this someplace more global
@@ -64,7 +68,7 @@ export default function PropertySettings() {
       </button>
       {propertyOpen && (
         <>
-          <div>
+          <div className={SettingItem}>
             <label>
               Seed:
               <input
@@ -85,7 +89,7 @@ export default function PropertySettings() {
             </label>
           </div>
 
-          <div>
+          <div className={SettingItem}>
             <label>
               Number of inference steps:{" "}
               <input
@@ -98,7 +102,7 @@ export default function PropertySettings() {
             </label>
           </div>
 
-          <div>
+          <div className={SettingItem}>
             <label>
               Guidance Scale:
               <input
@@ -116,7 +120,7 @@ export default function PropertySettings() {
           </div>
 
           {init_image && (
-            <div>
+            <div className={SettingItem}>
               <label>
                 Prompt Strength:{" "}
                 <input
@@ -134,7 +138,7 @@ export default function PropertySettings() {
             </div>
           )}
 
-          <div>
+          <div className={SettingItem}>
             <label>
               Width:
               <select
@@ -151,9 +155,7 @@ export default function PropertySettings() {
                 ))}
               </select>
             </label>
-          </div>
 
-          <div>
             <label>
               Height:
               <select
