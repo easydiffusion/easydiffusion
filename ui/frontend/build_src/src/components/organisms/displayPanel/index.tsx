@@ -116,7 +116,6 @@ export default function DisplayPanel() {
         <CurrentDisplay image={currentImage}></CurrentDisplay>
       </div>
       <div className={previousImages}>
-
         <CompletedImages
           images={completedImages}
           setCurrentDisplay={setCurrentImage}

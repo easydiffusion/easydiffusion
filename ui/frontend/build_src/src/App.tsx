@@ -6,6 +6,8 @@ import Settings from "./pages/Settings";
 // @ts-ignore
 import { darkTheme, lightTheme } from "./styles/theme/index.css.ts";
 
+import './Translation/config';
+
 const location = new ReactLocation();
 
 function App() {
@@ -21,7 +23,8 @@ function App() {
         { path: "/", element: <Home className={themeClass} /> },
         { path: "/settings", element: <Settings className={themeClass} /> },
       ]}
-    ></Router>
+    >
+    </Router>
   );
 }
 
