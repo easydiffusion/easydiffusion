@@ -4,14 +4,36 @@ import { style, globalStyle } from "@vanilla-extract/css";
 import { vars } from "../../../../styles/theme/index.css.ts";
 
 export const completedImagesMain = style({
+  height: "100%",
+  width: "100%",
+  display: "flex",
+  paddingBottom: vars.spacing.medium,
+});
+
+export const completedImagesList = style({
   display: "flex",
   flexDirection: "row",
   flexWrap: "nowrap",
   height: "100%",
   width: "100%",
   overflow: "auto",
-  paddingBottom: vars.spacing.medium,
+  paddingLeft: vars.spacing.none,
+
 });
+
+globalStyle(`${completedImagesMain} li`, {
+
+  position: "relative",
+});
+
+globalStyle(`${completedImagesMain} > li:first-of-type`, {
+  marginLeft: vars.spacing.medium,
+});
+
+globalStyle(`${completedImagesMain} > li:last-of-type`, {
+  marginRight: 0,
+});
+
 
 export const imageContain = style({
   width: "206px",
@@ -26,15 +48,18 @@ export const imageContain = style({
   cursor: "pointer",
 });
 
+
+
 globalStyle(`${imageContain} img`, {
   width: "100%",
   objectFit: "contain",
 });
 
-globalStyle(`${completedImagesMain} > ${imageContain}:first-of-type`, {
-  marginLeft: vars.spacing.medium,
-});
-
-globalStyle(`${imageContain} > ${imageContain}:last-of-type`, {
-  marginRight: 0,
+export const RemoveButton = style({
+  marginLeft: vars.spacing.small,
+  backgroundColor: vars.colors.brand,
+  border: "0 none",
+  padding: vars.spacing.small,
+  cursor: "pointer",
+  borderRadius: vars.trim.borderRadiusSmall,
 });

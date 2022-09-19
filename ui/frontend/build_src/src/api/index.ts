@@ -59,7 +59,6 @@ export const toggleBetaConfig = async (branch: string) => {
 
 export const MakeImageKey = "MakeImage";
 export const doMakeImage = async (reqBody: ImageRequest) => {
-  const { seed, num_outputs } = reqBody;
 
   const res = await fetch(`${API_URL}/image`, {
     method: "POST",

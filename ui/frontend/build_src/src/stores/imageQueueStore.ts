@@ -11,6 +11,7 @@ interface ImageQueueState {
   hasQueuedImages: () => boolean;
   firstInQueue: () => ImageRequest | [];
   removeFirstInQueue: () => void;
+  clearCachedIds: () => void;
 }
 
 // figure out why TS is complaining about this
@@ -46,4 +47,12 @@ export const useImageQueue = create<ImageQueueState>((set, get) => ({
       })
     );
   },
+  clearCachedIds: () => {
+    set(
+      produce((state) => {
+        state.completedImageIds = [];
+      })
+    );
+  }
+
 }));

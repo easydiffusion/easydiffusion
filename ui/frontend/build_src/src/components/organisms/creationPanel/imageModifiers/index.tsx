@@ -14,7 +14,6 @@ import {
 } from //@ts-expect-error
   "./imageModifiers.css.ts";
 
-
 import { useImageCreate } from "../../../../stores/imageCreateStore";
 import { useCreateUI } from "../creationPanelUIStore";
 
@@ -88,7 +87,9 @@ export default function ImageModifers() {
         <ul className={ImagerModifierGroups}>
           {allModifiers.map((item, index) => {
             return (
+              // @ts-ignore
               <li key={item[0]}>
+                {/* @ts-ignore */}
                 <ModifierGrouping title={item[0]} tags={item[1]} />
               </li>
             );
