@@ -5,11 +5,15 @@ import { KEY_CONFIG, getConfig } from "../../../api";
 
 import StatusDisplay from "./statusDisplay";
 
+import { useTranslation } from "react-i18next"
+
 import {
   HeaderDisplayMain, //@ts-ignore
 } from "./headerDisplay.css.ts";
 
 export default function HeaderDisplay() {
+  const { t } = useTranslation();
+
   const { status, data } = useQuery([KEY_CONFIG], getConfig);
 
   const [version, setVersion] = useState("2.1.0");
@@ -36,7 +40,7 @@ export default function HeaderDisplay() {
   return (
     <div className={HeaderDisplayMain}>
       <h1>
-        Stable Diffusion UI {version} {release}{" "}
+        {t("title")} {version} {release}{" "}
       </h1>
       <StatusDisplay className="status-display"></StatusDisplay>
     </div>

@@ -25,7 +25,6 @@ export default function CompletedImages({
     <div className={completedImagesMain}>
       {images &&
         images.map((image, index) => {
-
           if (void 0 === image) {
             console.warn(`image ${index} is undefined`);
             return null;

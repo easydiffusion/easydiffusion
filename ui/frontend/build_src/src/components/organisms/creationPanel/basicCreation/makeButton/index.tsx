@@ -10,7 +10,10 @@ import {
   MakeButtonStyle, // @ts-ignore
 } from "./makeButton.css.ts";
 
+import { useTranslation } from "react-i18next";
+
 export default function MakeButton() {
+  const { t } = useTranslation();
   const parallelCount = useImageCreate((state) => state.parallelCount);
   const builtRequest = useImageCreate((state) => state.builtRequest);
   const addNewImage = useImageQueue((state) => state.addNewImage);
@@ -78,7 +81,7 @@ export default function MakeButton() {
       onClick={makeImages}
       disabled={hasQueue}
     >
-      Make
+      {t("make-img-btn")}
     </button>
   );
 }
