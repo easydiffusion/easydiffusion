@@ -1,10 +1,12 @@
 {
   "root": true,
   "parser": "@typescript-eslint/parser",
+  "plugins": ["i18n-json"],
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
-    "plugin:i18next/recommended"
+    "plugin:i18next/recommended",
+    "plugin:i18n-json/recommended"
   ],
   "rules": {
     "@typescript-eslint/ban-ts-comment": "off",
@@ -12,5 +14,17 @@
     "prefer-const": "off",
     "no-debugger": "warn",
     "i18next/no-literal-string": "warn"
+    // "i18n-json/identical-keys": [
+    //   "error",
+    //   {
+    //     "filePath": {
+    //       "home.json/": "./Translation/locales/en/home.json"
+    //     }
+    //   }
+    // ],
+    // "i18n-json/valid-message-syntax": [
+    //   "error",
+    //   { "syntax": "non-empty-string" }
+    // ]
   }
 }
