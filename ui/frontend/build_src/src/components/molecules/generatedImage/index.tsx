@@ -8,8 +8,8 @@ import {
 } from "./generatedImage.css.ts";
 
 interface GeneretaedImageProps {
-  imageData: string;
-  metadata: ImageRequest;
+  imageData: string | undefined;
+  metadata: ImageRequest | undefined;
   className?: string;
   // children: never[];
 }
@@ -21,7 +21,7 @@ export default function GeneratedImage({
 }: GeneretaedImageProps) {
   return (
     <div className={[generatedImageMain, className].join(" ")}>
-      <img className={image} src={imageData} alt={metadata.prompt} />
+      <img className={image} src={imageData} alt={metadata!.prompt} />
     </div>
   );
 }

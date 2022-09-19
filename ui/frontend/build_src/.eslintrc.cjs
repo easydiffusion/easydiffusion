@@ -35,6 +35,7 @@ module.exports = {
     yoda: ["off"],
     eqeqeq: ["off"],
     "spaced-comment": ["off"],
+    "padded-blocks": ["off"],
 
     // TS  things turned off for now
     "@typescript-eslint/ban-ts-comment": "off",

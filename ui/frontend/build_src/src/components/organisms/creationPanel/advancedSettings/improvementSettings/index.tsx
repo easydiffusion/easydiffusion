@@ -43,8 +43,6 @@ export default function ImprovementSettings() {
   const [isFilteringDisabled, setIsFilteringDisabled] = useState(false);
   // should probably be a store selector
   useEffect(() => {
-    console.log("isUsingUpscaling", isUsingUpscaling);
-    console.log("isUsingFaceCorrection", isUsingFaceCorrection);
 
     // if either are true we arent disabled
     if (isUsingFaceCorrection || use_upscale) {

@@ -13,12 +13,10 @@ interface CurrentDisplayProps {
 }
 
 export default function CurrentDisplay({ isLoading, image }: CurrentDisplayProps) {
-  // @ts-ignore
-  const { info, data } = image;
+  const { info, data } = image ?? {};
 
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
-  console.log('current data', data);
-  console.log('current info', info);
+
   const createFileName = () => {
     const {
       prompt,
@@ -29,9 +27,7 @@ export default function CurrentDisplay({ isLoading, image }: CurrentDisplayProps
       use_upscale,
       width,
       height,
-    } = info;
-
-
+    } = info!;
 
 
     // Most important information is the prompt
@@ -81,7 +77,6 @@ export default function CurrentDisplay({ isLoading, image }: CurrentDisplayProps
           </div>
         )) || <h4 className="no-image">Try Making a new image!</h4>}
 
-      <div></div>
     </div>
   );
 }

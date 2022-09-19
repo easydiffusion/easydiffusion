@@ -10,4 +10,6 @@ const AudioDing = React.forwardRef((props, ref) => (
   </audio>
 ));
 
+AudioDing.displayName = "AudioDing";
+
 export default AudioDing;
