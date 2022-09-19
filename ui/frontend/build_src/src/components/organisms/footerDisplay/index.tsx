@@ -1,12 +1,16 @@
 import React from "react";
 
-import "./footerDisplay.css";
+import {
+  FooterDisplayMain,
+  CoffeeButton
+} from // @ts-ignore
+  "./footerDisplay.css.ts";
 
 import { API_URL } from "../../../api";
 
 export default function FooterDisplay() {
   return (
-    <div id="footer" className="panel-box">
+    <div className={FooterDisplayMain}>
       <p>
         If you found this project useful and want to help keep it alive, please{" "}
         <a
@@ -14,7 +18,7 @@ export default function FooterDisplay() {
           target="_blank"
           rel="noreferrer"
         >
-          <img src={`${API_URL}/kofi.png`} id="coffeeButton" />
+          <img src={`${API_URL}/kofi.png`} className={CoffeeButton} />
         </a>{" "}
         to help cover the cost of development and maintenance! Thank you for
         your support!

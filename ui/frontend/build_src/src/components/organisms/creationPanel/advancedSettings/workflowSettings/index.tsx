@@ -4,6 +4,10 @@ import { useImageCreate } from "../../../../../stores/imageCreateStore";
 import { useCreateUI } from "../../creationPanelUIStore";
 
 import {
+  SettingItem // @ts-expect-error
+} from "../../../../../styles/shared.css.ts";
+
+import {
   MenuButton, // @ts-expect-error
 } from "../advancedsettings.css.ts";
 
@@ -37,7 +41,7 @@ export default function WorkflowSettings() {
       </button>
       {workflowOpen && (
         <>
-          <div>
+          <div className={SettingItem}>
             <label>
               Number of images to make:{" "}
               <input
@@ -50,7 +54,7 @@ export default function WorkflowSettings() {
               />
             </label>
           </div>
-          <div>
+          <div className={SettingItem}>
             <label>
               Generate in parallel:
               <input
@@ -61,7 +65,7 @@ export default function WorkflowSettings() {
               />
             </label>
           </div>
-          <div>
+          <div className={SettingItem}>
             <label>
               <input
                 checked={isUseAutoSave}
@@ -84,7 +88,7 @@ export default function WorkflowSettings() {
               </span>
             </label>
           </div>
-          <div>
+          <div className={SettingItem}>
             <label>
               <input
                 checked={isSoundEnabled}

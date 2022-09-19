@@ -4,6 +4,9 @@ import { useImageCreate } from "../../../../../stores/imageCreateStore";
 import { useCreateUI } from "../../creationPanelUIStore";
 
 import {
+  SettingItem // @ts-expect-error
+} from "../../../../../styles/shared.css.ts";
+import {
   MenuButton, // @ts-expect-error
 } from "../advancedsettings.css.ts";
 
@@ -62,7 +65,7 @@ export default function ImprovementSettings() {
       </button>
       {improvementOpen && (
         <>
-          <div>
+          <div className={SettingItem}>
             <label>
               <input
                 type="checkbox"
@@ -72,7 +75,7 @@ export default function ImprovementSettings() {
               Fix incorrect faces and eyes (uses GFPGAN)
             </label>
           </div>
-          <div>
+          <div className={SettingItem}>
             <label>
               Upscale the image to 4x resolution using
               <select
@@ -91,7 +94,7 @@ export default function ImprovementSettings() {
               </select>
             </label>
           </div>
-          <div>
+          <div className={SettingItem}>
             <label>
               <input
                 disabled={isFilteringDisabled}

@@ -3,6 +3,18 @@ import React, { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { loadModifications } from "../../../../api";
 
+// @ts-expect-error
+import { PanelBox } from "../../../../styles/shared.css.ts";
+
+import {
+  ImagerModifierGroups,
+  ImageModifierGrouping,
+  MenuButton,
+  ModifierListStyle
+} from //@ts-expect-error
+  "./imageModifiers.css.ts";
+
+
 import { useImageCreate } from "../../../../stores/imageCreateStore";
 import { useCreateUI } from "../creationPanelUIStore";
 
@@ -14,7 +26,7 @@ interface ModifierListProps {
 
 function ModifierList({ tags }: ModifierListProps) {
   return (
-    <ul className="modifier-list">
+    <ul className={ModifierListStyle}>
       {tags.map((tag) => (
         <li key={tag}>
           <ModifierTag name={tag} />
@@ -39,28 +51,17 @@ function ModifierGrouping({ title, tags }: ModifierGroupingProps) {
   };
 
   return (
-    <div className="modifier-grouping">
-      <div className="modifier-grouping-header" onClick={_toggleExpand}>
-        <h5>{title}</h5>
-      </div>
+    <div className={ImageModifierGrouping}>
+      <button type="button" className={MenuButton} onClick={_toggleExpand}>
+        <h4>{title}</h4>
+      </button>
       {isExpanded && <ModifierList tags={tags} />}
     </div>
   );
 }
 
 export default function ImageModifers() {
-  // const { status, data } = useQuery(["modifications"], loadModifications);
-
-  // const imageModifierIsOpen = useImageCreate(
-  //   (state) => state.uiOptions.imageModifierIsOpen
-  // );
-  // const toggleImageModifiersIsOpen = useImageCreate(
-  //   (state) => state.toggleImageModifiersIsOpen
-  // );
-
   const allModifiers = useImageCreate((state) => state.allModifiers);
-
-  console.log("allModifiers", allModifiers);
 
   const imageModifierIsOpen = useCreateUI((state) => state.isOpenImageModifier);
   const toggleImageModifiersIsOpen = useCreateUI(
@@ -72,25 +73,28 @@ export default function ImageModifers() {
   };
 
   return (
-    <div className="panel-box">
+    <div className={PanelBox}>
       <button
         type="button"
         onClick={handleClick}
         className="panel-box-toggle-btn"
       >
         {/* TODO: swap this manual collapse stuff out for some UI component? */}
-        <h4>Image Modifiers (art styles, tags, ect)</h4>
+        <h3>Image Modifiers (art styles, tags, ect)</h3>
       </button>
 
       {/* @ts-ignore */}
-      {imageModifierIsOpen &&
-        // @ts-ignore
-        allModifiers.map((item, index) => {
-          return (
-            // @ts-ignore
-            <ModifierGrouping key={item[0]} title={item[0]} tags={item[1]} />
-          );
-        })}
+      {imageModifierIsOpen && (
+        <ul className={ImagerModifierGroups}>
+          {allModifiers.map((item, index) => {
+            return (
+              <li key={item[0]}>
+                <ModifierGrouping title={item[0]} tags={item[1]} />
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }

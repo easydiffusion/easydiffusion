@@ -12,6 +12,7 @@ import {
  * Lots of these arent used yet, but once they are defined and useable then they can be set.
  */
 
+// Link color 0, 102, 204
 
 const colors = createThemeContract({
   brand: null,
@@ -54,8 +55,6 @@ const colors = createThemeContract({
 
 const app = createGlobalTheme(":root", {
   spacing: {
-    none: "0",
-    min: '2px',
     small: "5px",
     medium: "10px",
     large: "25px",
@@ -71,9 +70,8 @@ const app = createGlobalTheme(":root", {
       Title: "2em",
       Headline: "1.5em",
       Subheadline: "1.20em",
-      SubSubheadline: "1.1em",
+      SubSubheadline: "1em",
       Body: "1em",
-      Plain: "0.8em",
       Caption: ".75em",
       Overline: ".5em",
 

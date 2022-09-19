@@ -1,17 +1,18 @@
 import { style, globalStyle } from "@vanilla-extract/css";
-
 // @ts-ignore
 import { vars } from "../../../../styles/theme/index.css.ts";
 
-// import { PanelBox } from "../../../../styles/shared.css.ts";
-
-export const AdvancedSettingsList = style({
+export const ImagerModifierGroups = style({
   // marginBottom: vars.spacing.small,
   paddingLeft: 0,
   listStyleType: "none",
 });
 
-export const AdvancedSettingGrouping = style({
+globalStyle(`${ImagerModifierGroups} li`, {
+  marginTop: vars.spacing.medium,
+});
+
+export const ImageModifierGrouping = style({
   marginTop: vars.spacing.medium,
 });
 
@@ -29,4 +30,16 @@ export const MenuButton = style({
 
 globalStyle(`${MenuButton}> h4`, {
   color: "#e7ba71",
+});
+
+export const ModifierListStyle = style({
+  // marginBottom: vars.spacing.small,
+  paddingLeft: 0,
+  listStyleType: "none",
+  display: "flex",
+  flexWrap: "wrap",
+});
+
+globalStyle(`${ModifierListStyle} li`, {
+  margin: 0,
 });
