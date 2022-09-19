@@ -88,7 +88,9 @@ export default function ImageModifers() {
         <ul className={ImagerModifierGroups}>
           {allModifiers.map((item, index) => {
             return (
+              // @ts-ignore
               <li key={item[0]}>
+                {/* @ts-ignore */}
                 <ModifierGrouping title={item[0]} tags={item[1]} />
               </li>
             );
