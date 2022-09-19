@@ -3,7 +3,7 @@ import { useCreateUI } from "../creationPanelUIStore";
 
 import {
   AdvancedSettingsList,
-  AdvancedSettingItem, // @ts-ignore
+  AdvancedSettingItem, // @ts-expect-error
 } from "./advancedsettings.css.ts";
 
 import ImprovementSettings from "./improvementSettings";

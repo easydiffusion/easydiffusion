@@ -2,15 +2,15 @@ import React from "react";
 
 import { CompletedImagesType } from "../index";
 
-type CurrentDisplayProps = {
-  images: CompletedImagesType[] | null;
-  setCurrentDisplay: (image: CompletedImagesType) => void;
-};
-
 import {
   completedImagesMain,
-  imageContain, //@ts-ignore
+  imageContain, // @ts-expect-error
 } from "./completedImages.css.ts";
+
+interface CurrentDisplayProps {
+  images: CompletedImagesType[] | null;
+  setCurrentDisplay: (image: CompletedImagesType) => void;
+}
 
 export default function CompletedImages({
   images,
@@ -23,7 +23,7 @@ export default function CompletedImages({
 
   return (
     <div className={completedImagesMain}>
-      {images &&
+      {images != null &&
         images.map((image, index) => {
           if (void 0 === image) {
             console.warn(`image ${index} is undefined`);

@@ -3,7 +3,7 @@ import { useImageCreate } from "../../../../../stores/imageCreateStore";
 import { useCreateUI } from "../../creationPanelUIStore";
 
 import {
-  MenuButton, //@ts-ignore
+  MenuButton, // @ts-expect-error
 } from "../advancedsettings.css.ts";
 // todo: move this someplace more global
 const IMAGE_DIMENSIONS = [

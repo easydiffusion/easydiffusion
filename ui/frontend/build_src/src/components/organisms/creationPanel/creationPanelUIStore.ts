@@ -1,7 +1,6 @@
 import create from "zustand";
 import produce from "immer";
-import { persist } from "zustand/middleware";
-import { devtools } from "zustand/middleware";
+import { persist, devtools } from "zustand/middleware";
 
 export type ImageCreationUIOptions = {
   isOpenAdvancedSettings: boolean;

@@ -1,20 +1,20 @@
 // @ts-nocheck
 import React, { useRef, useState, useEffect } from "react";
 
+import {
+  DrawImageMain, // @ts-expect-error
+} from "./drawImage.css.ts";
+
 // https://github.com/embiem/react-canvas-draw
 
-type DrawImageProps = {
+interface DrawImageProps {
   imageData: string;
   brushSize: string;
 
   brushShape: string;
   brushColor: string;
   isErasing: boolean;
-};
-
-import {
-  DrawImageMain, //@ts-ignore
-} from "./drawImage.css.ts";
+}
 
 export default function DrawImage({
   imageData,
@@ -42,7 +42,7 @@ export default function DrawImage({
   useEffect(() => {
     // when the brush color changes, change the color of all the
     // drawn pixels to the new color
-    if (drawingRef.current) {
+    if (drawingRef.current != null) {
       const ctx = drawingRef.current.getContext("2d");
       const imageData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
       const data = imageData.data;
@@ -72,7 +72,7 @@ export default function DrawImage({
   ) => {
     setIsUpdating(false);
     const canvas = drawingRef.current;
-    if (canvas) {
+    if (canvas != null) {
       const data = canvas.toDataURL();
       // TODO: SEND THIS TO THE STATE
     }
@@ -80,7 +80,7 @@ export default function DrawImage({
 
   const _drawCanvas = (x, y, brushSize, brushShape, brushColor) => {
     const canvas = drawingRef.current;
-    if (canvas) {
+    if (canvas != null) {
       const ctx = canvas.getContext("2d");
       if (isErasing) {
         // stack overflow https://stackoverflow.com/questions/10396991/clearing-circular-regions-from-html5-canvas
@@ -101,7 +101,7 @@ export default function DrawImage({
 
   const _drawCursor = (x, y, brushSize, brushShape, brushColor) => {
     const canvas = cursorRef.current;
-    if (canvas) {
+    if (canvas != null) {
       const ctx = canvas.getContext("2d");
       ctx.beginPath();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -146,7 +146,7 @@ export default function DrawImage({
   // function for external use
   const fillCanvas = () => {
     const canvas = drawingRef.current;
-    if (canvas) {
+    if (canvas != null) {
       const ctx = canvas.getContext("2d");
       ctx.fillStyle = brushColor;
       ctx.fillRect(0, 0, canvas.width, canvas.height);

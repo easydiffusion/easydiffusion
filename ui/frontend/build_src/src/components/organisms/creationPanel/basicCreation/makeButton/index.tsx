@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 import { useRandomSeed } from "../../../../../utils";
 
 import {
-  MakeButtonStyle, // @ts-ignore
+  MakeButtonStyle, // @ts-expect-error
 } from "./makeButton.css.ts";
 
 import { useTranslation } from "react-i18next";
@@ -65,7 +65,7 @@ export default function MakeButton() {
         // updated the number of images to make
         num_outputs: num,
         // update the seed
-        seed: seed,
+        seed,
       });
     });
 

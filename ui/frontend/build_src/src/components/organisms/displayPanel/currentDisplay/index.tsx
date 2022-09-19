@@ -7,12 +7,13 @@ import {
 
 import { CompletedImagesType } from "../index";
 
-type CurrentDisplayProps = {
+interface CurrentDisplayProps {
   image: CompletedImagesType | null;
-};
+}
 
 export default function CurrentDisplay({ image }: CurrentDisplayProps) {
-  const { info, data } = image || { info: null, data: null };
+  // @ts-ignore
+  const { info, data } = image != null || { info: null, data: null };
 
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
 
@@ -26,9 +27,9 @@ export default function CurrentDisplay({ image }: CurrentDisplayProps) {
       use_upscale,
       width,
       height,
-    } = info!;
+    } = info;
 
-    //Most important information is the prompt
+    // Most important information is the prompt
     let underscoreName = prompt.replace(/[^a-zA-Z0-9]/g, "_");
     underscoreName = underscoreName.substring(0, 100);
     // name and the top level metadata
@@ -43,7 +44,7 @@ export default function CurrentDisplay({ image }: CurrentDisplayProps) {
     // Add the width and height
     fileName += `_${width}x${height}`;
     // add the file extension
-    fileName += `.png`;
+    fileName += ".png";
     // return fileName
     return fileName;
   };
@@ -61,10 +62,10 @@ export default function CurrentDisplay({ image }: CurrentDisplayProps) {
 
   return (
     <div className="current-display">
-      {image && (
+      {image != null && (
         <div>
-          <p> {info!.prompt}</p>
-          <GeneratedImage imageData={data!} metadata={info!}></GeneratedImage>
+          <p> {info.prompt}</p>
+          <GeneratedImage imageData={data} metadata={info}></GeneratedImage>
 
           <div>
             <button onClick={_handleSave}>Save</button>

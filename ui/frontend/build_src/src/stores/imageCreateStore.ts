@@ -250,7 +250,7 @@ export const useImageCreate = create<ImageCreateState>(
     },
 
     isUsingUpscaling: () => {
-      const isUsing = get().getValueForRequestKey("use_upscale") != "";
+      const isUsing = get().getValueForRequestKey("use_upscale") !== "";
       return isUsing;
     },
 

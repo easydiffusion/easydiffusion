@@ -4,15 +4,15 @@ import { ImageRequest, useImageCreate } from "../../../stores/imageCreateStore";
 
 import {
   generatedImageMain,
-  image, //@ts-ignore
+  image, // @ts-expect-error
 } from "./generatedImage.css.ts";
 
-type GeneretaedImageProps = {
+interface GeneretaedImageProps {
   imageData: string;
   metadata: ImageRequest;
   className?: string;
   // children: never[];
-};
+}
 
 export default function GeneratedImage({
   imageData,

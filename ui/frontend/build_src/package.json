@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "lint": "eslint --ext .tsx --fix src",
     "pretty": "prettier --write .",
     "dev": "vite",
     "build": "tsc && vite build --emptyOutDir",
@@ -29,10 +30,21 @@
     "@types/react": "^18.0.17",
     "@types/react-dom": "^18.0.6",
     "@types/uuid": "^8.3.4",
+    "@typescript-eslint/eslint-plugin": "^5.37.0",
+    "@typescript-eslint/parser": "^5.37.0",
     "@vitejs/plugin-react": "^2.0.1",
+    "eslint": "^8.23.1",
+    "eslint-config-standard-with-typescript": "^23.0.0",
+    "eslint-plugin-i18n-json": "^4.0.0",
+    "eslint-plugin-i18next": "^6.0.0-4",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.2.5",
+    "eslint-plugin-promise": "^6.0.1",
+    "eslint-plugin-react": "^7.31.8",
     "prettier": "^2.7.1",
-    "typescript": "^4.6.4",
-    "vite": "^3.0.7"
+    "typescript": "^4.8.3",
+    "vite": "^3.0.7",
+    "vite-plugin-eslint": "^1.8.1"
   },
   "overrides": {
     "@vanilla-extract/vite-plugin": {

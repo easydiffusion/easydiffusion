@@ -13,7 +13,7 @@ import "./creationPanel.css";
 
 import {
   CreationPaneMain,
-  InpaintingSlider, // @ts-ignore
+  InpaintingSlider, // @ts-expect-error
 } from "./creationpane.css.ts";
 
 import BasicCreation from "./basicCreation";
