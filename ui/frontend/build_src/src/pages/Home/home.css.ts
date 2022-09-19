@@ -48,4 +48,6 @@ export const DisplayLayout = style({
 
 export const FooterLayout = style({
   gridArea: "footer",
+  display: "flex",
+  justifyContent: "center",
 });
