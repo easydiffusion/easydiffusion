@@ -11,6 +11,8 @@ import {
   HeaderDisplayMain, // @ts-expect-error
 } from "./headerDisplay.css.ts";
 
+import LanguageDropdown from "./languageDropdown";
+
 export default function HeaderDisplay() {
   const { t } = useTranslation();
 
@@ -43,6 +45,8 @@ export default function HeaderDisplay() {
         {t("title")} {version} {release}{" "}
       </h1>
       <StatusDisplay className="status-display"></StatusDisplay>
+
+      <LanguageDropdown></LanguageDropdown>
     </div>
   );
 }
