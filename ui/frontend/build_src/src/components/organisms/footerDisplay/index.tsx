@@ -9,7 +9,11 @@ export default function FooterDisplay() {
     <div id="footer" className="panel-box">
       <p>
         If you found this project useful and want to help keep it alive, please{" "}
-        <a href="https://ko-fi.com/cmdr2_stablediffusion_ui" target="_blank">
+        <a
+          href="https://ko-fi.com/cmdr2_stablediffusion_ui"
+          target="_blank"
+          rel="noreferrer"
+        >
           <img src={`${API_URL}/kofi.png`} id="coffeeButton" />
         </a>{" "}
         to help cover the cost of development and maintenance! Thank you for
@@ -17,13 +21,18 @@ export default function FooterDisplay() {
       </p>
       <p>
         Please feel free to join the{" "}
-        <a href="https://discord.com/invite/u9yhsFmEkB" target="_blank">
+        <a
+          href="https://discord.com/invite/u9yhsFmEkB"
+          target="_blank"
+          rel="noreferrer"
+        >
           discord community
         </a>{" "}
         or{" "}
         <a
           href="https://github.com/cmdr2/stable-diffusion-ui/issues"
           target="_blank"
+          rel="noreferrer"
         >
           file an issue
         </a>{" "}
@@ -43,6 +52,7 @@ export default function FooterDisplay() {
           <a
             href="https://github.com/cmdr2/stable-diffusion-ui/blob/main/LICENSE"
             target="_blank"
+            rel="noreferrer"
           >
             the license
           </a>

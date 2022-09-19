@@ -6,7 +6,7 @@ import {
   ImageInput,
   ImageInputButton,
   ImageFixer,
-  XButton, // @ts-ignore
+  XButton, // @ts-expect-error
 } from "./seedImage.css.ts";
 import { useImageCreate } from "../../../../../stores/imageCreateStore";
 
@@ -27,13 +27,13 @@ export default function SeedImage(_props: any) {
     imageInputRef.current?.click();
   };
   const _handleFileSelect = (event: ChangeEvent<HTMLInputElement>) => {
-    //@ts-ignore
+    // @ts-expect-error
     const file = event.target.files[0];
 
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        if (e.target) {
+        if (e.target != null) {
           setRequestOption("init_image", e.target.result);
         }
       };

@@ -20,19 +20,19 @@ import {
   displayContainer,
   // CurrentDisplay,
   previousImages,
-  previousImage, //@ts-ignore
+  previousImage, // @ts-expect-error
 } from "./displayPanel.css.ts";
 
-export type CompletedImagesType = {
+export interface CompletedImagesType {
   id: string;
   data: string;
   info: ImageRequest;
-};
+}
 
 export default function DisplayPanel() {
   const dingRef = useRef<HTMLAudioElement>(null);
   const isSoundEnabled = useImageCreate((state) => state.isSoundEnabled());
-  // @ts-ignore
+  // @ts-expect-error
   const { id, options } = useImageQueue((state) => state.firstInQueue());
   const removeFirstInQueue = useImageQueue((state) => state.removeFirstInQueue);
   const [currentImage, setCurrentImage] = useState<CompletedImagesType | null>(
@@ -41,7 +41,7 @@ export default function DisplayPanel() {
 
   const { status, data } = useQuery(
     [MakeImageKey, id],
-    () => doMakeImage(options),
+    async () => await doMakeImage(options),
     {
       enabled: void 0 !== id,
     }
@@ -84,13 +84,13 @@ export default function DisplayPanel() {
       const temp = completedQueries
         .map((query, index) => {
           if (void 0 !== query) {
-            //@ts-ignore
+            // @ts-ignore
             return query.output.map((data) => {
               // @ts-ignore
               return {
                 id: `${completedIds[index]}-${data.seed}`,
                 data: data.data,
-                //@ts-ignore
+                // @ts-ignore
                 info: { ...query.request, seed: data.seed },
               };
             });

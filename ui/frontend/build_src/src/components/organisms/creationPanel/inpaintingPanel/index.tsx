@@ -6,7 +6,7 @@ import { useImageCreate } from "../../../../stores/imageCreateStore";
 import {
   InpaintingPanelMain,
   InpaintingControls,
-  InpaintingControlRow, // @ts-ignore
+  InpaintingControlRow, // @ts-expect-error
 } from "./inpaintingPanel.css.ts";
 
 export default function InpaintingPanel() {

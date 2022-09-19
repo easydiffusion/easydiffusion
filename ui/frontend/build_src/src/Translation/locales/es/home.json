@@ -1,38 +1,20 @@
 {
   "title": "Stable Diffusion UI",
   "description": "",
-  "navbar": {
-  },
-  "land-cre": {
-   },
-  "land-pre": {
-  },
-  "home": {
-  },
-  "in-paint": {
-  },
-  "settings": {
-
-  },
-  "tags": {
-
-  },
-  "preview-prompt": {
-
-  },
+  "navbar": {},
+  "land-cre": {},
+  "land-pre": {},
+  "home": {},
+  "in-paint": {},
+  "settings": {},
+  "tags": {},
+  "preview-prompt": {},
   "current-task": "",
   "recent-create": "",
-  "popup": {
-  },
-  "history": {
-  },
-  "advanced-settings": {
-
-  },
-  "storage": {
-  
-  },
-  "import": {
-  },
+  "popup": {},
+  "history": {},
+  "advanced-settings": {},
+  "storage": {},
+  "import": {},
   "about": ""
 }

@@ -3,7 +3,7 @@ import { useImageCreate } from "../../../../stores/imageCreateStore";
 
 import {
   CreationBasicMain,
-  PromptDisplay, // @ts-ignore
+  PromptDisplay, // @ts-expect-error
 } from "./basicCreation.css.ts";
 
 import SeedImage from "./seedImage";

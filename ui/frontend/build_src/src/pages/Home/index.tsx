@@ -5,7 +5,7 @@ import {
   HeaderLayout,
   CreateLayout,
   DisplayLayout,
-  FooterLayout, // @ts-ignore
+  FooterLayout, // @ts-expect-error
 } from "./home.css.ts";
 
 import { useQuery } from "@tanstack/react-query";
@@ -45,7 +45,7 @@ function Home({ className }: { className: any }) {
     if (statusMods === "success") {
       setAllModifiers(dataMoads);
     } else if (statusMods === "error") {
-      // @ts-ignore
+      // @ts-expect-error
       setAllModifiers(Mockifiers);
     }
   }, [setRequestOption, statusMods, dataMoads]);

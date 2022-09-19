@@ -24,7 +24,7 @@ export default function BetaMode() {
   // the toggle config
   const { status: toggleStatus, data: toggleData } = useQuery(
     [KEY_TOGGLE_CONFIG],
-    () => toggleBetaConfig(branchToGetNext),
+    async () => await toggleBetaConfig(branchToGetNext),
     {
       enabled: shouldSetCofig,
     }
@@ -47,7 +47,7 @@ export default function BetaMode() {
 
   useEffect(() => {
     if (toggleStatus === "success") {
-      if (toggleData[0] == "OK") {
+      if (toggleData[0] === "OK") {
         // force a refetch of the config
         queryClient.invalidateQueries([KEY_CONFIG]);
       }

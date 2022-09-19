@@ -5,10 +5,10 @@ import { KEY_CONFIG, getConfig } from "../../../api";
 
 import StatusDisplay from "./statusDisplay";
 
-import { useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next";
 
 import {
-  HeaderDisplayMain, //@ts-ignore
+  HeaderDisplayMain, // @ts-expect-error
 } from "./headerDisplay.css.ts";
 
 export default function HeaderDisplay() {
