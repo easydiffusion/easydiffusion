@@ -9,6 +9,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: "latest",
     sourceType: "module",
+    tsconfigRootDir: __dirname,
   },
   plugins: ["react"],
   extends: [
@@ -21,6 +22,7 @@ module.exports = {
     // general things turned off for now
     "prefer-const": "off",
     "no-debugger": "warn",
+    "eol-last": "off",
 
     "comma-dangle": ["off", "always-multiline"],
     "no-void": ["off"],

@@ -12,7 +12,6 @@ import {
  * Lots of these arent used yet, but once they are defined and useable then they can be set.
  */
 
-// Link color 0, 102, 204
 
 const colors = createThemeContract({
   brand: null,

@@ -8,6 +8,7 @@ export const PanelBox = style({
   padding: vars.spacing.medium,
   borderRadius: vars.trim.smallBorderRadius,
   marginBottom: vars.spacing.medium,
+  // TODO move this to the theme
   boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15)",
 });
 
@@ -22,7 +23,6 @@ globalStyle(`${PanelBox} .panel-box-toggle-btn`, {
   border: "0 none",
   cursor: "pointer",
   padding: "0",
-  marginBottom: vars.spacing.small,
 });
 
 export const SettingItem = style({
