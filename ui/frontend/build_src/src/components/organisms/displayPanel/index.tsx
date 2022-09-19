@@ -39,15 +39,37 @@ export default function DisplayPanel() {
     null
   );
 
+
+
+  const [isEnabled, setIsEnabled] = useState(false);
+
+  const [isLoading, setIsLoading] = useState(false);
+
+
   const { status, data } = useQuery(
     [MakeImageKey, id],
     async () => await doMakeImage(options),
     {
-      enabled: void 0 !== id,
+      enabled: isEnabled
+      // void 0 !== id,
     }
   );
+  // update the enabled state when the id changes
+  useEffect(() => {
+    setIsEnabled(void 0 !== id)
+  }, [id]);
 
   useEffect(() => {
+    if (isEnabled && status === "loading") {
+      setIsLoading(true);
+    } else {
+      setIsLoading(false);
+    }
+  }, [isEnabled, status]);
+
+
+  useEffect(() => {
+    console.log("status", status);
     // query is done
     if (status === "success") {
       // check to make sure that the image was created
@@ -76,7 +98,7 @@ export default function DisplayPanel() {
     const completedQueries = completedIds.map((id) => {
       const imageData = queryClient.getQueryData([MakeImageKey, id]);
       return imageData;
-    });
+    }) as ImageRequest[];
 
     if (completedQueries.length > 0) {
       // map the completedImagesto a new array
@@ -98,10 +120,12 @@ export default function DisplayPanel() {
         })
         .flat()
         .reverse()
-        .filter((item) => void 0 !== item); // remove undefined items
+        .filter((item) => void 0 !== item) as CompletedImagesType[]; // remove undefined items
 
       setCompletedImages(temp);
-      debugger;
+
+      console.log("temp", temp);
+
       setCurrentImage(temp[0] || null);
     } else {
       setCompletedImages([]);
@@ -109,11 +133,15 @@ export default function DisplayPanel() {
     }
   }, [setCompletedImages, setCurrentImage, queryClient, completedIds]);
 
+  useEffect(() => {
+    console.log("completedImages", currentImage);
+  }, [currentImage]);
+
   return (
     <div className={displayPanel}>
       <AudioDing ref={dingRef}></AudioDing>
       <div className={displayContainer}>
-        <CurrentDisplay image={currentImage}></CurrentDisplay>
+        <CurrentDisplay isLoading={isLoading} image={currentImage}></CurrentDisplay>
       </div>
       <div className={previousImages}>
         <CompletedImages

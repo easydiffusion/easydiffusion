@@ -8,15 +8,17 @@ import {
 import { CompletedImagesType } from "../index";
 
 interface CurrentDisplayProps {
+  isLoading: boolean;
   image: CompletedImagesType | null;
 }
 
-export default function CurrentDisplay({ image }: CurrentDisplayProps) {
+export default function CurrentDisplay({ isLoading, image }: CurrentDisplayProps) {
   // @ts-ignore
-  const { info, data } = image != null || { info: null, data: null };
+  const { info, data } = image;
 
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
-
+  console.log('current data', data);
+  console.log('current info', info);
   const createFileName = () => {
     const {
       prompt,
@@ -28,6 +30,9 @@ export default function CurrentDisplay({ image }: CurrentDisplayProps) {
       width,
       height,
     } = info;
+
+
+
 
     // Most important information is the prompt
     let underscoreName = prompt.replace(/[^a-zA-Z0-9]/g, "_");
@@ -60,19 +65,22 @@ export default function CurrentDisplay({ image }: CurrentDisplayProps) {
     setRequestOption("init_image", data);
   };
 
+
   return (
     <div className="current-display">
-      {image != null && (
-        <div>
-          <p> {info.prompt}</p>
-          <GeneratedImage imageData={data} metadata={info}></GeneratedImage>
-
+      {isLoading
+        ? <h4 className="loading">Loading...</h4>
+        : (image != null && (
           <div>
-            <button onClick={_handleSave}>Save</button>
-            <button onClick={_handleUseAsInput}>Use as Input</button>
+            <p> {info?.prompt}</p>
+            <GeneratedImage imageData={data} metadata={info}></GeneratedImage>
+            <div>
+              <button onClick={_handleSave}>Save</button>
+              <button onClick={_handleUseAsInput}>Use as Input</button>
+            </div>
           </div>
-        </div>
-      )}
+        )) || <h4 className="no-image">Try Making a new image!</h4>}
+
       <div></div>
     </div>
   );
