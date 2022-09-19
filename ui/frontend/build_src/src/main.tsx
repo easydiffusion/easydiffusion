@@ -18,6 +18,7 @@ const queryClient = new QueryClient({
       refetchOnReconnect: false,
       refetchOnMount: false,
       staleTime: Infinity,
+      cacheTime: Infinity,
     },
   },
 });
