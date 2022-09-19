@@ -11,7 +11,7 @@ export const API_URL = import.meta.env.DEV ? "http://localhost:9000" : "";
 export const HEALTH_PING_INTERVAL = 5000; // 5 seconds
 export const healthPing = async () => {
   const pingUrl = `${API_URL}/ping`;
-  let response = await fetch(pingUrl);
+  const response = await fetch(pingUrl);
   const data = await response.json();
   return data;
 };

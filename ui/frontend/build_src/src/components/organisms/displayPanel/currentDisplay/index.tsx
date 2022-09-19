@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import React from "react";
 import GeneratedImage from "../../../molecules/generatedImage";
 import {
@@ -27,7 +28,7 @@ export default function CurrentDisplay({ isLoading, image }: CurrentDisplayProps
       use_upscale,
       width,
       height,
-    } = info!;
+    } = info! as ImageRequest;
 
 
     // Most important information is the prompt

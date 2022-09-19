@@ -18,7 +18,7 @@ import {
 
 import BasicCreation from "./basicCreation";
 
-export default function CreationPanel() {
+export default function CreationPanel () {
   const isInPaintingMode = useImageCreate((state) => state.isInpainting);
   return (
     <>

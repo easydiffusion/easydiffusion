@@ -16,7 +16,7 @@ interface DrawImageProps {
   isErasing: boolean;
 }
 
-export default function DrawImage({
+export default function DrawImage ({
   imageData,
   brushSize,
   brushShape,

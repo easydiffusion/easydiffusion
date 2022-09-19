@@ -17,8 +17,8 @@ interface ImageQueueState {
 // figure out why TS is complaining about this
 // @ts-ignore
 export const useImageQueue = create<ImageQueueState>((set, get) => ({
-  images: new Array(),
-  completedImageIds: new Array(),
+  images: [],
+  completedImageIds: [],
   // use produce to make sure we don't mutate state
   addNewImage: (id: string, imgRec: ImageRequest, isRandom = false) => {
     set(

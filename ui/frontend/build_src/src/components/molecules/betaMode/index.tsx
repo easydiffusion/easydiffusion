@@ -34,9 +34,9 @@ export default function BetaMode() {
   // TODO: make this a custom hook
   useEffect(() => {
     if (configStatus === "success") {
-      const { update_branch } = configData;
+      const { update_branch: updateBranch } = configData;
 
-      if (update_branch === "main") {
+      if (updateBranch === "main") {
         setBranchToGetNext("beta");
       } else {
         // setIsBeta(true);

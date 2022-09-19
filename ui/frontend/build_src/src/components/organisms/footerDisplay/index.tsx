@@ -8,7 +8,7 @@ import {
 
 import { API_URL } from "../../../api";
 
-export default function FooterDisplay() {
+export default function FooterDisplay () {
   return (
     <div className={FooterDisplayMain}>
       <p>

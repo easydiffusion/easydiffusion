@@ -15,7 +15,7 @@ import { useImageCreate } from "../../../../../stores/imageCreateStore";
 export default function SeedImage(_props: any) {
   const imageInputRef = useRef<HTMLInputElement>(null);
 
-  const init_image = useImageCreate((state) =>
+  const initImage = useImageCreate((state) =>
     state.getValueForRequestKey("init_image")
   );
 
@@ -70,10 +70,10 @@ export default function SeedImage(_props: any) {
       </div>
 
       <div className={ImageFixer}>
-        {init_image && (
+        {initImage && (
           <>
             <div>
-              <img src={init_image} width="100" height="100" />
+              <img src={initImage} width="100" height="100" />
               <button className={XButton} onClick={_handleClearImage}>
                 X
               </button>

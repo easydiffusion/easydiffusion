@@ -1,4 +1,4 @@
-import React, { useRef, useState, ChangeEvent, MouseEventHandler } from "react";
+import React, { useRef, useState, ChangeEvent } from "react";
 import DrawImage from "../../../molecules/drawImage";
 
 import { useImageCreate } from "../../../../stores/imageCreateStore";
@@ -18,7 +18,7 @@ export default function InpaintingPanel() {
   const [brushColor, setBrushColor] = useState("#fff");
   const [isErasing, setIsErasing] = useState(false);
 
-  const init_image = useImageCreate((state) =>
+  const initImage = useImageCreate((state) =>
     state.getValueForRequestKey("init_image")
   );
 
@@ -48,7 +48,7 @@ export default function InpaintingPanel() {
     <div className={InpaintingPanelMain}>
       <DrawImage
         // ref={drawingRef}
-        imageData={init_image}
+        imageData={initImage}
         brushSize={brushSize}
         brushShape={brushShape}
         brushColor={brushColor}

@@ -7,7 +7,7 @@ import { darkTheme, lightTheme } from "./styles/theme/index.css.ts";
 import "./Translation/config";
 const location = new ReactLocation();
 
-function App() {
+function App () {
   // just check for the theme one 1 time
 
   // var { matches } = window.matchMedia('(prefers-color-scheme: dark)')

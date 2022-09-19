@@ -14,10 +14,10 @@ import {
 
 export default function GpuSettings() {
   const turbo = useImageCreate((state) => state.getValueForRequestKey("turbo"));
-  const use_cpu = useImageCreate((state) =>
+  const useCpu = useImageCreate((state) =>
     state.getValueForRequestKey("use_cpu")
   );
-  const use_full_precision = useImageCreate((state) =>
+  const useFullPrecision = useImageCreate((state) =>
     state.getValueForRequestKey("use_full_precision")
   );
 
@@ -48,7 +48,7 @@ export default function GpuSettings() {
             <label>
               <input
                 type="checkbox"
-                checked={use_cpu}
+                checked={useCpu}
                 onChange={(e) => setRequestOption("use_cpu", e.target.checked)}
               />
               Use CPU instead of GPU (warning: this will be *very* slow)
@@ -57,7 +57,7 @@ export default function GpuSettings() {
           <div className={SettingItem}>
             <label>
               <input
-                checked={use_full_precision}
+                checked={useFullPrecision}
                 onChange={(e) =>
                   setRequestOption("use_full_precision", e.target.checked)
                 }

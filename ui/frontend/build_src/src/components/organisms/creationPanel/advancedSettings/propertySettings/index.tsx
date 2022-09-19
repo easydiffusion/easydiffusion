@@ -39,15 +39,15 @@ export default function PropertySettings() {
   const steps = useImageCreate((state) =>
     state.getValueForRequestKey("num_inference_steps")
   );
-  const guidance_scale = useImageCreate((state) =>
+  const guidanceScale = useImageCreate((state) =>
     state.getValueForRequestKey("guidance_scale")
   );
 
-  const init_image = useImageCreate((state) =>
+  const initImage = useImageCreate((state) =>
     state.getValueForRequestKey("init_image")
   );
 
-  const prompt_strength = useImageCreate((state) =>
+  const promptStrength = useImageCreate((state) =>
     state.getValueForRequestKey("prompt_strength")
   );
 
@@ -106,7 +106,7 @@ export default function PropertySettings() {
             <label>
               Guidance Scale:
               <input
-                value={guidance_scale}
+                value={guidanceScale}
                 onChange={(e) =>
                   setRequestOption("guidance_scale", e.target.value)
                 }
@@ -116,15 +116,15 @@ export default function PropertySettings() {
                 step=".1"
               />
             </label>
-            <span>{guidance_scale}</span>
+            <span>{guidanceScale}</span>
           </div>
 
-          {init_image && (
+          {initImage && (
             <div className={SettingItem}>
               <label>
                 Prompt Strength:{" "}
                 <input
-                  value={prompt_strength}
+                  value={promptStrength}
                   onChange={(e) =>
                     setRequestOption("prompt_strength", e.target.value)
                   }
@@ -134,7 +134,7 @@ export default function PropertySettings() {
                   step=".05"
                 />
               </label>
-              <span>{prompt_strength}</span>
+              <span>{promptStrength}</span>
             </div>
           )}
 

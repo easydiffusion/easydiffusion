@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import React, { useEffect, useState } from "react";
 
 import { useImageCreate } from "../../../../../stores/imageCreateStore";
@@ -26,7 +27,7 @@ export default function MakeButton() {
     // the request that we have built
     const req = builtRequest();
     // the actual number of request we will make
-    let requests = [];
+    const requests = [];
     // the number of images we will make
     let { num_outputs } = req;
 

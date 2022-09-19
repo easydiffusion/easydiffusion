@@ -18,11 +18,11 @@ export default function ImprovementSettings() {
 
   const isUsingUpscaling = useImageCreate((state) => state.isUsingUpscaling());
 
-  const use_upscale = useImageCreate((state) =>
+  const useUpscale = useImageCreate((state) =>
     state.getValueForRequestKey("use_upscale")
   );
 
-  const show_only_filtered_image = useImageCreate((state) =>
+  const filteredOnly = useImageCreate((state) =>
     state.getValueForRequestKey("show_only_filtered_image")
   );
 
@@ -45,7 +45,7 @@ export default function ImprovementSettings() {
   useEffect(() => {
 
     // if either are true we arent disabled
-    if (isUsingFaceCorrection || use_upscale) {
+    if (isUsingFaceCorrection || useUpscale) {
       setIsFilteringDisabled(false);
     } else {
       setIsFilteringDisabled(true);
@@ -79,7 +79,7 @@ export default function ImprovementSettings() {
               <select
                 id="upscale_model"
                 name="upscale_model"
-                value={use_upscale}
+                value={useUpscale}
                 onChange={(e) => {
                   setRequestOption("use_upscale", e.target.value);
                 }}
@@ -97,7 +97,7 @@ export default function ImprovementSettings() {
               <input
                 disabled={isFilteringDisabled}
                 type="checkbox"
-                checked={show_only_filtered_image}
+                checked={filteredOnly}
                 onChange={(e) =>
                   setRequestOption("show_only_filtered_image", e.target.checked)
                 }

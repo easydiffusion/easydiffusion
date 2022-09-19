@@ -16,7 +16,7 @@ interface CurrentDisplayProps {
   removeImages: () => void;
 }
 
-export default function CompletedImages({
+export default function CompletedImages ({
   images,
   setCurrentDisplay,
   removeImages,

@@ -16,7 +16,7 @@ import GpuSettings from "./gpuSettings";
 
 import BetaMode from "../../../molecules/betaMode";
 
-function SettingsList() {
+function SettingsList () {
   return (
     <ul className={AdvancedSettingsList}>
       <li className={AdvancedSettingGrouping}>
@@ -39,7 +39,7 @@ function SettingsList() {
   );
 }
 
-export default function AdvancedSettings() {
+export default function AdvancedSettings () {
   const advancedSettingsIsOpen = useCreateUI(
     (state) => state.isOpenAdvancedSettings
   );

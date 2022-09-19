@@ -9,40 +9,50 @@ module.exports = {
   parserOptions: {
     ecmaVersion: "latest",
     sourceType: "module",
+    ecmaFeatures: {
+      jsx: true,
+    },
     tsconfigRootDir: __dirname,
   },
+
   plugins: ["react"],
+
   extends: [
     "plugin:react/recommended",
     "standard-with-typescript",
     "plugin:i18next/recommended",
     "plugin:i18n-json/recommended",
   ],
+  settings: {
+    react: {
+      version: "detect",
+    },
+  },
   rules: {
     // general things turned off for now
-    "prefer-const": "off",
     "no-debugger": "warn",
     "eol-last": "off",
-
     "comma-dangle": ["off", "always-multiline"],
     "no-void": ["off"],
     "array-callback-return": ["off"],
-
-    "react/display-name": "warn",
-    quotes: ["off", "double"],
-    semi: ["off", "always"],
-    "no-multiple-empty-lines": ["off", { max: 2, maxEOF: 1 }],
-    yoda: ["off"],
-    eqeqeq: ["off"],
     "spaced-comment": ["off"],
     "padded-blocks": ["off"],
+    "no-multiple-empty-lines": ["off", { max: 2, maxEOF: 1 }],
+    quotes: ["off", "double"],
+    semi: ["off", "always"],
+    yoda: ["off"],
+    eqeqeq: ["off"],
+    "react/display-name": "warn",
+
+    // TS THINGS WE DONT WANT
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
+
+    // TS WARNINGS WE WANT
+    "@typescript-eslint/no-unused-vars": "warn",
 
     // TS  things turned off for now
-    "@typescript-eslint/ban-ts-comment": "off",
-    "@typescript-eslint/no-array-constructor": "off",
-    "@typescript-eslint/explicit-function-return-type": "off",
-    "@typescript-eslint/no-unused-vars": "off",
-    "@typescript-eslint/naming-convention": "off",
+    // "@typescript-eslint/naming-convention": "off",
     "@typescript-eslint/restrict-template-expressions": "off",
     "@typescript-eslint/prefer-optional-chain": "off",
     "@typescript-eslint/no-non-null-assertion": "off",

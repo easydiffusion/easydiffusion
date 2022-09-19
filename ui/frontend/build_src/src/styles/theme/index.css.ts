@@ -79,7 +79,7 @@ const app = createGlobalTheme(":root", {
 
     },
   },
-  colors: colors,
+  colors,
 });
 
 export const darkTheme = createTheme(colors, {

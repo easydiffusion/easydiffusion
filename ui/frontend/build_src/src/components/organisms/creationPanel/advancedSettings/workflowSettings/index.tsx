@@ -12,12 +12,12 @@ import {
 } from "../advancedsettings.css.ts";
 
 export default function WorkflowSettings() {
-  const num_outputs = useImageCreate((state) =>
+  const numOutputs = useImageCreate((state) =>
     state.getValueForRequestKey("num_outputs")
   );
   const parallelCount = useImageCreate((state) => state.parallelCount);
   const isUseAutoSave = useImageCreate((state) => state.isUseAutoSave());
-  const save_to_disk_path = useImageCreate((state) =>
+  const diskPath = useImageCreate((state) =>
     state.getValueForRequestKey("save_to_disk_path")
   );
   const isSoundEnabled = useImageCreate((state) => state.isSoundEnabled());
@@ -46,7 +46,7 @@ export default function WorkflowSettings() {
               Number of images to make:{" "}
               <input
                 type="number"
-                value={num_outputs}
+                value={numOutputs}
                 onChange={(e) =>
                   setRequestOption("num_outputs", parseInt(e.target.value, 10))
                 }
@@ -76,7 +76,7 @@ export default function WorkflowSettings() {
             </label>
             <label>
               <input
-                value={save_to_disk_path}
+                value={diskPath}
                 onChange={(e) =>
                   setRequestOption("save_to_disk_path", e.target.value)
                 }

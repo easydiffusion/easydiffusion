@@ -24,12 +24,12 @@ export default function HeaderDisplay() {
   useEffect(() => {
     if (status === "success") {
       // TODO also pass down the actual version
-      const { update_branch } = data;
+      const { update_branch: updateBranch } = data;
 
       // just hard coded for now
       setVersion("v2.1");
 
-      if (update_branch === "main") {
+      if (updateBranch === "main") {
         setRelease("(stable)");
       } else {
         setRelease("(beta)");

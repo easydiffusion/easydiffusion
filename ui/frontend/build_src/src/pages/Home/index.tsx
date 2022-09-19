@@ -20,7 +20,7 @@ import CreationPanel from "../../components/organisms/creationPanel";
 import DisplayPanel from "../../components/organisms/displayPanel";
 import FooterDisplay from "../../components/organisms/footerDisplay";
 
-function Home({ className }: { className: any }) {
+function Home ({ className }: { className: any }) {
   // Get the original save directory
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
 

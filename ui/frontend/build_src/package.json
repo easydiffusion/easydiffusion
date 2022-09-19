@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "lint": "eslint --ext .tsx --fix src",
     "pretty": "prettier --write .",
     "dev": "vite",
     "build": "tsc && vite build --emptyOutDir",
