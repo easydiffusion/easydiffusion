@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 
 export default function MakeButton() {
   const { t } = useTranslation();
+
   const parallelCount = useImageCreate((state) => state.parallelCount);
   const builtRequest = useImageCreate((state) => state.builtRequest);
   const addNewImage = useImageQueue((state) => state.addNewImage);
@@ -81,7 +82,7 @@ export default function MakeButton() {
       onClick={makeImages}
       disabled={hasQueue}
     >
-      {t("make-img-btn")}
+      {t("home.make-img-btn")}
     </button>
   );
 }
