@@ -47,6 +47,7 @@ const colors = createThemeContract({
     accentDimmed: null,
   },
 
+  link: null,
   warning: null,
   error: null,
   success: null,
@@ -72,6 +73,7 @@ const app = createGlobalTheme(":root", {
       Body: "1em",
       Caption: ".75em",
       Overline: ".5em",
+
     },
   },
   colors: colors,
@@ -110,6 +112,7 @@ export const darkTheme = createTheme(colors, {
     accentDimmed: "#7d6641", // muted orange
   },
 
+  link: '#0066cc', // blue
   warning: "#f0ad4e",
   error: "#d9534f",
   success: "#5cb85c",
@@ -148,6 +151,7 @@ export const lightTheme = createTheme(colors, {
     accentDimmed: "#6B7280",
   },
 
+  link: '#0066cc', // blue
   warning: "yellow",
   error: "red",
   success: "green",

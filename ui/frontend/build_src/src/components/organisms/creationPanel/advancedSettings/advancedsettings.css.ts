@@ -3,6 +3,8 @@ import { style, globalStyle } from "@vanilla-extract/css";
 // @ts-ignore
 import { vars } from "../../../../styles/theme/index.css.ts";
 
+// import { PanelBox } from "../../../../styles/shared.css.ts";
+
 export const AdvancedSettingsList = style({
   fontSize: vars.fonts.sizes.Body,
   marginBottom: vars.spacing.small,

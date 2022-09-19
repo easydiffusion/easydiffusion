@@ -1,7 +1,7 @@
 .create-layout {
   padding: 10px;
 }
-.panel-box-toggle-btn {
+/* .panel-box-toggle-btn {
   display: block;
   width: 100%;
   text-align: left;
@@ -9,7 +9,7 @@
   color: #fff;
   border: 0 none;
   cursor: pointer;
-}
+} */
 
 .selected-tags {
   margin: 10px 0;

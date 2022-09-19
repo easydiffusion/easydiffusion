@@ -5,3 +5,8 @@
   align-items: center;
   justify-content: center;
 }
+
+#coffeeButton {
+  height: 23px;
+  transform: translateY(25%);
+}

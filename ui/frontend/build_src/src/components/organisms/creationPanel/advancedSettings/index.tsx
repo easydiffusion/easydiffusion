@@ -1,6 +1,9 @@
 import React, { useEffect } from "react";
 import { useCreateUI } from "../creationPanelUIStore";
 
+// @ts-expect-error
+import { PanelBox } from "../../../../styles/shared.css.ts";
+
 import {
   AdvancedSettingsList,
   AdvancedSettingItem, // @ts-expect-error
@@ -46,7 +49,7 @@ export default function AdvancedSettings() {
   );
 
   return (
-    <div className="panel-box">
+    <div className={PanelBox}>
       <button
         type="button"
         onClick={toggleAdvancedSettingsIsOpen}

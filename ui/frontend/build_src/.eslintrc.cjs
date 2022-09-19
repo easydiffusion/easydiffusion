@@ -60,9 +60,10 @@ module.exports = {
     "@typescript-eslint/no-unnecessary-type-assertion": "off",
     "@typescript-eslint/space-before-function-paren": "off",
 
-    // i18n stuff no string literal works
-    "i18next/no-literal-string": "warn",
+    // i18n stuff no string literal works but turned off for now
+    "i18next/no-literal-string": "off",
     // still need to figure out how to get this to work
+    // it should error if we dont haev all the keys in the translation file
     "i18n-json/identical-keys": [
       "error",
       {

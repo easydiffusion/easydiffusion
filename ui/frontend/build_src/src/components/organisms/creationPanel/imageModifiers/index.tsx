@@ -3,6 +3,9 @@ import React, { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { loadModifications } from "../../../../api";
 
+// @ts-expect-error
+import { PanelBox } from "../../../../styles/shared.css.ts";
+
 import { useImageCreate } from "../../../../stores/imageCreateStore";
 import { useCreateUI } from "../creationPanelUIStore";
 
@@ -72,7 +75,7 @@ export default function ImageModifers() {
   };
 
   return (
-    <div className="panel-box">
+    <div className={PanelBox}>
       <button
         type="button"
         onClick={handleClick}
