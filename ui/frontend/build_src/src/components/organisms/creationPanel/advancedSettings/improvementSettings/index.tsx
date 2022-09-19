@@ -4,7 +4,7 @@ import { useImageCreate } from "../../../../../stores/imageCreateStore";
 import { useCreateUI } from "../../creationPanelUIStore";
 
 import {
-  SettingItem // @ts-expect-error
+  SettingItem, // @ts-expect-error
 } from "../../../../../styles/shared.css.ts";
 import {
   MenuButton, // @ts-expect-error
@@ -43,7 +43,6 @@ export default function ImprovementSettings() {
   const [isFilteringDisabled, setIsFilteringDisabled] = useState(false);
   // should probably be a store selector
   useEffect(() => {
-
     // if either are true we arent disabled
     if (isUsingFaceCorrection || useUpscale) {
       setIsFilteringDisabled(false);

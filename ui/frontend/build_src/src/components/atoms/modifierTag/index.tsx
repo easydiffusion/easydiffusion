@@ -5,7 +5,7 @@ interface ModifierTagProps {
   name: string;
 }
 
-export default function ModifierTag ({ name }: ModifierTagProps) {
+export default function ModifierTag({ name }: ModifierTagProps) {
   const hasTag = useImageCreate((state) => state.hasTag(name))
     ? "selected"
     : "";

@@ -53,6 +53,5 @@ export const useImageQueue = create<ImageQueueState>((set, get) => ({
         state.completedImageIds = [];
       })
     );
-  }
-
+  },
 }));

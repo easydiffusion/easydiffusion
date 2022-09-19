@@ -1,3 +1,4 @@
+/* eslint-disable multiline-ternary */
 /* eslint-disable @typescript-eslint/naming-convention */
 import React from "react";
 import GeneratedImage from "../../../molecules/generatedImage";
@@ -13,7 +14,10 @@ interface CurrentDisplayProps {
   image: CompletedImagesType | null;
 }
 
-export default function CurrentDisplay({ isLoading, image }: CurrentDisplayProps) {
+export default function CurrentDisplay({
+  isLoading,
+  image,
+}: CurrentDisplayProps) {
   const { info, data } = image ?? {};
 
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
@@ -29,7 +33,6 @@ export default function CurrentDisplay({ isLoading, image }: CurrentDisplayProps
       width,
       height,
     } = info! as ImageRequest;
-
 
     // Most important information is the prompt
     let underscoreName = prompt.replace(/[^a-zA-Z0-9]/g, "_");
@@ -62,12 +65,12 @@ export default function CurrentDisplay({ isLoading, image }: CurrentDisplayProps
     setRequestOption("init_image", data);
   };
 
-
   return (
     <div className="current-display">
-      {isLoading
-        ? <h4 className="loading">Loading...</h4>
-        : (image != null && (
+      {isLoading ? (
+        <h4 className="loading">Loading...</h4>
+      ) : (
+        (image != null && (
           <div>
             <p> {info?.prompt}</p>
             <GeneratedImage imageData={data} metadata={info}></GeneratedImage>
@@ -76,8 +79,8 @@ export default function CurrentDisplay({ isLoading, image }: CurrentDisplayProps
               <button onClick={_handleUseAsInput}>Use as Input</button>
             </div>
           </div>
-        )) || <h4 className="no-image">Try Making a new image!</h4>}
-
+        )) || <h4 className="no-image">Try Making a new image!</h4>
+      )}
     </div>
   );
 }

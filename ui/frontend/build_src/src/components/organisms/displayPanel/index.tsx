@@ -29,7 +29,7 @@ export interface CompletedImagesType {
   info: ImageRequest;
 }
 
-const idDelim = '_batch';
+const idDelim = "_batch";
 
 export default function DisplayPanel() {
   const dingRef = useRef<HTMLAudioElement>(null);
@@ -51,14 +51,14 @@ export default function DisplayPanel() {
     [MakeImageKey, id],
     async () => await doMakeImage(options),
     {
-      enabled: isEnabled
+      enabled: isEnabled,
       // void 0 !== id,
     }
   );
 
   // update the enabled state when the id changes
   useEffect(() => {
-    setIsEnabled(void 0 !== id)
+    setIsEnabled(void 0 !== id);
   }, [id]);
 
   // helper for the loading state to be enabled aware
@@ -83,7 +83,6 @@ export default function DisplayPanel() {
       }
     }
   }, [status, data, removeFirstInQueue, dingRef, isSoundEnabled]);
-
 
   /* COMPLETED IMAGES */
   const queryClient = useQueryClient();
@@ -140,13 +139,14 @@ export default function DisplayPanel() {
     clearCachedIds();
   };
 
-
-
   return (
     <div className={displayPanel}>
       <AudioDing ref={dingRef}></AudioDing>
       <div className={displayContainer}>
-        <CurrentDisplay isLoading={isLoading} image={currentImage}></CurrentDisplay>
+        <CurrentDisplay
+          isLoading={isLoading}
+          image={currentImage}
+        ></CurrentDisplay>
       </div>
       <div className={previousImages}>
         <CompletedImages

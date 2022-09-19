@@ -2,13 +2,12 @@ import React from "react";
 
 import {
   FooterDisplayMain,
-  CoffeeButton
-} from // @ts-ignore
-  "./footerDisplay.css.ts";
+  CoffeeButton, // @ts-ignore
+} from "./footerDisplay.css.ts";
 
 import { API_URL } from "../../../api";
 
-export default function FooterDisplay () {
+export default function FooterDisplay() {
   return (
     <div className={FooterDisplayMain}>
       <p>

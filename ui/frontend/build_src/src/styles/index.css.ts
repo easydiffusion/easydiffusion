@@ -26,7 +26,7 @@ globalStyle(`*`, {
 
 globalStyle(`button`, {
   fontSize: vars.fonts.sizes.Body,
-})
+});
 
 /** RESETS */
 globalStyle(`p, h1, h2, h3, h4, h5, h6, ul`, {
@@ -41,7 +41,6 @@ globalStyle(`h3`, {
 globalStyle(`h4, h5`, {
   fontSize: vars.fonts.sizes.SubSubheadline,
   fontFamily: vars.fonts.body,
-
 });
 
 globalStyle(`p, label`, {
@@ -54,6 +53,6 @@ globalStyle(`textarea`, {
   padding: 0,
   border: "none",
   fontSize: vars.fonts.sizes.Body,
-  fontWeight: 'bold',
+  fontWeight: "bold",
   fontFamily: vars.fonts.body,
 });

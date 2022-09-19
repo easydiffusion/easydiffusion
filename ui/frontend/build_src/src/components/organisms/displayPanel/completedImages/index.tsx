@@ -16,7 +16,7 @@ interface CurrentDisplayProps {
   removeImages: () => void;
 }
 
-export default function CompletedImages ({
+export default function CompletedImages({
   images,
   setCurrentDisplay,
   removeImages,
@@ -30,11 +30,14 @@ export default function CompletedImages ({
     <div className={completedImagesMain}>
       {/* Adjust the dom do we dont do this check twice */}
       {images != null && images.length > 0 && (
-        <button className={RemoveButton} onClick={
-          () => {
+        <button
+          className={RemoveButton}
+          onClick={() => {
             removeImages();
-          }
-        }>REMOVE</button>
+          }}
+        >
+          REMOVE
+        </button>
       )}
       <ul className={completedImagesList}>
         {images != null &&
@@ -59,6 +62,5 @@ export default function CompletedImages ({
           })}
       </ul>
     </div>
-
   );
 }

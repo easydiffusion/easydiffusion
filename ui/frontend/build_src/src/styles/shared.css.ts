@@ -9,10 +9,9 @@ export const PanelBox = style({
   borderRadius: vars.trim.smallBorderRadius,
   marginBottom: vars.spacing.medium,
   // TODO move this to the theme
-  boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15)",
+  boxShadow:
+    "0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15)",
 });
-
-
 
 globalStyle(`${PanelBox} .panel-box-toggle-btn`, {
   display: "block",

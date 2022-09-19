@@ -10,9 +10,8 @@ import {
   ImagerModifierGroups,
   ImageModifierGrouping,
   MenuButton,
-  ModifierListStyle
-} from //@ts-expect-error
-  "./imageModifiers.css.ts";
+  ModifierListStyle, //@ts-expect-error
+} from "./imageModifiers.css.ts";
 
 import { useImageCreate } from "../../../../stores/imageCreateStore";
 import { useCreateUI } from "../creationPanelUIStore";
@@ -23,7 +22,7 @@ interface ModifierListProps {
   tags: string[];
 }
 
-function ModifierList ({ tags }: ModifierListProps) {
+function ModifierList({ tags }: ModifierListProps) {
   return (
     <ul className={ModifierListStyle}>
       {tags.map((tag) => (
@@ -40,7 +39,7 @@ interface ModifierGroupingProps {
   tags: string[];
 }
 
-function ModifierGrouping ({ title, tags }: ModifierGroupingProps) {
+function ModifierGrouping({ title, tags }: ModifierGroupingProps) {
   // doing this localy for now, but could move to a store
   // and persist if we wanted to
   const [isExpanded, setIsExpanded] = useState(false);
@@ -59,7 +58,7 @@ function ModifierGrouping ({ title, tags }: ModifierGroupingProps) {
   );
 }
 
-export default function ImageModifers () {
+export default function ImageModifers() {
   const allModifiers = useImageCreate((state) => state.allModifiers);
 
   const imageModifierIsOpen = useCreateUI((state) => state.isOpenImageModifier);

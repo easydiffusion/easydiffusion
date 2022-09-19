@@ -3,7 +3,6 @@ import { style, globalStyle } from "@vanilla-extract/css";
 // @ts-ignore
 import { vars } from "../../../styles/theme/index.css.ts";
 
-
 export const FooterDisplayMain = style({
   color: vars.colors.text.normal,
   fontSize: vars.fonts.sizes.Caption,
@@ -13,7 +12,8 @@ export const FooterDisplayMain = style({
   // marginBottom: vars.spacing.medium,
   // TODO move this to the theme
   padding: vars.spacing.small,
-  boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15)",
+  boxShadow:
+    "0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15)",
 });
 
 export const CoffeeButton = style({
@@ -45,7 +45,6 @@ globalStyle(`${FooterDisplayMain} a:focus`, {
 globalStyle(`${FooterDisplayMain} p`, {
   margin: vars.spacing.min,
 });
-
 
 // .footer-display {
 //   color: #ffffff;

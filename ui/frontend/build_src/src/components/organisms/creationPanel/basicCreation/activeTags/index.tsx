@@ -3,7 +3,7 @@ import React from "react";
 import { useImageCreate } from "../../../../../stores/imageCreateStore";
 import ModifierTag from "../../../../atoms/modifierTag";
 
-export default function ActiveTags () {
+export default function ActiveTags() {
   const selectedtags = useImageCreate((state) => state.selectedTags());
   return (
     <div className="selected-tags">

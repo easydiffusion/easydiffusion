@@ -18,11 +18,9 @@ export const completedImagesList = style({
   width: "100%",
   overflow: "auto",
   paddingLeft: vars.spacing.none,
-
 });
 
 globalStyle(`${completedImagesMain} li`, {
-
   position: "relative",
 });
 
@@ -33,7 +31,6 @@ globalStyle(`${completedImagesMain} > li:first-of-type`, {
 globalStyle(`${completedImagesMain} > li:last-of-type`, {
   marginRight: 0,
 });
-
 
 export const imageContain = style({
   width: "206px",
@@ -47,8 +44,6 @@ export const imageContain = style({
   marginLeft: vars.spacing.medium,
   cursor: "pointer",
 });
-
-
 
 globalStyle(`${imageContain} img`, {
   width: "100%",

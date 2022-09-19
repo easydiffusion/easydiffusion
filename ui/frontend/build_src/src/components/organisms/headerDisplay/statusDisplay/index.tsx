@@ -13,7 +13,7 @@ const startingMessage = "Stable Diffusion is starting...";
 const successMessage = "Stable Diffusion is ready to use!";
 const errorMessage = "Stable Diffusion is not running!";
 
-export default function StatusDisplay ({ className }: { className?: string }) {
+export default function StatusDisplay({ className }: { className?: string }) {
   const [statusMessage, setStatusMessage] = useState(startingMessage);
   const [statusClass, setStatusClass] = useState(StartingStatus);
 

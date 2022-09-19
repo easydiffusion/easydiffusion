@@ -10,7 +10,7 @@ import SeedImage from "./seedImage";
 import ActiveTags from "./activeTags";
 import MakeButton from "./makeButton";
 
-export default function BasicCreation () {
+export default function BasicCreation() {
   const promptText = useImageCreate((state) =>
     state.getValueForRequestKey("prompt")
   );

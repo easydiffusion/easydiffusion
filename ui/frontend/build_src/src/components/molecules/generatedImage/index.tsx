@@ -14,7 +14,7 @@ interface GeneretaedImageProps {
   // children: never[];
 }
 
-export default function GeneratedImage ({
+export default function GeneratedImage({
   imageData,
   metadata,
   className,
