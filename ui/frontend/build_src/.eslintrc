@@ -1,11 +1,16 @@
 {
   "root": true,
   "parser": "@typescript-eslint/parser",
-  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:i18next/recommended"
+  ],
   "rules": {
     "@typescript-eslint/ban-ts-comment": "off",
     "@typescript-eslint/no-array-constructor": "off",
     "prefer-const": "off",
-    "no-debugger": "warn"
+    "no-debugger": "warn",
+    "i18next/no-literal-string": "warn"
   }
 }
