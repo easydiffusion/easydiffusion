@@ -28,11 +28,9 @@ export const MenuButton = style({
   marginBottom: vars.spacing.medium,
 });
 
-
 globalStyle(`${MenuButton}> h4`, {
   color: "#e7ba71",
 });
-
 
 export const ModifierListStyle = style({
   // marginBottom: vars.spacing.small,
@@ -40,7 +38,6 @@ export const ModifierListStyle = style({
   listStyleType: "none",
   display: "flex",
   flexWrap: "wrap",
-
 });
 
 globalStyle(`${ModifierListStyle} li`, {

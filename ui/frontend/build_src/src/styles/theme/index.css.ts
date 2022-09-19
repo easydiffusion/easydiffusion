@@ -54,6 +54,8 @@ const colors = createThemeContract({
 
 const app = createGlobalTheme(":root", {
   spacing: {
+    none: "0",
+    min: '2px',
     small: "5px",
     medium: "10px",
     large: "25px",
