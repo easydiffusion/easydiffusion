@@ -10,7 +10,11 @@ import {
   MenuButton, // @ts-expect-error
 } from "../advancedsettings.css.ts";
 
+import { useTranslation } from "react-i18next";
+
 export default function ImprovementSettings() {
+  const { t } = useTranslation();
+
   // these are conditionals that should be retired and inferred from the store
   const isUsingFaceCorrection = useImageCreate((state) =>
     state.isUsingFaceCorrection()
@@ -74,7 +78,7 @@ export default function ImprovementSettings() {
           </div>
           <div className={SettingItem}>
             <label>
-              Upscale the image to 4x resolution using
+              {t("settings.ups")}
               <select
                 id="upscale_model"
                 name="upscale_model"
@@ -83,7 +87,7 @@ export default function ImprovementSettings() {
                   setRequestOption("use_upscale", e.target.value);
                 }}
               >
-                <option value="">No Uscaling</option>
+                <option value="">{t("settings.no-ups")}</option>
                 <option value="RealESRGAN_x4plus">RealESRGAN_x4plus</option>
                 <option value="RealESRGAN_x4plus_anime_6B">
                   RealESRGAN_x4plus_anime_6B
@@ -101,7 +105,7 @@ export default function ImprovementSettings() {
                   setRequestOption("show_only_filtered_image", e.target.checked)
                 }
               />
-              Show only filtered image
+              {t("settings.correct")}
             </label>
           </div>
         </>

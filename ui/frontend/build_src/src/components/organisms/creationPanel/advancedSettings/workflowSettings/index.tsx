@@ -11,7 +11,11 @@ import {
   MenuButton, // @ts-expect-error
 } from "../advancedsettings.css.ts";
 
+import { useTranslation } from "react-i18next";
+
 export default function WorkflowSettings() {
+  const { t } = useTranslation();
+
   const numOutputs = useImageCreate((state) =>
     state.getValueForRequestKey("num_outputs")
   );
@@ -43,7 +47,7 @@ export default function WorkflowSettings() {
         <>
           <div className={SettingItem}>
             <label>
-              Number of images to make:{" "}
+              {t("settings.amount-of-img")}{" "}
               <input
                 type="number"
                 value={numOutputs}
@@ -56,7 +60,7 @@ export default function WorkflowSettings() {
           </div>
           <div className={SettingItem}>
             <label>
-              Generate in parallel:
+              {t("settings.how-many")}
               <input
                 type="number"
                 value={parallelCount}
@@ -72,7 +76,7 @@ export default function WorkflowSettings() {
                 onChange={(e) => toggleUseAutoSave()}
                 type="checkbox"
               />
-              Automatically save to{" "}
+              {t("storage.ast")}{" "}
             </label>
             <label>
               <input
@@ -95,7 +99,7 @@ export default function WorkflowSettings() {
                 onChange={(e) => toggleSoundEnabled()}
                 type="checkbox"
               />
-              Play sound on task completion
+              {t("advanced-settings.sound")}
             </label>
           </div>
         </>

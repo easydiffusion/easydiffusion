@@ -45,9 +45,11 @@
     "height": "Height:",
     "steps": "Number of inference steps:",
     "guide-scale": "Guidance Scale:",
+    "prompt-str": "Prompt Strength:",
     "live-preview": "Show a live preview of the image (disable this for faster image generation)",
     "fix-face": "Fix incorrect faces and eyes (uses GFPGAN)",
-    "upscale": "Upscale the image to 4x resolution using:",
+    "ups": "Upscale the image to 4x resolution using:",
+    "no-ups": "No Upscaling",
     "corrected": "Show only the corrected/upscaled image"
   },
   "tags": {

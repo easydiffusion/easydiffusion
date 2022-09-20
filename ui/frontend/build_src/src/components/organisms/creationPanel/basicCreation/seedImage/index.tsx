@@ -89,8 +89,7 @@ export default function SeedImage(_props: any) {
                   toggleInpainting();
                 }}
                 checked={isInPaintingMode}
-              >
-              </input>
+              ></input>
               {t("in-paint.txt")}
             </label>
           </>

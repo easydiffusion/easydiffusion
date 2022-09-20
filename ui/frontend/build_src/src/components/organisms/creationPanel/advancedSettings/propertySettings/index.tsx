@@ -9,6 +9,9 @@ import {
 import {
   MenuButton, // @ts-expect-error
 } from "../advancedsettings.css.ts";
+
+import { useTranslation } from "react-i18next";
+
 // todo: move this someplace more global
 const IMAGE_DIMENSIONS = [
   { value: 128, label: "128 (*)" },
@@ -29,6 +32,8 @@ const IMAGE_DIMENSIONS = [
 ];
 
 export default function PropertySettings() {
+  const { t } = useTranslation();
+
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
   const toggleUseRandomSeed = useImageCreate(
     (state) => state.toggleUseRandomSeed
@@ -91,7 +96,7 @@ export default function PropertySettings() {
 
           <div className={SettingItem}>
             <label>
-              Number of inference steps:{" "}
+              {t("settings.steps")} {" "}
               <input
                 value={steps}
                 onChange={(e) => {
@@ -104,7 +109,7 @@ export default function PropertySettings() {
 
           <div className={SettingItem}>
             <label>
-              Guidance Scale:
+              {t("settings.guide-scale")}
               <input
                 value={guidanceScale}
                 onChange={(e) =>
@@ -122,7 +127,7 @@ export default function PropertySettings() {
           {initImage && (
             <div className={SettingItem}>
               <label>
-                Prompt Strength:{" "}
+                {t("settings.prompt-str")} {" "}
                 <input
                   value={promptStrength}
                   onChange={(e) =>
@@ -140,7 +145,7 @@ export default function PropertySettings() {
 
           <div className={SettingItem}>
             <label>
-              Width:
+              {t("settings.width")}
               <select
                 value={width}
                 onChange={(e) => setRequestOption("width", e.target.value)}
@@ -157,7 +162,7 @@ export default function PropertySettings() {
             </label>
 
             <label>
-              Height:
+              {t("settings.height")}
               <select
                 value={height}
                 onChange={(e) => setRequestOption("height", e.target.value)}

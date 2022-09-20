@@ -1,7 +1,7 @@
 import i18n from "i18next";
 // this should be updated to an interface
 import ENTranslation from "./locales/en/home.json";
-import ESTranlation from "./locales/es/home.json";
+import ESTranslation from "./locales/es/home.json";
 import { initReactI18next } from "react-i18next";
 
 export const resources = {
@@ -9,7 +9,7 @@ export const resources = {
     translation: ENTranslation,
   },
   es: {
-    translation: ESTranlation,
+    translation: ESTranslation,
   },
 } as const;
 
