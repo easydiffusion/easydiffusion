@@ -10,7 +10,7 @@ import {
 } from "./seedImage.css.ts";
 import { useImageCreate } from "../../../../../stores/imageCreateStore";
 
-import {useTranslation} from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 // TODO : figure out why this needs props to be passed in.. fixes a type error
 // when the component is used in the parent component

@@ -10,7 +10,7 @@ import SeedImage from "./seedImage";
 import ActiveTags from "./activeTags";
 import MakeButton from "./makeButton";
 
-import {useTranslation} from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 export default function BasicCreation() {
   const { t } = useTranslation();

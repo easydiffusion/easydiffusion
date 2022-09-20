@@ -10,7 +10,7 @@ import {
 import {
   MenuButton, // @ts-expect-error
 } from "../advancedsettings.css.ts";
-import {useTranslation} from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 export default function GpuSettings() {
   const { t } = useTranslation();
