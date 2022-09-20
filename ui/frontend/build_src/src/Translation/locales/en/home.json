@@ -77,6 +77,8 @@
     "turbo-disc": "Generates images faster, but uses an additional 1 GB of GPU memory",
     "cpu": "Use CPU instead of GPU",
     "cpu-disc": "Warning: this will be *very* slow",
+    "gpu": "Use full precision",
+    "gpu-disc": "(for GPU-only. warning: this will consume more VRAM)",
     "beta": "Beta Features",
     "beta-disc": "Get the latest features immediately (but could be less stable). \nPlease restart the program after changing this.",
     "save": "SAVE"

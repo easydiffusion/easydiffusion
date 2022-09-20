@@ -10,9 +10,13 @@ import {
 } from "./seedImage.css.ts";
 import { useImageCreate } from "../../../../../stores/imageCreateStore";
 
+import {useTranslation} from "react-i18next";
+
 // TODO : figure out why this needs props to be passed in.. fixes a type error
 // when the component is used in the parent component
 export default function SeedImage(_props: any) {
+  const { t } = useTranslation();
+
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   const initImage = useImageCreate((state) =>
@@ -55,7 +59,7 @@ export default function SeedImage(_props: any) {
     <div className={ImageInputDisplay}>
       <div>
         <label className={InputLabel}>
-          <b>Initial Image:</b> (optional)
+          <b>{t("home.initial-img-txt")}</b>
         </label>
         <input
           ref={imageInputRef}
@@ -65,7 +69,7 @@ export default function SeedImage(_props: any) {
           onChange={_handleFileSelect}
         />
         <button className={ImageInputButton} onClick={_startFileSelect}>
-          Select File
+          {t("home.initial-img-btn")}
         </button>
       </div>
 
@@ -85,8 +89,9 @@ export default function SeedImage(_props: any) {
                   toggleInpainting();
                 }}
                 checked={isInPaintingMode}
-              ></input>
-              Use for Inpainting
+              >
+              </input>
+              {t("in-paint.txt")}
             </label>
           </>
         )}
