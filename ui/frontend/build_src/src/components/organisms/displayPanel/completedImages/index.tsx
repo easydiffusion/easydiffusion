@@ -40,26 +40,25 @@ export default function CompletedImages({
         </button>
       )}
       <ul className={completedImagesList}>
-        {images != null &&
-          images.map((image, index) => {
-            if (void 0 === image) {
-              console.warn(`image ${index} is undefined`);
-              return null;
-            }
+        {images?.map((image, index) => {
+          if (void 0 === image) {
+            console.warn(`image ${index} is undefined`);
+            return null;
+          }
 
-            return (
-              <li key={image.id}>
-                <button
-                  className={imageContain}
-                  onClick={() => {
-                    _handleSetCurrentDisplay(index);
-                  }}
-                >
-                  <img src={image.data} alt={image.info.prompt} />
-                </button>
-              </li>
-            );
-          })}
+          return (
+            <li key={image.id}>
+              <button
+                className={imageContain}
+                onClick={() => {
+                  _handleSetCurrentDisplay(index);
+                }}
+              >
+                <img src={image.data} alt={image.info.prompt} />
+              </button>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

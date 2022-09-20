@@ -52,9 +52,7 @@ module.exports = {
     "@typescript-eslint/no-unused-vars": "warn",
 
     // TS  things turned off for now
-    // "@typescript-eslint/naming-convention": "off",
-    "@typescript-eslint/restrict-template-expressions": "off",
-    "@typescript-eslint/prefer-optional-chain": "off",
+    // "@typescript-eslint/prefer-optional-chain": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/strict-boolean-expressions": "off",
     "@typescript-eslint/no-floating-promises": "off",

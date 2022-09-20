@@ -5,7 +5,7 @@ import { ImageRequest, useImageCreate } from "../../../stores/imageCreateStore";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { doMakeImage, MakeImageKey } from "../../../api";
+import { doMakeImage, MakeImageKey, ImageReturnType, ImageOutput } from "../../../api";
 
 import AudioDing from "./audioDing";
 
@@ -18,9 +18,8 @@ import CompletedImages from "./completedImages";
 import {
   displayPanel,
   displayContainer,
-  // CurrentDisplay,
   previousImages,
-  previousImage, // @ts-expect-error
+  // @ts-expect-error
 } from "./displayPanel.css.ts";
 
 export interface CompletedImagesType {
@@ -52,7 +51,6 @@ export default function DisplayPanel() {
     async () => await doMakeImage(options),
     {
       enabled: isEnabled,
-      // void 0 !== id,
     }
   );
 
@@ -95,11 +93,11 @@ export default function DisplayPanel() {
 
   // this is where we generate the list of completed images
   useEffect(() => {
-    const testReq = {} as ImageRequest;
+
     const completedQueries = completedIds.map((id) => {
       const imageData = queryClient.getQueryData([MakeImageKey, id]);
       return imageData;
-    }) as ImageRequest[];
+    }) as ImageReturnType[];
 
     if (completedQueries.length > 0) {
       // map the completedImagesto a new array
@@ -107,13 +105,10 @@ export default function DisplayPanel() {
       const temp = completedQueries
         .map((query, index) => {
           if (void 0 !== query) {
-            // @ts-ignore
-            return query.output.map((data, index) => {
-              // @ts-ignore
+            return query.output.map((data: ImageOutput, index: number) => {
               return {
-                id: `${completedIds[index]}${idDelim}-${data.seed}-${data.index}`,
+                id: `${completedIds[index]}${idDelim}-${data.seed}-${index}`,
                 data: data.data,
-                // @ts-ignore
                 info: { ...query.request, seed: data.seed },
               };
             });

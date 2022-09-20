@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
-import { useQuery } from "@tanstack/react-query";
-import { loadModifications } from "../../../../api";
 
 // @ts-expect-error
 import { PanelBox } from "../../../../styles/shared.css.ts";
