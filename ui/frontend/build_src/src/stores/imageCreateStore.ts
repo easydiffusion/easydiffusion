@@ -4,13 +4,13 @@ import { devtools } from "zustand/middleware";
 
 import { useRandomSeed } from "../utils";
 
-export type ImageCreationUiOptions = {
+export interface ImageCreationUiOptions {
   isUseRandomSeed: boolean;
   isUseAutoSave: boolean;
   isSoundEnabled: boolean;
-};
+}
 
-export type ImageRequest = {
+export interface ImageRequest {
   prompt: string;
   seed: number;
   num_outputs: number;
@@ -48,7 +48,7 @@ export type ImageRequest = {
     | 896
     | 960
     | 1024;
-  // allow_nsfw: boolean;
+  // allow_nsfw: boolean
   turbo: boolean;
   use_cpu: boolean;
   use_full_precision: boolean;
@@ -58,7 +58,7 @@ export type ImageRequest = {
   show_only_filtered_image: boolean;
   init_image: undefined | string;
   prompt_strength: undefined | number;
-};
+}
 
 type ModifiersList = string[];
 type ModifiersOptions = string | ModifiersList[];
@@ -84,7 +84,7 @@ interface ImageCreateState {
 
   uiOptions: ImageCreationUiOptions;
   toggleUseUpscaling: () => void;
-  // isUsingUpscaling: () => boolean;
+  // isUsingUpscaling: () => boolean
   toggleUseFaceCorrection: () => void;
   isUsingFaceCorrection: () => boolean;
   isUsingUpscaling: () => boolean;
@@ -99,7 +99,7 @@ interface ImageCreateState {
 
 // devtools breaks TS
 export const useImageCreate = create<ImageCreateState>(
-  // @ts-ignore
+  // @ts-expect-error
   devtools((set, get) => ({
     parallelCount: 1,
 
@@ -120,7 +120,8 @@ export const useImageCreate = create<ImageCreateState>(
       use_face_correction: "GFPGANv1.3",
       use_upscale: "RealESRGAN_x4plus",
       show_only_filtered_image: true,
-    } as ImageRequest,
+      init_image: undefined,
+    },
 
     // selected tags
     tags: [] as string[],
@@ -178,7 +179,7 @@ export const useImageCreate = create<ImageCreateState>(
     },
 
     hasTag: (tag: string) => {
-      return get().tags.indexOf(tag) > -1;
+      return get().tags.includes(tag);
     },
 
     selectedTags: () => {
@@ -256,15 +257,16 @@ export const useImageCreate = create<ImageCreateState>(
 
     toggleUseRandomSeed: () => {
       set(
-        produce((state) => {
+        produce((state: ImageCreateState) => {
           state.uiOptions.isUseRandomSeed = !state.uiOptions.isUseRandomSeed;
           state.requestOptions.seed = state.uiOptions.isUseRandomSeed
             ? useRandomSeed()
             : state.requestOptions.seed;
-          localStorage.setItem(
-            "ui:isUseRandomSeed",
-            state.uiOptions.isUseRandomSeed
-          );
+
+          // localStorage.setItem(
+          //   "ui:isUseRandomSeed",
+          //   state.uiOptions.isUseRandomSeed
+          // );
         })
       );
     },
@@ -277,12 +279,13 @@ export const useImageCreate = create<ImageCreateState>(
       //isUseAutoSave
       //save_to_disk_path
       set(
-        produce((state) => {
+        produce((state: ImageCreateState) => {
           state.uiOptions.isUseAutoSave = !state.uiOptions.isUseAutoSave;
-          localStorage.setItem(
-            "ui:isUseAutoSave",
-            state.uiOptions.isUseAutoSave
-          );
+
+          // localStorage.setItem(
+          //   "ui:isUseAutoSave",
+          //   state.uiOptions.isUseAutoSave
+          // );
         })
       );
     },
@@ -293,7 +296,7 @@ export const useImageCreate = create<ImageCreateState>(
 
     toggleSoundEnabled: () => {
       set(
-        produce((state) => {
+        produce((state: ImageCreateState) => {
           state.uiOptions.isSoundEnabled = !state.uiOptions.isSoundEnabled;
           //localStorage.setItem('ui:isSoundEnabled', state.uiOptions.isSoundEnabled);
         })
@@ -306,7 +309,7 @@ export const useImageCreate = create<ImageCreateState>(
 
     toggleInpainting: () => {
       set(
-        produce((state) => {
+        produce((state: ImageCreateState) => {
           state.isInpainting = !state.isInpainting;
         })
       );

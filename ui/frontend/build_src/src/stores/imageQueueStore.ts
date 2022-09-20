@@ -9,7 +9,7 @@ interface ImageQueueState {
   completedImageIds: string[];
   addNewImage: (id: string, imgRec: ImageRequest) => void;
   hasQueuedImages: () => boolean;
-  firstInQueue: () => ImageRequest | [];
+  firstInQueue: () => ImageRequest | {};
   removeFirstInQueue: () => void;
   clearCachedIds: () => void;
 }
@@ -33,8 +33,11 @@ export const useImageQueue = create<ImageQueueState>((set, get) => ({
   hasQueuedImages: () => {
     return get().images.length > 0;
   },
+
   firstInQueue: () => {
-    return (get().images[0] as ImageRequest) || [];
+    let first: ImageRequest | {} = get().images[0];
+    first = void 0 !== first ? first : {};
+    return first;
   },
 
   removeFirstInQueue: () => {
@@ -45,6 +48,7 @@ export const useImageQueue = create<ImageQueueState>((set, get) => ({
       })
     );
   },
+
   clearCachedIds: () => {
     set(
       produce((state) => {

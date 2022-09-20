@@ -2,7 +2,7 @@ import React from "react";
 
 import {
   FooterDisplayMain,
-  CoffeeButton, // @ts-ignore
+  CoffeeButton, // @ts-expect-error
 } from "./footerDisplay.css.ts";
 
 import { API_URL } from "../../../api";

@@ -1,5 +1,5 @@
 import { style } from "@vanilla-extract/css";
-// @ts-ignore
+// @ts-expect-error
 import { vars } from "../../styles/theme/index.css.ts";
 
 export const AppLayout = style({

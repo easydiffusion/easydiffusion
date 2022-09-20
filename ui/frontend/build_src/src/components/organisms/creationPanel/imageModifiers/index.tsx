@@ -78,14 +78,13 @@ export default function ImageModifers() {
         <h3>Image Modifiers (art styles, tags, ect)</h3>
       </button>
 
-      {/* @ts-ignore */}
       {imageModifierIsOpen && (
         <ul className={ImagerModifierGroups}>
           {allModifiers.map((item, index) => {
             return (
-              // @ts-ignore
+              // @ts-expect-error
               <li key={item[0]}>
-                {/* @ts-ignore */}
+                {/* @ts-expect-error */}
                 <ModifierGrouping title={item[0]} tags={item[1]} />
               </li>
             );

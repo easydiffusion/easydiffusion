@@ -18,6 +18,7 @@ module.exports = {
   plugins: ["react"],
 
   extends: [
+    "prettier",
     "plugin:react/recommended",
     "standard-with-typescript",
     "plugin:i18next/recommended",
@@ -48,27 +49,18 @@ module.exports = {
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/ban-ts-comment": "off",
 
-    // TS WARNINGS WE WANT
-    "@typescript-eslint/no-unused-vars": "warn",
-
-    // TS  things turned off for now
-    "@typescript-eslint/no-non-null-assertion": "off",
-    "@typescript-eslint/strict-boolean-expressions": "off",
-    "@typescript-eslint/no-floating-promises": "off",
-    "@typescript-eslint/consistent-type-assertions": "off",
+    // these are things that fight with prettier
     "@typescript-eslint/comma-dangle": "off",
+    "@typescript-eslint/space-before-function-paren": "off",
     "@typescript-eslint/quotes": "off",
     "@typescript-eslint/semi": "off",
-    "@typescript-eslint/restrict-plus-operands": "off",
     "@typescript-eslint/brace-style": "off",
-    "@typescript-eslint/prefer-ts-expect-error": "off",
     "@typescript-eslint/indent": "off",
     "@typescript-eslint/member-delimiter-style": "off",
-    "@typescript-eslint/prefer-includes": "off",
-    "@typescript-eslint/consistent-type-definitions": "off",
-    "@typescript-eslint/no-unnecessary-condition": "off",
-    "@typescript-eslint/no-unnecessary-type-assertion": "off",
-    "@typescript-eslint/space-before-function-paren": "off",
+
+    // TS WARNINGS WE WANT
+    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/no-non-null-assertion": "warn",
 
     // i18n stuff no string literal works but turned off for now
     "i18next/no-literal-string": "off",

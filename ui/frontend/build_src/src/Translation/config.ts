@@ -12,11 +12,21 @@ export const resources = {
     translation: ESTranslation,
   },
 } as const;
-
-i18n.use(initReactI18next).init({
-  lng: "en",
-  interpolation: {
-    escapeValue: false,
-  },
-  resources,
-});
+i18n
+  .use(initReactI18next)
+  .init({
+    lng: "en",
+    interpolation: {
+      escapeValue: false,
+    },
+    resources,
+  })
+  .then(() => {
+    console.log("i18n initialized");
+  })
+  .catch((err) => {
+    console.error("i18n initialization failed", err);
+  })
+  .finally(() => {
+    console.log("i18n initialization finished");
+  });

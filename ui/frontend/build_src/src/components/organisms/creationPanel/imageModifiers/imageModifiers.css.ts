@@ -1,5 +1,5 @@
 import { style, globalStyle } from "@vanilla-extract/css";
-// @ts-ignore
+// @ts-expect-error
 import { vars } from "../../../../styles/theme/index.css.ts";
 
 export const ImagerModifierGroups = style({

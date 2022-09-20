@@ -99,7 +99,13 @@ export default function DrawImage({
     }
   };
 
-  const _drawCursor = (x, y, brushSize, brushShape, brushColor) => {
+  const _drawCursor = (
+    x: number,
+    y: number,
+    brushSize: number,
+    brushShape: string,
+    brushColor: string
+  ) => {
     const canvas = cursorRef.current;
     if (canvas != null) {
       const ctx = canvas.getContext("2d");
