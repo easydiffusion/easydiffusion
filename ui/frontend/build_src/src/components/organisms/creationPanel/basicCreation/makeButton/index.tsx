@@ -24,7 +24,6 @@ export default function MakeButton() {
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
 
   const makeImages = () => {
-
     // potentially update the seed
     if (isRandomSeed) {
       // update the seed for the next time we click the button
@@ -78,7 +77,6 @@ export default function MakeButton() {
         seed,
       });
     });
-
   };
 
   return (

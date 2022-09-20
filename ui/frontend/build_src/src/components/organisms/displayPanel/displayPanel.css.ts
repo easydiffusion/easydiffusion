@@ -1,6 +1,5 @@
 import { style } from "@vanilla-extract/css";
 
-
 export const displayPanel = style({
   height: "100%",
   display: "flex",
@@ -15,5 +14,4 @@ export const displayContainer = style({
   alignItems: "center",
 });
 
-export const previousImages = style({
-});
+export const previousImages = style({});

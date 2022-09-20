@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 
-
 // @ts-expect-error
 import { PanelBox } from "../../../../styles/shared.css.ts";
 

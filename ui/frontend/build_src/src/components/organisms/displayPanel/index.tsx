@@ -5,7 +5,12 @@ import { ImageRequest, useImageCreate } from "../../../stores/imageCreateStore";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { doMakeImage, MakeImageKey, ImageReturnType, ImageOutput } from "../../../api";
+import {
+  doMakeImage,
+  MakeImageKey,
+  ImageReturnType,
+  ImageOutput,
+} from "../../../api";
 
 import AudioDing from "./audioDing";
 
@@ -93,7 +98,6 @@ export default function DisplayPanel() {
 
   // this is where we generate the list of completed images
   useEffect(() => {
-
     const completedQueries = completedIds.map((id) => {
       const imageData = queryClient.getQueryData([MakeImageKey, id]);
       return imageData;

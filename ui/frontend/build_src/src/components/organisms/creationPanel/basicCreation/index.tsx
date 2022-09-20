@@ -35,7 +35,6 @@ export default function BasicCreation() {
       <SeedImage></SeedImage>
 
       <ActiveTags></ActiveTags>
-
     </div>
   );
 }

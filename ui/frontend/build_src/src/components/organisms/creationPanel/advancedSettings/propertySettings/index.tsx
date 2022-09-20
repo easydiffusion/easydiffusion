@@ -96,7 +96,7 @@ export default function PropertySettings() {
 
           <div className={SettingItem}>
             <label>
-              {t("settings.steps")} {" "}
+              {t("settings.steps")}{" "}
               <input
                 value={steps}
                 onChange={(e) => {
@@ -127,7 +127,7 @@ export default function PropertySettings() {
           {initImage && (
             <div className={SettingItem}>
               <label>
-                {t("settings.prompt-str")} {" "}
+                {t("settings.prompt-str")}{" "}
                 <input
                   value={promptStrength}
                   onChange={(e) =>

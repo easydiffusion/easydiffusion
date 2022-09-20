@@ -61,14 +61,14 @@ export type ImageOutput = {
   data: string;
   path_abs: string | null;
   seed: number;
-}
+};
 
 export type ImageReturnType = {
   output: ImageOutput[];
   request: {};
-  status: string,
-  session_id: string,
-}
+  status: string;
+  session_id: string;
+};
 
 export const MakeImageKey = "MakeImage";
 export const doMakeImage = async (reqBody: ImageRequest) => {

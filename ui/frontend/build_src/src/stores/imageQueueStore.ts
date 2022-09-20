@@ -14,7 +14,6 @@ interface ImageQueueState {
   clearCachedIds: () => void;
 }
 
-
 export const useImageQueue = create<ImageQueueState>((set, get) => ({
   images: [],
   completedImageIds: [],
