@@ -14,8 +14,7 @@ interface ImageQueueState {
   clearCachedIds: () => void;
 }
 
-// figure out why TS is complaining about this
-// @ts-ignore
+
 export const useImageQueue = create<ImageQueueState>((set, get) => ({
   images: [],
   completedImageIds: [],

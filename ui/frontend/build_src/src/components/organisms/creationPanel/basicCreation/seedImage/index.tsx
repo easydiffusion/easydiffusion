@@ -82,7 +82,7 @@ export default function SeedImage(_props: any) {
                 X
               </button>
             </div>
-            <label>
+            {/* <label>
               <input
                 type="checkbox"
                 onChange={(e) => {
@@ -91,7 +91,7 @@ export default function SeedImage(_props: any) {
                 checked={isInPaintingMode}
               ></input>
               {t("in-paint.txt")}
-            </label>
+            </label> */}
           </>
         )}
       </div>

@@ -30,12 +30,12 @@ export default function BasicCreation() {
         <p>{t("home.editor-title")}</p>
         <textarea value={promptText} onChange={handlePromptChange}></textarea>
       </div>
+      <MakeButton></MakeButton>
 
       <SeedImage></SeedImage>
 
       <ActiveTags></ActiveTags>
 
-      <MakeButton></MakeButton>
     </div>
   );
 }

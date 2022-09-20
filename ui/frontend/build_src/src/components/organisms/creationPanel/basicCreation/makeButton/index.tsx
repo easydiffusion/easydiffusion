@@ -24,6 +24,14 @@ export default function MakeButton() {
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
 
   const makeImages = () => {
+
+    // potentially update the seed
+    if (isRandomSeed) {
+      // update the seed for the next time we click the button
+      debugger;
+      setRequestOption("seed", useRandomSeed());
+    }
+
     // the request that we have built
     const req = builtRequest();
     // the actual number of request we will make
@@ -57,6 +65,7 @@ export default function MakeButton() {
       // get the seed we want to use
       let seed = req.seed;
       if (index !== 0) {
+        debugger;
         // we want to use a random seed for subsequent requests
         seed = useRandomSeed();
       }
@@ -70,11 +79,6 @@ export default function MakeButton() {
       });
     });
 
-    // potentially update the seed
-    if (isRandomSeed) {
-      // update the seed for the next time we click the button
-      setRequestOption("seed", useRandomSeed());
-    }
   };
 
   return (

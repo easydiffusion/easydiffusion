@@ -14,7 +14,7 @@ import PropertySettings from "./propertySettings";
 import WorkflowSettings from "./workflowSettings";
 import GpuSettings from "./gpuSettings";
 
-import BetaMode from "../../../molecules/betaMode";
+// import BetaMode from "../../../molecules/betaMode";
 
 function SettingsList() {
   return (
@@ -32,9 +32,9 @@ function SettingsList() {
         <GpuSettings />
       </li>
 
-      <li className={AdvancedSettingGrouping}>
+      {/* <li className={AdvancedSettingGrouping}>
         <BetaMode />
-      </li>
+      </li> */}
     </ul>
   );
 }

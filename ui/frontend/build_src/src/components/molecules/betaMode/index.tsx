@@ -61,7 +61,6 @@ export default function BetaMode() {
   return (
     <label>
       <input
-        disabled={true}
         type="checkbox"
         checked={branchToGetNext === "main"}
         onChange={(e) => {
