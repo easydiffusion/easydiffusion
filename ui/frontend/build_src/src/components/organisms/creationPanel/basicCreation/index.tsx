@@ -10,7 +10,11 @@ import SeedImage from "./seedImage";
 import ActiveTags from "./activeTags";
 import MakeButton from "./makeButton";
 
+import { useTranslation } from "react-i18next";
+
 export default function BasicCreation() {
+  const { t } = useTranslation();
+
   const promptText = useImageCreate((state) =>
     state.getValueForRequestKey("prompt")
   );
@@ -23,7 +27,7 @@ export default function BasicCreation() {
   return (
     <div className={CreationBasicMain}>
       <div className={PromptDisplay}>
-        <p>Prompt </p>
+        <p>{t("home.editor-title")}</p>
         <textarea value={promptText} onChange={handlePromptChange}></textarea>
       </div>
 

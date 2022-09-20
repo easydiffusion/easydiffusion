@@ -10,8 +10,11 @@ import {
 import {
   MenuButton, // @ts-expect-error
 } from "../advancedsettings.css.ts";
+import { useTranslation } from "react-i18next";
 
 export default function GpuSettings() {
+  const { t } = useTranslation();
+
   const turbo = useImageCreate((state) => state.getValueForRequestKey("turbo"));
   const useCpu = useImageCreate((state) =>
     state.getValueForRequestKey("use_cpu")
@@ -39,8 +42,7 @@ export default function GpuSettings() {
                 onChange={(e) => setRequestOption("turbo", e.target.checked)}
                 type="checkbox"
               />
-              Turbo mode (generates images faster, but uses an additional 1 GB
-              of GPU memory)
+              {t("advanced-settings.turbo")} {t("advanced-settings.turbo-disc")}
             </label>
           </div>
           <div className={SettingItem}>
@@ -50,7 +52,7 @@ export default function GpuSettings() {
                 checked={useCpu}
                 onChange={(e) => setRequestOption("use_cpu", e.target.checked)}
               />
-              Use CPU instead of GPU (warning: this will be *very* slow)
+              {t("advanced-settings.cpu")} {t("advanced-settings.cpu-disc")}
             </label>
           </div>
           <div className={SettingItem}>
@@ -62,8 +64,7 @@ export default function GpuSettings() {
                 }
                 type="checkbox"
               />
-              Use full precision (for GPU-only. warning: this will consume more
-              VRAM)
+              {t("advanced-settings.gpu")} {t("advanced-settings.gpu-disc")}
             </label>
           </div>
         </>

@@ -8,7 +8,10 @@ import {
   toggleBetaConfig,
 } from "../../../api";
 
+import { useTranslation } from "react-i18next";
+
 export default function BetaMode() {
+  const { t } = useTranslation();
   // gate for the toggle
   const [shouldSetCofig, setShouldSetConfig] = useState(false);
   // next branch to get
@@ -65,7 +68,7 @@ export default function BetaMode() {
           setShouldSetConfig(true);
         }}
       />
-      Enable Beta Mode
+      {t("advanced-settings.beta")} {t("advanced-settings.beta-disc")}
     </label>
   );
 }
