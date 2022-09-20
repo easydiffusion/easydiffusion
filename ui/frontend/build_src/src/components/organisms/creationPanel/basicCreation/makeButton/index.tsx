@@ -27,7 +27,6 @@ export default function MakeButton() {
     // potentially update the seed
     if (isRandomSeed) {
       // update the seed for the next time we click the button
-      debugger;
       setRequestOption("seed", useRandomSeed());
     }
 
