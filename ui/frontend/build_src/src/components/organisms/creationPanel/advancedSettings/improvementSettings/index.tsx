@@ -48,7 +48,7 @@ export default function ImprovementSettings() {
   // should probably be a store selector
   useEffect(() => {
     // if either are true we arent disabled
-    if (isUsingFaceCorrection || useUpscale != '') {
+    if (isUsingFaceCorrection || useUpscale != "") {
       setIsFilteringDisabled(false);
     } else {
       setIsFilteringDisabled(true);

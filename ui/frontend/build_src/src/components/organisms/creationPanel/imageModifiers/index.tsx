@@ -16,7 +16,7 @@ import { useCreateUI } from "../creationPanelUIStore";
 import ModifierTag from "../../../atoms/modifierTag";
 
 interface ModifierListProps {
-  tags: string[]
+  tags: string[];
 }
 
 function ModifierList({ tags }: ModifierListProps) {
@@ -32,8 +32,8 @@ function ModifierList({ tags }: ModifierListProps) {
 }
 
 interface ModifierGroupingProps {
-  title: string
-  tags: string[]
+  title: string;
+  tags: string[];
 }
 
 function ModifierGrouping({ title, tags }: ModifierGroupingProps) {
@@ -78,14 +78,13 @@ export default function ImageModifers() {
         <h3>Image Modifiers (art styles, tags, ect)</h3>
       </button>
 
-      {/* @ts-ignore */}
       {imageModifierIsOpen && (
         <ul className={ImagerModifierGroups}>
           {allModifiers.map((item, index) => {
             return (
-              // @ts-ignore
+              // @ts-expect-error
               <li key={item[0]}>
-                {/* @ts-ignore */}
+                {/* @ts-expect-error */}
                 <ModifierGrouping title={item[0]} tags={item[1]} />
               </li>
             );

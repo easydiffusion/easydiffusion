@@ -3,27 +3,27 @@ import produce from "immer";
 import { persist } from "zustand/middleware";
 
 export interface ImageCreationUIOptions {
-  isOpenAdvancedSettings: boolean
-  isOpenAdvImprovementSettings: boolean
-  isOpenAdvPropertySettings: boolean
-  isOpenAdvWorkflowSettings: boolean
-  isOpenAdvGPUSettings: boolean
+  isOpenAdvancedSettings: boolean;
+  isOpenAdvImprovementSettings: boolean;
+  isOpenAdvPropertySettings: boolean;
+  isOpenAdvWorkflowSettings: boolean;
+  isOpenAdvGPUSettings: boolean;
 
-  isOpenImageModifier: boolean
-  imageMofidiersMap: object
+  isOpenImageModifier: boolean;
+  imageMofidiersMap: object;
 
-  toggleAdvancedSettings: () => void
-  toggleAdvImprovementSettings: () => void
-  toggleAdvPropertySettings: () => void
-  toggleAdvWorkflowSettings: () => void
-  toggleAdvGPUSettings: () => void
+  toggleAdvancedSettings: () => void;
+  toggleAdvImprovementSettings: () => void;
+  toggleAdvPropertySettings: () => void;
+  toggleAdvWorkflowSettings: () => void;
+  toggleAdvGPUSettings: () => void;
 
-  toggleImageModifier: () => void
+  toggleImageModifier: () => void;
   // addImageModifier: (modifier: string) => void;
-};
+}
 
 export const useCreateUI = create<ImageCreationUIOptions>(
-  //@ts-ignore
+  //@ts-expect-error
   persist(
     (set, get) => ({
       isOpenAdvancedSettings: false,
@@ -37,7 +37,7 @@ export const useCreateUI = create<ImageCreationUIOptions>(
       toggleAdvancedSettings: () => {
         set(
           produce((state: ImageCreationUIOptions) => {
-            state.isOpenAdvancedSettings = !(state.isOpenAdvancedSettings);
+            state.isOpenAdvancedSettings = !state.isOpenAdvancedSettings;
           })
         );
       },

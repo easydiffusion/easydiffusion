@@ -152,7 +152,7 @@ export default function PropertySettings() {
               >
                 {IMAGE_DIMENSIONS.map((dimension) => (
                   <option
-                    key={"width-option_" + dimension.value}
+                    key={`width-option_${dimension.value}`}
                     value={dimension.value}
                   >
                     {dimension.label}
@@ -169,7 +169,7 @@ export default function PropertySettings() {
               >
                 {IMAGE_DIMENSIONS.map((dimension) => (
                   <option
-                    key={"height-option_" + dimension.value}
+                    key={`height-option_${dimension.value}`}
                     value={dimension.value}
                   >
                     {dimension.label}

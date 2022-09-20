@@ -2,10 +2,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import React from "react";
 import GeneratedImage from "../../../molecules/generatedImage";
-import {
-  ImageRequest,
-  useImageCreate,
-} from "../../../../stores/imageCreateStore";
+import { useImageCreate } from "../../../../stores/imageCreateStore";
 
 import { CompletedImagesType } from "../index";
 

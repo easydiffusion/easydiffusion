@@ -5,101 +5,101 @@ import { devtools } from "zustand/middleware";
 import { useRandomSeed } from "../utils";
 
 export interface ImageCreationUiOptions {
-  isUseRandomSeed: boolean
-  isUseAutoSave: boolean
-  isSoundEnabled: boolean
-};
+  isUseRandomSeed: boolean;
+  isUseAutoSave: boolean;
+  isSoundEnabled: boolean;
+}
 
 export interface ImageRequest {
-  prompt: string
-  seed: number
-  num_outputs: number
-  num_inference_steps: number
-  guidance_scale: number
+  prompt: string;
+  seed: number;
+  num_outputs: number;
+  num_inference_steps: number;
+  guidance_scale: number;
   width:
-  | 128
-  | 192
-  | 256
-  | 320
-  | 384
-  | 448
-  | 512
-  | 576
-  | 640
-  | 704
-  | 768
-  | 832
-  | 896
-  | 960
-  | 1024
+    | 128
+    | 192
+    | 256
+    | 320
+    | 384
+    | 448
+    | 512
+    | 576
+    | 640
+    | 704
+    | 768
+    | 832
+    | 896
+    | 960
+    | 1024;
   height:
-  | 128
-  | 192
-  | 256
-  | 320
-  | 384
-  | 448
-  | 512
-  | 576
-  | 640
-  | 704
-  | 768
-  | 832
-  | 896
-  | 960
-  | 1024
+    | 128
+    | 192
+    | 256
+    | 320
+    | 384
+    | 448
+    | 512
+    | 576
+    | 640
+    | 704
+    | 768
+    | 832
+    | 896
+    | 960
+    | 1024;
   // allow_nsfw: boolean
-  turbo: boolean
-  use_cpu: boolean
-  use_full_precision: boolean
-  save_to_disk_path: null | string
-  use_face_correction: null | "GFPGANv1.3"
-  use_upscale: null | "RealESRGAN_x4plus" | "RealESRGAN_x4plus_anime_6B" | ""
-  show_only_filtered_image: boolean
-  init_image: undefined | string
-  prompt_strength: undefined | number
-};
+  turbo: boolean;
+  use_cpu: boolean;
+  use_full_precision: boolean;
+  save_to_disk_path: null | string;
+  use_face_correction: null | "GFPGANv1.3";
+  use_upscale: null | "RealESRGAN_x4plus" | "RealESRGAN_x4plus_anime_6B" | "";
+  show_only_filtered_image: boolean;
+  init_image: undefined | string;
+  prompt_strength: undefined | number;
+}
 
 type ModifiersList = string[];
 type ModifiersOptions = string | ModifiersList[];
 type ModifiersOptionList = ModifiersOptions[];
 
 interface ImageCreateState {
-  parallelCount: number
-  requestOptions: ImageRequest
-  allModifiers: ModifiersOptionList
-  tags: string[]
-  isInpainting: boolean
+  parallelCount: number;
+  requestOptions: ImageRequest;
+  allModifiers: ModifiersOptionList;
+  tags: string[];
+  isInpainting: boolean;
 
-  setParallelCount: (count: number) => void
-  setRequestOptions: (key: keyof ImageRequest, value: any) => void
-  getValueForRequestKey: (key: keyof ImageRequest) => any
-  setAllModifiers: (modifiers: ModifiersOptionList) => void
+  setParallelCount: (count: number) => void;
+  setRequestOptions: (key: keyof ImageRequest, value: any) => void;
+  getValueForRequestKey: (key: keyof ImageRequest) => any;
+  setAllModifiers: (modifiers: ModifiersOptionList) => void;
 
-  setModifierOptions: (key: string, value: any) => void
-  toggleTag: (tag: string) => void
-  hasTag: (tag: string) => boolean
-  selectedTags: () => string[]
-  builtRequest: () => ImageRequest
+  setModifierOptions: (key: string, value: any) => void;
+  toggleTag: (tag: string) => void;
+  hasTag: (tag: string) => boolean;
+  selectedTags: () => string[];
+  builtRequest: () => ImageRequest;
 
-  uiOptions: ImageCreationUiOptions
-  toggleUseUpscaling: () => void
+  uiOptions: ImageCreationUiOptions;
+  toggleUseUpscaling: () => void;
   // isUsingUpscaling: () => boolean
-  toggleUseFaceCorrection: () => void
-  isUsingFaceCorrection: () => boolean
-  isUsingUpscaling: () => boolean
-  toggleUseRandomSeed: () => void
-  isRandomSeed: () => boolean
-  toggleUseAutoSave: () => void
-  isUseAutoSave: () => boolean
-  toggleSoundEnabled: () => void
-  isSoundEnabled: () => boolean
-  toggleInpainting: () => void
+  toggleUseFaceCorrection: () => void;
+  isUsingFaceCorrection: () => boolean;
+  isUsingUpscaling: () => boolean;
+  toggleUseRandomSeed: () => void;
+  isRandomSeed: () => boolean;
+  toggleUseAutoSave: () => void;
+  isUseAutoSave: () => boolean;
+  toggleSoundEnabled: () => void;
+  isSoundEnabled: () => boolean;
+  toggleInpainting: () => void;
 }
 
 // devtools breaks TS
 export const useImageCreate = create<ImageCreateState>(
-  // @ts-ignore
+  // @ts-expect-error
   devtools((set, get) => ({
     parallelCount: 1,
 
@@ -120,7 +120,8 @@ export const useImageCreate = create<ImageCreateState>(
       use_face_correction: "GFPGANv1.3",
       use_upscale: "RealESRGAN_x4plus",
       show_only_filtered_image: true,
-    } as ImageRequest,
+      init_image: undefined,
+    },
 
     // selected tags
     tags: [] as string[],
@@ -235,7 +236,7 @@ export const useImageCreate = create<ImageCreateState>(
         produce((state) => {
           const isSeting =
             typeof state.getValueForRequestKey("use_face_correction") ===
-              "string"
+            "string"
               ? null
               : "GFPGANv1.3";
           state.requestOptions.use_face_correction = isSeting;

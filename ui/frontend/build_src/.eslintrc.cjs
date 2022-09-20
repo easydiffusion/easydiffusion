@@ -54,19 +54,13 @@ module.exports = {
     "@typescript-eslint/space-before-function-paren": "off",
     "@typescript-eslint/quotes": "off",
     "@typescript-eslint/semi": "off",
+    "@typescript-eslint/brace-style": "off",
+    "@typescript-eslint/indent": "off",
+    "@typescript-eslint/member-delimiter-style": "off",
 
     // TS WARNINGS WE WANT
     "@typescript-eslint/no-unused-vars": "warn",
     "@typescript-eslint/no-non-null-assertion": "warn",
-
-    // TS  things turned off for now
-    "@typescript-eslint/consistent-type-assertions": "off",
-
-    "@typescript-eslint/restrict-plus-operands": "off",
-    "@typescript-eslint/brace-style": "off",
-    "@typescript-eslint/prefer-ts-expect-error": "off",
-    "@typescript-eslint/indent": "off",
-    //    "@typescript-eslint/member-delimiter-style": "off",
 
     // i18n stuff no string literal works but turned off for now
     "i18next/no-literal-string": "off",

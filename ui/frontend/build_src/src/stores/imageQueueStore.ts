@@ -35,7 +35,7 @@ export const useImageQueue = create<ImageQueueState>((set, get) => ({
   },
 
   firstInQueue: () => {
-    let first: ImageRequest | {} = get().images[0]
+    let first: ImageRequest | {} = get().images[0];
     first = void 0 !== first ? first : {};
     return first;
   },
