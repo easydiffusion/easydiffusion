@@ -124,7 +124,7 @@ export default function PropertySettings() {
             <span>{guidanceScale}</span>
           </div>
 
-          {initImage && (
+          {void 0 !== initImage && (
             <div className={SettingItem}>
               <label>
                 {t("settings.prompt-str")}{" "}

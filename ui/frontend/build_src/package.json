@@ -33,6 +33,7 @@
     "@typescript-eslint/parser": "^5.37.0",
     "@vitejs/plugin-react": "^2.0.1",
     "eslint": "^8.23.1",
+    "eslint-config-prettier": "^8.5.0",
     "eslint-config-standard-with-typescript": "^23.0.0",
     "eslint-plugin-i18n-json": "^4.0.0",
     "eslint-plugin-i18next": "^6.0.0-4",

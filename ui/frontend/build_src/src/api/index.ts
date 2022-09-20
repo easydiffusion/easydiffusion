@@ -57,13 +57,13 @@ export const toggleBetaConfig = async (branch: string) => {
  * post a new request for an image
  */
 // TODO; put hese some place better
-export type ImageOutput = {
+export interface ImageOutput {
   data: string;
   path_abs: string | null;
   seed: number;
 };
 
-export type ImageReturnType = {
+export interface ImageReturnType {
   output: ImageOutput[];
   request: {};
   status: string;

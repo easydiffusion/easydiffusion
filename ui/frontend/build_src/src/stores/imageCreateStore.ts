@@ -4,60 +4,60 @@ import { devtools } from "zustand/middleware";
 
 import { useRandomSeed } from "../utils";
 
-export type ImageCreationUiOptions = {
-  isUseRandomSeed: boolean;
-  isUseAutoSave: boolean;
-  isSoundEnabled: boolean;
+export interface ImageCreationUiOptions {
+  isUseRandomSeed: boolean
+  isUseAutoSave: boolean
+  isSoundEnabled: boolean
 };
 
-export type ImageRequest = {
-  prompt: string;
-  seed: number;
-  num_outputs: number;
-  num_inference_steps: number;
-  guidance_scale: number;
+export interface ImageRequest {
+  prompt: string
+  seed: number
+  num_outputs: number
+  num_inference_steps: number
+  guidance_scale: number
   width:
-    | 128
-    | 192
-    | 256
-    | 320
-    | 384
-    | 448
-    | 512
-    | 576
-    | 640
-    | 704
-    | 768
-    | 832
-    | 896
-    | 960
-    | 1024;
+  | 128
+  | 192
+  | 256
+  | 320
+  | 384
+  | 448
+  | 512
+  | 576
+  | 640
+  | 704
+  | 768
+  | 832
+  | 896
+  | 960
+  | 1024
   height:
-    | 128
-    | 192
-    | 256
-    | 320
-    | 384
-    | 448
-    | 512
-    | 576
-    | 640
-    | 704
-    | 768
-    | 832
-    | 896
-    | 960
-    | 1024;
-  // allow_nsfw: boolean;
-  turbo: boolean;
-  use_cpu: boolean;
-  use_full_precision: boolean;
-  save_to_disk_path: null | string;
-  use_face_correction: null | "GFPGANv1.3";
-  use_upscale: null | "RealESRGAN_x4plus" | "RealESRGAN_x4plus_anime_6B" | "";
-  show_only_filtered_image: boolean;
-  init_image: undefined | string;
-  prompt_strength: undefined | number;
+  | 128
+  | 192
+  | 256
+  | 320
+  | 384
+  | 448
+  | 512
+  | 576
+  | 640
+  | 704
+  | 768
+  | 832
+  | 896
+  | 960
+  | 1024
+  // allow_nsfw: boolean
+  turbo: boolean
+  use_cpu: boolean
+  use_full_precision: boolean
+  save_to_disk_path: null | string
+  use_face_correction: null | "GFPGANv1.3"
+  use_upscale: null | "RealESRGAN_x4plus" | "RealESRGAN_x4plus_anime_6B" | ""
+  show_only_filtered_image: boolean
+  init_image: undefined | string
+  prompt_strength: undefined | number
 };
 
 type ModifiersList = string[];
@@ -65,36 +65,36 @@ type ModifiersOptions = string | ModifiersList[];
 type ModifiersOptionList = ModifiersOptions[];
 
 interface ImageCreateState {
-  parallelCount: number;
-  requestOptions: ImageRequest;
-  allModifiers: ModifiersOptionList;
-  tags: string[];
-  isInpainting: boolean;
+  parallelCount: number
+  requestOptions: ImageRequest
+  allModifiers: ModifiersOptionList
+  tags: string[]
+  isInpainting: boolean
 
-  setParallelCount: (count: number) => void;
-  setRequestOptions: (key: keyof ImageRequest, value: any) => void;
-  getValueForRequestKey: (key: keyof ImageRequest) => any;
-  setAllModifiers: (modifiers: ModifiersOptionList) => void;
+  setParallelCount: (count: number) => void
+  setRequestOptions: (key: keyof ImageRequest, value: any) => void
+  getValueForRequestKey: (key: keyof ImageRequest) => any
+  setAllModifiers: (modifiers: ModifiersOptionList) => void
 
-  setModifierOptions: (key: string, value: any) => void;
-  toggleTag: (tag: string) => void;
-  hasTag: (tag: string) => boolean;
-  selectedTags: () => string[];
-  builtRequest: () => ImageRequest;
+  setModifierOptions: (key: string, value: any) => void
+  toggleTag: (tag: string) => void
+  hasTag: (tag: string) => boolean
+  selectedTags: () => string[]
+  builtRequest: () => ImageRequest
 
-  uiOptions: ImageCreationUiOptions;
-  toggleUseUpscaling: () => void;
-  // isUsingUpscaling: () => boolean;
-  toggleUseFaceCorrection: () => void;
-  isUsingFaceCorrection: () => boolean;
-  isUsingUpscaling: () => boolean;
-  toggleUseRandomSeed: () => void;
-  isRandomSeed: () => boolean;
-  toggleUseAutoSave: () => void;
-  isUseAutoSave: () => boolean;
-  toggleSoundEnabled: () => void;
-  isSoundEnabled: () => boolean;
-  toggleInpainting: () => void;
+  uiOptions: ImageCreationUiOptions
+  toggleUseUpscaling: () => void
+  // isUsingUpscaling: () => boolean
+  toggleUseFaceCorrection: () => void
+  isUsingFaceCorrection: () => boolean
+  isUsingUpscaling: () => boolean
+  toggleUseRandomSeed: () => void
+  isRandomSeed: () => boolean
+  toggleUseAutoSave: () => void
+  isUseAutoSave: () => boolean
+  toggleSoundEnabled: () => void
+  isSoundEnabled: () => boolean
+  toggleInpainting: () => void
 }
 
 // devtools breaks TS
@@ -178,7 +178,7 @@ export const useImageCreate = create<ImageCreateState>(
     },
 
     hasTag: (tag: string) => {
-      return get().tags.indexOf(tag) > -1;
+      return get().tags.includes(tag);
     },
 
     selectedTags: () => {
@@ -235,7 +235,7 @@ export const useImageCreate = create<ImageCreateState>(
         produce((state) => {
           const isSeting =
             typeof state.getValueForRequestKey("use_face_correction") ===
-            "string"
+              "string"
               ? null
               : "GFPGANv1.3";
           state.requestOptions.use_face_correction = isSeting;
@@ -256,15 +256,16 @@ export const useImageCreate = create<ImageCreateState>(
 
     toggleUseRandomSeed: () => {
       set(
-        produce((state) => {
+        produce((state: ImageCreateState) => {
           state.uiOptions.isUseRandomSeed = !state.uiOptions.isUseRandomSeed;
           state.requestOptions.seed = state.uiOptions.isUseRandomSeed
             ? useRandomSeed()
             : state.requestOptions.seed;
-          localStorage.setItem(
-            "ui:isUseRandomSeed",
-            state.uiOptions.isUseRandomSeed
-          );
+
+          // localStorage.setItem(
+          //   "ui:isUseRandomSeed",
+          //   state.uiOptions.isUseRandomSeed
+          // );
         })
       );
     },
@@ -277,12 +278,13 @@ export const useImageCreate = create<ImageCreateState>(
       //isUseAutoSave
       //save_to_disk_path
       set(
-        produce((state) => {
+        produce((state: ImageCreateState) => {
           state.uiOptions.isUseAutoSave = !state.uiOptions.isUseAutoSave;
-          localStorage.setItem(
-            "ui:isUseAutoSave",
-            state.uiOptions.isUseAutoSave
-          );
+
+          // localStorage.setItem(
+          //   "ui:isUseAutoSave",
+          //   state.uiOptions.isUseAutoSave
+          // );
         })
       );
     },
@@ -293,7 +295,7 @@ export const useImageCreate = create<ImageCreateState>(
 
     toggleSoundEnabled: () => {
       set(
-        produce((state) => {
+        produce((state: ImageCreateState) => {
           state.uiOptions.isSoundEnabled = !state.uiOptions.isSoundEnabled;
           //localStorage.setItem('ui:isSoundEnabled', state.uiOptions.isSoundEnabled);
         })
@@ -306,7 +308,7 @@ export const useImageCreate = create<ImageCreateState>(
 
     toggleInpainting: () => {
       set(
-        produce((state) => {
+        produce((state: ImageCreateState) => {
           state.isInpainting = !state.isInpainting;
         })
       );

@@ -2,23 +2,23 @@ import create from "zustand";
 import produce from "immer";
 import { persist } from "zustand/middleware";
 
-export type ImageCreationUIOptions = {
-  isOpenAdvancedSettings: boolean;
-  isOpenAdvImprovementSettings: boolean;
-  isOpenAdvPropertySettings: boolean;
-  isOpenAdvWorkflowSettings: boolean;
-  isOpenAdvGPUSettings: boolean;
+export interface ImageCreationUIOptions {
+  isOpenAdvancedSettings: boolean
+  isOpenAdvImprovementSettings: boolean
+  isOpenAdvPropertySettings: boolean
+  isOpenAdvWorkflowSettings: boolean
+  isOpenAdvGPUSettings: boolean
 
-  isOpenImageModifier: boolean;
-  imageMofidiersMap: object;
+  isOpenImageModifier: boolean
+  imageMofidiersMap: object
 
-  toggleAdvancedSettings: () => void;
-  toggleAdvImprovementSettings: () => void;
-  toggleAdvPropertySettings: () => void;
-  toggleAdvWorkflowSettings: () => void;
-  toggleAdvGPUSettings: () => void;
+  toggleAdvancedSettings: () => void
+  toggleAdvImprovementSettings: () => void
+  toggleAdvPropertySettings: () => void
+  toggleAdvWorkflowSettings: () => void
+  toggleAdvGPUSettings: () => void
 
-  toggleImageModifier: () => void;
+  toggleImageModifier: () => void
   // addImageModifier: (modifier: string) => void;
 };
 
@@ -36,15 +36,15 @@ export const useCreateUI = create<ImageCreationUIOptions>(
 
       toggleAdvancedSettings: () => {
         set(
-          produce((state) => {
-            state.isOpenAdvancedSettings = !state.isOpenAdvancedSettings;
+          produce((state: ImageCreationUIOptions) => {
+            state.isOpenAdvancedSettings = !(state.isOpenAdvancedSettings);
           })
         );
       },
 
       toggleAdvImprovementSettings: () => {
         set(
-          produce((state) => {
+          produce((state: ImageCreationUIOptions) => {
             state.isOpenAdvImprovementSettings =
               !state.isOpenAdvImprovementSettings;
           })
@@ -53,7 +53,7 @@ export const useCreateUI = create<ImageCreationUIOptions>(
 
       toggleAdvPropertySettings: () => {
         set(
-          produce((state) => {
+          produce((state: ImageCreationUIOptions) => {
             state.isOpenAdvPropertySettings = !state.isOpenAdvPropertySettings;
           })
         );
@@ -61,7 +61,7 @@ export const useCreateUI = create<ImageCreationUIOptions>(
 
       toggleAdvWorkflowSettings: () => {
         set(
-          produce((state) => {
+          produce((state: ImageCreationUIOptions) => {
             state.isOpenAdvWorkflowSettings = !state.isOpenAdvWorkflowSettings;
           })
         );
@@ -69,7 +69,7 @@ export const useCreateUI = create<ImageCreationUIOptions>(
 
       toggleAdvGPUSettings: () => {
         set(
-          produce((state) => {
+          produce((state: ImageCreationUIOptions) => {
             state.isOpenAdvGPUSettings = !state.isOpenAdvGPUSettings;
           })
         );
@@ -77,7 +77,7 @@ export const useCreateUI = create<ImageCreationUIOptions>(
 
       toggleImageModifier: () => {
         set(
-          produce((state) => {
+          produce((state: ImageCreationUIOptions) => {
             state.isOpenImageModifier = !state.isOpenImageModifier;
           })
         );

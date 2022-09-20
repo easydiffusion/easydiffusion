@@ -80,7 +80,8 @@ export default function DisplayPanel() {
       // check to make sure that the image was created
       if (data.status === "succeeded") {
         if (isSoundEnabled) {
-          dingRef.current?.play();
+          // not awaiting the promise or error handling
+          void dingRef.current?.play();
         }
         removeFirstInQueue();
       }
@@ -123,7 +124,13 @@ export default function DisplayPanel() {
         .filter((item) => void 0 !== item) as CompletedImagesType[]; // remove undefined items
 
       setCompletedImages(temp);
-      setCurrentImage(temp[0] || null);
+
+      // could move this to the useEffect for completedImages
+      if (temp.length > 0) {
+        setCurrentImage(temp[0]);
+      } else {
+        setCurrentImage(null);
+      }
     } else {
       setCompletedImages([]);
       setCurrentImage(null);

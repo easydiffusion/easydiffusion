@@ -34,7 +34,7 @@ export default function SeedImage(_props: any) {
     // @ts-expect-error
     const file = event.target.files[0];
 
-    if (file) {
+    if (void 0 !== file) {
       const reader = new FileReader();
       reader.onload = (e) => {
         if (e.target != null) {
@@ -74,7 +74,7 @@ export default function SeedImage(_props: any) {
       </div>
 
       <div className={ImageFixer}>
-        {initImage && (
+        {void 0 !== initImage && (
           <>
             <div>
               <img src={initImage} width="100" height="100" />

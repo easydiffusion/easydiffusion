@@ -8,12 +8,12 @@ import {
 // https://github.com/embiem/react-canvas-draw
 
 interface DrawImageProps {
-  imageData: string;
-  brushSize: string;
+  imageData: string
+  brushSize: string
 
-  brushShape: string;
-  brushColor: string;
-  isErasing: boolean;
+  brushShape: string
+  brushColor: string
+  isErasing: boolean
 }
 
 export default function DrawImage({

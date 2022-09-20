@@ -16,7 +16,7 @@ import { useCreateUI } from "../creationPanelUIStore";
 import ModifierTag from "../../../atoms/modifierTag";
 
 interface ModifierListProps {
-  tags: string[];
+  tags: string[]
 }
 
 function ModifierList({ tags }: ModifierListProps) {
@@ -32,8 +32,8 @@ function ModifierList({ tags }: ModifierListProps) {
 }
 
 interface ModifierGroupingProps {
-  title: string;
-  tags: string[];
+  title: string
+  tags: string[]
 }
 
 function ModifierGrouping({ title, tags }: ModifierGroupingProps) {

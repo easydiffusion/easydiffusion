@@ -32,7 +32,7 @@ export default function CurrentDisplay({
       use_upscale,
       width,
       height,
-    } = info! as ImageRequest;
+    } = info!;
 
     // Most important information is the prompt
     let underscoreName = prompt.replace(/[^a-zA-Z0-9]/g, "_");
@@ -40,10 +40,10 @@ export default function CurrentDisplay({
     // name and the top level metadata
     let fileName = `${underscoreName}_Seed-${seed}_Steps-${num_inference_steps}_Guidance-${guidance_scale}`;
     // Add the face correction and upscale
-    if (use_face_correction) {
+    if (typeof use_face_correction == "string") {
       fileName += `_FaceCorrection-${use_face_correction}`;
     }
-    if (use_upscale) {
+    if (typeof use_upscale == "string") {
       fileName += `_Upscale-${use_upscale}`;
     }
     // Add the width and height
@@ -70,7 +70,8 @@ export default function CurrentDisplay({
       {isLoading ? (
         <h4 className="loading">Loading...</h4>
       ) : (
-        (image != null && (
+        (image !== null && (
+          // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
           <div>
             <p> {info?.prompt}</p>
             <GeneratedImage imageData={data} metadata={info}></GeneratedImage>
