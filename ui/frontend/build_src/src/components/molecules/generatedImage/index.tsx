@@ -1,6 +1,6 @@
-import React, { useCallback } from "react";
+import React from "react";
 
-import { ImageRequest, useImageCreate } from "../../../stores/imageCreateStore";
+import { ImageRequest } from "../../../stores/imageCreateStore";
 
 import {
   generatedImageMain,

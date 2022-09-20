@@ -105,7 +105,7 @@ export default function ImprovementSettings() {
                   setRequestOption("show_only_filtered_image", e.target.checked)
                 }
               />
-              {t("settings.correct")}
+              {t("settings.corrected")}
             </label>
           </div>
         </>

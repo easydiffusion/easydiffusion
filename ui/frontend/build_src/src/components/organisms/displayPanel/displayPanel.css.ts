@@ -1,8 +1,5 @@
 import { style } from "@vanilla-extract/css";
 
-// @ts-ignore
-import { vars } from "../../../styles/theme/index.css.ts";
-
 export const displayPanel = style({
   height: "100%",
   display: "flex",
@@ -17,6 +14,4 @@ export const displayContainer = style({
   alignItems: "center",
 });
 
-export const previousImages = style({
-  // height: "150px",
-});
+export const previousImages = style({});

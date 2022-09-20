@@ -56,6 +56,19 @@ export const toggleBetaConfig = async (branch: string) => {
 /**
  * post a new request for an image
  */
+// TODO; put hese some place better
+export type ImageOutput = {
+  data: string;
+  path_abs: string | null;
+  seed: number;
+};
+
+export type ImageReturnType = {
+  output: ImageOutput[];
+  request: {};
+  status: string;
+  session_id: string;
+};
 
 export const MakeImageKey = "MakeImage";
 export const doMakeImage = async (reqBody: ImageRequest) => {
