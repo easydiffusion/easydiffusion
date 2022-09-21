@@ -1,3 +1,7 @@
+<!--
+    THIS IS NO LONGER BEING SERVED REMOVE WHEN WE HAVE PORTED ANY
+     OF THE FEATURES THAT WERE PARTIALLY COMPLETE WHEN WE DID THE CUT OVER
+-->
 <!DOCTYPE html>
 <html>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1269,7 +1273,6 @@ function showInitImagePreview() {
     let file = initImageSelector.files[0]
 
     reader.addEventListener('load', function() {
-        // console.log(file.name, reader.result)
         initImagePreview.src = reader.result
         initImagePreviewContainer.style.display = 'block'
         inpaintingEditorContainer.style.display = 'none'

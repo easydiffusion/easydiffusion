@@ -2,4 +2,10 @@ __pycache__
 installer
 installer.tar
 dist
+
+# built code for the front end
+!/ui/frontend/dist
+ui/frontend/.idea/*
+ui/frontend/build_src/.idea/*
+
 .idea/*
