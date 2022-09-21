@@ -714,14 +714,13 @@ async function doMakeImage(reqBody, batchCount) {
     let res = ''
     let seed = reqBody['seed']
     let numOutputs = parseInt(reqBody['num_outputs'])
+    let showOnlyFilteredImage = reqBody['show_only_filtered_image']
 
     let images = []
 
-    function makeImageContainers() {
-        if (images.length === 0) {
-            for (let i = 0; i < numOutputs; i++) {
-                images.push(makeImageElement(reqBody.width, reqBody.height))
-            }
+    function makeImageContainers(numImages) {
+        for (let i = images.length; i < numImages; i++) {
+            images.push(makeImageElement(reqBody.width, reqBody.height))
         }
     }
 
@@ -777,7 +776,7 @@ async function doMakeImage(reqBody, batchCount) {
                         progressBar.style.display = 'block'
 
                         if (stepUpdate.output !== undefined) {
-                            makeImageContainers()
+                            makeImageContainers(numOutputs)
 
                             for (idx in stepUpdate.output) {
                                 let imgItem = images[idx]
@@ -844,7 +843,7 @@ async function doMakeImage(reqBody, batchCount) {
 
     lastPromptUsed = reqBody['prompt']
 
-    makeImageContainers()
+    makeImageContainers(numOutputs * (showOnlyFilteredImage ? 1 : 2))
 
     for (let idx in res.output) {
         let imgBody = ''
