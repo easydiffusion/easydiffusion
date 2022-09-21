@@ -33,7 +33,7 @@ filename_regex = re.compile('[^a-zA-Z0-9]')
 from . import Request, Response, Image as ResponseImage
 import base64
 from io import BytesIO
-from colorama import Fore
+#from colorama import Fore
 
 # local
 stop_processing = False
@@ -464,7 +464,7 @@ def mk_img(req: Request):
                     del x_samples
                     print("memory_final = ", torch.cuda.memory_allocated() / 1e6)
 
-    print(Fore.GREEN + 'Task completed')
+    print('Task completed')
 
     if req.stream_progress_updates:
         yield json.dumps(res.json())
