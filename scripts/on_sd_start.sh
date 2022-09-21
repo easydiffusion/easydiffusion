@@ -4,7 +4,7 @@ cp sd-ui-files/scripts/on_env_start.sh scripts/
 
 source installer/etc/profile.d/conda.sh
 
-python -c "import os; import shutil; frm = 'sd-ui-files/ui/hotfix/9c24e6cd9f499d02c4f21a033736dabd365962dc80fe3aeb57a8f85ea45a20a3.26fead7ea4f0f843f6eb4055dfd25693f1a71f3c6871b184042d4b126244e142'; dst = os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'transformers', '9c24e6cd9f499d02c4f21a033736dabd365962dc80fe3aeb57a8f85ea45a20a3.26fead7ea4f0f843f6eb4055dfd25693f1a71f3c6871b184042d4b126244e142'); shutil.copyfile(frm, dst); print('Hotfixed broken JSON file from OpenAI');"
+python -c "import os; import shutil; frm = 'sd-ui-files/ui/hotfix/9c24e6cd9f499d02c4f21a033736dabd365962dc80fe3aeb57a8f85ea45a20a3.26fead7ea4f0f843f6eb4055dfd25693f1a71f3c6871b184042d4b126244e142'; dst = os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'transformers', '9c24e6cd9f499d02c4f21a033736dabd365962dc80fe3aeb57a8f85ea45a20a3.26fead7ea4f0f843f6eb4055dfd25693f1a71f3c6871b184042d4b126244e142'); shutil.copyfile(frm, dst) if os.path.exists(dst) else print(''); print('Hotfixed broken JSON file from OpenAI');"
 
 # Caution, this file will make your eyes and brain bleed. It's such an unholy mess.
 # Note to self: Please rewrite this in Python. For the sake of your own sanity.
@@ -62,6 +62,14 @@ else
     fi
 
     conda activate ./env
+
+    if conda install -c conda-forge --prefix ./env -y antlr4-python3-runtime=4.8 ; then
+        echo "Installed. Testing.."
+    else
+        printf "\n\nError installing antlr4-python3-runtime for Stable Diffusion. Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/blob/main/Troubleshooting.md\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
+        read -p "Press any key to continue"
+        exit
+    fi
 
     out_test=`python -c "import torch; import ldm; import transformers; import numpy; import antlr4; print(42)"`
     if [ "$out_test" != "42" ]; then

@@ -1,6 +1,7 @@
 import json
 
 class Request:
+    session_id: str = "session"
     prompt: str = ""
     init_image: str = None # base64
     mask: str = None # base64
@@ -22,9 +23,11 @@ class Request:
     show_only_filtered_image: bool = False
 
     stream_progress_updates: bool = False
+    stream_image_progress: bool = False
 
     def json(self):
         return {
+            "session_id": self.session_id,
             "prompt": self.prompt,
             "num_outputs": self.num_outputs,
             "num_inference_steps": self.num_inference_steps,
@@ -39,6 +42,7 @@ class Request:
 
     def to_string(self):
         return f'''
+    session_id: {self.session_id}
     prompt: {self.prompt}
     seed: {self.seed}
     num_inference_steps: {self.num_inference_steps}
@@ -54,7 +58,8 @@ class Request:
     use_upscale: {self.use_upscale}
     show_only_filtered_image: {self.show_only_filtered_image}
 
-    stream_progress_updates: {self.stream_progress_updates}'''
+    stream_progress_updates: {self.stream_progress_updates}
+    stream_image_progress: {self.stream_image_progress}'''
 
 class Image:
     data: str # base64
@@ -75,13 +80,11 @@ class Image:
 
 class Response:
     request: Request
-    session_id: str
     images: list
 
     def json(self):
         res = {
             "status": 'succeeded',
-            "session_id": self.session_id,
             "request": self.request.json(),
             "output": [],
         }

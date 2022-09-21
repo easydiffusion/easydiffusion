@@ -5,6 +5,8 @@
 <!DOCTYPE html>
 <html>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/media/favicon-16x16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="/media/favicon-32x32.png" sizes="32x32">
     <style>
     body {
         font-family: Arial, Helvetica, sans-serif;
@@ -31,7 +33,7 @@
         }
     }
     .image_preview_container {
-        display: none;
+        /* display: none; */
         margin-top: 10pt;
     }
     .image_clear_btn {
@@ -278,7 +280,24 @@
         height: 23px;
         transform: translateY(25%);
     }
+    #inpaintingEditor {
+        width: 300pt;
+        height: 300pt;
+        margin-top: 5pt;
+    }
+    .drawing-board-canvas-wrapper {
+        background-size: 100% 100%;
+    }
+    #inpaintingEditor canvas {
+        opacity: 0.6;
+    }
+    #enable_mask {
+        margin-top: 8pt;
+    }
     </style>
+    <link rel="stylesheet" href="/media/drawingboard.min.css">
+    <script src="/media/jquery-3.6.1.min.js"></script>
+    <script src="/media/drawingboard.min.js"></script>
 </html>
 <body>
 <div id="container">
@@ -289,7 +308,7 @@
                     <div id="server-status-color">&nbsp;</div>
                     <span id="server-status-msg">Stable Diffusion is starting..</span>
                 </div>
-                <h1>Stable Diffusion UI <small>v2.1 <span id="updateBranchLabel"></span></small></h1>
+                <h1>Stable Diffusion UI <small>v2.13 <span id="updateBranchLabel"></span></small></h1>
             </div>
             <div id="editor-inputs">
                 <div id="editor-inputs-prompt" class="row">
@@ -299,9 +318,14 @@
 
                 <div id="editor-inputs-init-image" class="row">
                     <label for="init_image"><b>Initial Image:</b> (optional) </label> <input id="init_image" name="init_image" type="file" /><br/>
+
                     <div id="init_image_preview_container" class="image_preview_container">
                         <img id="init_image_preview" src="" width="100" height="100" />
-                        <button id="init_image_clear" class="image_clear_btn">X</button>
+                        <button class="init_image_clear image_clear_btn">X</button>
+
+                        <br/>
+                        <input id="enable_mask" name="enable_mask" type="checkbox"> <label for="enable_mask">In-Painting (select the area which the AI will paint into)</label>
+                        <div id="inpaintingEditor"></div>
                     </div>
                 </div>
 
@@ -320,6 +344,7 @@
             <div id="editor-settings" class="panel-box">
                 <h4 class="collapsible">Advanced Settings</h4>
                 <ul id="editor-settings-entries" class="collapsible-content">
+                    <li><input id="stream_image_progress" name="stream_image_progress" type="checkbox"> <label for="stream_image_progress">Show a live preview of the image (disable this for faster image generation)</label></li>
                     <li><input id="use_face_correction" name="use_face_correction" type="checkbox" checked> <label for="use_face_correction">Fix incorrect faces and eyes (uses GFPGAN)</label></li>
                     <li>
                         <input id="use_upscale" name="use_upscale" type="checkbox"> <label for="use_upscale">Upscale the image to 4x resolution using </label>
@@ -436,10 +461,13 @@ const MODIFIERS_PANEL_OPEN_KEY = "modifiersPanelOpen"
 const USE_FACE_CORRECTION_KEY = "useFaceCorrection"
 const USE_UPSCALING_KEY = "useUpscaling"
 const SHOW_ONLY_FILTERED_IMAGE_KEY = "showOnlyFilteredImage"
+const STREAM_IMAGE_PROGRESS_KEY = "streamImageProgress"
 const HEALTH_PING_INTERVAL = 5 // seconds
 const MAX_INIT_IMAGE_DIMENSION = 768
 
 const IMAGE_REGEX = new RegExp('data:image/[A-Za-z]+;base64')
+
+let sessionId = new Date().getTime()
 
 let promptField = document.querySelector('#prompt')
 let numOutputsTotalField = document.querySelector('#num_outputs_total')
@@ -453,8 +481,8 @@ let widthField = document.querySelector('#width')
 let heightField = document.querySelector('#height')
 let initImageSelector = document.querySelector("#init_image")
 let initImagePreview = document.querySelector("#init_image_preview")
-// let maskImageSelector = document.querySelector("#mask")
-// let maskImagePreview = document.querySelector("#mask_preview")
+let maskImageSelector = document.querySelector("#mask")
+let maskImagePreview = document.querySelector("#mask_preview")
 let turboField = document.querySelector('#turbo')
 let useCPUField = document.querySelector('#use_cpu')
 let useFullPrecisionField = document.querySelector('#use_full_precision')
@@ -469,18 +497,20 @@ let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
 let showOnlyFilteredImageField = document.querySelector("#show_only_filtered_image")
 let updateBranchLabel = document.querySelector("#updateBranchLabel")
+let streamImageProgressField = document.querySelector("#stream_image_progress")
 
 let makeImageBtn = document.querySelector('#makeImage')
 let stopImageBtn = document.querySelector('#stopImage')
 
 let imagesContainer = document.querySelector('#current-images')
 let initImagePreviewContainer = document.querySelector('#init_image_preview_container')
-let initImageClearBtn = document.querySelector('#init_image_clear')
+let initImageClearBtn = document.querySelector('.init_image_clear')
 let promptStrengthContainer = document.querySelector('#prompt_strength_container')
 
-// let maskSetting = document.querySelector('#mask_setting')
+// let maskSetting = document.querySelector('#editor-inputs-mask_setting')
 // let maskImagePreviewContainer = document.querySelector('#mask_preview_container')
 // let maskImageClearBtn = document.querySelector('#mask_clear')
+let maskSetting = document.querySelector('#enable_mask')
 
 let editorModifierEntries = document.querySelector('#editor-modifiers-entries')
 let editorModifierTagsList = document.querySelector('#editor-inputs-tags-list')
@@ -500,6 +530,29 @@ let serverStatusMsg = document.querySelector('#server-status-msg')
 
 let advancedPanelHandle = document.querySelector("#editor-settings .collapsible")
 let modifiersPanelHandle = document.querySelector("#editor-modifiers .collapsible")
+let inpaintingEditorContainer = document.querySelector('#inpaintingEditor')
+let inpaintingEditor = new DrawingBoard.Board('inpaintingEditor', {
+    color: "#ffffff",
+    background: false,
+    size: 30,
+    webStorage: false,
+    controls: [{'DrawingMode': {'filler': false}}, 'Size', 'Navigation']
+})
+let inpaintingEditorCanvasBackground = document.querySelector('.drawing-board-canvas-wrapper')
+// let inpaintingEditorControls = document.querySelector('.drawing-board-controls')
+
+// let inpaintingEditorMetaControl = document.createElement('div')
+// inpaintingEditorMetaControl.className = 'drawing-board-control'
+// let initImageClearBtnToolbar = document.createElement('button')
+// initImageClearBtnToolbar.className = 'init_image_clear'
+// initImageClearBtnToolbar.innerHTML = 'Remove Image'
+// inpaintingEditorMetaControl.appendChild(initImageClearBtnToolbar)
+// inpaintingEditorControls.appendChild(inpaintingEditorMetaControl)
+
+let maskResetButton = document.querySelector('.drawing-board-control-navigation-reset')
+maskResetButton.innerHTML = 'Clear'
+maskResetButton.style.fontWeight = 'normal'
+maskResetButton.style.fontSize = '10pt'
 
 let serverStatus = 'offline'
 let activeTags = []
@@ -581,6 +634,10 @@ function isModifiersPanelOpenEnabled() {
     return getLocalStorageBoolItem(MODIFIERS_PANEL_OPEN_KEY, false)
 }
 
+function isStreamImageProgressEnabled() {
+    return getLocalStorageBoolItem(STREAM_IMAGE_PROGRESS_KEY, false)
+}
+
 function setStatus(statusType, msg, msgType) {
     if (statusType !== 'server') {
         return;
@@ -640,6 +697,20 @@ async function healthCheck() {
     }
 }
 
+function makeImageElement(width, height) {
+    let imgItem = document.createElement('div')
+    imgItem.className = 'imgItem'
+
+    let img = document.createElement('img')
+    img.width = parseInt(width)
+    img.height = parseInt(height)
+
+    imgItem.appendChild(img)
+    imagesContainer.appendChild(imgItem)
+
+    return imgItem
+}
+
 // makes a single image. don't call this directly, use makeImage() instead
 async function doMakeImage(reqBody, batchCount) {
     if (taskStopped) {
@@ -648,6 +719,15 @@ async function doMakeImage(reqBody, batchCount) {
 
     let res = ''
     let seed = reqBody['seed']
+    let numOutputs = parseInt(reqBody['num_outputs'])
+
+    let images = []
+
+    function makeImageContainers(numImages) {
+        for (let i = images.length; i < numImages; i++) {
+            images.push(makeImageElement(reqBody.width, reqBody.height))
+        }
+    }
 
     try {
         res = await fetch('/image', {
@@ -685,9 +765,11 @@ async function doMakeImage(reqBody, batchCount) {
                         let overallStepCount = stepUpdate.step + batchesDone * batchSize
                         let totalSteps = batchCount * batchSize
                         let percent = 100 * (overallStepCount / totalSteps)
+                        percent = (percent > 100 ? 100 : percent)
                         percent = percent.toFixed(0)
 
                         stepsRemaining = totalSteps - overallStepCount
+                        stepsRemaining = (stepsRemaining < 0 ? 0 : stepsRemaining)
                         timeRemaining = (timeTaken === -1 ? '' : stepsRemaining * timeTaken) // ms
 
                         outputMsg.innerHTML = `Batch ${batchesDone+1} of ${batchCount}`
@@ -697,6 +779,17 @@ async function doMakeImage(reqBody, batchCount) {
                             progressBar.innerHTML += `<br>Time remaining (approx): ${millisecondsToStr(timeRemaining)}`
                         }
                         progressBar.style.display = 'block'
+
+                        if (stepUpdate.output !== undefined) {
+                            makeImageContainers(numOutputs)
+
+                            for (idx in stepUpdate.output) {
+                                let imgItem = images[idx]
+                                let img = imgItem.firstChild
+                                let tmpImageData = stepUpdate.output[idx]
+                                img.src = tmpImageData['path'] + '?t=' + new Date().getTime()
+                            }
+                        }
                     }
                 } catch (e) {
                     finalJSON += jsonStr
@@ -755,6 +848,8 @@ async function doMakeImage(reqBody, batchCount) {
 
     lastPromptUsed = reqBody['prompt']
 
+    makeImageContainers(res.output.length)
+
     for (let idx in res.output) {
         let imgBody = ''
         let seed = 0
@@ -769,12 +864,9 @@ async function doMakeImage(reqBody, batchCount) {
             continue
         }
 
-        let imgItem = document.createElement('div')
-        imgItem.className = 'imgItem'
+        let imgItem = images[idx]
+        let img = imgItem.firstChild
 
-        let img = document.createElement('img')
-        img.width = parseInt(reqBody.width)
-        img.height = parseInt(reqBody.height)
         img.src = imgBody
 
         let imgItemInfo = document.createElement('span')
@@ -792,19 +884,19 @@ async function doMakeImage(reqBody, batchCount) {
         imgSaveBtn.className = 'imgSaveBtn'
         imgSaveBtn.innerHTML = 'Download'
 
-        imgItem.appendChild(img)
         imgItem.appendChild(imgItemInfo)
         imgItemInfo.appendChild(imgSeedLabel)
         imgItemInfo.appendChild(imgUseBtn)
         imgItemInfo.appendChild(imgSaveBtn)
-        imagesContainer.appendChild(imgItem)
 
         imgUseBtn.addEventListener('click', function() {
             initImageSelector.value = null
             initImagePreview.src = imgBody
 
             initImagePreviewContainer.style.display = 'block'
+            inpaintingEditorContainer.style.display = 'none'
             promptStrengthContainer.style.display = 'block'
+            maskSetting.checked = false
 
             // maskSetting.style.display = 'block'
 
@@ -868,6 +960,7 @@ async function makeImage() {
     setStatus('request', 'fetching..')
 
     makeImageBtn.innerHTML = 'Processing..'
+    makeImageBtn.disabled = true
     makeImageBtn.style.display = 'none'
     stopImageBtn.style.display = 'block'
 
@@ -880,6 +973,8 @@ async function makeImage() {
     let batchCount = Math.ceil(numOutputsTotal / numOutputsParallel)
     let batchSize = numOutputsParallel
 
+    let streamImageProgress = (numOutputsTotal > 50 ? false : streamImageProgressField.checked)
+
     let prompt = promptField.value
     if (activeTags.length > 0) {
         let promptTags = activeTags.join(", ")
@@ -889,6 +984,7 @@ async function makeImage() {
     previewPrompt.innerHTML = prompt
 
     let reqBody = {
+        session_id: sessionId,
         prompt: prompt,
         num_outputs: batchSize,
         num_inference_steps: numInferenceStepsField.value,
@@ -899,7 +995,9 @@ async function makeImage() {
         turbo: turboField.checked,
         use_cpu: useCPUField.checked,
         use_full_precision: useFullPrecisionField.checked,
-        stream_progress_updates: true
+        stream_progress_updates: true,
+        stream_image_progress: streamImageProgress,
+        show_only_filtered_image: showOnlyFilteredImageField.checked
     }
 
     if (IMAGE_REGEX.test(initImagePreview.src)) {
@@ -909,6 +1007,9 @@ async function makeImage() {
         // if (IMAGE_REGEX.test(maskImagePreview.src)) {
         //     reqBody['mask'] = maskImagePreview.src
         // }
+        if (maskSetting.checked) {
+            reqBody['mask'] = inpaintingEditor.getImg()
+        }
     }
 
     if (saveToDiskField.checked && diskPathField.value.trim() !== '') {
@@ -921,10 +1022,6 @@ async function makeImage() {
 
     if (useUpscalingField.checked) {
         reqBody['use_upscale'] = upscaleModelField.value
-    }
-
-    if (showOnlyFilteredImageField.checked && (useUpscalingField.checked || useFaceCorrectionField.checked)) {
-        reqBody['show_only_filtered_image'] = showOnlyFilteredImageField.checked
     }
 
     let time = new Date().getTime()
@@ -1039,6 +1136,9 @@ useFullPrecisionField.checked = isUseFullPrecisionEnabled()
 
 turboField.addEventListener('click', handleBoolSettingChange(USE_TURBO_MODE_KEY))
 turboField.checked = isUseTurboModeEnabled()
+
+streamImageProgressField.addEventListener('click', handleBoolSettingChange(STREAM_IMAGE_PROGRESS_KEY))
+streamImageProgressField.checked = isStreamImageProgressEnabled()
 
 diskPathField.addEventListener('change', handleStringSettingChange(DISK_PATH_KEY))
 
@@ -1163,6 +1263,7 @@ checkRandomSeed()
 function showInitImagePreview() {
     if (initImageSelector.files.length === 0) {
         initImagePreviewContainer.style.display = 'none'
+        // inpaintingEditorContainer.style.display = 'none'
         promptStrengthContainer.style.display = 'none'
         // maskSetting.style.display = 'none'
         return
@@ -1174,7 +1275,9 @@ function showInitImagePreview() {
     reader.addEventListener('load', function() {
         initImagePreview.src = reader.result
         initImagePreviewContainer.style.display = 'block'
+        inpaintingEditorContainer.style.display = 'none'
         promptStrengthContainer.style.display = 'block'
+        // maskSetting.checked = false
     })
 
     if (file) {
@@ -1184,14 +1287,22 @@ function showInitImagePreview() {
 initImageSelector.addEventListener('change', showInitImagePreview)
 showInitImagePreview()
 
+initImagePreview.addEventListener('load', function() {
+    inpaintingEditorCanvasBackground.style.backgroundImage = "url('" + this.src + "')"
+    // maskSetting.style.display = 'block'
+    // inpaintingEditorContainer.style.display = 'block'
+})
+
 initImageClearBtn.addEventListener('click', function() {
     initImageSelector.value = null
     // maskImageSelector.value = null
 
     initImagePreview.src = ''
     // maskImagePreview.src = ''
+    maskSetting.checked = false
 
     initImagePreviewContainer.style.display = 'none'
+    // inpaintingEditorContainer.style.display = 'none'
     // maskImagePreviewContainer.style.display = 'none'
 
     // maskSetting.style.display = 'none'
@@ -1199,9 +1310,13 @@ initImageClearBtn.addEventListener('click', function() {
     promptStrengthContainer.style.display = 'none'
 })
 
+maskSetting.addEventListener('click', function() {
+    inpaintingEditorContainer.style.display = (this.checked ? 'block' : 'none')
+})
+
 // function showMaskImagePreview() {
 //     if (maskImageSelector.files.length === 0) {
-//         maskImagePreviewContainer.style.display = 'none'
+//         // maskImagePreviewContainer.style.display = 'none'
 //         return
 //     }
 
@@ -1209,8 +1324,8 @@ initImageClearBtn.addEventListener('click', function() {
 //     let file = maskImageSelector.files[0]
 
 //     reader.addEventListener('load', function() {
-//         maskImagePreview.src = reader.result
-//         maskImagePreviewContainer.style.display = 'block'
+//         // maskImagePreview.src = reader.result
+//         // maskImagePreviewContainer.style.display = 'block'
 //     })
 
 //     if (file) {
@@ -1223,7 +1338,7 @@ initImageClearBtn.addEventListener('click', function() {
 // maskImageClearBtn.addEventListener('click', function() {
 //     maskImageSelector.value = null
 //     maskImagePreview.src = ''
-//     maskImagePreviewContainer.style.display = 'none'
+//     // maskImagePreviewContainer.style.display = 'none'
 // })
 
 // https://stackoverflow.com/a/8212878
@@ -1407,5 +1522,4 @@ async function init() {
 
 init()
 </script>
-
 </html>
