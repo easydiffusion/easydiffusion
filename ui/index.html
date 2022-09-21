@@ -714,7 +714,6 @@ async function doMakeImage(reqBody, batchCount) {
     let res = ''
     let seed = reqBody['seed']
     let numOutputs = parseInt(reqBody['num_outputs'])
-    let showOnlyFilteredImage = reqBody['show_only_filtered_image']
 
     let images = []
 
@@ -843,7 +842,7 @@ async function doMakeImage(reqBody, batchCount) {
 
     lastPromptUsed = reqBody['prompt']
 
-    makeImageContainers(numOutputs * (showOnlyFilteredImage ? 1 : 2))
+    makeImageContainers(res.output.length)
 
     for (let idx in res.output) {
         let imgBody = ''
@@ -991,7 +990,8 @@ async function makeImage() {
         use_cpu: useCPUField.checked,
         use_full_precision: useFullPrecisionField.checked,
         stream_progress_updates: true,
-        stream_image_progress: streamImageProgress
+        stream_image_progress: streamImageProgress,
+        show_only_filtered_image: showOnlyFilteredImageField.checked
     }
 
     if (IMAGE_REGEX.test(initImagePreview.src)) {
@@ -1016,10 +1016,6 @@ async function makeImage() {
 
     if (useUpscalingField.checked) {
         reqBody['use_upscale'] = upscaleModelField.value
-    }
-
-    if (showOnlyFilteredImageField.checked && (useUpscalingField.checked || useFaceCorrectionField.checked)) {
-        reqBody['show_only_filtered_image'] = showOnlyFilteredImageField.checked
     }
 
     let time = new Date().getTime()

@@ -399,6 +399,9 @@ def mk_img(req: Request):
                         x_sample = x_sample.astype(np.uint8)
                         img = Image.fromarray(x_sample)
 
+                        has_filters =   (opt_use_face_correction is not None and opt_use_face_correction.startswith('GFPGAN')) or \
+                                        (opt_use_upscale is not None and opt_use_upscale.startswith('RealESRGAN'))
+
                         if opt_save_to_disk_path is not None:
                             prompt_flattened = filename_regex.sub('_', prompts[0])
                             prompt_flattened = prompt_flattened[:50]
@@ -409,12 +412,12 @@ def mk_img(req: Request):
                             img_out_path = os.path.join(session_out_path, f"{file_path}.{opt_format}")
                             meta_out_path = os.path.join(session_out_path, f"{file_path}.txt")
 
-                            if not opt_show_only_filtered:
+                            if not has_filters or not opt_show_only_filtered:
                                 save_image(img, img_out_path)
 
                             save_metadata(meta_out_path, prompts, opt_seed, opt_W, opt_H, opt_ddim_steps, opt_scale, opt_strength, opt_use_face_correction, opt_use_upscale)
 
-                        if not opt_show_only_filtered:
+                        if not has_filters or not opt_show_only_filtered:
                             img_data = img_to_base64_str(img)
                             res_image_orig = ResponseImage(data=img_data, seed=opt_seed)
                             res.images.append(res_image_orig)
@@ -422,9 +425,7 @@ def mk_img(req: Request):
                             if opt_save_to_disk_path is not None:
                                 res_image_orig.path_abs = img_out_path
 
-                        if (opt_use_face_correction is not None and opt_use_face_correction.startswith('GFPGAN')) or \
-                            (opt_use_upscale is not None and opt_use_upscale.startswith('RealESRGAN')):
-
+                        if has_filters:
                             print('Applying filters..')
 
                             gc()
