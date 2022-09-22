@@ -200,33 +200,6 @@
         margin: 0;
         padding: 2px 0;
     }
-    .prompt-modifier-tag {
-        border: 1px solid rgb(10, 0, 24);
-        border-radius: 4px;
-        padding: 0pt 3pt;
-        margin-right: 2pt;
-        cursor: pointer;
-        display: inline;
-        background: rgb(163, 163, 163);
-        color: black;
-        line-height: 25pt;
-        float: left;
-        font-size: 9pt;
-    }
-    .prompt-modifier-tag:hover {
-        background: black;
-        color: white;
-    }
-    #editor-modifiers-entries .prompt-modifier-tag {
-        background: #110f0f;
-        color: rgb(212, 212, 212);
-        margin-bottom: 4pt;
-        font-size: 10pt;
-    }
-    #editor-modifiers-entries .prompt-modifier-tag:hover {
-        background: rgb(163, 163, 163);
-        color: black;
-    }
     #editor-modifiers .editor-modifiers-leaf {
         padding-top: 10pt;
         padding-bottom: 10pt;
@@ -271,6 +244,98 @@
         height: 23px;
         transform: translateY(25%);
     }
+    .modifier-card {
+        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+        transition: 0.1s;
+        border-radius: 7px;
+        margin: 3pt 3pt;
+        float: left;
+        width: 8em;
+        height: 11.5em;
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: 8em 3.5em;
+        gap: 0px 0px;
+        grid-auto-flow: row;
+        grid-template-areas:
+            "modifier-card-image"
+            "modifier-card-container";
+        border: 2px solid rgba(255, 255, 255, .05);
+        cursor: pointer;
+    }
+    .modifier-card-tiny {
+        width: 6em;
+        height: 9.5em;
+        grid-template-rows: 6em 3.5em;
+    }
+    .modifier-card-tiny p {
+        font-size: 0.7em;
+    }
+    .modifier-card:hover {
+        box-shadow: 0 5px 16px 5px rgba(0, 0, 0, 0.25);
+    }
+    .modifier-card-image {
+        border-radius: 5px 5px 0 0;
+        width: inherit;
+        height: 100%;
+        background-color: rgba(0, 0, 0, .2);
+        grid-area: modifier-card-image;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgb(255 255 255 / 8%);
+    }
+    .modifier-card-image img {
+        width: inherit;
+        height: 100%;
+        border-radius: 5px 5px 0 0;
+    }
+    .modifier-card-container {
+        text-align: center;
+        background-color: rgba(0,0,0,0.5);
+        border-radius: 0 0 5px 5px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        grid-area: modifier-card-container;
+        font-weight: 100;
+        font-size: .9em;
+        padding: 4px;
+    }
+    .modifier-card-overlay {
+        width: inherit;
+        height: inherit;
+        background-color: rgb(0 0 0 / 50%);
+        z-index: 2;
+        position: absolute;
+        border-radius: 5px 5px 0 0;
+        opacity: 0;
+        font-size: 5em;
+        font-weight: 900;
+        color: rgb(255 255 255 / 50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .modifier-card:hover > .modifier-card-image .modifier-card-overlay {
+        opacity: 1;
+    }
+    .modifier-card:hover > .modifier-card-image img {
+        filter: blur(.1em);
+    }
+    .modifier-card:active {
+        transform: scale(0.95);
+        box-shadow: 0 5px 16px 5px rgba(0, 0, 0, 0.5);
+    }
+    #preview-image {
+        margin-top: 0.5em;
+        margin-bottom: 0.5em;
+    }
+    .modifier-card-active {
+        border: 2px solid rgb(179 82 255 / 94%);
+        box-shadow: 0 0px 10px 0 rgb(170 0 229 / 58%);
+    }
     </style>
 </html>
 <body>
@@ -300,8 +365,7 @@
 
                 <div id="editor-inputs-tags-container" class="row">
                     <label>Tags: <small>(click a tag to remove it)</small></label>
-                    <div id="editor-inputs-tags-list">
-                    </div>
+                    <div id="editor-inputs-tags-list"></div>
                 </div>
 
                 <button id="makeImage">Make Image</button>
@@ -389,6 +453,11 @@
             <div id="editor-modifiers" class="panel-box">
                 <h4 class="collapsible">Image Modifiers (art styles, tags etc)</h4>
                 <div id="editor-modifiers-entries" class="collapsible-content">
+                    <label for="preview-image">Preview:</label> 
+                    <select id="preview-image" name="preview-image" value="portrait">
+                        <option value="portrait" selected="">Portrait</option>
+                        <option value="landscape">Landscape</option>
+                    </select>
                 </div>
             </div>
         </div>
@@ -478,6 +547,8 @@ let editorModifierEntries = document.querySelector('#editor-modifiers-entries')
 let editorModifierTagsList = document.querySelector('#editor-inputs-tags-list')
 let editorTagsContainer = document.querySelector('#editor-inputs-tags-container')
 
+let previewImageField = document.querySelector('#preview-image')
+previewImageField.onchange = () => changePreviewImages(previewImageField.value);
 let previewPrompt = document.querySelector('#preview-prompt')
 
 let showConfigToggle = document.querySelector('#configToggleBtn')
@@ -494,8 +565,12 @@ let modifiersPanelHandle = document.querySelector("#editor-modifiers .collapsibl
 
 let serverStatus = 'offline'
 let activeTags = []
+let modifiers = []
 let lastPromptUsed = ''
 let taskStopped = true
+
+const modifierThumbnailPath = 'static/modifier-thumbnails';
+const activeCardClass = 'modifier-card-active';
 
 function getLocalStorageItem(key, fallback) {
     let item = localStorage.getItem(key)
@@ -580,12 +655,12 @@ function setStatus(statusType, msg, msgType) {
         // msg = '<span style="color: red">' + msg + '<span>'
         serverStatusColor.style.backgroundColor = 'red'
         serverStatusMsg.style.color = 'red'
-        serverStatusMsg.innerHTML = 'Stable Diffusion has stopped'
+        serverStatusMsg.innerText = 'Stable Diffusion has stopped'
     } else if (msgType == 'success') {
         // msg = '<span style="color: green">' + msg + '<span>'
         serverStatusColor.style.backgroundColor = 'green'
         serverStatusMsg.style.color = 'green'
-        serverStatusMsg.innerHTML = 'Stable Diffusion is ready'
+        serverStatusMsg.innerText = 'Stable Diffusion is ready'
         serverStatus = 'online'
     }
 }
@@ -596,7 +671,7 @@ function logMsg(msg, level) {
     } else if (level === 'warn') {
         outputMsg.innerHTML = '<span style="color: orange">Warning: ' + msg + '</span>'
     } else {
-        outputMsg.innerHTML = msg
+        outputMsg.innerText = msg
     }
 
     console.log(level, msg)
@@ -716,15 +791,15 @@ async function doMakeImage(reqBody) {
 
         let imgSeedLabel = document.createElement('span')
         imgSeedLabel.className = 'imgSeedLabel'
-        imgSeedLabel.innerHTML = 'Seed: ' + seed
+        imgSeedLabel.innerText = 'Seed: ' + seed
 
         let imgUseBtn = document.createElement('button')
         imgUseBtn.className = 'imgUseBtn'
-        imgUseBtn.innerHTML = 'Use as Input'
+        imgUseBtn.innerText = 'Use as Input'
 
         let imgSaveBtn = document.createElement('button')
         imgSaveBtn.className = 'imgSaveBtn'
-        imgSaveBtn.innerHTML = 'Download'
+        imgSaveBtn.innerText = 'Download'
 
         imgItem.appendChild(img)
         imgItem.appendChild(imgItemInfo)
@@ -815,11 +890,11 @@ async function makeImage() {
 
     let prompt = promptField.value
     if (activeTags.length > 0) {
-        let promptTags = activeTags.join(", ")
-        prompt += ", " + promptTags
+        let promptTags = activeTags.map(x => x.name).join(", ");
+        prompt += ", " + promptTags;
     }
 
-    previewPrompt.innerHTML = prompt
+    previewPrompt.innerText = prompt
 
     let reqBody = {
         prompt: prompt,
@@ -870,12 +945,12 @@ async function makeImage() {
         let success = await doMakeImage(reqBody)
 
         if (success) {
-            outputMsg.innerHTML = 'Processed batch ' + (i+1) + '/' + batchCount
+            outputMsg.innerText = 'Processed batch ' + (i+1) + '/' + batchCount
             successCount++
         }
     }
 
-    makeImageBtn.innerHTML = 'Make Image'
+    makeImageBtn.innerText = 'Make Image'
     makeImageBtn.disabled = false
     makeImageBtn.style.display = 'block'
     stopImageBtn.style.display = 'none'
@@ -888,7 +963,7 @@ async function makeImage() {
     time /= 1000
 
     if (successCount === batchCount) {
-        outputMsg.innerHTML = 'Processed ' + numOutputsTotal + ' images in ' + time + ' seconds'
+        outputMsg.innerText = 'Processed ' + numOutputsTotal + ' images in ' + time + ' seconds'
 
         setStatus('request', 'done', 'success')
     }
@@ -1071,7 +1146,7 @@ async function getAppConfig() {
 
         if (config.update_branch === 'beta') {
             useBetaChannelField.checked = true
-            updateBranchLabel.innerHTML = "(beta)"
+            updateBranchLabel.innerText = "(beta)"
         }
 
         console.log('get config status response', config)
@@ -1202,30 +1277,32 @@ function createCollapsibles(node) {
 createCollapsibles()
 
 function refreshTagsList() {
-    editorModifierTagsList.innerHTML = ''
+    editorModifierTagsList.innerHTML = '';
 
     if (activeTags.length == 0) {
-        editorTagsContainer.style.display = 'none'
-        return
+        editorTagsContainer.style.display = 'none';
+        return;
     } else {
-        editorTagsContainer.style.display = 'block'
+        editorTagsContainer.style.display = 'block';
     }
 
-    activeTags.forEach(function(tag) {
-        let el = document.createElement('div')
-        el.className = 'prompt-modifier-tag'
-        el.innerHTML = tag
+    activeTags.forEach((tag, index) => {
+        tag.element.querySelector('.modifier-card-overlay').innerText = '-';
+        tag.element.classList.add('modifier-card-tiny');
 
-        editorModifierTagsList.appendChild(el)
+        editorModifierTagsList.appendChild(tag.element);
 
-        el.addEventListener('click', function() {
-            let idx = activeTags.indexOf(tag)
+        tag.element.addEventListener('click', () => {
+            let idx = activeTags.indexOf(tag);
+
             if (idx !== -1) {
-                activeTags.splice(idx, 1)
-                refreshTagsList()
+                activeTags[idx].originElement.classList.remove(activeCardClass);
+
+                activeTags.splice(idx, 1);
+                refreshTagsList();
             }
-        })
-    })
+        });
+    });
 
     let brk = document.createElement('br')
     brk.style.clear = 'both'
@@ -1253,39 +1330,126 @@ async function getDiskPath() {
     }
 }
 
+function createModifierCard(name, previews) {
+    const modifierCard = document.createElement('div');
+    modifierCard.className = 'modifier-card';
+    modifierCard.innerHTML = `
+    <div class="modifier-card-image">
+        <div class="modifier-card-overlay">+</div>
+        <p></p>
+        <img alt="Modifier Image">
+    </div>
+    <div class="modifier-card-container">
+        <span></span>
+    </div>`;
+
+    const image = modifierCard.querySelector('img');
+    const errorText =  modifierCard.querySelector('p');
+
+    if (typeof previews == 'object') {
+        image.src = previews[0]; // portrait
+        image.setAttribute('preview-type', 'portrait');
+    } else {
+        image.remove();
+        errorText.innerText = 'No Image';
+    }
+
+    modifierCard.querySelector('span').innerText = name.replace('by ', '');
+   
+    return modifierCard;
+}
+
+function changePreviewImages(val) {
+    const previewImages = document.querySelectorAll('.modifier-card-image img');
+
+    let previewArr = [];
+
+    modifiers.map(x => x.modifiers).forEach(x => previewArr.push(...x.map(m => m.previews)));
+    
+    previewArr = previewArr.map(x => {
+        let obj = {};
+
+        x.forEach(preview => {
+            obj[preview.name] = preview.path;
+        });
+        
+        return obj;
+    });
+
+    previewImages.forEach(previewImage => {
+        const currentPreviewType = previewImage.getAttribute('preview-type');
+        const relativePreviewPath = previewImage.src.split(modifierThumbnailPath + '/').pop();
+
+        const previews = previewArr.find(preview => relativePreviewPath == preview[currentPreviewType]);
+
+        if(typeof previews == 'object') {
+            let preview = null;
+
+            if (val == 'portrait') {
+                preview = previews.portrait;
+            }
+            else if (val == 'landscape') {
+                preview = previews.landscape;
+            }
+
+            if(preview != null) {
+                previewImage.src = `${modifierThumbnailPath}/${preview}`;
+                previewImage.setAttribute('preview-type', val);
+            }
+        }
+    });
+}
+
 async function loadModifiers() {
     try {
         let res = await fetch('/modifiers.json')
         if (res.status === 200) {
             res = await res.json()
 
-            res.forEach(function(m) {
-                let title = m[0]
-                let modifiers = m[1]
+            modifiers = res; // update global variable
 
-                let titleEl = document.createElement('h5')
-                titleEl.className = 'collapsible'
-                titleEl.innerHTML = title
+            res.forEach(modifierGroup => {
+                const title = modifierGroup.category;
+                const modifiers = modifierGroup.modifiers;
 
-                let modifiersEl = document.createElement('div')
-                modifiersEl.classList.add('collapsible-content', 'editor-modifiers-leaf')
+                const titleEl = document.createElement('h5');
+                titleEl.className = 'collapsible';
+                titleEl.innerText = title;
 
-                modifiers.forEach(function(modifier) {
-                    let tagEl = document.createElement('div')
-                    tagEl.className = 'prompt-modifier-tag'
-                    tagEl.innerHTML = modifier
+                const modifiersEl = document.createElement('div');
+                modifiersEl.classList.add('collapsible-content', 'editor-modifiers-leaf');
 
-                    modifiersEl.appendChild(tagEl)
+                modifiers.forEach(modObj => {
+                    const modifierName = modObj.modifier;
+                    const modifierPreviews = modObj?.previews?.map(preview => `${modifierThumbnailPath}/${preview.path}`);
 
-                    tagEl.addEventListener('click', function() {
-                        if (activeTags.includes(modifier)) {
-                            return
-                        }
+                    const modifierCard = createModifierCard(modifierName, modifierPreviews);
 
-                        activeTags.push(modifier)
-                        refreshTagsList()
-                    })
-                })
+                    if(typeof modifierCard == 'object') {
+                        modifiersEl.appendChild(modifierCard);
+
+                        modifierCard.addEventListener('click', () => {
+                            if (activeTags.map(x => x.name).includes(modifierName)) {
+                                // remove modifier from active array
+                                activeTags = activeTags.filter(x => x.name != modifierName);
+                                modifierCard.classList.remove(activeCardClass);
+                            } else {
+                                // add modifier to active array
+                                activeTags.push({
+                                    'name': modifierName,
+                                    'element': modifierCard.cloneNode(true),
+                                    'originElement': modifierCard,
+                                    'previews': modifierPreviews
+                                });
+
+                                modifierCard.classList.add(activeCardClass);
+                            }
+
+                            refreshTagsList();
+                        });
+                    }
+                });
+
                 let brk = document.createElement('br')
                 brk.style.clear = 'both'
                 modifiersEl.appendChild(brk)

@@ -10,11 +10,14 @@ print('started in ', SCRIPT_DIR)
 SD_UI_DIR = os.getenv('SD_UI_PATH', None)
 sys.path.append(os.path.dirname(SD_UI_DIR))
 
+STATIC_DIR = os.path.join(SD_UI_DIR, "static")
+
 CONFIG_DIR = os.path.join(SD_UI_DIR, '..', 'scripts')
 
 OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder
 
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse
 from pydantic import BaseModel
 import logging
@@ -195,6 +198,8 @@ class HealthCheckLogFilter(logging.Filter):
         return record.getMessage().find('/ping') == -1
 
 logging.getLogger('uvicorn.access').addFilter(HealthCheckLogFilter())
+
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # start the browser ui
 import webbrowser; webbrowser.open('http://localhost:9000')
