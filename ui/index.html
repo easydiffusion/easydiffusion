@@ -793,7 +793,7 @@ async function doMakeImage(reqBody, batchCount) {
 
                 prevTime = t
             } catch (e) {
-                logError('Stable Diffusion had an error. Please check the logs in the command-line window. This happens sometimes. Maybe modify the prompt or seed a little bit?', res)
+                logError('Stable Diffusion had an error. Please check the logs in the command-line window.', res)
                 res = undefined
                 throw e
             }
@@ -801,9 +801,9 @@ async function doMakeImage(reqBody, batchCount) {
 
         if (res.status != 200) {
             if (serverStatus === 'online') {
-                logError('Stable Diffusion had an error: ' + await res.text() + '. This happens sometimes. Maybe modify the prompt or seed a little bit?', res)
+                logError('Stable Diffusion had an error: ' + await res.text(), res)
             } else {
-                logError("Stable Diffusion is still starting up, please wait. If this goes on beyond a few minutes, Stable Diffusion has probably crashed.", res)
+                logError("Stable Diffusion is still starting up, please wait. If this goes on beyond a few minutes, Stable Diffusion has probably crashed. Please check the error message in the command-line window.", res)
             }
             res = undefined
             progressBar.style.display = 'none'
@@ -833,9 +833,10 @@ async function doMakeImage(reqBody, batchCount) {
         }
     } catch (e) {
         console.log('request error', e)
-        logError('Stable Diffusion had an error. Please check the logs in the command-line window. This happens sometimes. Maybe modify the prompt or seed a little bit?', res)
+        logError('Stable Diffusion had an error. Please check the logs in the command-line window. <br/><br/>' + e + '<br/><pre>' + e.stack + '</pre>', res)
         setStatus('request', 'error', 'error')
         progressBar.style.display = 'none'
+        res = undefined
     }
 
     if (!res) {
