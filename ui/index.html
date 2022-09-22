@@ -291,6 +291,9 @@
         height: 100%;
         border-radius: 5px 5px 0 0;
     }
+    .modifier-card-image * {
+        position: absolute;
+    }
     .modifier-card-container {
         text-align: center;
         background-color: rgba(0,0,0,0.5);
@@ -1337,7 +1340,7 @@ function createModifierCard(name, previews) {
     <div class="modifier-card-image">
         <div class="modifier-card-overlay">+</div>
         <p></p>
-        <img alt="Modifier Image">
+        <img onerror="this.remove()" alt="Modifier Image">
     </div>
     <div class="modifier-card-container">
         <span></span>
@@ -1346,16 +1349,17 @@ function createModifierCard(name, previews) {
     const image = modifierCard.querySelector('img');
     const errorText =  modifierCard.querySelector('p');
 
+    errorText.innerText = 'No Image';
+
     if (typeof previews == 'object') {
         image.src = previews[0]; // portrait
         image.setAttribute('preview-type', 'portrait');
     } else {
         image.remove();
-        errorText.innerText = 'No Image';
     }
 
     modifierCard.querySelector('span').innerText = name.replace('by ', '');
-   
+
     return modifierCard;
 }
 
