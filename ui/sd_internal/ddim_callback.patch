@@ -1,5 +1,5 @@
 diff --git a/optimizedSD/ddpm.py b/optimizedSD/ddpm.py
-index b967b55..10a7c32 100644
+index b967b55..e06e653 100644
 --- a/optimizedSD/ddpm.py
 +++ b/optimizedSD/ddpm.py
 @@ -22,7 +22,7 @@ from ldm.util import exists, default, instantiate_from_config
@@ -11,8 +11,11 @@ index b967b55..10a7c32 100644
  
  def disabled_train(self):
      """Overwrite model.train with this function to make sure train/eval mode
-@@ -528,39 +528,46 @@ class UNet(DDPM):
+@@ -526,41 +526,49 @@ class UNet(DDPM):
+                                         )
+ 
          elif sampler == "ddim":
++            self.make_schedule(ddim_num_steps=S, ddim_eta=eta, verbose=False)
              samples = self.ddim_sampling(x_latent, conditioning, S, unconditional_guidance_scale=unconditional_guidance_scale,
                                           unconditional_conditioning=unconditional_conditioning,
 -                                         mask = mask,init_latent=x_T,use_original_steps=False)
@@ -67,7 +70,7 @@ index b967b55..10a7c32 100644
      @torch.no_grad()
      def plms_sampling(self, cond,b, img,
                        ddim_use_original_steps=False,
-@@ -599,10 +606,10 @@ class UNet(DDPM):
+@@ -599,10 +607,10 @@ class UNet(DDPM):
              old_eps.append(e_t)
              if len(old_eps) >= 4:
                  old_eps.pop(0)
@@ -81,7 +84,7 @@ index b967b55..10a7c32 100644
  
      @torch.no_grad()
      def p_sample_plms(self, x, c, t, index, repeat_noise=False, use_original_steps=False, quantize_denoised=False,
-@@ -706,7 +713,8 @@ class UNet(DDPM):
+@@ -706,7 +714,8 @@ class UNet(DDPM):
  
      @torch.no_grad()
      def ddim_sampling(self, x_latent, cond, t_start, unconditional_guidance_scale=1.0, unconditional_conditioning=None,
@@ -91,7 +94,7 @@ index b967b55..10a7c32 100644
  
          timesteps = self.ddim_timesteps
          timesteps = timesteps[:t_start]
-@@ -730,10 +738,13 @@ class UNet(DDPM):
+@@ -730,10 +739,13 @@ class UNet(DDPM):
                                            unconditional_guidance_scale=unconditional_guidance_scale,
                                            unconditional_conditioning=unconditional_conditioning)
          
@@ -107,7 +110,7 @@ index b967b55..10a7c32 100644
  
  
      @torch.no_grad()
-@@ -779,13 +790,16 @@ class UNet(DDPM):
+@@ -779,13 +791,16 @@ class UNet(DDPM):
  
  
      @torch.no_grad()
@@ -125,7 +128,7 @@ index b967b55..10a7c32 100644
          s_in = x.new_ones([x.shape[0]]).half()
          for i in trange(len(sigmas) - 1, disable=disable):
              gamma = min(s_churn / (len(sigmas) - 1), 2 ** 0.5 - 1) if s_tmin <= sigmas[i] <= s_tmax else 0.
-@@ -807,13 +821,18 @@ class UNet(DDPM):
+@@ -807,13 +822,18 @@ class UNet(DDPM):
              d = to_d(x, sigma_hat, denoised)
              if callback is not None:
                  callback({'x': x, 'i': i, 'sigma': sigmas[i], 'sigma_hat': sigma_hat, 'denoised': denoised})
@@ -146,7 +149,7 @@ index b967b55..10a7c32 100644
          """Ancestral sampling with Euler method steps."""
          extra_args = {} if extra_args is None else extra_args
  
-@@ -822,6 +841,8 @@ class UNet(DDPM):
+@@ -822,6 +842,8 @@ class UNet(DDPM):
          sigmas = cvd.get_sigmas(S)
          x = x*sigmas[0]
  
@@ -155,7 +158,7 @@ index b967b55..10a7c32 100644
          s_in = x.new_ones([x.shape[0]]).half()
          for i in trange(len(sigmas) - 1, disable=disable):
  
-@@ -837,17 +858,22 @@ class UNet(DDPM):
+@@ -837,17 +859,22 @@ class UNet(DDPM):
              sigma_down, sigma_up = get_ancestral_step(sigmas[i], sigmas[i + 1])
              if callback is not None:
                  callback({'x': x, 'i': i, 'sigma': sigmas[i], 'sigma_hat': sigmas[i], 'denoised': denoised})
@@ -180,7 +183,7 @@ index b967b55..10a7c32 100644
          """Implements Algorithm 2 (Heun steps) from Karras et al. (2022)."""
          extra_args = {} if extra_args is None else extra_args
  
-@@ -855,6 +881,8 @@ class UNet(DDPM):
+@@ -855,6 +882,8 @@ class UNet(DDPM):
          sigmas = cvd.get_sigmas(S)
          x = x*sigmas[0]
  
@@ -189,7 +192,7 @@ index b967b55..10a7c32 100644
  
          s_in = x.new_ones([x.shape[0]]).half()
          for i in trange(len(sigmas) - 1, disable=disable):
-@@ -876,6 +904,9 @@ class UNet(DDPM):
+@@ -876,6 +905,9 @@ class UNet(DDPM):
              d = to_d(x, sigma_hat, denoised)
              if callback is not None:
                  callback({'x': x, 'i': i, 'sigma': sigmas[i], 'sigma_hat': sigma_hat, 'denoised': denoised})
@@ -199,7 +202,7 @@ index b967b55..10a7c32 100644
              dt = sigmas[i + 1] - sigma_hat
              if sigmas[i + 1] == 0:
                  # Euler method
-@@ -895,11 +926,13 @@ class UNet(DDPM):
+@@ -895,11 +927,13 @@ class UNet(DDPM):
                  d_2 = to_d(x_2, sigmas[i + 1], denoised_2)
                  d_prime = (d + d_2) / 2
                  x = x + d_prime * dt
@@ -215,7 +218,7 @@ index b967b55..10a7c32 100644
          """A sampler inspired by DPM-Solver-2 and Algorithm 2 from Karras et al. (2022)."""
          extra_args = {} if extra_args is None else extra_args
  
-@@ -907,6 +940,8 @@ class UNet(DDPM):
+@@ -907,6 +941,8 @@ class UNet(DDPM):
          sigmas = cvd.get_sigmas(S)
          x = x*sigmas[0]
  
@@ -224,7 +227,7 @@ index b967b55..10a7c32 100644
          s_in = x.new_ones([x.shape[0]]).half()
          for i in trange(len(sigmas) - 1, disable=disable):
              gamma = min(s_churn / (len(sigmas) - 1), 2 ** 0.5 - 1) if s_tmin <= sigmas[i] <= s_tmax else 0.
-@@ -924,7 +959,7 @@ class UNet(DDPM):
+@@ -924,7 +960,7 @@ class UNet(DDPM):
              e_t_uncond, e_t = (x_in  + eps * c_out).chunk(2)
              denoised = e_t_uncond + unconditional_guidance_scale * (e_t - e_t_uncond)
  
@@ -233,7 +236,7 @@ index b967b55..10a7c32 100644
              
              d = to_d(x, sigma_hat, denoised)
              # Midpoint method, where the midpoint is chosen according to a rho=3 Karras schedule
-@@ -945,11 +980,13 @@ class UNet(DDPM):
+@@ -945,11 +981,13 @@ class UNet(DDPM):
  
              d_2 = to_d(x_2, sigma_mid, denoised_2)
              x = x + d_2 * dt_2
@@ -249,7 +252,7 @@ index b967b55..10a7c32 100644
          """Ancestral sampling with DPM-Solver inspired second-order steps."""
          extra_args = {} if extra_args is None else extra_args
  
-@@ -957,6 +994,8 @@ class UNet(DDPM):
+@@ -957,6 +995,8 @@ class UNet(DDPM):
          sigmas = cvd.get_sigmas(S)
          x = x*sigmas[0]
  
@@ -258,7 +261,7 @@ index b967b55..10a7c32 100644
          s_in = x.new_ones([x.shape[0]]).half()
          for i in trange(len(sigmas) - 1, disable=disable):
  
-@@ -973,6 +1012,9 @@ class UNet(DDPM):
+@@ -973,6 +1013,9 @@ class UNet(DDPM):
              sigma_down, sigma_up = get_ancestral_step(sigmas[i], sigmas[i + 1])
              if callback is not None:
                  callback({'x': x, 'i': i, 'sigma': sigmas[i], 'sigma_hat': sigmas[i], 'denoised': denoised})
@@ -268,7 +271,7 @@ index b967b55..10a7c32 100644
              d = to_d(x, sigmas[i], denoised)
              # Midpoint method, where the midpoint is chosen according to a rho=3 Karras schedule
              sigma_mid = ((sigmas[i] ** (1 / 3) + sigma_down ** (1 / 3)) / 2) ** 3
-@@ -993,11 +1035,13 @@ class UNet(DDPM):
+@@ -993,11 +1036,13 @@ class UNet(DDPM):
              d_2 = to_d(x_2, sigma_mid, denoised_2)
              x = x + d_2 * dt_2
              x = x + torch.randn_like(x) * sigma_up
@@ -284,7 +287,7 @@ index b967b55..10a7c32 100644
          extra_args = {} if extra_args is None else extra_args
          s_in = x.new_ones([x.shape[0]])
  
-@@ -1005,6 +1049,8 @@ class UNet(DDPM):
+@@ -1005,6 +1050,8 @@ class UNet(DDPM):
          sigmas = cvd.get_sigmas(S)
          x = x*sigmas[0]
  
@@ -293,7 +296,7 @@ index b967b55..10a7c32 100644
          ds = []
          for i in trange(len(sigmas) - 1, disable=disable):
  
-@@ -1017,6 +1063,7 @@ class UNet(DDPM):
+@@ -1017,6 +1064,7 @@ class UNet(DDPM):
              e_t_uncond, e_t = (x_in  + eps * c_out).chunk(2)
              denoised = e_t_uncond + unconditional_guidance_scale * (e_t - e_t_uncond)
  
@@ -301,7 +304,7 @@ index b967b55..10a7c32 100644
  
              d = to_d(x, sigmas[i], denoised)
              ds.append(d)
-@@ -1027,4 +1074,5 @@ class UNet(DDPM):
+@@ -1027,4 +1075,5 @@ class UNet(DDPM):
              cur_order = min(i + 1, order)
              coeffs = [linear_multistep_coeff(cur_order, sigmas.cpu(), i, j) for j in range(cur_order)]
              x = x + sum(coeff * d for coeff, d in zip(coeffs, reversed(ds)))
