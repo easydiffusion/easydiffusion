@@ -1398,6 +1398,7 @@ function refreshTagsList() {
 
             if (idx !== -1) {
                 activeTags[idx].originElement.classList.remove(activeCardClass);
+                activeTags[idx].originElement.querySelector('.modifier-card-overlay').innerText = '+';
 
                 activeTags.splice(idx, 1);
                 refreshTagsList();
@@ -1567,6 +1568,8 @@ async function loadModifiers() {
                                 // remove modifier from active array
                                 activeTags = activeTags.filter(x => x.name != modifierName);
                                 modifierCard.classList.remove(activeCardClass);
+                                
+                                modifierCard.querySelector('.modifier-card-overlay').innerText = '+';
                             } else {
                                 // add modifier to active array
                                 activeTags.push({
@@ -1577,6 +1580,8 @@ async function loadModifiers() {
                                 });
 
                                 modifierCard.classList.add(activeCardClass);
+
+                                modifierCard.querySelector('.modifier-card-overlay').innerText = '-';
                             }
 
                             refreshTagsList();
