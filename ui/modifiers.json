@@ -112,7 +112,7 @@
     "category": "Visual Style",
     "modifiers": [
       {
-        "modifier": "2d",
+        "modifier": "2D",
         "previews": [
           {
             "name": "portrait",
@@ -125,7 +125,7 @@
         ]
       },
       {
-        "modifier": "8-bit",
+        "modifier": "8-Bit",
         "previews": [
           {
             "name": "portrait",
@@ -138,7 +138,7 @@
         ]
       },
       {
-        "modifier": "16-bit",
+        "modifier": "16-Bit",
         "previews": [
           {
             "name": "portrait",
@@ -1490,19 +1490,6 @@
           {
             "name": "landscape",
             "path": "artist/artstation/landscape-0.jpg"
-          }
-        ]
-      },
-      {
-        "modifier": "Trending on Artstation",
-        "previews": [
-          {
-            "name": "portrait",
-            "path": "artist/trending_on_artstation/portrait-0.jpg"
-          },
-          {
-            "name": "landscape",
-            "path": "artist/trending_on_artstation/landscape-0.jpg"
           }
         ]
       },

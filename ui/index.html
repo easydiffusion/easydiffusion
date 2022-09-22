@@ -258,7 +258,7 @@
         gap: 0px 0px;
         grid-auto-flow: row;
         grid-template-areas:
-            "modifier-card-image"
+            "modifier-card-image-container"
             "modifier-card-container";
         border: 2px solid rgba(255, 255, 255, .05);
         cursor: pointer;
@@ -274,24 +274,24 @@
     .modifier-card:hover {
         box-shadow: 0 5px 16px 5px rgba(0, 0, 0, 0.25);
     }
-    .modifier-card-image {
+    .modifier-card-image-container {
         border-radius: 5px 5px 0 0;
         width: inherit;
         height: 100%;
         background-color: rgba(0, 0, 0, .2);
-        grid-area: modifier-card-image;
+        grid-area: modifier-card-image-container;
         position: relative;
         display: flex;
         align-items: center;
         justify-content: center;
         color: rgb(255 255 255 / 8%);
     }
-    .modifier-card-image img {
+    .modifier-card-image-container img {
         width: inherit;
         height: 100%;
         border-radius: 5px 5px 0 0;
     }
-    .modifier-card-image * {
+    .modifier-card-image-container * {
         position: absolute;
     }
     .modifier-card-container {
@@ -304,7 +304,11 @@
         grid-area: modifier-card-container;
         font-weight: 100;
         font-size: .9em;
+        width: inherit;
+    }
+    .modifier-card-label {
         padding: 4px;
+        word-break: break-word;
     }
     .modifier-card-overlay {
         width: inherit;
@@ -321,10 +325,10 @@
         align-items: center;
         justify-content: center;
     }
-    .modifier-card:hover > .modifier-card-image .modifier-card-overlay {
+    .modifier-card:hover > .modifier-card-image-container .modifier-card-overlay {
         opacity: 1;
     }
-    .modifier-card:hover > .modifier-card-image img {
+    .modifier-card:hover > .modifier-card-image-container img {
         filter: blur(.1em);
     }
     .modifier-card:active {
@@ -338,6 +342,44 @@
     .modifier-card-active {
         border: 2px solid rgb(179 82 255 / 94%);
         box-shadow: 0 0px 10px 0 rgb(170 0 229 / 58%);
+    }
+    .tooltip {
+        position: relative;
+        display: inline-block;
+    }
+    .tooltip .tooltip-text {
+        visibility: hidden;
+        width: 120px;
+        background: rgb(101,97,181);
+        background: linear-gradient(180deg, rgba(101,97,181,1) 0%, rgba(47,45,85,1) 100%);
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 5px;
+        position: absolute;
+        z-index: 1;
+        top: 105%;
+        left: 39%;
+        margin-left: -60px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        border: 2px solid rgb(90 100 177 / 94%);
+        box-shadow: 0px 10px 20px 5px rgb(11 0 58 / 55%);
+        width: 10em;
+    }
+    .tooltip .tooltip-text::after {
+        content: "";
+        position: absolute;
+        top: -0.9em;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: transparent transparent rgb(90 100 177 / 94%) transparent;
+    }
+    .tooltip:hover .tooltip-text {
+        visibility: visible;
+        opacity: 1;
     }
     </style>
 </html>
@@ -1337,17 +1379,18 @@ function createModifierCard(name, previews) {
     const modifierCard = document.createElement('div');
     modifierCard.className = 'modifier-card';
     modifierCard.innerHTML = `
-    <div class="modifier-card-image">
+    <div class="modifier-card-image-container">
         <div class="modifier-card-overlay">+</div>
-        <p></p>
-        <img onerror="this.remove()" alt="Modifier Image">
+        <p class="modifier-card-error-label"></p>
+        <img onerror="this.remove()" alt="Modifier Image" class="modifier-card-image">
     </div>
     <div class="modifier-card-container">
-        <span></span>
+        <div class="modifier-card-label"><p></p></div>
     </div>`;
 
-    const image = modifierCard.querySelector('img');
-    const errorText =  modifierCard.querySelector('p');
+    const image = modifierCard.querySelector('.modifier-card-image');
+    const errorText =  modifierCard.querySelector('.modifier-card-error-label');
+    const label = modifierCard.querySelector('.modifier-card-label');
 
     errorText.innerText = 'No Image';
 
@@ -1358,13 +1401,27 @@ function createModifierCard(name, previews) {
         image.remove();
     }
 
-    modifierCard.querySelector('span').innerText = name.replace('by ', '');
+    const maxLabelLength = 30;
+    const nameWithoutBy = name.replace('by ', '');
+
+    if(nameWithoutBy.length <= maxLabelLength) {
+        label.querySelector('p').innerText = nameWithoutBy;
+    } else {
+        const tooltipText = document.createElement('span');
+        tooltipText.className = 'tooltip-text';
+        tooltipText.innerText = name;
+
+        label.classList.add('tooltip');
+        label.appendChild(tooltipText);
+
+        label.querySelector('p').innerText = nameWithoutBy.substring(0, maxLabelLength) + '...';
+    }
 
     return modifierCard;
 }
 
 function changePreviewImages(val) {
-    const previewImages = document.querySelectorAll('.modifier-card-image img');
+    const previewImages = document.querySelectorAll('.modifier-card-image-container img');
 
     let previewArr = [];
 
