@@ -43,6 +43,7 @@ class ImageRequest(BaseModel):
     height: int = 512
     seed: int = 42
     prompt_strength: float = 0.8
+    sampler: str = None # "ddim", "plms", "heun", "euler", "euler_a", "dpm2", "dpm2_a", "lms"
     # allow_nsfw: bool = False
     save_to_disk_path: str = None
     turbo: bool = True
@@ -105,6 +106,7 @@ def image(req : ImageRequest):
     r.height = req.height
     r.seed = req.seed
     r.prompt_strength = req.prompt_strength
+    r.sampler = req.sampler
     # r.allow_nsfw = req.allow_nsfw
     r.turbo = req.turbo
     r.use_cpu = req.use_cpu

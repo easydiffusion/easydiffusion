@@ -304,7 +304,7 @@
                     <div id="server-status-color">&nbsp;</div>
                     <span id="server-status-msg">Stable Diffusion is starting..</span>
                 </div>
-                <h1>Stable Diffusion UI <small>v2.14 <span id="updateBranchLabel"></span></small></h1>
+                <h1>Stable Diffusion UI <small>v2.15 <span id="updateBranchLabel"></span></small></h1>
             </div>
             <div id="editor-inputs">
                 <div id="editor-inputs-prompt" class="row">
@@ -353,6 +353,18 @@
                     <br/>
                     <li><label for="seed">Seed:</label> <input id="seed" name="seed" size="10" value="30000"> <input id="random_seed" name="random_seed" type="checkbox" checked> <label for="random_seed">Random Image</label></li>
                     <li><label for="num_outputs_total">Number of images to make:</label> <input id="num_outputs_total" name="num_outputs_total" value="1" size="4"> <label for="num_outputs_parallel">Generate in parallel:</label> <input id="num_outputs_parallel" name="num_outputs_parallel" value="1" size="4"> (images at once)</li>
+                    <li id="samplerSelection"><label for="sampler">Sampler:</label>
+                        <select id="sampler" name="sampler">
+                            <option value="plms" selected>plms</option>
+                            <option value="ddim">ddim</option>
+                            <option value="heun">heun</option>
+                            <option value="euler">euler</option>
+                            <option value="euler_a">euler_a</option>
+                            <option value="dpm2">dpm2</option>
+                            <option value="dpm2_a">dpm2_a</option>
+                            <option value="lms">lms</option>
+                        </select>
+                    </li>
                     <li><label for="width">Width:</label> 
                         <select id="width" name="width" value="512">
                             <option value="128">128 (*)</option>
@@ -488,6 +500,8 @@ let diskPathField = document.querySelector('#diskPath')
 let useBetaChannelField = document.querySelector("#use_beta_channel")
 let promptStrengthSlider = document.querySelector('#prompt_strength_slider')
 let promptStrengthField = document.querySelector('#prompt_strength')
+let samplerField = document.querySelector('#sampler')
+let samplerSelectionContainer = document.querySelector("#samplerSelection")
 let useFaceCorrectionField = document.querySelector("#use_face_correction")
 let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
@@ -1007,6 +1021,10 @@ async function makeImage() {
         if (maskSetting.checked) {
             reqBody['mask'] = inpaintingEditor.getImg()
         }
+
+        reqBody['sampler'] = 'ddim'
+    } else {
+        reqBody['sampler'] = samplerField.value
     }
 
     if (saveToDiskField.checked && diskPathField.value.trim() !== '') {
@@ -1275,6 +1293,7 @@ function showInitImagePreview() {
         initImagePreviewContainer.style.display = 'block'
         inpaintingEditorContainer.style.display = 'none'
         promptStrengthContainer.style.display = 'block'
+        samplerSelectionContainer.style.display = 'none'
         // maskSetting.checked = false
     })
 
@@ -1306,6 +1325,7 @@ initImageClearBtn.addEventListener('click', function() {
     // maskSetting.style.display = 'none'
 
     promptStrengthContainer.style.display = 'none'
+    samplerSelectionContainer.style.display = 'block'
 })
 
 maskSetting.addEventListener('click', function() {

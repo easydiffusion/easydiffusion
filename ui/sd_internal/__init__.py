@@ -12,6 +12,7 @@ class Request:
     height: int = 512
     seed: int = 42
     prompt_strength: float = 0.8
+    sampler: str = None # "ddim", "plms", "heun", "euler", "euler_a", "dpm2", "dpm2_a", "lms"
     # allow_nsfw: bool = False
     precision: str = "autocast" # or "full"
     save_to_disk_path: str = None
@@ -36,6 +37,7 @@ class Request:
             "height": self.height,
             "seed": self.seed,
             "prompt_strength": self.prompt_strength,
+            "sampler": self.sampler,
             "use_face_correction": self.use_face_correction,
             "use_upscale": self.use_upscale,
         }
@@ -46,6 +48,7 @@ class Request:
     prompt: {self.prompt}
     seed: {self.seed}
     num_inference_steps: {self.num_inference_steps}
+    sampler: {self.sampler}
     guidance_scale: {self.guidance_scale}
     w: {self.width}
     h: {self.height}
