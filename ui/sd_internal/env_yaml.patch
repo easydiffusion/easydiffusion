@@ -1,8 +1,8 @@
 diff --git a/environment.yaml b/environment.yaml
-index 7f25da8..c9eef41 100644
+index 7f25da8..306750f 100644
 --- a/environment.yaml
 +++ b/environment.yaml
-@@ -23,6 +23,7 @@ dependencies:
+@@ -23,6 +23,8 @@ dependencies:
      - torch-fidelity==0.3.0
      - transformers==4.19.2
      - torchmetrics==0.6.0
