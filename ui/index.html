@@ -263,6 +263,49 @@
         border: 2px solid rgba(255, 255, 255, .05);
         cursor: pointer;
     }
+    .modifier-card-size_5 {
+        width: 18em;
+        grid-template-rows: 18em 3.5em;
+        height: 21.5em;
+    }
+    .modifier-card-size_4 {
+        width: 14em;
+        grid-template-rows: 14em 3.5em;
+        height: 17.5em;
+    }
+    .modifier-card-size_3 {
+        width: 11em;
+        grid-template-rows: 11em 3.5em;
+        height: 14.5em;
+    }
+    .modifier-card-size_2 {
+        width: 10em;
+        grid-template-rows: 10em 3.5em;
+        height: 13.5em;
+    }
+    .modifier-card-size_1 {
+        width: 9em;
+        grid-template-rows: 9em 3.5em;
+        height: 12.5em;
+    }
+    .modifier-card-size_-1 {
+        width: 7em;
+        grid-template-rows: 7em 3.5em;
+        height: 10.5em;
+    }
+    .modifier-card-size_-2 {
+        width: 6em;
+        grid-template-rows: 6em 3.5em;
+        height: 9.5em;
+    }
+    .modifier-card-size_-3 {
+        width: 5em;
+        grid-template-rows: 5em 3.5em;
+        height: 8.5em;
+    }
+    .modifier-card-size_-3 p {
+        font-size: 0.8em;
+    }
     .modifier-card-tiny {
         width: 6em;
         height: 9.5em;
@@ -272,6 +315,7 @@
         font-size: 0.7em;
     }
     .modifier-card:hover {
+        transform: scale(1.05);
         box-shadow: 0 5px 16px 5px rgba(0, 0, 0, 0.25);
     }
     .modifier-card-image-container {
@@ -380,6 +424,10 @@
     .tooltip:hover .tooltip-text {
         visibility: visible;
         opacity: 1;
+    }
+    #modifier-card-size-slider {
+        width: 6em;
+        margin-bottom: 0.5em;
     }
     </style>
 </html>
@@ -503,6 +551,10 @@
                         <option value="portrait" selected="">Portrait</option>
                         <option value="landscape">Landscape</option>
                     </select>
+                    <div>
+                        <label for="modifier-card-size-slider">Card Size:</label>
+                        <input id="modifier-card-size-slider" name="modifier-card-size-slider" value="0" type="range" min="-3" max="5">
+                    </div>
                 </div>
             </div>
         </div>
@@ -594,6 +646,10 @@ let editorTagsContainer = document.querySelector('#editor-inputs-tags-container'
 
 let previewImageField = document.querySelector('#preview-image')
 previewImageField.onchange = () => changePreviewImages(previewImageField.value);
+
+let modifierCardSizeSlider = document.querySelector('#modifier-card-size-slider')
+modifierCardSizeSlider.onchange = () => resizeModifierCards(modifierCardSizeSlider.value);
+
 let previewPrompt = document.querySelector('#preview-prompt')
 
 let showConfigToggle = document.querySelector('#configToggleBtn')
@@ -1458,6 +1514,23 @@ function changePreviewImages(val) {
                 previewImage.setAttribute('preview-type', val);
             }
         }
+    });
+}
+
+function resizeModifierCards(val) {
+    const cardSizePrefix = 'modifier-card-size_';
+    const modifierCardClass = 'modifier-card';
+
+    const modifierCards = document.querySelectorAll(`.${modifierCardClass}`);
+    const cardSize = n => `${cardSizePrefix}${n}`;
+
+    modifierCards.forEach(card => {
+        // remove existing size classes
+        const classes = card.className.split(' ').filter(c => !c.startsWith(cardSizePrefix));
+        card.className = classes.join(' ').trim();
+
+        if(val != 0)
+            card.classList.add(cardSize(val));
     });
 }
 
