@@ -114,16 +114,24 @@ def image(req : ImageRequest):
     r.use_face_correction = req.use_face_correction
     r.show_only_filtered_image = req.show_only_filtered_image
 
-    r.stream_progress_updates = req.stream_progress_updates
+    r.stream_progress_updates = True # the underlying implementation only supports streaming
     r.stream_image_progress = req.stream_image_progress
 
     try:
+        if not req.stream_progress_updates:
+            r.stream_image_progress = False
+
         res = runtime.mk_img(r)
 
-        if r.stream_progress_updates:
+        if req.stream_progress_updates:
             return StreamingResponse(res, media_type='application/json')
-        else:
-            return res.json()
+        else: # compatibility mode: buffer the streaming responses, and return the last one
+            last_result = None
+
+            for result in res:
+                last_result = result
+
+            return json.loads(last_result)
     except Exception as e:
         print(traceback.format_exc())
         return HTTPException(status_code=500, detail=str(e))
