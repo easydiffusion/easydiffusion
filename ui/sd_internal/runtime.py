@@ -189,8 +189,23 @@ def mk_img(req: Request):
     try:
         yield from do_mk_img(req)
     except Exception as e:
+        print(traceback.format_exc())
+
         gc()
-        raise e
+
+        if device != "cpu":
+            modelFS.to("cpu")
+            modelCS.to("cpu")
+
+            model.model1.to("cpu")
+            model.model2.to("cpu")
+
+        gc()
+
+        yield json.dumps({
+            "status": 'failed',
+            "detail": str(e)
+        })
 
 def do_mk_img(req: Request):
     global model, modelCS, modelFS, device
@@ -306,11 +321,7 @@ def do_mk_img(req: Request):
             if device != "cpu" and precision == "autocast":
                 mask = mask.half()
 
-        if device != "cpu":
-            mem = torch.cuda.memory_allocated() / 1e6
-            modelFS.to("cpu")
-            while torch.cuda.memory_allocated() / 1e6 >= mem:
-                time.sleep(1)
+        move_fs_to_cpu()
 
         assert 0. <= opt_strength <= 1., 'can only work with strength in [0.0, 1.0]'
         t_enc = int(opt_strength * opt_ddim_steps)
@@ -359,7 +370,7 @@ def do_mk_img(req: Request):
                         if req.stream_progress_updates:
                             progress = {"step": i, "total_steps": opt_ddim_steps}
 
-                            if req.stream_image_progress:
+                            if req.stream_image_progress and i % 5 == 0:
                                 partial_images = []
 
                                 for i in range(batch_size):
@@ -478,12 +489,8 @@ def do_mk_img(req: Request):
                         seeds += str(opt_seed) + ","
                         opt_seed += 1
 
+                    move_fs_to_cpu()
                     gc()
-                    if device != "cpu":
-                        mem = torch.cuda.memory_allocated() / 1e6
-                        modelFS.to("cpu")
-                        while torch.cuda.memory_allocated() / 1e6 >= mem:
-                            time.sleep(1)
                     del x_samples, x_samples_ddim, x_sample
                     print("memory_final = ", torch.cuda.memory_allocated() / 1e6)
 
@@ -568,6 +575,13 @@ def _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc, opt_ddim_steps, o
         yield from samples_ddim
     else:
         return samples_ddim
+
+def move_fs_to_cpu():
+    if device != "cpu":
+        mem = torch.cuda.memory_allocated() / 1e6
+        modelFS.to("cpu")
+        while torch.cuda.memory_allocated() / 1e6 >= mem:
+            time.sleep(1)
 
 def gc():
     if device == 'cpu':

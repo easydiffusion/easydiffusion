@@ -308,7 +308,7 @@
                     <div id="server-status-color">&nbsp;</div>
                     <span id="server-status-msg">Stable Diffusion is starting..</span>
                 </div>
-                <h1>Stable Diffusion UI <small>v2.13 <span id="updateBranchLabel"></span></small></h1>
+                <h1>Stable Diffusion UI <small>v2.14 <span id="updateBranchLabel"></span></small></h1>
             </div>
             <div id="editor-inputs">
                 <div id="editor-inputs-prompt" class="row">
@@ -344,7 +344,7 @@
             <div id="editor-settings" class="panel-box">
                 <h4 class="collapsible">Advanced Settings</h4>
                 <ul id="editor-settings-entries" class="collapsible-content">
-                    <li><input id="stream_image_progress" name="stream_image_progress" type="checkbox"> <label for="stream_image_progress">Show a live preview of the image (disable this for faster image generation)</label></li>
+                    <li><input id="stream_image_progress" name="stream_image_progress" type="checkbox"> <label for="stream_image_progress">Show a live preview of the image (consumes more VRAM, slightly slower image generation)</label></li>
                     <li><input id="use_face_correction" name="use_face_correction" type="checkbox" checked> <label for="use_face_correction">Fix incorrect faces and eyes (uses GFPGAN)</label></li>
                     <li>
                         <input id="use_upscale" name="use_upscale" type="checkbox"> <label for="use_upscale">Upscale the image to 4x resolution using </label>
@@ -797,7 +797,7 @@ async function doMakeImage(reqBody, batchCount) {
 
                 prevTime = t
             } catch (e) {
-                logError('Stable Diffusion had an error. Please check the logs in the command-line window. This happens sometimes. Maybe modify the prompt or seed a little bit?', res)
+                logError('Stable Diffusion had an error. Please check the logs in the command-line window.', res)
                 res = undefined
                 throw e
             }
@@ -805,9 +805,9 @@ async function doMakeImage(reqBody, batchCount) {
 
         if (res.status != 200) {
             if (serverStatus === 'online') {
-                logError('Stable Diffusion had an error: ' + await res.text() + '. This happens sometimes. Maybe modify the prompt or seed a little bit?', res)
+                logError('Stable Diffusion had an error: ' + await res.text(), res)
             } else {
-                logError("Stable Diffusion is still starting up, please wait. If this goes on beyond a few minutes, Stable Diffusion has probably crashed.", res)
+                logError("Stable Diffusion is still starting up, please wait. If this goes on beyond a few minutes, Stable Diffusion has probably crashed. Please check the error message in the command-line window.", res)
             }
             res = undefined
             progressBar.style.display = 'none'
@@ -837,9 +837,10 @@ async function doMakeImage(reqBody, batchCount) {
         }
     } catch (e) {
         console.log('request error', e)
-        logError('Stable Diffusion had an error. Please check the logs in the command-line window. This happens sometimes. Maybe modify the prompt or seed a little bit?', res)
+        logError('Stable Diffusion had an error. Please check the logs in the command-line window. <br/><br/>' + e + '<br/><pre>' + e.stack + '</pre>', res)
         setStatus('request', 'error', 'error')
         progressBar.style.display = 'none'
+        res = undefined
     }
 
     if (!res) {
