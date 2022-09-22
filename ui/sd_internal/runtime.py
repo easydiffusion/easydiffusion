@@ -189,8 +189,14 @@ def mk_img(req: Request):
     try:
         yield from do_mk_img(req)
     except Exception as e:
+        print(traceback.format_exc())
+
         gc()
-        raise e
+
+        yield json.dumps({
+            "status": 'failed',
+            "detail": str(e)
+        })
 
 def do_mk_img(req: Request):
     global model, modelCS, modelFS, device
