@@ -268,7 +268,7 @@
         grid-template-rows: 18em 3.5em;
         height: 21.5em;
     }
-    .modifier-card-size_5 .modifier-card-overlay {
+    .modifier-card-size_5 .modifier-card-image-overlay {
         font-size: 8em;
     }
     .modifier-card-size_4 {
@@ -276,7 +276,7 @@
         grid-template-rows: 14em 3.5em;
         height: 17.5em;
     }
-    .modifier-card-size_4 .modifier-card-overlay {
+    .modifier-card-size_4 .modifier-card-image-overlay {
         font-size: 7em;
     }
     .modifier-card-size_3 {
@@ -284,7 +284,7 @@
         grid-template-rows: 11em 3.5em;
         height: 14.5em;
     }
-    .modifier-card-size_3 .modifier-card-overlay {
+    .modifier-card-size_3 .modifier-card-image-overlay {
         font-size: 6em;
     }
     .modifier-card-size_2 {
@@ -292,7 +292,7 @@
         grid-template-rows: 10em 3.5em;
         height: 13.5em;
     }
-    .modifier-card-size_2 .modifier-card-overlay {
+    .modifier-card-size_2 .modifier-card-image-overlay {
         font-size: 6em;
     }
     .modifier-card-size_1 {
@@ -300,7 +300,7 @@
         grid-template-rows: 9em 3.5em;
         height: 12.5em;
     }
-    .modifier-card-size_1 .modifier-card-overlay {
+    .modifier-card-size_1 .modifier-card-image-overlay {
         font-size: 5em;
     }
     .modifier-card-size_-1 {
@@ -308,7 +308,7 @@
         grid-template-rows: 7em 3.5em;
         height: 10.5em;
     }
-    .modifier-card-size_-1 .modifier-card-overlay {
+    .modifier-card-size_-1 .modifier-card-image-overlay {
         font-size: 4em;
     }
     .modifier-card-size_-2 {
@@ -316,7 +316,7 @@
         grid-template-rows: 6em 3.5em;
         height: 9.5em;
     }
-    .modifier-card-size_-2 .modifier-card-overlay {
+    .modifier-card-size_-2 .modifier-card-image-overlay {
         font-size: 3em;
     }
     .modifier-card-size_-3 {
@@ -324,7 +324,7 @@
         grid-template-rows: 5em 3.5em;
         height: 8.5em;
     }
-    .modifier-card-size_-3 .modifier-card-overlay {
+    .modifier-card-size_-3 .modifier-card-image-overlay {
         font-size: 3em;
     }
     .modifier-card-size_-3 p {
@@ -378,7 +378,7 @@
         padding: 4px;
         word-break: break-word;
     }
-    .modifier-card-overlay {
+    .modifier-card-image-overlay {
         width: inherit;
         height: inherit;
         background-color: rgb(0 0 0 / 50%);
@@ -393,7 +393,13 @@
         align-items: center;
         justify-content: center;
     }
-    .modifier-card:hover > .modifier-card-image-container .modifier-card-overlay {
+    .modifier-card-overlay {
+        width: inherit;
+        height: inherit;
+        position: absolute;
+        z-index: 3;
+    }
+    .modifier-card:hover > .modifier-card-image-container .modifier-card-image-overlay {
         opacity: 1;
     }
     .modifier-card:hover > .modifier-card-image-container img {
@@ -1412,19 +1418,17 @@ function refreshTagsList() {
     }
 
     activeTags.forEach((tag, index) => {
-        tag.element.querySelector('.modifier-card-overlay').innerText = '-';
+        tag.element.querySelector('.modifier-card-image-overlay').innerText = '-';
         tag.element.classList.add('modifier-card-tiny');
 
         editorModifierTagsList.appendChild(tag.element);
 
         tag.element.addEventListener('click', () => {
-            let idx = activeTags.indexOf(tag);
+            if (index !== -1) {
+                activeTags[index].originElement.classList.remove(activeCardClass);
+                activeTags[index].originElement.querySelector('.modifier-card-image-overlay').innerText = '+';
 
-            if (idx !== -1) {
-                activeTags[idx].originElement.classList.remove(activeCardClass);
-                activeTags[idx].originElement.querySelector('.modifier-card-overlay').innerText = '+';
-
-                activeTags.splice(idx, 1);
+                activeTags.splice(index, 1);
                 refreshTagsList();
             }
         });
@@ -1460,8 +1464,9 @@ function createModifierCard(name, previews) {
     const modifierCard = document.createElement('div');
     modifierCard.className = 'modifier-card';
     modifierCard.innerHTML = `
+    <div class="modifier-card-overlay"></div>
     <div class="modifier-card-image-container">
-        <div class="modifier-card-overlay">+</div>
+        <div class="modifier-card-image-overlay">+</div>
         <p class="modifier-card-error-label"></p>
         <img onerror="this.remove()" alt="Modifier Image" class="modifier-card-image">
     </div>
@@ -1593,7 +1598,7 @@ async function loadModifiers() {
                                 activeTags = activeTags.filter(x => x.name != modifierName);
                                 modifierCard.classList.remove(activeCardClass);
                                 
-                                modifierCard.querySelector('.modifier-card-overlay').innerText = '+';
+                                modifierCard.querySelector('.modifier-card-image-overlay').innerText = '+';
                             } else {
                                 // add modifier to active array
                                 activeTags.push({
@@ -1605,7 +1610,7 @@ async function loadModifiers() {
 
                                 modifierCard.classList.add(activeCardClass);
 
-                                modifierCard.querySelector('.modifier-card-overlay').innerText = '-';
+                                modifierCard.querySelector('.modifier-card-image-overlay').innerText = '-';
                             }
 
                             refreshTagsList();
