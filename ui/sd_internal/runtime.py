@@ -522,6 +522,9 @@ def _txt2img(opt_W, opt_H, opt_n_samples, opt_ddim_steps, opt_scale, start_code,
         while torch.cuda.memory_allocated() / 1e6 >= mem:
             time.sleep(1)
 
+    if sampler_name == 'ddim' and not hasattr(model, 'ddim_timesteps'):
+        model.make_schedule(ddim_num_steps=opt_ddim_steps, ddim_eta=opt_ddim_eta, verbose=False)
+
     samples_ddim = model.sample(
         S=opt_ddim_steps,
         conditioning=c,
