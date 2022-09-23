@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import React from "react";
 
-import { useImageCreate } from "../../../../../stores/imageCreateStore";
+import { useImageCreate, ImageRequest } from "../../../../../stores/imageCreateStore";
 import { useImageQueue } from "../../../../../stores/imageQueueStore";
 import { v4 as uuidv4 } from "uuid";
 
@@ -23,15 +23,20 @@ export default function MakeButton() {
   const isRandomSeed = useImageCreate((state) => state.isRandomSeed());
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
 
-  const makeImages = () => {
-    // potentially update the seed
-    if (isRandomSeed) {
-      // update the seed for the next time we click the button
-      setRequestOption("seed", useRandomSeed());
-    }
+  // const makeImages = () => {
+  //   // potentially update the seed
+  //   if (isRandomSeed) {
+  //     // update the seed for the next time we click the button
+  //     setRequestOption("seed", useRandomSeed());
+  //   }
 
-    // the request that we have built
-    const req = builtRequest();
+  //   // the request that we have built
+  //   const req = builtRequest();
+
+  // };
+
+  const queueImageRequest = (req: ImageRequest) => {
+
     // the actual number of request we will make
     const requests = [];
     // the number of images we will make
@@ -63,7 +68,6 @@ export default function MakeButton() {
       // get the seed we want to use
       let seed = req.seed;
       if (index !== 0) {
-        debugger;
         // we want to use a random seed for subsequent requests
         seed = useRandomSeed();
       }
@@ -76,7 +80,60 @@ export default function MakeButton() {
         seed,
       });
     });
+  }
+
+  const testStream = async (req: ImageRequest) => {
+
+    const streamReq = {
+      ...req,
+      stream_progress_updates: true,
+      // stream_image_progress: false,
+      session_id: uuidv4(),
+    };
+
+    console.log("testStream", streamReq);
+    try {
+      const res = await fetch('http://localhost:9000/image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(streamReq)
+      });
+
+      console.log('res', res);
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+        const text = decoder.decode(value);
+        console.log(text);
+      }
+    } catch (e) {
+      console.log(e);
+      debugger;
+    }
+
+  }
+
+  const makeImages = () => {
+    // potentially update the seed
+    if (isRandomSeed) {
+      // update the seed for the next time we click the button
+      setRequestOption("seed", useRandomSeed());
+    }
+
+    // the request that we have built
+    const req = builtRequest();
+
+    //queueImageRequest(req);
+    void testStream(req);
+
   };
+
 
   return (
     <button
