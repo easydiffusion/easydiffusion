@@ -15,7 +15,8 @@ CONFIG_DIR = os.path.join(SD_UI_DIR, '..', 'scripts')
 OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder
 
 from fastapi import FastAPI, HTTPException
-from starlette.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from starlette.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 import logging
 
@@ -31,6 +32,7 @@ outpath = os.path.join(os.path.expanduser("~"), OUTPUT_DIRNAME)
 
 # defaults from https://huggingface.co/blog/stable_diffusion
 class ImageRequest(BaseModel):
+    session_id: str = "session"
     prompt: str = ""
     init_image: str = None # base64
     mask: str = None # base64
@@ -41,6 +43,7 @@ class ImageRequest(BaseModel):
     height: int = 512
     seed: int = 42
     prompt_strength: float = 0.8
+    sampler: str = None # "ddim", "plms", "heun", "euler", "euler_a", "dpm2", "dpm2_a", "lms"
     # allow_nsfw: bool = False
     save_to_disk_path: str = None
     turbo: bool = True
@@ -50,8 +53,13 @@ class ImageRequest(BaseModel):
     use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
     show_only_filtered_image: bool = False
 
+    stream_progress_updates: bool = False
+    stream_image_progress: bool = False
+
 class SetAppConfigRequest(BaseModel):
     update_branch: str = "main"
+
+app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'media/')), name="media")
 
 @app.get('/')
 def read_root():
@@ -87,6 +95,7 @@ def image(req : ImageRequest):
     from sd_internal import runtime
 
     r = Request()
+    r.session_id = req.session_id
     r.prompt = req.prompt
     r.init_image = req.init_image
     r.mask = req.mask
@@ -97,6 +106,7 @@ def image(req : ImageRequest):
     r.height = req.height
     r.seed = req.seed
     r.prompt_strength = req.prompt_strength
+    r.sampler = req.sampler
     # r.allow_nsfw = req.allow_nsfw
     r.turbo = req.turbo
     r.use_cpu = req.use_cpu
@@ -106,10 +116,24 @@ def image(req : ImageRequest):
     r.use_face_correction = req.use_face_correction
     r.show_only_filtered_image = req.show_only_filtered_image
 
-    try:
-        res: Response = runtime.mk_img(r)
+    r.stream_progress_updates = True # the underlying implementation only supports streaming
+    r.stream_image_progress = req.stream_image_progress
 
-        return res.json()
+    try:
+        if not req.stream_progress_updates:
+            r.stream_image_progress = False
+
+        res = runtime.mk_img(r)
+
+        if req.stream_progress_updates:
+            return StreamingResponse(res, media_type='application/json')
+        else: # compatibility mode: buffer the streaming responses, and return the last one
+            last_result = None
+
+            for result in res:
+                last_result = result
+
+            return json.loads(last_result)
     except Exception as e:
         print(traceback.format_exc())
         return HTTPException(status_code=500, detail=str(e))
@@ -127,6 +151,13 @@ def stop():
     except Exception as e:
         print(traceback.format_exc())
         return HTTPException(status_code=500, detail=str(e))
+
+@app.get('/image/tmp/{session_id}/{img_id}')
+def get_image(session_id, img_id):
+    from sd_internal import runtime
+    buf = runtime.temp_images[session_id + '/' + img_id]
+    buf.seek(0)
+    return StreamingResponse(buf, media_type='image/jpeg')
 
 @app.post('/app_config')
 async def setAppConfig(req : SetAppConfigRequest):
@@ -172,14 +203,6 @@ def getAppConfig():
     except Exception as e:
         print(traceback.format_exc())
         return HTTPException(status_code=500, detail=str(e))
-
-@app.get('/media/ding.mp3')
-def read_ding():
-    return FileResponse(os.path.join(SD_UI_DIR, 'media/ding.mp3'))
-
-@app.get('/media/kofi.png')
-def read_modifiers():
-    return FileResponse(os.path.join(SD_UI_DIR, 'media/kofi.png'))
 
 @app.get('/modifiers.json')
 def read_modifiers():
