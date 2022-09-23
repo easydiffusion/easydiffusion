@@ -1044,6 +1044,8 @@ async function doMakeImage(reqBody, batchCount) {
             randomSeedField.checked = false
             seedField.value = seed
             seedField.disabled = false
+
+            samplerSelectionContainer.style.display = 'none'
         })
 
         imgSaveBtn.addEventListener('click', function() {
