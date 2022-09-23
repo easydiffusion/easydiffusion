@@ -44,3 +44,6 @@ After this, you can access the server at `http://localhost:1337` (where 1337 is 
 Please ensure that you have an NVIDIA GPU and the latest [NVIDIA driver](http://www.nvidia.com/Download/index.aspx), and that you've installed [nvidia-container-toolkit](https://stackoverflow.com/a/58432877).
 
 Also, if you are using WSL (Windows), please ensure you have the latest WSL kernel by running `wsl --shutdown` and then `wsl --update`. (Thanks [AndrWeisR](https://github.com/AndrWeisR))
+
+## 'chcp' is not recognized as an internal or external command, operable program or batch file.
+Your PATH variable is missing the entry C:\windows\system32. Click on the Windows logo in the task bar ("start menu"), type "env", and click on "Edit the system environment variables". Then, click on the "Environment Variables" button near the bottom of the "System properties" window. Find the "PATH" entry in the "System variables" section, click on it, then click on the "Edit..." button beneath it. Click on the "New" button and type C:\Windows\System32 into the new line at the end of the list. Click the various OK buttons to close all the windows you just opened and rerun the installation.
