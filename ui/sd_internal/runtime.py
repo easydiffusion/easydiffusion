@@ -369,7 +369,8 @@ def do_mk_img(req: Request):
                         partial_x_samples = x_samples
 
                         if req.stream_progress_updates:
-                            progress = {"step": i, "total_steps": opt_ddim_steps}
+                            n_steps = opt_ddim_steps if req.init_image is None else t_enc
+                            progress = {"step": i, "total_steps": n_steps}
 
                             if req.stream_image_progress and i % 5 == 0:
                                 partial_images = []
