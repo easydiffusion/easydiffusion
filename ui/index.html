@@ -1428,7 +1428,7 @@ function refreshTagsList() {
 
             if (idx !== -1) {
                 activeTags[idx].originElement.classList.remove(activeCardClass);
-                activeTags[idx].originElement.querySelector('.modifier-card-overlay').innerText = '+';
+                activeTags[idx].originElement.querySelector('.modifier-card-image-overlay').innerText = '+';
 
                 activeTags.splice(idx, 1);
                 refreshTagsList();
