@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/media/favicon-16x16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="/media/favicon-32x32.png" sizes="32x32">
     <style>
     body {
         font-family: Arial, Helvetica, sans-serif;
@@ -19,7 +21,8 @@
     }
     #prompt {
         width: 100%;
-        height: 50pt;
+        height: 65pt;
+        box-sizing: border-box;
     }
     @media screen and (max-width: 600px) {
         #prompt {
@@ -27,7 +30,7 @@
         }
     }
     .image_preview_container {
-        display: none;
+        /* display: none; */
         margin-top: 10pt;
     }
     .image_clear_btn {
@@ -45,19 +48,22 @@
         font-family: Verdana;
         font-size: 8pt;
     }
-    #editor-settings-entries {
+    .settings-box ul {
         font-size: 9pt;
         margin-bottom: 5px;
         padding-left: 10px;
         list-style-type: none;
     }
-    #editor-settings-entries li {
-        padding-bottom: 3pt;
+    .settings-box li {
+        padding-bottom: 4pt;
     }
     .editor-slider {
         transform: translateY(30%);
     }
     #outputMsg {
+        font-size: small;
+    }
+    #progressBar {
         font-size: small;
     }
     #footer {
@@ -102,23 +108,26 @@
     }
 
     #container {
-        width: 75%;
+        width: 90%;
         margin-left: auto;
         margin-right: auto;
     }
-    @media screen and (max-width: 1400px) {
+    @media screen and (max-width: 1800px) {
         #container {
             width: 100%;
         }
     }
-    #meta small {
+    #logo small {
         font-size: 11pt;
     }
     #editor {
         padding: 5px;
     }
     #editor label {
-        font-weight: bold;
+        font-weight: normal;
+    }
+    .settings-box label small {
+        color: rgb(153, 153, 153);
     }
     #preview {
         padding: 5px;
@@ -168,6 +177,9 @@
     }
     .col-50 {
         flex: 50%;
+    }
+    .col-fixed-10 {
+        flex: 0 0 400pt;
     }
     .col-free {
         flex: 1;
@@ -220,16 +232,19 @@
         display: none;
     }
     #server-status {
+        display: inline;
         float: right;
+        transform: translateY(-5pt);
     }
     #server-status-color {
-        width: 8pt;
+        /* width: 8pt;
         height: 8pt;
-        border-radius: 4pt;
-        background-color: rgb(128, 87, 0);
+        border-radius: 4pt; */
+        font-size: 14pt;
+        color: rgb(128, 87, 0);
         /* background-color: rgb(197, 1, 1); */
-        float: left;
-        transform: translateY(15%);
+        /* transform: translateY(15%); */
+        display: inline;
     }
     #server-status-msg {
         color: rgb(128, 87, 0);
@@ -244,6 +259,7 @@
         height: 23px;
         transform: translateY(25%);
     }
+
     .modifier-card {
         box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
         transition: 0.1s;
@@ -459,18 +475,156 @@
         width: 6em;
         margin-bottom: 0.5em;
     }
+
+    #inpaintingEditor {
+        width: 300pt;
+        height: 300pt;
+        margin-top: 5pt;
+    }
+    .drawing-board-canvas-wrapper {
+        background-size: 100% 100%;
+    }
+    #inpaintingEditor canvas {
+        opacity: 0.6;
+    }
+    #enable_mask {
+        margin-top: 8pt;
+    }
+
+    #top-nav {
+        padding-top: 3pt;
+        padding-bottom: 15pt;
+    }
+    #top-nav .icon {
+        padding-right: 4pt;
+        font-size: 14pt;
+        transform: translateY(1pt);
+    }
+    #logo {
+        display: inline;
+    }
+    #logo h1 {
+        display: inline;
+    }
+    #top-nav-items {
+        list-style-type: none;
+        display: inline;
+        float: right;
+    }
+    #top-nav-items > li {
+        float: left;
+        display: inline;
+        padding-left: 20pt;
+        cursor: default;
+    }
+    #initial-text {
+        padding-top: 15pt;
+        padding-left: 4pt;
+    }
+    .settings-subheader {
+        font-size: 10pt;
+        font-weight: bold;
+    }
+    .pl-5 {
+        padding-left: 5pt;
+    }
+    #system-settings {
+        width: 360pt;
+        transform: translateX(-100%) translateX(70pt);
+
+        padding-top: 10pt;
+        padding-bottom: 10pt;
+    }
+    #system-settings ul {
+        margin: 0;
+        padding: 0;
+    }
+    #system-settings li {
+        padding-left: 5pt;
+    }
+    #community-links {
+        list-style-type: none;
+        margin: 0;
+        padding: 12pt;
+        padding-bottom: 0pt;
+        transform: translateX(-15%);
+    }
+    #community-links li {
+        padding-bottom: 12pt;
+        display: block;
+        font-size: 10pt;
+    }
+    #community-links li .fa-fw {
+        padding-right: 2pt;
+    }
+    #community-links li a {
+        color: white;
+        text-decoration: none;
+    }
+    .dropdown {
+        overflow: hidden;
+    }
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        z-index: 2;
+
+        background: rgb(18, 18, 19);
+        border: 2px solid rgb(37, 38, 41);
+        border-radius: 7px;
+        padding: 5px;
+        margin-bottom: 15px;
+        box-shadow: 0 20px 28px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
+    }
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <link rel="stylesheet" href="/media/drawingboard.min.css">
+    <script src="/media/jquery-3.6.1.min.js"></script>
+    <script src="/media/drawingboard.min.js"></script>
 </html>
 <body>
 <div id="container">
-    <div class="flex-container">
-        <div id="editor" class="col-50">
-            <div id="meta">
-                <div id="server-status">
-                    <div id="server-status-color">&nbsp;</div>
-                    <span id="server-status-msg">Stable Diffusion is starting..</span>
+    <div id="top-nav">
+        <div id="logo">
+            <h1>Stable Diffusion UI <small>v2.16 <span id="updateBranchLabel"></span></small></h1>
+        </div>
+        <ul id="top-nav-items">
+            <li class="dropdown">
+                <span><i class="fa fa-comments icon"></i> Help & Community</span>
+                <ul id="community-links" class="dropdown-content">
+                    <li><a href="https://github.com/cmdr2/stable-diffusion-ui/blob/main/Troubleshooting.md" target="_blank"><i class="fa-solid fa-circle-question fa-fw"></i> Usual problems and solutions</a></li>
+                    <li><a href="https://discord.com/invite/u9yhsFmEkB" target="_blank"><i class="fa-brands fa-discord fa-fw"></i> Discord user community</a></li>
+                    <li><a href="https://github.com/cmdr2/stable-diffusion-ui" target="_blank"><i class="fa-brands fa-github fa-fw"></i> Source code on GitHub</a></li>
+                </ul>
+            </li>
+            <li class="dropdown">
+                <span><i class="fa fa-gear icon"></i> Settings</span>
+                <div id="system-settings" class="panel-box settings-box dropdown-content">
+                    <ul id="system-settings-entries">
+                        <li><b class="settings-subheader">System Settings</b></li>
+                        <br/>
+                        <li><input id="save_to_disk" name="save_to_disk" type="checkbox"> <label for="save_to_disk">Automatically save to <input id="diskPath" name="diskPath" size="40" disabled></label></li>
+                        <li><input id="sound_toggle" name="sound_toggle" type="checkbox" checked> <label for="sound_toggle">Play sound on task completion</label></li>
+                        <li><input id="turbo" name="turbo" type="checkbox" checked> <label for="turbo">Turbo mode <small>(generates images faster, but uses an additional 1 GB of GPU memory)</small></label></li>
+                        <li><input id="use_cpu" name="use_cpu" type="checkbox"> <label for="use_cpu">Use CPU instead of GPU <small>(warning: this will be *very* slow)</small></label></li>
+                        <li><input id="use_full_precision" name="use_full_precision" type="checkbox"> <label for="use_full_precision">Use full precision <small>(for GPU-only. warning: this will consume more VRAM)</small></label></li>
+                        <!-- <li><input id="allow_nsfw" name="allow_nsfw" type="checkbox"> <label for="allow_nsfw">Allow NSFW Content (You confirm you are above 18 years of age)</label></li> -->
+                        <br/>
+                        <li><input id="use_beta_channel" name="use_beta_channel" type="checkbox"> <label for="use_beta_channel">🔥Beta channel. Get the latest features immediately (but could be less stable). Please restart the program after changing this.</label></li>
+                    </ul>
                 </div>
-                <h1>Stable Diffusion UI <small>v2.1 <span id="updateBranchLabel"></span></small></h1>
+            </li>
+        </ul>
+    </div>
+
+    <div class="flex-container">
+        <div id="editor" class="col-fixed-10">
+            <div id="server-status">
+                <div id="server-status-color">●</div>
+                <span id="server-status-msg">Stable Diffusion is starting..</span>
             </div>
             <div id="editor-inputs">
                 <div id="editor-inputs-prompt" class="row">
@@ -479,10 +633,15 @@
                 </div>
 
                 <div id="editor-inputs-init-image" class="row">
-                    <label for="init_image"><b>Initial Image:</b> (optional) </label> <input id="init_image" name="init_image" type="file" /> </button><br/>
+                    <label for="init_image"><b>Initial Image:</b> (optional) </label> <input id="init_image" name="init_image" type="file" /><br/>
+
                     <div id="init_image_preview_container" class="image_preview_container">
                         <img id="init_image_preview" src="" width="100" height="100" />
-                        <button id="init_image_clear" class="image_clear_btn">X</button>
+                        <button class="init_image_clear image_clear_btn">X</button>
+
+                        <br/>
+                        <input id="enable_mask" name="enable_mask" type="checkbox"> <label for="enable_mask">In-Painting (select the area which the AI will paint into)</label>
+                        <div id="inpaintingEditor"></div>
                     </div>
                 </div>
 
@@ -497,22 +656,25 @@
 
             <div class="line-separator">&nbsp;</div>
 
-            <div id="editor-settings" class="panel-box">
-                <h4 class="collapsible">Advanced Settings</h4>
+            <div id="editor-settings" class="panel-box settings-box">
+                <h4 class="collapsible">Image Settings</h4>
                 <ul id="editor-settings-entries" class="collapsible-content">
-                    <li><input id="use_face_correction" name="use_face_correction" type="checkbox" checked> <label for="use_face_correction">Fix incorrect faces and eyes (uses GFPGAN)</label></li>
-                    <li>
-                        <input id="use_upscale" name="use_upscale" type="checkbox"> <label for="use_upscale">Upscale the image to 4x resolution using </label>
-                        <select id="upscale_model" name="upscale_model">
-                            <option value="RealESRGAN_x4plus" selected>RealESRGAN_x4plus</option>
-                            <option value="RealESRGAN_x4plus_anime_6B">RealESRGAN_x4plus_anime_6B</option>
+                    <li><b class="settings-subheader">Image Settings</b></li>
+                    <li class="pl-5"><label for="seed">Seed:</label> <input id="seed" name="seed" size="10" value="30000"> <input id="random_seed" name="random_seed" type="checkbox" checked> <label for="random_seed">Random Image</label></li>
+                    <li class="pl-5"><label for="num_outputs_total">Number of images to make:</label> <input id="num_outputs_total" name="num_outputs_total" value="1" size="1"> <label for="num_outputs_parallel">Generate in parallel:</label> <input id="num_outputs_parallel" name="num_outputs_parallel" value="1" size="1"> (images at once)</li>
+                    <li id="samplerSelection" class="pl-5"><label for="sampler">Sampler:</label>
+                        <select id="sampler" name="sampler">
+                            <option value="plms" selected>plms</option>
+                            <option value="ddim">ddim</option>
+                            <option value="heun">heun</option>
+                            <option value="euler">euler</option>
+                            <option value="euler_a">euler_a</option>
+                            <option value="dpm2">dpm2</option>
+                            <option value="dpm2_a">dpm2_a</option>
+                            <option value="lms">lms</option>
                         </select>
                     </li>
-                    <li><input id="show_only_filtered_image" name="show_only_filtered_image" type="checkbox" checked> <label for="show_only_filtered_image">Show only the corrected/upscaled image</label></li>
-                    <br/>
-                    <li><label for="seed">Seed:</label> <input id="seed" name="seed" size="10" value="30000"> <input id="random_seed" name="random_seed" type="checkbox" checked> <label for="random_seed">Random Image</label></li>
-                    <li><label for="num_outputs_total">Number of images to make:</label> <input id="num_outputs_total" name="num_outputs_total" value="1" size="4"> <label for="num_outputs_parallel">Generate in parallel:</label> <input id="num_outputs_parallel" name="num_outputs_parallel" value="1" size="4"> (images at once)</li>
-                    <li><label for="width">Width:</label> 
+                    <li class="pl-5"><label>Image Size: </label>
                         <select id="width" name="width" value="512">
                             <option value="128">128 (*)</option>
                             <option value="192">192</option>
@@ -533,9 +695,7 @@
                             <option value="1536">1536</option>
                             <option value="1792">1792</option>
                             <option value="2048">2048</option>
-                        </select>
-                    </li>
-                    <li><label for="height">Height:</label> 
+                        </select> <label for="width"><small>(width)</small></label> 
                         <select id="height" name="height" value="512">
                             <option value="128">128 (*)</option>
                             <option value="192">192</option>
@@ -557,19 +717,27 @@
                             <option value="1792">1792</option>
                             <option value="2048">2048</option>
                         </select>
+                        <label for="height"><small>(height)</small></label>
                     </li>
-                    <li><label for="num_inference_steps">Number of inference steps:</label> <input id="num_inference_steps" name="num_inference_steps" size="4" value="50"></li>
-                    <li><label for="guidance_scale_slider">Guidance Scale:</label> <input id="guidance_scale_slider" name="guidance_scale_slider" class="editor-slider" value="75" type="range" min="10" max="200"> <input id="guidance_scale" name="guidance_scale" size="4"></li>
-                    <li><span id="prompt_strength_container"><label for="prompt_strength_slider">Prompt Strength:</label> <input id="prompt_strength_slider" name="prompt_strength_slider" class="editor-slider" value="80" type="range" min="0" max="99"> <input id="prompt_strength" name="prompt_strength" size="4"><br/></span></li>
-                    <li>&nbsp;</li>
-                    <li><input id="save_to_disk" name="save_to_disk" type="checkbox"> <label for="save_to_disk">Automatically save to <input id="diskPath" name="diskPath" size="40" disabled></label></li>
-                    <li><input id="sound_toggle" name="sound_toggle" type="checkbox" checked> <label for="sound_toggle">Play sound on task completion</label></li>
-                    <li><input id="turbo" name="turbo" type="checkbox" checked> <label for="turbo">Turbo mode (generates images faster, but uses an additional 1 GB of GPU memory)</label></li>
-                    <li><input id="use_cpu" name="use_cpu" type="checkbox"> <label for="use_cpu">Use CPU instead of GPU (warning: this will be *very* slow)</label></li>
-                    <li><input id="use_full_precision" name="use_full_precision" type="checkbox"> <label for="use_full_precision">Use full precision (for GPU-only. warning: this will consume more VRAM)</label></li>
-                    <!-- <li><input id="allow_nsfw" name="allow_nsfw" type="checkbox"> <label for="allow_nsfw">Allow NSFW Content (You confirm you are above 18 years of age)</label></li> -->
+                    <li class="pl-5"><label for="num_inference_steps">Number of inference steps:</label> <input id="num_inference_steps" name="num_inference_steps" size="4" value="50"></li>
+                    <li class="pl-5"><label for="guidance_scale_slider">Guidance Scale:</label> <input id="guidance_scale_slider" name="guidance_scale_slider" class="editor-slider" value="75" type="range" min="10" max="500"> <input id="guidance_scale" name="guidance_scale" size="4"></li>
+                    <li class="pl-5"><span id="prompt_strength_container"><label for="prompt_strength_slider">Prompt Strength:</label> <input id="prompt_strength_slider" name="prompt_strength_slider" class="editor-slider" value="80" type="range" min="0" max="99"> <input id="prompt_strength" name="prompt_strength" size="4"><br/></span></li>
+
                     <br/>
-                    <li><input id="use_beta_channel" name="use_beta_channel" type="checkbox"> <label for="use_beta_channel">🔥Beta channel. Get the latest features immediately (but could be less stable). Please restart the program after changing this.</label></li>
+
+                    <li><b class="settings-subheader">Render Settings</b></li>
+                    <li class="pl-5"><input id="stream_image_progress" name="stream_image_progress" type="checkbox"> <label for="stream_image_progress">Show a live preview of the image <small>(consumes more VRAM, slightly slower image generation)</small></label></li>
+                    <li class="pl-5"><input id="use_face_correction" name="use_face_correction" type="checkbox" checked> <label for="use_face_correction">Fix incorrect faces and eyes <small>(uses GFPGAN)</small></label></li>
+                    <li class="pl-5">
+                        <input id="use_upscale" name="use_upscale" type="checkbox"> <label for="use_upscale">Upscale the image to 4x resolution using </label>
+                        <select id="upscale_model" name="upscale_model">
+                            <option value="RealESRGAN_x4plus" selected>RealESRGAN_x4plus</option>
+                            <option value="RealESRGAN_x4plus_anime_6B">RealESRGAN_x4plus_anime_6B</option>
+                        </select>
+                    </li>
+                    <li class="pl-5"><input id="show_only_filtered_image" name="show_only_filtered_image" type="checkbox" checked> <label for="show_only_filtered_image">Show only the corrected/upscaled image</label></li>
+                    <br/>
+                    <li><small>The system-related settings have been moved to the top-right corner.</small></li>
                 </ul>
             </div>
 
@@ -589,10 +757,15 @@
             </div>
         </div>
 
-        <div id="preview" class="col-50">
-            <div id="preview-prompt">Type a prompt and press the "Make Image" button.<br/><br/>You can set an "Initial Image" if you want to guide the AI.<br/><br/>You can also add modifiers like "Realistic", "Pencil Sketch", "ArtStation" etc by browsing through the "Image Modifiers" section and selecting the desired modifiers.<br/><br/>Click "Advanced Settings" for additional settings like seed, image size, number of images to generate etc.<br/><br/>Enjoy! :)</div>
+        <div id="preview" class="col-free">
+            <div id="preview-prompt">
+                <div id="initial-text">
+                    Type a prompt and press the "Make Image" button.<br/><br/>You can set an "Initial Image" if you want to guide the AI.<br/><br/>You can also add modifiers like "Realistic", "Pencil Sketch", "ArtStation" etc by browsing through the "Image Modifiers" section and selecting the desired modifiers.<br/><br/>Click "Advanced Settings" for additional settings like seed, image size, number of images to generate etc.<br/><br/>Enjoy! :)
+                </div>
+            </div>
 
             <div id="outputMsg"></div>
+            <div id="progressBar"></div>
             <div id="current-images" class="img-preview">
             </div>
         </div>
@@ -624,10 +797,13 @@ const MODIFIERS_PANEL_OPEN_KEY = "modifiersPanelOpen"
 const USE_FACE_CORRECTION_KEY = "useFaceCorrection"
 const USE_UPSCALING_KEY = "useUpscaling"
 const SHOW_ONLY_FILTERED_IMAGE_KEY = "showOnlyFilteredImage"
+const STREAM_IMAGE_PROGRESS_KEY = "streamImageProgress"
 const HEALTH_PING_INTERVAL = 5 // seconds
 const MAX_INIT_IMAGE_DIMENSION = 768
 
 const IMAGE_REGEX = new RegExp('data:image/[A-Za-z]+;base64')
+
+let sessionId = new Date().getTime()
 
 let promptField = document.querySelector('#prompt')
 let numOutputsTotalField = document.querySelector('#num_outputs_total')
@@ -641,8 +817,8 @@ let widthField = document.querySelector('#width')
 let heightField = document.querySelector('#height')
 let initImageSelector = document.querySelector("#init_image")
 let initImagePreview = document.querySelector("#init_image_preview")
-// let maskImageSelector = document.querySelector("#mask")
-// let maskImagePreview = document.querySelector("#mask_preview")
+let maskImageSelector = document.querySelector("#mask")
+let maskImagePreview = document.querySelector("#mask_preview")
 let turboField = document.querySelector('#turbo')
 let useCPUField = document.querySelector('#use_cpu')
 let useFullPrecisionField = document.querySelector('#use_full_precision')
@@ -652,23 +828,27 @@ let diskPathField = document.querySelector('#diskPath')
 let useBetaChannelField = document.querySelector("#use_beta_channel")
 let promptStrengthSlider = document.querySelector('#prompt_strength_slider')
 let promptStrengthField = document.querySelector('#prompt_strength')
+let samplerField = document.querySelector('#sampler')
+let samplerSelectionContainer = document.querySelector("#samplerSelection")
 let useFaceCorrectionField = document.querySelector("#use_face_correction")
 let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
 let showOnlyFilteredImageField = document.querySelector("#show_only_filtered_image")
 let updateBranchLabel = document.querySelector("#updateBranchLabel")
+let streamImageProgressField = document.querySelector("#stream_image_progress")
 
 let makeImageBtn = document.querySelector('#makeImage')
 let stopImageBtn = document.querySelector('#stopImage')
 
 let imagesContainer = document.querySelector('#current-images')
 let initImagePreviewContainer = document.querySelector('#init_image_preview_container')
-let initImageClearBtn = document.querySelector('#init_image_clear')
+let initImageClearBtn = document.querySelector('.init_image_clear')
 let promptStrengthContainer = document.querySelector('#prompt_strength_container')
 
-// let maskSetting = document.querySelector('#mask_setting')
+// let maskSetting = document.querySelector('#editor-inputs-mask_setting')
 // let maskImagePreviewContainer = document.querySelector('#mask_preview_container')
 // let maskImageClearBtn = document.querySelector('#mask_clear')
+let maskSetting = document.querySelector('#enable_mask')
 
 let editorModifierEntries = document.querySelector('#editor-modifiers-entries')
 let editorModifierTagsList = document.querySelector('#editor-inputs-tags-list')
@@ -685,6 +865,7 @@ let previewPrompt = document.querySelector('#preview-prompt')
 let showConfigToggle = document.querySelector('#configToggleBtn')
 // let configBox = document.querySelector('#config')
 let outputMsg = document.querySelector('#outputMsg')
+let progressBar = document.querySelector("#progressBar")
 
 let soundToggle = document.querySelector('#sound_toggle')
 
@@ -693,12 +874,36 @@ let serverStatusMsg = document.querySelector('#server-status-msg')
 
 let advancedPanelHandle = document.querySelector("#editor-settings .collapsible")
 let modifiersPanelHandle = document.querySelector("#editor-modifiers .collapsible")
+let inpaintingEditorContainer = document.querySelector('#inpaintingEditor')
+let inpaintingEditor = new DrawingBoard.Board('inpaintingEditor', {
+    color: "#ffffff",
+    background: false,
+    size: 30,
+    webStorage: false,
+    controls: [{'DrawingMode': {'filler': false}}, 'Size', 'Navigation']
+})
+let inpaintingEditorCanvasBackground = document.querySelector('.drawing-board-canvas-wrapper')
+// let inpaintingEditorControls = document.querySelector('.drawing-board-controls')
+
+// let inpaintingEditorMetaControl = document.createElement('div')
+// inpaintingEditorMetaControl.className = 'drawing-board-control'
+// let initImageClearBtnToolbar = document.createElement('button')
+// initImageClearBtnToolbar.className = 'init_image_clear'
+// initImageClearBtnToolbar.innerHTML = 'Remove Image'
+// inpaintingEditorMetaControl.appendChild(initImageClearBtnToolbar)
+// inpaintingEditorControls.appendChild(inpaintingEditorMetaControl)
+
+let maskResetButton = document.querySelector('.drawing-board-control-navigation-reset')
+maskResetButton.innerHTML = 'Clear'
+maskResetButton.style.fontWeight = 'normal'
+maskResetButton.style.fontSize = '10pt'
 
 let serverStatus = 'offline'
 let activeTags = []
 let modifiers = []
 let lastPromptUsed = ''
 let taskStopped = true
+let batchesDone = 0
 
 const modifierThumbnailPath = 'static/modifier-thumbnails';
 const activeCardClass = 'modifier-card-active';
@@ -777,6 +982,10 @@ function isModifiersPanelOpenEnabled() {
     return getLocalStorageBoolItem(MODIFIERS_PANEL_OPEN_KEY, false)
 }
 
+function isStreamImageProgressEnabled() {
+    return getLocalStorageBoolItem(STREAM_IMAGE_PROGRESS_KEY, false)
+}
+
 function setStatus(statusType, msg, msgType) {
     if (statusType !== 'server') {
         return;
@@ -784,12 +993,12 @@ function setStatus(statusType, msg, msgType) {
 
     if (msgType == 'error') {
         // msg = '<span style="color: red">' + msg + '<span>'
-        serverStatusColor.style.backgroundColor = 'red'
+        serverStatusColor.style.color = 'red'
         serverStatusMsg.style.color = 'red'
         serverStatusMsg.innerText = 'Stable Diffusion has stopped'
     } else if (msgType == 'success') {
         // msg = '<span style="color: green">' + msg + '<span>'
-        serverStatusColor.style.backgroundColor = 'green'
+        serverStatusColor.style.color = 'green'
         serverStatusMsg.style.color = 'green'
         serverStatusMsg.innerText = 'Stable Diffusion is ready'
         serverStatus = 'online'
@@ -836,14 +1045,37 @@ async function healthCheck() {
     }
 }
 
+function makeImageElement(width, height) {
+    let imgItem = document.createElement('div')
+    imgItem.className = 'imgItem'
+
+    let img = document.createElement('img')
+    img.width = parseInt(width)
+    img.height = parseInt(height)
+
+    imgItem.appendChild(img)
+    imagesContainer.appendChild(imgItem)
+
+    return imgItem
+}
+
 // makes a single image. don't call this directly, use makeImage() instead
-async function doMakeImage(reqBody) {
+async function doMakeImage(reqBody, batchCount) {
     if (taskStopped) {
         return
     }
 
     let res = ''
     let seed = reqBody['seed']
+    let numOutputs = parseInt(reqBody['num_outputs'])
+
+    let images = []
+
+    function makeImageContainers(numImages) {
+        for (let i = images.length; i < numImages; i++) {
+            images.push(makeImageElement(reqBody.width, reqBody.height))
+        }
+    }
 
     try {
         res = await fetch('/image', {
@@ -854,15 +1086,82 @@ async function doMakeImage(reqBody) {
             body: JSON.stringify(reqBody)
         })
 
+        let reader = res.body.getReader()
+        let textDecoder = new TextDecoder()
+        let finalJSON = ''
+        let prevTime = -1
+        while (true) {
+            try {
+                let t = new Date().getTime()
+
+                const {value, done} = await reader.read()
+                if (done) {
+                    break
+                }
+
+                let timeTaken = (prevTime === -1 ? -1 : t - prevTime)
+
+                let jsonStr = textDecoder.decode(value)
+
+                try {
+                    let stepUpdate = JSON.parse(jsonStr)
+
+                    if (stepUpdate.step === undefined) {
+                        finalJSON += jsonStr
+                    } else {
+                        let batchSize = stepUpdate.total_steps
+                        let overallStepCount = stepUpdate.step + batchesDone * batchSize
+                        let totalSteps = batchCount * batchSize
+                        let percent = 100 * (overallStepCount / totalSteps)
+                        percent = (percent > 100 ? 100 : percent)
+                        percent = percent.toFixed(0)
+
+                        stepsRemaining = totalSteps - overallStepCount
+                        stepsRemaining = (stepsRemaining < 0 ? 0 : stepsRemaining)
+                        timeRemaining = (timeTaken === -1 ? '' : stepsRemaining * timeTaken) // ms
+
+                        outputMsg.innerHTML = `Batch ${batchesDone+1} of ${batchCount}`
+                        progressBar.innerHTML = `Generating image(s): ${percent}%`
+
+                        if (timeTaken !== -1) {
+                            progressBar.innerHTML += `<br>Time remaining (approx): ${millisecondsToStr(timeRemaining)}`
+                        }
+                        progressBar.style.display = 'block'
+
+                        if (stepUpdate.output !== undefined) {
+                            makeImageContainers(numOutputs)
+
+                            for (idx in stepUpdate.output) {
+                                let imgItem = images[idx]
+                                let img = imgItem.firstChild
+                                let tmpImageData = stepUpdate.output[idx]
+                                img.src = tmpImageData['path'] + '?t=' + new Date().getTime()
+                            }
+                        }
+                    }
+                } catch (e) {
+                    finalJSON += jsonStr
+                }
+
+                prevTime = t
+            } catch (e) {
+                logError('Stable Diffusion had an error. Please check the logs in the command-line window.', res)
+                res = undefined
+                throw e
+            }
+        }
+
         if (res.status != 200) {
             if (serverStatus === 'online') {
-                logError('Stable Diffusion had an error: ' + await res.text() + '. This happens sometimes. Maybe modify the prompt or seed a little bit?', res)
+                logError('Stable Diffusion had an error: ' + await res.text(), res)
             } else {
-                logError("Stable Diffusion is still starting up, please wait. If this goes on beyond a few minutes, Stable Diffusion has probably crashed.", res)
+                logError("Stable Diffusion is still starting up, please wait. If this goes on beyond a few minutes, Stable Diffusion has probably crashed. Please check the error message in the command-line window.", res)
             }
             res = undefined
+            progressBar.style.display = 'none'
         } else {
-            res = await res.json()
+            res = JSON.parse(finalJSON)
+            progressBar.style.display = 'none'
 
             if (res.status !== 'succeeded') {
                 let msg = ''
@@ -886,7 +1185,10 @@ async function doMakeImage(reqBody) {
         }
     } catch (e) {
         console.log('request error', e)
+        logError('Stable Diffusion had an error. Please check the logs in the command-line window. <br/><br/>' + e + '<br/><pre>' + e.stack + '</pre>', res)
         setStatus('request', 'error', 'error')
+        progressBar.style.display = 'none'
+        res = undefined
     }
 
     if (!res) {
@@ -894,6 +1196,8 @@ async function doMakeImage(reqBody) {
     }
 
     lastPromptUsed = reqBody['prompt']
+
+    makeImageContainers(res.output.length)
 
     for (let idx in res.output) {
         let imgBody = ''
@@ -909,12 +1213,9 @@ async function doMakeImage(reqBody) {
             continue
         }
 
-        let imgItem = document.createElement('div')
-        imgItem.className = 'imgItem'
+        let imgItem = images[idx]
+        let img = imgItem.firstChild
 
-        let img = document.createElement('img')
-        img.width = parseInt(reqBody.width)
-        img.height = parseInt(reqBody.height)
         img.src = imgBody
 
         let imgItemInfo = document.createElement('span')
@@ -932,19 +1233,19 @@ async function doMakeImage(reqBody) {
         imgSaveBtn.className = 'imgSaveBtn'
         imgSaveBtn.innerText = 'Download'
 
-        imgItem.appendChild(img)
         imgItem.appendChild(imgItemInfo)
         imgItemInfo.appendChild(imgSeedLabel)
         imgItemInfo.appendChild(imgUseBtn)
         imgItemInfo.appendChild(imgSaveBtn)
-        imagesContainer.appendChild(imgItem)
 
         imgUseBtn.addEventListener('click', function() {
             initImageSelector.value = null
             initImagePreview.src = imgBody
 
             initImagePreviewContainer.style.display = 'block'
+            inpaintingEditorContainer.style.display = 'none'
             promptStrengthContainer.style.display = 'block'
+            maskSetting.checked = false
 
             // maskSetting.style.display = 'block'
 
@@ -995,7 +1296,7 @@ async function makeImage() {
 
     let validation = validateInput()
     if (validation['isValid']) {
-        outputMsg.innerHTML = 'Fetching..'
+        outputMsg.innerHTML = 'Starting..'
     } else {
         if (validation['error']) {
             logError(validation['error'])
@@ -1008,16 +1309,20 @@ async function makeImage() {
     setStatus('request', 'fetching..')
 
     makeImageBtn.innerHTML = 'Processing..'
+    makeImageBtn.disabled = true
     makeImageBtn.style.display = 'none'
     stopImageBtn.style.display = 'block'
 
     taskStopped = false
+    batchesDone = 0
 
     let seed = (randomSeedField.checked ? Math.floor(Math.random() * 10000000) : parseInt(seedField.value))
     let numOutputsTotal = parseInt(numOutputsTotalField.value)
     let numOutputsParallel = parseInt(numOutputsParallelField.value)
     let batchCount = Math.ceil(numOutputsTotal / numOutputsParallel)
     let batchSize = numOutputsParallel
+
+    let streamImageProgress = (numOutputsTotal > 50 ? false : streamImageProgressField.checked)
 
     let prompt = promptField.value
     if (activeTags.length > 0) {
@@ -1028,6 +1333,7 @@ async function makeImage() {
     previewPrompt.innerText = prompt
 
     let reqBody = {
+        session_id: sessionId,
         prompt: prompt,
         num_outputs: batchSize,
         num_inference_steps: numInferenceStepsField.value,
@@ -1037,7 +1343,10 @@ async function makeImage() {
         // allow_nsfw: allowNSFWField.checked,
         turbo: turboField.checked,
         use_cpu: useCPUField.checked,
-        use_full_precision: useFullPrecisionField.checked
+        use_full_precision: useFullPrecisionField.checked,
+        stream_progress_updates: true,
+        stream_image_progress: streamImageProgress,
+        show_only_filtered_image: showOnlyFilteredImageField.checked
     }
 
     if (IMAGE_REGEX.test(initImagePreview.src)) {
@@ -1047,6 +1356,13 @@ async function makeImage() {
         // if (IMAGE_REGEX.test(maskImagePreview.src)) {
         //     reqBody['mask'] = maskImagePreview.src
         // }
+        if (maskSetting.checked) {
+            reqBody['mask'] = inpaintingEditor.getImg()
+        }
+
+        reqBody['sampler'] = 'ddim'
+    } else {
+        reqBody['sampler'] = samplerField.value
     }
 
     if (saveToDiskField.checked && diskPathField.value.trim() !== '') {
@@ -1061,10 +1377,6 @@ async function makeImage() {
         reqBody['use_upscale'] = upscaleModelField.value
     }
 
-    if (showOnlyFilteredImageField.checked && (useUpscalingField.checked || useFaceCorrectionField.checked)) {
-        reqBody['show_only_filtered_image'] = showOnlyFilteredImageField.checked
-    }
-
     let time = new Date().getTime()
     imagesContainer.innerHTML = ''
 
@@ -1073,7 +1385,8 @@ async function makeImage() {
     for (let i = 0; i < batchCount; i++) {
         reqBody['seed'] = seed + (i * batchSize)
 
-        let success = await doMakeImage(reqBody)
+        let success = await doMakeImage(reqBody, batchCount)
+        batchesDone++
 
         if (success) {
             outputMsg.innerText = 'Processed batch ' + (i+1) + '/' + batchCount
@@ -1177,6 +1490,9 @@ useFullPrecisionField.checked = isUseFullPrecisionEnabled()
 turboField.addEventListener('click', handleBoolSettingChange(USE_TURBO_MODE_KEY))
 turboField.checked = isUseTurboModeEnabled()
 
+streamImageProgressField.addEventListener('click', handleBoolSettingChange(STREAM_IMAGE_PROGRESS_KEY))
+streamImageProgressField.checked = isStreamImageProgressEnabled()
+
 diskPathField.addEventListener('change', handleStringSettingChange(DISK_PATH_KEY))
 
 saveToDiskField.addEventListener('click', function(e) {
@@ -1213,8 +1529,8 @@ function updateGuidanceScale() {
 function updateGuidanceScaleSlider() {
     if (guidanceScaleField.value < 0) {
         guidanceScaleField.value = 0
-    } else if (guidanceScaleField.value > 20) {
-        guidanceScaleField.value = 20
+    } else if (guidanceScaleField.value > 50) {
+        guidanceScaleField.value = 50
     }
 
     guidanceScaleSlider.value = guidanceScaleField.value * 10
@@ -1300,6 +1616,7 @@ checkRandomSeed()
 function showInitImagePreview() {
     if (initImageSelector.files.length === 0) {
         initImagePreviewContainer.style.display = 'none'
+        // inpaintingEditorContainer.style.display = 'none'
         promptStrengthContainer.style.display = 'none'
         // maskSetting.style.display = 'none'
         return
@@ -1312,9 +1629,10 @@ function showInitImagePreview() {
         // console.log(file.name, reader.result)
         initImagePreview.src = reader.result
         initImagePreviewContainer.style.display = 'block'
+        inpaintingEditorContainer.style.display = 'none'
         promptStrengthContainer.style.display = 'block'
-
-        // maskSetting.style.display = 'block'
+        samplerSelectionContainer.style.display = 'none'
+        // maskSetting.checked = false
     })
 
     if (file) {
@@ -1324,24 +1642,37 @@ function showInitImagePreview() {
 initImageSelector.addEventListener('change', showInitImagePreview)
 showInitImagePreview()
 
+initImagePreview.addEventListener('load', function() {
+    inpaintingEditorCanvasBackground.style.backgroundImage = "url('" + this.src + "')"
+    // maskSetting.style.display = 'block'
+    // inpaintingEditorContainer.style.display = 'block'
+})
+
 initImageClearBtn.addEventListener('click', function() {
     initImageSelector.value = null
     // maskImageSelector.value = null
 
     initImagePreview.src = ''
     // maskImagePreview.src = ''
+    maskSetting.checked = false
 
     initImagePreviewContainer.style.display = 'none'
+    // inpaintingEditorContainer.style.display = 'none'
     // maskImagePreviewContainer.style.display = 'none'
 
     // maskSetting.style.display = 'none'
 
     promptStrengthContainer.style.display = 'none'
+    samplerSelectionContainer.style.display = 'block'
+})
+
+maskSetting.addEventListener('click', function() {
+    inpaintingEditorContainer.style.display = (this.checked ? 'block' : 'none')
 })
 
 // function showMaskImagePreview() {
 //     if (maskImageSelector.files.length === 0) {
-//         maskImagePreviewContainer.style.display = 'none'
+//         // maskImagePreviewContainer.style.display = 'none'
 //         return
 //     }
 
@@ -1349,8 +1680,8 @@ initImageClearBtn.addEventListener('click', function() {
 //     let file = maskImageSelector.files[0]
 
 //     reader.addEventListener('load', function() {
-//         maskImagePreview.src = reader.result
-//         maskImagePreviewContainer.style.display = 'block'
+//         // maskImagePreview.src = reader.result
+//         // maskImagePreviewContainer.style.display = 'block'
 //     })
 
 //     if (file) {
@@ -1363,8 +1694,32 @@ initImageClearBtn.addEventListener('click', function() {
 // maskImageClearBtn.addEventListener('click', function() {
 //     maskImageSelector.value = null
 //     maskImagePreview.src = ''
-//     maskImagePreviewContainer.style.display = 'none'
+//     // maskImagePreviewContainer.style.display = 'none'
 // })
+
+// https://stackoverflow.com/a/8212878
+function millisecondsToStr(milliseconds) {
+    function numberEnding (number) {
+        return (number > 1) ? 's' : '';
+    }
+
+    var temp = Math.floor(milliseconds / 1000);
+    var hours = Math.floor((temp %= 86400) / 3600);
+    var s = ''
+    if (hours) {
+        s += hours + ' hour' + numberEnding(hours) + ' ';
+    }
+    var minutes = Math.floor((temp %= 3600) / 60);
+    if (minutes) {
+        s += minutes + ' minute' + numberEnding(minutes) + ' ';
+    }
+    var seconds = temp % 60;
+    if (!hours && minutes < 4 && seconds) {
+        s += seconds + ' second' + numberEnding(seconds);
+    }
+
+    return s;
+}
 </script>
 <script>
 function createCollapsibles(node) {
@@ -1651,5 +2006,4 @@ async function init() {
 
 init()
 </script>
-
 </html>
