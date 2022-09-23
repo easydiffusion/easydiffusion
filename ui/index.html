@@ -1424,11 +1424,13 @@ function refreshTagsList() {
         editorModifierTagsList.appendChild(tag.element);
 
         tag.element.addEventListener('click', () => {
-            if (index !== -1) {
-                activeTags[index].originElement.classList.remove(activeCardClass);
-                activeTags[index].originElement.querySelector('.modifier-card-image-overlay').innerText = '+';
+            let idx = activeTags.indexOf(tag);
 
-                activeTags.splice(index, 1);
+            if (idx !== -1) {
+                activeTags[idx].originElement.classList.remove(activeCardClass);
+                activeTags[idx].originElement.querySelector('.modifier-card-overlay').innerText = '+';
+
+                activeTags.splice(idx, 1);
                 refreshTagsList();
             }
         });
