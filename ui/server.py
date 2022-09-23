@@ -206,7 +206,8 @@ def getAppConfig():
 
 @app.get('/modifiers.json')
 def read_modifiers():
-    return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'))
+    headers = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
+    return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'), headers=headers)
 
 @app.get('/output_dir')
 def read_home_dir():
