@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useImageCreate } from "../../../../../stores/imageCreateStore";
+import React from "react";
+import { useImageCreate, SAMPLER_OPTIONS } from "../../../../../stores/imageCreateStore";
 import { useCreateUI } from "../../creationPanelUIStore";
 
 import {
@@ -59,6 +59,10 @@ export default function PropertySettings() {
   const width = useImageCreate((state) => state.getValueForRequestKey("width"));
   const height = useImageCreate((state) =>
     state.getValueForRequestKey("height")
+  );
+
+  const sampler = useImageCreate((state) =>
+    state.getValueForRequestKey("sampler")
   );
 
   const propertyOpen = useCreateUI((state) => state.isOpenAdvPropertySettings);
@@ -173,6 +177,22 @@ export default function PropertySettings() {
                     value={dimension.value}
                   >
                     {dimension.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <div className={SettingItem}>
+            <label>
+              {t("settings.sampler")}
+              <select
+                value={sampler}
+                onChange={(e) => setRequestOption("sampler", e.target.value)}
+              >
+                {SAMPLER_OPTIONS.map((sampler) => (
+                  <option key={`sampler-option_${sampler}`} value={sampler}>
+                    {sampler}
                   </option>
                 ))}
               </select>
