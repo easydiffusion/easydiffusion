@@ -70,6 +70,8 @@ export interface ImageRequest {
   init_image: undefined | string;
   prompt_strength: undefined | number;
   sampler: typeof SAMPLER_OPTIONS[number];
+  stream_progress_updates: boolean;
+  stream_image_progress: boolean;
 }
 
 type ModifiersList = string[];
@@ -134,6 +136,8 @@ export const useImageCreate = create<ImageCreateState>(
       show_only_filtered_image: true,
       init_image: undefined,
       sampler: "plms",
+      stream_progress_updates: false,
+      stream_image_progress: false
     },
 
     // selected tags
