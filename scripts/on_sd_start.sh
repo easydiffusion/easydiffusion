@@ -19,6 +19,7 @@ if [ -e "scripts/install_status.txt" ] && [ `grep -c sd_git_cloned scripts/insta
     git checkout f6cfebffa752ee11a7b07497b8529d5971de916c
 
     git apply ../ui/sd_internal/ddim_callback.patch
+    git apply ../ui/sd_internal/env_yaml.patch
 
     cd ..
 else
@@ -36,6 +37,7 @@ else
     git checkout f6cfebffa752ee11a7b07497b8529d5971de916c
 
     git apply ../ui/sd_internal/ddim_callback.patch
+    git apply ../ui/sd_internal/env_yaml.patch
 
     cd ..
 fi
