@@ -366,6 +366,20 @@ async function doMakeImage(reqBody, batchCount) {
             res = undefined
             progressBar.style.display = 'none'
         } else {
+            if (finalJSON !== undefined && finalJSON.indexOf('}{') !== -1) {
+                // hack for a middleman buffering all the streaming updates, and unleashing them
+                //  on the poor browser in one shot.
+                //  this results in having to parse JSON like {"step": 1}{"step": 2}...{"status": "succeeded"..}
+                //  which is obviously invalid.
+                // So we need to just extract the last {} section, starting from "status" to the end of the response
+
+                let lastChunkIdx = finalJSON.lastIndexOf('}{')
+                if (lastChunkIdx !== -1) {
+                    let remaining = finalJSON.substring(lastChunkIdx)
+                    finalJSON = remaining.substring(1)
+                }
+            }
+
             res = JSON.parse(finalJSON)
             progressBar.style.display = 'none'
 
