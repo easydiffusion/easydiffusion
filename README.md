@@ -8,19 +8,23 @@
 
 [![Discord Server](https://badgen.net/badge/icon/discord?icon=discord&label)](https://discord.com/invite/u9yhsFmEkB) (for support, and development discussion) | [Troubleshooting guide for common problems](Troubleshooting.md)
 
-️‍🔥🎉 **New!** Face Correction (GFPGAN) and Upscaling (RealESRGAN) have been added!
+️‍🔥🎉 **New!** Live Preview, More Samplers, In-Painting, Face Correction (GFPGAN) and Upscaling (RealESRGAN) have been added!
 
 This distribution currently uses Stable Diffusion 1.4. Once the model for 1.5 becomes publicly available, the model in this distribution will be updated.
 
 # Features in the new v2 Version:
 - **No Dependencies or Technical Knowledge Required**: 1-click install for Windows 10/11 and Linux. *No dependencies*, no need for WSL or Docker or Conda or technical setup. Just download and run!
 - **Face Correction (GFPGAN) and Upscaling (RealESRGAN)**
+- **In-Painting**
+- **Live Preview**: See the image as the AI is drawing it
+- **Lots of Samplers**
 - **Image Modifiers**: A library of *modifier tags* like *"Realistic"*, *"Pencil Sketch"*, *"ArtStation"* etc. Experiment with various styles quickly.
 - **New UI**: with cleaner design
 - Supports "*Text to Image*" and "*Image to Image*"
 - **NSFW Setting**: A setting in the UI to control *NSFW content*
 - **Use CPU setting**: If you don't have a compatible graphics card, but still want to run it on your CPU.
 - **Auto-updater**: Gets you the latest improvements and bug-fixes to a rapidly evolving project.
+- **Low Memory Usage**: Creates 512x512 images with less than 4GB of VRAM!
 
 ![Screenshot](media/shot-v8.jpg?raw=true)
 
