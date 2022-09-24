@@ -81,6 +81,9 @@
 .modifier-card-size_-3 .modifier-card-image-overlay {
     font-size: 3em;
 }
+.modifier-card-size_-3 .modifier-card-label {
+    font-size: 0.8em;
+}
 .modifier-card-tiny {
     width: 6em;
     height: 9.5em;
