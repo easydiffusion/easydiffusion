@@ -26,7 +26,7 @@ This distribution currently uses Stable Diffusion 1.4. Once the model for 1.5 be
 - **Auto-updater**: Gets you the latest improvements and bug-fixes to a rapidly evolving project.
 - **Low Memory Usage**: Creates 512x512 images with less than 4GB of VRAM!
 
-![Screenshot](media/shot-v8.jpg?raw=true)
+![Screenshot](media/shot-v9.jpg?raw=true)
 
 # System Requirements
 1. Windows 10/11, or Linux. Experimental support for Mac is coming soon.
