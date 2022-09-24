@@ -952,7 +952,13 @@ async function doMakeImage(reqBody, batchCount) {
             res = undefined
             progressBar.style.display = 'none'
         } else {
-            res = JSON.parse(finalJSON)
+            try {
+                res = JSON.parse(finalJSON)
+            } catch (e) {
+                console.log('Parse error, invalid JSON', finalJSON)
+                throw e
+            }
+
             progressBar.style.display = 'none'
 
             if (res.status !== 'succeeded') {
