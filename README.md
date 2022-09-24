@@ -35,7 +35,7 @@ This distribution currently uses Stable Diffusion 1.4. Once the model for 1.5 be
 
 # System Requirements
 1. Windows 10/11, or Linux. Experimental support for Mac is coming soon.
-2. An NVIDIA graphics card, preferably with 6GB or more of VRAM. But if you don't have a compatible graphics card, you can still use it with a "Use CPU" setting. It'll be very slow, but it should still work.
+2. An NVIDIA graphics card, preferably with 4GB or more of VRAM. But if you don't have a compatible graphics card, you can still use it with a "Use CPU" setting. It'll be very slow, but it should still work.
 
 You do not need anything else. You do not need WSL, Docker or Conda. The installer will take care of it.
 
