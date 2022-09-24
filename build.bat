@@ -34,7 +34,7 @@ if /i "%answer:~,1%" NEQ "Y" exit /b
 @copy ..\..\LICENSE .
 @copy "..\..\CreativeML Open RAIL-M License" .
 @copy "..\..\How to install and run.txt" .
-@echo "" > scripts\install_status.txt
+@echo. > scripts\install_status.txt
 
 @echo "Build ready. Zip the 'dist\stable-diffusion-ui' folder."
 
