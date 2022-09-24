@@ -82,7 +82,7 @@ You can also set the configuration like `seed`, `width`, `height`, `num_outputs`
 Use the same `seed` number to get the same image for a certain prompt. This is useful for refining a prompt without losing the basic image design. Enable the `random images` checkbox to get random images.
 
 ![Screenshot of advanced settings](media/config-v6.jpg?raw=true)
-![Screenshot of advanced settings](media/system-settings-v1.jpg?raw=true)
+![Screenshot of advanced settings](media/system-settings-v2.jpg?raw=true)
 
 # Image Modifiers
 ![Screenshot of advanced settings](media/modifiers-v1.jpg?raw=true)
