@@ -393,7 +393,6 @@ def do_mk_img(req: Request):
 
                                 progress['output'] = partial_images
 
-                            print(' sending progress update', json.dumps(progress))
                             yield json.dumps(progress)
 
                         if stop_processing:
