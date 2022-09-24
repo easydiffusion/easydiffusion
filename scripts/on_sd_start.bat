@@ -18,6 +18,7 @@
     @call git checkout f6cfebffa752ee11a7b07497b8529d5971de916c
 
     @call git apply ..\ui\sd_internal\ddim_callback.patch
+    @call git apply ..\ui\sd_internal\env_yaml.patch
 
     @cd ..
 ) else (
@@ -35,6 +36,7 @@
     @call git checkout f6cfebffa752ee11a7b07497b8529d5971de916c
 
     @call git apply ..\ui\sd_internal\ddim_callback.patch
+    @call git apply ..\ui\sd_internal\env_yaml.patch
 
     @cd ..
 )
@@ -76,6 +78,8 @@
 
     @echo conda_sd_env_created >> ..\scripts\install_status.txt
 )
+
+set PATH=C:\Windows\System32;%PATH%
 
 @>nul grep -c "conda_sd_gfpgan_deps_installed" ..\scripts\install_status.txt
 @if "%ERRORLEVEL%" EQU "0" (
