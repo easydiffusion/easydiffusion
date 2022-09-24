@@ -1,49 +1,108 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
+/* eslint-disable @typescript-eslint/prefer-ts-expect-error */
 /* eslint-disable @typescript-eslint/naming-convention */
-import React from "react";
+import React, { useEffect } from "react";
 
 import { useImageCreate, ImageRequest } from "../../../../../stores/imageCreateStore";
 import { useImageQueue } from "../../../../../stores/imageQueueStore";
+import {
+  FetchingStates,
+  useImageFetching
+} from "../../../../../stores/imageFetchingStore";
+
 import { v4 as uuidv4 } from "uuid";
 
 import { useRandomSeed } from "../../../../../utils";
-
+import { doMakeImage } from "../../../../../api";
 import {
   MakeButtonStyle, // @ts-expect-error
 } from "./makeButton.css.ts";
 
 import { useTranslation } from "react-i18next";
 
+import AudioDing from "./audioDing";
+import { parse } from "node:path/win32";
+
 export default function MakeButton() {
   const { t } = useTranslation();
 
   const parallelCount = useImageCreate((state) => state.parallelCount);
   const builtRequest = useImageCreate((state) => state.builtRequest);
-  const addNewImage = useImageQueue((state) => state.addNewImage);
-  const hasQueue = useImageQueue((state) => state.hasQueuedImages());
   const isRandomSeed = useImageCreate((state) => state.isRandomSeed());
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
 
-  // const makeImages = () => {
-  //   // potentially update the seed
-  //   if (isRandomSeed) {
-  //     // update the seed for the next time we click the button
-  //     setRequestOption("seed", useRandomSeed());
-  //   }
+  const addNewImage = useImageQueue((state) => state.addNewImage);
+  const hasQueue = useImageQueue((state) => state.hasQueuedImages());
+  const { id, options } = useImageQueue((state) => state.firstInQueue());
 
-  //   // the request that we have built
-  //   const req = builtRequest();
+  const setStatus = useImageFetching((state) => state.setStatus);
+  const appendData = useImageFetching((state) => state.appendData);
 
-  // };
+  const parseRequest = async (reader: ReadableStreamDefaultReader<Uint8Array>) => {
+    const decoder = new TextDecoder();
+    while (true) {
+      const { done, value } = await reader.read();
 
-  const queueImageRequest = (req: ImageRequest) => {
+      if (done as boolean) {
+        console.log("DONE");
+        setStatus(FetchingStates.COMPLETE);
+        break;
+      }
 
+      const jsonStr = decoder.decode(value);
+
+      try {
+        const update = JSON.parse(jsonStr);
+
+        if (update.status === "progress") {
+          console.log("PROGRESS");
+          setStatus(FetchingStates.PROGRESSING);
+        }
+        else if (update.status === "succeeded") {
+          console.log("succeeded");
+          setStatus(FetchingStates.SUCCEEDED);
+          // appendData(update.data);
+        }
+        else {
+          console.log("extra?", update);
+          // appendData(update.data);
+        }
+      }
+      catch (e) {
+        console.log('PARSE ERRROR')
+        console.log(e)
+        debugger;
+        //    appendData(update.data);
+      }
+
+    }
+  }
+
+  const startStream = async (req: ImageRequest) => {
+
+    const streamReq = {
+      ...req,
+      // stream_image_progress: false,
+    };
+
+    console.log("testStream", streamReq);
+    try {
+      const res = await doMakeImage(streamReq);
+      // @ts-expect-error
+      const reader = res.body.getReader();
+      void parseRequest(reader);
+
+    } catch (e) {
+      console.log('e');
+    }
+
+  }
+
+  const queueImageRequest = async (req: ImageRequest) => {
     // the actual number of request we will make
     const requests = [];
     // the number of images we will make
     let { num_outputs } = req;
-
-    // if making fewer images than the parallel count
-    // then it is only 1 request
     if (parallelCount > num_outputs) {
       requests.push(num_outputs);
     } else {
@@ -63,7 +122,6 @@ export default function MakeButton() {
       }
     }
 
-    // make the requests
     requests.forEach((num, index) => {
       // get the seed we want to use
       let seed = req.seed;
@@ -82,63 +140,42 @@ export default function MakeButton() {
     });
   }
 
-  const testStream = async (req: ImageRequest) => {
-
-    const streamReq = {
-      ...req,
-      stream_progress_updates: true,
-      // stream_image_progress: false,
-      session_id: uuidv4(),
-    };
-
-    console.log("testStream", streamReq);
-    try {
-      const res = await fetch('http://localhost:9000/image', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(streamReq)
-      });
-
-      console.log('res', res);
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
-          break;
-        }
-        const text = decoder.decode(value);
-        console.log(text);
-      }
-    } catch (e) {
-      console.log(e);
-      debugger;
-    }
-
-  }
-
-  const makeImages = () => {
+  const makeImageQueue = async () => {
     // potentially update the seed
     if (isRandomSeed) {
       // update the seed for the next time we click the button
       setRequestOption("seed", useRandomSeed());
     }
-
     // the request that we have built
     const req = builtRequest();
-
-    //queueImageRequest(req);
-    void testStream(req);
-
+    await queueImageRequest(req);
+    // void startStream(req);
   };
 
+  useEffect(() => {
+
+    const makeImages = async (options: ImageRequest) => {
+      // potentially update the seed
+      await startStream(options);
+    }
+
+    if (hasQueue) {
+      makeImages(options).catch((e) => {
+        console.log('HAS QUEUE ERROR');
+        console.log(e);
+      });
+    }
+
+
+  }, [hasQueue, id, options, startStream]);
 
   return (
     <button
       className={MakeButtonStyle}
-      onClick={makeImages}
+      onClick={() => {
+        setStatus(FetchingStates.FETCHING);
+        void makeImageQueue();
+      }}
       disabled={hasQueue}
     >
       {t("home.make-img-btn")}

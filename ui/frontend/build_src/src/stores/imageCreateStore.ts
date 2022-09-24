@@ -70,7 +70,7 @@ export interface ImageRequest {
   init_image: undefined | string;
   prompt_strength: undefined | number;
   sampler: typeof SAMPLER_OPTIONS[number];
-  stream_progress_updates: boolean;
+  stream_progress_updates: true;
   stream_image_progress: boolean;
 }
 
@@ -136,7 +136,7 @@ export const useImageCreate = create<ImageCreateState>(
       show_only_filtered_image: true,
       init_image: undefined,
       sampler: "plms",
-      stream_progress_updates: false,
+      stream_progress_updates: true,
       stream_image_progress: false
     },
 
