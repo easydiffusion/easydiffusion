@@ -30,6 +30,11 @@ model_is_loading = False
 modifiers_cache = None
 outpath = os.path.join(os.path.expanduser("~"), OUTPUT_DIRNAME)
 
+# don't show access log entries for URLs that start with the given prefix
+ACCESS_LOG_SUPPRESS_PATH_PREFIXES = ['/ping', '/modifier-thumbnails']
+
+app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'media/')), name="media")
+
 # defaults from https://huggingface.co/blog/stable_diffusion
 class ImageRequest(BaseModel):
     session_id: str = "session"
@@ -58,8 +63,6 @@ class ImageRequest(BaseModel):
 
 class SetAppConfigRequest(BaseModel):
     update_branch: str = "main"
-
-app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'media/')), name="media")
 
 @app.get('/')
 def read_root():
@@ -213,12 +216,17 @@ def read_modifiers():
 def read_home_dir():
     return {outpath}
 
-# don't log /ping requests
-class HealthCheckLogFilter(logging.Filter):
+# don't log certain requests
+class LogSuppressFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
-        return record.getMessage().find('/ping') == -1
+        path = record.getMessage()
+        for prefix in ACCESS_LOG_SUPPRESS_PATH_PREFIXES:
+            if path.find(prefix) != -1:
+                return False
 
-logging.getLogger('uvicorn.access').addFilter(HealthCheckLogFilter())
+        return True
+
+logging.getLogger('uvicorn.access').addFilter(LogSuppressFilter())
 
 # start the browser ui
 import webbrowser; webbrowser.open('http://localhost:9000')
