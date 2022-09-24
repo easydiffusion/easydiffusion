@@ -26,7 +26,11 @@ This distribution currently uses Stable Diffusion 1.4. Once the model for 1.5 be
 - **Auto-updater**: Gets you the latest improvements and bug-fixes to a rapidly evolving project.
 - **Low Memory Usage**: Creates 512x512 images with less than 4GB of VRAM!
 
-![Screenshot](media/shot-v9.jpg?raw=true)
+
+
+![vid](https://user-images.githubusercontent.com/844287/192094817-5d11fe10-2ae8-438a-b2cb-154d3bd804ae.gif)
+
+
 
 # System Requirements
 1. Windows 10/11, or Linux. Experimental support for Mac is coming soon.
@@ -79,12 +83,8 @@ Use the same `seed` number to get the same image for a certain prompt. This is u
 
 ![Screenshot of advanced settings](media/config-v6.png?raw=true)
 
-# What is this? Why no Docker?
-This version is a 1-click installer. You don't need WSL or Docker or anything beyond a working NVIDIA GPU with an updated driver. You don't need to use the command-line at all. Even if you don't have a compatible GPU, you can run it on your CPU (albeit very slowly).
-
-It'll download the necessary files from the original [Stable Diffusion](https://github.com/CompVis/stable-diffusion) git repository, and set it up. It'll then start the browser-based interface like before.
-
-The NSFW option is currently off (temporarily), so it'll allow NSFW images, for those people who are unable to run their prompts without hitting the NSFW filter incorrectly.
+# Image Modifiers
+![Screenshot of advanced settings](media/modifiers-v1.jpg?raw=true)
 
 # Bugs reports and code contributions welcome
 If there are any problems or suggestions, please feel free to ask on the [discord server](https://discord.com/invite/u9yhsFmEkB) or [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues).
