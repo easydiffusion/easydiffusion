@@ -26,10 +26,10 @@ This distribution currently uses Stable Diffusion 1.4. Once the model for 1.5 be
 - **Auto-updater**: Gets you the latest improvements and bug-fixes to a rapidly evolving project.
 - **Low Memory Usage**: Creates 512x512 images with less than 4GB of VRAM!
 
+![Screenshot of advanced settings](media/shot-v9.jpg?raw=true)
 
-
-![vid](https://user-images.githubusercontent.com/844287/192094817-5d11fe10-2ae8-438a-b2cb-154d3bd804ae.gif)
-
+## Live Preview
+![live-512](https://user-images.githubusercontent.com/844287/192097249-729a0a1e-a677-485e-9ccc-16a9e848fabe.gif)
 
 
 # System Requirements
@@ -81,7 +81,8 @@ You can also set the configuration like `seed`, `width`, `height`, `num_outputs`
 
 Use the same `seed` number to get the same image for a certain prompt. This is useful for refining a prompt without losing the basic image design. Enable the `random images` checkbox to get random images.
 
-![Screenshot of advanced settings](media/config-v6.png?raw=true)
+![Screenshot of advanced settings](media/config-v6.jpg?raw=true)
+![Screenshot of advanced settings](media/system-settings-v1.jpg?raw=true)
 
 # Image Modifiers
 ![Screenshot of advanced settings](media/modifiers-v1.jpg?raw=true)
