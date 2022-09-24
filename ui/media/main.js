@@ -1140,7 +1140,7 @@ async function loadModifiers() {
 
             modifiers = res; // update global variable
 
-            res.forEach(modifierGroup => {
+            res.forEach((modifierGroup, idx) => {
                 const title = modifierGroup.category;
                 const modifiers = modifierGroup.modifiers;
 
@@ -1150,6 +1150,11 @@ async function loadModifiers() {
 
                 const modifiersEl = document.createElement('div');
                 modifiersEl.classList.add('collapsible-content', 'editor-modifiers-leaf');
+
+                if (idx == 0) {
+                    titleEl.className += ' active'
+                    modifiersEl.style.display = 'block'
+                }
 
                 modifiers.forEach(modObj => {
                     const modifierName = modObj.modifier;
