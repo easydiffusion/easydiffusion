@@ -69,38 +69,28 @@ label {
     font-size: 8pt;
 }
 .imgSeedLabel {
-    position: absolute;
-    transform: translateX(-100%);
-    margin-top: 5pt;
-    margin-left: -5pt;
-    font-size: 10pt;
-
-    background-color: #333;
-    opacity: 0.8;
-    color: #ddd;
-    border-radius: 3pt;
-    padding: 1pt 3pt;
-}
-.imgUseBtn {
-    position: absolute;
-    transform: translateX(-100%);
-    margin-top: 30pt;
-    margin-left: -5pt;
-}
-.imgSaveBtn {
-    position: absolute;
-    transform: translateX(-100%);
-    margin-top: 55pt;
-    margin-left: -5pt;
+    font-size: 1.3em;
 }
 .imgItem {
-    display: inline;
-    padding-right: 10px;
+    display: inline-block;
+    width: fit-content;
+    height: fit-content;
+    padding: 0.5em;
+    border: 1px solid rgb(255 255 255 / 25%);
+    margin-top: 1em;
+    margin-right: 1em;
 }
 .imgItemInfo {
-    opacity: 0.5;
+    width: 100%;
+    height: 2em;
+    padding-bottom: 0.5em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
-
+.imgInfoLeft {
+    margin-right: 1em;
+}
 #container {
     width: 90%;
     margin-left: auto;

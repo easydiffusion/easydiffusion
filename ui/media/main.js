@@ -251,18 +251,74 @@ async function healthCheck() {
     }
 }
 
-function makeImageElement(width, height) {
-    let imgItem = document.createElement('div')
-    imgItem.className = 'imgItem'
+function showImages(res, req) {
+    res.output.forEach(result => {
+        if(typeof res != 'object') return;
 
-    let img = document.createElement('img')
-    img.width = parseInt(width)
-    img.height = parseInt(height)
+        const imageData = result?.data,
+            imageSeed = result?.seed,
+            imageWidth = req.width,
+            imageHeight = req.height;
 
-    imgItem.appendChild(img)
-    imagesContainer.appendChild(imgItem)
+        // don't continue if data is incorrect
+        if (!(imageData && imageSeed))
+        {
+            setStatus('request', 'invalid image', 'error');
+            console.log(imageData);
+            return;
+        }
 
-    return imgItem
+        const imageItemElem = document.createElement('div');
+        imageItemElem.className = 'imgItem';
+        imageItemElem.innerHTML = `
+            <div class="imgItemInfo">
+                <div class="imgInfoLeft">
+                    <span class="imgSeedLabel"></span>
+                </div>
+                <div>
+                    <button class="imgUseBtn">Use as Input</button>
+                    <button class="imgSaveBtn">Download</button>
+                </div>
+            </div>
+            <img/>
+        `;
+    
+        const imageElem = imageItemElem.querySelector('img'),
+            imageSeedLabel = imageItemElem.querySelector('.imgSeedLabel'),
+            useAsInputBtn = imageItemElem.querySelector('.imgUseBtn'),
+            saveImageBtn = imageItemElem.querySelector('.imgSaveBtn');
+
+        imageElem.src = imageData;
+        imageElem.width = parseInt(imageWidth);
+        imageElem.height = parseInt(imageHeight);
+
+        imageSeedLabel.innerText = imageSeed;
+
+        useAsInputBtn.addEventListener('click', () => {
+            initImageSelector.value = null;
+            initImagePreview.src = imageData;
+    
+            initImagePreviewContainer.style.display = 'block';
+            inpaintingEditorContainer.style.display = 'none';
+            promptStrengthContainer.style.display = 'block';
+            maskSetting.checked = false;
+    
+            // maskSetting.style.display = 'block';
+    
+            randomSeedField.checked = false;
+            seedField.value = imageSeed;
+            seedField.disabled = false;
+        });
+    
+        saveImageBtn.addEventListener('click', () => {
+            const imgDownload = document.createElement('a');
+            imgDownload.download = createFileName(imageSeed);
+            imgDownload.href = imageData;
+            imgDownload.click();
+        });
+
+        imagesContainer.appendChild(imageItemElem);
+    });
 }
 
 // makes a single image. don't call this directly, use makeImage() instead
@@ -274,14 +330,6 @@ async function doMakeImage(reqBody, batchCount) {
     let res = ''
     let seed = reqBody['seed']
     let numOutputs = parseInt(reqBody['num_outputs'])
-
-    let images = []
-
-    function makeImageContainers(numImages) {
-        for (let i = images.length; i < numImages; i++) {
-            images.push(makeImageElement(reqBody.width, reqBody.height))
-        }
-    }
 
     try {
         res = await fetch('/image', {
@@ -411,86 +459,13 @@ async function doMakeImage(reqBody, batchCount) {
         res = undefined
     }
 
-    if (!res) {
-        return false
-    }
+    if (!res) return false;
 
-    lastPromptUsed = reqBody['prompt']
+    lastPromptUsed = reqBody['prompt'];
 
-    makeImageContainers(res.output.length)
+    showImages(res, reqBody);
 
-    for (let idx in res.output) {
-        let imgBody = ''
-        let seed = 0
-
-        try {
-            let imgData = res.output[idx]
-            imgBody = imgData.data
-            seed = imgData.seed
-        } catch (e) {
-            console.log(imgBody)
-            setStatus('request', 'invalid image', 'error')
-            continue
-        }
-
-        let imgItem = images[idx]
-        let img = imgItem.firstChild
-
-        img.src = imgBody
-
-        let imgItemInfo = document.createElement('span')
-        imgItemInfo.className = 'imgItemInfo'
-
-        let imgSeedLabel = document.createElement('span')
-        imgSeedLabel.className = 'imgSeedLabel'
-        imgSeedLabel.innerText = 'Seed: ' + seed
-
-        let imgUseBtn = document.createElement('button')
-        imgUseBtn.className = 'imgUseBtn'
-        imgUseBtn.innerText = 'Use as Input'
-
-        let imgSaveBtn = document.createElement('button')
-        imgSaveBtn.className = 'imgSaveBtn'
-        imgSaveBtn.innerText = 'Download'
-
-        imgItem.appendChild(imgItemInfo)
-        imgItemInfo.appendChild(imgSeedLabel)
-        imgItemInfo.appendChild(imgUseBtn)
-        imgItemInfo.appendChild(imgSaveBtn)
-
-        imgUseBtn.addEventListener('click', function() {
-            initImageSelector.value = null
-            initImagePreview.src = imgBody
-
-            initImagePreviewContainer.style.display = 'block'
-            inpaintingEditorContainer.style.display = 'none'
-            promptStrengthContainer.style.display = 'block'
-            maskSetting.checked = false
-
-            // maskSetting.style.display = 'block'
-
-            randomSeedField.checked = false
-            seedField.value = seed
-            seedField.disabled = false
-        })
-
-        imgSaveBtn.addEventListener('click', function() {
-            let imgDownload = document.createElement('a')
-            imgDownload.download = createFileName();
-            imgDownload.href = imgBody
-            imgDownload.click()
-        })
-
-        imgItem.addEventListener('mouseenter', function() {
-            imgItemInfo.style.opacity = 1
-        })
-
-        imgItem.addEventListener('mouseleave', function() {
-            imgItemInfo.style.opacity = 0.5
-        })
-    }
-
-    return true
+    return true;
 }
 
 function validateInput() {
@@ -639,12 +614,11 @@ async function makeImage() {
 
 // create a file name with embedded prompt and metadata
 // for easier cateloging and comparison
-function createFileName() {
+function createFileName(seed) {
 
     // Most important information is the prompt
     let underscoreName = lastPromptUsed.replace(/[^a-zA-Z0-9]/g, '_')
     underscoreName = underscoreName.substring(0, 100)
-    const seed = seedField.value
     const steps = numInferenceStepsField.value
     const guidance =  guidanceScaleField.value
 
