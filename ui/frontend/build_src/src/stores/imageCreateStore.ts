@@ -10,6 +10,17 @@ export interface ImageCreationUiOptions {
   isSoundEnabled: boolean;
 }
 
+export const SAMPLER_OPTIONS = [
+  'plms',
+  'ddim',
+  'heun',
+  'euler',
+  'euler_a',
+  'dpm2',
+  'dpm2_a',
+  'lms',
+] as const;
+
 export interface ImageRequest {
   prompt: string;
   seed: number;
@@ -17,37 +28,37 @@ export interface ImageRequest {
   num_inference_steps: number;
   guidance_scale: number;
   width:
-    | 128
-    | 192
-    | 256
-    | 320
-    | 384
-    | 448
-    | 512
-    | 576
-    | 640
-    | 704
-    | 768
-    | 832
-    | 896
-    | 960
-    | 1024;
+  | 128
+  | 192
+  | 256
+  | 320
+  | 384
+  | 448
+  | 512
+  | 576
+  | 640
+  | 704
+  | 768
+  | 832
+  | 896
+  | 960
+  | 1024;
   height:
-    | 128
-    | 192
-    | 256
-    | 320
-    | 384
-    | 448
-    | 512
-    | 576
-    | 640
-    | 704
-    | 768
-    | 832
-    | 896
-    | 960
-    | 1024;
+  | 128
+  | 192
+  | 256
+  | 320
+  | 384
+  | 448
+  | 512
+  | 576
+  | 640
+  | 704
+  | 768
+  | 832
+  | 896
+  | 960
+  | 1024;
   // allow_nsfw: boolean
   turbo: boolean;
   use_cpu: boolean;
@@ -58,6 +69,7 @@ export interface ImageRequest {
   show_only_filtered_image: boolean;
   init_image: undefined | string;
   prompt_strength: undefined | number;
+  sampler: typeof SAMPLER_OPTIONS[number];
 }
 
 type ModifiersList = string[];
@@ -121,6 +133,7 @@ export const useImageCreate = create<ImageCreateState>(
       use_upscale: "RealESRGAN_x4plus",
       show_only_filtered_image: true,
       init_image: undefined,
+      sampler: "plms",
     },
 
     // selected tags
@@ -236,7 +249,7 @@ export const useImageCreate = create<ImageCreateState>(
         produce((state) => {
           const isSeting =
             typeof state.getValueForRequestKey("use_face_correction") ===
-            "string"
+              "string"
               ? null
               : "GFPGANv1.3";
           state.requestOptions.use_face_correction = isSeting;

@@ -43,6 +43,7 @@
     "how-many": "How many at once:",
     "width": "Width:",
     "height": "Height:",
+    "sampler": "Sampler:",
     "steps": "Number of inference steps:",
     "guide-scale": "Guidance Scale:",
     "prompt-str": "Prompt Strength:",
