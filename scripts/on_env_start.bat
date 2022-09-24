@@ -2,7 +2,7 @@
 
 @echo. & echo "Stable Diffusion UI - v2" & echo.
 
-set PATH=C:\Windows\System32;%PATH%
+@REM set PATH=C:\Windows\System32;%PATH%
 
 @cd ..
 
