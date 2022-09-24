@@ -1134,7 +1134,7 @@ function resizeModifierCards(val) {
 
 async function loadModifiers() {
     try {
-        let res = await fetch('/modifiers.json')
+        let res = await fetch('/modifiers.json?v=2')
         if (res.status === 200) {
             res = await res.json()
 
