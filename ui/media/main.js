@@ -95,15 +95,9 @@ let inpaintingEditor = new DrawingBoard.Board('inpaintingEditor', {
     controls: [{'DrawingMode': {'filler': false}}, 'Size', 'Navigation']
 })
 let inpaintingEditorCanvasBackground = document.querySelector('.drawing-board-canvas-wrapper')
-// let inpaintingEditorControls = document.querySelector('.drawing-board-controls')
 
-// let inpaintingEditorMetaControl = document.createElement('div')
-// inpaintingEditorMetaControl.className = 'drawing-board-control'
-// let initImageClearBtnToolbar = document.createElement('button')
-// initImageClearBtnToolbar.className = 'init_image_clear'
-// initImageClearBtnToolbar.innerHTML = 'Remove Image'
-// inpaintingEditorMetaControl.appendChild(initImageClearBtnToolbar)
-// inpaintingEditorControls.appendChild(inpaintingEditorMetaControl)
+document.querySelector('.drawing-board-control-navigation-back').innerHTML = '<i class="fa-solid fa-rotate-left"></i>'
+document.querySelector('.drawing-board-control-navigation-forward').innerHTML = '<i class="fa-solid fa-rotate-right"></i>'
 
 let maskResetButton = document.querySelector('.drawing-board-control-navigation-reset')
 maskResetButton.innerHTML = 'Clear'
