@@ -52,7 +52,7 @@ label {
     padding-bottom: 4pt;
 }
 .editor-slider {
-    transform: translateY(30%);
+    vertical-align: middle;
 }
 #outputMsg {
     font-size: small;

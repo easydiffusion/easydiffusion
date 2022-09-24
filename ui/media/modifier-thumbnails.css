@@ -212,4 +212,5 @@
 #modifier-card-size-slider {
     width: 6em;
     margin-bottom: 0.5em;
+    vertical-align: middle;
 }
