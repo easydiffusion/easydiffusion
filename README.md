@@ -20,7 +20,7 @@ This distribution currently uses Stable Diffusion 1.4. Once the model for 1.5 be
 - **Lots of Samplers:** ddim, plms, heun, euler, euler_a, dpm2, dpm2_a, lms
 - **Image Modifiers**: A library of *modifier tags* like *"Realistic"*, *"Pencil Sketch"*, *"ArtStation"* etc. Experiment with various styles quickly.
 - **New UI**: with cleaner design
-- **Waifu Model Supported**: Just replace the `stable-diffusion\sd-v1-4.ckpt` file after installation with the Waifu model
+- **Waifu Model Support**: Just replace the `stable-diffusion\sd-v1-4.ckpt` file after installation with the Waifu model
 - Supports "*Text to Image*" and "*Image to Image*"
 - **NSFW Setting**: A setting in the UI to control *NSFW content*
 - **Use CPU setting**: If you don't have a compatible graphics card, but still want to run it on your CPU.
