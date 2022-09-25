@@ -15,7 +15,6 @@ interface ImageDisplayState {
 export const useImageDisplay = create<ImageDisplayState>((set, get) => ({
   // imageOptions: new Map<string, any>(),
   images: [],
-  len: 0,
   // currentImage: null,
   // use produce to make sure we don't mutate state
   // imageOptions: any
@@ -25,9 +24,7 @@ export const useImageDisplay = create<ImageDisplayState>((set, get) => ({
         // options: imageOptions
         // state.currentImage = { display: ImageData, imageOptions };
         // imageOptions
-        state.images.push({ data: ImageData, info: imageOptions });
-        state.len += 1;
-        debugger
+        state.images.unshift({ data: ImageData, info: imageOptions });
       })
     );
   },

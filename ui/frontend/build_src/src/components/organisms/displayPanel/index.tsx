@@ -228,12 +228,11 @@ export default function DisplayPanel() {
     null
   );
 
-  const len = useImageDisplay((state) => state.len);
   const getCurrentImage = useImageDisplay((state) => state.getCurrentImage);
   const images = useImageDisplay((state) => state.images);
 
   useEffect(() => {
-    if (len > 0) {
+    if (images.length > 0) {
       debugger;
       const cur = getCurrentImage();
       console.log("cur", cur);
@@ -241,7 +240,7 @@ export default function DisplayPanel() {
     } else {
       setCurrentImage(null);
     }
-  }, [len, getCurrentImage]);
+  }, [images, getCurrentImage]);
 
   //   useEffect(() => {
   //     console.log("images CHANGED");
