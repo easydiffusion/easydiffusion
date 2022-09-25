@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
 /* eslint-disable multiline-ternary */
 /* eslint-disable @typescript-eslint/naming-convention */
 import React from "react";
@@ -17,6 +18,10 @@ export default function CurrentDisplay({
 }: CurrentDisplayProps) {
   const { info, data } = image ?? {};
 
+  console.log("CurrentDisplay");
+  console.log('info', info);
+  console.log('data', data);
+
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
 
   const createFileName = () => {
@@ -29,7 +34,7 @@ export default function CurrentDisplay({
       use_upscale,
       width,
       height,
-    } = info!;
+    } = info;
 
     // Most important information is the prompt
     let underscoreName = prompt.replace(/[^a-zA-Z0-9]/g, "_");

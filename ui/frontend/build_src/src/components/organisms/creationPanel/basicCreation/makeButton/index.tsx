@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 /* eslint-disable @typescript-eslint/prefer-ts-expect-error */
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -10,6 +11,8 @@ import {
   useImageFetching
 } from "../../../../../stores/imageFetchingStore";
 
+import { useImageDisplay } from "../../../../../stores/imageDisplayStore";
+
 import { v4 as uuidv4 } from "uuid";
 
 import { useRandomSeed } from "../../../../../utils";
@@ -20,8 +23,9 @@ import {
 
 import { useTranslation } from "react-i18next";
 
-import AudioDing from "./audioDing";
+import AudioDing from "../../../../molecules/audioDing";
 import { parse } from "node:path/win32";
+import { debug } from "node:console";
 
 export default function MakeButton() {
   const { t } = useTranslation();
@@ -36,20 +40,77 @@ export default function MakeButton() {
   const { id, options } = useImageQueue((state) => state.firstInQueue());
 
   const setStatus = useImageFetching((state) => state.setStatus);
+  const setStep = useImageFetching((state) => state.setStep);
+  const setTotalSteps = useImageFetching((state) => state.setTotalSteps);
   const appendData = useImageFetching((state) => state.appendData);
+
+  const updateDisplay = useImageDisplay((state) => state.updateDisplay);
+
+
+  const hackJson = (jsonStr: string) => {
+
+    // DONES't seem to be needed for the updated progress implementation
+
+    // if (jsonStr !== undefined && jsonStr.indexOf('}{') !== -1) {
+    //   // hack for a middleman buffering all the streaming updates, and unleashing them
+    //   //  on the poor browser in one shot.
+    //   //  this results in having to parse JSON like {"step": 1}{"step": 2}...{"status": "succeeded"..}
+    //   //  which is obviously invalid.
+    //   // So we need to just extract the last {} section, starting from "status" to the end of the response
+
+    //   const lastChunkIdx = jsonStr.lastIndexOf('}{')
+    //   if (lastChunkIdx !== -1) {
+    //     const remaining = jsonStr.substring(lastChunkIdx)
+    //     jsonStr = remaining.substring(1)
+    //   }
+    // }
+
+    try {
+      debugger;
+      const { status, request, output: outputs } = JSON.parse(jsonStr);
+
+      if (status === 'succeeded') {
+        outputs.forEach((output: any) => {
+
+          const { data, seed } = output;
+
+          const seedReq = {
+            ...request,
+            seed,
+          };
+
+          console.log('UPDATE DISPLAY!');
+          updateDisplay(data, seedReq);
+        });
+      }
+
+      else {
+        console.warn(`Unexpected status: ${status}`);
+      }
+
+    }
+    catch (e) {
+      console.error("Error HACKING JSON: ", e)
+      debugger;
+    }
+  }
 
   const parseRequest = async (reader: ReadableStreamDefaultReader<Uint8Array>) => {
     const decoder = new TextDecoder();
+    let finalJSON = '';
     while (true) {
       const { done, value } = await reader.read();
-
+      const jsonStr = decoder.decode(value);
+      console.log("READ START");
       if (done as boolean) {
         console.log("DONE");
+        // console.log('DONE jsonStr', jsonStr);
+        // debugger;
+        // finalJSON += jsonStr;
         setStatus(FetchingStates.COMPLETE);
+        hackJson(finalJSON)
         break;
       }
-
-      const jsonStr = decoder.decode(value);
 
       try {
         const update = JSON.parse(jsonStr);
@@ -57,21 +118,26 @@ export default function MakeButton() {
         if (update.status === "progress") {
           console.log("PROGRESS");
           setStatus(FetchingStates.PROGRESSING);
+          console.log(update);
         }
         else if (update.status === "succeeded") {
           console.log("succeeded");
           setStatus(FetchingStates.SUCCEEDED);
+          console.log(update);
           // appendData(update.data);
         }
         else {
           console.log("extra?", update);
           // appendData(update.data);
         }
+
+        console.log('------------------');
       }
       catch (e) {
         console.log('PARSE ERRROR')
-        console.log(e)
-        debugger;
+        // console.log(e)
+        console.log(jsonStr);
+        finalJSON += jsonStr;
         //    appendData(update.data);
       }
 
@@ -93,6 +159,7 @@ export default function MakeButton() {
       void parseRequest(reader);
 
     } catch (e) {
+      console.log('TOP LINE ERROR')
       console.log('e');
     }
 

@@ -1,22 +1,40 @@
+/* eslint-disable @typescript-eslint/restrict-plus-operands */
 import create from "zustand";
 import produce from "immer";
 
 interface ImageDisplayState {
-  imageOptions: Map<string, any>;
-  currentImage: object | null;
-  addNewImage: (ImageData: string, imageOptions: any) => void;
+  // imageOptions: Map<string, any>;
+  images: object[]
+  // SORT OF A HACK SOLUTION
+  len: number,
+  // currentImage: object | null;
+  updateDisplay: (ImageData: string, imageOptions: any) => void;
+  getCurrentImage: () => {};
 }
 
-export const useImageDisplay = create<ImageDisplayState>((set) => ({
-  imageOptions: new Map<string, any>(),
-  currentImage: null,
+export const useImageDisplay = create<ImageDisplayState>((set, get) => ({
+  // imageOptions: new Map<string, any>(),
+  images: [],
+  len: 0,
+  // currentImage: null,
   // use produce to make sure we don't mutate state
-  addNewImage: (ImageData: string, imageOptions: any) => {
+  // imageOptions: any
+  updateDisplay: (ImageData: string, imageOptions) => {
     set(
       produce((state) => {
-        state.currentImage = { display: ImageData, options: imageOptions };
-        state.images.set(ImageData, imageOptions);
+        // options: imageOptions
+        // state.currentImage = { display: ImageData, imageOptions };
+        // imageOptions
+        state.images.push({ data: ImageData, info: imageOptions });
+        state.len += 1;
+        debugger
       })
     );
   },
+  getCurrentImage: () => {
+    debugger;
+    return get().images[0];
+  }
+
+
 }));

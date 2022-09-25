@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import React, { useEffect, useState, useRef } from "react";
-import { useImageQueue } from "../../../stores/imageQueueStore";
+// import { useImageQueue } from "../../../stores/imageQueueStore";
 
-import { useImageFetching } from "../../../stores/imageFetchingStore";
+// import { useImageFetching } from "../../../stores/imageFetchingStore";
+// import { useImageDisplay } from "../../../stores/imageDisplayStore";
 import { useImageDisplay } from "../../../stores/imageDisplayStore";
 
 // import { ImageRequest, useImageCreate } from "../../../stores/imageCreateStore";
@@ -28,8 +29,8 @@ import CompletedImages from "./completedImages";
 
 import {
   displayPanel,
-  // displayContainer,
-  // previousImages,
+  displayContainer,
+  previousImages,
   // @ts-expect-error
 } from "./displayPanel.css.ts";
 
@@ -49,9 +50,7 @@ export default function DisplayPanel() {
   // const { id, options } = useImageQueue((state) => state.firstInQueue());
   // const removeFirstInQueue = useImageQueue((state) => state.removeFirstInQueue);
 
-  // const [currentImage, setCurrentImage] = useState<CompletedImagesType | null>(
-  //   null
-  // );
+
 
   // const [isEnabled, setIsEnabled] = useState(false);
 
@@ -225,23 +224,54 @@ export default function DisplayPanel() {
   //   clearCachedIds();
   // };
 
+  const [currentImage, setCurrentImage] = useState<CompletedImagesType | null>(
+    null
+  );
+
+  const len = useImageDisplay((state) => state.len);
+  const getCurrentImage = useImageDisplay((state) => state.getCurrentImage);
+  const images = useImageDisplay((state) => state.images);
+
+  useEffect(() => {
+    if (len > 0) {
+      debugger;
+      const cur = getCurrentImage();
+      console.log("cur", cur);
+      setCurrentImage(cur);
+    } else {
+      setCurrentImage(null);
+    }
+  }, [len, getCurrentImage]);
+
+  //   useEffect(() => {
+  //     console.log("images CHANGED");
+  //     debugger;
+  //     if (len) > 0) {
+  //     // console.log("images", images);
+  //     setCurrentImage(getCurrentImage());
+  //   }
+  // }, [len]);
+
+
   return (
     <div className={displayPanel}>
       DISPLAY
-      {/* <AudioDing ref={dingRef}></AudioDing>
+      {/* <AudioDing ref={dingRef}></AudioDing> */}
       <div className={displayContainer}>
         <CurrentDisplay
-          isLoading={isLoading}
+          isLoading={false}
           image={currentImage}
         ></CurrentDisplay>
       </div>
-      <div className={previousImages}>
+
+      {/* <div className={previousImages}>
         <CompletedImages
           removeImages={removeImages}
           images={completedImages}
           setCurrentDisplay={setCurrentImage}
         ></CompletedImages>
       </div> */}
+
     </div>
   );
 }
