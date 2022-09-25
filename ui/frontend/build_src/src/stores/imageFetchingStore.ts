@@ -15,12 +15,14 @@ interface ImageFetchingState {
   step: number;
   totalSteps: number;
   data: string;
+  progressImages: string[]
   appendData: (data: string) => void;
   reset: () => void;
   setStatus: (status: typeof FetchingStates[keyof typeof FetchingStates]) => void;
   setStep: (step: number) => void;
   setTotalSteps: (totalSteps: number) => void;
-
+  addProgressImage: (imageLink: string) => void;
+  clearProgressImage: () => void;
 }
 
 export const useImageFetching = create<ImageFetchingState>((set) => ({
@@ -28,6 +30,7 @@ export const useImageFetching = create<ImageFetchingState>((set) => ({
   step: 0,
   totalSteps: 0,
   data: '',
+  progressImages: [],
   // use produce to make sure we don't mutate state
   appendData: (data: string) => {
     set(
@@ -68,4 +71,18 @@ export const useImageFetching = create<ImageFetchingState>((set) => ({
       })
     );
   },
+  addProgressImage: (imageLink: string) => {
+    set(
+      produce((state: ImageFetchingState) => {
+        state.progressImages.push(imageLink);
+      })
+    );
+  },
+  clearProgressImage: () => {
+    set(
+      produce((state: ImageFetchingState) => {
+        state.progressImages = [];
+      })
+    );
+  }
 }));

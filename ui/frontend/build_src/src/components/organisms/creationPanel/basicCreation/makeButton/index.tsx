@@ -42,10 +42,10 @@ export default function MakeButton() {
   const setStatus = useImageFetching((state) => state.setStatus);
   const setStep = useImageFetching((state) => state.setStep);
   const setTotalSteps = useImageFetching((state) => state.setTotalSteps);
+  const addProgressImage = useImageFetching((state) => state.addProgressImage);
   const appendData = useImageFetching((state) => state.appendData);
 
   const updateDisplay = useImageDisplay((state) => state.updateDisplay);
-
 
   const hackJson = (jsonStr: string) => {
 
@@ -95,18 +95,21 @@ export default function MakeButton() {
     }
   }
 
-  const parseRequest = async (reader: ReadableStreamDefaultReader<Uint8Array>) => {
+  const parseRequest = async (id: string, reader: ReadableStreamDefaultReader<Uint8Array>) => {
     const decoder = new TextDecoder();
     let finalJSON = '';
+
+    console.log('id', id);
+
+    // TODO MAKE SPACE IN THE DISPLAY FOR THIS IMAGE
+    // UPDATE THE DISPLAY WITH THE PROGRESS IMAGE
+    // UPDATE THE DISPLAY WITH THE FINAL IMAGE
+
+
     while (true) {
       const { done, value } = await reader.read();
       const jsonStr = decoder.decode(value);
-      console.log("READ START");
       if (done as boolean) {
-        console.log("DONE");
-        // console.log('DONE jsonStr', jsonStr);
-        // debugger;
-        // finalJSON += jsonStr;
         setStatus(FetchingStates.COMPLETE);
         hackJson(finalJSON)
         break;
@@ -114,53 +117,55 @@ export default function MakeButton() {
 
       try {
         const update = JSON.parse(jsonStr);
-
-        if (update.status === "progress") {
-          console.log("PROGRESS");
+        const { status } = update;
+        if (status === "progress") {
           setStatus(FetchingStates.PROGRESSING);
-          console.log(update);
-        }
-        else if (update.status === "succeeded") {
-          console.log("succeeded");
+          const { progress: { step, totalSteps, output: outputs } } = update;
+          setStep(step);
+          setTotalSteps(totalSteps);
+
+          if (void 0 !== outputs) {
+            outputs.forEach((output: any) => {
+              addProgressImage(output.path);
+            });
+          }
+        } else if (status === "succeeded") {
+          // TODO this shoul be the the new out instead of the try catch
+          // wait for the path to come back instead of the data
           setStatus(FetchingStates.SUCCEEDED);
           console.log(update);
-          // appendData(update.data);
+        }
+        else if (status === 'failed') {
+          console.warn('failed');
+          console.log(update);
         }
         else {
-          console.log("extra?", update);
-          // appendData(update.data);
+          console.log("UNKNOWN ?", update);
         }
-
-        console.log('------------------');
       }
       catch (e) {
-        console.log('PARSE ERRROR')
-        // console.log(e)
-        console.log(jsonStr);
+        console.log('EXPECTED PARSE ERRROR')
         finalJSON += jsonStr;
-        //    appendData(update.data);
       }
 
     }
   }
 
-  const startStream = async (req: ImageRequest) => {
+  const startStream = async (id: string, req: ImageRequest) => {
 
     const streamReq = {
       ...req,
-      // stream_image_progress: false,
+      stream_image_progress: true,
     };
 
-    console.log("testStream", streamReq);
     try {
       const res = await doMakeImage(streamReq);
       // @ts-expect-error
       const reader = res.body.getReader();
-      void parseRequest(reader);
-
+      void parseRequest(id, reader);
     } catch (e) {
-      console.log('TOP LINE ERROR')
-      console.log('e');
+      console.log('TOP LINE STREAM ERROR')
+      console.log(e);
     }
 
   }
@@ -216,14 +221,13 @@ export default function MakeButton() {
     // the request that we have built
     const req = builtRequest();
     await queueImageRequest(req);
-    // void startStream(req);
   };
 
   useEffect(() => {
-
     const makeImages = async (options: ImageRequest) => {
       // potentially update the seed
-      await startStream(options);
+      debugger;
+      await startStream(id, options);
     }
 
     if (hasQueue) {

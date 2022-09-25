@@ -13,7 +13,7 @@ interface ImageDisplayState {
 }
 
 export const useImageDisplay = create<ImageDisplayState>((set, get) => ({
-  // imageOptions: new Map<string, any>(),
+  imageMap: new Map<string, any>(),
   images: [],
   // currentImage: null,
   // use produce to make sure we don't mutate state
