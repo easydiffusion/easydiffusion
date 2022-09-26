@@ -44,6 +44,12 @@ const LoadingDisplay = () => {
     <>
       <h4 className="loading">Loading...</h4>
       <p>{percent} % Complete </p>
+      {progressImages.map((image, index) => {
+        return (
+          <img src={`http://localhost:9000${image}`} key={index} />
+        )
+      })
+      }
     </>
   );
 };

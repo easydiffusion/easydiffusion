@@ -22,6 +22,7 @@ export const SAMPLER_OPTIONS = [
 ] as const;
 
 export interface ImageRequest {
+  session_id: string;
   prompt: string;
   seed: number;
   num_outputs: number;
@@ -118,6 +119,7 @@ export const useImageCreate = create<ImageCreateState>(
     parallelCount: 1,
 
     requestOptions: {
+      session_id: new Date().getTime().toString(),
       prompt: "a photograph of an astronaut riding a horse",
       seed: useRandomSeed(),
       num_outputs: 1,
