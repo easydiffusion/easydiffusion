@@ -11,6 +11,8 @@ case $yn in
     * ) exit;;
 esac
 
+export PYTHONNOUSERSITE=1
+
 mkdir -p dist/stable-diffusion-ui
 
 echo "Downloading components for the installer.."
@@ -38,6 +40,7 @@ cp ../../scripts/start.sh .
 cp ../../LICENSE .
 cp "../../CreativeML Open RAIL-M License" .
 cp "../../How to install and run.txt" .
+echo "" > scripts/install_status.txt
 
 chmod u+x start.sh
 
