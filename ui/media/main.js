@@ -271,16 +271,14 @@ function showImages(res, req) {
         const imageItemElem = document.createElement('div');
         imageItemElem.className = 'imgItem';
         imageItemElem.innerHTML = `
-            <div class="imgItemInfo">
-                <div class="imgInfoLeft">
+            <div class="imgContainer">
+                <img/>
+                <div class="imgItemInfo">
                     <span class="imgSeedLabel"></span>
-                </div>
-                <div>
                     <button class="imgUseBtn">Use as Input</button>
                     <button class="imgSaveBtn">Download</button>
                 </div>
             </div>
-            <img/>
         `;
     
         const imageElem = imageItemElem.querySelector('img'),
@@ -292,7 +290,7 @@ function showImages(res, req) {
         imageElem.width = parseInt(imageWidth);
         imageElem.height = parseInt(imageHeight);
 
-        imageSeedLabel.innerText = imageSeed;
+        imageSeedLabel.innerText = 'Seed: ' + imageSeed;
 
         useAsInputBtn.addEventListener('click', () => {
             initImageSelector.value = null;
