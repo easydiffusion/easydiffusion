@@ -5,11 +5,9 @@ import produce from "immer";
 interface ImageDisplayState {
   // imageOptions: Map<string, any>;
   images: object[]
-  // SORT OF A HACK SOLUTION
-  len: number,
   // currentImage: object | null;
   updateDisplay: (ImageData: string, imageOptions: any) => void;
-  getCurrentImage: () => {};
+  // getCurrentImage: () => {};
 }
 
 export const useImageDisplay = create<ImageDisplayState>((set, get) => ({
@@ -28,10 +26,11 @@ export const useImageDisplay = create<ImageDisplayState>((set, get) => ({
       })
     );
   },
-  getCurrentImage: () => {
-    debugger;
-    return get().images[0];
-  }
+
+  // getCurrentImage: () => {
+  //   debugger;
+  //   return get().images[0];
+  // }
 
 
 }));

@@ -24,8 +24,6 @@ import {
 import { useTranslation } from "react-i18next";
 
 import AudioDing from "../../../../molecules/audioDing";
-import { parse } from "node:path/win32";
-import { debug } from "node:console";
 
 export default function MakeButton() {
   const { t } = useTranslation();
@@ -37,8 +35,10 @@ export default function MakeButton() {
 
   const addNewImage = useImageQueue((state) => state.addNewImage);
   const hasQueue = useImageQueue((state) => state.hasQueuedImages());
+  const removeFirstInQueue = useImageQueue((state) => state.removeFirstInQueue);
   const { id, options } = useImageQueue((state) => state.firstInQueue());
 
+  const status = useImageFetching((state) => state.status);
   const setStatus = useImageFetching((state) => state.setStatus);
   const setStep = useImageFetching((state) => state.setStep);
   const setTotalSteps = useImageFetching((state) => state.setTotalSteps);
@@ -66,7 +66,6 @@ export default function MakeButton() {
     // }
 
     try {
-      debugger;
       const { status, request, output: outputs } = JSON.parse(jsonStr);
 
       if (status === 'succeeded') {
@@ -91,7 +90,7 @@ export default function MakeButton() {
     }
     catch (e) {
       console.error("Error HACKING JSON: ", e)
-      debugger;
+      // debugger;
     }
   }
 
@@ -104,7 +103,6 @@ export default function MakeButton() {
     // TODO MAKE SPACE IN THE DISPLAY FOR THIS IMAGE
     // UPDATE THE DISPLAY WITH THE PROGRESS IMAGE
     // UPDATE THE DISPLAY WITH THE FINAL IMAGE
-
 
     while (true) {
       const { done, value } = await reader.read();
@@ -120,17 +118,21 @@ export default function MakeButton() {
         const { status } = update;
         if (status === "progress") {
           setStatus(FetchingStates.PROGRESSING);
-          const { progress: { step, totalSteps, output: outputs } } = update;
+          const { progress: { step, total_steps }, output: outputs } = update;
           setStep(step);
-          setTotalSteps(totalSteps);
+          setTotalSteps(total_steps);
+
+          console.log('progess step of total', step, total_steps);
 
           if (void 0 !== outputs) {
             outputs.forEach((output: any) => {
+              // console.log('progress path', output.path);
               addProgressImage(output.path);
             });
           }
+
         } else if (status === "succeeded") {
-          // TODO this shoul be the the new out instead of the try catch
+          // TODO this should be the the new out instead of the try catch
           // wait for the path to come back instead of the data
           setStatus(FetchingStates.SUCCEEDED);
           console.log(update);
@@ -226,7 +228,6 @@ export default function MakeButton() {
   useEffect(() => {
     const makeImages = async (options: ImageRequest) => {
       // potentially update the seed
-      debugger;
       await startStream(id, options);
     }
 
@@ -239,6 +240,15 @@ export default function MakeButton() {
 
 
   }, [hasQueue, id, options, startStream]);
+
+  useEffect(() => {
+    // if the status is complete we can remove the image from the queue
+    if (status === FetchingStates.COMPLETE) {
+      // debugger;
+      removeFirstInQueue();
+    }
+  }, [removeFirstInQueue, status]);
+
 
   return (
     <button

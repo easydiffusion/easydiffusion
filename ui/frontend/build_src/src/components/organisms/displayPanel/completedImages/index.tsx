@@ -1,6 +1,9 @@
 import React from "react";
 
-import { CompletedImagesType } from "../index";
+import { CompletedImagesType } from "../currentDisplay";
+
+
+import { useImageDisplay } from "../../../../stores/imageDisplayStore";
 
 import {
   completedImagesMain,
@@ -10,20 +13,41 @@ import {
   // @ts-expect-error
 } from "./completedImages.css.ts";
 
-interface CurrentDisplayProps {
-  images: CompletedImagesType[] | null;
-  setCurrentDisplay: (image: CompletedImagesType) => void;
-  removeImages: () => void;
-}
+// interface CurrentDisplayProps {
+//   images: CompletedImagesType[] | null;
+//   setCurrentDisplay: (image: CompletedImagesType) => void;
+//   removeImages: () => void;
+// }
 
-export default function CompletedImages({
-  images,
-  setCurrentDisplay,
-  removeImages,
-}: CurrentDisplayProps) {
-  const _handleSetCurrentDisplay = (index: number) => {
-    const image = images![index];
-    setCurrentDisplay(image);
+export default function CompletedImages(
+  //   {
+  //   images,
+  //   setCurrentDisplay,
+  //   removeImages,
+  // }: CurrentDisplayProps
+
+) {
+
+
+  const images = useImageDisplay((state) => state.images);
+
+  // useEffect(() => {
+  //   if (images.length > 0) {
+  //     console.log("cur", images[0]);
+  //     setCurrentImage(images[0]);
+  //   } else {
+  //     setCurrentImage(null);
+  //   }
+  // }, [images]);
+
+
+
+  // const _handleSetCurrentDisplay = (index: number) => {
+  //   const image = images![index];
+  //   setCurrentDisplay(image);
+  // };
+
+  const removeImages = () => {
   };
 
   return (
@@ -50,9 +74,9 @@ export default function CompletedImages({
             <li key={image.id}>
               <button
                 className={imageContain}
-                onClick={() => {
-                  _handleSetCurrentDisplay(index);
-                }}
+              // onClick={() => {
+              //   _handleSetCurrentDisplay(index);
+              // }}
               >
                 <img src={image.data} alt={image.info.prompt} />
               </button>

@@ -224,23 +224,23 @@ export default function DisplayPanel() {
   //   clearCachedIds();
   // };
 
-  const [currentImage, setCurrentImage] = useState<CompletedImagesType | null>(
-    null
-  );
+  // const [currentImage, setCurrentImage] = useState<CompletedImagesType | null>(
+  //   null
+  // );
 
-  const getCurrentImage = useImageDisplay((state) => state.getCurrentImage);
-  const images = useImageDisplay((state) => state.images);
+  // const getCurrentImage = useImageDisplay((state) => state.getCurrentImage);
+  // const images = useImageDisplay((state) => state.images);
 
-  useEffect(() => {
-    if (images.length > 0) {
-      debugger;
-      const cur = getCurrentImage();
-      console.log("cur", cur);
-      setCurrentImage(cur);
-    } else {
-      setCurrentImage(null);
-    }
-  }, [images, getCurrentImage]);
+  // useEffect(() => {
+  //   if (images.length > 0) {
+  //     debugger;
+  //     const cur = getCurrentImage();
+  //     console.log("cur", cur);
+  //     setCurrentImage(cur);
+  //   } else {
+  //     setCurrentImage(null);
+  //   }
+  // }, [images, getCurrentImage]);
 
   //   useEffect(() => {
   //     console.log("images CHANGED");
@@ -258,18 +258,16 @@ export default function DisplayPanel() {
       {/* <AudioDing ref={dingRef}></AudioDing> */}
       <div className={displayContainer}>
         <CurrentDisplay
-          isLoading={false}
-          image={currentImage}
         ></CurrentDisplay>
       </div>
 
-      {/* <div className={previousImages}>
+      <div className={previousImages}>
         <CompletedImages
-          removeImages={removeImages}
-          images={completedImages}
-          setCurrentDisplay={setCurrentImage}
+        // removeImages={removeImages}
+        // images={completedImages}
+        // setCurrentDisplay={setCurrentImage}
         ></CompletedImages>
-      </div> */}
+      </div>
 
     </div>
   );

@@ -1,28 +1,54 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 /* eslint-disable multiline-ternary */
 /* eslint-disable @typescript-eslint/naming-convention */
-import React from "react";
+import React, { useEffect, useState } from "react";
 import GeneratedImage from "../../../molecules/generatedImage";
-import { useImageCreate } from "../../../../stores/imageCreateStore";
+import { ImageRequest, useImageCreate } from "../../../../stores/imageCreateStore";
+import { FetchingStates, useImageFetching } from "../../../../stores/imageFetchingStore";
+import { useImageDisplay } from "../../../../stores/imageDisplayStore";
 
-import { CompletedImagesType } from "../index";
 
-interface CurrentDisplayProps {
-  isLoading: boolean;
-  image: CompletedImagesType | null;
+export interface CompletedImagesType {
+  id?: string;
+  data: string | undefined;
+  info: ImageRequest | undefined;
 }
 
-export default function CurrentDisplay({
-  isLoading,
-  image,
-}: CurrentDisplayProps) {
-  const { info, data } = image ?? {};
+const IdleDisplay = () => {
+  return (
+    <h4 className="no-image">Try Making a new image!</h4>
+  );
+};
 
-  console.log("CurrentDisplay");
-  console.log('info', info);
-  console.log('data', data);
+const LoadingDisplay = () => {
 
-  const setRequestOption = useImageCreate((state) => state.setRequestOptions);
+  const step = useImageFetching((state) => state.step);
+  const totalSteps = useImageFetching((state) => state.totalSteps);
+  const progressImages = useImageFetching((state) => state.progressImages);
+
+  const [percent, setPercent] = useState(0);
+
+  console.log("progressImages", progressImages);
+
+
+
+  useEffect(() => {
+    if (totalSteps > 0) {
+      setPercent(Math.round((step / totalSteps) * 100));
+    } else {
+      setPercent(0);
+    }
+  }, [step, totalSteps]);
+
+  return (
+    <>
+      <h4 className="loading">Loading...</h4>
+      <p>{percent} % Complete </p>
+    </>
+  );
+};
+
+const ImageDisplay = ({ info, data }: CompletedImagesType) => {
 
   const createFileName = () => {
     const {
@@ -56,6 +82,10 @@ export default function CurrentDisplay({
     return fileName;
   };
 
+
+
+  const setRequestOption = useImageCreate((state) => state.setRequestOptions);
+
   const _handleSave = () => {
     const link = document.createElement("a");
     link.download = createFileName();
@@ -67,23 +97,48 @@ export default function CurrentDisplay({
     setRequestOption("init_image", data);
   };
 
+
+
+  return (
+    <div className="imageDisplay">
+      <p> {info?.prompt}</p>
+      <GeneratedImage imageData={data} metadata={info}></GeneratedImage>
+      <div>
+        <button onClick={_handleSave}>Save</button>
+        <button onClick={_handleUseAsInput}>Use as Input</button>
+      </div>
+    </div>
+  );
+};
+
+export default function CurrentDisplay() {
+
+  const status = useImageFetching((state) => state.status);
+
+  const [currentImage, setCurrentImage] = useState<CompletedImagesType | null>(
+    null
+  );
+  // const testCur = useImageDisplay((state) => state.getCurrentImage());
+  const images = useImageDisplay((state) => state.images);
+
+  useEffect(() => {
+    if (images.length > 0) {
+      console.log("cur", images[0]);
+      setCurrentImage(images[0]);
+    } else {
+      setCurrentImage(null);
+    }
+  }, [images]);
+
   return (
     <div className="current-display">
-      {isLoading ? (
-        <h4 className="loading">Loading...</h4>
-      ) : (
-        (image !== null && (
-          // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-          <div>
-            <p> {info?.prompt}</p>
-            <GeneratedImage imageData={data} metadata={info}></GeneratedImage>
-            <div>
-              <button onClick={_handleSave}>Save</button>
-              <button onClick={_handleUseAsInput}>Use as Input</button>
-            </div>
-          </div>
-        )) || <h4 className="no-image">Try Making a new image!</h4>
-      )}
+
+      {status === FetchingStates.IDLE && <IdleDisplay />}
+
+      {(status === FetchingStates.FETCHING || status === FetchingStates.PROGRESSING) && <LoadingDisplay />}
+
+      {(status === FetchingStates.COMPLETE && currentImage != null) && <ImageDisplay info={currentImage?.info} data={currentImage?.data} />}
+
     </div>
   );
 }

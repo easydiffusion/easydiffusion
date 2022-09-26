@@ -25,7 +25,10 @@ export const useImageQueue = create<ImageQueueState>((set, get) => ({
         if (isRandom) {
           seed = useRandomSeed();
         }
-        state.images.push({ id, options: { ...imgRec, seed } });
+        const newImg = { id, options: { ...imgRec, seed } };
+        console.log("addNewImage", newImg);
+
+        state.images.push(newImg);
       })
     );
   },
@@ -43,8 +46,10 @@ export const useImageQueue = create<ImageQueueState>((set, get) => ({
   removeFirstInQueue: () => {
     set(
       produce((state) => {
+        console.log("removing first in queue");
         const image = state.images.shift();
-        state.completedImageIds.push(image.id);
+        console.log("image", image);
+        // state.completedImageIds.push(image.id);
       })
     );
   },
