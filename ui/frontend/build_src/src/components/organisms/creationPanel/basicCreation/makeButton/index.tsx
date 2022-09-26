@@ -24,6 +24,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 import AudioDing from "../../../../molecules/audioDing";
+import { debug } from "console";
 
 export default function MakeButton() {
   const { t } = useTranslation();
@@ -95,19 +96,16 @@ export default function MakeButton() {
   }
 
   const parseRequest = async (id: string, reader: ReadableStreamDefaultReader<Uint8Array>) => {
+    console.log('parseRequest');
     const decoder = new TextDecoder();
     let finalJSON = '';
 
     console.log('id', id);
-
-    // TODO MAKE SPACE IN THE DISPLAY FOR THIS IMAGE
-    // UPDATE THE DISPLAY WITH THE PROGRESS IMAGE
-    // UPDATE THE DISPLAY WITH THE FINAL IMAGE
-
     while (true) {
       const { done, value } = await reader.read();
       const jsonStr = decoder.decode(value);
       if (done as boolean) {
+        removeFirstInQueue();
         setStatus(FetchingStates.COMPLETE);
         hackJson(finalJSON)
         break;
@@ -123,10 +121,9 @@ export default function MakeButton() {
           setTotalSteps(total_steps);
 
           console.log('progess step of total', step, total_steps);
-
           if (void 0 !== outputs) {
             outputs.forEach((output: any) => {
-              // console.log('progress path', output.path);
+              console.log('progress path', output.path);
               addProgressImage(output.path);
             });
           }
@@ -155,12 +152,14 @@ export default function MakeButton() {
 
   const startStream = async (id: string, req: ImageRequest) => {
 
+    console.log('START STREAM', id);
     const streamReq = {
       ...req,
       stream_image_progress: true,
     };
 
     try {
+      setStatus(FetchingStates.FETCHING);
       const res = await doMakeImage(streamReq);
       // @ts-expect-error
       const reader = res.body.getReader();
@@ -230,6 +229,12 @@ export default function MakeButton() {
       // potentially update the seed
       await startStream(id, options);
     }
+    console.log('USE EFFECT', hasQueue);
+    console.log('status', status);
+
+    if (status === FetchingStates.PROGRESSING || status === FetchingStates.FETCHING) {
+      return;
+    }
 
     if (hasQueue) {
       makeImages(options).catch((e) => {
@@ -239,22 +244,21 @@ export default function MakeButton() {
     }
 
 
-  }, [hasQueue, id, options, startStream]);
+  }, [hasQueue, status, id, options, startStream]);
 
-  useEffect(() => {
-    // if the status is complete we can remove the image from the queue
-    if (status === FetchingStates.COMPLETE) {
-      // debugger;
-      removeFirstInQueue();
-    }
-  }, [removeFirstInQueue, status]);
+  // useEffect(() => {
+  //   // if the status is complete we can remove the image from the queue
+  //   if (status === FetchingStates.COMPLETE) {
+  //     // debugger;
+  //     removeFirstInQueue();
+  //   }
+  // }, [removeFirstInQueue, status]);
 
 
   return (
     <button
       className={MakeButtonStyle}
       onClick={() => {
-        setStatus(FetchingStates.FETCHING);
         void makeImageQueue();
       }}
       disabled={hasQueue}
