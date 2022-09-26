@@ -30,8 +30,6 @@ const LoadingDisplay = () => {
 
   console.log("progressImages", progressImages);
 
-
-
   useEffect(() => {
     if (totalSteps > 0) {
       setPercent(Math.round((step / totalSteps) * 100));
@@ -120,21 +118,25 @@ const ImageDisplay = ({ info, data }: CompletedImagesType) => {
 export default function CurrentDisplay() {
 
   const status = useImageFetching((state) => state.status);
+  const currentImage = useImageDisplay((state) => state.currentImage);
 
-  const [currentImage, setCurrentImage] = useState<CompletedImagesType | null>(
-    null
-  );
+
+  console.log("currentImage", currentImage);
+
+  // const [currentImage, setCurrentImage] = useState<CompletedImagesType | null>(
+  //   null
+  // );
   // const testCur = useImageDisplay((state) => state.getCurrentImage());
-  const images = useImageDisplay((state) => state.images);
+  // const images = useImageDisplay((state) => state.images);
 
-  useEffect(() => {
-    if (images.length > 0) {
-      console.log("cur", images[0]);
-      setCurrentImage(images[0]);
-    } else {
-      setCurrentImage(null);
-    }
-  }, [images]);
+  // useEffect(() => {
+  //   if (images.length > 0) {
+  //     console.log("cur", images[0]);
+  //     setCurrentImage(images[0]);
+  //   } else {
+  //     setCurrentImage(null);
+  //   }
+  // }, [images]);
 
   return (
     <div className="current-display">

@@ -13,33 +13,16 @@ import {
   // @ts-expect-error
 } from "./completedImages.css.ts";
 
-// interface CurrentDisplayProps {
-//   images: CompletedImagesType[] | null;
-//   setCurrentDisplay: (image: CompletedImagesType) => void;
-//   removeImages: () => void;
-// }
+
 
 export default function CompletedImages(
-  //   {
-  //   images,
-  //   setCurrentDisplay,
-  //   removeImages,
-  // }: CurrentDisplayProps
 
 ) {
 
 
   const images = useImageDisplay((state) => state.images);
-
-  // useEffect(() => {
-  //   if (images.length > 0) {
-  //     console.log("cur", images[0]);
-  //     setCurrentImage(images[0]);
-  //   } else {
-  //     setCurrentImage(null);
-  //   }
-  // }, [images]);
-
+  const setCurrentImage = useImageDisplay((state) => state.setCurrentImage);
+  const clearDisplay = useImageDisplay((state) => state.clearDisplay);
 
 
   // const _handleSetCurrentDisplay = (index: number) => {
@@ -47,7 +30,8 @@ export default function CompletedImages(
   //   setCurrentDisplay(image);
   // };
 
-  const removeImages = () => {
+  const removeImagesAll = () => {
+    clearDisplay();
   };
 
   return (
@@ -57,7 +41,7 @@ export default function CompletedImages(
         <button
           className={RemoveButton}
           onClick={() => {
-            removeImages();
+            removeImagesAll();
           }}
         >
           REMOVE
@@ -74,9 +58,9 @@ export default function CompletedImages(
             <li key={image.id}>
               <button
                 className={imageContain}
-              // onClick={() => {
-              //   _handleSetCurrentDisplay(index);
-              // }}
+                onClick={() => {
+                  setCurrentImage(image);
+                }}
               >
                 <img src={image.data} alt={image.info.prompt} />
               </button>

@@ -5,15 +5,18 @@ import produce from "immer";
 interface ImageDisplayState {
   // imageOptions: Map<string, any>;
   images: object[]
-  // currentImage: object | null;
+  currentImage: object | null
   updateDisplay: (ImageData: string, imageOptions: any) => void;
+  setCurrentImage: (image: object) => void;
+  clearDisplay: () => void;
+
   // getCurrentImage: () => {};
 }
 
 export const useImageDisplay = create<ImageDisplayState>((set, get) => ({
   imageMap: new Map<string, any>(),
   images: [],
-  // currentImage: null,
+  currentImage: null,
   // use produce to make sure we don't mutate state
   // imageOptions: any
   updateDisplay: (ImageData: string, imageOptions) => {
@@ -23,14 +26,26 @@ export const useImageDisplay = create<ImageDisplayState>((set, get) => ({
         // state.currentImage = { display: ImageData, imageOptions };
         // imageOptions
         state.images.unshift({ data: ImageData, info: imageOptions });
+        state.currentImage = state.images[0];
       })
     );
   },
 
-  // getCurrentImage: () => {
-  //   debugger;
-  //   return get().images[0];
-  // }
+  setCurrentImage: (image) => {
+    set(
+      produce((state) => {
+        state.currentImage = image;
+      })
+    );
+  },
 
+  clearDisplay: () => {
+    set(
+      produce((state) => {
+        state.images = [];
+        state.currentImage = null;
+      })
+    );
+  }
 
 }));

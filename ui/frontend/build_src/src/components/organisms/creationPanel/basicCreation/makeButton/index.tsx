@@ -44,6 +44,7 @@ export default function MakeButton() {
   const setStep = useImageFetching((state) => state.setStep);
   const setTotalSteps = useImageFetching((state) => state.setTotalSteps);
   const addProgressImage = useImageFetching((state) => state.addProgressImage);
+  const resetProgressImages = useImageFetching((state) => state.resetProgressImages);
   const appendData = useImageFetching((state) => state.appendData);
 
   const updateDisplay = useImageDisplay((state) => state.updateDisplay);
@@ -159,7 +160,9 @@ export default function MakeButton() {
     };
 
     try {
+      resetProgressImages();
       setStatus(FetchingStates.FETCHING);
+
       const res = await doMakeImage(streamReq);
       // @ts-expect-error
       const reader = res.body.getReader();

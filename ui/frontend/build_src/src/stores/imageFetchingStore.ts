@@ -22,7 +22,7 @@ interface ImageFetchingState {
   setStep: (step: number) => void;
   setTotalSteps: (totalSteps: number) => void;
   addProgressImage: (imageLink: string) => void;
-  clearProgressImage: () => void;
+  resetProgressImages: () => void;
 }
 
 export const useImageFetching = create<ImageFetchingState>((set) => ({
@@ -78,10 +78,12 @@ export const useImageFetching = create<ImageFetchingState>((set) => ({
       })
     );
   },
-  clearProgressImage: () => {
+  resetProgressImages: () => {
     set(
       produce((state: ImageFetchingState) => {
         state.progressImages = [];
+        state.step = 0;
+        state.totalSteps = 0;
       })
     );
   }
