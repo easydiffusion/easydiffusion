@@ -229,8 +229,6 @@ export default function MakeButton() {
       // potentially update the seed
       await startStream(id, options);
     }
-    console.log('USE EFFECT', hasQueue);
-    console.log('status', status);
 
     if (status === FetchingStates.PROGRESSING || status === FetchingStates.FETCHING) {
       return;
@@ -245,15 +243,6 @@ export default function MakeButton() {
 
 
   }, [hasQueue, status, id, options, startStream]);
-
-  // useEffect(() => {
-  //   // if the status is complete we can remove the image from the queue
-  //   if (status === FetchingStates.COMPLETE) {
-  //     // debugger;
-  //     removeFirstInQueue();
-  //   }
-  // }, [removeFirstInQueue, status]);
-
 
   return (
     <button
