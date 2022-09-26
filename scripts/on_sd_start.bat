@@ -79,7 +79,7 @@
     @echo conda_sd_env_created >> ..\scripts\install_status.txt
 )
 
-set PATH=C:\Windows\System32;%PATH%
+@REM set PATH=C:\Windows\System32;%PATH%
 
 @>nul grep -c "conda_sd_gfpgan_deps_installed" ..\scripts\install_status.txt
 @if "%ERRORLEVEL%" EQU "0" (
