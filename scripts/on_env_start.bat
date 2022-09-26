@@ -4,6 +4,8 @@
 
 set PATH=C:\Windows\System32;%PATH%
 
+@cd ..
+
 if exist "scripts\config.bat" (
     @call scripts\config.bat
 )
