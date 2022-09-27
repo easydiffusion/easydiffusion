@@ -251,71 +251,81 @@ async function healthCheck() {
     }
 }
 
-function showImages(res, req) {
-    res.output.forEach(result => {
+function showImages(req, res, livePreview) {
+    res.output.forEach((result, index) => {
         if(typeof res != 'object') return;
 
-        const imageData = result?.data,
-            imageSeed = result?.seed,
+        const imageData = result?.data || result?.path,
+            imageSeed = req.seed + index,
             imageWidth = req.width,
-            imageHeight = req.height;
+            imageHeight = req.height,
+            imageIdentifier = 'IMG_' + (imageSeed + '').replace(/\d/g, c => 'SUOMIPERKL'[c]);
 
-        // don't continue if data is incorrect
-        if (!(imageData && imageSeed))
-        {
+        if (!imageData) {
+            // res contained no data for the image, stop execution
+
             setStatus('request', 'invalid image', 'error');
-            console.log(imageData);
             return;
         }
 
-        const imageItemElem = document.createElement('div');
-        imageItemElem.className = 'imgItem';
-        imageItemElem.innerHTML = `
-            <div class="imgContainer">
-                <img/>
-                <div class="imgItemInfo">
-                    <span class="imgSeedLabel"></span>
-                    <button class="imgUseBtn">Use as Input</button>
-                    <button class="imgSaveBtn">Download</button>
-                </div>
-            </div>
-        `;
-    
-        const imageElem = imageItemElem.querySelector('img'),
-            imageSeedLabel = imageItemElem.querySelector('.imgSeedLabel'),
-            useAsInputBtn = imageItemElem.querySelector('.imgUseBtn'),
-            saveImageBtn = imageItemElem.querySelector('.imgSaveBtn');
+        let imageItemElem = document.querySelector('#' + imageIdentifier);
 
-        imageElem.src = imageData;
+        if(!imageItemElem) {
+            imageItemElem = document.createElement('div');
+            imageItemElem.className = 'imgItem';
+            imageItemElem.id = imageIdentifier;
+            imageItemElem.innerHTML = `
+                <div class="imgContainer">
+                    <img/>
+                    <div class="imgItemInfo">
+                        <span class="imgSeedLabel"></span>
+                        <button class="imgUseBtn">Use as Input</button>
+                        <button class="imgSaveBtn">Download</button>
+                    </div>
+                </div>
+            `;
+
+            const useAsInputBtn = imageItemElem.querySelector('.imgUseBtn');
+            const saveImageBtn = imageItemElem.querySelector('.imgSaveBtn');
+
+            useAsInputBtn.addEventListener('click', () => {
+                initImageSelector.value = null;
+                initImagePreview.src = imageData;
+        
+                initImagePreviewContainer.style.display = 'block';
+                inpaintingEditorContainer.style.display = 'none';
+                promptStrengthContainer.style.display = 'block';
+                maskSetting.checked = false;
+        
+                // maskSetting.style.display = 'block';
+        
+                randomSeedField.checked = false;
+                seedField.value = imageSeed;
+                seedField.disabled = false;
+            });
+        
+            saveImageBtn.addEventListener('click', () => {
+                const imgDownload = document.createElement('a');
+                imgDownload.download = createFileName(imageSeed);
+                imgDownload.href = imageData;
+                imgDownload.click();
+            });
+
+            imagesContainer.appendChild(imageItemElem);
+        }
+
+        const imageElem = imageItemElem.querySelector('img');
+        const imageSeedLabel = imageItemElem.querySelector('.imgSeedLabel');
+
+        imageElem.src = livePreview
+            ? imageData + '?t=' + new Date().getTime()
+            : imageData;
         imageElem.width = parseInt(imageWidth);
         imageElem.height = parseInt(imageHeight);
 
-        imageSeedLabel.innerText = 'Seed: ' + imageSeed;
-
-        useAsInputBtn.addEventListener('click', () => {
-            initImageSelector.value = null;
-            initImagePreview.src = imageData;
-    
-            initImagePreviewContainer.style.display = 'block';
-            inpaintingEditorContainer.style.display = 'none';
-            promptStrengthContainer.style.display = 'block';
-            maskSetting.checked = false;
-    
-            // maskSetting.style.display = 'block';
-    
-            randomSeedField.checked = false;
-            seedField.value = imageSeed;
-            seedField.disabled = false;
-        });
-    
-        saveImageBtn.addEventListener('click', () => {
-            const imgDownload = document.createElement('a');
-            imgDownload.download = createFileName(imageSeed);
-            imgDownload.href = imageData;
-            imgDownload.click();
-        });
-
-        imagesContainer.appendChild(imageItemElem);
+        imageSeedLabel.innerText = livePreview
+            ? '(Live Preview)'
+            : 'Seed: ' + imageSeed;
     });
 }
 
@@ -381,14 +391,7 @@ async function doMakeImage(reqBody, batchCount) {
                         progressBar.style.display = 'block'
 
                         if (stepUpdate.output !== undefined) {
-                            makeImageContainers(numOutputs)
-
-                            for (idx in stepUpdate.output) {
-                                let imgItem = images[idx]
-                                let img = imgItem.firstChild
-                                let tmpImageData = stepUpdate.output[idx]
-                                img.src = tmpImageData['path'] + '?t=' + new Date().getTime()
-                            }
+                            showImages(reqBody, stepUpdate, true);
                         }
                     }
                 } catch (e) {
@@ -461,7 +464,7 @@ async function doMakeImage(reqBody, batchCount) {
 
     lastPromptUsed = reqBody['prompt'];
 
-    showImages(res, reqBody);
+    showImages(reqBody, res, false);
 
     return true;
 }
