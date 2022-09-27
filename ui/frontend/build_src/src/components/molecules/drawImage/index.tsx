@@ -76,7 +76,6 @@ export default function DrawImage({
     const canvas = drawingRef.current;
     if (canvas != null) {
       const data = canvas.toDataURL();
-      debugger;
       setData(data);
     }
   };
