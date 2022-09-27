@@ -439,6 +439,7 @@ async function doMakeImage(reqBody, batchCount) {
 
         let imgItemInfo = document.createElement('span')
         imgItemInfo.className = 'imgItemInfo'
+        imgItemInfo.style.opacity = 0
 
         let imgSeedLabel = document.createElement('span')
         imgSeedLabel.className = 'imgSeedLabel'
@@ -485,7 +486,7 @@ async function doMakeImage(reqBody, batchCount) {
         })
 
         imgItem.addEventListener('mouseleave', function() {
-            imgItemInfo.style.opacity = 0.5
+            imgItemInfo.style.opacity = 0
         })
     }
 
