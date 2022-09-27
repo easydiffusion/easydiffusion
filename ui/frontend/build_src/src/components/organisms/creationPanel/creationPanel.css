@@ -33,7 +33,7 @@ li {
   padding: 0;
 }
 
-.modifierTag {
+/* .modifierTag {
   display: inline-block;
   padding: 6px;
   background-color: rgb(38, 77, 141);
@@ -48,7 +48,7 @@ li {
 
 .modifierTag p {
   margin: 0;
-}
+} */
 
 input[type="file"] {
   /* Dont show the file name */

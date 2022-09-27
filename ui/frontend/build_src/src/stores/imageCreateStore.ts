@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import create from "zustand";
 import produce from "immer";
 import { devtools } from "zustand/middleware";
@@ -75,15 +76,30 @@ export interface ImageRequest {
   stream_image_progress: boolean;
 }
 
-type ModifiersList = string[];
-type ModifiersOptions = string | ModifiersList[];
-type ModifiersOptionList = ModifiersOptions[];
+export interface ModifierPreview {
+  name: string;
+  path: string;
+}
+
+export interface ModifierObject {
+  category?: string;
+  modifier: string;
+  previews: ModifierPreview[];
+}
+
+interface ModifiersList {
+  category: string;
+  modifiers: ModifierObject[];
+}
+
+type ModifiersOptionList = ModifiersList[];
 
 interface ImageCreateState {
   parallelCount: number;
   requestOptions: ImageRequest;
   allModifiers: ModifiersOptionList;
   tags: string[];
+  tagMap: Record<string, string[]>;
   isInpainting: boolean;
 
   setParallelCount: (count: number) => void;
@@ -92,9 +108,9 @@ interface ImageCreateState {
   setAllModifiers: (modifiers: ModifiersOptionList) => void;
 
   setModifierOptions: (key: string, value: any) => void;
-  toggleTag: (tag: string) => void;
-  hasTag: (tag: string) => boolean;
-  selectedTags: () => string[];
+  toggleTag: (category: string, tag: string) => void;
+  hasTag: (category: string, tag: string) => boolean;
+  selectedTags: () => ModifierObject[];
   builtRequest: () => ImageRequest;
 
   uiOptions: ImageCreationUiOptions;
@@ -145,6 +161,9 @@ export const useImageCreate = create<ImageCreateState>(
     // selected tags
     tags: [] as string[],
 
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    tagMap: {} as Record<string, string[]>,
+
     uiOptions: {
       // TODO proper persistence of all UI / user settings centrally somewhere?
       // localStorage.getItem('ui:advancedSettingsIsOpen') === 'true',
@@ -153,7 +172,7 @@ export const useImageCreate = create<ImageCreateState>(
       isSoundEnabled: false,
     },
 
-    allModifiers: [[[]]] as ModifiersOptionList,
+    allModifiers: [] as ModifiersOptionList,
 
     isInpainting: false,
 
@@ -184,36 +203,78 @@ export const useImageCreate = create<ImageCreateState>(
       );
     },
 
-    toggleTag: (tag: string) => {
+    toggleTag: (category: string, tag: string) => {
       set(
         produce((state) => {
-          const index = state.tags.indexOf(tag);
-          if (index > -1) {
-            state.tags.splice(index, 1);
+
+          if (Object.keys(state.tagMap).includes(category)) {
+            if (state.tagMap[category].includes(tag)) {
+              state.tagMap[category] = state.tagMap[category].filter((t: string) => t !== tag);
+            } else {
+              state.tagMap[category].push(tag);
+            }
           } else {
-            state.tags.push(tag);
+            state.tagMap[category] = [tag];
           }
+
+
+          // const index = state.tags.indexOf(tag);
+          // if (index > -1) {
+          //   state.tags.splice(index, 1);
+          // } else {
+          //   state.tags.push(tag);
+          // }
+
+
         })
       );
     },
 
-    hasTag: (tag: string) => {
-      return get().tags.includes(tag);
+    hasTag: (category: string, tag: string) => {
+      return get().tagMap[category]?.includes(tag);
     },
 
     selectedTags: () => {
-      return get().tags;
+      // get all the modifiers and all the tags
+      const allModifiers = get().allModifiers;
+      const selectedTags = get().tagMap;
+      let selected: ModifierObject[] = [];
+
+      // for each mappped tag
+      for (const [category, tags] of Object.entries(selectedTags)) {
+        // find the modifier
+        const modifier = allModifiers.find((m) => m.category === category);
+        if (modifier) {
+          // for each tag in the modifier
+          for (const tag of tags) {
+            // find the tag
+            const tagObject = modifier.modifiers.find((m) => m.modifier === tag);
+            if (tagObject) {
+              // add the previews to the selected list
+              selected = selected.concat({
+                ...tagObject,
+                category: modifier.category
+              });
+            }
+          }
+        }
+      }
+      return selected;
     },
+
+
 
     // the request body to send to the server
     // this is a computed value, just adding the tags to the request
     builtRequest: () => {
       const state = get();
       const requestOptions = state.requestOptions;
-      const tags = state.tags;
+      const selectedTags = get().selectedTags();
+      const tags = selectedTags.map((t: ModifierObject) => t.modifier);
 
       // join all the tags with a comma and add it to the prompt
-      const prompt = `${requestOptions.prompt} ${tags.join(",")}`;
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      const prompt = `${requestOptions.prompt}, ${tags.join(",")}`;
 
       const request = {
         ...requestOptions,
