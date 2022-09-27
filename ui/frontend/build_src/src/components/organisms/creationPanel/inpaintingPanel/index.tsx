@@ -11,7 +11,7 @@ import {
 
 export default function InpaintingPanel() {
   // no idea if this is the right typing
-  const drawingRef = useRef(null);
+  // const drawingRef = useRef(null);
 
   const [brushSize, setBrushSize] = useState("20");
   const [brushShape, setBrushShape] = useState("round");
@@ -22,6 +22,13 @@ export default function InpaintingPanel() {
     state.getValueForRequestKey("init_image")
   );
 
+  const setRequestOption = useImageCreate((state) => state.setRequestOptions);
+
+  const setMask = (data: string) => {
+    setRequestOption("mask", data);
+  }
+
+
   const _handleBrushMask = () => {
     setIsErasing(false);
   };
@@ -30,15 +37,6 @@ export default function InpaintingPanel() {
     setIsErasing(true);
   };
 
-  const _handleFillMask = () => {
-    console.log("fill mask!!", drawingRef);
-
-    // drawingRef.current?.fillCanvas();
-  };
-
-  const _handleClearAll = () => {
-    console.log("clear all");
-  };
 
   const _handleBrushSize = (event: ChangeEvent<HTMLInputElement>) => {
     setBrushSize(event.target.value);
@@ -53,17 +51,18 @@ export default function InpaintingPanel() {
         brushShape={brushShape}
         brushColor={brushColor}
         isErasing={isErasing}
+        setData={setMask}
       />
       <div className={InpaintingControls}>
         <div className={InpaintingControlRow}>
           <button onClick={_handleBrushMask}>Mask</button>
           <button onClick={_handleBrushErase}>Erase</button>
-          <button disabled onClick={_handleFillMask}>
+          {/* <button disabled onClick={_handleFillMask}>
             Fill
           </button>
           <button disabled onClick={_handleClearAll}>
             Clear
-          </button>
+          </button> */}
 
           <label>
             Brush Size
@@ -93,20 +92,20 @@ export default function InpaintingPanel() {
             Square Brush
           </button>
 
-          <button
+          {/* <button
             onClick={() => {
               setBrushColor("#000");
             }}
           >
             Dark Brush
-          </button>
-          <button
+          </button> */}
+          {/* <button
             onClick={() => {
               setBrushColor("#fff");
             }}
           >
             Light Brush
-          </button>
+          </button> */}
         </div>
       </div>
     </div>
