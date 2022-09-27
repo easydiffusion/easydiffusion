@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/restrict-plus-operands */
 import create from "zustand";
 import produce from "immer";
 
@@ -9,7 +8,6 @@ export interface CompletedImagesType {
   data: string | undefined;
   info: ImageRequest;
 }
-
 
 interface ImageDisplayState {
   // imageOptions: Map<string, any>;

@@ -16,13 +16,18 @@ interface ImageFetchingState {
   totalSteps: number;
   data: string;
   progressImages: string[]
+  timeStarted: Date;
+  timeNow: Date;
   appendData: (data: string) => void;
   reset: () => void;
   setStatus: (status: typeof FetchingStates[keyof typeof FetchingStates]) => void;
   setStep: (step: number) => void;
   setTotalSteps: (totalSteps: number) => void;
   addProgressImage: (imageLink: string) => void;
-  resetProgressImages: () => void;
+  setStartTime: () => void;
+  setNowTime: () => void;
+  resetForFetching: () => void;
+
 }
 
 export const useImageFetching = create<ImageFetchingState>((set) => ({
@@ -31,6 +36,8 @@ export const useImageFetching = create<ImageFetchingState>((set) => ({
   totalSteps: 0,
   data: '',
   progressImages: [],
+  timeStarted: new Date(),
+  timeNow: new Date(),
   // use produce to make sure we don't mutate state
   appendData: (data: string) => {
     set(
@@ -78,12 +85,29 @@ export const useImageFetching = create<ImageFetchingState>((set) => ({
       })
     );
   },
-  resetProgressImages: () => {
+  setStartTime: () => {
     set(
       produce((state: ImageFetchingState) => {
+        state.timeStarted = new Date();
+      })
+    );
+  },
+  setNowTime: () => {
+    set(
+      produce((state: ImageFetchingState) => {
+        state.timeNow = new Date();
+      })
+    );
+  },
+  resetForFetching: () => {
+    set(
+      produce((state: ImageFetchingState) => {
+        state.status = FetchingStates.FETCHING;
         state.progressImages = [];
         state.step = 0;
         state.totalSteps = 0;
+        state.timeNow = new Date();
+        state.timeStarted = new Date();
       })
     );
   }

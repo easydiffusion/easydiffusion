@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
-/* eslint-disable @typescript-eslint/prefer-ts-expect-error */
 /* eslint-disable @typescript-eslint/naming-convention */
 import React, { useEffect } from "react";
 
@@ -43,7 +40,9 @@ export default function MakeButton() {
   const setStep = useImageFetching((state) => state.setStep);
   const setTotalSteps = useImageFetching((state) => state.setTotalSteps);
   const addProgressImage = useImageFetching((state) => state.addProgressImage);
-  const resetProgressImages = useImageFetching((state) => state.resetProgressImages);
+  const setStartTime = useImageFetching((state) => state.setStartTime);
+  const setNowTime = useImageFetching((state) => state.setNowTime);
+  const resetForFetching = useImageFetching((state) => state.resetForFetching);
   const appendData = useImageFetching((state) => state.appendData);
 
   const updateDisplay = useImageDisplay((state) => state.updateDisplay);
@@ -67,7 +66,14 @@ export default function MakeButton() {
     // }
 
     try {
-      const { status, request, output: outputs } = JSON.parse(jsonStr);
+
+      // todo - used zod or something to validate this
+      interface jsonResponseType {
+        status: string;
+        request: ImageRequest;
+        output: []
+      }
+      const { status, request, output: outputs }: jsonResponseType = JSON.parse(jsonStr);
 
       if (status === 'succeeded') {
         outputs.forEach((output: any) => {
@@ -79,7 +85,6 @@ export default function MakeButton() {
             seed,
           };
 
-          console.log('UPDATE DISPLAY!');
           updateDisplay(data, seedReq);
         });
       }
@@ -103,7 +108,7 @@ export default function MakeButton() {
     while (true) {
       const { done, value } = await reader.read();
       const jsonStr = decoder.decode(value);
-      if (done as boolean) {
+      if (done) {
         removeFirstInQueue();
         setStatus(FetchingStates.COMPLETE);
         hackJson(finalJSON)
@@ -113,15 +118,25 @@ export default function MakeButton() {
       try {
         const update = JSON.parse(jsonStr);
         const { status } = update;
+
         if (status === "progress") {
           setStatus(FetchingStates.PROGRESSING);
           const { progress: { step, total_steps }, output: outputs } = update;
           setStep(step);
           setTotalSteps(total_steps);
 
+          if (step === 0) {
+            setStartTime();
+          }
+          else {
+            console.log('step else', step);
+            setNowTime();
+          }
+
           console.log('progess step of total', step, total_steps);
           if (void 0 !== outputs) {
             outputs.forEach((output: any) => {
+              // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
               const timePath = `${output.path}?t=${new Date().getTime()}`
               console.log('progress path', timePath);
               addProgressImage(timePath);
@@ -157,13 +172,14 @@ export default function MakeButton() {
     };
 
     try {
-      resetProgressImages();
-      setStatus(FetchingStates.FETCHING);
-
+      resetForFetching();
       const res = await doMakeImage(streamReq);
-      // @ts-expect-error
-      const reader = res.body.getReader();
-      void parseRequest(id, reader);
+      const reader = res.body?.getReader();
+
+      if (void 0 !== reader) {
+        void parseRequest(id, reader);
+      }
+
     } catch (e) {
       console.log('TOP LINE STREAM ERROR')
       console.log(e);
@@ -245,7 +261,6 @@ export default function MakeButton() {
         console.log(e);
       });
     }
-
 
   }, [hasQueue, status, id, options, startStream]);
 

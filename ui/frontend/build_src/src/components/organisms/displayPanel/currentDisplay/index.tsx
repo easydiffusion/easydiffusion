@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-/* eslint-disable multiline-ternary */
 
 import React, { useEffect, useState } from "react";
 import GeneratedImage from "../../../molecules/generatedImage";
@@ -8,6 +7,7 @@ import { FetchingStates, useImageFetching } from "../../../../stores/imageFetchi
 import { CompletedImagesType, useImageDisplay } from "../../../../stores/imageDisplayStore";
 
 import { API_URL } from "../../../../api";
+import { isGeneratorFunction } from "util/types";
 
 
 const IdleDisplay = () => {
@@ -22,9 +22,18 @@ const LoadingDisplay = () => {
   const totalSteps = useImageFetching((state) => state.totalSteps);
   const progressImages = useImageFetching((state) => state.progressImages);
 
-  const [percent, setPercent] = useState(0);
+  const startTime = useImageFetching((state) => state.timeStarted);
+  const timeNow = useImageFetching((state) => state.timeNow);
+  const [timeRemaining, setTimeRemaining] = useState(0);
 
+  const [percent, setPercent] = useState(0);
   console.log("progressImages", progressImages);
+
+
+  // stepsRemaining = totalSteps - overallStepCount
+  // stepsRemaining = (stepsRemaining < 0 ? 0 : stepsRemaining)
+  // timeRemaining = (timeTaken === -1 ? '' : stepsRemaining * timeTaken) // ms
+
 
   useEffect(() => {
     if (totalSteps > 0) {
@@ -34,14 +43,27 @@ const LoadingDisplay = () => {
     }
   }, [step, totalSteps]);
 
+  useEffect(() => {
+    // find the remaining time
+    const timeTaken = +timeNow - +startTime;
+    const timePerStep = step == 0 ? 0 : timeTaken / step;
+    const totalTime = timePerStep * totalSteps;
+    const timeRemaining = (totalTime - timeTaken) / 1000;
+    setTimeRemaining(timeRemaining);
+
+  }, [step, totalSteps, startTime, timeNow, setTimeRemaining]);
+
   return (
     <>
       <h4 className="loading">Loading...</h4>
       <p>{percent} % Complete </p>
+      {timeRemaining != 0 && <p>Time Remaining: {timeRemaining} s</p>}
       {progressImages.map((image, index) => {
-        return (
-          <img src={`${API_URL}${image}`} key={index} />
-        )
+        if (index == progressImages.length - 1) {
+          return (
+            <img src={`${API_URL}${image}`} key={index} />
+          )
+        }
       })
       }
     </>
