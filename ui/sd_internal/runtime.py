@@ -343,7 +343,7 @@ def do_mk_img(req: Request):
                     modelCS.to(device)
                     uc = None
                     if opt_scale != 1.0:
-                        uc = modelCS.get_learned_conditioning(batch_size * [""])
+                        uc = modelCS.get_learned_conditioning(batch_size * [req.negative_prompt])
                     if isinstance(prompts, tuple):
                         prompts = list(prompts)
 
