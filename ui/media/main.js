@@ -255,13 +255,13 @@ function showImages(req, res, livePreview) {
     res.output.forEach((result, index) => {
         if(typeof res != 'object') return;
 
-        const imageData = result?.data || result?.path,
-            imageSeed = req.seed + index,
+        const imageData = result?.data || result?.path + '?t=' + new Date().getTime(),
+            imageSeed = req.seed,
             imageWidth = req.width,
             imageHeight = req.height,
-            imageIdentifier = 'IMG_' + (imageSeed + '').replace(/\d/g, c => 'SUOMIPERKL'[c]);
+            imageIdentifier = 'IMG_ID_' + (imageSeed + '').replace(/\d/g, c => 'SUOMIPERKL'[c]) + 'X'.repeat(index);
 
-        if (!imageData) {
+        if (!imageData.includes('/')) {
             // res contained no data for the image, stop execution
 
             setStatus('request', 'invalid image', 'error');
@@ -285,12 +285,14 @@ function showImages(req, res, livePreview) {
                 </div>
             `;
 
-            const useAsInputBtn = imageItemElem.querySelector('.imgUseBtn');
-            const saveImageBtn = imageItemElem.querySelector('.imgSaveBtn');
+            const useAsInputBtn = imageItemElem.querySelector('.imgUseBtn'),
+                saveImageBtn = imageItemElem.querySelector('.imgSaveBtn');
 
-            useAsInputBtn.addEventListener('click', () => {
+            useAsInputBtn.addEventListener('click', e => {
+                const imgData = e.path.find(x => x == imageItemElem).querySelector('img').src;
+
                 initImageSelector.value = null;
-                initImagePreview.src = imageData;
+                initImagePreview.src = imgData;
         
                 initImagePreviewContainer.style.display = 'block';
                 inpaintingEditorContainer.style.display = 'none';
@@ -303,23 +305,23 @@ function showImages(req, res, livePreview) {
                 seedField.value = imageSeed;
                 seedField.disabled = false;
             });
-        
-            saveImageBtn.addEventListener('click', () => {
+    
+            saveImageBtn.addEventListener('click', e => {
+                const imgData = e.path.find(x => x == imageItemElem).querySelector('img').src;
+
                 const imgDownload = document.createElement('a');
                 imgDownload.download = createFileName(imageSeed);
-                imgDownload.href = imageData;
+                imgDownload.href = imgData;
                 imgDownload.click();
             });
 
             imagesContainer.appendChild(imageItemElem);
         }
 
-        const imageElem = imageItemElem.querySelector('img');
-        const imageSeedLabel = imageItemElem.querySelector('.imgSeedLabel');
+        const imageElem = imageItemElem.querySelector('img'),
+            imageSeedLabel = imageItemElem.querySelector('.imgSeedLabel');
 
-        imageElem.src = livePreview
-            ? imageData + '?t=' + new Date().getTime()
-            : imageData;
+        imageElem.src = imageData;
         imageElem.width = parseInt(imageWidth);
         imageElem.height = parseInt(imageHeight);
 
