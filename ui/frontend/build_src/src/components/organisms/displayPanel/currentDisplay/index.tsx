@@ -27,12 +27,6 @@ const LoadingDisplay = () => {
   const [timeRemaining, setTimeRemaining] = useState(0);
 
   const [percent, setPercent] = useState(0);
-  console.log("progressImages", progressImages);
-
-
-  // stepsRemaining = totalSteps - overallStepCount
-  // stepsRemaining = (stepsRemaining < 0 ? 0 : stepsRemaining)
-  // timeRemaining = (timeTaken === -1 ? '' : stepsRemaining * timeTaken) // ms
 
 
   useEffect(() => {
@@ -49,7 +43,8 @@ const LoadingDisplay = () => {
     const timePerStep = step == 0 ? 0 : timeTaken / step;
     const totalTime = timePerStep * totalSteps;
     const timeRemaining = (totalTime - timeTaken) / 1000;
-    setTimeRemaining(timeRemaining);
+    // @ts-expect-error
+    setTimeRemaining(timeRemaining.toPrecision(3));
 
   }, [step, totalSteps, startTime, timeNow, setTimeRemaining]);
 
@@ -103,8 +98,6 @@ const ImageDisplay = ({ info, data }: CompletedImagesType) => {
     // return fileName
     return fileName;
   };
-
-
 
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
 

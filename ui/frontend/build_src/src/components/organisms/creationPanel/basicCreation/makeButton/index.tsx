@@ -129,16 +129,13 @@ export default function MakeButton() {
             setStartTime();
           }
           else {
-            console.log('step else', step);
             setNowTime();
           }
 
-          console.log('progess step of total', step, total_steps);
           if (void 0 !== outputs) {
             outputs.forEach((output: any) => {
               // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
               const timePath = `${output.path}?t=${new Date().getTime()}`
-              console.log('progress path', timePath);
               addProgressImage(timePath);
             });
           }
@@ -166,14 +163,14 @@ export default function MakeButton() {
   }
 
   const startStream = async (id: string, req: ImageRequest) => {
-    const streamReq = {
-      ...req,
-      stream_image_progress: true,
-    };
+    // const streamReq = {
+    //   ...req,
+    //   stream_image_progress: true,
+    // };
 
     try {
       resetForFetching();
-      const res = await doMakeImage(streamReq);
+      const res = await doMakeImage(req);
       const reader = res.body?.getReader();
 
       if (void 0 !== reader) {

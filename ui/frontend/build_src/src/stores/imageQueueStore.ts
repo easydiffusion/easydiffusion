@@ -52,7 +52,6 @@ export const useImageQueue = create<ImageQueueState>((set, get) => ({
     set(
       produce((state) => {
         const image = state.images.shift();
-        console.log("image", image);
         if (void 0 !== image) {
           state.completedImageIds.push(image.id);
         }
