@@ -383,6 +383,11 @@ img {
     border-radius: 2pt;
     margin-right: 5pt;
 }
+.activeTaskLabel {
+    background:rgb(0, 90, 30);
+    border: 1px solid rgb(0, 75, 19);
+    color:rgb(204, 255, 217)
+}
 .secondaryButton {
     background: rgb(132, 8, 0);
     border: 1px solid rgb(122, 29, 0);

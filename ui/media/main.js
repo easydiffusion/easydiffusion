@@ -545,7 +545,9 @@ async function checkTasks() {
 
     task.isProcessing = true
     task['stopTask'].innerHTML = '<i class="fa-solid fa-circle-stop"></i> Stop'
-    task['taskStatusLabel'].style.display = 'none'
+    task['taskStatusLabel'].innerText = "Processing"
+    task['taskStatusLabel'].className += " activeTaskLabel"
+    console.log(task['taskStatusLabel'].className)
 
     for (let i = 0; i < task.batchCount; i++) {
         task.reqBody['seed'] = task.seed + (i * task.reqBody['num_outputs'])
@@ -560,6 +562,7 @@ async function checkTasks() {
 
     task.isProcessing = false
     task['stopTask'].innerHTML = '<i class="fa-solid fa-trash-can"></i> Remove'
+    task['taskStatusLabel'].style.display = 'none'
 
     time = new Date().getTime() - time
     time /= 1000
