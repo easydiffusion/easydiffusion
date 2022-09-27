@@ -116,6 +116,7 @@ let modifiers = []
 let lastPromptUsed = ''
 
 let taskQueue = []
+let currentTask = null
 
 const modifierThumbnailPath = 'media/modifier-thumbnails';
 const activeCardClass = 'modifier-card-active';
@@ -528,6 +529,8 @@ async function checkTasks() {
         setTimeout(checkTasks, 500)
         stopImageBtn.style.display = 'none'
         makeImageBtn.innerHTML = 'Make Image'
+
+        currentTask = null
         return
     }
 
@@ -539,6 +542,7 @@ async function checkTasks() {
     previewTools.style.display = 'block'
 
     let task = taskQueue.pop()
+    currentTask = task
 
     let time = new Date().getTime()
 
@@ -556,6 +560,10 @@ async function checkTasks() {
         let success = await doMakeImage(task)
         task.batchesDone++
 
+        if (!task.isProcessing) {
+            break
+        }
+
         if (success) {
             successCount++
         }
@@ -572,11 +580,15 @@ async function checkTasks() {
         task.outputMsg.innerText = 'Processed ' + task.numOutputsTotal + ' images in ' + time + ' seconds'
 
         // setStatus('request', 'done', 'success')
+    } else {
+        task.outputMsg.innerText = 'Task ended after ' + time + ' seconds'
     }
 
     if (randomSeedField.checked) {
         seedField.value = task.seed
     }
+
+    currentTask = null
 
     setTimeout(checkTasks, 10)
 }
@@ -715,6 +727,7 @@ async function makeImage() {
 
     task['stopTask'].addEventListener('click', async function() {
         if (task['isProcessing']) {
+            task.isProcessing = false
             try {
                 let res = await fetch('/image/stop')
             } catch (e) {
@@ -820,6 +833,10 @@ async function stopAllTasks() {
         task.isProcessing = false
     })
     taskQueue = []
+
+    if (currentTask !== null) {
+        currentTask.isProcessing = false
+    }
 
     try {
         let res = await fetch('/image/stop')
