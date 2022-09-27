@@ -327,12 +327,12 @@ async function doMakeImage(reqBody, batchCount) {
                         timeRemaining = (timeTaken === -1 ? '' : stepsRemaining * timeTaken) // ms
 
                         outputMsg.innerHTML = `Batch ${batchesDone+1} of ${batchCount}`
-                        progressBar.innerHTML = `Generating image(s): ${percent}%`
+                        outputMsg.innerHTML += `. Generating image(s): ${percent}%`
 
-                        if (timeTaken !== -1) {
-                            progressBar.innerHTML += `<br>Time remaining (approx): ${millisecondsToStr(timeRemaining)}`
-                        }
-                        progressBar.style.display = 'block'
+                        timeRemaining = (timeTaken !== -1 ? millisecondsToStr(timeRemaining) : '')
+
+                        outputMsg.innerHTML += `. Time remaining (approx): ${timeRemaining}`
+                        outputMsg.style.display = 'block'
 
                         if (stepUpdate.output !== undefined) {
                             makeImageContainers(numOutputs)
@@ -381,7 +381,6 @@ async function doMakeImage(reqBody, batchCount) {
             }
 
             res = JSON.parse(finalJSON)
-            progressBar.style.display = 'none'
 
             if (res.status !== 'succeeded') {
                 let msg = ''
@@ -609,10 +608,11 @@ async function makeImage() {
         batchesDone++
 
         if (success) {
-            outputMsg.innerText = 'Processed batch ' + (i+1) + '/' + batchCount
             successCount++
         }
     }
+
+    progressBar.style.display = 'none'
 
     makeImageBtn.innerText = 'Make Image'
     makeImageBtn.disabled = false
