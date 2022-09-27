@@ -79,7 +79,7 @@
     @echo conda_sd_env_created >> ..\scripts\install_status.txt
 )
 
-@REM set PATH=C:\Windows\System32;%PATH%
+set PATH=C:\Windows\System32;%PATH%
 
 @>nul grep -c "conda_sd_gfpgan_deps_installed" ..\scripts\install_status.txt
 @if "%ERRORLEVEL%" EQU "0" (
@@ -148,13 +148,13 @@
     )
 )
 
-@REM call WHERE uvicorn > .tmp
-@REM @>nul grep -c "uvicorn" .tmp
-@REM @if "%ERRORLEVEL%" NEQ "0" (
-@REM     @echo. & echo "UI packages not found! Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/blob/main/Troubleshooting.md" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
-@REM     pause
-@REM     exit /b
-@REM )
+call WHERE uvicorn > .tmp
+@>nul grep -c "uvicorn" .tmp
+@if "%ERRORLEVEL%" NEQ "0" (
+    @echo. & echo "UI packages not found! Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/blob/main/Troubleshooting.md" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
+    pause
+    exit /b
+)
 
 @>nul grep -c "conda_sd_ui_deps_installed" ..\scripts\install_status.txt
 @if "%ERRORLEVEL%" NEQ "0" (
@@ -173,9 +173,8 @@
             for %%K in ("sd-v1-4.ckpt") do if "%%~zK" EQU "7703810927" (
                 echo "Data files (weights) necessary for Stable Diffusion were already downloaded. Using the Waifu Model."
             ) else (
-                @REM echo. & echo "The model file present at %cd%\sd-v1-4.ckpt is invalid. It is only %%~zK bytes in size. Re-downloading.." & echo.
-                @REM del "sd-v1-4.ckpt"
-                echo. & echo "It looks like you're using a custom weights file. File size: %%~zK bytes" & echo.
+                echo. & echo "The model file present at %cd%\sd-v1-4.ckpt is invalid. It is only %%~zK bytes in size. Re-downloading.." & echo.
+                del "sd-v1-4.ckpt"
             )
         )
     )
