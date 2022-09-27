@@ -122,8 +122,9 @@ export default function MakeButton() {
           console.log('progess step of total', step, total_steps);
           if (void 0 !== outputs) {
             outputs.forEach((output: any) => {
-              console.log('progress path', output.path);
-              addProgressImage(output.path);
+              const timePath = `${output.path}?t=${new Date().getTime()}`
+              console.log('progress path', timePath);
+              addProgressImage(timePath);
             });
           }
 
