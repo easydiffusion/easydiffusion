@@ -1,18 +1,14 @@
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-/* eslint-disable multiline-ternary */
 /* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable multiline-ternary */
+
 import React, { useEffect, useState } from "react";
 import GeneratedImage from "../../../molecules/generatedImage";
-import { ImageRequest, useImageCreate } from "../../../../stores/imageCreateStore";
+import { useImageCreate } from "../../../../stores/imageCreateStore";
 import { FetchingStates, useImageFetching } from "../../../../stores/imageFetchingStore";
-import { useImageDisplay } from "../../../../stores/imageDisplayStore";
+import { CompletedImagesType, useImageDisplay } from "../../../../stores/imageDisplayStore";
 
+import { API_URL } from "../../../../api";
 
-export interface CompletedImagesType {
-  id?: string;
-  data: string | undefined;
-  info: ImageRequest | undefined;
-}
 
 const IdleDisplay = () => {
   return (
@@ -44,7 +40,7 @@ const LoadingDisplay = () => {
       <p>{percent} % Complete </p>
       {progressImages.map((image, index) => {
         return (
-          <img src={`http://localhost:9000${image}`} key={index} />
+          <img src={`${API_URL}${image}`} key={index} />
         )
       })
       }
@@ -93,15 +89,13 @@ const ImageDisplay = ({ info, data }: CompletedImagesType) => {
   const _handleSave = () => {
     const link = document.createElement("a");
     link.download = createFileName();
-    link.href = data!;
+    link.href = data ?? "";
     link.click();
   };
 
   const _handleUseAsInput = () => {
     setRequestOption("init_image", data);
   };
-
-
 
   return (
     <div className="imageDisplay">
@@ -119,24 +113,6 @@ export default function CurrentDisplay() {
 
   const status = useImageFetching((state) => state.status);
   const currentImage = useImageDisplay((state) => state.currentImage);
-
-
-  console.log("currentImage", currentImage);
-
-  // const [currentImage, setCurrentImage] = useState<CompletedImagesType | null>(
-  //   null
-  // );
-  // const testCur = useImageDisplay((state) => state.getCurrentImage());
-  // const images = useImageDisplay((state) => state.images);
-
-  // useEffect(() => {
-  //   if (images.length > 0) {
-  //     console.log("cur", images[0]);
-  //     setCurrentImage(images[0]);
-  //   } else {
-  //     setCurrentImage(null);
-  //   }
-  // }, [images]);
 
   return (
     <div className="current-display">

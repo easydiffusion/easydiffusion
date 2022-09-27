@@ -24,7 +24,6 @@ import {
 import { useTranslation } from "react-i18next";
 
 import AudioDing from "../../../../molecules/audioDing";
-import { debug } from "console";
 
 export default function MakeButton() {
   const { t } = useTranslation();
@@ -91,8 +90,7 @@ export default function MakeButton() {
 
     }
     catch (e) {
-      console.error("Error HACKING JSON: ", e)
-      // debugger;
+      console.log("Error HACKING JSON: ", e)
     }
   }
 
@@ -152,8 +150,6 @@ export default function MakeButton() {
   }
 
   const startStream = async (id: string, req: ImageRequest) => {
-
-    console.log('START STREAM', id);
     const streamReq = {
       ...req,
       stream_image_progress: true,
@@ -230,7 +226,7 @@ export default function MakeButton() {
   useEffect(() => {
     const makeImages = async (options: ImageRequest) => {
       // potentially update the seed
-      await startStream(id, options);
+      await startStream(id ?? "", options);
     }
 
     if (status === FetchingStates.PROGRESSING || status === FetchingStates.FETCHING) {
@@ -238,6 +234,11 @@ export default function MakeButton() {
     }
 
     if (hasQueue) {
+
+      if (options === undefined) {
+        console.log('req is undefined');
+        return;
+      }
       makeImages(options).catch((e) => {
         console.log('HAS QUEUE ERROR');
         console.log(e);

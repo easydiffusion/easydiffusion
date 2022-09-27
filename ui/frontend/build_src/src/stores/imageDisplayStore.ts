@@ -2,12 +2,21 @@
 import create from "zustand";
 import produce from "immer";
 
+import { ImageRequest } from "./imageCreateStore";
+
+export interface CompletedImagesType {
+  id?: string;
+  data: string | undefined;
+  info: ImageRequest;
+}
+
+
 interface ImageDisplayState {
   // imageOptions: Map<string, any>;
-  images: object[]
-  currentImage: object | null
+  images: CompletedImagesType[]
+  currentImage: CompletedImagesType | null
   updateDisplay: (ImageData: string, imageOptions: any) => void;
-  setCurrentImage: (image: object) => void;
+  setCurrentImage: (image: CompletedImagesType) => void;
   clearDisplay: () => void;
 
   // getCurrentImage: () => {};

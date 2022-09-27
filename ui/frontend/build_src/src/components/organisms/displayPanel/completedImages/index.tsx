@@ -1,7 +1,5 @@
 import React from "react";
 
-import { CompletedImagesType } from "../currentDisplay";
-
 
 import { useImageDisplay } from "../../../../stores/imageDisplayStore";
 
@@ -24,11 +22,6 @@ export default function CompletedImages(
   const setCurrentImage = useImageDisplay((state) => state.setCurrentImage);
   const clearDisplay = useImageDisplay((state) => state.clearDisplay);
 
-
-  // const _handleSetCurrentDisplay = (index: number) => {
-  //   const image = images![index];
-  //   setCurrentDisplay(image);
-  // };
 
   const removeImagesAll = () => {
     clearDisplay();
