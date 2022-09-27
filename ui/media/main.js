@@ -260,7 +260,7 @@ function makeImageElement(width, height) {
     img.height = parseInt(height)
 
     imgItem.appendChild(img)
-    imagesContainer.appendChild(imgItem)
+    imagesContainer.insertBefore(imgItem, imagesContainer.firstChild)
 
     return imgItem
 }
