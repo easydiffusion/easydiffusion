@@ -18,6 +18,7 @@ const IMAGE_REGEX = new RegExp('data:image/[A-Za-z]+;base64')
 let sessionId = new Date().getTime()
 
 let promptField = document.querySelector('#prompt')
+let negativePromptField = document.querySelector('#negative_prompt')
 let numOutputsTotalField = document.querySelector('#num_outputs_total')
 let numOutputsParallelField = document.querySelector('#num_outputs_parallel')
 let numInferenceStepsField = document.querySelector('#num_inference_steps')
@@ -628,6 +629,7 @@ async function makeImage() {
     let reqBody = {
         session_id: sessionId,
         prompt: prompt,
+        negative_prompt: negativePromptField.value.trim(),
         num_outputs: batchSize,
         num_inference_steps: numInferenceStepsField.value,
         guidance_scale: guidanceScaleField.value,
@@ -671,6 +673,10 @@ async function makeImage() {
     }
 
     let taskConfig = `Seed: ${seed}, Sampler: ${reqBody['sampler']}, Inference Steps: ${numInferenceStepsField.value}, Guidance Scale: ${guidanceScaleField.value}`
+
+    if (negativePromptField.value.trim() !== '') {
+        taskConfig += `, Negative Prompt: ${negativePromptField.value.trim()}`
+    }
 
     if (reqBody['init_image'] !== undefined) {
         taskConfig += `, Prompt Strength: ${promptStrengthField.value}`

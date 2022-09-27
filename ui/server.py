@@ -39,6 +39,7 @@ app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'media/')), na
 class ImageRequest(BaseModel):
     session_id: str = "session"
     prompt: str = ""
+    negative_prompt: str = ""
     init_image: str = None # base64
     mask: str = None # base64
     num_outputs: int = 1
@@ -100,6 +101,7 @@ def image(req : ImageRequest):
     r = Request()
     r.session_id = req.session_id
     r.prompt = req.prompt
+    r.negative_prompt = req.negative_prompt
     r.init_image = req.init_image
     r.mask = req.mask
     r.num_outputs = req.num_outputs
