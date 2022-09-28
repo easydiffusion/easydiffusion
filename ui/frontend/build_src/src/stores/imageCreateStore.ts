@@ -301,7 +301,6 @@ export const useImageCreate = create<ImageCreateState>(
       ) {
         request.show_only_filtered_image = false;
       }
-      debugger;
       return request;
     },
 
