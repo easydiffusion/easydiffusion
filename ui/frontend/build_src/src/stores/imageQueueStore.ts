@@ -2,7 +2,7 @@ import create from "zustand";
 import produce from "immer";
 import { useRandomSeed } from "../utils";
 
-import { ImageRequest } from "./imageCreateStore";
+import { ImageRequest } from "../api";
 
 interface QueueItem {
   id?: string;
