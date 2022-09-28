@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import React from "react";
-import { Popover, Switch } from '@headlessui/react';
+import { Popover } from '@headlessui/react';
 import { useTranslation } from "react-i18next";
 
 import { useImageCreate } from "../../../../stores/imageCreateStore";

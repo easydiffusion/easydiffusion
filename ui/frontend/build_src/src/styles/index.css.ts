@@ -60,3 +60,8 @@ globalStyle(`textarea`, {
   fontSize: vars.fonts.sizes.Body,
   fontWeight: "bold",
 });
+
+globalStyle(`a`, {
+  color: vars.colors.link,
+  textDecoration: "none",
+});
