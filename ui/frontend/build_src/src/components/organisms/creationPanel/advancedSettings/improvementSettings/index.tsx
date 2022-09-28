@@ -5,10 +5,8 @@ import { useCreateUI } from "../../creationPanelUIStore";
 
 import {
   SettingItem,
-} from "../../../../../styles/shared.css";
-import {
   MenuButton,
-} from "../advancedsettings.css";
+} from "../../../../../styles/shared.css";
 
 import { useTranslation } from "react-i18next";
 

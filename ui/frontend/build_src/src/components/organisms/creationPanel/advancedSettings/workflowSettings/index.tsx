@@ -4,12 +4,10 @@ import { useImageCreate } from "../../../../../stores/imageCreateStore";
 import { useCreateUI } from "../../creationPanelUIStore";
 
 import {
-  SettingItem
+  SettingItem,
+  MenuButton,
 } from "../../../../../styles/shared.css";
 
-import {
-  MenuButton,
-} from "../advancedsettings.css";
 
 import { useTranslation } from "react-i18next";
 

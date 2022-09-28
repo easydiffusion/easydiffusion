@@ -14,18 +14,18 @@ export const AdvancedSettingGrouping = style({
   marginTop: vars.spacing.medium,
 });
 
-export const MenuButton = style({
-  display: "block",
-  width: "100%",
-  textAlign: "left",
-  backgroundColor: "transparent",
-  color: vars.colors.text.normal,
-  border: "0 none",
-  cursor: "pointer",
-  padding: "0",
-  marginBottom: vars.spacing.medium,
-});
+// export const MenuButton = style({
+//   display: "block",
+//   width: "100%",
+//   textAlign: "left",
+//   backgroundColor: "transparent",
+//   color: vars.colors.text.normal,
+//   border: "0 none",
+//   cursor: "pointer",
+//   padding: "0",
+//   marginBottom: vars.spacing.medium,
+// });
 
-globalStyle(`${MenuButton}> h4`, {
-  color: "#e7ba71",
-});
+// globalStyle(`${MenuButton}> h4`, {
+//   color: "#e7ba71",
+// });

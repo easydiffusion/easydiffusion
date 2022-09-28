@@ -4,14 +4,12 @@ import { ImageRequest } from "../../../api";
 
 import {
   generatedImageMain,
-  image,
 } from "./generatedImage.css";
 
 interface GeneretaedImageProps {
   imageData: string | undefined;
   metadata: ImageRequest | undefined;
   className?: string;
-  // children: never[];
 }
 
 export default function GeneratedImage({
@@ -21,7 +19,7 @@ export default function GeneratedImage({
 }: GeneretaedImageProps) {
   return (
     <div className={[generatedImageMain, className].join(" ")}>
-      <img className={image} src={imageData} alt={metadata!.prompt} />
+      <img src={imageData} alt={metadata!.prompt} />
     </div>
   );
 }

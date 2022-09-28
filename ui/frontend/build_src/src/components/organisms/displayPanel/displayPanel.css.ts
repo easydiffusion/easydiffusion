@@ -1,17 +1,18 @@
 import { style } from "@vanilla-extract/css";
+import { vars } from "../../../styles/theme/index.css";
 
 export const displayPanel = style({
   height: "100%",
   display: "flex",
   flexDirection: "column",
+  paddingRight: vars.spacing.medium,
 });
 
 export const displayContainer = style({
   flexGrow: 1,
-  display: "flex",
-  flexDirection: "column",
-  justifyContent: "center",
-  alignItems: "center",
+  overflow: 'auto',
 });
 
-export const previousImages = style({});
+export const previousImages = style({
+  minHeight: '250px',
+});

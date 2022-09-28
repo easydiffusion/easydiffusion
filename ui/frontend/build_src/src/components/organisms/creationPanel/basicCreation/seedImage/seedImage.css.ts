@@ -2,6 +2,8 @@ import { style } from "@vanilla-extract/css";
 
 import { vars } from "../../../../../styles/theme/index.css";
 
+import { BrandedButton } from "../../../../../styles/shared.css";
+
 export const ImageInputDisplay = style({
   display: "flex",
 });
@@ -15,27 +17,7 @@ export const ImageInput = style({
   display: "none",
 });
 
-export const ImageInputButton = style({
-  backgroundColor: vars.colors.brand,
-  fontSize: vars.fonts.sizes.Subheadline,
-  fontWeight: "bold",
-  color: vars.colors.text.normal,
-  padding: vars.spacing.small,
-  borderRadius: vars.trim.smallBorderRadius,
-
-  ":hover": {
-    backgroundColor: vars.colors.brandHover,
-  },
-
-  ":active": {
-    backgroundColor: vars.colors.brandActive,
-  },
-
-  ":disabled": {
-    backgroundColor: vars.colors.brandDimmed,
-    color: vars.colors.text.dimmed,
-  },
-});
+export const ImageInputButton = style([BrandedButton]);
 
 // this is needed to fix an issue with the image input text
 // when that is a drag an drop we can remove this

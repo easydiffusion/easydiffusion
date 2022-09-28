@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 
 
-import { PanelBox } from "../../../../styles/shared.css";
+import {
+  PanelBox,
+  MenuButton,
+} from "../../../../styles/shared.css";
 
 import {
   ImagerModifierGroups,
   ImageModifierGrouping,
-  MenuButton,
   ModifierListStyle,
 } from "./imageModifiers.css";
 

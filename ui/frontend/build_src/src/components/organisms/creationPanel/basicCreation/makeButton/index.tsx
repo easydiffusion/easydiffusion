@@ -32,7 +32,7 @@ const idDelim = "_batch";
 export default function MakeButton() {
   const { t } = useTranslation();
 
-  const dingRef = useRef<HTMLAudioElement>(null);
+  const dingRef = useRef<HTMLAudioElement>();
 
   const parallelCount = useImageCreate((state) => state.parallelCount);
   const builtRequest = useImageCreate((state) => state.builtRequest);
@@ -57,8 +57,6 @@ export default function MakeButton() {
   const updateDisplay = useImageDisplay((state) => state.updateDisplay);
 
   const hackJson = (jsonStr: string, id: string) => {
-
-    // DONES't seem to be needed for the updated progress implementation
 
     try {
 
@@ -91,7 +89,6 @@ export default function MakeButton() {
     const decoder = new TextDecoder();
     let finalJSON = '';
 
-    //console.log('id', id);
     while (true) {
       const { done, value } = await reader.read();
       const jsonStr = decoder.decode(value);
@@ -151,10 +148,7 @@ export default function MakeButton() {
   }
 
   const startStream = async (id: string, req: ImageRequest) => {
-    // const streamReq = {
-    //   ...req,
-    //   stream_image_progress: true,
-    // };
+
 
     try {
       resetForFetching();

@@ -19,7 +19,7 @@ export default function StatusDisplay({ className }: { className?: string }) {
   const [statusMessage, setStatusMessage] = useState(startingMessage);
   const [statusClass, setStatusClass] = useState(StartingStatus);
 
-  const dingRef = useRef<HTMLAudioElement>(null);
+  const dingRef = useRef<HTMLAudioElement>();
 
   // but this will be moved to the status display when it is created
   const { status, data } = useQuery(["health"], healthPing, {

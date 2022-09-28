@@ -7,7 +7,6 @@ import { useRandomSeed } from "../utils";
 
 import { ImageRequest } from "../api";
 
-
 export interface ImageCreationUiOptions {
   isUseRandomSeed: boolean;
   isUseAutoSave: boolean;

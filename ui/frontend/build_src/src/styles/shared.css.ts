@@ -40,3 +40,43 @@ export const IconFont = style({
   // reliant on font-awesome cdn
   fontFamily: "Font Awesome 6 Free"
 });
+
+
+export const MenuButton = style({
+  display: "block",
+  width: "100%",
+  textAlign: "left",
+  backgroundColor: "transparent",
+  color: vars.colors.text.normal,
+  border: "0 none",
+  cursor: "pointer",
+  padding: "0",
+  marginBottom: vars.spacing.medium,
+});
+
+globalStyle(`${MenuButton}> h4`, {
+  color: "#e7ba71",
+});
+
+
+export const BrandedButton = style({
+  backgroundColor: vars.colors.brand,
+  fontSize: vars.fonts.sizes.Subheadline,
+  fontWeight: "bold",
+  color: vars.colors.text.normal,
+  padding: vars.spacing.small,
+  borderRadius: vars.trim.smallBorderRadius,
+
+  ":hover": {
+    backgroundColor: vars.colors.brandHover,
+  },
+
+  ":active": {
+    backgroundColor: vars.colors.brandActive,
+  },
+
+  ":disabled": {
+    backgroundColor: vars.colors.brandDimmed,
+    color: vars.colors.text.dimmed,
+  },
+});
