@@ -5,6 +5,8 @@ import { KEY_CONFIG, getConfig } from "../../../api";
 
 import StatusDisplay from "./statusDisplay";
 
+import SystemSettings from "./systemSettings";
+
 import { useTranslation } from "react-i18next";
 
 import {
@@ -45,6 +47,8 @@ export default function HeaderDisplay() {
         {t("title")} {version} {release}{" "}
       </h1>
       <StatusDisplay className="status-display"></StatusDisplay>
+
+      <SystemSettings></SystemSettings>
 
       {/* <LanguageDropdown></LanguageDropdown> */}
     </div>

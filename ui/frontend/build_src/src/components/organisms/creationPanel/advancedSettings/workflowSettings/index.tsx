@@ -4,8 +4,8 @@ import { useImageCreate } from "../../../../../stores/imageCreateStore";
 import { useCreateUI } from "../../creationPanelUIStore";
 
 import {
-  SettingItem, // @ts-expect-error
-} from "../../../../../styles/shared.css.ts";
+  SettingItem
+} from "../../../../../styles/shared.css";
 
 import {
   MenuButton, // @ts-expect-error
@@ -20,21 +20,21 @@ export default function WorkflowSettings() {
     state.getValueForRequestKey("num_outputs")
   );
   const parallelCount = useImageCreate((state) => state.parallelCount);
-  const isUseAutoSave = useImageCreate((state) => state.isUseAutoSave());
-  const diskPath = useImageCreate((state) =>
-    state.getValueForRequestKey("save_to_disk_path")
-  );
-  const isSoundEnabled = useImageCreate((state) => state.isSoundEnabled());
+  // const isUseAutoSave = useImageCreate((state) => state.isUseAutoSave());
+  // const diskPath = useImageCreate((state) =>
+  //   state.getValueForRequestKey("save_to_disk_path")
+  // );
+  // const isSoundEnabled = useImageCreate((state) => state.isSoundEnabled());
 
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
   const setParallelCount = useImageCreate((state) => state.setParallelCount);
   const shouldStreamImages = useImageCreate((state) => state.getValueForRequestKey("stream_image_progress"));
-  const toggleUseAutoSave = useImageCreate((state) => state.toggleUseAutoSave);
+  // const toggleUseAutoSave = useImageCreate((state) => state.toggleUseAutoSave);
 
 
-  const toggleSoundEnabled = useImageCreate(
-    (state) => state.toggleSoundEnabled
-  );
+  // const toggleSoundEnabled = useImageCreate(
+  //   (state) => state.toggleSoundEnabled
+  // );
 
   const workflowOpen = useCreateUI((state) => state.isOpenAdvWorkflowSettings);
   const toggleWorkflowOpen = useCreateUI(
@@ -83,40 +83,6 @@ export default function WorkflowSettings() {
                   setRequestOption("stream_image_progress", e.target.checked)
                 }
               />
-            </label>
-          </div>
-
-          <div className={SettingItem}>
-            <label>
-              <input
-                checked={isUseAutoSave}
-                onChange={(e) => toggleUseAutoSave()}
-                type="checkbox"
-              />
-              {t("storage.ast")}{" "}
-            </label>
-            <label>
-              <input
-                value={diskPath}
-                onChange={(e) =>
-                  setRequestOption("save_to_disk_path", e.target.value)
-                }
-                size={40}
-                disabled={!isUseAutoSave}
-              />
-              <span className="visually-hidden">
-                Path on disk where images will be saved
-              </span>
-            </label>
-          </div>
-          <div className={SettingItem}>
-            <label>
-              <input
-                checked={isSoundEnabled}
-                onChange={(e) => toggleSoundEnabled()}
-                type="checkbox"
-              />
-              {t("advanced-settings.sound")}
             </label>
           </div>
         </>

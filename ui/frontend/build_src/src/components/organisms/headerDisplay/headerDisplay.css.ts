@@ -1,6 +1,5 @@
 import { style, globalStyle } from "@vanilla-extract/css";
-//@ts-expect-error
-import { vars } from "../../../styles/theme/index.css.ts";
+import { vars } from "../../../styles/theme/index.css";
 
 export const HeaderDisplayMain = style({
   color: vars.colors.text.normal,

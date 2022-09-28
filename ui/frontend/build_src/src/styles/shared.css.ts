@@ -27,3 +27,9 @@ globalStyle(`${PanelBox} .panel-box-toggle-btn`, {
 export const SettingItem = style({
   marginBottom: vars.spacing.medium,
 });
+
+
+export const IconFont = style({
+  // reliant on font-awesome cdn
+  fontFamily: "Font Awesome 6 Free"
+});

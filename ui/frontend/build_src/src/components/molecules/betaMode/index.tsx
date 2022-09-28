@@ -52,7 +52,7 @@ export default function BetaMode() {
     if (toggleStatus === "success") {
       if (toggleData[0] === "OK") {
         // force a refetch of the config
-        queryClient.invalidateQueries([KEY_CONFIG]);
+        void queryClient.invalidateQueries([KEY_CONFIG])
       }
       setShouldSetConfig(false);
     }
@@ -66,7 +66,7 @@ export default function BetaMode() {
         onChange={(e) => {
           setShouldSetConfig(true);
         }}
-      />
+      />🔥
       {t("advanced-settings.beta")} {t("advanced-settings.beta-disc")}
     </label>
   );
