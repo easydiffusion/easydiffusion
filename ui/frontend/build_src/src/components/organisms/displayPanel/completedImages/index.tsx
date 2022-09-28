@@ -8,8 +8,7 @@ import {
   completedImagesList,
   imageContain,
   RemoveButton,
-  // @ts-expect-error
-} from "./completedImages.css.ts";
+} from "./completedImages.css";
 
 
 

@@ -1,6 +1,5 @@
 import { style, globalStyle } from "@vanilla-extract/css";
-// @ts-expect-error
-import { vars } from "./theme/index.css.ts";
+import { vars } from "./theme/index.css";
 
 export const PanelBox = style({
   background: vars.colors.backgroundAlt,

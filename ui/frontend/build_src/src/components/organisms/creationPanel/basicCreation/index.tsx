@@ -3,8 +3,8 @@ import { useImageCreate } from "../../../../stores/imageCreateStore";
 
 import {
   CreationBasicMain,
-  PromptDisplay, // @ts-expect-error
-} from "./basicCreation.css.ts";
+  PromptDisplay,
+} from "./basicCreation.css";
 
 import SeedImage from "./seedImage";
 import ActiveTags from "./activeTags";

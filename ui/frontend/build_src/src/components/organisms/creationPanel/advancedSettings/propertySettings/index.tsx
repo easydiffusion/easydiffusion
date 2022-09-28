@@ -3,12 +3,12 @@ import { useImageCreate, SAMPLER_OPTIONS } from "../../../../../stores/imageCrea
 import { useCreateUI } from "../../creationPanelUIStore";
 
 import {
-  SettingItem, // @ts-expect-error
-} from "../../../../../styles/shared.css.ts";
+  SettingItem,
+} from "../../../../../styles/shared.css";
 
 import {
-  MenuButton, // @ts-expect-error
-} from "../advancedsettings.css.ts";
+  MenuButton,
+} from "../advancedsettings.css";
 
 import { useTranslation } from "react-i18next";
 

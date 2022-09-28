@@ -8,8 +8,7 @@ import {
   displayPanel,
   displayContainer,
   previousImages,
-  // @ts-expect-error
-} from "./displayPanel.css.ts";
+} from "./displayPanel.css";
 
 
 const idDelim = "_batch";

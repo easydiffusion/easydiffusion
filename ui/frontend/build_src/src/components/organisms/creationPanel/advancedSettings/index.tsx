@@ -1,20 +1,16 @@
 import React, { useEffect } from "react";
 import { useCreateUI } from "../creationPanelUIStore";
 
-// @ts-expect-error
-import { PanelBox } from "../../../../styles/shared.css.ts";
+import { PanelBox } from "../../../../styles/shared.css";
 
 import {
   AdvancedSettingsList,
-  AdvancedSettingGrouping, // @ts-expect-error
-} from "./advancedsettings.css.ts";
+  AdvancedSettingGrouping,
+} from "./advancedsettings.css";
 
 import ImprovementSettings from "./improvementSettings";
 import PropertySettings from "./propertySettings";
 import WorkflowSettings from "./workflowSettings";
-// import GpuSettings from "./gpuSettings";
-
-// import BetaMode from "../../../molecules/betaMode";
 
 function SettingsList() {
   return (
@@ -28,13 +24,6 @@ function SettingsList() {
       <li className={AdvancedSettingGrouping}>
         <WorkflowSettings />
       </li>
-      {/* <li className={AdvancedSettingGrouping}>
-        <GpuSettings />
-      </li> */}
-
-      {/* <li className={AdvancedSettingGrouping}>
-        <BetaMode />
-      </li> */}
     </ul>
   );
 }

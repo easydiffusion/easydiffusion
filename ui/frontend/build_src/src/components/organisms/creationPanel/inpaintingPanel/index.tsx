@@ -6,8 +6,8 @@ import { useImageCreate } from "../../../../stores/imageCreateStore";
 import {
   InpaintingPanelMain,
   InpaintingControls,
-  InpaintingControlRow, // @ts-expect-error
-} from "./inpaintingPanel.css.ts";
+  InpaintingControlRow,
+} from "./inpaintingPanel.css";
 
 export default function InpaintingPanel() {
   // no idea if this is the right typing
@@ -47,6 +47,7 @@ export default function InpaintingPanel() {
       <DrawImage
         // ref={drawingRef}
         imageData={initImage}
+        // @ts-expect-error
         brushSize={brushSize}
         brushShape={brushShape}
         brushColor={brushColor}

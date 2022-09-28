@@ -1,6 +1,5 @@
 import { globalStyle } from "@vanilla-extract/css";
-// @ts-expect-error
-import { vars } from "./theme/index.css.ts";
+import { vars } from "./theme/index.css";
 
 // baisc body style
 globalStyle("body", {

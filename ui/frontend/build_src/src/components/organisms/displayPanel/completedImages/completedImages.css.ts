@@ -1,7 +1,6 @@
 import { style, globalStyle } from "@vanilla-extract/css";
 
-// @ts-expect-error
-import { vars } from "../../../../styles/theme/index.css.ts";
+import { vars } from "../../../../styles/theme/index.css";
 
 export const completedImagesMain = style({
   height: "100%",
@@ -56,5 +55,5 @@ export const RemoveButton = style({
   border: "0 none",
   padding: vars.spacing.small,
   cursor: "pointer",
-  borderRadius: vars.trim.borderRadiusSmall,
+  borderRadius: vars.trim.smallBorderRadius,
 });

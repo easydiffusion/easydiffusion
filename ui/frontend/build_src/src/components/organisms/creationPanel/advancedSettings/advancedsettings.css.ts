@@ -1,7 +1,6 @@
 import { style, globalStyle } from "@vanilla-extract/css";
 
-// @ts-expect-error
-import { vars } from "../../../../styles/theme/index.css.ts";
+import { vars } from "../../../../styles/theme/index.css";
 
 // import { PanelBox } from "../../../../styles/shared.css.ts";
 

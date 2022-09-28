@@ -15,8 +15,8 @@ import { v4 as uuidv4 } from "uuid";
 import { useRandomSeed } from "../../../../../utils";
 import { doMakeImage } from "../../../../../api";
 import {
-  MakeButtonStyle, // @ts-expect-error
-} from "./makeButton.css.ts";
+  MakeButtonStyle,
+} from "./makeButton.css";
 
 import { useTranslation } from "react-i18next";
 

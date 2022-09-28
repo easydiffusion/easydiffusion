@@ -4,8 +4,8 @@ import { ImageRequest } from "../../../stores/imageCreateStore";
 
 import {
   generatedImageMain,
-  image, // @ts-expect-error
-} from "./generatedImage.css.ts";
+  image,
+} from "./generatedImage.css";
 
 interface GeneretaedImageProps {
   imageData: string | undefined;

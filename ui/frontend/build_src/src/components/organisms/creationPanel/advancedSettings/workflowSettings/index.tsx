@@ -8,8 +8,8 @@ import {
 } from "../../../../../styles/shared.css";
 
 import {
-  MenuButton, // @ts-expect-error
-} from "../advancedsettings.css.ts";
+  MenuButton,
+} from "../advancedsettings.css";
 
 import { useTranslation } from "react-i18next";
 
