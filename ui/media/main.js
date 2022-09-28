@@ -687,11 +687,15 @@ async function makeImage() {
     taskEntry.className = 'imageTaskContainer'
     taskEntry.innerHTML = ` <div class="taskStatusLabel">Enqueued</div>
                             <button class="secondaryButton stopTask"><i class="fa-solid fa-trash-can"></i> Remove</button>
-                            <div class="preview-prompt"></div>
+                            <div class="preview-prompt collapsible active"></div>
                             <div class="taskConfig">${taskConfig}</div>
-                            <div class="outputMsg"></div>
-                            <div class="progressBar"></div>
-                            <div class="img-preview">`
+                            <div class="collapsible-content" style="display: block">
+                                <div class="outputMsg"></div>
+                                <div class="progressBar"></div>
+                                <div class="img-preview">
+                            </div>`
+
+    createCollapsibles(taskEntry)
 
     task['numOutputsTotal'] = numOutputsTotal
     task['taskStatusLabel'] = taskEntry.querySelector('.taskStatusLabel')
@@ -1052,6 +1056,22 @@ function millisecondsToStr(milliseconds) {
     return s;
 }
 
+// https://gomakethings.com/finding-the-next-and-previous-sibling-elements-that-match-a-selector-with-vanilla-js/
+function getNextSibling(elem, selector) {
+	// Get the next sibling element
+	var sibling = elem.nextElementSibling
+
+	// If there's no selector, return the first sibling
+	if (!selector) return sibling
+
+	// If the sibling matches our selector, use it
+	// If not, jump to the next sibling and continue the loop
+	while (sibling) {
+		if (sibling.matches(selector)) return sibling
+		sibling = sibling.nextElementSibling
+	}
+}
+
 function createCollapsibles(node) {
     if (!node) {
         node = document
@@ -1071,7 +1091,7 @@ function createCollapsibles(node) {
 
         c.addEventListener('click', function() {
             this.classList.toggle("active")
-            let content = this.nextElementSibling
+            let content = getNextSibling(this, '.collapsible-content')
             if (content.style.display === "block") {
                 content.style.display = "none"
                 handle.innerHTML = '&#x2795;' // plus
