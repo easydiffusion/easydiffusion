@@ -18,6 +18,7 @@ const IMAGE_REGEX = new RegExp('data:image/[A-Za-z]+;base64')
 let sessionId = new Date().getTime()
 
 let promptField = document.querySelector('#prompt')
+let negativePromptField = document.querySelector('#negative_prompt')
 let numOutputsTotalField = document.querySelector('#num_outputs_total')
 let numOutputsParallelField = document.querySelector('#num_outputs_parallel')
 let numInferenceStepsField = document.querySelector('#num_inference_steps')
@@ -57,6 +58,10 @@ let initImagePreviewContainer = document.querySelector('#init_image_preview_cont
 let initImageClearBtn = document.querySelector('.init_image_clear')
 let promptStrengthContainer = document.querySelector('#prompt_strength_container')
 
+let initialText = document.querySelector("#initial-text")
+let previewTools = document.querySelector("#preview-tools")
+let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
+
 // let maskSetting = document.querySelector('#editor-inputs-mask_setting')
 // let maskImagePreviewContainer = document.querySelector('#mask_preview_container')
 // let maskImageClearBtn = document.querySelector('#mask_clear')
@@ -66,18 +71,19 @@ let editorModifierEntries = document.querySelector('#editor-modifiers-entries')
 let editorModifierTagsList = document.querySelector('#editor-inputs-tags-list')
 let editorTagsContainer = document.querySelector('#editor-inputs-tags-container')
 
+let imagePreview = document.querySelector("#preview")
 let previewImageField = document.querySelector('#preview-image')
 previewImageField.onchange = () => changePreviewImages(previewImageField.value);
 
 let modifierCardSizeSlider = document.querySelector('#modifier-card-size-slider')
 modifierCardSizeSlider.onchange = () => resizeModifierCards(modifierCardSizeSlider.value);
 
-let previewPrompt = document.querySelector('#preview-prompt')
+// let previewPrompt = document.querySelector('#preview-prompt')
 
 let showConfigToggle = document.querySelector('#configToggleBtn')
 // let configBox = document.querySelector('#config')
-let outputMsg = document.querySelector('#outputMsg')
-let progressBar = document.querySelector("#progressBar")
+// let outputMsg = document.querySelector('#outputMsg')
+// let progressBar = document.querySelector("#progressBar")
 
 let soundToggle = document.querySelector('#sound_toggle')
 
@@ -108,8 +114,10 @@ let serverStatus = 'offline'
 let activeTags = []
 let modifiers = []
 let lastPromptUsed = ''
-let taskStopped = true
-let batchesDone = 0
+let bellPending = false
+
+let taskQueue = []
+let currentTask = null
 
 const modifierThumbnailPath = 'media/modifier-thumbnails';
 const activeCardClass = 'modifier-card-active';
@@ -211,7 +219,7 @@ function setStatus(statusType, msg, msgType) {
     }
 }
 
-function logMsg(msg, level) {
+function logMsg(msg, level, outputMsg) {
     if (level === 'error') {
         outputMsg.innerHTML = '<span style="color: red">Error: ' + msg + '</span>'
     } else if (level === 'warn') {
@@ -223,8 +231,8 @@ function logMsg(msg, level) {
     console.log(level, msg)
 }
 
-function logError(msg, res) {
-    logMsg(msg, 'error')
+function logError(msg, res, outputMsg) {
+    logMsg(msg, 'error', outputMsg)
 
     console.log('request error', res)
     setStatus('request', 'error', 'error')
@@ -251,7 +259,7 @@ async function healthCheck() {
     }
 }
 
-function makeImageElement(width, height) {
+function makeImageElement(width, height, outputContainer) {
     let imgItem = document.createElement('div')
     imgItem.className = 'imgItem'
 
@@ -260,16 +268,24 @@ function makeImageElement(width, height) {
     img.height = parseInt(height)
 
     imgItem.appendChild(img)
-    imagesContainer.appendChild(imgItem)
+    outputContainer.insertBefore(imgItem, outputContainer.firstChild)
 
     return imgItem
 }
 
 // makes a single image. don't call this directly, use makeImage() instead
-async function doMakeImage(reqBody, batchCount) {
-    if (taskStopped) {
+async function doMakeImage(task) {
+    if (task.stopped) {
         return
     }
+
+    const reqBody = task.reqBody
+    const batchCount = task.batchCount
+    const outputContainer = task.outputContainer
+
+    const outputMsg = task['outputMsg']
+    const previewPrompt = task['previewPrompt']
+    const progressBar = task['progressBar']
 
     let res = ''
     let seed = reqBody['seed']
@@ -279,7 +295,7 @@ async function doMakeImage(reqBody, batchCount) {
 
     function makeImageContainers(numImages) {
         for (let i = images.length; i < numImages; i++) {
-            images.push(makeImageElement(reqBody.width, reqBody.height))
+            images.push(makeImageElement(reqBody.width, reqBody.height, outputContainer))
         }
     }
 
@@ -316,7 +332,7 @@ async function doMakeImage(reqBody, batchCount) {
                         finalJSON += jsonStr
                     } else {
                         let batchSize = stepUpdate.total_steps
-                        let overallStepCount = stepUpdate.step + batchesDone * batchSize
+                        let overallStepCount = stepUpdate.step + task.batchesDone * batchSize
                         let totalSteps = batchCount * batchSize
                         let percent = 100 * (overallStepCount / totalSteps)
                         percent = (percent > 100 ? 100 : percent)
@@ -326,13 +342,13 @@ async function doMakeImage(reqBody, batchCount) {
                         stepsRemaining = (stepsRemaining < 0 ? 0 : stepsRemaining)
                         timeRemaining = (timeTaken === -1 ? '' : stepsRemaining * timeTaken) // ms
 
-                        outputMsg.innerHTML = `Batch ${batchesDone+1} of ${batchCount}`
-                        progressBar.innerHTML = `Generating image(s): ${percent}%`
+                        outputMsg.innerHTML = `Batch ${task.batchesDone+1} of ${batchCount}`
+                        outputMsg.innerHTML += `. Generating image(s): ${percent}%`
 
-                        if (timeTaken !== -1) {
-                            progressBar.innerHTML += `<br>Time remaining (approx): ${millisecondsToStr(timeRemaining)}`
-                        }
-                        progressBar.style.display = 'block'
+                        timeRemaining = (timeTaken !== -1 ? millisecondsToStr(timeRemaining) : '')
+
+                        outputMsg.innerHTML += `. Time remaining (approx): ${timeRemaining}`
+                        outputMsg.style.display = 'block'
 
                         if (stepUpdate.output !== undefined) {
                             makeImageContainers(numOutputs)
@@ -351,7 +367,7 @@ async function doMakeImage(reqBody, batchCount) {
 
                 prevTime = t
             } catch (e) {
-                logError('Stable Diffusion had an error. Please check the logs in the command-line window.', res)
+                logError('Stable Diffusion had an error. Please check the logs in the command-line window.', res, outputMsg)
                 res = undefined
                 throw e
             }
@@ -359,9 +375,9 @@ async function doMakeImage(reqBody, batchCount) {
 
         if (res.status != 200) {
             if (serverStatus === 'online') {
-                logError('Stable Diffusion had an error: ' + await res.text(), res)
+                logError('Stable Diffusion had an error: ' + await res.text(), res, outputMsg)
             } else {
-                logError("Stable Diffusion is still starting up, please wait. If this goes on beyond a few minutes, Stable Diffusion has probably crashed. Please check the error message in the command-line window.", res)
+                logError("Stable Diffusion is still starting up, please wait. If this goes on beyond a few minutes, Stable Diffusion has probably crashed. Please check the error message in the command-line window.", res, outputMsg)
             }
             res = undefined
             progressBar.style.display = 'none'
@@ -381,7 +397,6 @@ async function doMakeImage(reqBody, batchCount) {
             }
 
             res = JSON.parse(finalJSON)
-            progressBar.style.display = 'none'
 
             if (res.status !== 'succeeded') {
                 let msg = ''
@@ -399,13 +414,13 @@ async function doMakeImage(reqBody, batchCount) {
                 } else {
                     msg = res
                 }
-                logError(msg, res)
+                logError(msg, res, outputMsg)
                 res = undefined
             }
         }
     } catch (e) {
         console.log('request error', e)
-        logError('Stable Diffusion had an error. Please check the logs in the command-line window. <br/><br/>' + e + '<br/><pre>' + e.stack + '</pre>', res)
+        logError('Stable Diffusion had an error. Please check the logs in the command-line window. <br/><br/>' + e + '<br/><pre>' + e.stack + '</pre>', res, outputMsg)
         setStatus('request', 'error', 'error')
         progressBar.style.display = 'none'
         res = undefined
@@ -440,6 +455,7 @@ async function doMakeImage(reqBody, batchCount) {
 
         let imgItemInfo = document.createElement('span')
         imgItemInfo.className = 'imgItemInfo'
+        imgItemInfo.style.opacity = 0
 
         let imgSeedLabel = document.createElement('span')
         imgSeedLabel.className = 'imgSeedLabel'
@@ -486,55 +502,103 @@ async function doMakeImage(reqBody, batchCount) {
         })
 
         imgItem.addEventListener('mouseleave', function() {
-            imgItemInfo.style.opacity = 0.5
+            imgItemInfo.style.opacity = 0
         })
     }
 
     return true
 }
 
-function validateInput() {
-    let width = parseInt(widthField.value)
-    let height = parseInt(heightField.value)
+async function checkTasks() {
+    if (taskQueue.length === 0) {
+        setStatus('request', 'done', 'success')
+        setTimeout(checkTasks, 500)
+        stopImageBtn.style.display = 'none'
+        makeImageBtn.innerHTML = 'Make Image'
 
-    if (IMAGE_REGEX.test(initImagePreview.src)) {
-        if (initImagePreview.naturalWidth > MAX_INIT_IMAGE_DIMENSION || initImagePreview.naturalHeight > MAX_INIT_IMAGE_DIMENSION) {
-            return {'isValid': false, 'warning': `The dimensions of your initial image are very large, and can cause 'Out of Memory' errors! Please ensure that its dimensions are equal (or smaller) than the desired output image.
-                    <br/><br/>
-                    Your initial image size is ${initImagePreview.naturalWidth}x${initImagePreview.naturalHeight} pixels. Please try to keep it smaller than ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION}.`}
+        currentTask = null
+
+        if (bellPending) {
+            if (isSoundEnabled()) {
+                playSound()
+            }
+            bellPending = false
         }
-    }
 
-    return {'isValid': true}
-}
-
-async function makeImage() {
-    if (serverStatus !== 'online') {
-        logError('The server is still starting up..')
         return
-    }
-
-    let validation = validateInput()
-    if (validation['isValid']) {
-        outputMsg.innerHTML = 'Starting..'
-    } else {
-        if (validation['error']) {
-            logError(validation['error'])
-            return
-        } else if (validation['warning']) {
-            logMsg(validation['warning'], 'warn')
-        }
     }
 
     setStatus('request', 'fetching..')
 
-    makeImageBtn.innerHTML = 'Processing..'
-    makeImageBtn.disabled = true
-    makeImageBtn.style.display = 'none'
     stopImageBtn.style.display = 'block'
+    makeImageBtn.innerHTML = 'Enqueue Next Image'
+    bellPending = true
 
-    taskStopped = false
-    batchesDone = 0
+    previewTools.style.display = 'block'
+
+    let task = taskQueue.pop()
+    currentTask = task
+
+    let time = new Date().getTime()
+
+    let successCount = 0
+
+    task.isProcessing = true
+    task['stopTask'].innerHTML = '<i class="fa-solid fa-circle-stop"></i> Stop'
+    task['taskStatusLabel'].innerText = "Processing"
+    task['taskStatusLabel'].className += " activeTaskLabel"
+    console.log(task['taskStatusLabel'].className)
+
+    for (let i = 0; i < task.batchCount; i++) {
+        task.reqBody['seed'] = task.seed + (i * task.reqBody['num_outputs'])
+
+        let success = await doMakeImage(task)
+        task.batchesDone++
+
+        if (!task.isProcessing) {
+            break
+        }
+
+        if (success) {
+            successCount++
+        }
+    }
+
+    task.isProcessing = false
+    task['stopTask'].innerHTML = '<i class="fa-solid fa-trash-can"></i> Remove'
+    task['taskStatusLabel'].style.display = 'none'
+
+    time = new Date().getTime() - time
+    time /= 1000
+
+    if (successCount === task.batchCount) {
+        task.outputMsg.innerText = 'Processed ' + task.numOutputsTotal + ' images in ' + time + ' seconds'
+
+        // setStatus('request', 'done', 'success')
+    } else {
+        task.outputMsg.innerText = 'Task ended after ' + time + ' seconds'
+    }
+
+    if (randomSeedField.checked) {
+        seedField.value = task.seed
+    }
+
+    currentTask = null
+
+    setTimeout(checkTasks, 10)
+}
+setTimeout(checkTasks, 0)
+
+async function makeImage() {
+    if (serverStatus !== 'online') {
+        alert('The server is still starting up..')
+        return
+    }
+
+    let task = {
+        stopped: false,
+        batchesDone: 0
+    }
 
     let seed = (randomSeedField.checked ? Math.floor(Math.random() * 10000000) : parseInt(seedField.value))
     let numOutputsTotal = parseInt(numOutputsTotalField.value)
@@ -550,11 +614,10 @@ async function makeImage() {
         prompt += ", " + promptTags;
     }
 
-    previewPrompt.innerText = prompt
-
     let reqBody = {
         session_id: sessionId,
         prompt: prompt,
+        negative_prompt: negativePromptField.value.trim(),
         num_outputs: batchSize,
         num_inference_steps: numInferenceStepsField.value,
         guidance_scale: guidanceScaleField.value,
@@ -597,44 +660,76 @@ async function makeImage() {
         reqBody['use_upscale'] = upscaleModelField.value
     }
 
-    let time = new Date().getTime()
-    imagesContainer.innerHTML = ''
+    let taskConfig = `Seed: ${seed}, Sampler: ${reqBody['sampler']}, Inference Steps: ${numInferenceStepsField.value}, Guidance Scale: ${guidanceScaleField.value}`
 
-    let successCount = 0
+    if (negativePromptField.value.trim() !== '') {
+        taskConfig += `, Negative Prompt: ${negativePromptField.value.trim()}`
+    }
 
-    for (let i = 0; i < batchCount; i++) {
-        reqBody['seed'] = seed + (i * batchSize)
+    if (reqBody['init_image'] !== undefined) {
+        taskConfig += `, Prompt Strength: ${promptStrengthField.value}`
+    }
 
-        let success = await doMakeImage(reqBody, batchCount)
-        batchesDone++
+    if (useFaceCorrectionField.checked) {
+        taskConfig += `, Fix Faces: ${reqBody['use_face_correction']}`
+    }
 
-        if (success) {
-            outputMsg.innerText = 'Processed batch ' + (i+1) + '/' + batchCount
-            successCount++
+    if (useUpscalingField.checked) {
+        taskConfig += `, Upscale: ${reqBody['use_upscale']}`
+    }
+
+    task['reqBody'] = reqBody
+    task['seed'] = seed
+    task['batchCount'] = batchCount
+    task['isProcessing'] = false
+
+    let taskEntry = document.createElement('div')
+    taskEntry.className = 'imageTaskContainer'
+    taskEntry.innerHTML = ` <div class="taskStatusLabel">Enqueued</div>
+                            <button class="secondaryButton stopTask"><i class="fa-solid fa-trash-can"></i> Remove</button>
+                            <div class="preview-prompt collapsible active"></div>
+                            <div class="taskConfig">${taskConfig}</div>
+                            <div class="collapsible-content" style="display: block">
+                                <div class="outputMsg"></div>
+                                <div class="progressBar"></div>
+                                <div class="img-preview">
+                            </div>`
+
+    createCollapsibles(taskEntry)
+
+    task['numOutputsTotal'] = numOutputsTotal
+    task['taskStatusLabel'] = taskEntry.querySelector('.taskStatusLabel')
+    task['outputContainer'] = taskEntry.querySelector('.img-preview')
+    task['outputMsg'] = taskEntry.querySelector('.outputMsg')
+    task['previewPrompt'] = taskEntry.querySelector('.preview-prompt')
+    task['progressBar'] = taskEntry.querySelector('.progressBar')
+    task['stopTask'] = taskEntry.querySelector('.stopTask')
+
+    task['stopTask'].addEventListener('click', async function() {
+        if (task['isProcessing']) {
+            task.isProcessing = false
+            try {
+                let res = await fetch('/image/stop')
+            } catch (e) {
+                console.log(e)
+            }
+        } else {
+            let idx = taskQueue.indexOf(task)
+            if (idx >= 0) {
+                taskQueue.splice(idx, 1)
+            }
+
+            taskEntry.remove()
         }
-    }
+    })
 
-    makeImageBtn.innerText = 'Make Image'
-    makeImageBtn.disabled = false
-    makeImageBtn.style.display = 'block'
-    stopImageBtn.style.display = 'none'
+    imagePreview.insertBefore(taskEntry, previewTools.nextSibling)
 
-    if (isSoundEnabled()) {
-        playSound()
-    }
+    task['previewPrompt'].innerText = prompt
 
-    time = new Date().getTime() - time
-    time /= 1000
+    taskQueue.unshift(task)
 
-    if (successCount === batchCount) {
-        outputMsg.innerText = 'Processed ' + numOutputsTotal + ' images in ' + time + ' seconds'
-
-        setStatus('request', 'done', 'success')
-    }
-
-    if (randomSeedField.checked) {
-        seedField.value = seed
-    }
+    initialText.style.display = 'none'
 }
 
 // create a file name with embedded prompt and metadata
@@ -673,17 +768,37 @@ function createFileName() {
     return fileName
 }
 
-stopImageBtn.addEventListener('click', async function() {
+async function stopAllTasks() {
+    taskQueue.forEach(task => {
+        task.isProcessing = false
+    })
+    taskQueue = []
+
+    if (currentTask !== null) {
+        currentTask.isProcessing = false
+    }
+
     try {
         let res = await fetch('/image/stop')
     } catch (e) {
         console.log(e)
     }
+}
 
-    stopImageBtn.style.display = 'none'
-    makeImageBtn.style.display = 'block'
+clearAllPreviewsBtn.addEventListener('click', async function() {
+    await stopAllTasks()
 
-    taskStopped = true
+    let taskEntries = document.querySelectorAll('.imageTaskContainer')
+    taskEntries.forEach(task => {
+        task.remove()
+    })
+
+    previewTools.style.display = 'none'
+    initialText.style.display = 'block'
+})
+
+stopImageBtn.addEventListener('click', async function() {
+    await stopAllTasks()
 })
 
 soundToggle.addEventListener('click', handleBoolSettingChange(SOUND_ENABLED_KEY))
@@ -780,7 +895,7 @@ updatePromptStrength()
 
 useBetaChannelField.addEventListener('click', async function(e) {
     if (serverStatus !== 'online') {
-        logError('The server is still starting up..')
+        // logError('The server is still starting up..')
         alert('The server is still starting up..')
         e.preventDefault()
         return false
@@ -941,6 +1056,22 @@ function millisecondsToStr(milliseconds) {
     return s;
 }
 
+// https://gomakethings.com/finding-the-next-and-previous-sibling-elements-that-match-a-selector-with-vanilla-js/
+function getNextSibling(elem, selector) {
+	// Get the next sibling element
+	var sibling = elem.nextElementSibling
+
+	// If there's no selector, return the first sibling
+	if (!selector) return sibling
+
+	// If the sibling matches our selector, use it
+	// If not, jump to the next sibling and continue the loop
+	while (sibling) {
+		if (sibling.matches(selector)) return sibling
+		sibling = sibling.nextElementSibling
+	}
+}
+
 function createCollapsibles(node) {
     if (!node) {
         node = document
@@ -960,7 +1091,7 @@ function createCollapsibles(node) {
 
         c.addEventListener('click', function() {
             this.classList.toggle("active")
-            let content = this.nextElementSibling
+            let content = getNextSibling(this, '.collapsible-content')
             if (content.style.display === "block") {
                 content.style.display = "none"
                 handle.innerHTML = '&#x2795;' // plus

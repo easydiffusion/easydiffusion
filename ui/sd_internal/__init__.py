@@ -3,6 +3,7 @@ import json
 class Request:
     session_id: str = "session"
     prompt: str = ""
+    negative_prompt: str = ""
     init_image: str = None # base64
     mask: str = None # base64
     num_outputs: int = 1
@@ -30,6 +31,7 @@ class Request:
         return {
             "session_id": self.session_id,
             "prompt": self.prompt,
+            "negative_prompt": self.negative_prompt,
             "num_outputs": self.num_outputs,
             "num_inference_steps": self.num_inference_steps,
             "guidance_scale": self.guidance_scale,
@@ -46,6 +48,7 @@ class Request:
         return f'''
     session_id: {self.session_id}
     prompt: {self.prompt}
+    negative_prompt: {self.negative_prompt}
     seed: {self.seed}
     num_inference_steps: {self.num_inference_steps}
     sampler: {self.sampler}
