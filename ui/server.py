@@ -47,7 +47,9 @@ outpath = os.path.join(os.path.expanduser("~"), OUTPUT_DIRNAME)
 # don't show access log entries for URLs that start with the given prefix
 ACCESS_LOG_SUPPRESS_PATH_PREFIXES = ['/ping', '/modifier-thumbnails']
 
-app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'media/')), name="media")
+# app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'media/')), name="media")
+app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'frontend/assets/media/')), name="media")
+
 
 # defaults from https://huggingface.co/blog/stable_diffusion
 class ImageRequest(BaseModel):

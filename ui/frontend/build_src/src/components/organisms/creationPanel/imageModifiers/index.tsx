@@ -10,21 +10,22 @@ import {
   ModifierListStyle, //@ts-expect-error
 } from "./imageModifiers.css.ts";
 
-import { useImageCreate } from "../../../../stores/imageCreateStore";
+import { ModifierObject, useImageCreate } from "../../../../stores/imageCreateStore";
 import { useCreateUI } from "../creationPanelUIStore";
 
 import ModifierTag from "../../../atoms/modifierTag";
 
 interface ModifierListProps {
-  tags: string[];
+  category: string;
+  tags: ModifierObject[];
 }
 
-function ModifierList({ tags }: ModifierListProps) {
+function ModifierList({ tags, category }: ModifierListProps) {
   return (
     <ul className={ModifierListStyle}>
       {tags.map((tag) => (
-        <li key={tag}>
-          <ModifierTag name={tag} />
+        <li key={tag.modifier}>
+          <ModifierTag category={category} name={tag.modifier} previews={tag.previews} />
         </li>
       ))}
     </ul>
@@ -33,10 +34,11 @@ function ModifierList({ tags }: ModifierListProps) {
 
 interface ModifierGroupingProps {
   title: string;
-  tags: string[];
+  category: string;
+  tags: ModifierObject[];
 }
 
-function ModifierGrouping({ title, tags }: ModifierGroupingProps) {
+function ModifierGrouping({ title, category, tags }: ModifierGroupingProps) {
   // doing this localy for now, but could move to a store
   // and persist if we wanted to
   const [isExpanded, setIsExpanded] = useState(false);
@@ -45,12 +47,14 @@ function ModifierGrouping({ title, tags }: ModifierGroupingProps) {
     setIsExpanded(!isExpanded);
   };
 
+  // console.log("ModifierGrouping", tags);
+
   return (
     <div className={ImageModifierGrouping}>
       <button type="button" className={MenuButton} onClick={_toggleExpand}>
         <h4>{title}</h4>
       </button>
-      {isExpanded && <ModifierList tags={tags} />}
+      {isExpanded && <ModifierList category={category} tags={tags} />}
     </div>
   );
 }
@@ -81,11 +85,12 @@ export default function ImageModifers() {
       {imageModifierIsOpen && (
         <ul className={ImagerModifierGroups}>
           {allModifiers.map((item, index) => {
+
+            // console.log('mod item ', item);
+
             return (
-              // @ts-expect-error
-              <li key={item[0]}>
-                {/* @ts-expect-error */}
-                <ModifierGrouping title={item[0]} tags={item[1]} />
+              <li key={item.category}>
+                <ModifierGrouping title={item.category} category={item.category} tags={item.modifiers} />
               </li>
             );
           })}

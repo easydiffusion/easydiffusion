@@ -28,7 +28,10 @@ export default function WorkflowSettings() {
 
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
   const setParallelCount = useImageCreate((state) => state.setParallelCount);
+  const shouldStreamImages = useImageCreate((state) => state.getValueForRequestKey("stream_image_progress"));
   const toggleUseAutoSave = useImageCreate((state) => state.toggleUseAutoSave);
+
+
   const toggleSoundEnabled = useImageCreate(
     (state) => state.toggleSoundEnabled
   );
@@ -69,6 +72,20 @@ export default function WorkflowSettings() {
               />
             </label>
           </div>
+
+          <div className={SettingItem}>
+            <label>
+              {t("settings.stream-img")}
+              <input
+                type="checkbox"
+                checked={shouldStreamImages}
+                onChange={(e) =>
+                  setRequestOption("stream_image_progress", e.target.checked)
+                }
+              />
+            </label>
+          </div>
+
           <div className={SettingItem}>
             <label>
               <input

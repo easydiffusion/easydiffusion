@@ -1,23 +1,71 @@
-/* eslint-disable multiline-ternary */
 /* eslint-disable @typescript-eslint/naming-convention */
-import React from "react";
+
+import React, { useEffect, useState } from "react";
 import GeneratedImage from "../../../molecules/generatedImage";
 import { useImageCreate } from "../../../../stores/imageCreateStore";
+import { FetchingStates, useImageFetching } from "../../../../stores/imageFetchingStore";
+import { CompletedImagesType, useImageDisplay } from "../../../../stores/imageDisplayStore";
 
-import { CompletedImagesType } from "../index";
+import { API_URL } from "../../../../api";
+import { isGeneratorFunction } from "util/types";
 
-interface CurrentDisplayProps {
-  isLoading: boolean;
-  image: CompletedImagesType | null;
-}
 
-export default function CurrentDisplay({
-  isLoading,
-  image,
-}: CurrentDisplayProps) {
-  const { info, data } = image ?? {};
+const IdleDisplay = () => {
+  return (
+    <h4 className="no-image">Try Making a new image!</h4>
+  );
+};
 
-  const setRequestOption = useImageCreate((state) => state.setRequestOptions);
+const LoadingDisplay = () => {
+
+  const step = useImageFetching((state) => state.step);
+  const totalSteps = useImageFetching((state) => state.totalSteps);
+  const progressImages = useImageFetching((state) => state.progressImages);
+
+  const startTime = useImageFetching((state) => state.timeStarted);
+  const timeNow = useImageFetching((state) => state.timeNow);
+  const [timeRemaining, setTimeRemaining] = useState(0);
+
+  const [percent, setPercent] = useState(0);
+
+
+  useEffect(() => {
+    if (totalSteps > 0) {
+      setPercent(Math.round((step / totalSteps) * 100));
+    } else {
+      setPercent(0);
+    }
+  }, [step, totalSteps]);
+
+  useEffect(() => {
+    // find the remaining time
+    const timeTaken = +timeNow - +startTime;
+    const timePerStep = step == 0 ? 0 : timeTaken / step;
+    const totalTime = timePerStep * totalSteps;
+    const timeRemaining = (totalTime - timeTaken) / 1000;
+    // @ts-expect-error
+    setTimeRemaining(timeRemaining.toPrecision(3));
+
+  }, [step, totalSteps, startTime, timeNow, setTimeRemaining]);
+
+  return (
+    <>
+      <h4 className="loading">Loading...</h4>
+      <p>{percent} % Complete </p>
+      {timeRemaining != 0 && <p>Time Remaining: {timeRemaining} s</p>}
+      {progressImages.map((image, index) => {
+        if (index == progressImages.length - 1) {
+          return (
+            <img src={`${API_URL}${image}`} key={index} />
+          )
+        }
+      })
+      }
+    </>
+  );
+};
+
+const ImageDisplay = ({ info, data }: CompletedImagesType) => {
 
   const createFileName = () => {
     const {
@@ -29,7 +77,7 @@ export default function CurrentDisplay({
       use_upscale,
       width,
       height,
-    } = info!;
+    } = info;
 
     // Most important information is the prompt
     let underscoreName = prompt.replace(/[^a-zA-Z0-9]/g, "_");
@@ -51,10 +99,12 @@ export default function CurrentDisplay({
     return fileName;
   };
 
+  const setRequestOption = useImageCreate((state) => state.setRequestOptions);
+
   const _handleSave = () => {
     const link = document.createElement("a");
     link.download = createFileName();
-    link.href = data!;
+    link.href = data ?? "";
     link.click();
   };
 
@@ -63,22 +113,31 @@ export default function CurrentDisplay({
   };
 
   return (
+    <div className="imageDisplay">
+      <p> {info?.prompt}</p>
+      <GeneratedImage imageData={data} metadata={info}></GeneratedImage>
+      <div>
+        <button onClick={_handleSave}>Save</button>
+        <button onClick={_handleUseAsInput}>Use as Input</button>
+      </div>
+    </div>
+  );
+};
+
+export default function CurrentDisplay() {
+
+  const status = useImageFetching((state) => state.status);
+  const currentImage = useImageDisplay((state) => state.currentImage);
+
+  return (
     <div className="current-display">
-      {isLoading ? (
-        <h4 className="loading">Loading...</h4>
-      ) : (
-        (image !== null && (
-          // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-          <div>
-            <p> {info?.prompt}</p>
-            <GeneratedImage imageData={data} metadata={info}></GeneratedImage>
-            <div>
-              <button onClick={_handleSave}>Save</button>
-              <button onClick={_handleUseAsInput}>Use as Input</button>
-            </div>
-          </div>
-        )) || <h4 className="no-image">Try Making a new image!</h4>
-      )}
+
+      {status === FetchingStates.IDLE && <IdleDisplay />}
+
+      {(status === FetchingStates.FETCHING || status === FetchingStates.PROGRESSING) && <LoadingDisplay />}
+
+      {(status === FetchingStates.COMPLETE && currentImage != null) && <ImageDisplay info={currentImage?.info} data={currentImage?.data} />}
+
     </div>
   );
 }

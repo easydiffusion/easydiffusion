@@ -79,7 +79,9 @@ export const doMakeImage = async (reqBody: ImageRequest) => {
     },
     body: JSON.stringify(reqBody),
   });
+  console.log('doMakeImage= GOT RESPONSE', res);
 
-  const data = await res.json();
-  return data;
+  // const data = await res.json();
+  // return data;
+  return res;
 };

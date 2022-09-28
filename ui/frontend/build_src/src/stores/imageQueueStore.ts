@@ -4,12 +4,18 @@ import { useRandomSeed } from "../utils";
 
 import { ImageRequest } from "./imageCreateStore";
 
+interface QueueItem {
+  id?: string;
+  options?: ImageRequest;
+  status?: "pending" | "complete" | "error";
+}
+
 interface ImageQueueState {
-  images: ImageRequest[];
+  images: QueueItem[];
   completedImageIds: string[];
   addNewImage: (id: string, imgRec: ImageRequest) => void;
   hasQueuedImages: () => boolean;
-  firstInQueue: () => ImageRequest | {};
+  firstInQueue: () => QueueItem;
   removeFirstInQueue: () => void;
   clearCachedIds: () => void;
 }
@@ -18,14 +24,11 @@ export const useImageQueue = create<ImageQueueState>((set, get) => ({
   images: [],
   completedImageIds: [],
   // use produce to make sure we don't mutate state
-  addNewImage: (id: string, imgRec: ImageRequest, isRandom = false) => {
+  addNewImage: (id: string, imgRec: ImageRequest) => {
     set(
       produce((state) => {
-        let { seed } = imgRec;
-        if (isRandom) {
-          seed = useRandomSeed();
-        }
-        state.images.push({ id, options: { ...imgRec, seed } });
+        const item: QueueItem = { id, options: imgRec, status: "pending" };
+        state.images.push(item);
       })
     );
   },
@@ -35,16 +38,23 @@ export const useImageQueue = create<ImageQueueState>((set, get) => ({
   },
 
   firstInQueue: () => {
-    let first: ImageRequest | {} = get().images[0];
-    first = void 0 !== first ? first : {};
-    return first;
+    const { images } = get();
+    if (images.length > 0) {
+      return images[0];
+    }
+    // // cast an empty object to QueueItem
+    const empty: QueueItem = {};
+    return empty;
+
   },
 
   removeFirstInQueue: () => {
     set(
       produce((state) => {
         const image = state.images.shift();
-        state.completedImageIds.push(image.id);
+        if (void 0 !== image) {
+          state.completedImageIds.push(image.id);
+        }
       })
     );
   },

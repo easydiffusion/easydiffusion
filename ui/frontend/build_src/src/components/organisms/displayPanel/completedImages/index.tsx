@@ -1,6 +1,7 @@
 import React from "react";
 
-import { CompletedImagesType } from "../index";
+
+import { useImageDisplay } from "../../../../stores/imageDisplayStore";
 
 import {
   completedImagesMain,
@@ -10,20 +11,20 @@ import {
   // @ts-expect-error
 } from "./completedImages.css.ts";
 
-interface CurrentDisplayProps {
-  images: CompletedImagesType[] | null;
-  setCurrentDisplay: (image: CompletedImagesType) => void;
-  removeImages: () => void;
-}
 
-export default function CompletedImages({
-  images,
-  setCurrentDisplay,
-  removeImages,
-}: CurrentDisplayProps) {
-  const _handleSetCurrentDisplay = (index: number) => {
-    const image = images![index];
-    setCurrentDisplay(image);
+
+export default function CompletedImages(
+
+) {
+
+
+  const images = useImageDisplay((state) => state.images);
+  const setCurrentImage = useImageDisplay((state) => state.setCurrentImage);
+  const clearDisplay = useImageDisplay((state) => state.clearDisplay);
+
+
+  const removeImagesAll = () => {
+    clearDisplay();
   };
 
   return (
@@ -33,7 +34,7 @@ export default function CompletedImages({
         <button
           className={RemoveButton}
           onClick={() => {
-            removeImages();
+            removeImagesAll();
           }}
         >
           REMOVE
@@ -51,7 +52,7 @@ export default function CompletedImages({
               <button
                 className={imageContain}
                 onClick={() => {
-                  _handleSetCurrentDisplay(index);
+                  setCurrentImage(image);
                 }}
               >
                 <img src={image.data} alt={image.info.prompt} />
