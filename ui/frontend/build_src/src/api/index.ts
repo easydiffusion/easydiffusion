@@ -136,3 +136,19 @@ export const doMakeImage = async (reqBody: ImageRequest) => {
   });
   return res;
 };
+
+export const doStopImage = async () => {
+
+  console.log("stopping image");
+  const response = await fetch(`${API_URL}/image/stop`);
+  console.log("stopping image response", response);
+  const data = await response.json();
+  console.log("stopping image data", data);
+  return data;
+
+  //   try {
+  //     let res = await fetch('/image/stop')
+  // } catch (e) {
+  //     console.log(e)
+  // }
+};

@@ -317,7 +317,6 @@ export const useImageCreate = create<ImageCreateState>(
       set(
         produce((state: ImageCreateState) => {
           state.uiOptions.isSoundEnabled = !state.uiOptions.isSoundEnabled;
-          //localStorage.setItem('ui:isSoundEnabled', state.uiOptions.isSoundEnabled);
         })
       );
     },

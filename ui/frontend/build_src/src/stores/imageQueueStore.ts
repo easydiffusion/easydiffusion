@@ -17,6 +17,7 @@ interface ImageQueueState {
   hasQueuedImages: () => boolean;
   firstInQueue: () => QueueItem;
   removeFirstInQueue: () => void;
+  clearQueue: () => void;
   clearCachedIds: () => void;
 }
 
@@ -55,6 +56,14 @@ export const useImageQueue = create<ImageQueueState>((set, get) => ({
         if (void 0 !== image) {
           state.completedImageIds.push(image.id);
         }
+      })
+    );
+  },
+
+  clearQueue: () => {
+    set(
+      produce((state) => {
+        state.images = [];
       })
     );
   },

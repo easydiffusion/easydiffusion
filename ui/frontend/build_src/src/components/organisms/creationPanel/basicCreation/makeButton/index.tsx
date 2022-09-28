@@ -8,6 +8,7 @@ import {
   useImageFetching
 } from "../../../../../stores/imageFetchingStore";
 
+
 import { useImageDisplay } from "../../../../../stores/imageDisplayStore";
 
 import { v4 as uuidv4 } from "uuid";
@@ -38,6 +39,8 @@ export default function MakeButton() {
   const builtRequest = useImageCreate((state) => state.builtRequest);
   const isRandomSeed = useImageCreate((state) => state.isRandomSeed());
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
+
+  const isSoundEnabled = useImageCreate((state) => state.isSoundEnabled());
 
   const addNewImage = useImageQueue((state) => state.addNewImage);
   const hasQueue = useImageQueue((state) => state.hasQueuedImages());
@@ -96,7 +99,9 @@ export default function MakeButton() {
         removeFirstInQueue();
         setStatus(FetchingStates.COMPLETE);
         hackJson(finalJSON, id);
-        void dingRef.current?.play();
+        if (isSoundEnabled) {
+          void dingRef.current?.play();
+        }
         break;
       }
 

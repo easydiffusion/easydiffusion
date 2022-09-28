@@ -6,9 +6,12 @@ import {
   PromptDisplay,
 } from "./basicCreation.css";
 
+import MakeButton from "./makeButton";
+import StopButton from "./stopButton";
+import ClearQueue from "./clearQueue";
 import SeedImage from "./seedImage";
 import ActiveTags from "./activeTags";
-import MakeButton from "./makeButton";
+
 
 import { useTranslation } from "react-i18next";
 
@@ -31,9 +34,12 @@ export default function BasicCreation() {
         <textarea value={promptText} onChange={handlePromptChange}></textarea>
       </div>
       <MakeButton></MakeButton>
+      <div>
+        <StopButton></StopButton>
+        <ClearQueue></ClearQueue>
+      </div>
 
       <SeedImage></SeedImage>
-
       <ActiveTags></ActiveTags>
     </div>
   );
