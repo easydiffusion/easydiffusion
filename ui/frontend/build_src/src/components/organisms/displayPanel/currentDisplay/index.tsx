@@ -11,7 +11,6 @@ import {
 
 import ImageDisplay from "./imageDisplay";
 
-
 const IdleDisplay = () => {
   return (
     <h4 className="no-image">Try Making a new image!</h4>

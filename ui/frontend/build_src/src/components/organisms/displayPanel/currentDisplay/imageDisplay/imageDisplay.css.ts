@@ -29,7 +29,7 @@ export const imageDisplayContent = style({
 });
 
 globalStyle(`${imageDisplayContent} > div`, {
-  marginBottom: vars.spacing.large,
+  marginBottom: vars.spacing.medium,
 });
 
 globalStyle(`${imageDisplayContent} p`, {

@@ -16,8 +16,6 @@ interface ImageDisplayState {
   updateDisplay: (id: string, ImageData: string, imageOptions: any) => void;
   setCurrentImage: (image: CompletedImagesType) => void;
   clearDisplay: () => void;
-
-  // getCurrentImage: () => {};
 }
 
 export const useImageDisplay = create<ImageDisplayState>((set, get) => ({
@@ -29,9 +27,7 @@ export const useImageDisplay = create<ImageDisplayState>((set, get) => ({
   updateDisplay: (id: string, ImageData: string, imageOptions) => {
     set(
       produce((state) => {
-        // options: imageOptions
         state.currentImage = { id, display: ImageData, info: imageOptions };
-        // // imageOptions
         state.images.unshift({ id, data: ImageData, info: imageOptions });
         state.currentImage = state.images[0];
       })

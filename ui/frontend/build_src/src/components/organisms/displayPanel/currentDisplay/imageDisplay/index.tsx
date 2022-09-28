@@ -79,7 +79,6 @@ export default function ImageDisplay({ info, data }: CompletedImagesType) {
               </div>
             </div>
             <GeneratedImage imageData={data} metadata={info}></GeneratedImage>
-
           </div>
 
         </div>
