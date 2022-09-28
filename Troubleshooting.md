@@ -9,6 +9,11 @@ Additionally, a common reason for this error is that you're using an initial ima
 
 Also try generating smaller sized images.
 
+## basicsr module not found
+For Windows: Please download and extract basicsr from [here](https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.16/basicsr-win64.zip), and place the `basicsr` folder inside the `stable-diffusion-ui\stable-diffusion\env\lib\site-packages` folder. Then run the `Start Stable Diffusion UI.cmd` file again.
+
+For Linux: Please contact on the [discord server](https://discord.com/invite/u9yhsFmEkB).
+
 ## No ldm found, or antlr4 or any other missing module, or ClobberError: This transaction has incompatible packages due to a shared path
 On Windows, please ensure that you had placed the `stable-diffusion-ui` folder after unzipping to the root of C: or D: (or any drive). For e.g. `C:\stable-diffusion-ui`. **Note:** This has to be done **before** you start the installation process. If you have already installed (and are facing this error), please delete the installed folder, and start fresh by unzipping and placing the folder at the top of your drive.
 
