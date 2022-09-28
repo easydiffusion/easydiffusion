@@ -114,6 +114,7 @@ let serverStatus = 'offline'
 let activeTags = []
 let modifiers = []
 let lastPromptUsed = ''
+let bellPending = false
 
 let taskQueue = []
 let currentTask = null
@@ -508,21 +509,6 @@ async function doMakeImage(task) {
     return true
 }
 
-// function validateInput() {
-//     let width = parseInt(widthField.value)
-//     let height = parseInt(heightField.value)
-
-//     if (IMAGE_REGEX.test(initImagePreview.src)) {
-//         if (initImagePreview.naturalWidth > MAX_INIT_IMAGE_DIMENSION || initImagePreview.naturalHeight > MAX_INIT_IMAGE_DIMENSION) {
-//             return {'isValid': false, 'warning': `The dimensions of your initial image are very large, and can cause 'Out of Memory' errors! Please ensure that its dimensions are equal (or smaller) than the desired output image.
-//                     <br/><br/>
-//                     Your initial image size is ${initImagePreview.naturalWidth}x${initImagePreview.naturalHeight} pixels. Please try to keep it smaller than ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION}.`}
-//         }
-//     }
-
-//     return {'isValid': true}
-// }
-
 async function checkTasks() {
     if (taskQueue.length === 0) {
         setStatus('request', 'done', 'success')
@@ -531,6 +517,14 @@ async function checkTasks() {
         makeImageBtn.innerHTML = 'Make Image'
 
         currentTask = null
+
+        if (bellPending) {
+            if (isSoundEnabled()) {
+                playSound()
+            }
+            bellPending = false
+        }
+
         return
     }
 
@@ -538,6 +532,7 @@ async function checkTasks() {
 
     stopImageBtn.style.display = 'block'
     makeImageBtn.innerHTML = 'Enqueue Next Image'
+    bellPending = true
 
     previewTools.style.display = 'block'
 
@@ -599,25 +594,6 @@ async function makeImage() {
         alert('The server is still starting up..')
         return
     }
-
-    // let validation = validateInput()
-    // if (validation['isValid']) {
-    //     // outputMsg.innerHTML = 'Starting..'
-    // } else {
-    //     if (validation['error']) {
-    //         logError(validation['error'])
-    //         return
-    //     } else if (validation['warning']) {
-    //         logMsg(validation['warning'], 'warn')
-    //     }
-    // }
-
-    // setStatus('request', 'fetching..')
-
-    // makeImageBtn.innerHTML = 'Processing..'
-    // makeImageBtn.disabled = true
-    // makeImageBtn.style.display = 'none'
-    // stopImageBtn.style.display = 'block'
 
     let task = {
         stopped: false,
@@ -750,46 +726,6 @@ async function makeImage() {
     taskQueue.unshift(task)
 
     initialText.style.display = 'none'
-
-    // let time = new Date().getTime()
-    // imagesContainer.innerHTML = ''
-
-    // let successCount = 0
-
-    // for (let i = 0; i < batchCount; i++) {
-    //     reqBody['seed'] = seed + (i * batchSize)
-
-    //     let success = await doMakeImage(reqBody, batchCount)
-    //     batchesDone++
-
-    //     if (success) {
-    //         successCount++
-    //     }
-    // }
-
-    // progressBar.style.display = 'none'
-
-    // makeImageBtn.innerText = 'Make Image'
-    // makeImageBtn.disabled = false
-    // makeImageBtn.style.display = 'block'
-    // stopImageBtn.style.display = 'none'
-
-    // if (isSoundEnabled()) {
-    //     playSound()
-    // }
-
-    // time = new Date().getTime() - time
-    // time /= 1000
-
-    // if (successCount === batchCount) {
-    //     outputMsg.innerText = 'Processed ' + numOutputsTotal + ' images in ' + time + ' seconds'
-
-    //     setStatus('request', 'done', 'success')
-    // }
-
-    // if (randomSeedField.checked) {
-    //     seedField.value = seed
-    // }
 }
 
 // create a file name with embedded prompt and metadata
@@ -859,11 +795,6 @@ clearAllPreviewsBtn.addEventListener('click', async function() {
 
 stopImageBtn.addEventListener('click', async function() {
     await stopAllTasks()
-
-    // stopImageBtn.style.display = 'none'
-    // makeImageBtn.style.display = 'block'
-
-    // taskStopped = true
 })
 
 soundToggle.addEventListener('click', handleBoolSettingChange(SOUND_ENABLED_KEY))
