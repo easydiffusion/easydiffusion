@@ -6,8 +6,6 @@ import ModifierTag from "../../../../atoms/modifierTag";
 export default function ActiveTags() {
   const selectedtags = useImageCreate((state) => state.selectedTags());
 
-  console.log("ActiveTags", selectedtags);
-
   return (
     <div className="selected-tags">
       <p>Active Tags</p>

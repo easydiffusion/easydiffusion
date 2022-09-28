@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 
 import { useImageCreate, ImageRequest } from "../../../../../stores/imageCreateStore";
 import { useImageQueue } from "../../../../../stores/imageQueueStore";
@@ -24,6 +24,8 @@ import AudioDing from "../../../../molecules/audioDing";
 
 export default function MakeButton() {
   const { t } = useTranslation();
+
+  const dingRef = useRef<HTMLAudioElement>(null);
 
   const parallelCount = useImageCreate((state) => state.parallelCount);
   const builtRequest = useImageCreate((state) => state.builtRequest);
@@ -100,18 +102,18 @@ export default function MakeButton() {
   }
 
   const parseRequest = async (id: string, reader: ReadableStreamDefaultReader<Uint8Array>) => {
-    console.log('parseRequest');
     const decoder = new TextDecoder();
     let finalJSON = '';
 
-    console.log('id', id);
+    //console.log('id', id);
     while (true) {
       const { done, value } = await reader.read();
       const jsonStr = decoder.decode(value);
       if (done) {
         removeFirstInQueue();
         setStatus(FetchingStates.COMPLETE);
-        hackJson(finalJSON)
+        hackJson(finalJSON);
+        void dingRef.current?.play();
         break;
       }
 
@@ -262,14 +264,17 @@ export default function MakeButton() {
   }, [hasQueue, status, id, options, startStream]);
 
   return (
-    <button
-      className={MakeButtonStyle}
-      onClick={() => {
-        void makeImageQueue();
-      }}
-      disabled={hasQueue}
-    >
-      {t("home.make-img-btn")}
-    </button>
+    <>
+      <button
+        className={MakeButtonStyle}
+        onClick={() => {
+          void makeImageQueue();
+        }}
+        disabled={hasQueue}
+      >
+        {t("home.make-img-btn")}
+      </button>
+      <AudioDing ref={dingRef}></AudioDing>
+    </>
   );
 }

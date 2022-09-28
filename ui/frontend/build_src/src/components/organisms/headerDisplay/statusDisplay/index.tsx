@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { healthPing, HEALTH_PING_INTERVAL } from "../../../../api";
+
+import AudioDing from "../../../molecules/audioDing";
 
 import {
   StartingStatus,
@@ -16,6 +18,8 @@ const errorMessage = "Stable Diffusion is not running!";
 export default function StatusDisplay({ className }: { className?: string }) {
   const [statusMessage, setStatusMessage] = useState(startingMessage);
   const [statusClass, setStatusClass] = useState(StartingStatus);
+
+  const dingRef = useRef<HTMLAudioElement>(null);
 
   // but this will be moved to the status display when it is created
   const { status, data } = useQuery(["health"], healthPing, {
@@ -33,16 +37,20 @@ export default function StatusDisplay({ className }: { className?: string }) {
       if (data[0] === "OK") {
         setStatusMessage(successMessage);
         setStatusClass(SuccessStatus);
+        // catch an auto play error
+        dingRef.current?.play().catch((e) => {
+          console.log('DING!')
+        });
       } else {
         setStatusMessage(errorMessage);
         setStatusClass(ErrorStatus);
       }
     }
-  }, [status, data]);
+  }, [status, data, dingRef]);
 
   return (
     <>
-      {/* alittle hacky but joins the class names, will probably need a better css in js solution or tailwinds */}
+      <AudioDing ref={dingRef}></AudioDing>
       <p className={[statusClass, className].join(" ")}>{statusMessage}</p>
     </>
   );
