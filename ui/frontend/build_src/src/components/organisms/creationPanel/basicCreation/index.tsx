@@ -6,9 +6,10 @@ import {
   PromptDisplay,
 } from "./basicCreation.css";
 
-import MakeButton from "./makeButton";
-import StopButton from "./stopButton";
-import ClearQueue from "./clearQueue";
+// import MakeButton from "./makeButton";
+// import StopButton from "./stopButton";
+// import ClearQueue from "./clearQueue";
+import CreationActions from "./creationActions";
 import SeedImage from "./seedImage";
 import ActiveTags from "./activeTags";
 
@@ -33,11 +34,14 @@ export default function BasicCreation() {
         <p>{t("home.editor-title")}</p>
         <textarea value={promptText} onChange={handlePromptChange}></textarea>
       </div>
-      <MakeButton></MakeButton>
+
+      <CreationActions></CreationActions>
+
+      {/* <MakeButton></MakeButton>
       <div>
         <StopButton></StopButton>
         <ClearQueue></ClearQueue>
-      </div>
+      </div> */}
 
       <SeedImage></SeedImage>
       <ActiveTags></ActiveTags>

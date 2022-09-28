@@ -65,6 +65,7 @@ export const BrandedButton = style({
   fontWeight: "bold",
   color: vars.colors.text.normal,
   padding: vars.spacing.small,
+  border: "0",
   borderRadius: vars.trim.smallBorderRadius,
 
   ":hover": {

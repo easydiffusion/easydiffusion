@@ -1,6 +1,7 @@
 import React from "react";
-import { doStopImage } from "../../../../../api";
+import { doStopImage } from "../../../api";
 
+import { BrandedButton } from "../../../styles/shared.css";
 
 export default function StopButton() {
 
@@ -12,5 +13,5 @@ export default function StopButton() {
     }
   };
 
-  return <button onClick={() => void stopMake()}>Stop</button>;
+  return <button className={BrandedButton} onClick={() => void stopMake()}>Stop</button>;
 }

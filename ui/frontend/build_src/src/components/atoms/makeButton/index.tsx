@@ -1,32 +1,32 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import React, { useEffect, useRef } from "react";
 
-import { useImageCreate } from "../../../../../stores/imageCreateStore";
-import { useImageQueue } from "../../../../../stores/imageQueueStore";
+import { useImageCreate } from "../../../stores/imageCreateStore";
+import { useImageQueue } from "../../../stores/imageQueueStore";
 import {
   FetchingStates,
   useImageFetching
-} from "../../../../../stores/imageFetchingStore";
+} from "../../../stores/imageFetchingStore";
 
 
-import { useImageDisplay } from "../../../../../stores/imageDisplayStore";
+import { useImageDisplay } from "../../../stores/imageDisplayStore";
 
 import { v4 as uuidv4 } from "uuid";
 
-import { useRandomSeed } from "../../../../../utils";
+import { useRandomSeed } from "../../../utils";
 import {
   ImageRequest,
   ImageReturnType,
   ImageOutput,
   doMakeImage,
-} from "../../../../../api";
+} from "../../../api";
 import {
   MakeButtonStyle,
 } from "./makeButton.css";
 
 import { useTranslation } from "react-i18next";
 
-import AudioDing from "../../../../molecules/audioDing";
+import AudioDing from "../../molecules/audioDing";
 
 const idDelim = "_batch";
 
@@ -62,7 +62,6 @@ export default function MakeButton() {
   const hackJson = (jsonStr: string, id: string) => {
 
     try {
-
       const parsed = JSON.parse(jsonStr);
       const { status, request, output: outputs } = parsed as ImageReturnType;
       if (status === 'succeeded') {
@@ -96,7 +95,6 @@ export default function MakeButton() {
       const { done, value } = await reader.read();
       const jsonStr = decoder.decode(value);
       if (done) {
-        removeFirstInQueue();
         setStatus(FetchingStates.COMPLETE);
         hackJson(finalJSON, id);
         if (isSoundEnabled) {
@@ -171,7 +169,7 @@ export default function MakeButton() {
 
   }
 
-  const queueImageRequest = async (req: ImageRequest) => {
+  const queueImageRequest = (req: ImageRequest) => {
     // the actual number of request we will make
     const requests = [];
     // the number of images we will make
@@ -221,12 +219,12 @@ export default function MakeButton() {
     }
     // the request that we have built
     const req = builtRequest();
-    await queueImageRequest(req);
+    queueImageRequest(req);
   };
 
   useEffect(() => {
     const makeImages = async (options: ImageRequest) => {
-      // potentially update the seed
+      removeFirstInQueue();
       await startStream(id ?? "", options);
     }
 
@@ -255,7 +253,6 @@ export default function MakeButton() {
         onClick={() => {
           void makeImageQueue();
         }}
-        disabled={hasQueue}
       >
         {t("home.make-img-btn")}
       </button>
