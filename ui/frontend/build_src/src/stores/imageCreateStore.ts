@@ -71,9 +71,11 @@ export interface ImageRequest {
   show_only_filtered_image: boolean;
   init_image: undefined | string;
   prompt_strength: undefined | number;
+  mask: undefined | string;
   sampler: typeof SAMPLER_OPTIONS[number];
   stream_progress_updates: true;
   stream_image_progress: boolean;
+
 }
 
 export interface ModifierPreview {
@@ -155,7 +157,8 @@ export const useImageCreate = create<ImageCreateState>(
       init_image: undefined,
       sampler: "plms",
       stream_progress_updates: true,
-      stream_image_progress: false
+      stream_image_progress: false,
+      mask: undefined,
     },
 
     // selected tags
@@ -216,15 +219,6 @@ export const useImageCreate = create<ImageCreateState>(
           } else {
             state.tagMap[category] = [tag];
           }
-
-
-          // const index = state.tags.indexOf(tag);
-          // if (index > -1) {
-          //   state.tags.splice(index, 1);
-          // } else {
-          //   state.tags.push(tag);
-          // }
-
 
         })
       );
@@ -307,7 +301,6 @@ export const useImageCreate = create<ImageCreateState>(
       ) {
         request.show_only_filtered_image = false;
       }
-
       return request;
     },
 

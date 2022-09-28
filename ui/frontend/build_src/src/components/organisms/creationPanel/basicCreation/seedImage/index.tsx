@@ -50,6 +50,7 @@ export default function SeedImage(_props: any) {
   const _handleClearImage = () => {
     setRequestOption("init_image", undefined);
 
+    setRequestOption("mask", undefined);
     if (isInPaintingMode) {
       toggleInpainting();
     }
@@ -82,7 +83,7 @@ export default function SeedImage(_props: any) {
                 X
               </button>
             </div>
-            {/* <label>
+            <label>
               <input
                 type="checkbox"
                 onChange={(e) => {
@@ -91,7 +92,7 @@ export default function SeedImage(_props: any) {
                 checked={isInPaintingMode}
               ></input>
               {t("in-paint.txt")}
-            </label> */}
+            </label>
           </>
         )}
       </div>

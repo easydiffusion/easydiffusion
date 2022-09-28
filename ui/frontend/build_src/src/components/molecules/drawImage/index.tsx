@@ -14,6 +14,7 @@ interface DrawImageProps {
   brushShape: string;
   brushColor: string;
   isErasing: boolean;
+  setData: (data: string) => void;
 }
 
 export default function DrawImage({
@@ -22,6 +23,7 @@ export default function DrawImage({
   brushShape,
   brushColor,
   isErasing,
+  setData,
 }: DrawImageProps) {
   const drawingRef = useRef<HTMLCanvasElement>(null);
   const cursorRef = useRef<HTMLCanvasElement>(null);
@@ -74,7 +76,7 @@ export default function DrawImage({
     const canvas = drawingRef.current;
     if (canvas != null) {
       const data = canvas.toDataURL();
-      // TODO: SEND THIS TO THE STATE
+      setData(data);
     }
   };
 
