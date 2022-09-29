@@ -408,3 +408,6 @@ img {
     color: #aaa;
     margin-bottom: 5pt;
 }
+.img-batch {
+    display: inline;
+}

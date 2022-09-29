@@ -361,7 +361,10 @@ async function doMakeImage(task) {
 
     const reqBody = task.reqBody
     const batchCount = task.batchCount
-    const outputContainer = task.outputContainer
+    const outputContainer = document.createElement('div')
+
+    outputContainer.className = 'img-batch'
+    task.outputContainer.appendChild(outputContainer)
 
     const outputMsg = task['outputMsg']
     const previewPrompt = task['previewPrompt']
