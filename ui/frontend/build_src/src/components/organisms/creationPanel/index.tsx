@@ -1,25 +1,39 @@
 import React, { ChangeEvent } from "react";
 
+import BasicCreation from "./basicCreation";
 import AdvancedSettings from "./advancedSettings";
 import ImageModifiers from "./imageModifiers";
 import InpaintingPanel from "./inpaintingPanel";
+
+import QueueDisplay from "../queueDisplay";
 
 // this works but causes type errors so its not worth it for now
 // import { useImageCreate } from "@stores/imageCreateStore.ts";
 
 import { useImageCreate } from "../../../stores/imageCreateStore";
+import { useImageQueue } from "../../../stores/imageQueueStore";
 
-import "./creationPanel.css";
+import { useCreateUI } from "./creationPanelUIStore";
+
+// import "./creationPanel.css";
 
 import {
   CreationPaneMain,
   InpaintingSlider,
-} from "./creationpane.css";
+  QueueSlider,
+} from "./creationPanel.css";
 
-import BasicCreation from "./basicCreation";
+
 
 export default function CreationPanel() {
   const isInPaintingMode = useImageCreate((state) => state.isInpainting);
+
+  const showQueue = useCreateUI((state) => state.showQueue);
+  const hasQueue = useImageQueue((state) => state.hasQueuedImages());
+
+  // console.log('hasQueue', hasQueue);
+  console.log('showQueue', showQueue);
+
   return (
     <>
       <div className={CreationPaneMain}>
@@ -33,6 +47,13 @@ export default function CreationPanel() {
           <InpaintingPanel></InpaintingPanel>
         </div>
       )}
+
+      {(showQueue) && (
+        <div className={QueueSlider}>
+          <QueueDisplay></QueueDisplay>
+        </div>
+      )}
+
     </>
   );
 }

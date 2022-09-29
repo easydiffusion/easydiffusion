@@ -15,3 +15,11 @@ export const InpaintingSlider = style({
   zIndex: 1,
   backgroundColor: "rgba(0, 0, 0, 0.5)",
 });
+
+export const QueueSlider = style({
+  position: "absolute",
+  top: "10px",
+  left: "400px",
+  zIndex: 1,
+  backgroundColor: "rgba(0, 0, 0, 0.5)",
+});
