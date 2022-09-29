@@ -1,8 +1,10 @@
 import React from "react";
 
-import MakeButton from "../../../../atoms/makeButton";
-import StopButton from "../../../../atoms/stopButton";
-import ClearQueue from "../../../../atoms/clearQueue";
+import MakeButton from "../../../../molecules/makeButton";
+// import StopButton from "../../../../molecules/stopButton";
+// import ClearQueue from "../../../../molecules/clearQueue";
+
+import ShowQueue from "../showQueue";
 
 import {
   StopContainer
@@ -12,10 +14,11 @@ export default function CreationActions() {
   return (
     <div>
       <MakeButton></MakeButton>
-      <div className={StopContainer}>
+      <ShowQueue></ShowQueue>
+      {/* <div className={StopContainer}>
         <StopButton></StopButton>
         <ClearQueue></ClearQueue>
-      </div>
+      </div> */}
     </div>
   );
 }

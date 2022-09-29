@@ -1,24 +1,45 @@
 import React from "react";
+import { ImageRequest } from "../../../api";
 
-import { useImageQueue } from "../../../stores/imageQueueStore";
-
+import { QueuedRequest, useRequestQueue } from "../../../stores/requestQueueStore";
 
 import {
-  QueueDisplayMain
+  QueueDisplayMain,
+  QueueListButtons,
+  CompleteButtton,
+  ErrorButton
 } from "./queueDisplay.css";
 
+
+import ClearQueue from "../../molecules/clearQueue";
 import QueueItem from "./queueItem";
+
 
 export default function QueueDisplay() {
 
-  const images = useImageQueue((state) => state.images);
-  console.log('images', images);
+  const requests: QueuedRequest[] = useRequestQueue((state) => state.requests);
+  const removeCompleted = useRequestQueue((state) => state.removeCompleted);
+  const removeErrored = useRequestQueue((state) => state.removeErrored);
 
+  const clearCompleted = () => {
+    console.log('clear completed');
+    removeCompleted();
+  }
+
+  const clearErrored = () => {
+    console.log('clear errored');
+    removeErrored();
+  }
 
   return (
     <div className={QueueDisplayMain}>
-      {images.map((image) => {
-        return <QueueItem key={image.id} info={image}></QueueItem>;
+      <ClearQueue />
+      <div className={QueueListButtons}>
+        <button className={CompleteButtton} onClick={clearCompleted}>Clear Completed</button>
+        <button className={ErrorButton} onClick={clearErrored}>Clear Errored</button>
+      </div>
+      {requests.map((request) => {
+        return <QueueItem key={request.id} request={request}></QueueItem>;
       })}
     </div>
   );

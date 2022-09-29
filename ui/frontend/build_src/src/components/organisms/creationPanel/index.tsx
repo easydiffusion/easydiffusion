@@ -11,7 +11,7 @@ import QueueDisplay from "../queueDisplay";
 // import { useImageCreate } from "@stores/imageCreateStore.ts";
 
 import { useImageCreate } from "../../../stores/imageCreateStore";
-import { useImageQueue } from "../../../stores/imageQueueStore";
+import { useRequestQueue } from "../../../stores/requestQueueStore";
 
 import { useCreateUI } from "./creationPanelUIStore";
 
@@ -24,12 +24,11 @@ import {
 } from "./creationPanel.css";
 
 
-
 export default function CreationPanel() {
   const isInPaintingMode = useImageCreate((state) => state.isInpainting);
 
   const showQueue = useCreateUI((state) => state.showQueue);
-  const hasQueue = useImageQueue((state) => state.hasQueuedImages());
+  const hasQueue = useRequestQueue((state) => state.hasAnyQueue());
 
   // console.log('hasQueue', hasQueue);
   console.log('showQueue', showQueue);
@@ -48,7 +47,7 @@ export default function CreationPanel() {
         </div>
       )}
 
-      {(showQueue) && (
+      {(showQueue && hasQueue) && (
         <div className={QueueSlider}>
           <QueueDisplay></QueueDisplay>
         </div>

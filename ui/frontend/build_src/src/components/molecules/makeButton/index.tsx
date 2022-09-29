@@ -2,7 +2,11 @@
 import React, { useEffect, useRef } from "react";
 
 import { useImageCreate } from "../../../stores/imageCreateStore";
-import { useImageQueue } from "../../../stores/imageQueueStore";
+import {
+  QueueStatus,
+  useRequestQueue
+} from "../../../stores/requestQueueStore";
+
 import {
   FetchingStates,
   useImageFetching
@@ -42,10 +46,10 @@ export default function MakeButton() {
 
   const isSoundEnabled = useImageCreate((state) => state.isSoundEnabled());
 
-  const addNewImage = useImageQueue((state) => state.addNewImage);
-  const hasQueue = useImageQueue((state) => state.hasQueuedImages());
-  const removeFirstInQueue = useImageQueue((state) => state.removeFirstInQueue);
-  const { id, options } = useImageQueue((state) => state.firstInQueue());
+  const addtoQueue = useRequestQueue((state) => state.addtoQueue);
+  const hasQueue = useRequestQueue((state) => state.hasPendingQueue());
+  const { id, options } = useRequestQueue((state) => state.firstInQueue());
+  const updateQueueStatus = useRequestQueue((state) => state.updateStatus);
 
   const status = useImageFetching((state) => state.status);
   const setStatus = useImageFetching((state) => state.setStatus);
@@ -64,7 +68,11 @@ export default function MakeButton() {
     try {
       const parsed = JSON.parse(jsonStr);
       const { status, request, output: outputs } = parsed as ImageReturnType;
+
+
       if (status === 'succeeded') {
+
+        updateQueueStatus(id, QueueStatus.complete);
         outputs.forEach((output: any, index: number) => {
 
           const { data, seed } = output as ImageOutput;
@@ -79,10 +87,12 @@ export default function MakeButton() {
 
       else {
         console.warn(`Unexpected status: ${status}`);
+        updateQueueStatus(id, QueueStatus.error);
       }
 
     }
     catch (e) {
+      updateQueueStatus(id, QueueStatus.error);
       console.log("Error HACKING JSON: ", e)
     }
   }
@@ -143,7 +153,7 @@ export default function MakeButton() {
         }
       }
       catch (e) {
-        console.log('EXPECTED PARSE ERRROR')
+        // console.log('EXPECTED PARSE ERRROR')
         finalJSON += jsonStr;
       }
 
@@ -152,8 +162,8 @@ export default function MakeButton() {
 
   const startStream = async (id: string, req: ImageRequest) => {
 
-
     try {
+      updateQueueStatus(id, QueueStatus.processing);
       resetForFetching();
       const res = await doMakeImage(req);
       const reader = res.body?.getReader();
@@ -164,6 +174,7 @@ export default function MakeButton() {
 
     } catch (e) {
       console.log('TOP LINE STREAM ERROR')
+      updateQueueStatus(id, QueueStatus.error);
       console.log(e);
     }
 
@@ -201,7 +212,7 @@ export default function MakeButton() {
         seed = useRandomSeed();
       }
       // add the request to the queue
-      addNewImage(uuidv4(), {
+      addtoQueue(uuidv4(), {
         ...req,
         // updated the number of images to make
         num_outputs: num,
@@ -224,7 +235,7 @@ export default function MakeButton() {
 
   useEffect(() => {
     const makeImages = async (options: ImageRequest) => {
-      removeFirstInQueue();
+      // removeFirstInQueue();
       await startStream(id ?? "", options);
     }
 
@@ -238,6 +249,7 @@ export default function MakeButton() {
         console.log('req is undefined');
         return;
       }
+
       makeImages(options).catch((e) => {
         console.log('HAS QUEUE ERROR');
         console.log(e);

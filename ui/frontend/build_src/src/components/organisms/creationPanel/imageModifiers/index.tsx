@@ -15,7 +15,7 @@ import {
 import { ModifierObject, useImageCreate } from "../../../../stores/imageCreateStore";
 import { useCreateUI } from "../creationPanelUIStore";
 
-import ModifierTag from "../../../atoms/modifierTag";
+import ModifierTag from "../../../molecules/modifierTag";
 
 interface ModifierListProps {
   category: string;

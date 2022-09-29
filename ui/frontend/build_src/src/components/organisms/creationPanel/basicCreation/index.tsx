@@ -37,12 +37,6 @@ export default function BasicCreation() {
 
       <CreationActions></CreationActions>
 
-      {/* <MakeButton></MakeButton>
-      <div>
-        <StopButton></StopButton>
-        <ClearQueue></ClearQueue>
-      </div> */}
-
       <SeedImage></SeedImage>
       <ActiveTags></ActiveTags>
     </div>
