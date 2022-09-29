@@ -1,3 +1,5 @@
+/* eslint-disable  @typescript-eslint/naming-convention */
+
 import React from "react";
 
 import {
@@ -10,6 +12,7 @@ import StopButton from '../../../molecules/stopButton';
 
 import {
   QueueItemMain,
+  QueueItemInfo,
   QueueButtons,
   CompleteButtton,
   PauseButton,
@@ -26,9 +29,6 @@ interface QueueItemProps {
 
 export default function QueueItem({ request }: QueueItemProps) {
 
-  // console.log('info', info);
-  // console.log('status', status);
-
   const removeItem = useRequestQueue((state) => state.removeItem);
   const updateStatus = useRequestQueue((state) => state.updateStatus);
   const sendPendingToTop = useRequestQueue((state) => state.sendPendingToTop);
@@ -37,39 +37,45 @@ export default function QueueItem({ request }: QueueItemProps) {
     id,
     options: {
       prompt,
+      num_outputs,
       seed,
       sampler,
+      guidance_scale,
+      num_inference_steps,
+
     },
     status,
   } = request;
 
   const removeFromQueue = () => {
-    console.log('remove from queue');
     removeItem(id);
   }
 
   const pauseItem = () => {
-    console.log('pause item');
     updateStatus(id, QueueStatus.paused);
   }
 
   const retryRequest = () => {
-    console.log('retry request');
     updateStatus(id, QueueStatus.pending);
   }
 
   const sendToTop = () => {
-    console.log('send to top');
     sendPendingToTop(id);
   }
 
   return (
     <div className={[QueueItemMain, status].join(' ')}>
-      {/* @ts-expect-error */}
-      <div>{status}</div>
-      <div>{prompt}</div>
-      <div>{seed}</div>
-      <div>{sampler}</div>
+
+      <div className={QueueItemInfo}>
+        <p>{prompt}</p>
+        <p>Making {num_outputs} concurrent images</p>
+        <p>
+          <span>Seed: {seed} </span>
+          <span>Sampler: {sampler} </span>
+          <span>Guidance Scale: {guidance_scale} </span>
+          <span>Num Inference Steps: {num_inference_steps} </span>
+        </p>
+      </div>
 
       <div className={QueueButtons}>
 

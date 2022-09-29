@@ -11,8 +11,20 @@ export const QueueItemMain = style({
   display: "flex",
   flexDirection: "column",
   width: "100%",
-  padding: "0.5rem",
+  padding: vars.spacing.small,
+  borderRadius: vars.trim.smallBorderRadius,
+  marginBottom: vars.spacing.medium,
+  boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15)",
 });
+
+export const QueueItemInfo = style({
+
+});
+
+globalStyle(`${QueueItemInfo} p`, {
+  marginBottom: vars.spacing.small,
+});
+
 
 globalStyle(`${QueueItemMain}.${QueueStatus.processing}`, {
   backgroundColor: vars.colors.warning,

@@ -1,7 +1,10 @@
 import React from "react";
 import { doStopImage } from "../../../api";
 import { useRequestQueue } from "../../../stores/requestQueueStore";
-import { BrandedButton } from "../../../styles/shared.css";
+
+import {
+  ClearQueueButton
+} from "./clearQueue.css";
 
 export default function ClearQueue() {
 
@@ -18,8 +21,8 @@ export default function ClearQueue() {
   };
 
   return (
-    <button className={BrandedButton} disabled={!hasQueue} onClick={() => void stopAll()}>
-      Stop ALL
+    <button className={ClearQueueButton} disabled={!hasQueue} onClick={() => void stopAll()}>
+      STOP ALL
     </button>
   );
 }

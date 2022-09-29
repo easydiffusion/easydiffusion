@@ -15,7 +15,7 @@ export default function ShowQueue() {
         onChange={() => toggleQueue()}
       >
       </input>
-      Display
+      Display Queue
     </label>
   );
 }

@@ -84,14 +84,31 @@ export const useRequestQueue = create<RequestQueueState>((set, get) => ({
     set(
       produce((state) => {
         const item = state.requests.find((item: QueuedRequest) => item.id === id);
+
         if (void 0 !== item) {
+          // remove from current position
           const index = state.requests.indexOf(item);
-          // insert infront of the pending requests
-          const pending = get().pendingRequests();
-          const pendingIndex = state.requests.indexOf(pending[0]);
-          console.log()
           state.requests.splice(index, 1);
-          state.requests.splice(pendingIndex, 0, item);
+
+          // find the first available stop and insert it there
+          for (let i = 0; i < state.requests.length; i++) {
+            const curStatus = state.requests[i].status;
+
+            // skip over any items that are not pending or paused
+            if (curStatus === QueueStatus.processing) {
+              continue;
+            }
+            if (curStatus === QueueStatus.complete) {
+              continue;
+            }
+            if (curStatus === QueueStatus.error) {
+              continue;
+            }
+
+            // insert infront of any pending or paused items
+            state.requests.splice(i, 0, item);
+            break;
+          }
         }
       })
     );

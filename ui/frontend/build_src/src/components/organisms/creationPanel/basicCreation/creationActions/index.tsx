@@ -1,24 +1,18 @@
 import React from "react";
 
 import MakeButton from "../../../../molecules/makeButton";
-// import StopButton from "../../../../molecules/stopButton";
-// import ClearQueue from "../../../../molecules/clearQueue";
 
 import ShowQueue from "../showQueue";
 
 import {
-  StopContainer
+  CreationActionMain
 } from "./creationActions.css";
 
 export default function CreationActions() {
   return (
-    <div>
+    <div className={CreationActionMain}>
       <MakeButton></MakeButton>
       <ShowQueue></ShowQueue>
-      {/* <div className={StopContainer}>
-        <StopButton></StopButton>
-        <ClearQueue></ClearQueue>
-      </div> */}
     </div>
   );
 }
