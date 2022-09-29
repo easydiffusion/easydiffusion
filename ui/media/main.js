@@ -537,7 +537,6 @@ async function checkTasks() {
     task['stopTask'].innerHTML = '<i class="fa-solid fa-circle-stop"></i> Stop'
     task['taskStatusLabel'].innerText = "Processing"
     task['taskStatusLabel'].className += " activeTaskLabel"
-    console.log(task['taskStatusLabel'].className)
 
     for (let i = 0; i < task.batchCount; i++) {
         task.reqBody['seed'] = task.seed + (i * task.reqBody['num_outputs'])
