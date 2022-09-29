@@ -268,7 +268,7 @@ function showImages(req, res, outputContainer, livePreview) {
         if(typeof res != 'object') return
 
         const imageData = result?.data || result?.path + '?t=' + new Date().getTime(),
-            imageSeed = req.seed,
+            imageSeed = result?.seed,
             imageWidth = req.width,
             imageHeight = req.height;
 
