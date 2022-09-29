@@ -5,11 +5,16 @@ import { KEY_CONFIG, getConfig } from "../../../api";
 
 import StatusDisplay from "./statusDisplay";
 
+import HelpOptions from "./helpOptions";
+import SystemSettings from "./systemSettings";
+
 import { useTranslation } from "react-i18next";
 
 import {
-  HeaderDisplayMain, // @ts-expect-error
-} from "./headerDisplay.css.ts";
+  HeaderDisplayMain,
+  HeaderTitle,
+  HeaderLinks,
+} from "./headerDisplay.css";
 
 // import LanguageDropdown from "./languageDropdown";
 
@@ -41,11 +46,16 @@ export default function HeaderDisplay() {
 
   return (
     <div className={HeaderDisplayMain}>
-      <h1>
-        {t("title")} {version} {release}{" "}
-      </h1>
-      <StatusDisplay className="status-display"></StatusDisplay>
-
+      <div className={HeaderTitle}>
+        <h1>
+          {t("title")} {version} {release}{" "}
+        </h1>
+        <StatusDisplay className="status-display"></StatusDisplay>
+      </div>
+      <div className={HeaderLinks}>
+        <HelpOptions></HelpOptions>
+        <SystemSettings></SystemSettings>
+      </div>
       {/* <LanguageDropdown></LanguageDropdown> */}
     </div>
   );

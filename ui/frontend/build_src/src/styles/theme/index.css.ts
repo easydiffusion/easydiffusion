@@ -11,7 +11,6 @@ import {
  *
  * Lots of these arent used yet, but once they are defined and useable then they can be set.
  */
-
 const colors = createThemeContract({
   brand: null,
   brandDimmed: null,
@@ -33,6 +32,8 @@ const colors = createThemeContract({
   backgroundAccent: null,
   backgroundAlt: null,
   backgroundAltAccent: null,
+  backgroundDark: null,
+  backgroundDarkAccent: null,
 
   text: {
     normal: null,
@@ -66,6 +67,7 @@ const app = createGlobalTheme(":root", {
 
   fonts: {
     body: "Arial, Helvetica, sans-serif;",
+    // IconFont is a shared class for now
     sizes: {
       Title: "2em",
       Headline: "1.5em",
@@ -99,8 +101,12 @@ export const darkTheme = createTheme(colors, {
 
   background: "#202124", // dark grey
   backgroundAccent: " #383838", // lighter grey
+
   backgroundAlt: "#2c2d30", // med grey
   backgroundAltAccent: "#383838", // lighter grey
+
+  backgroundDark: "#121213", // darker grey
+  backgroundDarkAccent: "#383838", // lighter grey
 
   text: {
     normal: "#ffffff", // white
@@ -141,6 +147,9 @@ export const lightTheme = createTheme(colors, {
   backgroundAccent: "#EFF6FF",
   backgroundAlt: "#EFF6FF",
   backgroundAltAccent: "#EFF6FF",
+  backgroundDark: "#EFF6FF",
+  backgroundDarkAccent: "#EFF6FF",
+
   text: {
     normal: "#1F2937",
     dimmed: "#6B7280",

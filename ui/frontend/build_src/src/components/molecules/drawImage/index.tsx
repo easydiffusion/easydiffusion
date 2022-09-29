@@ -1,15 +1,14 @@
-// @ts-nocheck
 import React, { useRef, useState, useEffect } from "react";
 
 import {
-  DrawImageMain, // @ts-expect-error
-} from "./drawImage.css.ts";
+  DrawImageMain,
+} from "./drawImage.css";
 
 // https://github.com/embiem/react-canvas-draw
 
 interface DrawImageProps {
   imageData: string;
-  brushSize: string;
+  brushSize: number;
 
   brushShape: string;
   brushColor: string;
@@ -46,16 +45,19 @@ export default function DrawImage({
     // drawn pixels to the new color
     if (drawingRef.current != null) {
       const ctx = drawingRef.current.getContext("2d");
-      const imageData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
-      const data = imageData.data;
-      for (let i = 0; i < data.length; i += 4) {
-        if (data[i + 3] > 0) {
-          data[i] = parseInt(brushColor, 16);
-          data[i + 1] = parseInt(brushColor, 16);
-          data[i + 2] = parseInt(brushColor, 16);
+      if (ctx != null) {
+
+        const imageData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+        const data = imageData.data;
+        for (let i = 0; i < data.length; i += 4) {
+          if (data[i + 3] > 0) {
+            data[i] = parseInt(brushColor, 16);
+            data[i + 1] = parseInt(brushColor, 16);
+            data[i + 2] = parseInt(brushColor, 16);
+          }
         }
+        ctx.putImageData(imageData, 0, 0);
       }
-      ctx.putImageData(imageData, 0, 0);
     }
   }, [brushColor]);
 
@@ -80,23 +82,25 @@ export default function DrawImage({
     }
   };
 
-  const _drawCanvas = (x, y, brushSize, brushShape, brushColor) => {
+  const _drawCanvas = (x: number, y: number, brushSize: number, brushShape: string, brushColor: string | CanvasGradient | CanvasPattern) => {
     const canvas = drawingRef.current;
     if (canvas != null) {
       const ctx = canvas.getContext("2d");
-      if (isErasing) {
-        // stack overflow https://stackoverflow.com/questions/10396991/clearing-circular-regions-from-html5-canvas
-
-        const offset = brushSize / 2;
-        ctx.clearRect(x - offset, y - offset, brushSize, brushSize);
-      } else {
-        ctx.beginPath();
-        ctx.lineWidth = brushSize;
-        ctx.lineCap = brushShape;
-        ctx.strokeStyle = brushColor;
-        ctx.moveTo(x, y);
-        ctx.lineTo(x, y);
-        ctx.stroke();
+      if (ctx != null) {
+        if (isErasing) {
+          // stack overflow https://stackoverflow.com/questions/10396991/clearing-circular-regions-from-html5-canvas
+          const offset = brushSize / 2;
+          ctx.clearRect(x - offset, y - offset, brushSize, brushSize);
+        } else {
+          ctx.beginPath();
+          ctx.lineWidth = brushSize;
+          // @ts-expect-error
+          ctx.lineCap = brushShape;
+          ctx.strokeStyle = brushColor;
+          ctx.moveTo(x, y);
+          ctx.lineTo(x, y);
+          ctx.stroke();
+        }
       }
     }
   };
@@ -111,29 +115,35 @@ export default function DrawImage({
     const canvas = cursorRef.current;
     if (canvas != null) {
       const ctx = canvas.getContext("2d");
-      ctx.beginPath();
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (ctx != null) {
+        ctx.beginPath();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      if (isErasing) {
-        const offset = brushSize / 2;
-        // draw a quare
-        ctx.lineWidth = 2;
-        ctx.lineCap = "butt";
-        ctx.strokeStyle = brushColor;
-        ctx.moveTo(x - offset, y - offset);
-        ctx.lineTo(x + offset, y - offset);
-        ctx.lineTo(x + offset, y + offset);
-        ctx.lineTo(x - offset, y + offset);
-        ctx.lineTo(x - offset, y - offset);
-        ctx.stroke();
-      } else {
-        ctx.lineWidth = brushSize;
-        ctx.lineCap = brushShape;
-        ctx.strokeStyle = brushColor;
-        ctx.moveTo(x, y);
-        ctx.lineTo(x, y);
-        ctx.stroke();
+        if (isErasing) {
+          const offset = brushSize / 2;
+          // draw a quare
+          ctx.lineWidth = 2;
+          ctx.lineCap = "butt";
+          ctx.strokeStyle = brushColor;
+          ctx.moveTo(x - offset, y - offset);
+          ctx.lineTo(x + offset, y - offset);
+          ctx.lineTo(x + offset, y + offset);
+          ctx.lineTo(x - offset, y + offset);
+          ctx.lineTo(x - offset, y - offset);
+          ctx.stroke();
+        } else {
+          ctx.lineWidth = brushSize;
+          // @ts-expect-error
+          ctx.lineCap = brushShape;
+          ctx.strokeStyle = brushColor;
+          ctx.moveTo(x, y);
+          ctx.lineTo(x, y);
+          ctx.stroke();
+        }
       }
+
+
+
     }
   };
 
@@ -156,8 +166,10 @@ export default function DrawImage({
     const canvas = drawingRef.current;
     if (canvas != null) {
       const ctx = canvas.getContext("2d");
-      ctx.fillStyle = brushColor;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      if (ctx != null) {
+        ctx.fillStyle = brushColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
     }
   };
 

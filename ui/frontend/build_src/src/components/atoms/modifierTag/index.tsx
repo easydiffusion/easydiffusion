@@ -9,8 +9,7 @@ import { API_URL } from "../../../api";
 import {
   ModifierTagMain,
   tagPreview
-  // @ts-expect-error
-} from "./modifierTags.css.ts";
+} from "./modifierTags.css";
 
 interface ModifierTagProps {
   name: string;

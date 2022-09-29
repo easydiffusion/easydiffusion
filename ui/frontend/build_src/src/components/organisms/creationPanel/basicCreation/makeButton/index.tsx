@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 
-import { useImageCreate, ImageRequest } from "../../../../../stores/imageCreateStore";
+import { useImageCreate } from "../../../../../stores/imageCreateStore";
 import { useImageQueue } from "../../../../../stores/imageQueueStore";
 import {
   FetchingStates,
@@ -13,17 +13,26 @@ import { useImageDisplay } from "../../../../../stores/imageDisplayStore";
 import { v4 as uuidv4 } from "uuid";
 
 import { useRandomSeed } from "../../../../../utils";
-import { doMakeImage } from "../../../../../api";
 import {
-  MakeButtonStyle, // @ts-expect-error
-} from "./makeButton.css.ts";
+  ImageRequest,
+  ImageReturnType,
+  ImageOutput,
+  doMakeImage,
+} from "../../../../../api";
+import {
+  MakeButtonStyle,
+} from "./makeButton.css";
 
 import { useTranslation } from "react-i18next";
 
 import AudioDing from "../../../../molecules/audioDing";
 
+const idDelim = "_batch";
+
 export default function MakeButton() {
   const { t } = useTranslation();
+
+  const dingRef = useRef<HTMLAudioElement>();
 
   const parallelCount = useImageCreate((state) => state.parallelCount);
   const builtRequest = useImageCreate((state) => state.builtRequest);
@@ -47,45 +56,22 @@ export default function MakeButton() {
 
   const updateDisplay = useImageDisplay((state) => state.updateDisplay);
 
-  const hackJson = (jsonStr: string) => {
-
-    // DONES't seem to be needed for the updated progress implementation
-
-    // if (jsonStr !== undefined && jsonStr.indexOf('}{') !== -1) {
-    //   // hack for a middleman buffering all the streaming updates, and unleashing them
-    //   //  on the poor browser in one shot.
-    //   //  this results in having to parse JSON like {"step": 1}{"step": 2}...{"status": "succeeded"..}
-    //   //  which is obviously invalid.
-    //   // So we need to just extract the last {} section, starting from "status" to the end of the response
-
-    //   const lastChunkIdx = jsonStr.lastIndexOf('}{')
-    //   if (lastChunkIdx !== -1) {
-    //     const remaining = jsonStr.substring(lastChunkIdx)
-    //     jsonStr = remaining.substring(1)
-    //   }
-    // }
+  const hackJson = (jsonStr: string, id: string) => {
 
     try {
 
-      // todo - used zod or something to validate this
-      interface jsonResponseType {
-        status: string;
-        request: ImageRequest;
-        output: []
-      }
-      const { status, request, output: outputs }: jsonResponseType = JSON.parse(jsonStr);
-
+      const parsed = JSON.parse(jsonStr);
+      const { status, request, output: outputs } = parsed as ImageReturnType;
       if (status === 'succeeded') {
-        outputs.forEach((output: any) => {
+        outputs.forEach((output: any, index: number) => {
 
-          const { data, seed } = output;
-
+          const { data, seed } = output as ImageOutput;
           const seedReq = {
             ...request,
             seed,
           };
-
-          updateDisplay(data, seedReq);
+          const batchId = `${id}${idDelim}-${seed}-${index}`;
+          updateDisplay(batchId, data, seedReq);
         });
       }
 
@@ -100,18 +86,17 @@ export default function MakeButton() {
   }
 
   const parseRequest = async (id: string, reader: ReadableStreamDefaultReader<Uint8Array>) => {
-    console.log('parseRequest');
     const decoder = new TextDecoder();
     let finalJSON = '';
 
-    console.log('id', id);
     while (true) {
       const { done, value } = await reader.read();
       const jsonStr = decoder.decode(value);
       if (done) {
         removeFirstInQueue();
         setStatus(FetchingStates.COMPLETE);
-        hackJson(finalJSON)
+        hackJson(finalJSON, id);
+        void dingRef.current?.play();
         break;
       }
 
@@ -163,10 +148,7 @@ export default function MakeButton() {
   }
 
   const startStream = async (id: string, req: ImageRequest) => {
-    // const streamReq = {
-    //   ...req,
-    //   stream_image_progress: true,
-    // };
+
 
     try {
       resetForFetching();
@@ -262,14 +244,17 @@ export default function MakeButton() {
   }, [hasQueue, status, id, options, startStream]);
 
   return (
-    <button
-      className={MakeButtonStyle}
-      onClick={() => {
-        void makeImageQueue();
-      }}
-      disabled={hasQueue}
-    >
-      {t("home.make-img-btn")}
-    </button>
+    <>
+      <button
+        className={MakeButtonStyle}
+        onClick={() => {
+          void makeImageQueue();
+        }}
+        disabled={hasQueue}
+      >
+        {t("home.make-img-btn")}
+      </button>
+      <AudioDing ref={dingRef}></AudioDing>
+    </>
   );
 }

@@ -1,6 +1,5 @@
 import { style } from "@vanilla-extract/css";
-// @ts-expect-error
-import { vars } from "../../styles/theme/index.css.ts";
+import { vars } from "../../styles/theme/index.css";
 
 export const AppLayout = style({
   position: "relative",

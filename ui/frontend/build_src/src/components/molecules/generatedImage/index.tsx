@@ -1,17 +1,15 @@
 import React from "react";
 
-import { ImageRequest } from "../../../stores/imageCreateStore";
+import { ImageRequest } from "../../../api";
 
 import {
   generatedImageMain,
-  image, // @ts-expect-error
-} from "./generatedImage.css.ts";
+} from "./generatedImage.css";
 
 interface GeneretaedImageProps {
   imageData: string | undefined;
   metadata: ImageRequest | undefined;
   className?: string;
-  // children: never[];
 }
 
 export default function GeneratedImage({
@@ -21,7 +19,7 @@ export default function GeneratedImage({
 }: GeneretaedImageProps) {
   return (
     <div className={[generatedImageMain, className].join(" ")}>
-      <img className={image} src={imageData} alt={metadata!.prompt} />
+      <img src={imageData} alt={metadata!.prompt} />
     </div>
   );
 }

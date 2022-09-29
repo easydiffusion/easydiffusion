@@ -6,8 +6,8 @@ import {
   ImageInput,
   ImageInputButton,
   ImageFixer,
-  XButton, // @ts-expect-error
-} from "./seedImage.css.ts";
+  XButton,
+} from "./seedImage.css";
 import { useImageCreate } from "../../../../../stores/imageCreateStore";
 
 import { useTranslation } from "react-i18next";

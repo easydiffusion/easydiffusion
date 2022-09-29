@@ -5,8 +5,8 @@ import {
   HeaderLayout,
   CreateLayout,
   DisplayLayout,
-  FooterLayout, // @ts-expect-error
-} from "./home.css.ts";
+  FooterLayout,
+} from "./home.css";
 
 import { useQuery } from "@tanstack/react-query";
 import { getSaveDirectory, loadModifications } from "../../api";

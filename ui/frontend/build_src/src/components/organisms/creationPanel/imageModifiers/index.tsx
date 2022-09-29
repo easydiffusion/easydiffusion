@@ -1,14 +1,16 @@
 import React, { useState } from "react";
 
-// @ts-expect-error
-import { PanelBox } from "../../../../styles/shared.css.ts";
+
+import {
+  PanelBox,
+  MenuButton,
+} from "../../../../styles/shared.css";
 
 import {
   ImagerModifierGroups,
   ImageModifierGrouping,
-  MenuButton,
-  ModifierListStyle, //@ts-expect-error
-} from "./imageModifiers.css.ts";
+  ModifierListStyle,
+} from "./imageModifiers.css";
 
 import { ModifierObject, useImageCreate } from "../../../../stores/imageCreateStore";
 import { useCreateUI } from "../creationPanelUIStore";

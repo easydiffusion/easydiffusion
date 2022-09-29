@@ -2,8 +2,8 @@ import React from "react";
 
 import {
   FooterDisplayMain,
-  CoffeeButton, // @ts-expect-error
-} from "./footerDisplay.css.ts";
+  CoffeeButton,
+} from "./footerDisplay.css";
 
 import { API_URL } from "../../../api";
 

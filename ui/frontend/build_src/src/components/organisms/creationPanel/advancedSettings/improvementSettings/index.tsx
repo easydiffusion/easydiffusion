@@ -4,11 +4,9 @@ import { useImageCreate } from "../../../../../stores/imageCreateStore";
 import { useCreateUI } from "../../creationPanelUIStore";
 
 import {
-  SettingItem, // @ts-expect-error
-} from "../../../../../styles/shared.css.ts";
-import {
-  MenuButton, // @ts-expect-error
-} from "../advancedsettings.css.ts";
+  SettingItem,
+  MenuButton,
+} from "../../../../../styles/shared.css";
 
 import { useTranslation } from "react-i18next";
 

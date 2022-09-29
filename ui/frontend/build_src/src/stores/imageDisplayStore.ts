@@ -1,7 +1,7 @@
 import create from "zustand";
 import produce from "immer";
 
-import { ImageRequest } from "./imageCreateStore";
+import { ImageRequest } from "../api";
 
 export interface CompletedImagesType {
   id?: string;
@@ -13,11 +13,9 @@ interface ImageDisplayState {
   // imageOptions: Map<string, any>;
   images: CompletedImagesType[]
   currentImage: CompletedImagesType | null
-  updateDisplay: (ImageData: string, imageOptions: any) => void;
+  updateDisplay: (id: string, ImageData: string, imageOptions: any) => void;
   setCurrentImage: (image: CompletedImagesType) => void;
   clearDisplay: () => void;
-
-  // getCurrentImage: () => {};
 }
 
 export const useImageDisplay = create<ImageDisplayState>((set, get) => ({
@@ -26,13 +24,11 @@ export const useImageDisplay = create<ImageDisplayState>((set, get) => ({
   currentImage: null,
   // use produce to make sure we don't mutate state
   // imageOptions: any
-  updateDisplay: (ImageData: string, imageOptions) => {
+  updateDisplay: (id: string, ImageData: string, imageOptions) => {
     set(
       produce((state) => {
-        // options: imageOptions
-        // state.currentImage = { display: ImageData, imageOptions };
-        // imageOptions
-        state.images.unshift({ data: ImageData, info: imageOptions });
+        state.currentImage = { id, display: ImageData, info: imageOptions };
+        state.images.unshift({ id, data: ImageData, info: imageOptions });
         state.currentImage = state.images[0];
       })
     );

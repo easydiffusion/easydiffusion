@@ -1,6 +1,5 @@
 import { globalStyle } from "@vanilla-extract/css";
-// @ts-expect-error
-import { vars } from "./theme/index.css.ts";
+import { vars } from "./theme/index.css";
 
 // baisc body style
 globalStyle("body", {
@@ -28,31 +27,40 @@ globalStyle(`button`, {
   fontSize: vars.fonts.sizes.Body,
 });
 
+globalStyle(`.visually-hidden`, {
+  visibility: "hidden",
+  position: "absolute",
+});
+
 /** RESETS */
-globalStyle(`p, h1, h2, h3, h4, h5, h6, ul`, {
+globalStyle(`h1, h2, h3, h4, h5, h6, p, label, ul, textarea`, {
   margin: 0,
+  padding: 0,
+  fontFamily: vars.fonts.body,
 });
 
 globalStyle(`h3`, {
   fontSize: vars.fonts.sizes.Subheadline,
-  fontFamily: vars.fonts.body,
+  marginBottom: vars.spacing.small,
 });
 
 globalStyle(`h4, h5`, {
   fontSize: vars.fonts.sizes.SubSubheadline,
-  fontFamily: vars.fonts.body,
+  marginBottom: vars.spacing.medium,
 });
 
 globalStyle(`p, label`, {
   fontSize: vars.fonts.sizes.Body,
-  fontFamily: vars.fonts.body,
 });
 
 globalStyle(`textarea`, {
-  margin: 0,
   padding: 0,
   border: "none",
   fontSize: vars.fonts.sizes.Body,
   fontWeight: "bold",
-  fontFamily: vars.fonts.body,
+});
+
+globalStyle(`a`, {
+  color: vars.colors.link,
+  textDecoration: "none",
 });

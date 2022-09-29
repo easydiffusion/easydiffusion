@@ -7,16 +7,12 @@ export interface ImageCreationUIOptions {
   isOpenAdvImprovementSettings: boolean;
   isOpenAdvPropertySettings: boolean;
   isOpenAdvWorkflowSettings: boolean;
-  isOpenAdvGPUSettings: boolean;
-
   isOpenImageModifier: boolean;
-  imageMofidiersMap: object;
 
   toggleAdvancedSettings: () => void;
   toggleAdvImprovementSettings: () => void;
   toggleAdvPropertySettings: () => void;
   toggleAdvWorkflowSettings: () => void;
-  toggleAdvGPUSettings: () => void;
 
   toggleImageModifier: () => void;
   // addImageModifier: (modifier: string) => void;
@@ -30,9 +26,7 @@ export const useCreateUI = create<ImageCreationUIOptions>(
       isOpenAdvImprovementSettings: false,
       isOpenAdvPropertySettings: false,
       isOpenAdvWorkflowSettings: false,
-      isOpenAdvGPUSettings: false,
       isOpenImageModifier: false,
-      imageMofidiersMap: {},
 
       toggleAdvancedSettings: () => {
         set(
@@ -63,14 +57,6 @@ export const useCreateUI = create<ImageCreationUIOptions>(
         set(
           produce((state: ImageCreationUIOptions) => {
             state.isOpenAdvWorkflowSettings = !state.isOpenAdvWorkflowSettings;
-          })
-        );
-      },
-
-      toggleAdvGPUSettings: () => {
-        set(
-          produce((state: ImageCreationUIOptions) => {
-            state.isOpenAdvGPUSettings = !state.isOpenAdvGPUSettings;
           })
         );
       },
