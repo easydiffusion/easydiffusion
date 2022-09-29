@@ -93,7 +93,7 @@ export default function MakeButton() {
     }
     catch (e) {
       updateQueueStatus(id, QueueStatus.error);
-      console.log("Error HACKING JSON: ", e)
+      console.warn("Error HACKING JSON: ", e)
     }
   }
 
@@ -142,14 +142,13 @@ export default function MakeButton() {
           // TODO this should be the the new out instead of the try catch
           // wait for the path to come back instead of the data
           setStatus(FetchingStates.SUCCEEDED);
-          console.log(update);
         }
         else if (status === 'failed') {
           console.warn('failed');
-          console.log(update);
+          console.warn(update);
         }
         else {
-          console.log("UNKNOWN ?", update);
+          console.warn("UNKNOWN ?", update);
         }
       }
       catch (e) {

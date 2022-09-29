@@ -49,8 +49,6 @@ function ModifierGrouping({ title, category, tags }: ModifierGroupingProps) {
     setIsExpanded(!isExpanded);
   };
 
-  // console.log("ModifierGrouping", tags);
-
   return (
     <div className={ImageModifierGrouping}>
       <button type="button" className={MenuButton} onClick={_toggleExpand}>
@@ -88,7 +86,6 @@ export default function ImageModifers() {
         <ul className={ImagerModifierGroups}>
           {allModifiers.map((item, index) => {
 
-            // console.log('mod item ', item);
 
             return (
               <li key={item.category}>

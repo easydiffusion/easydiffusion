@@ -30,9 +30,6 @@ export default function CreationPanel() {
   const showQueue = useCreateUI((state) => state.showQueue);
   const hasQueue = useRequestQueue((state) => state.hasAnyQueue());
 
-  // console.log('hasQueue', hasQueue);
-  console.log('showQueue', showQueue);
-
   return (
     <>
       <div className={CreationPaneMain}>

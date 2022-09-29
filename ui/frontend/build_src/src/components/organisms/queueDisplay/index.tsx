@@ -22,12 +22,10 @@ export default function QueueDisplay() {
   const removeErrored = useRequestQueue((state) => state.removeErrored);
 
   const clearCompleted = () => {
-    console.log('clear completed');
     removeCompleted();
   }
 
   const clearErrored = () => {
-    console.log('clear errored');
     removeErrored();
   }
 
