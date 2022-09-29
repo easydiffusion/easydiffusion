@@ -70,9 +70,9 @@ label {
     font-size: 8pt;
 }
 .imgSeedLabel {
-    font-size: 1em;
+    font-size: 0.8em;
     background-color: rgb(44, 45, 48);
-    border-radius: 5px;
+    border-radius: 3px;
     padding: 5px;
 }
 .imgItem {
@@ -91,7 +91,7 @@ label {
     flex-direction: column;
     position: absolute;
     padding: 5px;
-    opacity: 0.25;
+    opacity: 0;
     transition: 0.1s all;
 }
 .imgContainer:hover > .imgItemInfo {

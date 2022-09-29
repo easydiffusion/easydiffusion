@@ -259,15 +259,16 @@ async function healthCheck() {
     }
 }
 
-function showImages(req, res, livePreview) {
+function showImages(req, res, outputContainer, livePreview) {
+    let imageItemElements = outputContainer.querySelectorAll('.imgItem');
+
     res.output.forEach((result, index) => {
         if(typeof res != 'object') return;
 
         const imageData = result?.data || result?.path + '?t=' + new Date().getTime(),
             imageSeed = req.seed,
             imageWidth = req.width,
-            imageHeight = req.height,
-            imageIdentifier = 'IMG_ID_' + (imageSeed + '').replace(/\d/g, c => 'SUOMIPERKL'[c]) + 'X'.repeat(index);
+            imageHeight = req.height;
 
         if (!imageData.includes('/')) {
             // res contained no data for the image, stop execution
@@ -276,12 +277,11 @@ function showImages(req, res, livePreview) {
             return;
         }
 
-        let imageItemElem = document.querySelector('#' + imageIdentifier);
+        let imageItemElem = (index < imageItemElements.length ? imageItemElements[index] : null)
 
         if(!imageItemElem) {
             imageItemElem = document.createElement('div');
             imageItemElem.className = 'imgItem';
-            imageItemElem.id = imageIdentifier;
             imageItemElem.innerHTML = `
                 <div class="imgContainer">
                     <img/>
@@ -296,34 +296,10 @@ function showImages(req, res, livePreview) {
             const useAsInputBtn = imageItemElem.querySelector('.imgUseBtn'),
                 saveImageBtn = imageItemElem.querySelector('.imgSaveBtn');
 
-            useAsInputBtn.addEventListener('click', e => {
-                const imgData = e.path.find(x => x == imageItemElem).querySelector('img').src;
+            useAsInputBtn.addEventListener('click', getUseAsInputHandler(imageItemElem));
+            saveImageBtn.addEventListener('click', getSaveImageHandler(imageItemElem));
 
-                initImageSelector.value = null;
-                initImagePreview.src = imgData;
-        
-                initImagePreviewContainer.style.display = 'block';
-                inpaintingEditorContainer.style.display = 'none';
-                promptStrengthContainer.style.display = 'block';
-                maskSetting.checked = false;
-        
-                // maskSetting.style.display = 'block';
-        
-                randomSeedField.checked = false;
-                seedField.value = imageSeed;
-                seedField.disabled = false;
-            });
-    
-            saveImageBtn.addEventListener('click', e => {
-                const imgData = e.path.find(x => x == imageItemElem).querySelector('img').src;
-
-                const imgDownload = document.createElement('a');
-                imgDownload.download = createFileName(imageSeed);
-                imgDownload.href = imgData;
-                imgDownload.click();
-            });
-
-            imagesContainer.appendChild(imageItemElem);
+            outputContainer.appendChild(imageItemElem);
         }
 
         const imageElem = imageItemElem.querySelector('img'),
@@ -332,11 +308,48 @@ function showImages(req, res, livePreview) {
         imageElem.src = imageData;
         imageElem.width = parseInt(imageWidth);
         imageElem.height = parseInt(imageHeight);
+        imageElem.setAttribute('data-seed', imageSeed)
 
-        imageSeedLabel.innerText = livePreview
-            ? '(Live Preview)'
-            : 'Seed: ' + imageSeed;
+        const imageInfo = imageItemElem.querySelector('.imgItemInfo')
+        imageInfo.style.visibility = (livePreview ? 'hidden' : 'visible')
+
+        imageSeedLabel.innerText = 'Seed: ' + imageSeed;
     });
+}
+
+function getUseAsInputHandler(imageItemElem) {
+    return function() {
+        const imageElem = imageItemElem.querySelector('img')
+        const imgData = imageElem.src;
+        const imageSeed = imageElem.getAttribute('data-seed')
+
+        initImageSelector.value = null;
+        initImagePreview.src = imgData;
+
+        initImagePreviewContainer.style.display = 'block';
+        inpaintingEditorContainer.style.display = 'none';
+        promptStrengthContainer.style.display = 'block';
+        maskSetting.checked = false;
+
+        // maskSetting.style.display = 'block';
+
+        randomSeedField.checked = false;
+        seedField.value = imageSeed;
+        seedField.disabled = false;
+    }
+}
+
+function getSaveImageHandler(imageItemElem) {
+    return function() {
+        const imageElem = imageItemElem.querySelector('img')
+        const imgData = imageElem.src;
+        const imageSeed = imageElem.getAttribute('data-seed')
+
+        const imgDownload = document.createElement('a');
+        imgDownload.download = createFileName(imageSeed);
+        imgDownload.href = imgData;
+        imgDownload.click();
+    }
 }
 
 // makes a single image. don't call this directly, use makeImage() instead
@@ -409,7 +422,7 @@ async function doMakeImage(task) {
                         outputMsg.style.display = 'block'
 
                         if (stepUpdate.output !== undefined) {
-                            showImages(reqBody, stepUpdate, true);
+                            showImages(reqBody, stepUpdate, outputContainer, true);
                         }
                     }
                 } catch (e) {
@@ -481,7 +494,7 @@ async function doMakeImage(task) {
 
     lastPromptUsed = reqBody['prompt'];
 
-    showImages(reqBody, res, false);
+    showImages(reqBody, res, outputContainer, false);
 
     return true;
 }
