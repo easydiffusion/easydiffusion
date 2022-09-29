@@ -330,6 +330,7 @@ function getUseAsInputHandler(imageItemElem) {
         inpaintingEditorContainer.style.display = 'none'
         promptStrengthContainer.style.display = 'block'
         maskSetting.checked = false
+        samplerSelectionContainer.style.display = 'none'
 
         // maskSetting.style.display = 'block'
 
