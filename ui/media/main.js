@@ -73,10 +73,10 @@ let editorTagsContainer = document.querySelector('#editor-inputs-tags-container'
 
 let imagePreview = document.querySelector("#preview")
 let previewImageField = document.querySelector('#preview-image')
-previewImageField.onchange = () => changePreviewImages(previewImageField.value);
+previewImageField.onchange = () => changePreviewImages(previewImageField.value)
 
 let modifierCardSizeSlider = document.querySelector('#modifier-card-size-slider')
-modifierCardSizeSlider.onchange = () => resizeModifierCards(modifierCardSizeSlider.value);
+modifierCardSizeSlider.onchange = () => resizeModifierCards(modifierCardSizeSlider.value)
 
 // let previewPrompt = document.querySelector('#preview-prompt')
 
@@ -119,8 +119,8 @@ let bellPending = false
 let taskQueue = []
 let currentTask = null
 
-const modifierThumbnailPath = 'media/modifier-thumbnails';
-const activeCardClass = 'modifier-card-active';
+const modifierThumbnailPath = 'media/modifier-thumbnails'
+const activeCardClass = 'modifier-card-active'
 
 function getLocalStorageItem(key, fallback) {
     let item = localStorage.getItem(key)
@@ -202,7 +202,7 @@ function isStreamImageProgressEnabled() {
 
 function setStatus(statusType, msg, msgType) {
     if (statusType !== 'server') {
-        return;
+        return
     }
 
     if (msgType == 'error') {
@@ -260,10 +260,10 @@ async function healthCheck() {
 }
 
 function showImages(req, res, outputContainer, livePreview) {
-    let imageItemElements = outputContainer.querySelectorAll('.imgItem');
+    let imageItemElements = outputContainer.querySelectorAll('.imgItem')
 
     res.output.forEach((result, index) => {
-        if(typeof res != 'object') return;
+        if(typeof res != 'object') return
 
         const imageData = result?.data || result?.path + '?t=' + new Date().getTime(),
             imageSeed = req.seed,
@@ -273,15 +273,15 @@ function showImages(req, res, outputContainer, livePreview) {
         if (!imageData.includes('/')) {
             // res contained no data for the image, stop execution
 
-            setStatus('request', 'invalid image', 'error');
-            return;
+            setStatus('request', 'invalid image', 'error')
+            return
         }
 
         let imageItemElem = (index < imageItemElements.length ? imageItemElements[index] : null)
 
         if(!imageItemElem) {
-            imageItemElem = document.createElement('div');
-            imageItemElem.className = 'imgItem';
+            imageItemElem = document.createElement('div')
+            imageItemElem.className = 'imgItem'
             imageItemElem.innerHTML = `
                 <div class="imgContainer">
                     <img/>
@@ -291,64 +291,64 @@ function showImages(req, res, outputContainer, livePreview) {
                         <button class="imgSaveBtn">Download</button>
                     </div>
                 </div>
-            `;
+            `
 
             const useAsInputBtn = imageItemElem.querySelector('.imgUseBtn'),
                 saveImageBtn = imageItemElem.querySelector('.imgSaveBtn');
 
-            useAsInputBtn.addEventListener('click', getUseAsInputHandler(imageItemElem));
-            saveImageBtn.addEventListener('click', getSaveImageHandler(imageItemElem));
+            useAsInputBtn.addEventListener('click', getUseAsInputHandler(imageItemElem))
+            saveImageBtn.addEventListener('click', getSaveImageHandler(imageItemElem))
 
-            outputContainer.appendChild(imageItemElem);
+            outputContainer.appendChild(imageItemElem)
         }
 
         const imageElem = imageItemElem.querySelector('img'),
             imageSeedLabel = imageItemElem.querySelector('.imgSeedLabel');
 
-        imageElem.src = imageData;
-        imageElem.width = parseInt(imageWidth);
-        imageElem.height = parseInt(imageHeight);
+        imageElem.src = imageData
+        imageElem.width = parseInt(imageWidth)
+        imageElem.height = parseInt(imageHeight)
         imageElem.setAttribute('data-seed', imageSeed)
 
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
         imageInfo.style.visibility = (livePreview ? 'hidden' : 'visible')
 
-        imageSeedLabel.innerText = 'Seed: ' + imageSeed;
-    });
+        imageSeedLabel.innerText = 'Seed: ' + imageSeed
+    })
 }
 
 function getUseAsInputHandler(imageItemElem) {
     return function() {
         const imageElem = imageItemElem.querySelector('img')
-        const imgData = imageElem.src;
+        const imgData = imageElem.src
         const imageSeed = imageElem.getAttribute('data-seed')
 
-        initImageSelector.value = null;
-        initImagePreview.src = imgData;
+        initImageSelector.value = null
+        initImagePreview.src = imgData
 
-        initImagePreviewContainer.style.display = 'block';
-        inpaintingEditorContainer.style.display = 'none';
-        promptStrengthContainer.style.display = 'block';
-        maskSetting.checked = false;
+        initImagePreviewContainer.style.display = 'block'
+        inpaintingEditorContainer.style.display = 'none'
+        promptStrengthContainer.style.display = 'block'
+        maskSetting.checked = false
 
-        // maskSetting.style.display = 'block';
+        // maskSetting.style.display = 'block'
 
-        randomSeedField.checked = false;
-        seedField.value = imageSeed;
-        seedField.disabled = false;
+        randomSeedField.checked = false
+        seedField.value = imageSeed
+        seedField.disabled = false
     }
 }
 
 function getSaveImageHandler(imageItemElem) {
     return function() {
         const imageElem = imageItemElem.querySelector('img')
-        const imgData = imageElem.src;
+        const imgData = imageElem.src
         const imageSeed = imageElem.getAttribute('data-seed')
 
-        const imgDownload = document.createElement('a');
-        imgDownload.download = createFileName(imageSeed);
-        imgDownload.href = imgData;
-        imgDownload.click();
+        const imgDownload = document.createElement('a')
+        imgDownload.download = createFileName(imageSeed)
+        imgDownload.href = imgData
+        imgDownload.click()
     }
 }
 
@@ -422,7 +422,7 @@ async function doMakeImage(task) {
                         outputMsg.style.display = 'block'
 
                         if (stepUpdate.output !== undefined) {
-                            showImages(reqBody, stepUpdate, outputContainer, true);
+                            showImages(reqBody, stepUpdate, outputContainer, true)
                         }
                     }
                 } catch (e) {
@@ -490,13 +490,13 @@ async function doMakeImage(task) {
         res = undefined
     }
 
-    if (!res) return false;
+    if (!res) return false
 
-    lastPromptUsed = reqBody['prompt'];
+    lastPromptUsed = reqBody['prompt']
 
-    showImages(reqBody, res, outputContainer, false);
+    showImages(reqBody, res, outputContainer, false)
 
-    return true;
+    return true
 }
 
 async function checkTasks() {
@@ -600,8 +600,8 @@ async function makeImage() {
 
     let prompt = promptField.value
     if (activeTags.length > 0) {
-        let promptTags = activeTags.map(x => x.name).join(", ");
-        prompt += ", " + promptTags;
+        let promptTags = activeTags.map(x => x.name).join(", ")
+        prompt += ", " + promptTags
     }
 
     let reqBody = {
@@ -736,20 +736,20 @@ function createFileName(seed) {
     let fileName = `${underscoreName}_Seed-${seed}_Steps-${steps}_Guidance-${guidance}`
 
     // add the tags
-    // let tags = [];
-    // let tagString = '';
+    // let tags = []
+    // let tagString = ''
     // document.querySelectorAll(modifyTagsSelector).forEach(function(tag) {
-    //     tags.push(tag.innerHTML);
+    //     tags.push(tag.innerHTML)
     // })
 
     // join the tags with a pipe
     // if (activeTags.length > 0) {
-    //     tagString = '_Tags-';
-    //     tagString += tags.join('|');
+    //     tagString = '_Tags-'
+    //     tagString += tags.join('|')
     // }
 
     // // append empty or populated tags
-    // fileName += `${tagString}`;
+    // fileName += `${tagString}`
 
     // add the file extension
     fileName += `.png`
@@ -1024,25 +1024,25 @@ maskSetting.addEventListener('click', function() {
 // https://stackoverflow.com/a/8212878
 function millisecondsToStr(milliseconds) {
     function numberEnding (number) {
-        return (number > 1) ? 's' : '';
+        return (number > 1) ? 's' : ''
     }
 
-    var temp = Math.floor(milliseconds / 1000);
-    var hours = Math.floor((temp %= 86400) / 3600);
+    var temp = Math.floor(milliseconds / 1000)
+    var hours = Math.floor((temp %= 86400) / 3600)
     var s = ''
     if (hours) {
-        s += hours + ' hour' + numberEnding(hours) + ' ';
+        s += hours + ' hour' + numberEnding(hours) + ' '
     }
-    var minutes = Math.floor((temp %= 3600) / 60);
+    var minutes = Math.floor((temp %= 3600) / 60)
     if (minutes) {
-        s += minutes + ' minute' + numberEnding(minutes) + ' ';
+        s += minutes + ' minute' + numberEnding(minutes) + ' '
     }
-    var seconds = temp % 60;
+    var seconds = temp % 60
     if (!hours && minutes < 4 && seconds) {
-        s += seconds + ' second' + numberEnding(seconds);
+        s += seconds + ' second' + numberEnding(seconds)
     }
 
-    return s;
+    return s
 }
 
 // https://gomakethings.com/finding-the-next-and-previous-sibling-elements-that-match-a-selector-with-vanilla-js/
@@ -1102,33 +1102,33 @@ function createCollapsibles(node) {
 createCollapsibles()
 
 function refreshTagsList() {
-    editorModifierTagsList.innerHTML = '';
+    editorModifierTagsList.innerHTML = ''
 
     if (activeTags.length == 0) {
-        editorTagsContainer.style.display = 'none';
-        return;
+        editorTagsContainer.style.display = 'none'
+        return
     } else {
-        editorTagsContainer.style.display = 'block';
+        editorTagsContainer.style.display = 'block'
     }
 
     activeTags.forEach((tag, index) => {
-        tag.element.querySelector('.modifier-card-image-overlay').innerText = '-';
-        tag.element.classList.add('modifier-card-tiny');
+        tag.element.querySelector('.modifier-card-image-overlay').innerText = '-'
+        tag.element.classList.add('modifier-card-tiny')
 
-        editorModifierTagsList.appendChild(tag.element);
+        editorModifierTagsList.appendChild(tag.element)
 
         tag.element.addEventListener('click', () => {
-            let idx = activeTags.indexOf(tag);
+            let idx = activeTags.indexOf(tag)
 
             if (idx !== -1) {
-                activeTags[idx].originElement.classList.remove(activeCardClass);
-                activeTags[idx].originElement.querySelector('.modifier-card-image-overlay').innerText = '+';
+                activeTags[idx].originElement.classList.remove(activeCardClass)
+                activeTags[idx].originElement.querySelector('.modifier-card-image-overlay').innerText = '+'
 
-                activeTags.splice(idx, 1);
-                refreshTagsList();
+                activeTags.splice(idx, 1)
+                refreshTagsList()
             }
-        });
-    });
+        })
+    })
 
     let brk = document.createElement('br')
     brk.style.clear = 'both'
@@ -1157,8 +1157,8 @@ async function getDiskPath() {
 }
 
 function createModifierCard(name, previews) {
-    const modifierCard = document.createElement('div');
-    modifierCard.className = 'modifier-card';
+    const modifierCard = document.createElement('div')
+    modifierCard.className = 'modifier-card'
     modifierCard.innerHTML = `
     <div class="modifier-card-overlay"></div>
     <div class="modifier-card-image-container">
@@ -1168,96 +1168,96 @@ function createModifierCard(name, previews) {
     </div>
     <div class="modifier-card-container">
         <div class="modifier-card-label"><p></p></div>
-    </div>`;
+    </div>`
 
-    const image = modifierCard.querySelector('.modifier-card-image');
-    const errorText =  modifierCard.querySelector('.modifier-card-error-label');
-    const label = modifierCard.querySelector('.modifier-card-label');
+    const image = modifierCard.querySelector('.modifier-card-image')
+    const errorText =  modifierCard.querySelector('.modifier-card-error-label')
+    const label = modifierCard.querySelector('.modifier-card-label')
 
-    errorText.innerText = 'No Image';
+    errorText.innerText = 'No Image'
 
     if (typeof previews == 'object') {
         image.src = previews[0]; // portrait
-        image.setAttribute('preview-type', 'portrait');
+        image.setAttribute('preview-type', 'portrait')
     } else {
-        image.remove();
+        image.remove()
     }
 
-    const maxLabelLength = 30;
-    const nameWithoutBy = name.replace('by ', '');
+    const maxLabelLength = 30
+    const nameWithoutBy = name.replace('by ', '')
 
     if(nameWithoutBy.length <= maxLabelLength) {
-        label.querySelector('p').innerText = nameWithoutBy;
+        label.querySelector('p').innerText = nameWithoutBy
     } else {
-        const tooltipText = document.createElement('span');
-        tooltipText.className = 'tooltip-text';
-        tooltipText.innerText = name;
+        const tooltipText = document.createElement('span')
+        tooltipText.className = 'tooltip-text'
+        tooltipText.innerText = name
 
-        label.classList.add('tooltip');
-        label.appendChild(tooltipText);
+        label.classList.add('tooltip')
+        label.appendChild(tooltipText)
 
-        label.querySelector('p').innerText = nameWithoutBy.substring(0, maxLabelLength) + '...';
+        label.querySelector('p').innerText = nameWithoutBy.substring(0, maxLabelLength) + '...'
     }
 
-    return modifierCard;
+    return modifierCard
 }
 
 function changePreviewImages(val) {
-    const previewImages = document.querySelectorAll('.modifier-card-image-container img');
+    const previewImages = document.querySelectorAll('.modifier-card-image-container img')
 
-    let previewArr = [];
+    let previewArr = []
 
-    modifiers.map(x => x.modifiers).forEach(x => previewArr.push(...x.map(m => m.previews)));
+    modifiers.map(x => x.modifiers).forEach(x => previewArr.push(...x.map(m => m.previews)))
     
     previewArr = previewArr.map(x => {
-        let obj = {};
+        let obj = {}
 
         x.forEach(preview => {
-            obj[preview.name] = preview.path;
-        });
+            obj[preview.name] = preview.path
+        })
         
-        return obj;
-    });
+        return obj
+    })
 
     previewImages.forEach(previewImage => {
-        const currentPreviewType = previewImage.getAttribute('preview-type');
-        const relativePreviewPath = previewImage.src.split(modifierThumbnailPath + '/').pop();
+        const currentPreviewType = previewImage.getAttribute('preview-type')
+        const relativePreviewPath = previewImage.src.split(modifierThumbnailPath + '/').pop()
 
-        const previews = previewArr.find(preview => relativePreviewPath == preview[currentPreviewType]);
+        const previews = previewArr.find(preview => relativePreviewPath == preview[currentPreviewType])
 
         if(typeof previews == 'object') {
-            let preview = null;
+            let preview = null
 
             if (val == 'portrait') {
-                preview = previews.portrait;
+                preview = previews.portrait
             }
             else if (val == 'landscape') {
-                preview = previews.landscape;
+                preview = previews.landscape
             }
 
             if(preview != null) {
-                previewImage.src = `${modifierThumbnailPath}/${preview}`;
-                previewImage.setAttribute('preview-type', val);
+                previewImage.src = `${modifierThumbnailPath}/${preview}`
+                previewImage.setAttribute('preview-type', val)
             }
         }
-    });
+    })
 }
 
 function resizeModifierCards(val) {
-    const cardSizePrefix = 'modifier-card-size_';
-    const modifierCardClass = 'modifier-card';
+    const cardSizePrefix = 'modifier-card-size_'
+    const modifierCardClass = 'modifier-card'
 
-    const modifierCards = document.querySelectorAll(`.${modifierCardClass}`);
-    const cardSize = n => `${cardSizePrefix}${n}`;
+    const modifierCards = document.querySelectorAll(`.${modifierCardClass}`)
+    const cardSize = n => `${cardSizePrefix}${n}`
 
     modifierCards.forEach(card => {
         // remove existing size classes
-        const classes = card.className.split(' ').filter(c => !c.startsWith(cardSizePrefix));
-        card.className = classes.join(' ').trim();
+        const classes = card.className.split(' ').filter(c => !c.startsWith(cardSizePrefix))
+        card.className = classes.join(' ').trim()
 
         if(val != 0)
-            card.classList.add(cardSize(val));
-    });
+            card.classList.add(cardSize(val))
+    })
 }
 
 async function loadModifiers() {
@@ -1269,15 +1269,15 @@ async function loadModifiers() {
             modifiers = res; // update global variable
 
             res.forEach((modifierGroup, idx) => {
-                const title = modifierGroup.category;
-                const modifiers = modifierGroup.modifiers;
+                const title = modifierGroup.category
+                const modifiers = modifierGroup.modifiers
 
-                const titleEl = document.createElement('h5');
-                titleEl.className = 'collapsible';
-                titleEl.innerText = title;
+                const titleEl = document.createElement('h5')
+                titleEl.className = 'collapsible'
+                titleEl.innerText = title
 
-                const modifiersEl = document.createElement('div');
-                modifiersEl.classList.add('collapsible-content', 'editor-modifiers-leaf');
+                const modifiersEl = document.createElement('div')
+                modifiersEl.classList.add('collapsible-content', 'editor-modifiers-leaf')
 
                 if (idx == 0) {
                     titleEl.className += ' active'
@@ -1285,21 +1285,21 @@ async function loadModifiers() {
                 }
 
                 modifiers.forEach(modObj => {
-                    const modifierName = modObj.modifier;
-                    const modifierPreviews = modObj?.previews?.map(preview => `${modifierThumbnailPath}/${preview.path}`);
+                    const modifierName = modObj.modifier
+                    const modifierPreviews = modObj?.previews?.map(preview => `${modifierThumbnailPath}/${preview.path}`)
 
-                    const modifierCard = createModifierCard(modifierName, modifierPreviews);
+                    const modifierCard = createModifierCard(modifierName, modifierPreviews)
 
                     if(typeof modifierCard == 'object') {
-                        modifiersEl.appendChild(modifierCard);
+                        modifiersEl.appendChild(modifierCard)
 
                         modifierCard.addEventListener('click', () => {
                             if (activeTags.map(x => x.name).includes(modifierName)) {
                                 // remove modifier from active array
-                                activeTags = activeTags.filter(x => x.name != modifierName);
-                                modifierCard.classList.remove(activeCardClass);
+                                activeTags = activeTags.filter(x => x.name != modifierName)
+                                modifierCard.classList.remove(activeCardClass)
                                 
-                                modifierCard.querySelector('.modifier-card-image-overlay').innerText = '+';
+                                modifierCard.querySelector('.modifier-card-image-overlay').innerText = '+'
                             } else {
                                 // add modifier to active array
                                 activeTags.push({
@@ -1307,17 +1307,17 @@ async function loadModifiers() {
                                     'element': modifierCard.cloneNode(true),
                                     'originElement': modifierCard,
                                     'previews': modifierPreviews
-                                });
+                                })
 
-                                modifierCard.classList.add(activeCardClass);
+                                modifierCard.classList.add(activeCardClass)
 
-                                modifierCard.querySelector('.modifier-card-image-overlay').innerText = '-';
+                                modifierCard.querySelector('.modifier-card-image-overlay').innerText = '-'
                             }
 
-                            refreshTagsList();
-                        });
+                            refreshTagsList()
+                        })
                     }
-                });
+                })
 
                 let brk = document.createElement('br')
                 brk.style.clear = 'both'
