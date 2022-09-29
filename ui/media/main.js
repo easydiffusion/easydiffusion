@@ -262,6 +262,8 @@ async function healthCheck() {
 function showImages(req, res, outputContainer, livePreview) {
     let imageItemElements = outputContainer.querySelectorAll('.imgItem')
 
+    res.output.reverse()
+
     res.output.forEach((result, index) => {
         if(typeof res != 'object') return
 
@@ -364,7 +366,7 @@ async function doMakeImage(task) {
     const outputContainer = document.createElement('div')
 
     outputContainer.className = 'img-batch'
-    task.outputContainer.appendChild(outputContainer)
+    task.outputContainer.insertBefore(outputContainer, task.outputContainer.firstChild)
 
     const outputMsg = task['outputMsg']
     const previewPrompt = task['previewPrompt']
