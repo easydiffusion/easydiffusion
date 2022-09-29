@@ -1,64 +1,47 @@
-import json
-import os, re
-import traceback
+import sys
+import os
+import uuid
+import re
 import torch
+import traceback
 import numpy as np
 from omegaconf import OmegaConf
-from PIL import Image, ImageOps
-from tqdm import tqdm, trange
-from itertools import islice
+from pytorch_lightning import logging
 from einops import rearrange
-import time
-from pytorch_lightning import seed_everything
-from torch import autocast
-from contextlib import nullcontext
-from einops import rearrange, repeat
-from ldm.util import instantiate_from_config
-from optimizedSD.optimUtils import split_weighted_subprompts
-from transformers import logging
+from PIL import Image, ImageOps, ImageChops
+from ldm.generate import Generate
+import transformers
 
 from gfpgan import GFPGANer
 from basicsr.archs.rrdbnet_arch import RRDBNet
 from realesrgan import RealESRGANer
 
-import uuid
+transformers.logging.set_verbosity_error()
 
-logging.set_verbosity_error()
-
-# consts
-config_yaml = "optimizedSD/v1-inference.yaml"
-filename_regex = re.compile('[^a-zA-Z0-9]')
-
-# api stuff
 from . import Request, Response, Image as ResponseImage
 import base64
+import json
 from io import BytesIO
-#from colorama import Fore
+
+filename_regex = re.compile('[^a-zA-Z0-9]')
+
+generator = None
+
+gfpgan_file = None
+real_esrgan_file = None
+model_gfpgan = None
+model_real_esrgan = None
+
+device = None
+precision = 'autocast'
+
+has_valid_gpu = False
+force_full_precision = False
 
 # local
 stop_processing = False
 temp_images = {}
 
-ckpt_file = None
-gfpgan_file = None
-real_esrgan_file = None
-
-model = None
-modelCS = None
-modelFS = None
-model_gfpgan = None
-model_real_esrgan = None
-
-model_is_half = False
-model_fs_is_half = False
-device = None
-unet_bs = 1
-precision = 'autocast'
-sampler_plms = None
-sampler_ddim = None
-
-has_valid_gpu = False
-force_full_precision = False
 try:
     gpu = torch.cuda.current_device()
     gpu_name = torch.cuda.get_device_name(gpu)
@@ -79,68 +62,45 @@ except:
     print('WARNING: No compatible GPU found. Using the CPU, but this will be very slow!')
     pass
 
-def load_model_ckpt(ckpt_to_use, device_to_use='cuda', turbo=False, unet_bs_to_use=1, precision_to_use='autocast', half_model_fs=False):
-    global ckpt_file, model, modelCS, modelFS, model_is_half, device, unet_bs, precision, model_fs_is_half
+def load_model_ckpt(ckpt_to_use, device_to_use='cuda', precision_to_use='autocast'):
+    global generator
 
-    ckpt_file = ckpt_to_use
     device = device_to_use if has_valid_gpu else 'cpu'
     precision = precision_to_use if not force_full_precision else 'full'
-    unet_bs = unet_bs_to_use
 
-    if device == 'cpu':
-        precision = 'full'
+    try:
+        config = 'configs/models.yaml'
+        model = 'stable-diffusion-1.4'
 
-    sd = load_model_from_config(f"{ckpt_file}.ckpt")
-    li, lo = [], []
-    for key, value in sd.items():
-        sp = key.split(".")
-        if (sp[0]) == "model":
-            if "input_blocks" in sp:
-                li.append(key)
-            elif "middle_block" in sp:
-                li.append(key)
-            elif "time_embed" in sp:
-                li.append(key)
-            else:
-                lo.append(key)
-    for key in li:
-        sd["model1." + key[6:]] = sd.pop(key)
-    for key in lo:
-        sd["model2." + key[6:]] = sd.pop(key)
+        models = OmegaConf.load(config)
+        width = models[model].width
+        height = models[model].height
+        config = models[model].config
+        weights = ckpt_to_use + '.ckpt'
+    except (FileNotFoundError, IOError, KeyError) as e:
+        print(f'{e}. Aborting.')
+        sys.exit(-1)
 
-    config = OmegaConf.load(f"{config_yaml}")
+    generator = Generate(
+        width=width,
+        height=height,
+        sampler_name='ddim',
+        weights=weights,
+        full_precision=(precision == 'full'),
+        config=config,
+        grid=False,
+        # this is solely for recreating the prompt
+        seamless=False,
+        embedding_path=None,
+        device_type=device,
+        ignore_ctrl_c=True,
+    )
 
-    model = instantiate_from_config(config.modelUNet)
-    _, _ = model.load_state_dict(sd, strict=False)
-    model.eval()
-    model.cdevice = device
-    model.unet_bs = unet_bs
-    model.turbo = turbo
+    # gets rid of annoying messages about random seed
+    logging.getLogger('pytorch_lightning').setLevel(logging.ERROR)
 
-    modelCS = instantiate_from_config(config.modelCondStage)
-    _, _ = modelCS.load_state_dict(sd, strict=False)
-    modelCS.eval()
-    modelCS.cond_stage_model.device = device
-
-    modelFS = instantiate_from_config(config.modelFirstStage)
-    _, _ = modelFS.load_state_dict(sd, strict=False)
-    modelFS.eval()
-    del sd
-
-    if device != "cpu" and precision == "autocast":
-        model.half()
-        modelCS.half()
-        model_is_half = True
-    else:
-        model_is_half = False
-
-    if half_model_fs:
-        modelFS.half()
-        model_fs_is_half = True
-    else:
-        model_fs_is_half = False
-
-    print('loaded ', ckpt_file, 'to', device, 'precision', precision)
+    # preload the model
+    generator.load_model()
 
 def load_model_gfpgan(gfpgan_to_use):
     global gfpgan_file, model_gfpgan
@@ -179,7 +139,7 @@ def load_model_real_esrgan(real_esrgan_to_use):
         model_real_esrgan.device = torch.device('cpu')
         model_real_esrgan.model.to('cpu')
     else:
-        model_real_esrgan = RealESRGANer(scale=2, model_path=model_path, model=model_to_use, pre_pad=0, half=model_is_half)
+        model_real_esrgan = RealESRGANer(scale=2, model_path=model_path, model=model_to_use, pre_pad=0, half=(precision != 'full'))
 
     model_real_esrgan.model.name = real_esrgan_to_use
 
@@ -193,14 +153,14 @@ def mk_img(req: Request):
 
         gc()
 
-        if device != "cpu":
-            modelFS.to("cpu")
-            modelCS.to("cpu")
+        # if device != "cpu":
+        #     modelFS.to("cpu")
+        #     modelCS.to("cpu")
 
-            model.model1.to("cpu")
-            model.model2.to("cpu")
+        #     model.model1.to("cpu")
+        #     model.model2.to("cpu")
 
-        gc()
+        # gc()
 
         yield json.dumps({
             "status": 'failed',
@@ -208,45 +168,7 @@ def mk_img(req: Request):
         })
 
 def do_mk_img(req: Request):
-    global model, modelCS, modelFS, device
-    global model_gfpgan, model_real_esrgan
-    global stop_processing
-
     stop_processing = False
-
-    res = Response()
-    res.request = req
-    res.images = []
-
-    temp_images.clear()
-
-    model.turbo = req.turbo
-    if req.use_cpu:
-        if device != 'cpu':
-            device = 'cpu'
-
-            if model_is_half:
-                del model, modelCS, modelFS
-                load_model_ckpt(ckpt_file, device)
-
-            load_model_gfpgan(gfpgan_file)
-            load_model_real_esrgan(real_esrgan_file)
-    else:
-        if has_valid_gpu:
-            prev_device = device
-            device = 'cuda'
-
-            if (precision == 'autocast' and (req.use_full_precision or not model_is_half)) or \
-                (precision == 'full' and not req.use_full_precision and not force_full_precision) or \
-                (req.init_image is None and model_fs_is_half) or \
-                (req.init_image is not None and not model_fs_is_half and not force_full_precision):
-
-                del model, modelCS, modelFS
-                load_model_ckpt(ckpt_file, device, req.turbo, unet_bs, ('full' if req.use_full_precision else 'autocast'), half_model_fs=(req.init_image is not None and not req.use_full_precision))
-
-                if prev_device != device:
-                    load_model_gfpgan(gfpgan_file)
-                    load_model_real_esrgan(real_esrgan_file)
 
     if req.use_face_correction != gfpgan_file:
         load_model_gfpgan(req.use_face_correction)
@@ -254,246 +176,156 @@ def do_mk_img(req: Request):
     if req.use_upscale != real_esrgan_file:
         load_model_real_esrgan(req.use_upscale)
 
-    model.cdevice = device
-    modelCS.cond_stage_model.device = device
+    init_image = None
+    init_mask = None
 
-    opt_prompt = req.prompt
-    opt_seed = req.seed
-    opt_n_samples = req.num_outputs
-    opt_n_iter = 1
-    opt_scale = req.guidance_scale
-    opt_C = 4
-    opt_H = req.height
-    opt_W = req.width
-    opt_f = 8
-    opt_ddim_steps = req.num_inference_steps
-    opt_ddim_eta = 0.0
-    opt_strength = req.prompt_strength
-    opt_save_to_disk_path = req.save_to_disk_path
-    opt_init_img = req.init_image
-    opt_use_face_correction = req.use_face_correction
-    opt_use_upscale = req.use_upscale
-    opt_show_only_filtered = req.show_only_filtered_image
-    opt_format = 'png'
-    opt_sampler_name = req.sampler
+    if req.init_image is not None:
+        image = base64_str_to_img(req.init_image)
 
-    print(req.to_string(), '\n    device', device)
+        w, h = image.size
+        print(f"loaded input image of size ({w}, {h}) from base64")
+        if req.width is not None and req.height is not None:
+            h, w = req.height, req.width
 
-    print('\n\n    Using precision:', precision)
+        w, h = map(lambda x: x - x % 64, (w, h))  # resize to integer multiple of 64
+        image = image.resize((w, h), resample=Image.Resampling.LANCZOS)
+        init_image = generator._create_init_image(image)
 
-    seed_everything(opt_seed)
+        if generator._has_transparency(image) and req.mask is None:      # if image has a transparent area and no mask was provided, then try to generate mask
+            print('>> Initial image has transparent areas. Will inpaint in these regions.')
+            if generator._check_for_erasure(image):
+                print(
+                    '>> WARNING: Colors underneath the transparent region seem to have been erased.\n',
+                    '>>          Inpainting will be suboptimal. Please preserve the colors when making\n',
+                    '>>          a transparency mask, or provide mask explicitly using --init_mask (-M).'
+                )
+            init_mask = generator._create_init_mask(image)                   # this returns a torch tensor
 
-    batch_size = opt_n_samples
-    prompt = opt_prompt
-    assert prompt is not None
-    data = [batch_size * [prompt]]
-
-    if precision == "autocast" and device != "cpu":
-        precision_scope = autocast
-    else:
-        precision_scope = nullcontext
-
-    mask = None
-
-    if req.init_image is None:
-        handler = _txt2img
-
-        init_latent = None
-        t_enc = None
-    else:
-        handler = _img2img
-
-        init_image = load_img(req.init_image, opt_W, opt_H)
-        init_image = init_image.to(device)
-
-        if device != "cpu" and precision == "autocast":
+        if device != "cpu" and precision != "full":
             init_image = init_image.half()
 
-        modelFS.to(device)
-
-        init_image = repeat(init_image, '1 ... -> b ...', b=batch_size)
-        init_latent = modelFS.get_first_stage_encoding(modelFS.encode_first_stage(init_image))  # move to latent space
-
         if req.mask is not None:
-            mask = load_mask(req.mask, opt_W, opt_H, init_latent.shape[2], init_latent.shape[3], True).to(device)
-            mask = mask[0][0].unsqueeze(0).repeat(4, 1, 1).unsqueeze(0)
-            mask = repeat(mask, '1 ... -> b ...', b=batch_size)
+            image = base64_str_to_img(req.mask)
 
-            if device != "cpu" and precision == "autocast":
-                mask = mask.half()
+            image = ImageChops.invert(image)
 
-        move_fs_to_cpu()
+            w, h = image.size
+            print(f"loaded input image of size ({w}, {h}) from base64")
+            if req.width is not None and req.height is not None:
+                h, w = req.height, req.width
 
-        assert 0. <= opt_strength <= 1., 'can only work with strength in [0.0, 1.0]'
-        t_enc = int(opt_strength * opt_ddim_steps)
-        print(f"target t_enc is {t_enc} steps")
+            w, h = map(lambda x: x - x % 64, (w, h))  # resize to integer multiple of 64
+            image = image.resize((w, h), resample=Image.Resampling.LANCZOS)
 
-    if opt_save_to_disk_path is not None:
-        session_out_path = os.path.join(opt_save_to_disk_path, req.session_id)
+            init_mask = generator._create_init_mask(image)
+
+        if init_mask is not None:
+            req.sampler = 'plms' # hack to force the underlying implementation to initialize DDIM properly
+
+    result = generator.prompt2image(
+        req.prompt,
+        iterations     =    req.num_outputs,
+        steps          =    req.num_inference_steps,
+        seed           =    req.seed,
+        cfg_scale      =    req.guidance_scale,
+        ddim_eta       =    0.0,
+        skip_normalize =    False,
+        image_callback =    None,
+        step_callback  =    None,
+        width          =    req.width,
+        height         =    req.height,
+        sampler_name   =    req.sampler,
+        seamless       =    False,
+        log_tokenization=  False,
+        with_variations =   None,
+        variation_amount =  0.0,
+        # these are specific to img2img and inpaint
+        init_img       =    init_image,
+        init_mask      =    init_mask,
+        fit            =    False,
+        strength       =    req.prompt_strength,
+        init_img_is_path = False,
+        # these are specific to GFPGAN/ESRGAN
+        gfpgan_strength=    0,
+        save_original  =    False,
+        upscale        =    None,
+        negative_prompt=    req.negative_prompt,
+    )
+
+    has_filters =   (req.use_face_correction is not None and req.use_face_correction.startswith('GFPGAN')) or \
+                    (req.use_upscale is not None and req.use_upscale.startswith('RealESRGAN'))
+
+    print('has filter', has_filters)
+
+    return_orig_img = not has_filters or not req.show_only_filtered_image
+
+    res = Response()
+    res.request = req
+    res.images = []
+
+    if req.save_to_disk_path is not None:
+        session_out_path = os.path.join(req.save_to_disk_path, req.session_id)
         os.makedirs(session_out_path, exist_ok=True)
     else:
         session_out_path = None
 
-    seeds = ""
-    with torch.no_grad():
-        for n in trange(opt_n_iter, desc="Sampling"):
-            for prompts in tqdm(data, desc="data"):
+    for img, seed in result:
+        if req.save_to_disk_path is not None:
+            prompt_flattened = filename_regex.sub('_', req.prompt)
+            prompt_flattened = prompt_flattened[:50]
 
-                with precision_scope("cuda"):
-                    modelCS.to(device)
-                    uc = None
-                    if opt_scale != 1.0:
-                        uc = modelCS.get_learned_conditioning(batch_size * [req.negative_prompt])
-                    if isinstance(prompts, tuple):
-                        prompts = list(prompts)
+            img_id = str(uuid.uuid4())[-8:]
 
-                    subprompts, weights = split_weighted_subprompts(prompts[0])
-                    if len(subprompts) > 1:
-                        c = torch.zeros_like(uc)
-                        totalWeight = sum(weights)
-                        # normalize each "sub prompt" and add it
-                        for i in range(len(subprompts)):
-                            weight = weights[i]
-                            # if not skip_normalize:
-                            weight = weight / totalWeight
-                            c = torch.add(c, modelCS.get_learned_conditioning(subprompts[i]), alpha=weight)
-                    else:
-                        c = modelCS.get_learned_conditioning(prompts)
+            file_path = f"{prompt_flattened}_{img_id}"
+            img_out_path = os.path.join(session_out_path, f"{file_path}.{req.output_format}")
+            meta_out_path = os.path.join(session_out_path, f"{file_path}.txt")
 
-                    modelFS.to(device)
+            if return_orig_img:
+                save_image(img, img_out_path)
 
-                    partial_x_samples = None
-                    def img_callback(x_samples, i):
-                        nonlocal partial_x_samples
+            save_metadata(meta_out_path, req.prompt, seed, req.width, req.height, req.num_inference_steps, req.guidance_scale, req.prompt_strength, req.use_face_correction, req.use_upscale, req.sampler, req.negative_prompt)
 
-                        partial_x_samples = x_samples
+        if return_orig_img:
+            img_data = img_to_base64_str(img)
+            res_image_orig = ResponseImage(data=img_data, seed=seed)
+            res.images.append(res_image_orig)
 
-                        if req.stream_progress_updates:
-                            n_steps = opt_ddim_steps if req.init_image is None else t_enc
-                            progress = {"step": i, "total_steps": n_steps}
+            if req.save_to_disk_path is not None:
+                res_image_orig.path_abs = img_out_path
 
-                            if req.stream_image_progress and i % 5 == 0:
-                                partial_images = []
+        if has_filters and not stop_processing:
+            print('Applying filters..')
 
-                                for i in range(batch_size):
-                                    x_samples_ddim = modelFS.decode_first_stage(x_samples[i].unsqueeze(0))
-                                    x_sample = torch.clamp((x_samples_ddim + 1.0) / 2.0, min=0.0, max=1.0)
-                                    x_sample = 255.0 * rearrange(x_sample[0].cpu().numpy(), "c h w -> h w c")
-                                    x_sample = x_sample.astype(np.uint8)
-                                    img = Image.fromarray(x_sample)
-                                    buf = BytesIO()
-                                    img.save(buf, format='JPEG')
-                                    buf.seek(0)
+            gc()
+            filters_applied = []
 
-                                    del img, x_sample, x_samples_ddim
-                                    # don't delete x_samples, it is used in the code that called this callback
+            np_img = img.convert('RGB')
+            np_img = np.array(np_img, dtype=np.uint8)
 
-                                    temp_images[str(req.session_id) + '/' + str(i)] = buf
-                                    partial_images.append({'path': f'/image/tmp/{req.session_id}/{i}'})
+            if req.use_face_correction:
+                _, _, np_img = model_gfpgan.enhance(np_img, has_aligned=False, only_center_face=False, paste_back=True)
+                filters_applied.append(req.use_face_correction)
 
-                                progress['output'] = partial_images
+            if req.use_upscale:
+                np_img, _ = model_real_esrgan.enhance(np_img)
+                filters_applied.append(req.use_upscale)
 
-                            yield json.dumps(progress)
+            filtered_image = Image.fromarray(np_img)
 
-                        if stop_processing:
-                            raise UserInitiatedStop("User requested that we stop processing")
+            filtered_img_data = img_to_base64_str(filtered_image)
+            res_image_filtered = ResponseImage(data=filtered_img_data, seed=seed)
+            res.images.append(res_image_filtered)
 
-                    # run the handler
-                    try:
-                        if handler == _txt2img:
-                            x_samples = _txt2img(opt_W, opt_H, opt_n_samples, opt_ddim_steps, opt_scale, None, opt_C, opt_f, opt_ddim_eta, c, uc, opt_seed, img_callback, mask, opt_sampler_name)
-                        else:
-                            x_samples = _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc, opt_ddim_steps, opt_ddim_eta, opt_seed, img_callback, mask)
+            filters_applied = "_".join(filters_applied)
 
-                        yield from x_samples
+            if req.save_to_disk_path is not None:
+                filtered_img_out_path = os.path.join(session_out_path, f"{file_path}_{filters_applied}.{req.output_format}")
+                save_image(filtered_image, filtered_img_out_path)
+                res_image_filtered.path_abs = filtered_img_out_path
 
-                        x_samples = partial_x_samples
-                    except UserInitiatedStop:
-                        if partial_x_samples is None:
-                            continue
-
-                        x_samples = partial_x_samples
-
-                    print("saving images")
-                    for i in range(batch_size):
-
-                        x_samples_ddim = modelFS.decode_first_stage(x_samples[i].unsqueeze(0))
-                        x_sample = torch.clamp((x_samples_ddim + 1.0) / 2.0, min=0.0, max=1.0)
-                        x_sample = 255.0 * rearrange(x_sample[0].cpu().numpy(), "c h w -> h w c")
-                        x_sample = x_sample.astype(np.uint8)
-                        img = Image.fromarray(x_sample)
-
-                        has_filters =   (opt_use_face_correction is not None and opt_use_face_correction.startswith('GFPGAN')) or \
-                                        (opt_use_upscale is not None and opt_use_upscale.startswith('RealESRGAN'))
-
-                        return_orig_img = not has_filters or not opt_show_only_filtered
-
-                        if stop_processing:
-                            return_orig_img = True
-
-                        if opt_save_to_disk_path is not None:
-                            prompt_flattened = filename_regex.sub('_', prompts[0])
-                            prompt_flattened = prompt_flattened[:50]
-
-                            img_id = str(uuid.uuid4())[-8:]
-
-                            file_path = f"{prompt_flattened}_{img_id}"
-                            img_out_path = os.path.join(session_out_path, f"{file_path}.{opt_format}")
-                            meta_out_path = os.path.join(session_out_path, f"{file_path}.txt")
-
-                            if return_orig_img:
-                                save_image(img, img_out_path)
-
-                            save_metadata(meta_out_path, prompts, opt_seed, opt_W, opt_H, opt_ddim_steps, opt_scale, opt_strength, opt_use_face_correction, opt_use_upscale, opt_sampler_name, req.negative_prompt)
-
-                        if return_orig_img:
-                            img_data = img_to_base64_str(img)
-                            res_image_orig = ResponseImage(data=img_data, seed=opt_seed)
-                            res.images.append(res_image_orig)
-
-                            if opt_save_to_disk_path is not None:
-                                res_image_orig.path_abs = img_out_path
-
-                        del img
-
-                        if has_filters and not stop_processing:
-                            print('Applying filters..')
-
-                            gc()
-                            filters_applied = []
-
-                            if opt_use_face_correction:
-                                _, _, output = model_gfpgan.enhance(x_sample[:,:,::-1], has_aligned=False, only_center_face=False, paste_back=True)
-                                x_sample = output[:,:,::-1]
-                                filters_applied.append(opt_use_face_correction)
-
-                            if opt_use_upscale:
-                                output, _ = model_real_esrgan.enhance(x_sample[:,:,::-1])
-                                x_sample = output[:,:,::-1]
-                                filters_applied.append(opt_use_upscale)
-
-                            filtered_image = Image.fromarray(x_sample)
-
-                            filtered_img_data = img_to_base64_str(filtered_image)
-                            res_image_filtered = ResponseImage(data=filtered_img_data, seed=opt_seed)
-                            res.images.append(res_image_filtered)
-
-                            filters_applied = "_".join(filters_applied)
-
-                            if opt_save_to_disk_path is not None:
-                                filtered_img_out_path = os.path.join(session_out_path, f"{file_path}_{filters_applied}.{opt_format}")
-                                save_image(filtered_image, filtered_img_out_path)
-                                res_image_filtered.path_abs = filtered_img_out_path
-
-                            del filtered_image
-
-                        seeds += str(opt_seed) + ","
-                        opt_seed += 1
-
-                    move_fs_to_cpu()
-                    gc()
-                    del x_samples, x_samples_ddim, x_sample
-                    print("memory_final = ", torch.cuda.memory_allocated() / 1e6)
+            del filtered_image
+        
+        del img
 
     print('Task completed')
 
@@ -505,8 +337,8 @@ def save_image(img, img_out_path):
     except:
         print('could not save the file', traceback.format_exc())
 
-def save_metadata(meta_out_path, prompts, opt_seed, opt_W, opt_H, opt_ddim_steps, opt_scale, opt_prompt_strength, opt_correct_face, opt_upscale, sampler_name, negative_prompt):
-    metadata = f"{prompts[0]}\nWidth: {opt_W}\nHeight: {opt_H}\nSeed: {opt_seed}\nSteps: {opt_ddim_steps}\nGuidance Scale: {opt_scale}\nPrompt Strength: {opt_prompt_strength}\nUse Face Correction: {opt_correct_face}\nUse Upscaling: {opt_upscale}\nSampler: {sampler_name}\nNegative Prompt: {negative_prompt}"
+def save_metadata(meta_out_path, prompt, seed, width, height, num_inference_steps, guidance_scale, prompt_strength, use_correct_face, use_upscale, sampler_name, negative_prompt):
+    metadata = f"{prompt}\nWidth: {width}\nHeight: {height}\nSeed: {seed}\nSteps: {num_inference_steps}\nGuidance Scale: {guidance_scale}\nPrompt Strength: {prompt_strength}\nUse Face Correction: {use_correct_face}\nUse Upscaling: {use_upscale}\nSampler: {sampler_name}\nNegative Prompt: {negative_prompt}"
 
     try:
         with open(meta_out_path, 'w') as f:
@@ -514,93 +346,12 @@ def save_metadata(meta_out_path, prompts, opt_seed, opt_W, opt_H, opt_ddim_steps
     except:
         print('could not save the file', traceback.format_exc())
 
-def _txt2img(opt_W, opt_H, opt_n_samples, opt_ddim_steps, opt_scale, start_code, opt_C, opt_f, opt_ddim_eta, c, uc, opt_seed, img_callback, mask, sampler_name):
-    shape = [opt_n_samples, opt_C, opt_H // opt_f, opt_W // opt_f]
-
-    if device != "cpu":
-        mem = torch.cuda.memory_allocated() / 1e6
-        modelCS.to("cpu")
-        while torch.cuda.memory_allocated() / 1e6 >= mem:
-            time.sleep(1)
-
-    if sampler_name == 'ddim':
-        model.make_schedule(ddim_num_steps=opt_ddim_steps, ddim_eta=opt_ddim_eta, verbose=False)
-
-    samples_ddim = model.sample(
-        S=opt_ddim_steps,
-        conditioning=c,
-        seed=opt_seed,
-        shape=shape,
-        verbose=False,
-        unconditional_guidance_scale=opt_scale,
-        unconditional_conditioning=uc,
-        eta=opt_ddim_eta,
-        x_T=start_code,
-        img_callback=img_callback,
-        mask=mask,
-        sampler = sampler_name,
-    )
-
-    yield from samples_ddim
-
-def _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc, opt_ddim_steps, opt_ddim_eta, opt_seed, img_callback, mask):
-    # encode (scaled latent)
-    z_enc = model.stochastic_encode(
-        init_latent,
-        torch.tensor([t_enc] * batch_size).to(device),
-        opt_seed,
-        opt_ddim_eta,
-        opt_ddim_steps,
-    )
-    x_T = None if mask is None else init_latent
-
-    # decode it
-    samples_ddim = model.sample(
-        t_enc,
-        c,
-        z_enc,
-        unconditional_guidance_scale=opt_scale,
-        unconditional_conditioning=uc,
-        img_callback=img_callback,
-        mask=mask,
-        x_T=x_T,
-        sampler = 'ddim'
-    )
-
-    yield from samples_ddim
-
-def move_fs_to_cpu():
-    if device != "cpu":
-        mem = torch.cuda.memory_allocated() / 1e6
-        modelFS.to("cpu")
-        while torch.cuda.memory_allocated() / 1e6 >= mem:
-            time.sleep(1)
-
 def gc():
     if device == 'cpu':
         return
 
     torch.cuda.empty_cache()
     torch.cuda.ipc_collect()
-
-# internal
-
-def chunk(it, size):
-    it = iter(it)
-    return iter(lambda: tuple(islice(it, size)), ())
-
-
-def load_model_from_config(ckpt, verbose=False):
-    print(f"Loading model from {ckpt}")
-    pl_sd = torch.load(ckpt, map_location="cpu")
-    if "global_step" in pl_sd:
-        print(f"Global Step: {pl_sd['global_step']}")
-    sd = pl_sd["state_dict"]
-    return sd
-
-# utils
-class UserInitiatedStop(Exception):
-    pass
 
 def load_img(img_str, w0, h0):
     image = base64_str_to_img(img_str).convert("RGB")

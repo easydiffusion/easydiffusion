@@ -15,16 +15,17 @@
 
     @call git reset --hard
     @call git pull
-    @call git checkout f6cfebffa752ee11a7b07497b8529d5971de916c
+    @call git checkout d87bd29a6862996d8a0980c1343b6f0d4eb718b4
 
-    @call git apply ..\ui\sd_internal\ddim_callback.patch
-    @call git apply ..\ui\sd_internal\env_yaml.patch
+    @REM @call git apply ..\ui\sd_internal\ddim_callback.patch
+    @REM @call git apply ..\ui\sd_internal\env_yaml.patch
+    @call git apply ..\ui\sd_internal\custom_sd.patch
 
     @cd ..
 ) else (
     @echo. & echo "Downloading Stable Diffusion.." & echo.
 
-    @call git clone https://github.com/basujindal/stable-diffusion.git && (
+    @call git clone https://github.com/invoke-ai/InvokeAI.git stable-diffusion && (
         @echo sd_git_cloned >> scripts\install_status.txt
     ) || (
         @echo "Error downloading Stable Diffusion. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/blob/main/Troubleshooting.md" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
@@ -33,10 +34,11 @@
     )
 
     @cd stable-diffusion
-    @call git checkout f6cfebffa752ee11a7b07497b8529d5971de916c
+    @call git checkout d87bd29a6862996d8a0980c1343b6f0d4eb718b4
 
-    @call git apply ..\ui\sd_internal\ddim_callback.patch
-    @call git apply ..\ui\sd_internal\env_yaml.patch
+    @REM @call git apply ..\ui\sd_internal\ddim_callback.patch
+    @REM @call git apply ..\ui\sd_internal\env_yaml.patch
+    @call git apply ..\ui\sd_internal\custom_sd.patch
 
     @cd ..
 )
@@ -80,58 +82,6 @@
 )
 
 set PATH=C:\Windows\System32;%PATH%
-
-@>nul grep -c "conda_sd_gfpgan_deps_installed" ..\scripts\install_status.txt
-@if "%ERRORLEVEL%" EQU "0" (
-    @echo "Packages necessary for GFPGAN (Face Correction) were already installed"
-) else (
-    @echo. & echo "Downloading packages necessary for GFPGAN (Face Correction).." & echo.
-
-    @set PYTHONNOUSERSITE=1
-
-    @call pip install -e git+https://github.com/TencentARC/GFPGAN#egg=GFPGAN || (
-        @echo. & echo "Error installing the packages necessary for GFPGAN (Face Correction). Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/blob/main/Troubleshooting.md" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
-        pause
-        exit /b
-    )
-
-    @call pip install basicsr==1.4.2 || (
-        @echo. & echo "Error installing the basicsr package necessary for GFPGAN (Face Correction). Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/blob/main/Troubleshooting.md" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
-        pause
-        exit /b
-    )
-
-    for /f "tokens=*" %%a in ('python -c "from gfpgan import GFPGANer; print(42)"') do if "%%a" NEQ "42" (
-        @echo. & echo "Dependency test failed! Error installing the packages necessary for GFPGAN (Face Correction). Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/blob/main/Troubleshooting.md" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
-        pause
-        exit /b
-    )
-
-    @echo conda_sd_gfpgan_deps_installed >> ..\scripts\install_status.txt
-)
-
-@>nul grep -c "conda_sd_esrgan_deps_installed" ..\scripts\install_status.txt
-@if "%ERRORLEVEL%" EQU "0" (
-    @echo "Packages necessary for ESRGAN (Resolution Upscaling) were already installed"
-) else (
-    @echo. & echo "Downloading packages necessary for ESRGAN (Resolution Upscaling).." & echo.
-
-    @set PYTHONNOUSERSITE=1
-
-    @call pip install -e git+https://github.com/xinntao/Real-ESRGAN#egg=realesrgan || (
-        @echo. & echo "Error installing the packages necessary for ESRGAN (Resolution Upscaling). Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/blob/main/Troubleshooting.md" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
-        pause
-        exit /b
-    )
-
-    for /f "tokens=*" %%a in ('python -c "from basicsr.archs.rrdbnet_arch import RRDBNet; from realesrgan import RealESRGANer; print(42)"') do if "%%a" NEQ "42" (
-        @echo. & echo "Dependency test failed! Error installing the packages necessary for ESRGAN (Resolution Upscaling). Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/blob/main/Troubleshooting.md" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
-        pause
-        exit /b
-    )
-
-    @echo conda_sd_esrgan_deps_installed >> ..\scripts\install_status.txt
-)
 
 @>nul grep -c "conda_sd_ui_deps_installed" ..\scripts\install_status.txt
 @if "%ERRORLEVEL%" EQU "0" (
