@@ -18,11 +18,25 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
+# this is needed for development.
+from fastapi.middleware.cors import CORSMiddleware
 import logging
 
 from sd_internal import Request, Response
 
 app = FastAPI()
+
+# we need to be able to run a local server for the UI (9001)
+# and still be able to hit our python port (9000)
+origins = ["*"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 model_loaded = False
 model_is_loading = False
@@ -33,12 +47,15 @@ outpath = os.path.join(os.path.expanduser("~"), OUTPUT_DIRNAME)
 # don't show access log entries for URLs that start with the given prefix
 ACCESS_LOG_SUPPRESS_PATH_PREFIXES = ['/ping', '/modifier-thumbnails']
 
-app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'media/')), name="media")
+# app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'media/')), name="media")
+app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'frontend/assets/media/')), name="media")
+
 
 # defaults from https://huggingface.co/blog/stable_diffusion
 class ImageRequest(BaseModel):
     session_id: str = "session"
     prompt: str = ""
+    negative_prompt: str = ""
     init_image: str = None # base64
     mask: str = None # base64
     num_outputs: int = 1
@@ -67,7 +84,18 @@ class SetAppConfigRequest(BaseModel):
 @app.get('/')
 def read_root():
     headers = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
-    return FileResponse(os.path.join(SD_UI_DIR, 'index.html'), headers=headers)
+    return FileResponse(os.path.join(SD_UI_DIR,'frontend/dist/index.html'), headers=headers)
+
+# then get the js files
+@app.get('/index.js')
+def read_scripts():
+    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/dist/index.js'))
+
+#then get the css files
+@app.get('/index.css')
+def read_styles():
+    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/dist/index.css'))
+
 
 @app.get('/ping')
 async def ping():
@@ -83,7 +111,10 @@ async def ping():
         model_is_loading = True
 
         from sd_internal import runtime
-        runtime.load_model_ckpt(ckpt_to_use="sd-v1-4")
+
+        custom_weight_path = os.path.join(SCRIPT_DIR, 'custom-model.ckpt')
+        ckpt_to_use = "sd-v1-4" if not os.path.exists(custom_weight_path) else "custom-model"
+        runtime.load_model_ckpt(ckpt_to_use=ckpt_to_use)
 
         model_loaded = True
         model_is_loading = False
@@ -100,6 +131,7 @@ def image(req : ImageRequest):
     r = Request()
     r.session_id = req.session_id
     r.prompt = req.prompt
+    r.negative_prompt = req.negative_prompt
     r.init_image = req.init_image
     r.mask = req.mask
     r.num_outputs = req.num_outputs
@@ -207,10 +239,20 @@ def getAppConfig():
         print(traceback.format_exc())
         return HTTPException(status_code=500, detail=str(e))
 
+# moved these to the root for easier pathing
+# TODO: change the vite config for public files
+@app.get('/ding.mp3')
+def read_ding():
+    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/assets/ding.mp3'))
+
+@app.get('/kofi.png')
+def read_kofi():
+    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/assets/kofi.png'))
+
 @app.get('/modifiers.json')
 def read_modifiers():
     headers = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
-    return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'), headers=headers)
+    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/assets/modifiers.json'), headers=headers)
 
 @app.get('/output_dir')
 def read_home_dir():

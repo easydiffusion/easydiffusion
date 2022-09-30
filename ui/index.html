@@ -1,10 +1,14 @@
+<!--
+    THIS IS NO LONGER BEING SERVED REMOVE WHEN WE HAVE PORTED ANY
+     OF THE FEATURES THAT WERE PARTIALLY COMPLETE WHEN WE DID THE CUT OVER
+-->
 <!DOCTYPE html>
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="/media/favicon-16x16.png" sizes="16x16">
     <link rel="icon" type="image/png" href="/media/favicon-32x32.png" sizes="32x32">
-    <link rel="stylesheet" href="/media/main.css?v=4">
+    <link rel="stylesheet" href="/media/main.css?v=10">
     <link rel="stylesheet" href="/media/modifier-thumbnails.css?v=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <link rel="stylesheet" href="/media/drawingboard.min.css">
@@ -15,7 +19,7 @@
 <div id="container">
     <div id="top-nav">
         <div id="logo">
-            <h1>Stable Diffusion UI <small>v2.17 <span id="updateBranchLabel"></span></small></h1>
+            <h1>Stable Diffusion UI <small>v2.195 <span id="updateBranchLabel"></span></small></h1>
         </div>
         <ul id="top-nav-items">
             <li class="dropdown">
@@ -78,7 +82,7 @@
                 </div>
 
                 <button id="makeImage">Make Image</button>
-                <button id="stopImage">Stop</button>
+                <button id="stopImage" class="secondaryButton">Stop All</button>
             </div>
 
             <div class="line-separator">&nbsp;</div>
@@ -153,8 +157,13 @@
 
                     <br/>
 
+                    <li><b class="settings-subheader">Prompt Settings</b></li>
+                    <li class="pl-5"><label for="negative_prompt">Negative Prompt:</label> <input id="negative_prompt" name="negative_prompt" size="55"></li>
+
+                    <br/>
+
                     <li><b class="settings-subheader">Render Settings</b></li>
-                    <li class="pl-5"><input id="stream_image_progress" name="stream_image_progress" type="checkbox"> <label for="stream_image_progress">Show a live preview of the image <small>(consumes more VRAM, slightly slower image generation)</small></label></li>
+                    <li class="pl-5"><input id="stream_image_progress" name="stream_image_progress" type="checkbox"> <label for="stream_image_progress">Show a live preview of the image <small>(uses more VRAM, slightly slower image creation)</small></label></li>
                     <li class="pl-5"><input id="use_face_correction" name="use_face_correction" type="checkbox" checked> <label for="use_face_correction">Fix incorrect faces and eyes <small>(uses GFPGAN)</small></label></li>
                     <li class="pl-5">
                         <input id="use_upscale" name="use_upscale" type="checkbox"> <label for="use_upscale">Upscale the image to 4x resolution using </label>
@@ -185,15 +194,11 @@
         </div>
 
         <div id="preview" class="col-free">
-            <div id="preview-prompt">
-                <div id="initial-text">
-                    Type a prompt and press the "Make Image" button.<br/><br/>You can set an "Initial Image" if you want to guide the AI.<br/><br/>You can also add modifiers like "Realistic", "Pencil Sketch", "ArtStation" etc by browsing through the "Image Modifiers" section and selecting the desired modifiers.<br/><br/>Click "Advanced Settings" for additional settings like seed, image size, number of images to generate etc.<br/><br/>Enjoy! :)
-                </div>
+            <div id="initial-text">
+                Type a prompt and press the "Make Image" button.<br/><br/>You can set an "Initial Image" if you want to guide the AI.<br/><br/>You can also add modifiers like "Realistic", "Pencil Sketch", "ArtStation" etc by browsing through the "Image Modifiers" section and selecting the desired modifiers.<br/><br/>Click "Advanced Settings" for additional settings like seed, image size, number of images to generate etc.<br/><br/>Enjoy! :)
             </div>
-
-            <div id="outputMsg"></div>
-            <div id="progressBar"></div>
-            <div id="current-images" class="img-preview">
+            <div id="preview-tools">
+                <button id="clear-all-previews" class="secondaryButton"><i class="fa-solid fa-trash-can"></i> Clear All</button>
             </div>
         </div>
     </div>
@@ -212,7 +217,7 @@
 </div>
 </body>
 
-<script src="media/main.js?v=6"></script>
+<script src="media/main.js?v=14"></script>
 <script>
 async function init() {
     await loadModifiers()

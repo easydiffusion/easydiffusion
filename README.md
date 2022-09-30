@@ -8,7 +8,7 @@
 
 [![Discord Server](https://img.shields.io/discord/1014774730907209781?label=Discord)](https://discord.com/invite/u9yhsFmEkB) (for support, and development discussion) | [Troubleshooting guide for common problems](Troubleshooting.md)
 
-️‍🔥🎉 **New!** Live Preview, More Samplers, In-Painting, Face Correction (GFPGAN) and Upscaling (RealESRGAN) have been added!
+️‍🔥🎉 **New!** Task Queue, Negative Prompt, Live Preview, More Samplers, In-Painting, Face Correction (GFPGAN) and Upscaling (RealESRGAN) have been added!
 
 This distribution currently uses Stable Diffusion 1.4. Once the model for 1.5 becomes publicly available, the model in this distribution will be updated.
 
@@ -17,6 +17,8 @@ This distribution currently uses Stable Diffusion 1.4. Once the model for 1.5 be
 - **Face Correction (GFPGAN) and Upscaling (RealESRGAN)**
 - **In-Painting**
 - **Live Preview**: See the image as the AI is drawing it
+- **Task Queue**: Queue up all your ideas, without waiting for the current task to finish
+- **Negative Prompt**: Specify aspects of the image to *remove*.
 - **Lots of Samplers:** ddim, plms, heun, euler, euler_a, dpm2, dpm2_a, lms
 - **Image Modifiers**: A library of *modifier tags* like *"Realistic"*, *"Pencil Sketch"*, *"ArtStation"* etc. Experiment with various styles quickly.
 - **New UI**: with cleaner design

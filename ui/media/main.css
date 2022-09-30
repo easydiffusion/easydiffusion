@@ -54,7 +54,7 @@ label {
 .editor-slider {
     vertical-align: middle;
 }
-#outputMsg {
+.outputMsg {
     font-size: small;
     padding-bottom: 3pt;
 }
@@ -165,7 +165,7 @@ label {
     display: none;
 }
 #stopImage:hover {
-    background: rgb(214, 32, 0);
+    background: rgb(177, 27, 0);
 }
 .flex-container {
     display: flex;
@@ -174,7 +174,7 @@ label {
     flex: 50%;
 }
 .col-fixed-10 {
-    flex: 0 0 400pt;
+    flex: 0 0 380pt;
 }
 .col-free {
     flex: 1;
@@ -212,7 +212,7 @@ label {
     padding-bottom: 10pt;
 }
 #preview {
-    margin-left: 20pt;
+    margin-left: 10pt;
 }
 img {
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
@@ -246,7 +246,7 @@ img {
     padding-left: 2pt;
     font-size: 10pt;
 }
-#preview-prompt {
+.preview-prompt {
     font-size: 16pt;
     margin-bottom: 10pt;
 }
@@ -365,4 +365,48 @@ img {
 }
 .dropdown:hover .dropdown-content {
     display: block;
+}
+
+.imageTaskContainer {
+    border: 1px solid #333;
+    margin-bottom: 10pt;
+    padding: 5pt;
+    border-radius: 5pt;
+    box-shadow: 0 20px 28px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
+}
+.taskStatusLabel {
+    float: left;
+    font-size: 8pt;
+    background:rgb(44, 45, 48);
+    border: 1px solid rgb(61, 62, 66);
+    padding: 2pt 4pt;
+    border-radius: 2pt;
+    margin-right: 5pt;
+}
+.activeTaskLabel {
+    background:rgb(0, 90, 30);
+    border: 1px solid rgb(0, 75, 19);
+    color:rgb(204, 255, 217)
+}
+.secondaryButton {
+    background: rgb(132, 8, 0);
+    border: 1px solid rgb(122, 29, 0);
+    color: rgb(255, 221, 255);
+    padding: 3pt 6pt;
+    border-radius: 5px;
+}
+.secondaryButton:hover {
+    background: rgb(177, 27, 0);
+}
+.stopTask {
+    float: right;
+}
+#preview-tools {
+    display: none;
+    padding: 4pt;
+}
+.taskConfig {
+    font-size: 10pt;
+    color: #aaa;
+    margin-bottom: 5pt;
 }

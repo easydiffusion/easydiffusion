@@ -343,7 +343,7 @@ def do_mk_img(req: Request):
                     modelCS.to(device)
                     uc = None
                     if opt_scale != 1.0:
-                        uc = modelCS.get_learned_conditioning(batch_size * [""])
+                        uc = modelCS.get_learned_conditioning(batch_size * [req.negative_prompt])
                     if isinstance(prompts, tuple):
                         prompts = list(prompts)
 
@@ -370,7 +370,13 @@ def do_mk_img(req: Request):
 
                         if req.stream_progress_updates:
                             n_steps = opt_ddim_steps if req.init_image is None else t_enc
-                            progress = {"step": i, "total_steps": n_steps}
+                            progress = {
+                                "status": "progress",
+                                #"progress": (i + 1) / n_steps,
+                                "progress": {
+                                    "step": i, "total_steps": n_steps
+                                }
+                            }
 
                             if req.stream_image_progress and i % 5 == 0:
                                 partial_images = []
@@ -444,7 +450,7 @@ def do_mk_img(req: Request):
                             if return_orig_img:
                                 save_image(img, img_out_path)
 
-                            save_metadata(meta_out_path, prompts, opt_seed, opt_W, opt_H, opt_ddim_steps, opt_scale, opt_strength, opt_use_face_correction, opt_use_upscale, opt_sampler_name)
+                            save_metadata(meta_out_path, prompts, opt_seed, opt_W, opt_H, opt_ddim_steps, opt_scale, opt_strength, opt_use_face_correction, opt_use_upscale, opt_sampler_name, req.negative_prompt)
 
                         if return_orig_img:
                             img_data = img_to_base64_str(img)
@@ -505,8 +511,8 @@ def save_image(img, img_out_path):
     except:
         print('could not save the file', traceback.format_exc())
 
-def save_metadata(meta_out_path, prompts, opt_seed, opt_W, opt_H, opt_ddim_steps, opt_scale, opt_prompt_strength, opt_correct_face, opt_upscale, sampler_name):
-    metadata = f"{prompts[0]}\nWidth: {opt_W}\nHeight: {opt_H}\nSeed: {opt_seed}\nSteps: {opt_ddim_steps}\nGuidance Scale: {opt_scale}\nPrompt Strength: {opt_prompt_strength}\nUse Face Correction: {opt_correct_face}\nUse Upscaling: {opt_upscale}\nSampler: {sampler_name}"
+def save_metadata(meta_out_path, prompts, opt_seed, opt_W, opt_H, opt_ddim_steps, opt_scale, opt_prompt_strength, opt_correct_face, opt_upscale, sampler_name, negative_prompt):
+    metadata = f"{prompts[0]}\nWidth: {opt_W}\nHeight: {opt_H}\nSeed: {opt_seed}\nSteps: {opt_ddim_steps}\nGuidance Scale: {opt_scale}\nPrompt Strength: {opt_prompt_strength}\nUse Face Correction: {opt_correct_face}\nUse Upscaling: {opt_upscale}\nSampler: {sampler_name}\nNegative Prompt: {negative_prompt}"
 
     try:
         with open(meta_out_path, 'w') as f:
