@@ -77,7 +77,6 @@ export const buttonStyle = recipe({
           backgroundColor: `hsl(var(--tertiary-button-hue),${vars.colorMod.saturation.dim},${vars.colorMod.lightness.dim})`,
         },
       },
-
       cancel: {
         '--cancel-button-hue': vars.errorHue,
         backgroundColor: `hsl(var(--cancel-button-hue), ${vars.colorMod.saturation.normal},${vars.colorMod.lightness.normal})`,
@@ -94,7 +93,9 @@ export const buttonStyle = recipe({
           backgroundColor: `hsl(var(--cancel-button-hue), ${vars.colorMod.saturation.dim} ,${vars.colorMod.lightness.dim})`,
         },
       },
-
+      clear: {
+        backgroundColor: "transparent",
+      },
     },
 
     size: {

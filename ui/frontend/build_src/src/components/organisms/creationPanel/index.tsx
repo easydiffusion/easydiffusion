@@ -13,21 +13,16 @@ import QueueDisplay from "../queueDisplay";
 import { useImageCreate } from "../../../stores/imageCreateStore";
 import { useRequestQueue } from "../../../stores/requestQueueStore";
 
-import { useCreateUI } from "./creationPanelUIStore";
-
-// import "./creationPanel.css";
 
 import {
   CreationPaneMain,
   InpaintingSlider,
-  QueueSlider,
 } from "./creationPanel.css";
 
 
 export default function CreationPanel() {
   const isInPaintingMode = useImageCreate((state) => state.isInpainting);
 
-  const showQueue = useCreateUI((state) => state.showQueue);
   const hasQueue = useRequestQueue((state) => state.hasAnyQueue());
 
   return (
@@ -43,13 +38,6 @@ export default function CreationPanel() {
           <InpaintingPanel></InpaintingPanel>
         </div>
       )}
-
-      {(showQueue && hasQueue) && (
-        <div className={QueueSlider}>
-          <QueueDisplay></QueueDisplay>
-        </div>
-      )}
-
     </>
   );
 }

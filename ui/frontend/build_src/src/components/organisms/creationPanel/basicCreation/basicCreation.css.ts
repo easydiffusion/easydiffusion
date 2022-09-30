@@ -1,9 +1,17 @@
 import { style, globalStyle } from "@vanilla-extract/css";
 
-export const CreationBasicMain = style({
-  position: "relative",
-  width: "100%",
-});
+import { card } from "../../../_recipes/card.css";
+
+
+export const CreationBasicMain = style([
+  card({
+    baking: 'normal',
+    level: 1
+  }), {
+    position: "relative",
+    width: "100%",
+  }]
+);
 
 globalStyle(`${CreationBasicMain} > *`, {
   marginBottom: "10px",

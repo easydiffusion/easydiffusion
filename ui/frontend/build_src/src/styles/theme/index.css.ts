@@ -76,14 +76,14 @@ const app = createGlobalTheme(":root", {
   },
   colors,
 
+  // 60degree color difference
+  brandHue: '265', // purple
+  secondaryHue: '205', // light blue
+  tertiaryHue: '145', // grass green
 
-  brandHue: '265',
-  secondaryHue: '54',
-  tertiaryHue: '116',
-
-  errorHue: '0',
-  warningHue: '60',
-  successHue: '120',
+  errorHue: '325', // magenta
+  warningHue: '25', // orange
+  successHue: '85', // green
 
   colorMod: {
     saturation: {

@@ -7,6 +7,14 @@ import {
 } from "../../../../styles/shared.css";
 
 import {
+  card
+} from '../../../_recipes/card.css';
+
+import {
+  buttonStyle,
+} from "../../../_recipes/button.css";
+
+import {
   ImagerModifierGroups,
   ImageModifierGrouping,
   ModifierListStyle,
@@ -72,21 +80,26 @@ export default function ImageModifers() {
   };
 
   return (
-    <div className={PanelBox}>
+    <div className={card(
+      {
+        level: 1,
+        baking: 'normal'
+      }
+    )}>
       <button
         type="button"
         onClick={handleClick}
-        className="panel-box-toggle-btn"
+        className={buttonStyle({
+          type: 'clear',
+          size: 'large'
+        })}
       >
-        {/* TODO: swap this manual collapse stuff out for some UI component? */}
-        <h3>Image Modifiers (art styles, tags, ect)</h3>
+        Image Modifiers
       </button>
 
       {imageModifierIsOpen && (
         <ul className={ImagerModifierGroups}>
           {allModifiers.map((item, index) => {
-
-
             return (
               <li key={item.category}>
                 <ModifierGrouping title={item.category} category={item.category} tags={item.modifiers} />

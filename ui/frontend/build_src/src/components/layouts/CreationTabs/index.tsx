@@ -3,19 +3,11 @@ import { Tab } from '@headlessui/react';
 import CreationPanel from "../../organisms/creationPanel";
 import QueueDisplay from "../../organisms/queueDisplay";
 
-import {
-  CreationTabsMain
-} from "./creationTabs.css";
 
 import {
   tabPanelStyles,
   tabStyles,
 } from "../../_recipes/tabs_headless.css";
-
-import {
-  card as cardStyle
-} from "../../_recipes/card.css";
-
 
 
 export default function CreationTabs() {

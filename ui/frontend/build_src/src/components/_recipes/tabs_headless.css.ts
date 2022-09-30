@@ -11,7 +11,7 @@ export const tabStyles = recipe({
     border: `1px solid ${vars.backgroundLight}`,
     borderBottom: 'none',
     marginLeft: vars.spacing.small,
-    boxShadow: `0px -1px 4px -2px ${vars.backgroundAccentMain}`,
+    boxShadow: `0px -1px 4px -2px ${vars.backgroundAccentMain} inset`,
   },
 
   variants: {
@@ -19,6 +19,7 @@ export const tabStyles = recipe({
       true: {
         background: vars.backgroundLight,
         color: vars.colors.text.normal,
+        boxShadow: `0px -1px 4px -2px ${vars.backgroundDark} inset`,
       }
     }
   }
@@ -30,6 +31,12 @@ export const tabPanelStyles = recipe({
     borderRadius: `0 0 ${vars.trim.smallBorderRadius} ${vars.trim.smallBorderRadius}`,
     background: vars.backgroundLight,
     padding: vars.spacing.medium,
+    flexGrow: 1,
+    overflow: 'auto',
+    "::-webkit-scrollbar": {
+      width: "0",
+    },
+
   },
   variants: {
 

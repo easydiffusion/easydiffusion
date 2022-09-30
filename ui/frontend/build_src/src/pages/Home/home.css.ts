@@ -40,8 +40,8 @@ export const CreateLayout = style({
   position: "relative",
   display: "flex",
   flexDirection: "column",
-  overflowY: "auto",
-  overflowX: "hidden",
+  // overflowY: "auto",
+  // overflowX: "hidden",
   padding: `0 ${vars.spacing.small}`,
 });
 

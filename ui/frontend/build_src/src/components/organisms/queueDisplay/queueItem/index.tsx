@@ -2,9 +2,6 @@
 
 import React from "react";
 
-import {
-  ImageRequest
-} from '../../../../api'
 
 import { QueueStatus, QueuedRequest, useRequestQueue } from '../../../../stores/requestQueueStore';
 
@@ -14,12 +11,6 @@ import {
   QueueItemMain,
   QueueItemInfo,
   QueueButtons,
-  // CompleteButtton,
-  // PauseButton,
-  // ResumeButton,
-  // CancelButton,
-  // RetryButton,
-  // SendToTopButton,
 } from "./queueItem.css";
 
 
