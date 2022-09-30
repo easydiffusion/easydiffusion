@@ -3,12 +3,12 @@ import { vars } from "../../styles/theme/index.css";
 
 export const AppLayout = style({
   position: "relative",
-  backgroundColor: vars.colors.background,
+
   width: "100%",
   height: "100%",
   pointerEvents: "auto",
   display: "grid",
-  // backgroundColor: "rgb(32, 33, 36)",
+  backgroundColor: vars.backgroundMain,
   gridTemplateColumns: "400px 1fr",
   gridTemplateRows: "100px 1fr 115px",
   gridTemplateAreas: `
@@ -42,13 +42,9 @@ export const CreateLayout = style({
   flexDirection: "column",
   overflowY: "auto",
   overflowX: "hidden",
+  padding: `0 ${vars.spacing.small}`,
 });
 
-// globalStyle(`${CreateLayout}`, {
-
-
-
-// }
 
 export const DisplayLayout = style({
   gridArea: "display",

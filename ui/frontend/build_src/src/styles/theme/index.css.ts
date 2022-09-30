@@ -4,27 +4,6 @@ import {
   createTheme,
 } from "@vanilla-extract/css";
 
-/**
- * Colors are all the same across the themes, this is just to set up a contract
- * Colors can be decided later. I am just the architect.
- * Tried to pull things from the original app.
- *
- * Lots of these arent used yet, but once they are defined and useable then they can be set.
- */
-
-// const SharedColors = {
-
-//   pending: null,
-//   processing: null,
-//   paused: null,
-
-//   link: null,
-
-//   warning: null,
-//   error: null,
-//   success: null,
-
-// }
 
 const colors = createThemeContract({
   brand: null,
@@ -60,11 +39,6 @@ const colors = createThemeContract({
     accent: null,
     accentDimmed: null,
   },
-
-  // pending: null,
-  // processing: null,
-  // paused: null,
-
 
   link: null,
 
@@ -102,9 +76,6 @@ const app = createGlobalTheme(":root", {
   },
   colors,
 
-  backgroundMain: 'hsl(0, 0%, 30%)',
-  backgroundLight: 'hsl(0, 0%, 50%)',
-  backgroundDark: 'hsl(0, 0%, 20%)',
 
   brandHue: '265',
   secondaryHue: '54',
@@ -126,6 +97,13 @@ const app = createGlobalTheme(":root", {
       dim: "40%",
     },
   },
+
+  backgroundMain: 'hsl(225, 6%, 13%)',
+  backgroundLight: 'hsl(225, 4%, 18%)',
+  backgroundDark: 'hsl(225, 3%, 7%)',
+
+  backgroundAccentMain: 'hsl(225, 6%, 30%)',
+
 
 });
 
