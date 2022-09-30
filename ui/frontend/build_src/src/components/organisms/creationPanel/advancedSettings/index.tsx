@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { useCreateUI } from "../creationPanelUIStore";
 
-import { PanelBox } from "../../../../styles/shared.css";
 
 import {
   card
@@ -49,7 +48,7 @@ export default function AdvancedSettings() {
     <div className={card(
       {
         level: 1,
-        baking: 'normal'
+        backing: 'plain'
       }
     )}>
       <button

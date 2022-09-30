@@ -81,7 +81,7 @@ export default function ImageModifers() {
     <div className={card(
       {
         level: 1,
-        baking: 'normal'
+        backing: 'normal'
       }
     )}>
       <button

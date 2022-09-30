@@ -79,22 +79,23 @@ const app = createGlobalTheme(":root", {
   // 6 0degree color difference
   // step downs
   brandHue: '265', // purple
-  secondaryHue: '205', // light blue
+  secondaryHue: '20', // light blue
   tertiaryHue: '145', // grass green
 
   // step ups
-  errorHue: '0', // magenta
+  errorHue: '0',
   warningHue: '25', // orange
   successHue: '85', // green
 
   colorMod: {
     saturation: {
-      normal: "70%",
       bright: "100%",
+      normal: "60%",
+      dimmed: "50%",
       dim: "30%",
     },
     lightness: {
-      normal: "50%",
+      normal: "45%",
       bright: "60%",
       dim: "40%",
     },

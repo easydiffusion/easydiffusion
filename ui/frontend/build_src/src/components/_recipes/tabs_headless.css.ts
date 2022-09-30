@@ -40,7 +40,7 @@ export const tabPanelStyles = recipe({
   },
   variants: {
 
-    baking: {
+    backing: {
       normal: {
         background: vars.backgroundMain,
       },

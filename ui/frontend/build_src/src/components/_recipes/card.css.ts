@@ -9,7 +9,7 @@ export const card = recipe({
   },
   variants: {
 
-    baking: {
+    backing: {
       normal: {
         background: vars.backgroundMain,
       },
@@ -35,7 +35,7 @@ export const card = recipe({
     },
   },
   defaultVariants: {
-    baking: "light",
+    backing: "light",
     level: 'flat',
     rounded: true,
   },

@@ -13,7 +13,7 @@ import {
 
 export const QueueItemMain = style([card(
   {
-    baking: "dark",
+    backing: "dark",
     level: 1
   }
 ), {

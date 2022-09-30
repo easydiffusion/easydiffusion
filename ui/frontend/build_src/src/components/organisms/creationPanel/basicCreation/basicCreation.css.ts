@@ -5,7 +5,7 @@ import { card } from "../../../_recipes/card.css";
 
 export const CreationBasicMain = style([
   card({
-    baking: 'normal',
+    backing: 'normal',
     level: 1
   }), {
     position: "relative",
