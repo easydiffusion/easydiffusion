@@ -576,7 +576,9 @@ async function checkTasks() {
 
         // setStatus('request', 'done', 'success')
     } else {
-        task.outputMsg.innerText = 'Task ended after ' + time + ' seconds'
+        if (task.outputMsg.innerText.toLowerCase().indexOf('error') === -1) {
+            task.outputMsg.innerText = 'Task ended after ' + time + ' seconds'
+        }
     }
 
     if (randomSeedField.checked) {
