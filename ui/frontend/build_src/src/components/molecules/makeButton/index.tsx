@@ -24,9 +24,10 @@ import {
   ImageOutput,
   doMakeImage,
 } from "../../../api";
+
 import {
-  MakeButtonStyle,
-} from "./makeButton.css";
+  buttonStyle
+} from "../../_recipes/button.css";
 
 import { useTranslation } from "react-i18next";
 
@@ -260,7 +261,9 @@ export default function MakeButton() {
   return (
     <>
       <button
-        className={MakeButtonStyle}
+        className={buttonStyle({
+          size: "large",
+        })}
         onClick={() => {
           void makeImageQueue();
         }}

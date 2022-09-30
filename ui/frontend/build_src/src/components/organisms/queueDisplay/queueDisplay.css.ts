@@ -7,7 +7,7 @@ import { vars } from "../../../styles/theme/index.css";
 export const QueueDisplayMain = style({
   display: "flex",
   flexDirection: "column",
-  width: '400px',
+  width: '100%',
   height: '100%',
 });
 

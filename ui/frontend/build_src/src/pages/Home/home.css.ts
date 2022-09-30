@@ -1,4 +1,4 @@
-import { style } from "@vanilla-extract/css";
+import { style, globalStyle } from "@vanilla-extract/css";
 import { vars } from "../../styles/theme/index.css";
 
 export const AppLayout = style({
@@ -38,7 +38,17 @@ export const HeaderLayout = style({
 export const CreateLayout = style({
   gridArea: "create",
   position: "relative",
+  display: "flex",
+  flexDirection: "column",
+  overflowY: "auto",
+  overflowX: "hidden",
 });
+
+// globalStyle(`${CreateLayout}`, {
+
+
+
+// }
 
 export const DisplayLayout = style({
   gridArea: "display",

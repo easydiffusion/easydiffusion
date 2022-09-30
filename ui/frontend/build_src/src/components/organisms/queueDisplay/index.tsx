@@ -10,10 +10,12 @@ import {
   ErrorButton
 } from "./queueDisplay.css";
 
+import {
+  buttonStyle
+} from "../../_recipes/button.css";
 
 import ClearQueue from "../../molecules/clearQueue";
 import QueueItem from "./queueItem";
-
 
 export default function QueueDisplay() {
 
@@ -33,8 +35,16 @@ export default function QueueDisplay() {
     <div className={QueueDisplayMain}>
       <ClearQueue />
       <div className={QueueListButtons}>
-        <button className={CompleteButtton} onClick={clearCompleted}>Clear Completed</button>
-        <button className={ErrorButton} onClick={clearErrored}>Clear Errored</button>
+        <button
+          className={buttonStyle({
+            type: "secondary",
+          })}
+          onClick={clearCompleted}>Clear Completed</button>
+        <button
+          className={buttonStyle({
+            type: "secondary",
+          })}
+          onClick={clearErrored}>Clear Errored</button>
       </div>
       {requests.map((request) => {
         return <QueueItem key={request.id} request={request}></QueueItem>;

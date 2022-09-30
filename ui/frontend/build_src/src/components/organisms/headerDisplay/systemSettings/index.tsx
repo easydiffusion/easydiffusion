@@ -17,7 +17,7 @@ import {
   PopoverMain,
   PopoverButtonStyle,
   PopoverPanelMain,
-} from "../../../_headless/popover/index.css";
+} from "../../../_recipes/popover_headless.css";
 
 import {
   SettingContent

@@ -1,7 +1,9 @@
 
 import { style, globalStyle } from "@vanilla-extract/css";
 
-import { vars } from "../../../styles/theme/index.css";
+// import { recipe } from "@vanilla-extract/recipes";
+import { vars } from "../../styles/theme/index.css";
+
 
 export const PopoverMain = style({
   position: 'relative'

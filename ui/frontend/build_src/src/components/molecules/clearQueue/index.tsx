@@ -8,7 +8,7 @@ import {
 
 export default function ClearQueue() {
 
-  const hasQueue = useRequestQueue((state) => state.hasPendingQueue());
+  const hasQueue = useRequestQueue((state) => state.hasAnyQueue());
   const clearQueue = useRequestQueue((state) => state.clearQueue);
 
   const stopAll = async () => {

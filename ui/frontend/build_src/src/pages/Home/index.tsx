@@ -19,6 +19,7 @@ import HeaderDisplay from "../../components/organisms/headerDisplay";
 import CreationPanel from "../../components/organisms/creationPanel";
 import DisplayPanel from "../../components/organisms/displayPanel";
 import FooterDisplay from "../../components/organisms/footerDisplay";
+import CreationTabs from "../../components/layouts/CreationTabs";
 
 function Home({ className }: { className: any }) {
   // Get the original save directory
@@ -56,7 +57,8 @@ function Home({ className }: { className: any }) {
         <HeaderDisplay></HeaderDisplay>
       </header>
       <nav className={CreateLayout}>
-        <CreationPanel></CreationPanel>
+        <CreationTabs></CreationTabs>
+        {/* <CreationPanel></CreationPanel> */}
       </nav>
       <main className={DisplayLayout}>
         <DisplayPanel></DisplayPanel>

@@ -26,13 +26,11 @@ globalStyle(`${PanelBox} .panel-box-toggle-btn`, {
 //TODO this should probably just be for all li elements
 export const SettingItem = style({
   marginBottom: vars.spacing.medium,
-
   selectors: {
     "&:last-of-type": {
       marginBottom: vars.spacing.none,
     },
   },
-
 });
 
 

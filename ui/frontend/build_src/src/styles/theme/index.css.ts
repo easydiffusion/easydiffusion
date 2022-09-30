@@ -11,6 +11,21 @@ import {
  *
  * Lots of these arent used yet, but once they are defined and useable then they can be set.
  */
+
+// const SharedColors = {
+
+//   pending: null,
+//   processing: null,
+//   paused: null,
+
+//   link: null,
+
+//   warning: null,
+//   error: null,
+//   success: null,
+
+// }
+
 const colors = createThemeContract({
   brand: null,
   brandDimmed: null,
@@ -46,7 +61,13 @@ const colors = createThemeContract({
     accentDimmed: null,
   },
 
+  // pending: null,
+  // processing: null,
+  // paused: null,
+
+
   link: null,
+
   warning: null,
   error: null,
   success: null,
@@ -80,6 +101,28 @@ const app = createGlobalTheme(":root", {
     },
   },
   colors,
+
+  brandHue: '265',
+  secondaryHue: '54',
+  tertiaryHue: '116',
+
+  errorHue: '0',
+  warningHue: '60',
+  successHue: '120',
+
+  colorMod: {
+    saturation: {
+      normal: "70%",
+      bright: "100%",
+      dim: "30%",
+    },
+    lightness: {
+      normal: "50%",
+      bright: "60%",
+      dim: "40%",
+    },
+  },
+
 });
 
 export const darkTheme = createTheme(colors, {
