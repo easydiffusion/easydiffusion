@@ -1,6 +1,5 @@
 import { style, globalStyle } from "@vanilla-extract/css";
 
-import { BrandedButton } from "../../../styles/shared.css";
 
 import { vars } from "../../../styles/theme/index.css";
 

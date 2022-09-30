@@ -1,7 +1,6 @@
 import React from "react";
 import { doStopImage } from "../../../api";
 
-// import { BrandedButton } from "../../../styles/shared.css";
 
 import {
   buttonStyle
@@ -22,6 +21,5 @@ export default function StopButton() {
       type: "cancel",
       size: "large",
     }
-
   )} onClick={() => void stopMake()}>Stop</button>;
 }

@@ -7,7 +7,6 @@ import {
   completedImagesMain,
   completedImagesList,
   imageContain,
-  RemoveButton,
 } from "./completedImages.css";
 
 import {

@@ -56,26 +56,3 @@ globalStyle(`${MenuButton}> h4`, {
   color: "#e7ba71",
 });
 
-
-export const BrandedButton = style({
-  backgroundColor: vars.colors.brand,
-  fontSize: vars.fonts.sizes.Subheadline,
-  fontWeight: "bold",
-  color: vars.colors.text.normal,
-  padding: vars.spacing.small,
-  border: "0",
-  borderRadius: vars.trim.smallBorderRadius,
-
-  ":hover": {
-    backgroundColor: vars.colors.brandHover,
-  },
-
-  ":active": {
-    backgroundColor: vars.colors.brandActive,
-  },
-
-  ":disabled": {
-    backgroundColor: vars.colors.brandDimmed,
-    color: vars.colors.text.dimmed,
-  },
-});

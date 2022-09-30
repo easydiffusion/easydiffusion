@@ -2,8 +2,6 @@ import { style } from "@vanilla-extract/css";
 
 import { vars } from "../../../../../styles/theme/index.css";
 
-import { BrandedButton } from "../../../../../styles/shared.css";
-
 export const ImageInputDisplay = style({
   display: "flex",
 });
@@ -17,7 +15,6 @@ export const ImageInput = style({
   display: "none",
 });
 
-export const ImageInputButton = style([BrandedButton]);
 
 // this is needed to fix an issue with the image input text
 // when that is a drag an drop we can remove this

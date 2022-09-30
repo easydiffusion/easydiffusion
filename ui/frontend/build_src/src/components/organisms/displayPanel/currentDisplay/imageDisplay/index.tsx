@@ -12,9 +12,10 @@ import {
   imageDisplayContent,
 } from './imageDisplay.css';
 
+
 import {
-  BrandedButton
-} from '../../../../../styles/shared.css'
+  buttonStyle
+} from "../../../../_recipes/button.css";
 
 export default function ImageDisplay({ info, data }: CompletedImagesType) {
 
@@ -74,8 +75,14 @@ export default function ImageDisplay({ info, data }: CompletedImagesType) {
             <div>
               <p> {info?.prompt}</p>
               <div>
-                <button className={BrandedButton} onClick={_handleSave}>Save</button>
-                <button className={BrandedButton} onClick={_handleUseAsInput}>Use as Input</button>
+                <button className={buttonStyle(
+
+                )} onClick={_handleSave}>Save</button>
+                <button className={buttonStyle(
+                  {
+                    type: "secondary"
+                  }
+                )} onClick={_handleUseAsInput}>Use as Input</button>
               </div>
             </div>
             <GeneratedImage imageData={data} metadata={info}></GeneratedImage>

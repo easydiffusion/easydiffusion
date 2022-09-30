@@ -3,7 +3,6 @@ import { style, globalStyle } from "@vanilla-extract/css";
 
 import { vars } from "../../../../styles/theme/index.css";
 
-import { BrandedButton } from "../../../../styles/shared.css";
 
 import { QueueStatus } from "../../../../stores/requestQueueStore";
 
@@ -52,29 +51,3 @@ export const QueueButtons = style({
   justifyContent: "space-between",
   alignItems: "center",
 });
-
-
-// TODO these should be a button recipe?
-// export const CompleteButtton = style([BrandedButton, {
-
-// }]);
-
-// export const PauseButton = style([BrandedButton, {
-
-// }]);
-
-// export const ResumeButton = style([BrandedButton, {
-
-// }]);
-
-// export const CancelButton = style([BrandedButton, {
-
-// }]);
-
-// export const RetryButton = style([BrandedButton, {
-
-// }]);
-
-// export const SendToTopButton = style([BrandedButton, {
-
-// }]);

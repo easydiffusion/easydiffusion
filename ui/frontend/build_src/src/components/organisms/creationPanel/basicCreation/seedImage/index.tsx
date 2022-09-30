@@ -4,10 +4,14 @@ import {
   ImageInputDisplay,
   InputLabel,
   ImageInput,
-  ImageInputButton,
   ImageFixer,
   XButton,
 } from "./seedImage.css";
+
+import {
+  buttonStyle
+} from "../../../../_recipes/button.css";
+
 import { useImageCreate } from "../../../../../stores/imageCreateStore";
 
 import { useTranslation } from "react-i18next";
@@ -69,7 +73,7 @@ export default function SeedImage(_props: any) {
           type="file"
           onChange={_handleFileSelect}
         />
-        <button className={ImageInputButton} onClick={_startFileSelect}>
+        <button className={buttonStyle()} onClick={_startFileSelect}>
           {t("home.initial-img-btn")}
         </button>
       </div>
