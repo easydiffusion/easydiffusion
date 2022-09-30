@@ -102,6 +102,10 @@ const app = createGlobalTheme(":root", {
   },
   colors,
 
+  backgroundMain: 'hsl(0, 0%, 30%)',
+  backgroundLight: 'hsl(0, 0%, 50%)',
+  backgroundDark: 'hsl(0, 0%, 20%)',
+
   brandHue: '265',
   secondaryHue: '54',
   tertiaryHue: '116',

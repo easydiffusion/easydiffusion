@@ -8,6 +8,10 @@ import {
   CreationTabsMain
 } from "./creationTabs.css";
 
+import {
+  card as cardStyle
+} from "../../_recipes/card.css";
+
 export default function CreationTabs() {
 
   return (
@@ -16,7 +20,9 @@ export default function CreationTabs() {
         <Tab>Create</Tab>
         <Tab>Queue</Tab>
       </Tab.List>
-      <Tab.Panels className={CreationTabsMain}>
+      <Tab.Panels className={cardStyle({
+        baking: 'normal',
+      })}>
         <Tab.Panel>
           <CreationPanel></CreationPanel>
         </Tab.Panel>
