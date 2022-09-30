@@ -14,13 +14,18 @@ import {
   QueueItemMain,
   QueueItemInfo,
   QueueButtons,
-  CompleteButtton,
-  PauseButton,
-  ResumeButton,
-  CancelButton,
-  RetryButton,
-  SendToTopButton,
+  // CompleteButtton,
+  // PauseButton,
+  // ResumeButton,
+  // CancelButton,
+  // RetryButton,
+  // SendToTopButton,
 } from "./queueItem.css";
+
+
+import {
+  buttonStyle
+} from "../../../_recipes/button.css";
 
 
 interface QueueItemProps {
@@ -84,23 +89,41 @@ export default function QueueItem({ request }: QueueItemProps) {
         )}
 
         {status === QueueStatus.complete && (
-          <button className={CompleteButtton} onClick={removeFromQueue}>Clear</button>
+          <button
+            className={buttonStyle({
+              size: "large",
+            })}
+            onClick={removeFromQueue}>
+            Clear
+          </button>
         )}
 
         {status === QueueStatus.pending && (
           <>
-            <button className={CancelButton} onClick={removeFromQueue}>Remove</button>
-            <button className={PauseButton} onClick={pauseItem}>Pause</button>
-            <button className={SendToTopButton} onClick={sendToTop}>Send to top</button>
+            <button className={buttonStyle({
+              type: "cancel",
+            })} onClick={removeFromQueue}>Remove</button>
+            <button className={buttonStyle({
+              type: "secondary",
+            })} onClick={pauseItem}>Pause</button>
+            <button className={buttonStyle({
+              type: "secondary",
+            })} onClick={sendToTop}>Send to top</button>
           </>
         )}
 
         {status === QueueStatus.paused && (
-          <button className={ResumeButton} onClick={retryRequest}>Resume</button>
+          <button
+            className={buttonStyle({
+              size: "large",
+            })} onClick={retryRequest}>Resume</button>
         )}
 
         {status === QueueStatus.error && (
-          <button className={RetryButton} onClick={retryRequest}>Retry</button>
+          <button
+            className={buttonStyle({
+              size: "large",
+            })} onClick={retryRequest}>Retry</button>
         )}
       </div>
 

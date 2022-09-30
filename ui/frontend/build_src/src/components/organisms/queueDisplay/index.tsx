@@ -6,8 +6,6 @@ import { QueuedRequest, useRequestQueue } from "../../../stores/requestQueueStor
 import {
   QueueDisplayMain,
   QueueListButtons,
-  CompleteButtton,
-  ErrorButton
 } from "./queueDisplay.css";
 
 import {
@@ -37,12 +35,11 @@ export default function QueueDisplay() {
       <div className={QueueListButtons}>
         <button
           className={buttonStyle({
-            type: "secondary",
+
           })}
           onClick={clearCompleted}>Clear Completed</button>
         <button
           className={buttonStyle({
-            type: "secondary",
           })}
           onClick={clearErrored}>Clear Errored</button>
       </div>
@@ -51,4 +48,4 @@ export default function QueueDisplay() {
       })}
     </div>
   );
-}
+};

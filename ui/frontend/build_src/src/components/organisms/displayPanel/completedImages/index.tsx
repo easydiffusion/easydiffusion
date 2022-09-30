@@ -10,6 +10,10 @@ import {
   RemoveButton,
 } from "./completedImages.css";
 
+import {
+  buttonStyle
+} from "../../../_recipes/button.css";
+
 
 
 export default function CompletedImages(
@@ -31,7 +35,7 @@ export default function CompletedImages(
       {/* Adjust the dom do we dont do this check twice */}
       {images != null && images.length > 0 && (
         <button
-          className={RemoveButton}
+          className={buttonStyle()}
           onClick={() => {
             removeImagesAll();
           }}

@@ -48,12 +48,3 @@ globalStyle(`${imageContain} img`, {
   width: "100%",
   objectFit: "contain",
 });
-
-export const RemoveButton = style({
-  marginLeft: vars.spacing.small,
-  backgroundColor: vars.colors.brand,
-  border: "0 none",
-  padding: vars.spacing.small,
-  cursor: "pointer",
-  borderRadius: vars.trim.smallBorderRadius,
-});

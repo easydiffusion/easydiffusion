@@ -55,26 +55,26 @@ export const QueueButtons = style({
 
 
 // TODO these should be a button recipe?
-export const CompleteButtton = style([BrandedButton, {
+// export const CompleteButtton = style([BrandedButton, {
 
-}]);
+// }]);
 
-export const PauseButton = style([BrandedButton, {
+// export const PauseButton = style([BrandedButton, {
 
-}]);
+// }]);
 
-export const ResumeButton = style([BrandedButton, {
+// export const ResumeButton = style([BrandedButton, {
 
-}]);
+// }]);
 
-export const CancelButton = style([BrandedButton, {
+// export const CancelButton = style([BrandedButton, {
 
-}]);
+// }]);
 
-export const RetryButton = style([BrandedButton, {
+// export const RetryButton = style([BrandedButton, {
 
-}]);
+// }]);
 
-export const SendToTopButton = style([BrandedButton, {
+// export const SendToTopButton = style([BrandedButton, {
 
-}]);
+// }]);

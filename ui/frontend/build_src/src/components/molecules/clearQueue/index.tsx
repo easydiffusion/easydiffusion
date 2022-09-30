@@ -3,8 +3,9 @@ import { doStopImage } from "../../../api";
 import { useRequestQueue } from "../../../stores/requestQueueStore";
 
 import {
-  ClearQueueButton
-} from "./clearQueue.css";
+  buttonStyle
+} from "../../_recipes/button.css";
+
 
 export default function ClearQueue() {
 
@@ -21,7 +22,13 @@ export default function ClearQueue() {
   };
 
   return (
-    <button className={ClearQueueButton} disabled={!hasQueue} onClick={() => void stopAll()}>
+    <button className={buttonStyle(
+      {
+        type: "cancel",
+        size: "large",
+      }
+    )}
+      disabled={!hasQueue} onClick={() => void stopAll()}>
       STOP ALL
     </button>
   );

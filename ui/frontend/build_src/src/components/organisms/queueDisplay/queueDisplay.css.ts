@@ -27,13 +27,3 @@ globalStyle(`${QueueListButtons} button`, {
 globalStyle(`${QueueListButtons} button:first-child`, {
   marginRight: vars.spacing.medium,
 });
-
-
-// TODO these should be a button recipe?
-export const CompleteButtton = style([BrandedButton, {
-
-}]);
-
-export const ErrorButton = style([BrandedButton, {
-
-}]);
