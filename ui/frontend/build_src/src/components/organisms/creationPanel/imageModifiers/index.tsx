@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 
-
 import {
-  PanelBox,
   MenuButton,
 } from "../../../../styles/shared.css";
 

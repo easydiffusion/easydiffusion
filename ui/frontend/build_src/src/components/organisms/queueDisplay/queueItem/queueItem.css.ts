@@ -31,23 +31,22 @@ globalStyle(`${QueueItemInfo} p`, {
   marginBottom: vars.spacing.small,
 });
 
+globalStyle(`${QueueItemMain}.${QueueStatus.complete}`, {
+  backgroundColor: `hsl(${vars.tertiaryHue}, ${vars.colorMod.saturation.normal}, ${vars.colorMod.lightness.normal})`,
+});
+
 globalStyle(`${QueueItemMain}.${QueueStatus.processing}`, {
-  backgroundColor: `hsl(${vars.secondaryHue}, ${vars.colorMod.saturation.normal}, ${vars.colorMod.lightness.normal})`,
+  backgroundColor: `hsl(${vars.secondaryHue}, ${vars.colorMod.saturation.bright}, ${vars.colorMod.lightness.bright})`,
 });
 
 globalStyle(`${QueueItemMain}.${QueueStatus.pending}`, {
-  backgroundColor: vars.backgroundDark,
-  // `hsl(${vars.warningHue}, ${vars.colorMod.saturation.normal}, ${vars.colorMod.lightness.normal})`,
+  backgroundColor: `hsl(${vars.secondaryHue}, ${vars.colorMod.saturation.dim}, ${vars.colorMod.lightness.normal})`,
 });
 
 globalStyle(`${QueueItemMain}.${QueueStatus.paused}`, {
-  backgroundColor: vars.backgroundDark,
-  //`hsl(${vars.tertiaryHue}, ${vars.colorMod.saturation.normal}, ${vars.colorMod.lightness.normal})`,
+  backgroundColor: `hsl(${vars.secondaryHue}, ${vars.colorMod.saturation.dim}, ${vars.colorMod.lightness.dim})`,
 });
 
-globalStyle(`${QueueItemMain}.${QueueStatus.complete}`, {
-  backgroundColor: `hsl(${vars.successHue}, ${vars.colorMod.saturation.normal}, ${vars.colorMod.lightness.normal})`,
-});
 
 globalStyle(`${QueueItemMain}.${QueueStatus.error}`, {
   backgroundColor: `hsl(${vars.errorHue}, ${vars.colorMod.saturation.normal}, ${vars.colorMod.lightness.normal})`,

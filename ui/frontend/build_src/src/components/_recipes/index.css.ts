@@ -4,7 +4,7 @@ import { vars } from "../../styles/theme/index.css";
 
 export const card = recipe({
   base: {
-    background: vars.colors.background,
+    background: vars.backgroundMain,
     color: vars.colors.text.normal,
     padding: vars.spacing.medium,
     borderRadius: vars.trim.smallBorderRadius,

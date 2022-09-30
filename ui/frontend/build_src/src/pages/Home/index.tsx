@@ -16,12 +16,11 @@ import { useImageCreate } from "../../stores/imageCreateStore";
 
 // Todo - import components here
 import HeaderDisplay from "../../components/organisms/headerDisplay";
-import CreationPanel from "../../components/organisms/creationPanel";
 import DisplayPanel from "../../components/organisms/displayPanel";
 import FooterDisplay from "../../components/organisms/footerDisplay";
 import CreationTabs from "../../components/layouts/CreationTabs";
 
-function Home({ className }: { className: any }) {
+function Home() {
   // Get the original save directory
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
 
@@ -52,13 +51,12 @@ function Home({ className }: { className: any }) {
   }, [setRequestOption, statusMods, dataMoads]);
 
   return (
-    <div className={[AppLayout, className].join(" ")}>
+    <div className={[AppLayout].join(" ")}>
       <header className={HeaderLayout}>
         <HeaderDisplay></HeaderDisplay>
       </header>
       <nav className={CreateLayout}>
         <CreationTabs></CreationTabs>
-        {/* <CreationPanel></CreationPanel> */}
       </nav>
       <main className={DisplayLayout}>
         <DisplayPanel></DisplayPanel>

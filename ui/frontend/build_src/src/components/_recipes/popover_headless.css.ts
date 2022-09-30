@@ -25,7 +25,7 @@ export const PopoverPanelMain = style({
   top: '100%',
   right: '0',
   zIndex: '1',
-  background: vars.colors.backgroundDark,
+  background: vars.backgroundMain,
   color: vars.colors.text.normal,
   padding: vars.spacing.medium,
   borderRadius: vars.trim.smallBorderRadius,

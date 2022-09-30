@@ -2,7 +2,7 @@ import { style, globalStyle } from "@vanilla-extract/css";
 import { vars } from "./theme/index.css";
 
 export const PanelBox = style({
-  background: vars.colors.backgroundAlt,
+  background: vars.backgroundLight,
   color: vars.colors.text.normal,
   padding: vars.spacing.medium,
   borderRadius: vars.trim.smallBorderRadius,
