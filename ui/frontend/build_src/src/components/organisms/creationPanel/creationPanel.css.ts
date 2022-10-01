@@ -1,5 +1,4 @@
 import { style, globalStyle } from "@vanilla-extract/css";
-import { PanelBox } from "../../../styles/shared.css";
 import { vars } from "../../../styles/theme/index.css";
 export const CreationPaneMain = style({
   position: "relative",

@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useCreateUI } from "../creationPanelUIStore";
 
 
+
 import {
   card
 } from '../../../_recipes/card.css';
@@ -48,7 +49,7 @@ export default function AdvancedSettings() {
     <div className={card(
       {
         level: 1,
-        backing: 'plain'
+        backing: 'normal'
       }
     )}>
       <button
