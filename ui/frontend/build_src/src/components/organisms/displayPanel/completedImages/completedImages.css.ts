@@ -1,13 +1,18 @@
 import { style, globalStyle } from "@vanilla-extract/css";
 
 import { vars } from "../../../../styles/theme/index.css";
+import {
+  card as cardStyle,
+} from '../../../_recipes/card.css'
 
-export const completedImagesMain = style({
-  height: "100%",
+export const completedImagesMain = style([cardStyle(),
+{
+  height: "250px",
   width: "100%",
   display: "flex",
-  paddingBottom: vars.spacing.medium,
-});
+  padding: vars.spacing.medium,
+  borderRadius: 0,
+}]);
 
 export const completedImagesList = style({
   display: "flex",

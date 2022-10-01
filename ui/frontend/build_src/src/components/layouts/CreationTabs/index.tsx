@@ -1,13 +1,19 @@
 import React, { Fragment } from "react";
 import { Tab } from '@headlessui/react';
+
+import { useImageFetching } from "../../../stores/imageFetchingStore";
+
 import CreationPanel from "../../organisms/creationPanel";
 import QueueDisplay from "../../organisms/queueDisplay";
 
+import ProcessingStatus from "../../molecules/queueStatusTab";
 
 import {
   tabPanelStyles,
   tabStyles,
 } from "../../_recipes/tabs_headless.css";
+
+
 
 
 export default function CreationTabs() {
@@ -35,7 +41,7 @@ export default function CreationTabs() {
                 selected,
               })}
             >
-              Queue
+              <ProcessingStatus></ProcessingStatus>
             </button>
           )}
         </Tab>

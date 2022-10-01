@@ -24,7 +24,7 @@ export default function ClearQueue() {
   return (
     <button className={buttonStyle(
       {
-        type: "cancel",
+        color: "cancel",
         size: "large",
       }
     )}

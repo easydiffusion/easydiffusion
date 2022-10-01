@@ -56,7 +56,8 @@ export default function AdvancedSettings() {
         type="button"
         onClick={toggleAdvancedSettingsIsOpen}
         className={buttonStyle({
-          type: 'clear',
+          type: 'action',
+          color: 'secondary',
           size: 'large'
         })}
       >

@@ -250,6 +250,7 @@ export default function MakeButton() {
         return;
       }
 
+      debugger;
       makeImages(options).catch((e) => {
         console.log('HAS QUEUE ERROR');
         console.log(e);

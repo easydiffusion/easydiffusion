@@ -4,8 +4,12 @@ import { useCreateUI } from "../../creationPanelUIStore";
 
 import {
   SettingItem,
-  MenuButton
 } from "../../../../../styles/shared.css";
+
+
+import {
+  buttonStyle,
+} from "../../../../_recipes/button.css";
 
 
 
@@ -71,7 +75,10 @@ export default function PropertySettings() {
 
   return (
     <div>
-      <button type="button" className={MenuButton} onClick={togglePropertyOpen}>
+      <button type="button" className={buttonStyle({
+        type: 'action',
+        color: 'accent',
+      })} onClick={togglePropertyOpen}>
         <h4>Property Settings</h4>
       </button>
       {propertyOpen && (

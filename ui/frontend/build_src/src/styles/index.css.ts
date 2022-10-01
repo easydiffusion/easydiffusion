@@ -8,6 +8,10 @@ globalStyle("body", {
   minHeight: "100vh",
 });
 
+
+
+
+
 // single page style
 globalStyle("#root", {
   position: "absolute",
@@ -15,7 +19,11 @@ globalStyle("#root", {
   left: 0,
   width: "100vw",
   height: "100vh",
-  overflow: "hidden",
+  overflow: 'auto',
+  overflowX: 'hidden',
+  // "::-webkit-scrollbar": {
+  //   width: "0",
+  // },
 });
 
 // border box all
@@ -65,4 +73,8 @@ globalStyle(`textarea`, {
 globalStyle(`a`, {
   color: vars.colors.link,
   textDecoration: "none",
+});
+
+globalStyle(`ul`, {
+  listStyle: "none",
 });

@@ -76,10 +76,10 @@ const app = createGlobalTheme(":root", {
   },
   // colors,
 
-  // 6 0degree color difference
+  // 60 degree color difference
   // step downs
   brandHue: '265', // purple
-  secondaryHue: '20', // light blue
+  secondaryHue: '225', // deep blue
   tertiaryHue: '145', // grass green
 
   // step ups
@@ -101,6 +101,7 @@ const app = createGlobalTheme(":root", {
     },
   },
 
+  // is the secondary hue
   backgroundMain: 'hsl(225, 6%, 13%)',
   backgroundLight: 'hsl(225, 4%, 18%)',
   backgroundDark: 'hsl(225, 3%, 7%)',

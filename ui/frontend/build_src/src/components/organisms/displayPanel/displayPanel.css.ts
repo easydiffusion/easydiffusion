@@ -13,6 +13,6 @@ export const displayContainer = style({
   overflow: 'auto',
 });
 
-export const previousImages = style({
-  minHeight: '250px',
-});
+// export const previousImages = style({
+//   minHeight: '250px',
+// });

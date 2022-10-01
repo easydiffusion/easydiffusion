@@ -13,7 +13,8 @@ import {
 
 export const QueueItemMain = style([card(
   {
-    backing: "dark",
+
+    info: true,
     level: 1
   }
 ), {
@@ -32,24 +33,24 @@ globalStyle(`${QueueItemInfo} p`, {
 });
 
 globalStyle(`${QueueItemMain}.${QueueStatus.complete}`, {
-  backgroundColor: `hsl(${vars.tertiaryHue}, ${vars.colorMod.saturation.normal}, ${vars.colorMod.lightness.normal})`,
+  borderColor: `hsl(${vars.secondaryHue}, ${vars.colorMod.saturation.normal}, ${vars.colorMod.lightness.normal})`,
 });
 
 globalStyle(`${QueueItemMain}.${QueueStatus.processing}`, {
-  backgroundColor: `hsl(${vars.secondaryHue}, ${vars.colorMod.saturation.bright}, ${vars.colorMod.lightness.bright})`,
+  borderColor: `hsl(${vars.tertiaryHue}, ${vars.colorMod.saturation.bright}, ${vars.colorMod.lightness.bright})`,
 });
 
 globalStyle(`${QueueItemMain}.${QueueStatus.pending}`, {
-  backgroundColor: `hsl(${vars.secondaryHue}, ${vars.colorMod.saturation.dim}, ${vars.colorMod.lightness.normal})`,
+  borderColor: `hsl(${vars.backgroundAccentMain}, ${vars.colorMod.saturation.bright}, ${vars.colorMod.lightness.normal})`,
 });
 
 globalStyle(`${QueueItemMain}.${QueueStatus.paused}`, {
-  backgroundColor: `hsl(${vars.secondaryHue}, ${vars.colorMod.saturation.dim}, ${vars.colorMod.lightness.dim})`,
+  borderColor: `hsl(${vars.backgroundAccentMain}, ${vars.colorMod.saturation.dim}, ${vars.colorMod.lightness.dim})`,
+  backgroundColor: `hsl(${vars.backgroundAccentMain}, ${vars.colorMod.saturation.dim}, ${vars.colorMod.lightness.dim})`,
 });
 
-
 globalStyle(`${QueueItemMain}.${QueueStatus.error}`, {
-  backgroundColor: `hsl(${vars.errorHue}, ${vars.colorMod.saturation.normal}, ${vars.colorMod.lightness.normal})`,
+  borderColor: `hsl(${vars.errorHue}, ${vars.colorMod.saturation.normal}, ${vars.colorMod.lightness.normal})`,
 });
 
 export const QueueButtons = style({

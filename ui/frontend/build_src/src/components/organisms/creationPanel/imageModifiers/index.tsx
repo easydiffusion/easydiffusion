@@ -57,7 +57,10 @@ function ModifierGrouping({ title, category, tags }: ModifierGroupingProps) {
 
   return (
     <div className={ImageModifierGrouping}>
-      <button type="button" className={MenuButton} onClick={_toggleExpand}>
+      <button type="button" className={buttonStyle({
+        type: 'action',
+        color: 'accent',
+      })} onClick={_toggleExpand}>
         <h4>{title}</h4>
       </button>
       {isExpanded && <ModifierList category={category} tags={tags} />}
@@ -88,7 +91,8 @@ export default function ImageModifers() {
         type="button"
         onClick={handleClick}
         className={buttonStyle({
-          type: 'clear',
+          type: 'action',
+          color: 'secondary',
           size: 'large'
         })}
       >

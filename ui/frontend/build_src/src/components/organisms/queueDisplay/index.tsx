@@ -35,11 +35,12 @@ export default function QueueDisplay() {
       <div className={QueueListButtons}>
         <button
           className={buttonStyle({
-
+            type: 'outline',
           })}
           onClick={clearCompleted}>Clear Completed</button>
         <button
           className={buttonStyle({
+            type: 'outline',
           })}
           onClick={clearErrored}>Clear Errored</button>
       </div>

@@ -2,13 +2,13 @@ import { recipe } from "@vanilla-extract/recipes";
 import { vars } from "../../styles/theme/index.css";
 
 export const card = recipe({
+
   base: {
     color: vars.colors.text.normal,
     padding: vars.spacing.medium,
-
   },
-  variants: {
 
+  variants: {
     backing: {
       normal: {
         background: vars.backgroundMain,
@@ -20,10 +20,16 @@ export const card = recipe({
         background: vars.backgroundDark,
       },
     },
-
     rounded: {
       true: {
         borderRadius: vars.trim.smallBorderRadius,
+      },
+    },
+
+    info: {
+      true: {
+        background: vars.backgroundDark,
+        border: `1px solid ${vars.backgroundAccentMain}`,
       },
     },
 

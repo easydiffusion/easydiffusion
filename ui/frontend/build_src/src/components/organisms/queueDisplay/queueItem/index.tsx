@@ -92,13 +92,15 @@ export default function QueueItem({ request }: QueueItemProps) {
         {status === QueueStatus.pending && (
           <>
             <button className={buttonStyle({
-              type: "cancel",
+              color: "cancel",
             })} onClick={removeFromQueue}>Remove</button>
             <button className={buttonStyle({
-              type: "secondary",
+              color: "secondary",
+              type: "outline",
             })} onClick={pauseItem}>Pause</button>
             <button className={buttonStyle({
-              type: "secondary",
+              color: "tertiary",
+              type: "action",
             })} onClick={sendToTop}>Send to top</button>
           </>
         )}

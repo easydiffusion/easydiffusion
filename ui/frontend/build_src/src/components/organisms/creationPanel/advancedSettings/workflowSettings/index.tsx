@@ -5,9 +5,11 @@ import { useCreateUI } from "../../creationPanelUIStore";
 
 import {
   SettingItem,
-  MenuButton,
 } from "../../../../../styles/shared.css";
 
+import {
+  buttonStyle,
+} from "../../../../_recipes/button.css";
 
 import { useTranslation } from "react-i18next";
 
@@ -30,7 +32,10 @@ export default function WorkflowSettings() {
 
   return (
     <div>
-      <button type="button" className={MenuButton} onClick={toggleWorkflowOpen}>
+      <button type="button" className={buttonStyle({
+        type: 'action',
+        color: 'accent',
+      })} onClick={toggleWorkflowOpen}>
         <h4>Workflow Settings</h4>
       </button>
       {workflowOpen && (

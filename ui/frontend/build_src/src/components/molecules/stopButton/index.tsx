@@ -18,7 +18,7 @@ export default function StopButton() {
 
   return <button className={buttonStyle(
     {
-      type: "cancel",
+      color: "cancel",
       size: "large",
     }
   )} onClick={() => void stopMake()}>Stop</button>;

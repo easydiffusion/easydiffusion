@@ -5,8 +5,11 @@ import { useCreateUI } from "../../creationPanelUIStore";
 
 import {
   SettingItem,
-  MenuButton,
 } from "../../../../../styles/shared.css";
+
+import {
+  buttonStyle,
+} from "../../../../_recipes/button.css";
 
 import { useTranslation } from "react-i18next";
 
@@ -57,7 +60,10 @@ export default function ImprovementSettings() {
     <div>
       <button
         type="button"
-        className={MenuButton}
+        className={buttonStyle({
+          type: 'action',
+          color: 'accent',
+        })}
         onClick={toggleImprovementOpen}
       >
         <h4>Improvement Settings</h4>

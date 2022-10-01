@@ -80,7 +80,8 @@ export default function ImageDisplay({ info, data }: CompletedImagesType) {
                 )} onClick={_handleSave}>Save</button>
                 <button className={buttonStyle(
                   {
-                    type: "secondary"
+                    color: "secondary",
+                    type: "outline",
                   }
                 )} onClick={_handleUseAsInput}>Use as Input</button>
               </div>

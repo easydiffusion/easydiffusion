@@ -17,45 +17,12 @@ const IdleDisplay = () => {
   );
 };
 
-const LoadingDisplay = () => {
-
-  const step = useImageFetching((state) => state.step);
-  const totalSteps = useImageFetching((state) => state.totalSteps);
-  const progressImages = useImageFetching((state) => state.progressImages);
-
-  const startTime = useImageFetching((state) => state.timeStarted);
-  const timeNow = useImageFetching((state) => state.timeNow);
-  const [timeRemaining, setTimeRemaining] = useState(0);
-
-  const [percent, setPercent] = useState(0);
-
-
-  useEffect(() => {
-    if (totalSteps > 0) {
-      setPercent(Math.round((step / totalSteps) * 100));
-    } else {
-      setPercent(0);
-    }
-  }, [step, totalSteps]);
-
-  useEffect(() => {
-    // find the remaining time
-    const timeTaken = +timeNow - +startTime;
-    const timePerStep = step == 0 ? 0 : timeTaken / step;
-    const totalTime = timePerStep * totalSteps;
-    const timeRemaining = (totalTime - timeTaken) / 1000;
-    // @ts-expect-error
-    setTimeRemaining(timeRemaining.toPrecision(3));
-
-  }, [step, totalSteps, startTime, timeNow, setTimeRemaining]);
+const LoadingDisplay = ({ images }: { images: string[] }) => {
 
   return (
     <>
-      <h4 className="loading">Loading...</h4>
-      <p>{percent} % Complete </p>
-      {timeRemaining != 0 && <p>Time Remaining: {timeRemaining} s</p>}
-      {progressImages.map((image, index) => {
-        if (index == progressImages.length - 1) {
+      {images.map((image, index) => {
+        if (index == images.length - 1) {
           return (
             <img src={`${API_URL}${image}`} key={index} />
           )
@@ -66,20 +33,26 @@ const LoadingDisplay = () => {
   );
 };
 
-
 export default function CurrentDisplay() {
 
   const status = useImageFetching((state) => state.status);
   const currentImage = useImageDisplay((state) => state.currentImage);
 
+
+  const progressImages = useImageFetching((state) => state.progressImages);
+
   return (
     <div className={currentDisplayMain}>
 
-      {status === FetchingStates.IDLE && <IdleDisplay />}
+      {(currentImage == null) && <IdleDisplay />}
+      {/* {(status === FetchingStates.FETCHING || status === FetchingStates.PROGRESSING) && <LoadingDisplay />}
+      {(currentImage != null) && <ImageDisplay info={currentImage?.info} data={currentImage?.data} />}  */}
 
-      {(status === FetchingStates.FETCHING || status === FetchingStates.PROGRESSING) && <LoadingDisplay />}
-
-      {(status === FetchingStates.COMPLETE && currentImage != null) && <ImageDisplay info={currentImage?.info} data={currentImage?.data} />}
+      {
+        (progressImages.length > 0)
+          ? <LoadingDisplay images={progressImages} />
+          : (currentImage != null) && <ImageDisplay info={currentImage?.info} data={currentImage?.data} />
+      }
 
     </div>
   );

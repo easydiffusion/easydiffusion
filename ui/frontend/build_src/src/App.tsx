@@ -7,7 +7,6 @@ const location = new ReactLocation();
 
 function App() {
 
-
   return (
     <Router
       location={location}

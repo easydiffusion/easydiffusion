@@ -51,20 +51,22 @@ function Home() {
   }, [setRequestOption, statusMods, dataMoads]);
 
   return (
-    <div className={[AppLayout].join(" ")}>
-      <header className={HeaderLayout}>
-        <HeaderDisplay></HeaderDisplay>
-      </header>
-      <nav className={CreateLayout}>
-        <CreationTabs></CreationTabs>
-      </nav>
-      <main className={DisplayLayout}>
-        <DisplayPanel></DisplayPanel>
-      </main>
+    <>
+      <div className={[AppLayout].join(" ")}>
+        <header className={HeaderLayout}>
+          <HeaderDisplay></HeaderDisplay>
+        </header>
+        <nav className={CreateLayout}>
+          <CreationTabs></CreationTabs>
+        </nav>
+        <main className={DisplayLayout}>
+          <DisplayPanel></DisplayPanel>
+        </main>
+      </div>
       <footer className={FooterLayout}>
         <FooterDisplay></FooterDisplay>
       </footer>
-    </div>
+    </>
   );
 }
 

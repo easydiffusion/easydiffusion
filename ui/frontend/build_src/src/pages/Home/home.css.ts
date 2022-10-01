@@ -4,28 +4,28 @@ import { vars } from "../../styles/theme/index.css";
 export const AppLayout = style({
   position: "relative",
 
-  width: "100%",
-  height: "100%",
+  width: "100vw",
+  height: "100vh",
   pointerEvents: "auto",
   display: "grid",
   backgroundColor: vars.backgroundMain,
   gridTemplateColumns: "400px 1fr",
-  gridTemplateRows: "100px 1fr 115px",
+  gridTemplateRows: "70px 1fr 115px",
   gridTemplateAreas: `
     "header header header"
     "create display display"
-    "create footer footer"
+    "create display display"
   `,
+
 
   "@media": {
     "screen and (max-width: 800px)": {
       gridTemplateColumns: "1fr",
-      gridTemplateRows: "100px 300px 1fr 100px",
+      gridTemplateRows: "100px 300px 1fr",
       gridTemplateAreas: `
         "header"
         "create"
         "display"
-        "footer"
       `,
     },
   },
@@ -40,9 +40,6 @@ export const CreateLayout = style({
   position: "relative",
   display: "flex",
   flexDirection: "column",
-  // overflowY: "auto",
-  // overflowX: "hidden",
-  padding: `0 ${vars.spacing.small}`,
 });
 
 

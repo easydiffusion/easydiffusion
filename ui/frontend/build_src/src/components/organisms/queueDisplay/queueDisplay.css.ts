@@ -15,7 +15,7 @@ export const QueueListButtons = style({
   flexDirection: "row",
   justifyContent: "space-between",
   alignItems: "center",
-  marginBottom: vars.spacing.large,
+  marginBottom: vars.spacing.medium,
   marginTop: vars.spacing.medium,
 });
 
