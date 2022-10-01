@@ -16,9 +16,9 @@ import { useImageCreate } from "../../stores/imageCreateStore";
 
 // Todo - import components here
 import HeaderDisplay from "../../components/organisms/headerDisplay";
-import DisplayPanel from "../../components/organisms/displayPanel";
+import BasicDisplay from "../../components/layouts/basicDisplay";
 import FooterDisplay from "../../components/organisms/footerDisplay";
-import CreationTabs from "../../components/layouts/CreationTabs";
+import CreationTabs from "../../components/layouts/creationTabs";
 
 function Home() {
   // Get the original save directory
@@ -60,7 +60,7 @@ function Home() {
           <CreationTabs></CreationTabs>
         </nav>
         <main className={DisplayLayout}>
-          <DisplayPanel></DisplayPanel>
+          <BasicDisplay></BasicDisplay>
         </main>
       </div>
       <footer className={FooterLayout}>

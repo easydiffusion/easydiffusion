@@ -42,7 +42,6 @@ export const CreateLayout = style({
   flexDirection: "column",
 });
 
-
 export const DisplayLayout = style({
   gridArea: "display",
   overflow: "auto",

@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import React from "react";
-import { useImageCreate } from "../../../../../stores/imageCreateStore";
-import { CompletedImagesType } from "../../../../../stores/imageDisplayStore";
+import { useImageCreate } from "../../../../stores/imageCreateStore";
+import { CompletedImagesType } from "../../../../stores/imageDisplayStore";
 
-import GeneratedImage from "../../../../molecules/generatedImage";
+import GeneratedImage from "../../../molecules/generatedImage";
 
 import {
   imageDisplayMain,
@@ -15,7 +15,7 @@ import {
 
 import {
   buttonStyle
-} from "../../../../_recipes/button.css";
+} from "../../../_recipes/button.css";
 
 export default function ImageDisplay({ info, data }: CompletedImagesType) {
 

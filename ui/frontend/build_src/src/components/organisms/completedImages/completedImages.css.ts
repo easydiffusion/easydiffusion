@@ -1,12 +1,20 @@
 import { style, globalStyle } from "@vanilla-extract/css";
 
-import { vars } from "../../../../styles/theme/index.css";
+import { vars } from "../../../styles/theme/index.css";
 import {
   card as cardStyle,
-} from '../../../_recipes/card.css'
+} from '../../_recipes/card.css'
 
-export const completedImagesMain = style([cardStyle(),
-{
+export const completedImagesMain = style({
+  position: "relative",
+});
+
+// globalStyle(`${completedImagesMain} > button`, {
+//   position: "absolute",
+//   top: '-29px',
+// });
+
+export const completedImagesContent = style([cardStyle(), {
   height: "250px",
   width: "100%",
   display: "flex",
@@ -24,15 +32,15 @@ export const completedImagesList = style({
   paddingLeft: vars.spacing.none,
 });
 
-globalStyle(`${completedImagesMain} li`, {
+globalStyle(`${completedImagesContent} li`, {
   position: "relative",
 });
 
-globalStyle(`${completedImagesMain} > li:first-of-type`, {
+globalStyle(`${completedImagesContent} > li:first-of-type`, {
   marginLeft: vars.spacing.medium,
 });
 
-globalStyle(`${completedImagesMain} > li:last-of-type`, {
+globalStyle(`${completedImagesContent} > li:last-of-type`, {
   marginRight: 0,
 });
 

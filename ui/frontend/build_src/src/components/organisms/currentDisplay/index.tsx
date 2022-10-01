@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 
-import { FetchingStates, useImageFetching } from "../../../../stores/imageFetchingStore";
-import { useImageDisplay } from "../../../../stores/imageDisplayStore";
+import { FetchingStates, useImageFetching } from "../../../stores/imageFetchingStore";
+import { useImageDisplay } from "../../../stores/imageDisplayStore";
 
-import { API_URL } from "../../../../api";
+import { API_URL } from "../../../api";
 
 import {
   currentDisplayMain,
@@ -37,7 +37,6 @@ export default function CurrentDisplay() {
 
   const status = useImageFetching((state) => state.status);
   const currentImage = useImageDisplay((state) => state.currentImage);
-
 
   const progressImages = useImageFetching((state) => state.progressImages);
 

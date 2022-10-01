@@ -101,6 +101,7 @@ export const buttonStyle = recipe({
       action: {
         backgroundColor: "transparent",
         color: `hsl(var(--button-hue),${vars.colorMod.saturation.normal},${vars.colorMod.lightness.normal})`,
+        textDecoration: "underline",
         ":hover": {
           color: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.normal})`,
         },

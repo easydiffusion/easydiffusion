@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 import { Tab } from '@headlessui/react';
 
-import { useImageFetching } from "../../../stores/imageFetchingStore";
+
 
 import CreationPanel from "../../organisms/creationPanel";
 import QueueDisplay from "../../organisms/queueDisplay";
@@ -9,12 +9,12 @@ import QueueDisplay from "../../organisms/queueDisplay";
 import ProcessingStatus from "../../molecules/queueStatusTab";
 
 import {
-  tabPanelStyles,
   tabStyles,
 } from "../../_recipes/tabs_headless.css";
 
-
-
+import {
+  TabpanelScrollFlop
+} from "./creationTabs.css";
 
 export default function CreationTabs() {
 
@@ -48,7 +48,7 @@ export default function CreationTabs() {
 
 
       </Tab.List>
-      <Tab.Panels className={tabPanelStyles()}>
+      <Tab.Panels className={TabpanelScrollFlop}>
         <Tab.Panel>
           <CreationPanel></CreationPanel>
         </Tab.Panel>
