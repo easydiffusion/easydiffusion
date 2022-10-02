@@ -8,5 +8,5 @@ export const AdvancedSettingsList = style({
 });
 
 export const AdvancedSettingGrouping = style({
-  marginTop: vars.spacing.medium,
+  marginTop: vars.spacing.small,
 });

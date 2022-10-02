@@ -66,7 +66,7 @@ export default function ImprovementSettings() {
         })}
         onClick={toggleImprovementOpen}
       >
-        <h4>Improvement Settings</h4>
+        Improvement Settings
       </button>
       {improvementOpen && (
         <>

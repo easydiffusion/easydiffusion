@@ -21,21 +21,3 @@ export const ImageInput = style({
 export const ImageFixer = style({
   marginLeft: "20px",
 });
-
-// just a 1 off component for now
-// dont bother bringing in line with the rest of the app
-export const XButton = style({
-  position: "absolute",
-  transform: "translateX(-50%) translateY(-35%)",
-  background: "black",
-  color: "white",
-  border: "2pt solid #ccc",
-  padding: "0",
-  cursor: "pointer",
-  outline: "inherit",
-  borderRadius: "8pt",
-  width: "16pt",
-  height: "16pt",
-  fontFamily: "Verdana",
-  fontSize: "8pt",
-});

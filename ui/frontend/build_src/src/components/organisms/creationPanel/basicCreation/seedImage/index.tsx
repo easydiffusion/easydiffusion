@@ -1,11 +1,14 @@
 import React, { useRef, ChangeEvent } from "react";
 
+
+
+import { XButton } from "../../../../../styles/shared.css";
+
 import {
   ImageInputDisplay,
   InputLabel,
   ImageInput,
   ImageFixer,
-  XButton,
 } from "./seedImage.css";
 
 import {

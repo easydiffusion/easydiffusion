@@ -79,7 +79,7 @@ export default function PropertySettings() {
         type: 'action',
         color: 'accent',
       })} onClick={togglePropertyOpen}>
-        <h4>Property Settings</h4>
+        Property Settings
       </button>
       {propertyOpen && (
         <>

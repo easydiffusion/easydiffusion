@@ -36,7 +36,7 @@ export default function WorkflowSettings() {
         type: 'action',
         color: 'accent',
       })} onClick={toggleWorkflowOpen}>
-        <h4>Workflow Settings</h4>
+        Workflow Settings
       </button>
       {workflowOpen && (
         <>

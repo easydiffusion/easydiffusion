@@ -19,6 +19,24 @@ export const IconFont = style({
 });
 
 
+export const XButton = style({
+  position: "absolute",
+  transform: "translateX(-50%) translateY(-35%)",
+  background: "black",
+  color: "white",
+  border: "2pt solid #ccc",
+  padding: "0",
+  cursor: "pointer",
+  outline: "inherit",
+  borderRadius: "8pt",
+  width: "16pt",
+  height: "16pt",
+  fontFamily: "Verdana",
+  fontSize: "8pt",
+});
+
+
+
 export const MenuButton = style({
   display: "block",
   width: "100%",
@@ -33,6 +51,5 @@ export const MenuButton = style({
 
 globalStyle(`${MenuButton}> h4`, {
   color: "#e7ba71",
-
 });
 

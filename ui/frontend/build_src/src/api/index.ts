@@ -60,6 +60,7 @@ export const toggleBetaConfig = async (branch: string) => {
 export interface ImageRequest {
   session_id: string;
   prompt: string;
+  negative_prompt: string;
   seed: number;
   num_outputs: number;
   num_inference_steps: number;

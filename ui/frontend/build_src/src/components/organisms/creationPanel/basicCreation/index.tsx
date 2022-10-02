@@ -6,13 +6,12 @@ import {
   PromptDisplay,
 } from "./basicCreation.css";
 
-// import MakeButton from "./makeButton";
-// import StopButton from "./stopButton";
-// import ClearQueue from "./clearQueue";
-import CreationActions from "./creationActions";
-import SeedImage from "./seedImage";
-import ActiveTags from "./activeTags";
+import MakeButton from "../../../molecules/makeButton";
 
+import PromptCreator from "./promptCreator";
+// import CreationActions from "./creationActions";
+import SeedImage from "./seedImage";
+import ActiveTags from "./promptCreator/activeTags";
 
 import { useTranslation } from "react-i18next";
 
@@ -30,15 +29,9 @@ export default function BasicCreation() {
 
   return (
     <div className={CreationBasicMain}>
-      <div className={PromptDisplay}>
-        <p>{t("home.editor-title")}</p>
-        <textarea value={promptText} onChange={handlePromptChange}></textarea>
-      </div>
-
-      <CreationActions></CreationActions>
-
+      <MakeButton></MakeButton>
+      <PromptCreator></PromptCreator>
       <SeedImage></SeedImage>
-      <ActiveTags></ActiveTags>
     </div>
   );
 }

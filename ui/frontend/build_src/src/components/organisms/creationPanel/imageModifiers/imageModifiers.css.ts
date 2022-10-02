@@ -15,12 +15,17 @@ export const ImageModifierGrouping = style({
   marginTop: vars.spacing.medium,
 });
 
+globalStyle(`${ImageModifierGrouping} h4`, {
+  fontSize: vars.fonts.sizes.Plain,
+});
+
 
 export const ModifierListStyle = style({
   paddingLeft: 0,
   listStyleType: "none",
   display: "flex",
   flexWrap: "wrap",
+  gap: vars.spacing.small,
 });
 
 globalStyle(`${ModifierListStyle} li`, {

@@ -47,9 +47,9 @@ export const buttonStyle = recipe({
       },
       accent: {
         // @ts-expect-error
-        '--button-hue': vars.backgroundAccentMain,
-        '--button-base-saturation': vars.colorMod.saturation.normal,
-        '--button-base-lightness': vars.colorMod.lightness.normal,
+        '--button-hue': vars.backgroundAccentHue,
+        '--button-base-saturation': vars.backgroundAccentSaturation,
+        '--button-base-lightness': vars.backgroundAccentLightness,
       },
       clear: {
         backgroundColor: "transparent",
@@ -58,8 +58,8 @@ export const buttonStyle = recipe({
 
     type: {
       fill: {
-        backgroundColor: `hsl(var(--button-hue),${vars.colorMod.saturation.normal},${vars.colorMod.lightness.normal})`,
-        border: `1px solid hsl(var(--button-hue),${vars.colorMod.saturation.normal},${vars.colorMod.lightness.normal})`,
+        backgroundColor: `hsl(var(--button-hue),var(--button-base-saturation),${vars.colorMod.lightness.normal})`,
+        border: `1px solid hsl(var(--button-hue),var(--button-base-saturation),${vars.colorMod.lightness.normal})`,
         ":hover": {
           backgroundColor: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.normal})`,
           border: `1px solid hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.normal})`,
@@ -81,7 +81,7 @@ export const buttonStyle = recipe({
       },
       outline: {
         backgroundColor: "transparent",
-        border: `1px solid hsl(var(--button-hue),${vars.colorMod.saturation.normal},${vars.colorMod.lightness.normal})`,
+        border: `1px solid hsl(var(--button-hue),var(--button-base-saturation),${vars.colorMod.lightness.normal})`,
         ":hover": {
           borderColor: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.normal})`,
         },
@@ -100,7 +100,7 @@ export const buttonStyle = recipe({
       },
       action: {
         backgroundColor: "transparent",
-        color: `hsl(var(--button-hue),${vars.colorMod.saturation.normal},${vars.colorMod.lightness.normal})`,
+        color: `hsl(var(--button-hue),var(--button-base-saturation),${vars.colorMod.lightness.normal})`,
         textDecoration: "underline",
         ":hover": {
           color: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.normal})`,
@@ -121,6 +121,10 @@ export const buttonStyle = recipe({
     },
 
     size: {
+      slim: {
+        padding: vars.spacing.min,
+        fontSize: vars.fonts.sizes.Caption,
+      },
       large: {
         width: "100%",
         fontSize: vars.fonts.sizes.Headline,

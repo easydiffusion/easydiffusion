@@ -22,6 +22,7 @@ export default function ImageDisplay({ info, data }: CompletedImagesType) {
   const createFileName = () => {
     const {
       prompt,
+      negative_prompt,
       seed,
       num_inference_steps,
       guidance_scale,
@@ -74,6 +75,7 @@ export default function ImageDisplay({ info, data }: CompletedImagesType) {
           <div className={imageDisplayContent}>
             <div>
               <p> {info?.prompt}</p>
+              <p> {info?.negative_prompt}</p>
               <div>
                 <button className={buttonStyle(
 

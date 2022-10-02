@@ -4,49 +4,6 @@ import {
   createTheme,
 } from "@vanilla-extract/css";
 
-
-// const colors = createThemeContract({
-//   brand: null,
-//   brandDimmed: null,
-//   brandHover: null,
-//   brandActive: null,
-//   brandAccent: null,
-//   brandAccentDimmed: null,
-//   brandAccentActive: null,
-
-//   secondary: null,
-//   secondaryDimmed: null,
-//   secondaryHover: null,
-//   secondaryActive: null,
-//   secondaryAccent: null,
-//   secondaryAccentDimmed: null,
-//   secondaryAccentActive: null,
-
-//   background: null,
-//   backgroundAccent: null,
-//   backgroundAlt: null,
-//   backgroundAltAccent: null,
-//   backgroundDark: null,
-//   backgroundDarkAccent: null,
-
-//   text: {
-//     normal: null,
-//     dimmed: null,
-
-//     secondary: null,
-//     secondaryDimmed: null,
-
-//     accent: null,
-//     accentDimmed: null,
-//   },
-
-//   link: null,
-
-//   warning: null,
-//   error: null,
-//   success: null,
-// });
-
 const app = createGlobalTheme(":root", {
   spacing: {
     none: "0",
@@ -106,6 +63,10 @@ const app = createGlobalTheme(":root", {
   backgroundLight: 'hsl(225, 4%, 18%)',
   backgroundDark: 'hsl(225, 3%, 7%)',
   backgroundAccentMain: 'hsl(225, 6%, 30%)',
+
+  backgroundAccentHue: '225',
+  backgroundAccentSaturation: '26%',
+  backgroundAccentLightness: '70%',
 
   // this is depricated
   colors: {

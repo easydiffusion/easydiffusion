@@ -20,6 +20,7 @@ export const card = recipe({
         background: vars.backgroundDark,
       },
     },
+
     rounded: {
       true: {
         borderRadius: vars.trim.smallBorderRadius,
