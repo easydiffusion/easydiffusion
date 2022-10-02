@@ -26,17 +26,15 @@ export default function BasicDisplay() {
 
   useEffect(() => {
 
-    if (void 0 !== layoutRef.current) {
-
+    if (layoutRef.current != undefined) {
       // set the hide-history data attribute
       if (isShowingHistory) {
         layoutRef.current.removeAttribute('data-hide-history');
       }
       else {
         // layoutRef.current.dataset.hideHistory = "true";
-        layoutRef.current.setAttribute('data-hide-history', {});
+        layoutRef.current.setAttribute('data-hide-history', '');
       }
-
     }
   }, [layoutRef, isShowingHistory]);
 

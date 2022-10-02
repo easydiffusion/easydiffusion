@@ -14,12 +14,12 @@ import {
   buttonStyle
 } from "../../_recipes/button.css";
 
-import { Transition } from '@headlessui/react'
+// import { Transition } from '@headlessui/react'
 
 
-import {
-  tabStyles
-} from "../../_recipes/tabs_headless.css";
+// import {
+//   tabStyles
+// } from "../../_recipes/tabs_headless.css";
 
 export default function CompletedImages(
 

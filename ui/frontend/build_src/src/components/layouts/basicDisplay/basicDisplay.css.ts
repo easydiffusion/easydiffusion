@@ -39,6 +39,20 @@ export const basicDisplayLayout = style({
       //   "content"`,
     },
   },
+
+
+  // "@media": {
+  //   "screen and (max-width: 800px)": {
+  //     gridTemplateColumns: "1fr",
+  //     gridTemplateRows: "100px 300px 1fr",
+  //     gridTemplateAreas: `
+  //       "header"
+  //       "create"
+  //       "display"
+  //     `,
+  //   },
+  // },
+
 });
 
 // globalStyle(`${basicDisplayLayout}.hideHistory`, {
