@@ -1,6 +1,6 @@
 @echo off
 
-echo. & echo "Stable Diffusion UI - v2.5" & echo.
+echo. & echo "Stable Diffusion UI - v2.5 " & echo.
 
 set PATH=C:\Windows\System32;%PATH%
 
