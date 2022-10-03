@@ -17,6 +17,7 @@
     "@vanilla-extract/css": "^1.9.0",
     "@vanilla-extract/css-utils": "^0.1.2",
     "@vanilla-extract/recipes": "^0.2.5",
+    "@vanilla-extract/sprinkles": "^1.5.0",
     "@vanilla-extract/vite-plugin": "^3.5.0",
     "i18next": "^21.9.2",
     "immer": "^9.0.15",

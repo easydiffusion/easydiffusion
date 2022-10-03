@@ -12,6 +12,8 @@ import {
   useImageFetching
 } from "../../../stores/imageFetchingStore";
 
+import { useCreatedMedia } from "../../../stores/createdMediaStore";
+
 
 import { useImageDisplay } from "../../../stores/imageDisplayStore";
 
@@ -40,6 +42,7 @@ export default function MakeButton() {
 
   const dingRef = useRef<HTMLAudioElement>();
 
+  // creation logic
   const parallelCount = useImageCreate((state) => state.parallelCount);
   const builtRequest = useImageCreate((state) => state.builtRequest);
   const isRandomSeed = useImageCreate((state) => state.isRandomSeed());
@@ -47,11 +50,13 @@ export default function MakeButton() {
 
   const isSoundEnabled = useImageCreate((state) => state.isSoundEnabled());
 
+  // request queue logic
   const addtoQueue = useRequestQueue((state) => state.addtoQueue);
   const hasQueue = useRequestQueue((state) => state.hasPendingQueue());
   const { id, options } = useRequestQueue((state) => state.firstInQueue());
   const updateQueueStatus = useRequestQueue((state) => state.updateStatus);
 
+  // fetching logic
   const status = useImageFetching((state) => state.status);
   const setStatus = useImageFetching((state) => state.setStatus);
   const setStep = useImageFetching((state) => state.setStep);
@@ -62,7 +67,13 @@ export default function MakeButton() {
   const resetForFetching = useImageFetching((state) => state.resetForFetching);
   const appendData = useImageFetching((state) => state.appendData);
 
+  // display logic
   const updateDisplay = useImageDisplay((state) => state.updateDisplay);
+  // new display logic
+  const makeSpace = useCreatedMedia((state) => state.makeSpace);
+  const removeFailedMedia = useCreatedMedia((state) => state.removeFailedMedia);
+  const addCompletedProgressImage = useCreatedMedia((state) => state.addProgressImage);
+  const addCreatedMedia = useCreatedMedia((state) => state.addCreatedMedia);
 
   const hackJson = (jsonStr: string, id: string) => {
 
@@ -83,6 +94,7 @@ export default function MakeButton() {
           };
           const batchId = `${id}${idDelim}-${seed}-${index}`;
           updateDisplay(batchId, data, seedReq);
+          addCreatedMedia(id, { id: batchId, data });
         });
       }
 
@@ -102,9 +114,11 @@ export default function MakeButton() {
     const decoder = new TextDecoder();
     let finalJSON = '';
 
+
     while (true) {
       const { done, value } = await reader.read();
       const jsonStr = decoder.decode(value);
+
       if (done) {
         setStatus(FetchingStates.COMPLETE);
         hackJson(finalJSON, id);
@@ -136,6 +150,7 @@ export default function MakeButton() {
               // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
               const timePath = `${output.path}?t=${new Date().getTime()}`
               addProgressImage(timePath);
+              addCompletedProgressImage(id, timePath);
             });
           }
 
@@ -156,7 +171,6 @@ export default function MakeButton() {
         // console.log('EXPECTED PARSE ERRROR')
         finalJSON += jsonStr;
       }
-
     }
   }
 
@@ -169,12 +183,14 @@ export default function MakeButton() {
       const reader = res.body?.getReader();
 
       if (void 0 !== reader) {
+        makeSpace(id, req);
         void parseRequest(id, reader);
       }
 
     } catch (e) {
       console.log('TOP LINE STREAM ERROR')
       updateQueueStatus(id, QueueStatus.error);
+      removeFailedMedia(id);
       console.log(e);
     }
 

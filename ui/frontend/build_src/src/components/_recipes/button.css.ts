@@ -7,6 +7,8 @@
 
 import { recipe } from "@vanilla-extract/recipes";
 import { vars } from "../../styles/theme/index.css";
+// import { sprinkles } from "../../styles/sprinkles/index.css";
+
 
 export const buttonStyle = recipe({
 
@@ -138,3 +140,33 @@ export const buttonStyle = recipe({
   },
 
 });
+
+
+
+// export const buttonRecipe = recipe({
+//   base: {
+//     fontSize: vars.fonts.sizes.Subheadline,
+//     fontWeight: "bold",
+//     color: vars.colors.text.normal,
+//     padding: vars.spacing.small,
+//     border: "0",
+//     borderRadius: vars.trim.smallBorderRadius,
+//   },
+
+//   variants: {
+//     color: {
+//       primary: {
+//         ...sprinkles({
+//           backgroundColor: {
+//             default: 'brandDefault',
+//             hover: 'brandBright',
+//             focus: 'brandFocus',
+//             active: 'brandFocus',
+//             disabled: 'brandDim',
+//           },
+//         })
+//       }
+//     }
+//   }
+
+// });

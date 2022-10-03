@@ -11,7 +11,7 @@ export const basicDisplayLayout = style({
   height: "100%",
   display: "grid",
   gridTemplateColumns: "1fr 250px",
-  gridTemplateRows: "1fr 250px",
+  gridTemplateRows: "minmax(0, 1fr) 250px",
   gridTemplateAreas: `
     "content info"
     "history history"`,

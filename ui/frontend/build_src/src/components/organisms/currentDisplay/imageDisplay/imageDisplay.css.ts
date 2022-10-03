@@ -11,7 +11,6 @@ export const imageDisplayMain = style({
 
 export const imageDisplayContainer = style({
   height: '100%',
-  width: '80%',
   display: 'flex',
   justifyContent: 'center',
 });

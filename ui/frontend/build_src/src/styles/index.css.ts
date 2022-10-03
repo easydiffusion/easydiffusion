@@ -11,7 +11,6 @@ globalStyle("body", {
 
 
 
-
 // single page style
 globalStyle("#root", {
   position: "absolute",

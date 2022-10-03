@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 
 import { useImageDisplay } from "../../../stores/imageDisplayStore";
+
+import { useCreatedMedia } from "../../../stores/createdMediaStore";
 
 import {
   completedImagesMain,
@@ -26,11 +28,31 @@ export default function CompletedImages(
 ) {
 
   const [isShowing, setIsShowing] = useState(false)
+  const [images, setImages] = useState([])
 
-
-  const images = useImageDisplay((state) => state.images);
+  //  const images = useImageDisplay((state) => state.images);
   const setCurrentImage = useImageDisplay((state) => state.setCurrentImage);
   const clearDisplay = useImageDisplay((state) => state.clearDisplay);
+
+  const createdMedia = useCreatedMedia((state) => state.createdMedia);
+
+  useEffect(() => {
+
+    const tempImages = [];
+    debugger;
+
+    createdMedia.forEach((media) => {
+      const { data } = media;
+      data.forEach(element => {
+        console.log(element);
+        tempImages.push({ id: element.id, data: element.data, info: media.info })
+      });
+    })
+
+    setImages(tempImages);
+  }, [createdMedia])
+
+
 
   const removeImagesAll = () => {
     clearDisplay();

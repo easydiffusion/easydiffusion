@@ -10,9 +10,9 @@ import {
   IconFont,
 } from "../../../../../styles/shared.css";
 
-import {
-  buttonStyle,
-} from "../../../../_recipes/button.css";
+// import {
+//   buttonStyle,
+// } from "../../../../_recipes/button.css";
 
 import {
   PromptCreatorMain,
@@ -22,6 +22,7 @@ import {
   ToggleEnabled,
   TogglePill,
   buttonRow,
+  prmptBtn,
 } from "./promptCreator.css";
 
 
@@ -62,6 +63,19 @@ export default function PromptCreator() {
 
   const { t } = useTranslation();
 
+  const enterPrompt = () => {
+    if (tagText !== '') {
+      const type = positive ? "positive" : "negative";
+
+      tagText.split(',').map((tag) => tag.trim()).forEach((tag) => {
+        addCreateTag({ id: uuidv4(), name: tag, type });
+      });
+      //debugger;
+
+      setTagText('');
+    }
+  }
+
   const checkForEnter = (event: KeyboardEventHandler<HTMLInputElement>) => {
     // @ts-expect-error
     if (event.key === "Enter") {
@@ -89,13 +103,13 @@ export default function PromptCreator() {
       </div>
       <div className={buttonRow}>
         <button
-          className={buttonStyle(
-            {
-              size: 'slim'
-            }
-          )}
-          onClick={() => {
-          }}
+          // className={buttonStyle(
+          //   {
+          //     size: 'slim'
+          //   }
+          // )}
+          className={prmptBtn}
+          onClick={enterPrompt}
         >
           Add Prompt
         </button>

@@ -2,6 +2,11 @@ import { style, globalStyle } from '@vanilla-extract/css';
 
 import { vars } from "../../../../../styles/theme/index.css";
 
+import { sprinkles } from "../../../../../styles/sprinkles/index.css";
+import {
+  buttonStyle,
+} from "../../../../_recipes/button.css";
+
 export const PromptCreatorMain = style({
   display: 'flex',
   flexDirection: 'column',
@@ -9,6 +14,17 @@ export const PromptCreatorMain = style({
   height: '100%',
   marginBottom: 0,
 });
+
+// alternative way to s
+export const prmptBtn = style([buttonStyle({ size: 'slim' }), sprinkles({
+  backgroundColor: {
+    default: 'brandDefault',
+    hover: 'brandBright',
+    focus: 'brandFocus',
+    active: 'brandFocus',
+    disabled: 'brandDim',
+  },
+}), {}]);
 
 globalStyle(`${PromptCreatorMain} input`, {
   width: '100%',
@@ -65,6 +81,8 @@ globalStyle(`${ToggleMain}[data-headlessui-state="checked"] ${TogglePill}`, {
 globalStyle(`${TogglePill} p`, {
   color: vars.colors.text.normal,
 });
+
+
 
 
 export const buttonRow = style({
