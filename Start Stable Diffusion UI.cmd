@@ -4,7 +4,7 @@ echo. & echo "Stable Diffusion UI - v2.5" & echo.
 
 set PATH=C:\Windows\System32;%PATH%
 
-set RUN_CMD_FILENAME="Start Stable Diffusion UI.cmd"
+set START_CMD_FILENAME="Start Stable Diffusion UI.cmd"
 
 set SD_BASE_DIR=%cd%
 

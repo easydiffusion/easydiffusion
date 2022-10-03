@@ -13,7 +13,7 @@ if /i "%answer:~,1%" NEQ "c" (
     )
 
     xcopy "%SD_BASE_DIR%" "%suggested_dir%" /s /i /Y /Q
-    echo Please run the %RUN_CMD_FILENAME% file inside %suggested_dir% . Do not use this folder anymore > "%SD_BASE_DIR%/READ_ME - DO_NOT_USE_THIS_FOLDER.txt"
+    echo Please run the %START_CMD_FILENAME% file inside %suggested_dir% . Do not use this folder anymore > "%SD_BASE_DIR%/READ_ME - DO_NOT_USE_THIS_FOLDER.txt"
 
     cd %suggested_dir%
 )

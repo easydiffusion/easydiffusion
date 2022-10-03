@@ -3,11 +3,12 @@ import json
 
 # config
 PROJECT_REPO_URL = 'https://github.com/cmdr2/stable-diffusion-ui.git'
-DEFAULT_UPDATE_BRANCH = 'main'
+DEFAULT_UPDATE_BRANCH = 'installer_new'
 
 PROJECT_REPO_DIR_NAME = 'project_repo'
 STABLE_DIFFUSION_REPO_DIR_NAME = 'stable-diffusion'
 
+START_CMD_FILE_NAME = os.environ['START_CMD_FILENAME']
 LOG_FILE_NAME = 'run.log'
 CONFIG_FILE_NAME = 'config.json'
 
