@@ -1,0 +1,7 @@
+name: stable-diffusion-ui-installer
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - git
+  - python=3.8.13
