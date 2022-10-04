@@ -1,5 +1,7 @@
 @echo off
 
+if exist "%SD_BASE_DIR%\env" exit /b
+
 set suggested_dir=%~d0\stable-diffusion-ui
 
 echo "Please install Stable Diffusion UI at the root of your drive. This avoids problems with path length limits in Windows." & echo.

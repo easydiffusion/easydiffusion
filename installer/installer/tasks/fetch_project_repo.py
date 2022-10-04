@@ -17,7 +17,9 @@ def run():
         helpers.log("\nDownloading Stable Diffusion UI..\n")
         helpers.log(f"Using the {branch_name} channel\n")
 
-        if helpers.run(f'git clone {app.PROJECT_REPO_URL} "{app.project_repo_dir_path}"'):
+        helpers.run(f'git clone {app.PROJECT_REPO_URL} "{app.project_repo_dir_path}"')
+
+        if path.exists(project_repo_git_path):
             helpers.log("Downloaded Stable Diffusion UI")
         else:
             helpers.fail_with_install_error(error_msg="Could not download Stable Diffusion UI")
