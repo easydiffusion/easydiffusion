@@ -66,20 +66,13 @@ if opt.symlink_dir is not None:
         print('The target symlink directory does not contain the required {ui, installer, engine} folders. Are you sure it is the correct git repo for the project?')
         exit(1)
 
-    cmds = []
-
     if platform.system() == 'Windows':
-        cmds.append(f'mklink /J "installer" "{installer_target_path}"')
-        cmds.append(f'mklink /J "ui" "{ui_target_path}"')
-        cmds.append(f'mklink /J "engine" "{engine_target_path}"')
+        run(f'mklink /J "installer" "{installer_target_path}"')
+        run(f'mklink /J "ui" "{ui_target_path}"')
+        run(f'mklink /J "engine" "{engine_target_path}"')
     elif platform.system() in ('Linux', 'Darwin'):
-        cmds.append(f'ln -s "{installer_target_path}" "installer"')
-        cmds.append(f'ln -s "{ui_target_path}" "ui"')
-        cmds.append(f'ln -s "{engine_target_path}" "engine"')
-
-    for cmd in cmds:
-        if not run(cmd):
-            print('Error while running', cmd)
-            exit(1)
+        run(f'ln -s "{installer_target_path}" "installer"')
+        run(f'ln -s "{ui_target_path}" "ui"')
+        run(f'ln -s "{engine_target_path}" "engine"')
 
     print(f'Created symlinks! Your installation will now automatically use the files present in the repository at {opt.symlink_dir}')
