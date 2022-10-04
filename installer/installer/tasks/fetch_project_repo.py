@@ -11,7 +11,7 @@ def run():
         helpers.log(f"Stable Diffusion UI's git repository was already installed. Updating from {branch_name}..")
 
         helpers.run("git reset --hard", run_in_folder=app.project_repo_dir_path)
-        helpers.run(f'git checkout "{branch_name}"', run_in_folder=app.project_repo_dir_path)
+        helpers.run(f'git checkout -c advice.detachedHead=false "{branch_name}"', run_in_folder=app.project_repo_dir_path)
         helpers.run("git pull", run_in_folder=app.project_repo_dir_path)
     else:
         helpers.log("\nDownloading Stable Diffusion UI..\n")
@@ -23,4 +23,4 @@ def run():
             helpers.show_install_error(error_msg="Could not download Stable Diffusion UI")
             exit(1)
 
-        helpers.run(f'git checkout "{branch_name}"', run_in_folder=app.project_repo_dir_path)
+        helpers.run(f'git checkout -c advice.detachedHead=false "{branch_name}"', run_in_folder=app.project_repo_dir_path)
