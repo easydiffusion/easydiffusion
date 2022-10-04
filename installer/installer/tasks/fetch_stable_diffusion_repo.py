@@ -23,7 +23,7 @@ def fetch_repo():
 
         if not is_developer_mode:
             helpers.run("git reset --hard", run_in_folder=app.stable_diffusion_repo_dir_path)
-            helpers.run("git pull", run_in_folder=app.stable_diffusion_repo_dir_path)
+            helpers.run("git fetch origin", run_in_folder=app.stable_diffusion_repo_dir_path)
             helpers.run(f'git -c advice.detachedHead=false checkout "{commit_id}"', run_in_folder=app.stable_diffusion_repo_dir_path)
     else:
         helpers.log("\nDownloading Stable Diffusion..\n")
