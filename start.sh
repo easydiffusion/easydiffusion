@@ -17,4 +17,4 @@ python --version
 # Download the rest of the installer and UI
 python installer/installer/main.py
 
-read -p "Press any key to continue"
+read -p "Press enter to continue"
