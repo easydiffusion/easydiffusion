@@ -1,19 +1,17 @@
 /* eslint-disable  @typescript-eslint/naming-convention */
-
 import React from "react";
-
 
 import { QueueStatus, QueuedRequest, useRequestQueue } from '../../../../stores/requestQueueStore';
 
 import StopButton from '../../../molecules/stopButton';
 import ProgressImageDisplay from "../../../molecules/progressImageDisplay";
+import TimeRemaining from '../../../atoms/timeRemaining';
 
 import {
   QueueItemMain,
   QueueItemInfo,
   QueueButtons,
 } from "./queueItem.css";
-
 
 import {
   buttonStyle
@@ -23,6 +21,7 @@ import {
 interface QueueItemProps {
   request: QueuedRequest;
 }
+
 
 export default function QueueItem({ request }: QueueItemProps) {
 
@@ -39,7 +38,6 @@ export default function QueueItem({ request }: QueueItemProps) {
       sampler,
       guidance_scale,
       num_inference_steps,
-
     },
     status,
   } = request;
@@ -65,7 +63,12 @@ export default function QueueItem({ request }: QueueItemProps) {
 
       <div className={QueueItemInfo}>
         <p>{prompt}</p>
-        <p>Making {num_outputs} concurrent images</p>
+        {status === QueueStatus.processing && (
+          <p>
+            <span>Making {num_outputs} concurrent images </span>
+            <span>Time: <TimeRemaining /></span>
+          </p>
+        )}
         <p>
           <span>Seed: {seed} </span>
           <span>Sampler: {sampler} </span>

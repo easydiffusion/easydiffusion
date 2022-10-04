@@ -33,7 +33,6 @@ export default function CompletedImages() {
     createdMediaList?.forEach((media) => {
       const { data } = media;
       data?.forEach(element => {
-        console.log(element);
         tempImages.push({ batchId: media.batchId, id: element.id, data: element.data, info: media.info })
       });
     })
@@ -72,7 +71,6 @@ export default function CompletedImages() {
                 <button
                   className={imageContain}
                   onClick={() => {
-                    console.log('set current image', image.batchId, image.id);
                     setCurrentImage({ batchId: image.batchId, imageId: image.id });
                   }}
                 >

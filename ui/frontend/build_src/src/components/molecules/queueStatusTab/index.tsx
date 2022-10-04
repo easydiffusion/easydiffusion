@@ -1,66 +1,45 @@
 import React, { useEffect, useState } from "react";
+import TimeRemaining from "../../atoms/timeRemaining";
 
 import { FetchingStates, useImageFetching } from "../../../stores/imageFetchingStore";
 import { useRequestQueue } from "../../../stores/requestQueueStore";
 
 export default function QueueStatusTab() {
 
+  const [showTimeRemaining, setShowTimeRemaining] = useState(false);
+  const [showQueueLength, setShowQueueLength] = useState(false);
 
-  const [showBasicQueue, setShowBasicQueue] = useState(true);
+  const status = useImageFetching((state) => state.status);
 
   const hasPendingQueue = useRequestQueue((state) => state.hasPendingQueue());
   const pendingRequests = useRequestQueue((state) => state.pendingRequests());
 
-  const status = useImageFetching((state) => state.status);
-
-  const step = useImageFetching((state) => state.step);
-  const totalSteps = useImageFetching((state) => state.totalSteps);
-
-  const startTime = useImageFetching((state) => state.timeStarted);
-  const timeNow = useImageFetching((state) => state.timeNow);
-  const [timeRemaining, setTimeRemaining] = useState(0);
-
-  const [percent, setPercent] = useState(0);
-
   useEffect(() => {
-    if (totalSteps > 0) {
-      setPercent(Math.round((step / totalSteps) * 100));
-    } else {
-      setPercent(0);
+    console.log('status', status);
+    // if we are processing we want to show something
+    if (status == FetchingStates.PROGRESSING || status == FetchingStates.FETCHING) {
+      // if we have a pending queue we want to show the queue length
+      if (hasPendingQueue) {
+        setShowTimeRemaining(false);
+        setShowQueueLength(true);
+      }
+      // if we don't have a pending queue we want to show the time remaining
+      else {
+        setShowTimeRemaining(true);
+        setShowQueueLength(false);
+      }
     }
-  }, [step, totalSteps]);
-
-  useEffect(() => {
-    // find the remaining time
-    const timeTaken = +timeNow - +startTime;
-    const timePerStep = step == 0 ? 0 : timeTaken / step;
-    const totalTime = timePerStep * totalSteps;
-    const timeRemaining = (totalTime - timeTaken) / 1000;
-    // @ts-expect-error
-    setTimeRemaining(timeRemaining.toPrecision(3));
-
-  }, [step, totalSteps, startTime, timeNow, setTimeRemaining]);
-
-  useEffect(() => {
-    if (hasPendingQueue) {
-      setShowBasicQueue(false);
+    else {
+      setShowTimeRemaining(false);
+      setShowQueueLength(false);
     }
   }, [status, hasPendingQueue]);
-
-  // {/* {showBasicQueue
-  //   ? <> */}
-  //   Queue
-  //   {/* </>
-  //   : <>
-  //     <span>Percent: {percent}%</span>
-  //   </>npm
-  // } */}
-
 
   return (
     <>
       <span>Queue </span>
-      {hasPendingQueue && <span> Items Remaining: {pendingRequests.length} </span>}
+      {showTimeRemaining && <span>: <TimeRemaining /></span>}
+      {showQueueLength && <span> : {pendingRequests.length} remaining</span>}
     </>
   )
 

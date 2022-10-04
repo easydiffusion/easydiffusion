@@ -24,6 +24,7 @@ import {
   imageDisplayContainer,
   imageDisplayCenter,
   imageDisplayContent,
+  ImageActionsMain
 } from './imageDisplay.css';
 
 import {
@@ -52,10 +53,23 @@ function ImageActions({ info, data }: ImageActionsProps) {
     } = info;
 
     // Most important information is the prompt
-    let underscoreName = prompt.replace(/[^a-zA-Z0-9]/g, "_");
-    underscoreName = underscoreName.substring(0, 100);
+    let promptName = prompt.replace(/[^a-zA-Z0-9]/g, "_");
+    promptName = `prompt-${promptName}`;
+    //.substring(0, 100)}
+
+    // Add negative prompt if it exists
+    let negativePromptName = "";
+    if (negative_prompt != '') {
+      negativePromptName = negative_prompt.replace(/[^a-zA-Z0-9]/g, "_");
+      negativePromptName = `_neg-${negativePromptName}`;
+      //.substring(0, 100)}
+    }
+
+    const fullPrompt = `${promptName}${negativePromptName}`;
+
+
     // name and the top level metadata
-    let fileName = `${underscoreName}_Seed-${seed}_Steps-${num_inference_steps}_Guidance-${guidance_scale}`;
+    let fileName = `${fullPrompt}_Seed-${seed}_Steps-${num_inference_steps}_Guidance-${guidance_scale}`;
     // Add the face correction and upscale
     if (typeof use_face_correction == "string") {
       fileName += `_FaceCorrection-${use_face_correction}`;
@@ -85,7 +99,7 @@ function ImageActions({ info, data }: ImageActionsProps) {
   };
 
   return (
-    <div>
+    <div className={ImageActionsMain} >
       <button className={buttonStyle(
 
       )} onClick={_handleSave}>Save</button>

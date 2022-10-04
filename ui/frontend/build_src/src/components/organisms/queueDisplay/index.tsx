@@ -42,12 +42,11 @@ export default function QueueDisplay() {
       if (request.status != QueueStatus.processing) {
         return true
       }
-      else {
-        setCurrentRequest(request);
-        return false;
-      }
     });
 
+    const current = requests.find((request) => request.status == QueueStatus.processing);
+
+    setCurrentRequest(current ?? null);
     setRemainingRequests(remaining);
 
   }, [requests]);

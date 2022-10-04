@@ -39,10 +39,10 @@ globalStyle(`${imageDisplayContent} button`, {
   marginRight: vars.spacing.medium,
 });
 
-export const ImageActions = style({
+export const ImageActionsMain = style({
   position: 'absolute',
-  top: '0',
-  left: '0',
+  top: vars.spacing.medium,
+  left: vars.spacing.medium,
   display: 'flex',
   flexDirection: 'row',
 });

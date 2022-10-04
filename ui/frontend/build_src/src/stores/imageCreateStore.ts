@@ -54,7 +54,6 @@ interface ImageCreateState {
   allModifiers: ModifiersOptionList;
 
   createTags: promptTag[];
-  // negativeTags: promptTag[];
 
   tagMap: Record<string, string[]>;
   isInpainting: boolean;
@@ -124,7 +123,6 @@ export const useImageCreate = create<ImageCreateState>(
 
     // selected tags
     createTags: [] as promptTag[],
-    // negativeTags: [] as promptTag[],
 
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     tagMap: {} as Record<string, string[]>,
