@@ -1,5 +1,7 @@
 import subprocess
 import sys
+import shutil
+import time
 
 from installer import app
 
@@ -27,8 +29,9 @@ def log(msg):
     app.log_file.write(bytes(msg + "\n", 'utf-8'))
     app.log_file.flush()
 
-def show_install_error(error_msg):
-    log(f'''
+def fail_with_install_error(error_msg):
+    try:
+        log(f'''
 
 Error: {error_msg}. Sorry about that, please try to:
   1. Run this installer again.
@@ -36,3 +39,10 @@ Error: {error_msg}. Sorry about that, please try to:
   3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB
   4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues
 Thanks!''')
+
+        ts = int(time.time())
+        shutil.copy(app.LOG_FILE_NAME, f'error-{ts}.log')
+    except:
+        pass
+
+    exit(1)

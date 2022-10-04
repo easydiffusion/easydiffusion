@@ -32,8 +32,7 @@ def fetch_repo():
         if helpers.run(f'git clone {app.STABLE_DIFFUSION_REPO_URL} "{app.stable_diffusion_repo_dir_path}"'):
             helpers.log("Downloaded Stable Diffusion")
         else:
-            helpers.show_install_error(error_msg="Could not download Stable Diffusion")
-            exit(1)
+            helpers.fail_with_install_error(error_msg="Could not download Stable Diffusion")
 
         helpers.run(f'git -c advice.detachedHead=false checkout "{commit_id}"', run_in_folder=app.stable_diffusion_repo_dir_path)
 

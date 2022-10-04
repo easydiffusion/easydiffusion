@@ -20,7 +20,6 @@ def run():
         if helpers.run(f'git clone {app.PROJECT_REPO_URL} "{app.project_repo_dir_path}"'):
             helpers.log("Downloaded Stable Diffusion UI")
         else:
-            helpers.show_install_error(error_msg="Could not download Stable Diffusion UI")
-            exit(1)
+            helpers.fail_with_install_error(error_msg="Could not download Stable Diffusion UI")
 
         helpers.run(f'git -c advice.detachedHead=false checkout "{branch_name}"', run_in_folder=app.project_repo_dir_path)
