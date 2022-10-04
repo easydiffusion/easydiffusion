@@ -7,7 +7,7 @@
 set MAMBA_ROOT_PREFIX=%SD_BASE_DIR%\env\mamba
 set INSTALL_ENV_DIR=%SD_BASE_DIR%\env\installer_env
 set INSTALLER_YAML_FILE=%SD_BASE_DIR%\installer\yaml\installer-environment.yaml
-set MICROMAMBA_BINARY_FILE=%SD_BASE_DIR%\installer\bin\micromamba_win64.exe
+set MICROMAMBA_BINARY_FILE=%SD_BASE_DIR%\installer\bin\micromamba_win_x64.exe
 
 @rem initialize the mamba dir
 if not exist "%MAMBA_ROOT_PREFIX%" mkdir "%MAMBA_ROOT_PREFIX%"
