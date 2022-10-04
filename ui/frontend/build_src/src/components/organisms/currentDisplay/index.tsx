@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import React, { useEffect, useState } from "react";
 
 import { FetchingStates, useImageFetching } from "../../../stores/imageFetchingStore";
@@ -17,42 +18,37 @@ const IdleDisplay = () => {
   );
 };
 
-const LoadingDisplay = ({ images }: { images: string[] }) => {
+// const LoadingDisplay = ({ images }: { images: string[] }) => {
 
-  return (
-    <>
-      {images.map((image, index) => {
-        if (index == images.length - 1) {
-          return (
-            // TODO: make and 'ApiImage' component
-            <img src={`${API_URL}${image}`} key={index} />
-          )
-        }
-      })
-      }
-    </>
-  );
-};
+//   return (
+//     <>
+//       {images.map((image, index) => {
+//         if (index == images.length - 1) {
+//           return (
+//             // TODO: make and 'ApiImage' component
+//             <img src={`${API_URL}${image}`} key={index} />
+//           )
+//         }
+//       })
+//       }
+//     </>
+//   );
+// };
 
 export default function CurrentDisplay() {
 
   const status = useImageFetching((state) => state.status);
-  const currentImage = useImageDisplay((state) => state.currentImage);
+  const imageKeys = useImageDisplay((state) => state.currentImageKeys);
 
-  const progressImages = useImageFetching((state) => state.progressImages);
+  console.log('imageKeys', imageKeys);
+
 
   return (
     <div className={currentDisplayMain}>
 
-      {(currentImage == null) && <IdleDisplay />}
-      {/* {(status === FetchingStates.FETCHING || status === FetchingStates.PROGRESSING) && <LoadingDisplay />}
-      {(currentImage != null) && <ImageDisplay info={currentImage?.info} data={currentImage?.data} />}  */}
+      {(imageKeys == null) && <IdleDisplay />}
 
-      {
-        (progressImages.length > 0)
-          ? <LoadingDisplay images={progressImages} />
-          : (currentImage != null) && <ImageDisplay info={currentImage?.info} data={currentImage?.data} />
-      }
+      {(imageKeys != null) && <ImageDisplay batchId={imageKeys.batchId} imageId={imageKeys.imageId} progressId={imageKeys.progressId} />}
 
     </div>
   );

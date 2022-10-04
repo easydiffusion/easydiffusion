@@ -4,8 +4,9 @@ import produce from "immer";
 
 import { ImageRequest } from "../api/api.d";
 
+// same as progressDataObject
 export interface imageDataObject {
-  itemId: string;
+  id: string;
   data: string;
 }
 
@@ -38,7 +39,7 @@ export const useCreatedMedia = create<createdMediaState>((set, get) => ({
           data: [],
           info: req,
         };
-        state.createdMedia.unshift(item);
+        state.createdMediaList.unshift(item);
 
       })
     );

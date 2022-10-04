@@ -61,7 +61,7 @@ export default function MakeButton() {
   const setStatus = useImageFetching((state) => state.setStatus);
   const setStep = useImageFetching((state) => state.setStep);
   const setTotalSteps = useImageFetching((state) => state.setTotalSteps);
-  const addProgressImage = useImageFetching((state) => state.addProgressImage);
+  // const addProgressImage = useImageFetching((state) => state.addProgressImage);
   const setStartTime = useImageFetching((state) => state.setStartTime);
   const setNowTime = useImageFetching((state) => state.setNowTime);
   const resetForFetching = useImageFetching((state) => state.resetForFetching);
@@ -98,7 +98,7 @@ export default function MakeButton() {
           };
           const itemId = `${batchId}${idDelim}-${seed}-${index}`;
           // updateDisplay(batchId, data, seedReq);
-          addCreatedMedia(batchId, { itemId, data });
+          addCreatedMedia(batchId, { id: itemId, data });
         });
       }
 
@@ -154,7 +154,7 @@ export default function MakeButton() {
               // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
               const timePath = `${output.path}?t=${new Date().getTime()}`
 
-              addProgressImage(timePath);
+              // addProgressImage(timePath);
               addProgressImageToStore(batchId, { id: uuidv4(), data: timePath });
             });
           }

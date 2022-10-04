@@ -8,18 +8,18 @@ import {
 
 interface GeneretaedImageProps {
   imageData: string | undefined;
-  metadata: ImageRequest | undefined;
+  metadata?: ImageRequest | undefined;
   className?: string;
 }
 
 export default function GeneratedImage({
   imageData,
-  metadata,
+  // metadata,
   className,
 }: GeneretaedImageProps) {
   return (
     <div className={[generatedImageMain, className].join(" ")}>
-      <img src={imageData} alt={metadata!.prompt} />
+      <img src={imageData} />
     </div>
   );
 }

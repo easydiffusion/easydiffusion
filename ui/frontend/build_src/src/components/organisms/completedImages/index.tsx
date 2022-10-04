@@ -34,14 +34,12 @@ export default function CompletedImages() {
       const { data } = media;
       data?.forEach(element => {
         console.log(element);
-        tempImages.push({ batchId: media.batchId, id: element.itemId, data: element.data, info: media.info })
+        tempImages.push({ batchId: media.batchId, id: element.id, data: element.data, info: media.info })
       });
     })
 
     setImages(tempImages);
   }, [createdMediaList])
-
-
 
   const removeImagesAll = () => {
     clearDisplay();
@@ -70,11 +68,12 @@ export default function CompletedImages() {
             }
 
             return (
-              <li key={image.itemId}>
+              <li key={image.id}>
                 <button
                   className={imageContain}
                   onClick={() => {
-                    setCurrentImage({ batchId: image.batchId, imageId: image.itemId });
+                    console.log('set current image', image.batchId, image.id);
+                    setCurrentImage({ batchId: image.batchId, imageId: image.id });
                   }}
                 >
                   <img src={image.data} />

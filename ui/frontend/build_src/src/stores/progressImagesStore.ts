@@ -2,6 +2,7 @@
 import create from "zustand";
 import produce from "immer";
 
+// same as imageDataObject
 export interface progressDataObject {
   id: string;
   data: string;
