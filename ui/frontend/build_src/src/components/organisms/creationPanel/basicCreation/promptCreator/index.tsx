@@ -56,12 +56,15 @@ function TagTypeToggle({ positive, setPositive }: TagTypeProps) {
 
 export default function PromptCreator() {
 
+  const { t } = useTranslation();
   const [positive, setPositive] = useState(true)
-  const [tagText, setTagText] = useState('An astronaut riding a horse');
+  const [tagText, setTagText] = useState('');
 
   const addCreateTag = useImageCreate((state) => state.addCreateTag);
+  const prompt = useImageCreate((state) => state.getValueForRequestKey("prompt"));
 
-  const { t } = useTranslation();
+  const setRequestOptions = useImageCreate((state) => state.setRequestOptions);
+
 
   const enterPrompt = () => {
     if (tagText !== '') {
@@ -81,12 +84,9 @@ export default function PromptCreator() {
     if (event.key === "Enter") {
       if (tagText !== '') {
         const type = positive ? "positive" : "negative";
-
         tagText.split(',').map((tag) => tag.trim()).forEach((tag) => {
           addCreateTag({ id: uuidv4(), name: tag, type });
         });
-        //debugger;
-
         setTagText('');
       }
     }
@@ -96,22 +96,27 @@ export default function PromptCreator() {
     <div className={PromptCreatorMain}>
       <div>
         <p>{t("home.editor-title")}</p>
-        {/* @ts-expect-error */}
-        <input value={tagText} onKeyDown={checkForEnter} onChange={(event) => {
-          setTagText(event.target.value)
+
+        <input value={prompt} onChange={(event) => {
+          setRequestOptions('prompt', event.target.value);
         }}></input>
       </div>
+
+      <div>
+        <p> modifiers</p>
+        {/* @ts-expect-error */}
+        <input value={tagText} onKeyDown={checkForEnter} onChange={(event) => {
+          setTagText(event.target.value);
+        }}></input>
+      </div>
+
+
       <div className={buttonRow}>
         <button
-          // className={buttonStyle(
-          //   {
-          //     size: 'slim'
-          //   }
-          // )}
           className={prmptBtn}
           onClick={enterPrompt}
         >
-          Add Prompt
+          Add Modifier
         </button>
 
         <TagTypeToggle positive={positive} setPositive={setPositive}></TagTypeToggle>

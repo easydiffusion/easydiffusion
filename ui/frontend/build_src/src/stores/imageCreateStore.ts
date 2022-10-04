@@ -264,20 +264,21 @@ export const useImageCreate = create<ImageCreateState>(
     builtRequest: () => {
       const state = get();
       const requestOptions = state.requestOptions;
-      const selectedTags = get().selectedTags();
-      const tags = selectedTags.map((t: ModifierObject) => t.modifier);
+      //const selectedTags = get().selectedTags();
+      // const tags = selectedTags.map((t: ModifierObject) => t.modifier);
 
       const positivePrompt = state.createTags.filter((t) => t.type === "positive").map((t) => t.name).join(",");
       const negativePrompt = state.createTags.filter((t) => t.type === "negative").map((t) => t.name).join(",");
 
       // join all the tags with a comma and add it to the prompt
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      // const prompt = `${requestOptions.prompt}, ${tags.join(",")}`;
+      const fullPrompt = `${requestOptions.prompt}, ${positivePrompt}`;
+      const fullNegativePrompt = `${requestOptions.negative_prompt}, ${negativePrompt}`;
 
       const request = {
         ...requestOptions,
-        prompt: positivePrompt,
-        negative_prompt: negativePrompt,
+        prompt: fullPrompt,
+        negative_prompt: fullNegativePrompt,
       };
       // if we arent using auto save clear the save path
       if (!state.uiOptions.isUseAutoSave) {
