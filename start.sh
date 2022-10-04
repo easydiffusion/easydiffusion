@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Stable Diffusion UI - v2.5/n/n"
+echo "Stable Diffusion UI - v2.5\n\n"
 
 export START_CMD_FILENAME="start.sh"
 export SD_BASE_DIR=$(pwd)
