@@ -8,7 +8,7 @@ import shutil
 
 config_path = os.path.join('config.json')
 
-if not os.path.exists('installer') or not os.path.exists('ui') or not os.path.exists('engine'):
+if not os.path.exists('LICENSE'):
     print('Error: This script needs to be run from the root of the stable-diffusion-ui folder! Please cd to the correct folder, and run this again.')
     exit(1)
 
