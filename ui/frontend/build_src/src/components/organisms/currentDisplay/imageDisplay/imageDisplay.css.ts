@@ -24,6 +24,7 @@ export const imageDisplayCenter = style({
 export const imageDisplayContent = style({
   display: 'flex',
   flexDirection: 'column',
+  position: 'relative',
 });
 
 globalStyle(`${imageDisplayContent} > div`, {
@@ -36,4 +37,12 @@ globalStyle(`${imageDisplayContent} p`, {
 
 globalStyle(`${imageDisplayContent} button`, {
   marginRight: vars.spacing.medium,
+});
+
+export const ImageActions = style({
+  position: 'absolute',
+  top: '0',
+  left: '0',
+  display: 'flex',
+  flexDirection: 'row',
 });
