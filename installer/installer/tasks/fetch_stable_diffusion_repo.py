@@ -29,7 +29,7 @@ def fetch_repo():
         helpers.log("\nDownloading Stable Diffusion..\n")
         helpers.log(f"Using commit: {commit_id}\n")
 
-        if helpers.run(f'git clone {app.STABLE_DIFFUSION_REPO_URL} "{app.stable_diffusion_repo_dir_path}"')
+        helpers.run(f'git clone {app.STABLE_DIFFUSION_REPO_URL} "{app.stable_diffusion_repo_dir_path}"')
 
         if path.exists(stable_diffusion_repo_git_path):
             helpers.log("Downloaded Stable Diffusion")
