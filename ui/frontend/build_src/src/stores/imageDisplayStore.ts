@@ -3,6 +3,7 @@ import produce from "immer";
 
 export interface CompletedImageIds {
   batchId: string;
+  seed: string;
   imageId?: string;
   progressId?: string;
 }
@@ -19,8 +20,6 @@ export const useImageDisplay = create<ImageDisplayState>((set, get) => ({
   setCurrentImage: (image) => {
     set(
       produce((state) => {
-        console.log('what is currentImageKeys', state.currentImageKeys)
-        console.log("setting current image", image);
         state.currentImageKeys = image;
       })
     );

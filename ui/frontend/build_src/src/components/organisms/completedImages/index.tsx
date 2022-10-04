@@ -13,10 +13,12 @@ import {
 import {
   buttonStyle
 } from "../../_recipes/button.css";
+import { ImageRequest } from "../../../api/api.d";
 
 
 interface completedImageObject extends imageDataObject {
   batchId: string;
+  info: ImageRequest;
 }
 
 export default function CompletedImages() {
@@ -66,12 +68,14 @@ export default function CompletedImages() {
               return null;
             }
 
+            const seed = image.info.seed.toString(10);
+
             return (
               <li key={image.id}>
                 <button
                   className={imageContain}
                   onClick={() => {
-                    setCurrentImage({ batchId: image.batchId, imageId: image.id });
+                    setCurrentImage({ batchId: image.batchId, imageId: image.id, seed });
                   }}
                 >
                   <img src={image.data} />

@@ -61,23 +61,22 @@ export default function MakeButton() {
   const setStatus = useImageFetching((state) => state.setStatus);
   const setStep = useImageFetching((state) => state.setStep);
   const setTotalSteps = useImageFetching((state) => state.setTotalSteps);
-  // const addProgressImage = useImageFetching((state) => state.addProgressImage);
   const setStartTime = useImageFetching((state) => state.setStartTime);
   const setNowTime = useImageFetching((state) => state.setNowTime);
   const resetForFetching = useImageFetching((state) => state.resetForFetching);
   const appendData = useImageFetching((state) => state.appendData);
 
   // progress images logic
-  const addProgressImageToStore = useProgressImages((state) => state.addProgressImage);
+  const addProgressImage = useProgressImages((state) => state.addProgressImage);
+  const addProgressImageRecord = useProgressImages((state) => state.addProgressImageRecord);
 
   // display logic
   // const updateDisplay = useImageDisplay((state) => state.updateDisplay);
   // new display logic
   const makeSpace = useCreatedMedia((state) => state.makeSpace);
   const removeFailedMedia = useCreatedMedia((state) => state.removeFailedMedia);
-  // const addCompletedProgressImage = useCreatedMedia((state) => state.addProgressImage);
   const addCreatedMedia = useCreatedMedia((state) => state.addCreatedMedia);
-
+  const addCreatedMediaRecord = useCreatedMedia((state) => state.addCreatedMediaRecord);
   // waiting for the python server to start sending down an image url and not a base64 string
   const hackJson = (jsonStr: string, batchId: string) => {
 
@@ -92,6 +91,7 @@ export default function MakeButton() {
         outputs.forEach((output: any, index: number) => {
 
           const { data, seed } = output as ImageOutput;
+          console.log('succeeded seed', seed);
           const seedReq = {
             ...request,
             seed,
@@ -99,6 +99,7 @@ export default function MakeButton() {
           const itemId = `${batchId}${idDelim}-${seed}-${index}`;
           // updateDisplay(batchId, data, seedReq);
           addCreatedMedia(batchId, { id: itemId, data });
+          addCreatedMediaRecord(batchId, seed.toString(10), { id: itemId, data: seedReq });
         });
       }
 
@@ -151,11 +152,11 @@ export default function MakeButton() {
 
           if (void 0 !== outputs) {
             outputs.forEach((output: any) => {
+              const { path, seed } = output;
               // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-              const timePath = `${output.path}?t=${new Date().getTime()}`
-
-              // addProgressImage(timePath);
-              addProgressImageToStore(batchId, { id: uuidv4(), data: timePath });
+              const timePath = `${path}?t=${new Date().getTime()}`
+              addProgressImage(batchId, { id: uuidv4(), data: timePath });
+              addProgressImageRecord(batchId, seed, { id: uuidv4(), data: timePath });
             });
           }
 

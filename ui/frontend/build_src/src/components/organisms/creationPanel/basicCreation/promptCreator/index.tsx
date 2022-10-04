@@ -97,9 +97,9 @@ export default function PromptCreator() {
       <div>
         <p>{t("home.editor-title")}</p>
 
-        <input value={prompt} onChange={(event) => {
+        <textarea value={prompt} onChange={(event) => {
           setRequestOptions('prompt', event.target.value);
-        }}></input>
+        }}></textarea>
       </div>
 
       <div>
@@ -110,16 +110,14 @@ export default function PromptCreator() {
         }}></input>
       </div>
 
-
       <div className={buttonRow}>
+        <TagTypeToggle positive={positive} setPositive={setPositive}></TagTypeToggle>
         <button
           className={prmptBtn}
           onClick={enterPrompt}
         >
           Add Modifier
         </button>
-
-        <TagTypeToggle positive={positive} setPositive={setPositive}></TagTypeToggle>
       </div>
       <ActiveTags></ActiveTags>
     </div >

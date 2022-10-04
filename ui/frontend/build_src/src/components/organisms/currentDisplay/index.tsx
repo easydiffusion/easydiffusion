@@ -18,31 +18,10 @@ const IdleDisplay = () => {
   );
 };
 
-// const LoadingDisplay = ({ images }: { images: string[] }) => {
-
-//   return (
-//     <>
-//       {images.map((image, index) => {
-//         if (index == images.length - 1) {
-//           return (
-//             // TODO: make and 'ApiImage' component
-//             <img src={`${API_URL}${image}`} key={index} />
-//           )
-//         }
-//       })
-//       }
-//     </>
-//   );
-// };
-
 export default function CurrentDisplay() {
 
   const status = useImageFetching((state) => state.status);
   const imageKeys = useImageDisplay((state) => state.currentImageKeys);
-
-  console.log('imageKeys', imageKeys);
-
-
   return (
     <div className={currentDisplayMain}>
 

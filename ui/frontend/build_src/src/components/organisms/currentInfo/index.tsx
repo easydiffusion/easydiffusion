@@ -100,8 +100,6 @@ export default function CurrentInfo() {
     }
   }, [createdMedia]);
 
-
-
   return (
     <div className={currentInfoMain}>
       {batchId != '' && (
@@ -112,7 +110,7 @@ export default function CurrentInfo() {
           <div>negative_prompt: {negPrompt}</div>
           <div>seed: {seed}</div>
 
-          <ProgressImageDisplay batchId={batchId}></ProgressImageDisplay>
+          <ProgressImageDisplay orientation="vertical" batchId={batchId} seed={seed}></ProgressImageDisplay>
 
         </>
       )}

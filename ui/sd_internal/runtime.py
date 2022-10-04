@@ -395,7 +395,15 @@ def do_mk_img(req: Request):
                                     # don't delete x_samples, it is used in the code that called this callback
 
                                     temp_images[str(req.session_id) + '/' + str(i)] = buf
-                                    partial_images.append({'path': f'/image/tmp/{req.session_id}/{i}'})
+
+                                    # print('seeds', seeds)
+                                    # print('opt_seed', opt_seed)
+                                    print("sending partial image", i)
+
+                                    partial_images.append({
+                                        'path': f'/image/tmp/{req.session_id}/{i}',
+                                        'seed': f'{opt_seed+i}'
+                                    })
 
                                 progress['output'] = partial_images
 

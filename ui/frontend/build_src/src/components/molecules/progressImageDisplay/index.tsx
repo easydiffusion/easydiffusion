@@ -5,14 +5,16 @@ import { useProgressImages } from "../../../stores/progressImagesStore";
 import { useImageDisplay } from "../../../stores/imageDisplayStore";
 
 import {
-  root
+  progressImageDisplayStyle
 } from "./progressImageDisplay.css";
 
 interface ProgressImageDisplayProps {
   batchId: string;
+  seed: string;
+  orientation: 'horizontal' | 'vertical';
 }
 
-export default function ProgressImageDisplay({ batchId }: ProgressImageDisplayProps) {
+export default function ProgressImageDisplay({ batchId, seed, orientation }: ProgressImageDisplayProps) {
   const progressImages = useProgressImages((state) => state.getProgressImages(batchId));
 
   const setCurrentImage = useImageDisplay((state) => state.setCurrentImage);
@@ -20,7 +22,7 @@ export default function ProgressImageDisplay({ batchId }: ProgressImageDisplayPr
   const setProgressAsCurrent = (progressId: string) => {
     console.log('setProgressAsCurrent - batchId', batchId);
     console.log('progressId', progressId);
-    setCurrentImage({ batchId, progressId });
+    setCurrentImage({ batchId, progressId, seed });
   }
 
   if (progressImages.length === 0) {
@@ -28,7 +30,9 @@ export default function ProgressImageDisplay({ batchId }: ProgressImageDisplayPr
   }
 
   return (
-    <div className={root}>
+    <div className={progressImageDisplayStyle({
+      orientation
+    })}>
       {progressImages.map((image) => {
         return <img
           key={image.id}

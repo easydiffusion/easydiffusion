@@ -26,9 +26,14 @@ export const prmptBtn = style([buttonStyle({ size: 'slim' }), sprinkles({
   },
 }), {}]);
 
+globalStyle(`${PromptCreatorMain} textarea`, {
+  width: '100%',
+});
+
 globalStyle(`${PromptCreatorMain} input`, {
   width: '100%',
 });
+
 
 globalStyle(`${PromptCreatorMain} > div`, {
   marginBottom: vars.spacing.small,
@@ -83,8 +88,6 @@ globalStyle(`${TogglePill} p`, {
 });
 
 
-
-
 export const buttonRow = style({
   marginTop: vars.spacing.small,
   display: 'flex',
@@ -93,5 +96,5 @@ export const buttonRow = style({
 
 globalStyle(`${buttonRow} > button`, {
   flexGrow: 1,
-  marginRight: vars.spacing.medium,
+  marginLeft: vars.spacing.medium,
 });
