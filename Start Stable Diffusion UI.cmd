@@ -24,7 +24,6 @@ call git --version
 call python --version
 
 @rem Download the rest of the installer and UI
-@REM call installer\install-sd-ui.bat
 call python installer\installer\main.py
 
 pause
