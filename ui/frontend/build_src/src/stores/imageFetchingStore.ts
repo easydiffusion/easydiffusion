@@ -15,7 +15,6 @@ interface ImageFetchingState {
   step: number;
   totalSteps: number;
   data: string;
-  // progressImages: string[]
   timeStarted: Date;
   timeNow: Date;
   appendData: (data: string) => void;
@@ -23,7 +22,6 @@ interface ImageFetchingState {
   setStatus: (status: typeof FetchingStates[keyof typeof FetchingStates]) => void;
   setStep: (step: number) => void;
   setTotalSteps: (totalSteps: number) => void;
-  // addProgressImage: (imageLink: string) => void;
   setStartTime: () => void;
   setNowTime: () => void;
   resetForFetching: () => void;
@@ -77,13 +75,7 @@ export const useImageFetching = create<ImageFetchingState>((set) => ({
       })
     );
   },
-  // addProgressImage: (imageLink: string) => {
-  //   set(
-  //     produce((state: ImageFetchingState) => {
-  //       state.progressImages.push(imageLink);
-  //     })
-  //   );
-  // },
+
   setStartTime: () => {
     set(
       produce((state: ImageFetchingState) => {
@@ -102,7 +94,6 @@ export const useImageFetching = create<ImageFetchingState>((set) => ({
     set(
       produce((state: ImageFetchingState) => {
         state.status = FetchingStates.FETCHING;
-        state.progressImages = [];
         state.step = 0;
         state.totalSteps = 0;
         state.timeNow = new Date();

@@ -1,7 +1,11 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { ImageRequest } from "../../../api/api.d";
 
-import { QueuedRequest, useRequestQueue } from "../../../stores/requestQueueStore";
+import {
+  QueueStatus,
+  QueuedRequest,
+  useRequestQueue
+} from "../../../stores/requestQueueStore";
 
 import {
   QueueDisplayMain,
@@ -18,6 +22,10 @@ import QueueItem from "./queueItem";
 export default function QueueDisplay() {
 
   const requests: QueuedRequest[] = useRequestQueue((state) => state.requests);
+
+  const [currentRequest, setCurrentRequest] = useState<QueuedRequest | null>(null);
+  const [remainingRequests, setRemainingRequests] = useState<QueuedRequest[]>([]);
+
   const removeCompleted = useRequestQueue((state) => state.removeCompleted);
   const removeErrored = useRequestQueue((state) => state.removeErrored);
 
@@ -28,6 +36,21 @@ export default function QueueDisplay() {
   const clearErrored = () => {
     removeErrored();
   }
+
+  useMemo(() => {
+    const remaining = requests.filter((request) => {
+      if (request.status != QueueStatus.processing) {
+        return true
+      }
+      else {
+        setCurrentRequest(request);
+        return false;
+      }
+    });
+
+    setRemainingRequests(remaining);
+
+  }, [requests]);
 
   return (
     <div className={QueueDisplayMain}>
@@ -45,7 +68,9 @@ export default function QueueDisplay() {
           onClick={clearErrored}>Clear Errored</button>
       </div>
 
-      {requests.map((request) => {
+      {(currentRequest != null) && <QueueItem request={currentRequest} />}
+
+      {remainingRequests.map((request) => {
         return <QueueItem key={request.batchId} request={request}></QueueItem>;
       })}
     </div>
