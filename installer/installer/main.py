@@ -9,12 +9,14 @@ from installer.tasks import (
     fetch_project_repo,
     apply_project_update,
     fetch_stable_diffusion_repo,
+    install_stable_diffusion_packages,
 )
 
 tasks = [
     fetch_project_repo,
     apply_project_update,
     fetch_stable_diffusion_repo,
+    install_stable_diffusion_packages,
 ]
 
 helpers.log(f'Starting Stable Diffusion UI at {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}')

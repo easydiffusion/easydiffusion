@@ -10,6 +10,8 @@ STABLE_DIFFUSION_REPO_URL = 'https://github.com/basujindal/stable-diffusion.git'
 DEFAULT_STABLE_DIFFUSION_COMMIT = 'f6cfebffa752ee11a7b07497b8529d5971de916c'
 STABLE_DIFFUSION_REPO_DIR_NAME = 'stable-diffusion'
 
+PROJECT_ENV_DIR_NAME = 'project_env'
+
 START_CMD_FILE_NAME = os.environ['START_CMD_FILENAME']
 LOG_FILE_NAME = 'run.log'
 CONFIG_FILE_NAME = 'config.json'
@@ -44,6 +46,8 @@ engine_dir_path = os.path.join(SD_BASE_DIR, ENGINE_DIR_NAME)
 
 project_repo_dir_path = os.path.join(env_dir_path, PROJECT_REPO_DIR_NAME)
 stable_diffusion_repo_dir_path = os.path.join(env_dir_path, STABLE_DIFFUSION_REPO_DIR_NAME)
+
+project_env_dir_path = os.path.join(env_dir_path, PROJECT_ENV_DIR_NAME)
 
 config = get_config()
 log_file = open(LOG_FILE_NAME, 'wb')
