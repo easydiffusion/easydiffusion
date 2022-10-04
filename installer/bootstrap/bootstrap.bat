@@ -1,5 +1,9 @@
 @echo off
 
+@rem This file initializes micromamba and activates the env.
+@rem A similar bootstrap file needs to exist for each platform (win, linux, macOS)
+@rem Ready to hand-over to the platform-independent installer after this (written in python).
+
 set MAMBA_ROOT_PREFIX=%SD_BASE_DIR%\env\mamba
 set INSTALL_ENV_DIR=%SD_BASE_DIR%\env\installer_env
 set INSTALLER_YAML_FILE=%SD_BASE_DIR%\installer\yaml\installer-environment.yaml
