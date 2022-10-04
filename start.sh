@@ -16,6 +16,4 @@ git --version
 python --version
 
 # Download the rest of the installer and UI
-python installer/installer/main.py
-
-read -p "Press enter to continue"
+installer/installer/start.sh

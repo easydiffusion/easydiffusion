@@ -23,6 +23,4 @@ call git --version
 call python --version
 
 @rem Download the rest of the installer and UI
-call python installer\installer\main.py
-
-pause
+call installer\installer\start.bat
