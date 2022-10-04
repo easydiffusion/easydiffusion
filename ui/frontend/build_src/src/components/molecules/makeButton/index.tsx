@@ -6,15 +6,12 @@ import {
   QueueStatus,
   useRequestQueue
 } from "../../../stores/requestQueueStore";
-
 import {
   FetchingStates,
   useImageFetching
 } from "../../../stores/imageFetchingStore";
-
+import { useProgressImages } from "../../../stores/progressImagesStore";
 import { useCreatedMedia } from "../../../stores/createdMediaStore";
-
-
 import { useImageDisplay } from "../../../stores/imageDisplayStore";
 
 import { v4 as uuidv4 } from "uuid";
@@ -24,6 +21,9 @@ import {
   ImageRequest,
   ImageReturnType,
   ImageOutput,
+} from "../../../api/api.d";
+
+import {
   doMakeImage,
 } from "../../../api";
 
@@ -35,7 +35,7 @@ import { useTranslation } from "react-i18next";
 
 import AudioDing from "../../molecules/audioDing";
 
-const idDelim = "_batch";
+const idDelim = "_item";
 
 export default function MakeButton() {
   const { t } = useTranslation();
@@ -53,7 +53,7 @@ export default function MakeButton() {
   // request queue logic
   const addtoQueue = useRequestQueue((state) => state.addtoQueue);
   const hasQueue = useRequestQueue((state) => state.hasPendingQueue());
-  const { id, options } = useRequestQueue((state) => state.firstInQueue());
+  const { batchId, options } = useRequestQueue((state) => state.firstInQueue());
   const updateQueueStatus = useRequestQueue((state) => state.updateStatus);
 
   // fetching logic
@@ -67,15 +67,19 @@ export default function MakeButton() {
   const resetForFetching = useImageFetching((state) => state.resetForFetching);
   const appendData = useImageFetching((state) => state.appendData);
 
+  // progress images logic
+  const addProgressImageToStore = useProgressImages((state) => state.addProgressImage);
+
   // display logic
-  const updateDisplay = useImageDisplay((state) => state.updateDisplay);
+  // const updateDisplay = useImageDisplay((state) => state.updateDisplay);
   // new display logic
   const makeSpace = useCreatedMedia((state) => state.makeSpace);
   const removeFailedMedia = useCreatedMedia((state) => state.removeFailedMedia);
-  const addCompletedProgressImage = useCreatedMedia((state) => state.addProgressImage);
+  // const addCompletedProgressImage = useCreatedMedia((state) => state.addProgressImage);
   const addCreatedMedia = useCreatedMedia((state) => state.addCreatedMedia);
 
-  const hackJson = (jsonStr: string, id: string) => {
+  // waiting for the python server to start sending down an image url and not a base64 string
+  const hackJson = (jsonStr: string, batchId: string) => {
 
     try {
       const parsed = JSON.parse(jsonStr);
@@ -84,7 +88,7 @@ export default function MakeButton() {
 
       if (status === 'succeeded') {
 
-        updateQueueStatus(id, QueueStatus.complete);
+        updateQueueStatus(batchId, QueueStatus.complete);
         outputs.forEach((output: any, index: number) => {
 
           const { data, seed } = output as ImageOutput;
@@ -92,25 +96,25 @@ export default function MakeButton() {
             ...request,
             seed,
           };
-          const batchId = `${id}${idDelim}-${seed}-${index}`;
-          updateDisplay(batchId, data, seedReq);
-          addCreatedMedia(id, { id: batchId, data });
+          const itemId = `${batchId}${idDelim}-${seed}-${index}`;
+          // updateDisplay(batchId, data, seedReq);
+          addCreatedMedia(batchId, { itemId, data });
         });
       }
 
       else {
         console.warn(`Unexpected status: ${status}`);
-        updateQueueStatus(id, QueueStatus.error);
+        updateQueueStatus(batchId, QueueStatus.error);
       }
 
     }
     catch (e) {
-      updateQueueStatus(id, QueueStatus.error);
+      updateQueueStatus(batchId, QueueStatus.error);
       console.warn("Error HACKING JSON: ", e)
     }
   }
 
-  const parseRequest = async (id: string, reader: ReadableStreamDefaultReader<Uint8Array>) => {
+  const parseRequest = async (batchId: string, reader: ReadableStreamDefaultReader<Uint8Array>) => {
     const decoder = new TextDecoder();
     let finalJSON = '';
 
@@ -121,7 +125,7 @@ export default function MakeButton() {
 
       if (done) {
         setStatus(FetchingStates.COMPLETE);
-        hackJson(finalJSON, id);
+        hackJson(finalJSON, batchId);
         if (isSoundEnabled) {
           void dingRef.current?.play();
         }
@@ -149,8 +153,9 @@ export default function MakeButton() {
             outputs.forEach((output: any) => {
               // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
               const timePath = `${output.path}?t=${new Date().getTime()}`
+
               addProgressImage(timePath);
-              addCompletedProgressImage(id, timePath);
+              addProgressImageToStore(batchId, { id: uuidv4(), data: timePath });
             });
           }
 
@@ -174,26 +179,25 @@ export default function MakeButton() {
     }
   }
 
-  const startStream = async (id: string, req: ImageRequest) => {
+  const startStream = async (batchId: string, req: ImageRequest) => {
 
     try {
-      updateQueueStatus(id, QueueStatus.processing);
+      updateQueueStatus(batchId, QueueStatus.processing);
       resetForFetching();
       const res = await doMakeImage(req);
       const reader = res.body?.getReader();
 
       if (void 0 !== reader) {
-        makeSpace(id, req);
-        void parseRequest(id, reader);
+        makeSpace(batchId, req);
+        void parseRequest(batchId, reader);
       }
 
     } catch (e) {
       console.log('TOP LINE STREAM ERROR')
-      updateQueueStatus(id, QueueStatus.error);
-      removeFailedMedia(id);
+      updateQueueStatus(batchId, QueueStatus.error);
+      removeFailedMedia(batchId);
       console.log(e);
     }
-
   }
 
   const queueImageRequest = (req: ImageRequest) => {
@@ -252,7 +256,7 @@ export default function MakeButton() {
   useEffect(() => {
     const makeImages = async (options: ImageRequest) => {
       // removeFirstInQueue();
-      await startStream(id ?? "", options);
+      await startStream(batchId ?? "", options);
     }
 
     if (status === FetchingStates.PROGRESSING || status === FetchingStates.FETCHING) {
@@ -272,7 +276,7 @@ export default function MakeButton() {
       });
     }
 
-  }, [hasQueue, status, id, options, startStream]);
+  }, [hasQueue, status, batchId, options, startStream]);
 
   return (
     <>

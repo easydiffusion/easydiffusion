@@ -15,12 +15,14 @@ import {
   basicDisplayLayout,
   contentLayout,
   infoLayout,
+  infoTab,
   historyLayout
 } from "./basicDisplay.css";
 
 export default function BasicDisplay() {
 
-  const [isShowingHistory, setIsShowingHistory] = useState(true)
+  const [isShowingHistory, setIsShowingHistory] = useState(true);
+  const [isShowingInfo, setIsShowingInfo] = useState(true);
 
   const layoutRef = useRef<HTMLDivElement>(null);
 
@@ -38,6 +40,19 @@ export default function BasicDisplay() {
     }
   }, [layoutRef, isShowingHistory]);
 
+  useEffect(() => {
+    if (layoutRef.current != undefined) {
+      // set the hide-history data attribute
+      if (isShowingInfo) {
+        layoutRef.current.removeAttribute('data-hide-info');
+      }
+      else {
+        // layoutRef.current.dataset.hideHistory = "true";
+        layoutRef.current.setAttribute('data-hide-info', '');
+      }
+    }
+  }, [layoutRef, isShowingInfo]);
+
 
   return (
     <div
@@ -48,9 +63,14 @@ export default function BasicDisplay() {
         <CurrentDisplay></CurrentDisplay>
       </div>
 
-      {/* <div className={infoLayout}>
+      <div className={infoLayout}>
+        <button
+          className={infoTab}
+          onClick={() => setIsShowingInfo((isShowingInfo) => !isShowingInfo)}>
+          {isShowingInfo ? "Toggle info" : "Toggle info"}
+        </button>
         <CurrentInfo ></CurrentInfo>
-      </div> */}
+      </div>
 
       <div className={historyLayout}>
         <button

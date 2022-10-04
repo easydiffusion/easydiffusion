@@ -1,5 +1,5 @@
 import React from "react";
-import { ImageRequest } from "../../../api";
+import { ImageRequest } from "../../../api/api.d";
 
 import { QueuedRequest, useRequestQueue } from "../../../stores/requestQueueStore";
 
@@ -44,8 +44,9 @@ export default function QueueDisplay() {
           })}
           onClick={clearErrored}>Clear Errored</button>
       </div>
+
       {requests.map((request) => {
-        return <QueueItem key={request.id} request={request}></QueueItem>;
+        return <QueueItem key={request.batchId} request={request}></QueueItem>;
       })}
     </div>
   );

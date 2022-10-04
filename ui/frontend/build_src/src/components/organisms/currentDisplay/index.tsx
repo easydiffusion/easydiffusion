@@ -24,6 +24,7 @@ const LoadingDisplay = ({ images }: { images: string[] }) => {
       {images.map((image, index) => {
         if (index == images.length - 1) {
           return (
+            // TODO: make and 'ApiImage' component
             <img src={`${API_URL}${image}`} key={index} />
           )
         }

@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
-
-
 import { useImageDisplay } from "../../../stores/imageDisplayStore";
 
-import { useCreatedMedia } from "../../../stores/createdMediaStore";
+import { imageDataObject, useCreatedMedia } from "../../../stores/createdMediaStore";
 
 import {
   completedImagesMain,
@@ -16,41 +14,32 @@ import {
   buttonStyle
 } from "../../_recipes/button.css";
 
-// import { Transition } from '@headlessui/react'
 
+interface completedImageObject extends imageDataObject {
+  batchId: string;
+}
 
-// import {
-//   tabStyles
-// } from "../../_recipes/tabs_headless.css";
+export default function CompletedImages() {
 
-export default function CompletedImages(
+  const [images, setImages] = useState<completedImageObject[]>([])
 
-) {
-
-  const [isShowing, setIsShowing] = useState(false)
-  const [images, setImages] = useState([])
-
-  //  const images = useImageDisplay((state) => state.images);
   const setCurrentImage = useImageDisplay((state) => state.setCurrentImage);
   const clearDisplay = useImageDisplay((state) => state.clearDisplay);
 
-  const createdMedia = useCreatedMedia((state) => state.createdMedia);
+  const createdMediaList = useCreatedMedia((state) => state.createdMediaList);
 
   useEffect(() => {
-
-    const tempImages = [];
-    debugger;
-
-    createdMedia.forEach((media) => {
+    const tempImages: any = [];
+    createdMediaList?.forEach((media) => {
       const { data } = media;
-      data.forEach(element => {
+      data?.forEach(element => {
         console.log(element);
-        tempImages.push({ id: element.id, data: element.data, info: media.info })
+        tempImages.push({ batchId: media.batchId, id: element.itemId, data: element.data, info: media.info })
       });
     })
 
     setImages(tempImages);
-  }, [createdMedia])
+  }, [createdMediaList])
 
 
 
@@ -60,14 +49,6 @@ export default function CompletedImages(
 
   return (
     <div className={completedImagesMain}>
-      {/* <button
-        className={tabStyles({})}
-        onClick={() => setIsShowing((isShowing) => !isShowing)}>
-        {isShowing ? "Hide History" : "Show History"}
-      </button> */}
-      {/* <Transition
-        show={isShowing}
-      > */}
 
       <div className={completedImagesContent}>
         {/* Adjust the dom do we dont do this check twice */}
@@ -89,14 +70,14 @@ export default function CompletedImages(
             }
 
             return (
-              <li key={image.id}>
+              <li key={image.itemId}>
                 <button
                   className={imageContain}
                   onClick={() => {
-                    setCurrentImage(image);
+                    setCurrentImage({ batchId: image.batchId, imageId: image.itemId });
                   }}
                 >
-                  <img src={image.data} alt={image.info.prompt} />
+                  <img src={image.data} />
                 </button>
               </li>
             );

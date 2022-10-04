@@ -1,98 +1,74 @@
 /* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import create from "zustand";
 import produce from "immer";
-import { devtools } from "zustand/middleware";
 
-import { useRandomSeed } from "../utils";
+import { ImageRequest } from "../api/api.d";
 
-import { ImageRequest } from "../api";
-
-// import {
-//   FetchingStates
-// } from "./imageFetchingStore";
-
-interface imageDataObject {
-  id: string;
+export interface imageDataObject {
+  itemId: string;
   data: string;
 }
 
-interface createdMedia {
-  id: string;
+interface createdMediaObject {
+  batchId: string;
   completed: boolean;
   data: imageDataObject[] | undefined;
-  positivePrompts: string[];
-  negativePrompts: string[];
   info: ImageRequest;
-  progressImages: string[];
 }
 
 interface createdMediaState {
-  createdMedia: createdMedia[];
-  makeSpace: (id: string, req: ImageRequest) => void;
-  addCreatedMedia: (id: string, data: imageDataObject) => void;
-  // completeCreatedMedia: (id: string) => void;
-  addProgressImage: (id: string, imageData: string) => void;
-  removeFailedMedia: (id: string) => void;
+  createdMediaList: createdMediaObject[];
+  makeSpace: (batchId: string, req: ImageRequest) => void;
+  addCreatedMedia: (batchId: string, data: imageDataObject) => void;
+  getCreatedMedia: (batchId: string) => createdMediaObject | undefined;
+  removeFailedMedia: (batchId: string) => void;
+
 };
 
 export const useCreatedMedia = create<createdMediaState>((set, get) => ({
-  createdMedia: [],
+  //Array<createdMedia>(),
+  createdMediaList: [],
 
-  makeSpace: (id: string, req: ImageRequest) => {
+  makeSpace: (batchId: string, req: ImageRequest) => {
     set(
       produce((state) => {
-        const item: createdMedia = {
-          id,
+        const item: createdMediaObject = {
+          batchId,
           completed: false,
           data: [],
-          positivePrompts: [],
-          negativePrompts: [],
-          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
           info: req,
-          progressImages: []
         };
         state.createdMedia.unshift(item);
 
       })
     );
   },
-  addCreatedMedia: (id: string, data: imageDataObject) => {
+  addCreatedMedia: (batchId: string, data: imageDataObject) => {
     set(
 
       produce((state) => {
-        const item = state.createdMedia.find((item: createdMedia) => item.id === id);
-        if (void 0 !== item) {
-          item.data.push(data);
-          item.completed = true;
+        const media = state.createdMediaList.find((item: createdMediaObject) => item.batchId === batchId);
+        if (void 0 !== media) {
+          media.data.push(data);
         }
       })
     );
   },
 
-  // completeCreatedMedia: (id) => {
-  //   set(
-  //     produce((state) => {
-  //       const index = state.createdMedia.findIndex((media) => media.id === id);
-  //       if (index !== -1) {
-  //         state.createdMedia[index].completed = true;
-  //       }
-  //     })
-  //   );
-  // },
-
-  addProgressImage(id, imageData) {
-    set(
-      produce((state) => {
-        const index = state.createdMedia.findIndex((media) => media.id === id);
-        state.createdMedia[index].progressImages.push(imageData);
-      })
-    );
+  getCreatedMedia: (batchId: string) => {
+    const item = get().createdMediaList.find((item: createdMediaObject) => item.batchId === batchId);
+    if (void 0 !== item) {
+      return item;
+    }
+    return undefined;
   },
 
-  removeFailedMedia: (id) => {
+
+
+  removeFailedMedia: (batchId: string) => {
     set(
       produce((state) => {
-        const index = state.createdMedia.findIndex((media) => media.id === id);
+        const index = state.createdMediaList.findIndex((media: createdMediaObject) => media.batchId === batchId);
         if (index !== -1) {
           state.createdMedia.splice(index, 1);
         }

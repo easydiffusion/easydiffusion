@@ -1,7 +1,7 @@
 import create from "zustand";
 import produce from "immer";
 
-import { ImageRequest } from "../api";
+import { ImageRequest } from "../api/api.d";
 
 export enum QueueStatus {
   pending = "pending",
@@ -12,7 +12,7 @@ export enum QueueStatus {
 }
 
 export interface QueuedRequest {
-  id: string;
+  batchId: string;
   options: ImageRequest;
   status: QueueStatus[keyof QueueStatus];
   //"pending" | "processing" | "complete" | "error";
@@ -20,14 +20,14 @@ export interface QueuedRequest {
 
 interface RequestQueueState {
   requests: QueuedRequest[];
-  addtoQueue: (id: string, imgRec: ImageRequest) => void;
+  addtoQueue: (batchId: string, imgRec: ImageRequest) => void;
   pendingRequests: () => QueuedRequest[];
   hasPendingQueue: () => boolean;
   hasAnyQueue: () => boolean;
   firstInQueue: () => QueuedRequest;
-  updateStatus: (id: string, status: QueueStatus[keyof QueueStatus]) => void;
-  sendPendingToTop: (id: string) => void;
-  removeItem: (id: string) => void;
+  updateStatus: (batchId: string, status: QueueStatus[keyof QueueStatus]) => void;
+  sendPendingToTop: (batchId: string) => void;
+  removeItem: (batchId: string) => void;
   removeCompleted: () => void;
   removeErrored: () => void;
   clearQueue: () => void;
@@ -37,10 +37,10 @@ interface RequestQueueState {
 export const useRequestQueue = create<RequestQueueState>((set, get) => ({
   requests: [],
   // use produce to make sure we don't mutate state
-  addtoQueue: (id: string, imgRec: ImageRequest) => {
+  addtoQueue: (batchId: string, imgRec: ImageRequest) => {
     set(
       produce((state) => {
-        const item: QueuedRequest = { id, options: imgRec, status: QueueStatus.pending };
+        const item: QueuedRequest = { batchId, options: imgRec, status: QueueStatus.pending };
         state.requests.push(item);
       })
     );
@@ -63,16 +63,16 @@ export const useRequestQueue = create<RequestQueueState>((set, get) => ({
 
     if (pending === undefined) {
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      const temp: QueuedRequest = { id: "", options: ({} as ImageRequest), status: QueueStatus.pending };
+      const temp: QueuedRequest = { batchId: "", options: ({} as ImageRequest), status: QueueStatus.pending };
       return temp;
     }
     return pending;
   },
 
-  updateStatus: (id: string, status: QueueStatus[keyof QueueStatus]) => {
+  updateStatus: (batchId: string, status: QueueStatus[keyof QueueStatus]) => {
     set(
       produce((state) => {
-        const item = state.requests.find((item: QueuedRequest) => item.id === id);
+        const item = state.requests.find((item: QueuedRequest) => item.batchId === batchId);
         if (void 0 !== item) {
           item.status = status;
         }
@@ -80,10 +80,10 @@ export const useRequestQueue = create<RequestQueueState>((set, get) => ({
     );
   },
 
-  sendPendingToTop: (id: string) => {
+  sendPendingToTop: (batchId: string) => {
     set(
       produce((state) => {
-        const item = state.requests.find((item: QueuedRequest) => item.id === id);
+        const item = state.requests.find((item: QueuedRequest) => item.batchId === batchId);
 
         if (void 0 !== item) {
           // remove from current position
@@ -114,10 +114,10 @@ export const useRequestQueue = create<RequestQueueState>((set, get) => ({
     );
   },
 
-  removeItem: (id: string) => {
+  removeItem: (batchId: string) => {
     set(
       produce((state) => {
-        const index = state.requests.findIndex((item: QueuedRequest) => item.id === id);
+        const index = state.requests.findIndex((item: QueuedRequest) => item.batchId === batchId);
         if (index > -1) {
           state.requests.splice(index, 1);
         }

@@ -20,7 +20,7 @@ export const basicDisplayLayout = style({
 
   selectors: {
     '&[data-hide-info]': {
-      gridTemplateColumns: "1fr",
+      gridTemplateColumns: "1fr 0px",
       gridTemplateRows: "1fr 250px",
       // gridTemplateAreas: `
       //   "content"
@@ -39,7 +39,6 @@ export const basicDisplayLayout = style({
       //   "content"`,
     },
   },
-
 
   // "@media": {
   //   "screen and (max-width: 800px)": {
@@ -67,6 +66,21 @@ export const infoLayout = style({
   gridArea: "info",
   position: "relative",
 });
+
+
+export const infoTab = style([tabStyles({}), {
+  position: 'absolute',
+  whiteSpace: 'nowrap',
+  top: '0',
+  right: '100%',
+  textAlign: 'right',
+  // -webkit-transform-origin: 100% 100%;
+  // -webkit-transform: rotate(-90deg);
+  transformOrigin: `100% 100%`,
+  transform: `rotate(-90deg)`,
+
+
+}]);
 
 export const historyLayout = style({
   gridArea: "history",

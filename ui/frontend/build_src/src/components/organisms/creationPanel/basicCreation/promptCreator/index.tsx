@@ -70,7 +70,7 @@ export default function PromptCreator() {
       tagText.split(',').map((tag) => tag.trim()).forEach((tag) => {
         addCreateTag({ id: uuidv4(), name: tag, type });
       });
-      //debugger;
+
 
       setTagText('');
     }

@@ -5,7 +5,7 @@ import { devtools } from "zustand/middleware";
 
 import { useRandomSeed } from "../utils";
 
-import { ImageRequest } from "../api";
+import { ImageRequest } from "../api/api.d";
 
 export interface ImageCreationUiOptions {
   isUseRandomSeed: boolean;

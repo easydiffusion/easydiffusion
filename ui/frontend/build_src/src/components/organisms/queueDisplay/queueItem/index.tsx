@@ -6,6 +6,7 @@ import React from "react";
 import { QueueStatus, QueuedRequest, useRequestQueue } from '../../../../stores/requestQueueStore';
 
 import StopButton from '../../../molecules/stopButton';
+import ProgressImageDisplay from "../../../molecules/progressImageDisplay";
 
 import {
   QueueItemMain,
@@ -30,7 +31,7 @@ export default function QueueItem({ request }: QueueItemProps) {
   const sendPendingToTop = useRequestQueue((state) => state.sendPendingToTop);
 
   const {
-    id,
+    batchId,
     options: {
       prompt,
       num_outputs,
@@ -44,19 +45,19 @@ export default function QueueItem({ request }: QueueItemProps) {
   } = request;
 
   const removeFromQueue = () => {
-    removeItem(id);
+    removeItem(batchId);
   }
 
   const pauseItem = () => {
-    updateStatus(id, QueueStatus.paused);
+    updateStatus(batchId, QueueStatus.paused);
   }
 
   const retryRequest = () => {
-    updateStatus(id, QueueStatus.pending);
+    updateStatus(batchId, QueueStatus.pending);
   }
 
   const sendToTop = () => {
-    sendPendingToTop(id);
+    sendPendingToTop(batchId);
   }
 
   return (
@@ -71,6 +72,7 @@ export default function QueueItem({ request }: QueueItemProps) {
           <span>Guidance Scale: {guidance_scale} </span>
           <span>Num Inference Steps: {num_inference_steps} </span>
         </p>
+        <ProgressImageDisplay batchId={batchId}></ProgressImageDisplay>
       </div>
 
       <div className={QueueButtons}>
