@@ -23,7 +23,7 @@ def fetch_repo():
 
         if not is_developer_mode:
             helpers.run("git reset --hard", run_in_folder=app.stable_diffusion_repo_dir_path)
-            helpers.run(f'git checkout -c advice.detachedHead=false "{commit_id}"', run_in_folder=app.stable_diffusion_repo_dir_path)
+            helpers.run(f'git -c advice.detachedHead=false checkout "{commit_id}"', run_in_folder=app.stable_diffusion_repo_dir_path)
             helpers.run("git pull", run_in_folder=app.stable_diffusion_repo_dir_path)
     else:
         helpers.log("\nDownloading Stable Diffusion..\n")
@@ -35,7 +35,7 @@ def fetch_repo():
             helpers.show_install_error(error_msg="Could not download Stable Diffusion")
             exit(1)
 
-        helpers.run(f'git checkout -c advice.detachedHead=false "{commit_id}"', run_in_folder=app.stable_diffusion_repo_dir_path)
+        helpers.run(f'git -c advice.detachedHead=false checkout "{commit_id}"', run_in_folder=app.stable_diffusion_repo_dir_path)
 
 def apply_patches():
     if is_developer_mode:
