@@ -6,15 +6,15 @@
 
 OS_NAME=$(uname -s)
 case "${OS_NAME}" in
-    Linux*)     OS_NAME="linux"
-    Darwin*)    OS_NAME="mac"
+    Linux*)     OS_NAME="linux";;
+    Darwin*)    OS_NAME="mac";;
     *)          echo "Unknown OS: $OS_NAME! This only runs on Linux or Mac" && exit
 esac
 
 OS_ARCH=$(uname -m)
 case "${OS_ARCH}" in
-    x86_64*)    OS_ARCH="x64"
-    arm64*)     OS_ARCH="arm64"
+    x86_64*)    OS_ARCH="x64";;
+    arm64*)     OS_ARCH="arm64";;
     *)          echo "Unknown system architecture: $OS_ARCH! This only runs on x86_64 or arm64" && exit
 esac
 
