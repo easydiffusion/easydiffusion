@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
 /* eslint-disable @typescript-eslint/naming-convention */
 import React, { useEffect } from "react";
 
@@ -116,7 +117,6 @@ function ImageActions({ info, data }: ImageActionsProps) {
 
 export default function ImageDisplay({ batchId, imageId, progressId }: CompletedImageIds) {
 
-
   const getCreatedMedia = useCreatedMedia((state) => state.getCreatedMedia);
   const getProgressImages = useProgressImages((state) => state.getProgressImages);
 
@@ -136,7 +136,7 @@ export default function ImageDisplay({ batchId, imageId, progressId }: Completed
       }
 
       if (void 0 != progressId) {
-        const curImage = getProgressImages(batchId)?.filter((media) => media.id == progressId)[0] ?? null;
+        const curImage = getProgressImages(batchId)?.filter((media: { id: string; }) => media.id == progressId)[0] ?? null;
         console.log('getProgressImages curImage', curImage);
         setCurMedia({
           ...curImage,

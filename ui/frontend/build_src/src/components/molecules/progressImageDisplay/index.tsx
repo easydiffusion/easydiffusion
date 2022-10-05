@@ -8,15 +8,23 @@ import {
   progressImageDisplayStyle
 } from "./progressImageDisplay.css";
 
-interface ProgressImageDisplayProps {
+interface ProgressMainDisplayProps {
   batchId: string;
   seed?: string;
+}
+
+interface ProgressListDisplayProps {
+  batchId: string;
+  seed: string;
   orientation: 'horizontal' | 'vertical';
 }
 
-function ProgressImageList({ batchId, seed }: Partial<ProgressImageDisplayProps>) {
+//batchId, seed,
+function ProgressImageList({ batchId, seed, orientation }: ProgressListDisplayProps) {
 
-  const progressImages = useProgressImages((state) => state.getProgressRecordImages(batchId!, seed!));
+  const getProgressImageList = useProgressImages((state) => state.getProgressImageList);
+  const list = getProgressImageList(batchId, seed);
+
   const setCurrentImage = useImageDisplay((state) => state.setCurrentImage);
   const setProgressAsCurrent = (progressId: string) => {
     console.log('setProgressAsCurrent - batchId', batchId);
@@ -26,64 +34,52 @@ function ProgressImageList({ batchId, seed }: Partial<ProgressImageDisplayProps>
     }
   }
   return (
-    <>
+    <div className={progressImageDisplayStyle({ orientation })}>
       {
-        progressImages.map((image) => {
+        list.map((image: any) => {
           return <img
             key={image.id}
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             src={`${API_URL}${image.data}`}
             alt={image.id}
             onClick={() => { setProgressAsCurrent(image.id) }} />;
         })
       }
-    </>
+    </div>
   );
 }
 
 
-export default function ProgressImageDisplay({ batchId, seed, orientation }: ProgressImageDisplayProps) {
-  // const progressImages = useProgressImages((state) => state.getProgressImages(batchId));
+export default function ProgressImageDisplay({ batchId, seed }: ProgressMainDisplayProps) {
 
-  // if (progressImages.length === 0) {
-  //   return null;
-  // }
-  const [isSingle, setIsSingle] = useState(true);
-
-
-  const getProgressRecord = useProgressImages((state) => state.getProgressRecord);
-
-  const records = getProgressRecord(batchId);
+  const { progressImageBySeed } = useProgressImages((state) => state.getProgressImageBatch(batchId)) ?? {};
+  const [batchSeeds, setBatchSeeds] = useState<string[]>([]);
 
   useEffect(() => {
-    ///seed is optional
-    const sing = seed != null
-    console.log('sing', sing);
-    setIsSingle(sing);
-  }, [seed])
+    if (progressImageBySeed != null) {
 
-  // useEffect(() => {
-  //   console.log('ProgressImageDisplay - batchId', batchId);
-  //   console.log('ProgressImageDisplay - seed', seed);
+      const keys = Object.entries(progressImageBySeed).map(([key, value]) => {
+        return key;
+      });
 
-  //   getProgressRecord(batchId)
+      setBatchSeeds(keys);
+    }
 
-  // }, [batchId, seed])
+  }, [progressImageBySeed])
 
   return (
-    <div className={progressImageDisplayStyle({
-      orientation
-    })}>
-
-      {isSingle && <ProgressImageList batchId={batchId} seed={seed} />}
-
-      {!isSingle && (
-        // <ProgressImageList batchId={batchId} />
-        records?.map((record) => {
-          return <ProgressImageList key={record.seed} batchId={batchId} seed={record.seed} />
-        })
-
+    <div>
+      {void 0 != seed && (
+        <ProgressImageList key={seed} batchId={batchId} seed={seed} orientation='vertical' />
       )}
 
+      {void 0 == seed && (
+        <div>
+          {batchSeeds?.map((seed: any) => {
+            return <ProgressImageList key={seed} batchId={batchId} seed={seed} orientation='horizontal' />
+          })}
+        </div>
+      )}
     </div>
   );
 };

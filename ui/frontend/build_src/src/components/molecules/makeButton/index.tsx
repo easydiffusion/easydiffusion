@@ -68,7 +68,6 @@ export default function MakeButton() {
 
   // progress images logic
   const addProgressImage = useProgressImages((state) => state.addProgressImage);
-  const addProgressImageRecord = useProgressImages((state) => state.addProgressImageRecord);
 
   // display logic
   // const updateDisplay = useImageDisplay((state) => state.updateDisplay);
@@ -83,7 +82,6 @@ export default function MakeButton() {
     try {
       const parsed = JSON.parse(jsonStr);
       const { status, request, output: outputs } = parsed as ImageReturnType;
-
 
       if (status === 'succeeded') {
 
@@ -155,8 +153,7 @@ export default function MakeButton() {
               const { path, seed } = output;
               // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
               const timePath = `${path}?t=${new Date().getTime()}`
-              addProgressImage(batchId, { id: uuidv4(), data: timePath });
-              addProgressImageRecord(batchId, seed, { id: uuidv4(), data: timePath });
+              addProgressImage(batchId, seed, { id: uuidv4(), data: timePath });
             });
           }
 

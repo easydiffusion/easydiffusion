@@ -10,82 +10,55 @@ export interface progressDataObject {
 
 interface progressImageList {
   batchId: string;
-  progressImages: progressDataObject[];
+  progressImageBySeed: Record<string, progressDataObject[]>;
 };
 
 interface progressImagesState {
   progressImagesManifest: progressImageList[];
-  progressImageRecords: Record<string, progressImageList[]>;
-  // addProgressImage: (batchId: string, imageData: progressDataObject) => void;
-  // getProgressImages: (batchId: string) => progressDataObject[];
-
-  // addProgressImageRecord: (batchId: string, seed: string, imageData: progressDataObject) => void;
-  // getProgressRecord: (batchId: string, seed: string) => progressDataObject[] | undefined;
-  // getProgressRecordImages: (batchId: string, seed: string) => progressDataObject[];
-
+  addProgressImage: (batchId: string, seed: string, imageData: progressDataObject) => void;
+  getProgressImageBatch: (batchId: string) => progressImageList | null;
+  getProgressImageList: (batchId: string, seed: string) => progressDataObject[];
 };
 
 export const useProgressImages = create<progressImagesState>((set, get) => ({
   progressImagesManifest: [],
-  progressImageRecords: {},
-  // addProgressImage: (batchId: string, imageData: progressDataObject) => {
-  //   set(
-  //     produce((state) => {
-  //       const item = state.progressImagesManifest.find((item: progressImageList) => item.batchId === batchId);
-  //       if (void 0 !== item) {
-  //         console.log('add new item ', imageData.id);
-  //         console.log('to batch', batchId);
-  //         item.progressImages.unshift(imageData);
-  //         console.log('new length ', item.progressImages.length)
-  //       }
-  //       else {
-  //         console.log('add new batch', batchId);
-  //         console.log('first item', imageData.id);
-  //         state.progressImagesManifest.push({ batchId, progressImages: [imageData] });
-  //       }
-  //     })
-  //   );
-  // },
-  // getProgressImages: (batchId: string) => {
-  //   const item = get().progressImagesManifest.find((item: progressImageList) => item.batchId === batchId);
-  //   if (void 0 !== item) {
-  //     return item.progressImages;
-  //   }
+  addProgressImage: (batchId: string, seed: string, imageData: progressDataObject) => {
+    set(produce((state) => {
+      const batch = state.progressImagesManifest.find((batch: { batchId: string; }) => batch.batchId === batchId);
+      if (batch) {
+        batch.progressImages.push(imageData);
+        const seedRec = batch.progressImageBySeed[seed];
+        if (seedRec) {
+          seedRec.push(imageData);
+        } else {
+          batch.progressImageBySeed[seed] = [imageData];
+        }
+      } else {
+        state.progressImagesManifest.push({
+          batchId,
+          progressImages: [imageData],
+          progressImageBySeed: {
+            [seed]: [imageData],
+          },
+        });
+      }
+    }));
+  },
 
-  //   return [];
-  // },
+  getProgressImageBatch: (batchId: string) => {
+    const batch = get().progressImagesManifest.find((batch: { batchId: string; }) => batch.batchId === batchId);
+    if (batch) {
+      return batch;
+    }
+    return null;
+  },
 
-  // addProgressImageRecord: (batchId: string, seed: string, imageData: progressDataObject) => {
-  //   set(
-  //     produce((state) => {
-  //       const item = state.progressImageRecords[batchId]?.find((item: progressImageList) => item.batchId === seed);
-  //       if (void 0 !== item) {
-  //         console.log('add new item ', imageData.id);
-  //         console.log('to batch', batchId);
-
-  //         item.progressImages.unshift(imageData);
-  //         console.log('new length ', item.progressImages.length)
-  //       }
-  //       else {
-  //         console.log('add new batch', batchId);
-  //         console.log('first item', imageData.id);
-  //         if (void 0 === state.progressImageRecords[batchId]) {
-  //           state.progressImageRecords[batchId] = [];
-  //         }
-
-  //         state.progressImageRecords[batchId].push({ batchId: seed, progressImages: [imageData] });
-
-  //       }
-  //     })
-  //   );
-  // },
-
-  // getProgressImagesRecord: (batchId: string, seed: string) => {
-  //   const item = get().progressImageRecords[batchId]?.find((item: progressImageList) => item.batchId === seed);
-  //   if (void 0 !== item) {
-  //     return item.progressImages;
-  //   }
-  //   return [];
-  // }
+  getProgressImageList: (batchId: string, seed: string) => {
+    const batch = get().progressImagesManifest.find((batch) => batch.batchId === batchId);
+    if (batch) {
+      return batch.progressImageBySeed[seed] || [];
+    }
+    return [];
+  },
 
 }));
