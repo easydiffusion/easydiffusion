@@ -151,8 +151,10 @@ export default function MakeButton() {
           if (void 0 !== outputs) {
             outputs.forEach((output: any) => {
               const { path, seed } = output;
+              console.log('output path', path);
               // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
               const timePath = `${path}?t=${new Date().getTime()}`
+              console.log('output path', timePath);
               addProgressImage(batchId, seed, { id: uuidv4(), data: timePath });
             });
           }

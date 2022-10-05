@@ -27,8 +27,8 @@ function ProgressImageList({ batchId, seed, orientation }: ProgressListDisplayPr
 
   const setCurrentImage = useImageDisplay((state) => state.setCurrentImage);
   const setProgressAsCurrent = (progressId: string) => {
-    console.log('setProgressAsCurrent - batchId', batchId);
-    console.log('progressId', progressId);
+    // console.log('setProgressAsCurrent - batchId', batchId);
+    // console.log('progressId', progressId);
     if (batchId != null && seed != null) {
       setCurrentImage({ batchId, progressId, seed });
     }
@@ -37,6 +37,8 @@ function ProgressImageList({ batchId, seed, orientation }: ProgressListDisplayPr
     <div className={progressImageDisplayStyle({ orientation })}>
       {
         list.map((image: any) => {
+          // console.log('image.data', image.data);
+
           return <img
             key={image.id}
             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions

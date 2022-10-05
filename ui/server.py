@@ -187,10 +187,10 @@ def stop():
         print(traceback.format_exc())
         return HTTPException(status_code=500, detail=str(e))
 
-@app.get('/image/tmp/{session_id}/{img_id}')
-def get_image(session_id, img_id):
+@app.get('/image/tmp/{session_id}/{img_id}/{step}')
+def get_image(session_id, img_id, step):
     from sd_internal import runtime
-    buf = runtime.temp_images[session_id + '/' + img_id]
+    buf = runtime.temp_images[session_id + '/' + img_id + '/' + step]
     buf.seek(0)
     return StreamingResponse(buf, media_type='image/jpeg')
 
