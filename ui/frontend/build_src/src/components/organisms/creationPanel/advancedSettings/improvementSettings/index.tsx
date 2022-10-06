@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+
 import { useImageCreate } from "../../../../../stores/imageCreateStore";
 
 import { useCreateUI } from "../../creationPanelUIStore";
@@ -13,7 +15,8 @@ import {
 
 import Checkbox from "../../../../atoms/checkbox";
 
-import { useTranslation } from "react-i18next";
+import UpscaleOptions from "./upscaleOptions";
+
 
 export default function ImprovementSettings() {
   const { t } = useTranslation();
@@ -80,23 +83,7 @@ export default function ImprovementSettings() {
             ></Checkbox>
           </div>
           <div className={SettingItem}>
-            <label>
-              {t("settings.ups")}
-              <select
-                id="upscale_model"
-                name="upscale_model"
-                value={useUpscale}
-                onChange={(e) => {
-                  setRequestOption("use_upscale", e.target.value);
-                }}
-              >
-                <option value="">{t("settings.no-ups")}</option>
-                <option value="RealESRGAN_x4plus">RealESRGAN_x4plus</option>
-                <option value="RealESRGAN_x4plus_anime_6B">
-                  RealESRGAN_x4plus_anime_6B
-                </option>
-              </select>
-            </label>
+            <UpscaleOptions></UpscaleOptions>
           </div>
           <div className={SettingItem}>
             <Checkbox

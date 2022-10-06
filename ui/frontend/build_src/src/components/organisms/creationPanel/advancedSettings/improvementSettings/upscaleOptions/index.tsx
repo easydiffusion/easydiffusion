@@ -1,56 +1,121 @@
-import React from "react";
-
+/* eslint-disable @typescript-eslint/strict-boolean-expressions */
+import React, { Fragment, useEffect, useState } from "react";
+import { Listbox } from '@headlessui/react'
+import { useTranslation } from "react-i18next";
 import { useImageCreate, SAMPLER_OPTIONS } from "../../../../../../stores/imageCreateStore";
 
 import { useCreateUI } from "../../../creationPanelUIStore";
 
 import {
-  ListboxHeadless
+  IconFont,
+} from "../../../../../../styles/shared.css";
+
+import {
+  ListboxHeadless,
+  ListboxHeadlessButton,
+  ListBoxIcon,
+  ListboxHeadlessLabel,
+  ListboxHeadlessOptions,
+  ListboxHeadlessOptionItem,
 } from "../../../../../_recipes/listbox_headless.css";
 
+interface UpscaleOptionsProps {
+  id: number,
+  display: string,
+  value: string | null,
+  unavailable: boolean,
+}
+
+const options: UpscaleOptionsProps[] = [
+  { id: 1, value: null, display: 'No Upscaling', unavailable: false },
+  { id: 2, value: 'RealESRGAN_x4plus', display: 'RealESRGAN_x4plus', unavailable: false },
+  { id: 3, value: 'RealESRGAN_x4plus_anime_6B', display: 'RealESRGAN_x4plus_anime_6B', unavailable: false },
+]
 
 export default function UpscaleOptions() {
-  // const setRequestOption = useImageCreate((state) => state.setRequestOptions);
-  // const sampler = useImageCreate((state) => state.getValueForRequestKey("sampler"));
-  // const samplerOptions = useImageCreate((state) => state.getValueForRequestKey("sampler_options"));
+  const { t } = useTranslation();
+  const [selectedUpscaleOption, setSelectedUpscaleOption] = useState(options[0])
+  const setRequestOption = useImageCreate((state) => state.setRequestOptions);
+  const upscaleValue = useImageCreate((state) => state.getValueForRequestKey("use_upscale"));
 
-  // const setSampler = (sampler: string) => {
-  //   setRequestOption("sampler", sampler);
-  // };
+  useEffect(() => {
+    if (upscaleValue) {
+      const upscaleOption = options.find((option) => option.value === upscaleValue)
+      if (upscaleOption) {
+        setSelectedUpscaleOption(upscaleOption);
+      }
+    }
+    else {
+      setSelectedUpscaleOption(options[0]);
+    }
+  }, [upscaleValue]);
 
-  // const setSamplerOption = (key: string, value: any) => {
-  //   const newOptions = { ...samplerOptions, [key]: value };
-  //   setRequestOption("sampler_options", newOptions);
-  // };
+  const handleChange = (option: UpscaleOptionsProps) => {
+    setRequestOption("use_upscale", option.value);
+  };
+
+
+
 
   return (
-    <div>
-      UPSCALE
-      {/* <ListboxHeadless
-        label="Sampler"
-        value={sampler}
-        options={SAMPLER_OPTIONS}
-        onChange={setSampler}
-      /> */}
-
-      {/* <label>
-              {t("settings.ups")}
-              <select
-                id="upscale_model"
-                name="upscale_model"
-                value={useUpscale}
-                onChange={(e) => {
-                  setRequestOption("use_upscale", e.target.value);
-                }}
-              >
-                <option value="">{t("settings.no-ups")}</option>
-                <option value="RealESRGAN_x4plus">RealESRGAN_x4plus</option>
-                <option value="RealESRGAN_x4plus_anime_6B">
-                  RealESRGAN_x4plus_anime_6B
-                </option>
-              </select>
-            </label> */}
-
+    <div className={ListboxHeadless}>
+      <Listbox value={selectedUpscaleOption} onChange={handleChange}>
+        <Listbox.Label className={ListboxHeadlessLabel}>{t("settings.ups")}</Listbox.Label>
+        <Listbox.Button
+          className={ListboxHeadlessButton}>
+          {selectedUpscaleOption.display}
+          <i className={[ListBoxIcon, IconFont, 'fa-solid', 'fa-chevron-down'].join(" ")}></i>
+        </Listbox.Button>
+        <Listbox.Options className={ListboxHeadlessOptions}>
+          {options.map((option) => (
+            <Listbox.Option
+              // className={ListboxHeadlessOption}
+              key={option.id}
+              value={option}
+              disabled={option.unavailable}
+              as={Fragment}
+            >
+              {({ active, selected }) => {
+                console.log('active', active);
+                console.log('selected', selected);
+                return (
+                  <li
+                    className={ListboxHeadlessOptionItem}
+                  // data-selected={selected}
+                  >
+                    {option.display}
+                  </li>
+                )
+              }}
+            </Listbox.Option>
+          ))}
+        </Listbox.Options>
+      </Listbox>
     </div>
   );
 }
+
+//  {/* <ListboxHeadless
+//         label="Sampler"
+//         value={sampler}
+//         options={SAMPLER_OPTIONS}
+//         onChange={setSampler}
+//       /> */}
+
+//   {/* <label>
+//               {t("settings.ups")}
+//               <select
+//                 id="upscale_model"
+//                 name="upscale_model"
+//                 value={useUpscale}
+//                 onChange={(e) => {
+//                   setRequestOption("use_upscale", e.target.value);
+//                 }}
+//               >
+//                 <option value="">{t("settings.no-ups")}</option>
+//                 <option value="RealESRGAN_x4plus">RealESRGAN_x4plus</option>
+//                 <option value="RealESRGAN_x4plus_anime_6B">
+//                   RealESRGAN_x4plus_anime_6B
+//                 </option>
+//               </select>
+//             </label> */}

@@ -291,12 +291,6 @@ export const useImageCreate = create<ImageCreateState>(
         request.prompt_strength = undefined;
       }
 
-      // a bit of a hack. figure out what a clean value to pass to the server is
-      // if we arent using upscaling clear the upscaling
-      if (request.use_upscale === "") {
-        request.use_upscale = null;
-      }
-
       //     typeof state.getValueForRequestKey("use_face_correction") ===
       //     "string"
       //     ? null
