@@ -7,6 +7,8 @@ import { useImageCreate } from "../../../../stores/imageCreateStore";
 
 import BetaMode from "../../../molecules/betaMode";
 
+import Checkbox from "../../../atoms/checkbox";
+
 
 import {
   IconFont,
@@ -22,14 +24,6 @@ import {
 import {
   SettingContent
 } from "./systemSettings.css";
-
-// import {
-//   SwitchGroupMain,
-//   SwitchMain,
-//   SwitchLabel,
-//   SwitchEnabled,
-//   SwitchPill,
-// } from "../../../_headless/switch/index.css";
 
 
 export default function SystemSettings() {

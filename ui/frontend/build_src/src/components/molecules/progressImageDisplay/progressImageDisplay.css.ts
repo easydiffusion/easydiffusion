@@ -8,7 +8,6 @@ export const progressImageDisplayStyle = recipe({
     width: "100%",
     height: "100%",
   },
-
   variants: {
     orientation: {
       horizontal: {
@@ -21,29 +20,53 @@ export const progressImageDisplayStyle = recipe({
   },
 });
 
-globalStyle(`${progressImageDisplayStyle()} > img`, {
-  width: "100px",
+// this is a hack to work round a bug in vanilla-extract
+export const progressImage = recipe({
+  base: {
+    position: "relative",
+    objectFit: "contain",
+    width: "100%",
+    height: "100%",
+  },
+  variants: {
+    orientation: {
+      horizontal: {
+        width: "80%",
+      },
+      vertical: {
+        width: "20%",
+      },
+    },
+  },
 });
 
-// globalStyle(`${progressImageDisplayStyle} horizontal`, {
-// })
+// this would be best but it doesn't work
+// globalStyle(`${progressImageDisplayStyle(
+//   { orientation: "vertical" }
+// )} > img`, {
+//   width: "80%",
+// });
+// globalStyle(`${progressImageDisplayStyle(
+//   { orientation: "horizontal" }
+// )} > img`, {
+//   width: "100px",
+// });
 
-// export const root = style({
-//   display: 'flex',
-//   flexDirection: 'column',
-//   alignItems: 'center',
-//   justifyContent: 'center',
-//   width: '100%',
-//   // height: '100%',
-//   maxHeight: '70%',
-//   position: 'relative',
-//   overflow: 'scroll',
-//   backgroundColor: 'white',
-//   borderRadius: '4px',
-//   border: '1px solid #e0e0e0',
-//   boxSizing: 'border-box',
-//   transition: 'all 0.3s ease-in-out',
-//   ':hover': {
-//     borderColor: '#c0c0c0',
-//   },
+// This would be better but it doesn't work
+// export const progressImage = style({
+//   // width: "100px",
+
+//   selectors: {
+//     [`${progressImageDisplayStyle(
+//       { orientation: "horizontal" }
+//     )} &`]: {
+//       width: "25%",
+//     },
+//     [`${progressImageDisplayStyle(
+//       { orientation: "vertical" }
+//     )} &`]: {
+//       width: "80%",
+//     }
+//   }
+
 // });

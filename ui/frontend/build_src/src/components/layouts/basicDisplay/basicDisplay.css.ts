@@ -5,7 +5,6 @@ import {
   tabStyles
 } from "../../_recipes/tabs_headless.css";
 
-
 export const basicDisplayLayout = style({
   width: "100%",
   height: "100%",

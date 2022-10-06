@@ -22,12 +22,15 @@ export default function CurrentDisplay() {
 
   const status = useImageFetching((state) => state.status);
   const imageKeys = useImageDisplay((state) => state.currentImageKeys);
+
+  console.log('CurrentDisplay = imageKeys', imageKeys);
+
   return (
     <div className={currentDisplayMain}>
 
       {(imageKeys == null) && <IdleDisplay />}
 
-      {(imageKeys != null) && <ImageDisplay batchId={imageKeys.batchId} imageId={imageKeys.imageId} progressId={imageKeys.progressId} />}
+      {(imageKeys != null) && <ImageDisplay batchId={imageKeys.batchId} seed={imageKeys.seed} imageId={imageKeys.imageId} progressId={imageKeys.progressId} />}
 
     </div>
   );

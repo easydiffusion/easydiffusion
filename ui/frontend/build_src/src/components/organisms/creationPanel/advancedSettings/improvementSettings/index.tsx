@@ -11,6 +11,8 @@ import {
   buttonStyle,
 } from "../../../../_recipes/button.css";
 
+import Checkbox from "../../../../atoms/checkbox";
+
 import { useTranslation } from "react-i18next";
 
 export default function ImprovementSettings() {
@@ -71,14 +73,12 @@ export default function ImprovementSettings() {
       {improvementOpen && (
         <>
           <div className={SettingItem}>
-            <label>
-              <input
-                type="checkbox"
-                checked={isUsingFaceCorrection}
-                onChange={(e) => toggleUseFaceCorrection()}
-              />
-              Fix incorrect faces and eyes (uses GFPGAN)
-            </label>
+            <Checkbox
+              label="Face Fixes (uses GFPGAN)"
+              isChecked={isUsingFaceCorrection}
+              toggleCheck={toggleUseFaceCorrection}
+            ></Checkbox>
+
           </div>
           <div className={SettingItem}>
             <label>
@@ -100,17 +100,15 @@ export default function ImprovementSettings() {
             </label>
           </div>
           <div className={SettingItem}>
-            <label>
-              <input
-                disabled={isFilteringDisabled}
-                type="checkbox"
-                checked={filteredOnly}
-                onChange={(e) =>
-                  setRequestOption("show_only_filtered_image", e.target.checked)
-                }
-              />
-              {t("settings.corrected")}
-            </label>
+            <Checkbox
+              disabled={isFilteringDisabled}
+              label={t("settings.corrected")}
+              isChecked={filteredOnly}
+              toggleCheck={(value) => {
+                setRequestOption("show_only_filtered_image", value)
+              }}
+            ></Checkbox>
+
           </div>
         </>
       )}

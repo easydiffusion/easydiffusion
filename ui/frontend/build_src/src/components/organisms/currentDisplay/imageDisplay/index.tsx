@@ -36,7 +36,6 @@ import { ImageRequest } from "../../../../api/api.d";
 interface ImageActionsProps {
   info: ImageRequest;
   data: string;
-
 }
 
 function ImageActions({ info, data }: ImageActionsProps) {
@@ -115,10 +114,10 @@ function ImageActions({ info, data }: ImageActionsProps) {
 }
 
 
-export default function ImageDisplay({ batchId, imageId, progressId }: CompletedImageIds) {
+export default function ImageDisplay({ batchId, seed, imageId, progressId }: CompletedImageIds) {
 
   const getCreatedMedia = useCreatedMedia((state) => state.getCreatedMedia);
-  const getProgressImages = useProgressImages((state) => state.getProgressImages);
+  const getProgressImages = useProgressImages((state) => state.getProgressImageList);
 
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const [curMedia, setCurMedia] = React.useState<imageDataObject | null>(null);
@@ -136,15 +135,23 @@ export default function ImageDisplay({ batchId, imageId, progressId }: Completed
       }
 
       if (void 0 != progressId) {
-        const curImage = getProgressImages(batchId)?.filter((media: { id: string; }) => media.id == progressId)[0] ?? null;
-        console.log('getProgressImages curImage', curImage);
-        setCurMedia({
+
+        const list = getProgressImages(batchId, seed)
+        const curImage = list?.filter((media) => media.id == progressId)[0] ?? null;
+
+        const urlCur = {
           ...curImage,
           data: `${API_URL}${curImage.data}`
-        });
+        }
+        setCurMedia(
+          {
+            ...curImage,
+            data: `${API_URL}${curImage.data}`
+          }
+        );
       }
     }
-  }, [batchId, imageId, progressId, getCreatedMedia, getProgressImages]);
+  }, [batchId, seed, imageId, progressId, getCreatedMedia, getProgressImages]);
 
   if (curMedia == null) {
     return null;

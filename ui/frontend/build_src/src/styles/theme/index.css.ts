@@ -65,8 +65,11 @@ const app = createGlobalTheme(":root", {
   backgroundAccentMain: 'hsl(225, 6%, 30%)',
 
   backgroundAccentHue: '225',
+  // used in button and checkmark
   backgroundAccentSaturation: '26%',
   backgroundAccentLightness: '70%',
+
+
 
   // this is depricated
   colors: {

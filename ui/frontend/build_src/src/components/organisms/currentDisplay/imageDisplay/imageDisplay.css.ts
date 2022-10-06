@@ -27,18 +27,6 @@ export const imageDisplayContent = style({
   position: 'relative',
 });
 
-globalStyle(`${imageDisplayContent} > div`, {
-  marginBottom: vars.spacing.medium,
-});
-
-globalStyle(`${imageDisplayContent} p`, {
-  marginBottom: vars.spacing.small,
-});
-
-globalStyle(`${imageDisplayContent} button`, {
-  marginRight: vars.spacing.medium,
-});
-
 export const ImageActionsMain = style({
   position: 'absolute',
   top: vars.spacing.medium,

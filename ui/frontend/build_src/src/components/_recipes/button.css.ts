@@ -104,6 +104,8 @@ export const buttonStyle = recipe({
         backgroundColor: "transparent",
         color: `hsl(var(--button-hue),var(--button-base-saturation),${vars.colorMod.lightness.normal})`,
         textDecoration: "underline",
+        paddingLeft: 0,
+        paddingRight: 0,
         ":hover": {
           color: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.normal})`,
         },

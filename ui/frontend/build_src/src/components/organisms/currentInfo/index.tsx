@@ -8,58 +8,6 @@ import { useCreatedMedia } from "../../../stores/createdMediaStore";
 import { currentInfoMain } from "./currentInfo.css";
 
 import ProgressImageDisplay from '../../molecules/progressImageDisplay';
-// function CurrentActions() {
-//   const createFileName = () => {
-//     const {
-//       prompt,
-//       negative_prompt,
-//       seed,
-//       num_inference_steps,
-//       guidance_scale,
-//       use_face_correction,
-//       use_upscale,
-//       width,
-//       height,
-//     } = info;
-
-//     // Most important information is the prompt
-//     let underscoreName = prompt.replace(/[^a-zA-Z0-9]/g, "_");
-//     underscoreName = underscoreName.substring(0, 100);
-//     // name and the top level metadata
-//     let fileName = `${underscoreName}_Seed-${seed}_Steps-${num_inference_steps}_Guidance-${guidance_scale}`;
-//     // Add the face correction and upscale
-//     if (typeof use_face_correction == "string") {
-//       fileName += `_FaceCorrection-${use_face_correction}`;
-//     }
-//     if (typeof use_upscale == "string") {
-//       fileName += `_Upscale-${use_upscale}`;
-//     }
-//     // Add the width and height
-//     fileName += `_${width}x${height}`;
-//     // add the file extension
-//     fileName += ".png";
-//     // return fileName
-//     return fileName;
-//   };
-
-//   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
-
-//   const _handleSave = () => {
-//     const link = document.createElement("a");
-//     link.download = createFileName();
-//     link.href = data ?? "";
-//     link.click();
-//   };
-
-//   const _handleUseAsInput = () => {
-//     setRequestOption("init_image", data);
-//   };
-
-
-//   return (
-
-//   )
-// }
 
 
 export default function CurrentInfo() {
@@ -70,7 +18,7 @@ export default function CurrentInfo() {
   const [gScale, setGScale] = useState<number>(1);
   const [prompt, setPrompt] = useState<string>('');
   const [negPrompt, setNegPrompt] = useState<string>('');
-  const [seed, setSeed] = useState<number>(0);
+  const [seed, setSeed] = useState<string>('');
 
   const imageKeys = useImageDisplay((state) => state.currentImageKeys);
 
@@ -79,6 +27,7 @@ export default function CurrentInfo() {
 
   useEffect(() => {
     if (imageKeys != null) {
+      console.log('imageKeys', imageKeys);
       setBatchId(imageKeys.batchId);
     }
   }, [imageKeys]);
@@ -93,10 +42,12 @@ export default function CurrentInfo() {
           seed
         }
       } = createdMedia;
+      console.log('SET FOR NEW MEDIA', seed)
       setGScale(guidance_scale);
       setPrompt(prompt);
       setNegPrompt(negative_prompt);
-      setSeed(seed);
+
+      setSeed(seed.toString(10));
     }
   }, [createdMedia]);
 
@@ -110,7 +61,7 @@ export default function CurrentInfo() {
           <div>negative_prompt: {negPrompt}</div>
           <div>seed: {seed}</div>
 
-          <ProgressImageDisplay orientation="vertical" batchId={batchId} seed={seed}></ProgressImageDisplay>
+          <ProgressImageDisplay batchId={batchId} seed={seed}></ProgressImageDisplay>
 
         </>
       )}
