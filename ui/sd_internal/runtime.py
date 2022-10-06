@@ -79,7 +79,7 @@ except:
     print('WARNING: No compatible GPU found. Using the CPU, but this will be very slow!')
     pass
 
-def load_model_ckpt(ckpt_to_use, device_to_use='cuda', turbo=False, unet_bs_to_use=1, precision_to_use='autocast', half_model_fs=False):
+def load_model_ckpt(ckpt_to_use, device_to_use='cuda', turbo=False, unet_bs_to_use=1, precision_to_use='autocast'):
     global ckpt_file, model, modelCS, modelFS, model_is_half, device, unet_bs, precision, model_fs_is_half
 
     ckpt_file = ckpt_to_use
@@ -130,14 +130,11 @@ def load_model_ckpt(ckpt_to_use, device_to_use='cuda', turbo=False, unet_bs_to_u
     if device != "cpu" and precision == "autocast":
         model.half()
         modelCS.half()
-        model_is_half = True
-    else:
-        model_is_half = False
-
-    if half_model_fs:
         modelFS.half()
+        model_is_half = True
         model_fs_is_half = True
     else:
+        model_is_half = False
         model_fs_is_half = False
 
     print('loaded ', ckpt_file, 'to', device, 'precision', precision)
@@ -248,12 +245,10 @@ def do_mk_img(req: Request):
             device = 'cuda'
 
             if (precision == 'autocast' and (req.use_full_precision or not model_is_half)) or \
-                (precision == 'full' and not req.use_full_precision and not force_full_precision) or \
-                (req.init_image is None and model_fs_is_half) or \
-                (req.init_image is not None and not model_fs_is_half and not force_full_precision):
+                (precision == 'full' and not req.use_full_precision and not force_full_precision):
 
                 del model, modelCS, modelFS
-                load_model_ckpt(ckpt_file, device, req.turbo, unet_bs, ('full' if req.use_full_precision else 'autocast'), half_model_fs=(req.init_image is not None and not req.use_full_precision))
+                load_model_ckpt(ckpt_file, device, req.turbo, unet_bs, ('full' if req.use_full_precision else 'autocast'))
                 needs_model_reload = False
 
                 if prev_device != device:
@@ -261,7 +256,7 @@ def do_mk_img(req: Request):
                     load_model_real_esrgan(real_esrgan_file)
 
     if needs_model_reload:
-        load_model_ckpt(ckpt_file, device, req.turbo, unet_bs, precision, model_fs_is_half)
+        load_model_ckpt(ckpt_file, device, req.turbo, unet_bs, precision)
 
     if req.use_face_correction != gfpgan_file:
         load_model_gfpgan(req.use_face_correction)
