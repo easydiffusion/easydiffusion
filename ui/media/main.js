@@ -47,6 +47,7 @@ let useFaceCorrectionField = document.querySelector("#use_face_correction")
 let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
 let stableDiffusionModelField = document.querySelector('#stable_diffusion_model')
+let outputFormatField = document.querySelector('#output_format')
 let showOnlyFilteredImageField = document.querySelector("#show_only_filtered_image")
 let updateBranchLabel = document.querySelector("#updateBranchLabel")
 let streamImageProgressField = document.querySelector("#stream_image_progress")
@@ -300,7 +301,7 @@ function showImages(req, res, outputContainer, livePreview) {
                 saveImageBtn = imageItemElem.querySelector('.imgSaveBtn');
 
             useAsInputBtn.addEventListener('click', getUseAsInputHandler(imageItemElem))
-            saveImageBtn.addEventListener('click', getSaveImageHandler(imageItemElem))
+            saveImageBtn.addEventListener('click', getSaveImageHandler(imageItemElem, req['output_format']))
 
             outputContainer.appendChild(imageItemElem)
         }
@@ -343,14 +344,14 @@ function getUseAsInputHandler(imageItemElem) {
     }
 }
 
-function getSaveImageHandler(imageItemElem) {
+function getSaveImageHandler(imageItemElem, outputFormat) {
     return function() {
         const imageElem = imageItemElem.querySelector('img')
         const imgData = imageElem.src
         const imageSeed = imageElem.getAttribute('data-seed')
 
         const imgDownload = document.createElement('a')
-        imgDownload.download = createFileName(imageSeed)
+        imgDownload.download = createFileName(imageSeed, outputFormat)
         imgDownload.href = imgData
         imgDownload.click()
     }
@@ -628,7 +629,8 @@ async function makeImage() {
         use_stable_diffusion_model: stableDiffusionModelField.value,
         stream_progress_updates: true,
         stream_image_progress: streamImageProgress,
-        show_only_filtered_image: showOnlyFilteredImageField.checked
+        show_only_filtered_image: showOnlyFilteredImageField.checked,
+        output_format: outputFormatField.value
     }
 
     if (IMAGE_REGEX.test(initImagePreview.src)) {
@@ -733,7 +735,7 @@ async function makeImage() {
 
 // create a file name with embedded prompt and metadata
 // for easier cateloging and comparison
-function createFileName(seed) {
+function createFileName(seed, outputFormat) {
 
     // Most important information is the prompt
     let underscoreName = lastPromptUsed.replace(/[^a-zA-Z0-9]/g, '_')
@@ -761,7 +763,7 @@ function createFileName(seed) {
     // fileName += `${tagString}`
 
     // add the file extension
-    fileName += `.png`
+    fileName += '.' + (outputFormat === 'png' ? 'png' : 'jpeg')
 
     return fileName
 }

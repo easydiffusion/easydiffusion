@@ -24,6 +24,7 @@ class Request:
     use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
     use_stable_diffusion_model: str = "sd-v1-4"
     show_only_filtered_image: bool = False
+    output_format: str = "jpeg" # or "png"
 
     stream_progress_updates: bool = False
     stream_image_progress: bool = False
@@ -44,6 +45,7 @@ class Request:
             "use_face_correction": self.use_face_correction,
             "use_upscale": self.use_upscale,
             "use_stable_diffusion_model": self.use_stable_diffusion_model,
+            "output_format": self.output_format,
         }
 
     def to_string(self):
@@ -66,6 +68,7 @@ class Request:
     use_upscale: {self.use_upscale}
     use_stable_diffusion_model: {self.use_stable_diffusion_model}
     show_only_filtered_image: {self.show_only_filtered_image}
+    output_format: {self.output_format}
 
     stream_progress_updates: {self.stream_progress_updates}
     stream_image_progress: {self.stream_image_progress}'''

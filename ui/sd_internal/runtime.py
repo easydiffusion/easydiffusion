@@ -284,7 +284,7 @@ def do_mk_img(req: Request):
     opt_use_face_correction = req.use_face_correction
     opt_use_upscale = req.use_upscale
     opt_show_only_filtered = req.show_only_filtered_image
-    opt_format = 'png'
+    opt_format = req.output_format
     opt_sampler_name = req.sampler
 
     print(req.to_string(), '\n    device', device)
@@ -457,7 +457,7 @@ def do_mk_img(req: Request):
                             save_metadata(meta_out_path, prompts, opt_seed, opt_W, opt_H, opt_ddim_steps, opt_scale, opt_strength, opt_use_face_correction, opt_use_upscale, opt_sampler_name, req.negative_prompt, ckpt_file)
 
                         if return_orig_img:
-                            img_data = img_to_base64_str(img)
+                            img_data = img_to_base64_str(img, opt_format)
                             res_image_orig = ResponseImage(data=img_data, seed=opt_seed)
                             res.images.append(res_image_orig)
 
@@ -484,7 +484,7 @@ def do_mk_img(req: Request):
 
                             filtered_image = Image.fromarray(x_sample)
 
-                            filtered_img_data = img_to_base64_str(filtered_image)
+                            filtered_img_data = img_to_base64_str(filtered_image, opt_format)
                             res_image_filtered = ResponseImage(data=filtered_img_data, seed=opt_seed)
                             res.images.append(res_image_filtered)
 
@@ -652,9 +652,9 @@ def load_mask(mask_str, h0, w0, newH, newW, invert=False):
     return image
 
 # https://stackoverflow.com/a/61114178
-def img_to_base64_str(img):
+def img_to_base64_str(img, output_format="PNG"):
     buffered = BytesIO()
-    img.save(buffered, format="PNG")
+    img.save(buffered, format=output_format)
     buffered.seek(0)
     img_byte = buffered.getvalue()
     img_str = "data:image/png;base64," + base64.b64encode(img_byte).decode()

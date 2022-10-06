@@ -60,6 +60,7 @@ class ImageRequest(BaseModel):
     use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
     use_stable_diffusion_model: str = "sd-v1-4"
     show_only_filtered_image: bool = False
+    output_format: str = "jpeg" # or "png"
 
     stream_progress_updates: bool = False
     stream_image_progress: bool = False
@@ -163,6 +164,7 @@ def image(req : ImageRequest):
     r.use_upscale: str = req.use_upscale
     r.use_face_correction = req.use_face_correction
     r.show_only_filtered_image = req.show_only_filtered_image
+    r.output_format = req.output_format
 
     r.stream_progress_updates = True # the underlying implementation only supports streaming
     r.stream_image_progress = req.stream_image_progress

@@ -155,6 +155,12 @@
                     <li class="pl-5"><label for="num_inference_steps">Number of inference steps:</label> <input id="num_inference_steps" name="num_inference_steps" size="4" value="50"></li>
                     <li class="pl-5"><label for="guidance_scale_slider">Guidance Scale:</label> <input id="guidance_scale_slider" name="guidance_scale_slider" class="editor-slider" value="75" type="range" min="10" max="500"> <input id="guidance_scale" name="guidance_scale" size="4"></li>
                     <li class="pl-5"><span id="prompt_strength_container"><label for="prompt_strength_slider">Prompt Strength:</label> <input id="prompt_strength_slider" name="prompt_strength_slider" class="editor-slider" value="80" type="range" min="0" max="99"> <input id="prompt_strength" name="prompt_strength" size="4"><br/></span></li>
+                    <li class="pl-5"><label for="output_format">Output format:</label>
+                        <select id="output_format" name="output_format">
+                            <option value="jpeg" selected>jpeg</option>
+                            <option value="png">png</option>
+                        </select>
+                    </li>
 
                     <br/>
 
@@ -218,7 +224,7 @@
 </div>
 </body>
 
-<script src="media/main.js?v=30"></script>
+<script src="media/main.js?v=31"></script>
 <script>
 async function init() {
     await loadModifiers()
