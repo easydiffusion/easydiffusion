@@ -14,6 +14,7 @@ const app = createGlobalTheme(":root", {
   },
 
   trim: {
+    inputBorderRadius: "4px",
     smallBorderRadius: "5px",
   },
 

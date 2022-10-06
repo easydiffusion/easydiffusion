@@ -3,6 +3,8 @@ import { useImageCreate, SAMPLER_OPTIONS } from "../../../../../stores/imageCrea
 import { useCreateUI } from "../../creationPanelUIStore";
 
 import Checkbox from "../../../../atoms/checkbox";
+import NumberInput from "../../../../atoms/numberInput";
+
 
 import {
   SettingItem,
@@ -92,31 +94,23 @@ export default function PropertySettings() {
               toggleCheck={toggleUseRandomSeed}
             ></Checkbox>
 
-
-            <label>
-              Seed:
-              <input
-                size={10}
-                value={seed}
-                onChange={(e) => setRequestOption("seed", e.target.value)}
-                disabled={isRandomSeed}
-                placeholder="random"
-              />
-            </label>
+            <NumberInput
+              label="Seed:"
+              value={seed}
+              onChange={(value) => setRequestOption("seed", value)}
+              disabled={isRandomSeed}
+            ></NumberInput>
 
           </div>
 
           <div className={SettingItem}>
-            <label>
-              {t("settings.steps")}{" "}
-              <input
-                value={steps}
-                onChange={(e) => {
-                  setRequestOption("num_inference_steps", e.target.value);
-                }}
-                size={4}
-              />
-            </label>
+            <NumberInput
+              label={t("settings.steps")}
+              value={steps}
+              onChange={(value) => {
+                setRequestOption("num_inference_steps", value);
+              }}
+            ></NumberInput>
           </div>
 
           <div className={SettingItem}>

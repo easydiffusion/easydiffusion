@@ -17,9 +17,18 @@ export const CheckContent = style({
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
+
+  borderRadius: vars.trim.inputBorderRadius,
+
+  // ':hover': {
+
+  //0 0 6px -4px white inset
   selectors: {
     [`${CheckMain}[data-disabled="true"] &`]: {
       background: vars.backgroundLight,
+    },
+    [`&[data-headlessui-state="checked"]`]: {
+      boxShadow: `0 0 5px -1px var(--backgroundAccentMain__4vfmtjw) inset`,
     }
   }
 });

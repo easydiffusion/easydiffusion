@@ -55,7 +55,7 @@ globalStyle(`p, label`, {
   fontSize: vars.fonts.sizes.Body,
 });
 
-globalStyle(`textarea`, {
+globalStyle(`textarea, input`, {
   padding: 0,
   border: "none",
   fontSize: vars.fonts.sizes.Body,

@@ -11,6 +11,12 @@ import {
   buttonStyle,
 } from "../../../../_recipes/button.css";
 
+
+import Checkbox from "../../../../atoms/checkbox";
+import NumberInput from "../../../../atoms/numberInput";
+
+
+
 import { useTranslation } from "react-i18next";
 
 export default function WorkflowSettings() {
@@ -41,41 +47,29 @@ export default function WorkflowSettings() {
       {workflowOpen && (
         <>
           <div className={SettingItem}>
-            <label>
-              {t("settings.amount-of-img")}{" "}
-              <input
-                type="number"
-                value={numOutputs}
-                onChange={(e) =>
-                  setRequestOption("num_outputs", parseInt(e.target.value, 10))
-                }
-                size={4}
-              />
-            </label>
-          </div>
-          <div className={SettingItem}>
-            <label>
-              {t("settings.how-many")}
-              <input
-                type="number"
-                value={parallelCount}
-                onChange={(e) => setParallelCount(parseInt(e.target.value, 10))}
-                size={4}
-              />
-            </label>
+            <NumberInput
+              label={t("settings.amount-of-img")}
+              value={numOutputs}
+              onChange={(value) => setRequestOption("num_outputs", value)}
+            ></NumberInput>
           </div>
 
           <div className={SettingItem}>
-            <label>
-              {t("settings.stream-img")}
-              <input
-                type="checkbox"
-                checked={shouldStreamImages}
-                onChange={(e) =>
-                  setRequestOption("stream_image_progress", e.target.checked)
-                }
-              />
-            </label>
+            <NumberInput
+              label={t("settings.how-many")}
+              value={parallelCount}
+              onChange={(value) => setParallelCount(value)}
+            ></NumberInput>
+          </div>
+
+          <div className={SettingItem}>
+            <Checkbox
+              label={t("settings.stream-img")}
+              isChecked={shouldStreamImages}
+              toggleCheck={(value) =>
+                setRequestOption("stream_image_progress", value)
+              }
+            ></Checkbox>
           </div>
         </>
       )}
