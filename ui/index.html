@@ -15,7 +15,7 @@
 <div id="container">
     <div id="top-nav">
         <div id="logo">
-            <h1>Stable Diffusion UI <small>v2.195 <span id="updateBranchLabel"></span></small></h1>
+            <h1>Stable Diffusion UI <small>v2.2 <span id="updateBranchLabel"></span></small></h1>
         </div>
         <ul id="top-nav-items">
             <li class="dropdown">
@@ -89,6 +89,11 @@
                     <li><b class="settings-subheader">Image Settings</b></li>
                     <li class="pl-5"><label for="seed">Seed:</label> <input id="seed" name="seed" size="10" value="30000"> <input id="random_seed" name="random_seed" type="checkbox" checked> <label for="random_seed">Random Image</label></li>
                     <li class="pl-5"><label for="num_outputs_total">Number of images to make:</label> <input id="num_outputs_total" name="num_outputs_total" value="1" size="1"> <label for="num_outputs_parallel">Generate in parallel:</label> <input id="num_outputs_parallel" name="num_outputs_parallel" value="1" size="1"> (images at once)</li>
+                    <li class="pl-5"><label for="stable_diffusion_model">Model:</label>
+                        <select id="stable_diffusion_model" name="stable_diffusion_model">
+                            <!-- <option value="sd-v1-4" selected>sd-v1-4</option> -->
+                        </select>
+                    </li>
                     <li id="samplerSelection" class="pl-5"><label for="sampler">Sampler:</label>
                         <select id="sampler" name="sampler">
                             <option value="plms" selected>plms</option>
@@ -213,12 +218,13 @@
 </div>
 </body>
 
-<script src="media/main.js?v=22"></script>
+<script src="media/main.js?v=30"></script>
 <script>
 async function init() {
     await loadModifiers()
     await getDiskPath()
     await getAppConfig()
+    await getModels()
 
     setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
     healthCheck()

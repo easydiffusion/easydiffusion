@@ -165,6 +165,8 @@ call WHERE uvicorn > .tmp
 
 
 
+if not exist "..\models\stable-diffusion" mkdir "..\models\stable-diffusion"
+
 @if exist "sd-v1-4.ckpt" (
     for %%I in ("sd-v1-4.ckpt") do if "%%~zI" EQU "4265380512" (
         echo "Data files (weights) necessary for Stable Diffusion were already downloaded. Using the HuggingFace 4 GB Model."

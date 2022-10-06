@@ -159,6 +159,8 @@ fi
 
 
 
+mkdir -p "../models/stable-diffusion"
+
 if [ -f "sd-v1-4.ckpt" ]; then
     model_size=`find "sd-v1-4.ckpt" -printf "%s"`
 

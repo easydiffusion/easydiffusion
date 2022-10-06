@@ -22,6 +22,7 @@ class Request:
     use_full_precision: bool = False
     use_face_correction: str = None # or "GFPGANv1.3"
     use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
+    use_stable_diffusion_model: str = "sd-v1-4"
     show_only_filtered_image: bool = False
 
     stream_progress_updates: bool = False
@@ -42,6 +43,7 @@ class Request:
             "sampler": self.sampler,
             "use_face_correction": self.use_face_correction,
             "use_upscale": self.use_upscale,
+            "use_stable_diffusion_model": self.use_stable_diffusion_model,
         }
 
     def to_string(self):
@@ -62,6 +64,7 @@ class Request:
     use_full_precision: {self.use_full_precision}
     use_face_correction: {self.use_face_correction}
     use_upscale: {self.use_upscale}
+    use_stable_diffusion_model: {self.use_stable_diffusion_model}
     show_only_filtered_image: {self.show_only_filtered_image}
 
     stream_progress_updates: {self.stream_progress_updates}

@@ -46,6 +46,7 @@ let samplerSelectionContainer = document.querySelector("#samplerSelection")
 let useFaceCorrectionField = document.querySelector("#use_face_correction")
 let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
+let stableDiffusionModelField = document.querySelector('#stable_diffusion_model')
 let showOnlyFilteredImageField = document.querySelector("#show_only_filtered_image")
 let updateBranchLabel = document.querySelector("#updateBranchLabel")
 let streamImageProgressField = document.querySelector("#stream_image_progress")
@@ -624,6 +625,7 @@ async function makeImage() {
         turbo: turboField.checked,
         use_cpu: useCPUField.checked,
         use_full_precision: useFullPrecisionField.checked,
+        use_stable_diffusion_model: stableDiffusionModelField.value,
         stream_progress_updates: true,
         stream_image_progress: streamImageProgress,
         show_only_filtered_image: showOnlyFilteredImageField.checked
@@ -657,7 +659,7 @@ async function makeImage() {
         reqBody['use_upscale'] = upscaleModelField.value
     }
 
-    let taskConfig = `Seed: ${seed}, Sampler: ${reqBody['sampler']}, Inference Steps: ${numInferenceStepsField.value}, Guidance Scale: ${guidanceScaleField.value}`
+    let taskConfig = `Seed: ${seed}, Sampler: ${reqBody['sampler']}, Inference Steps: ${numInferenceStepsField.value}, Guidance Scale: ${guidanceScaleField.value}, Model: ${stableDiffusionModelField.value}`
 
     if (negativePromptField.value.trim() !== '') {
         taskConfig += `, Negative Prompt: ${negativePromptField.value.trim()}`
@@ -930,6 +932,33 @@ async function getAppConfig() {
         console.log('get config status response', config)
     } catch (e) {
         console.log('get config status error', e)
+    }
+}
+
+async function getModels() {
+    try {
+        let res = await fetch('/models')
+        models = await res.json()
+
+        let activeModel = models['active']
+        let modelOptions = models['options']
+        let stableDiffusionOptions = modelOptions['stable-diffusion']
+
+        stableDiffusionOptions.forEach(modelName => {
+            let modelOption = document.createElement('option')
+            modelOption.value = modelName
+            modelOption.innerText = modelName
+
+            if (modelName === activeModel['stable-diffusion']) {
+                modelOption.selected = true
+            }
+
+            stableDiffusionModelField.appendChild(modelOption)
+        })
+
+        console.log('get models response', config)
+    } catch (e) {
+        console.log('get models error', e)
     }
 }
 

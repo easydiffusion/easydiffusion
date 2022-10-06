@@ -208,6 +208,7 @@ def mk_img(req: Request):
         })
 
 def do_mk_img(req: Request):
+    global ckpt_file
     global model, modelCS, modelFS, device
     global model_gfpgan, model_real_esrgan
     global stop_processing
@@ -220,6 +221,15 @@ def do_mk_img(req: Request):
 
     temp_images.clear()
 
+    # custom model support:
+    #  the req.use_stable_diffusion_model needs to be a valid path
+    #  to the ckpt file (without the extension).
+
+    needs_model_reload = False
+    if ckpt_file != req.use_stable_diffusion_model:
+        ckpt_file = req.use_stable_diffusion_model
+        needs_model_reload = True
+
     model.turbo = req.turbo
     if req.use_cpu:
         if device != 'cpu':
@@ -228,6 +238,7 @@ def do_mk_img(req: Request):
             if model_is_half:
                 del model, modelCS, modelFS
                 load_model_ckpt(ckpt_file, device)
+                needs_model_reload = False
 
             load_model_gfpgan(gfpgan_file)
             load_model_real_esrgan(real_esrgan_file)
@@ -243,10 +254,14 @@ def do_mk_img(req: Request):
 
                 del model, modelCS, modelFS
                 load_model_ckpt(ckpt_file, device, req.turbo, unet_bs, ('full' if req.use_full_precision else 'autocast'), half_model_fs=(req.init_image is not None and not req.use_full_precision))
+                needs_model_reload = False
 
                 if prev_device != device:
                     load_model_gfpgan(gfpgan_file)
                     load_model_real_esrgan(real_esrgan_file)
+
+    if needs_model_reload:
+        load_model_ckpt(ckpt_file, device, req.turbo, unet_bs, precision, model_fs_is_half)
 
     if req.use_face_correction != gfpgan_file:
         load_model_gfpgan(req.use_face_correction)
@@ -444,7 +459,7 @@ def do_mk_img(req: Request):
                             if return_orig_img:
                                 save_image(img, img_out_path)
 
-                            save_metadata(meta_out_path, prompts, opt_seed, opt_W, opt_H, opt_ddim_steps, opt_scale, opt_strength, opt_use_face_correction, opt_use_upscale, opt_sampler_name, req.negative_prompt)
+                            save_metadata(meta_out_path, prompts, opt_seed, opt_W, opt_H, opt_ddim_steps, opt_scale, opt_strength, opt_use_face_correction, opt_use_upscale, opt_sampler_name, req.negative_prompt, ckpt_file)
 
                         if return_orig_img:
                             img_data = img_to_base64_str(img)
@@ -505,8 +520,8 @@ def save_image(img, img_out_path):
     except:
         print('could not save the file', traceback.format_exc())
 
-def save_metadata(meta_out_path, prompts, opt_seed, opt_W, opt_H, opt_ddim_steps, opt_scale, opt_prompt_strength, opt_correct_face, opt_upscale, sampler_name, negative_prompt):
-    metadata = f"{prompts[0]}\nWidth: {opt_W}\nHeight: {opt_H}\nSeed: {opt_seed}\nSteps: {opt_ddim_steps}\nGuidance Scale: {opt_scale}\nPrompt Strength: {opt_prompt_strength}\nUse Face Correction: {opt_correct_face}\nUse Upscaling: {opt_upscale}\nSampler: {sampler_name}\nNegative Prompt: {negative_prompt}"
+def save_metadata(meta_out_path, prompts, opt_seed, opt_W, opt_H, opt_ddim_steps, opt_scale, opt_prompt_strength, opt_correct_face, opt_upscale, sampler_name, negative_prompt, ckpt_file):
+    metadata = f"{prompts[0]}\nWidth: {opt_W}\nHeight: {opt_H}\nSeed: {opt_seed}\nSteps: {opt_ddim_steps}\nGuidance Scale: {opt_scale}\nPrompt Strength: {opt_prompt_strength}\nUse Face Correction: {opt_correct_face}\nUse Upscaling: {opt_upscale}\nSampler: {sampler_name}\nNegative Prompt: {negative_prompt}\nStable Diffusion Model: {ckpt_file + '.ckpt'}"
 
     try:
         with open(meta_out_path, 'w') as f:
