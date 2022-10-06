@@ -78,7 +78,6 @@ export default function ImprovementSettings() {
               isChecked={isUsingFaceCorrection}
               toggleCheck={toggleUseFaceCorrection}
             ></Checkbox>
-
           </div>
           <div className={SettingItem}>
             <label>

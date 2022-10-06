@@ -62,14 +62,12 @@ export default function SystemSettings() {
           <h4>System Settings</h4>
           <ul>
             <li className={SettingItem}>
-              <label>
-                <input
-                  checked={isUseAutoSave}
-                  onChange={(e) => toggleUseAutoSave()}
-                  type="checkbox"
-                />
-                {t("storage.ast")}{" "}
-              </label>
+              <Checkbox
+                label={t("storage.ast")}
+                isChecked={isUseAutoSave}
+                toggleCheck={toggleUseAutoSave}
+              ></Checkbox>
+
               <label>
                 <input
                   value={diskPath}
@@ -85,67 +83,37 @@ export default function SystemSettings() {
               </label>
             </li>
             <li className={SettingItem}>
-              <label>
-                <input
-                  checked={isSoundEnabled}
-                  onChange={(e) => toggleSoundEnabled()}
-                  type="checkbox"
-                />
-                {t("advanced-settings.sound")}
-              </label>
-
-
-              {/* <Switch.Group>
-                <Switch.Label passive> <>{t("advanced-settings.sound")}</> </Switch.Label>
-                <Switch checked={isSoundEnabled} onChange={toggleSoundEnabled} className={SwitchMain}>
-                  <span
-                    className={SwitchPill}
-                  />
-                </Switch>
-              </Switch.Group> */}
-            </li>
-
-
-            <li className={SettingItem}>
-              <label>
-                <input
-                  checked={turbo}
-                  onChange={(e) => setRequestOption("turbo", e.target.checked)}
-                  type="checkbox"
-                />
-                {t("advanced-settings.turbo")} {t("advanced-settings.turbo-disc")}
-              </label>
+              <Checkbox
+                label={t("advanced-settings.sound")}
+                isChecked={isSoundEnabled}
+                toggleCheck={toggleSoundEnabled}
+              ></Checkbox>
             </li>
             <li className={SettingItem}>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={useCpu}
-                  onChange={(e) => setRequestOption("use_cpu", e.target.checked)}
-                />
-                {t("advanced-settings.cpu")} {t("advanced-settings.cpu-disc")}
-              </label>
+              <Checkbox
+                label={`${t("advanced-settings.turbo")} ${t("advanced-settings.turbo-disc")}`}
+                isChecked={turbo}
+                toggleCheck={(value) => setRequestOption("turbo", value)}
+              ></Checkbox>
             </li>
             <li className={SettingItem}>
-              <label>
-                <input
-                  checked={useFullPrecision}
-                  onChange={(e) =>
-                    setRequestOption("use_full_precision", e.target.checked)
-                  }
-                  type="checkbox"
-                />
-                {t("advanced-settings.gpu")} {t("advanced-settings.gpu-disc")}
-              </label>
+              <Checkbox
+                label={`${t("advanced-settings.cpu")} ${t("advanced-settings.cpu-disc")}`}
+                isChecked={useCpu}
+                toggleCheck={(value) => setRequestOption("use_cpu", value)}
+              ></Checkbox>
+            </li>
+            <li className={SettingItem}>
+              <Checkbox
+                label={`${t("advanced-settings.gpu")} ${t("advanced-settings.gpu-disc")}`}
+                isChecked={useFullPrecision}
+                toggleCheck={(value) => setRequestOption("use_full_precision", value)}
+              ></Checkbox>
             </li>
 
             <li className={SettingItem}>
               <BetaMode />
             </li>
-
-
-
-
 
           </ul>
         </div>

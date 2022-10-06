@@ -2,10 +2,11 @@ import React from "react";
 import { useImageCreate, SAMPLER_OPTIONS } from "../../../../../stores/imageCreateStore";
 import { useCreateUI } from "../../creationPanelUIStore";
 
+import Checkbox from "../../../../atoms/checkbox";
+
 import {
   SettingItem,
 } from "../../../../../styles/shared.css";
-
 
 import {
   buttonStyle,
@@ -84,6 +85,14 @@ export default function PropertySettings() {
       {propertyOpen && (
         <>
           <div className={SettingItem}>
+
+            <Checkbox
+              label=" Random Image"
+              isChecked={isRandomSeed}
+              toggleCheck={toggleUseRandomSeed}
+            ></Checkbox>
+
+
             <label>
               Seed:
               <input
@@ -94,14 +103,7 @@ export default function PropertySettings() {
                 placeholder="random"
               />
             </label>
-            <label>
-              <input
-                type="checkbox"
-                checked={isRandomSeed}
-                onChange={(e) => toggleUseRandomSeed()}
-              />{" "}
-              Random Image
-            </label>
+
           </div>
 
           <div className={SettingItem}>

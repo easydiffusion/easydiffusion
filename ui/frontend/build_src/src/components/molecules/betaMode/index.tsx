@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import Checkbox from "../../atoms/checkbox";
 
 import {
   KEY_CONFIG,
@@ -59,15 +60,13 @@ export default function BetaMode() {
   }, [toggleStatus, toggleData, setShouldSetConfig]);
 
   return (
-    <label>
-      <input
-        type="checkbox"
-        checked={branchToGetNext === "main"}
-        onChange={(e) => {
-          setShouldSetConfig(true);
-        }}
-      />🔥
-      {t("advanced-settings.beta")} {t("advanced-settings.beta-disc")}
-    </label>
+
+    <Checkbox
+      label={`🔥 ${t("advanced-settings.beta")} ${t("advanced-settings.gpu-beta")}`}
+      isChecked={branchToGetNext === "main"}
+      toggleCheck={(e) => {
+        setShouldSetConfig(true);
+      }}
+    ></Checkbox>
   );
 }

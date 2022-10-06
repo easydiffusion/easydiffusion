@@ -297,10 +297,15 @@ export const useImageCreate = create<ImageCreateState>(
         request.use_upscale = null;
       }
 
+      //     typeof state.getValueForRequestKey("use_face_correction") ===
+      //     "string"
+      //     ? null
+      //     : "GFPGANv1.3";
+      // state.requestOptions.use_face_correction = isSeting;
+
       // make sure you look above for the "null" value
       // this patches over a a backend issue if you dont ask for a filtered image
       // you get nothing back
-
       if (
         null === request.use_upscale &&
         null === request.use_face_correction

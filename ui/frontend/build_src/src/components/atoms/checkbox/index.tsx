@@ -10,6 +10,7 @@ import {
   CheckContent,
   CheckInner
 } from "./checkbox.css";
+import { debug } from "console";
 
 interface CheckboxProps {
   isChecked: boolean;
@@ -32,15 +33,16 @@ export default function Checkbox({ isChecked, label, isLabelFirst, toggleCheck, 
       <div className={CheckMain}
         data-disabled={disabled}
       >
+        {/* TODO Make the lable first logic more eligant? */}
         {(isLabelFirst === true) && <Switch.Label> {label} </Switch.Label>}
         <Switch className={CheckContent} checked={isChecked} onChange={handChange}>
-          <span
+          <div
             className={CheckInner}
           >
             {isChecked
               ? <i className={[IconFont, 'fa-solid', 'fa-check'].join(" ")}></i>
               : <i className={[IconFont, 'fa-solid', 'fa-x'].join(" ")}></i>}
-          </span>
+          </div>
         </Switch>
         {(isLabelFirst !== true) && <Switch.Label> {label} </Switch.Label>}
       </div>
