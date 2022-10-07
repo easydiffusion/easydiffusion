@@ -1,0 +1,110 @@
+{
+  "title": "Stable Diffusion UI",
+  "description": "",
+  "navbar": {
+    "home": "Home",
+    "history": "History",
+    "community": "Community",
+    "settings": "Settings"
+  },
+  "land-cre": {
+    "cp": "Create Profile",
+    "cp-place": "Profile name",
+    "pp": "Profile Picture",
+    "pp-disc": "",
+    "ast": "Automatically save to",
+    "ast-disc": "File path to auto save your creations",
+    "place": "File path",
+    "cre": "Create"
+  },
+  "land-pre": {
+    "user": "Username",
+    "add": "Add Profile"
+  },
+  "home": {
+    "status-starting": "Stable Diffusion is starting...",
+    "status-ready": "Stable Diffusion is ready to use!",
+    "status-error": "Stable Diffusion is not running!",
+    "editor-title": "Prompt",
+    "initial-img-txt": "Initial Image: (optional)",
+    "initial-img-btn": "Browse...",
+    "initial-img-text2": "No file selected.",
+    "make-img-btn": "Make Image",
+    "make-img-btn-stop": "Stop"
+  },
+  "in-paint": {
+    "txt": "In-Painting (select the area which the AI will paint into)",
+    "clear": "Clear"
+  },
+  "settings": {
+    "base-img": "Use base image:",
+    "seed": "Seed:",
+    "amount-of-img": "Amount of images to make:",
+    "how-many": "How many at once:",
+    "stream-img": "Stream images (this will slow down image generation):",
+    "width": "Width:",
+    "height": "Height:",
+    "sampler": "Sampler:",
+    "steps": "Number of inference steps:",
+    "guide-scale": "Guidance Scale:",
+    "prompt-str": "Prompt Strength:",
+    "live-preview": "Show a live preview of the image (disable this for faster image generation)",
+    "fix-face": "Fix incorrect faces and eyes (uses GFPGAN)",
+    "ups": "Upscale the image to 4x resolution using:",
+    "no-ups": "No Upscaling",
+    "corrected": "Show only the corrected/upscaled image"
+  },
+  "tags": {
+    "txt": "Image Modifiers (art styles, tags etc)"
+  },
+  "preview-prompt": {
+    "part1": "Type a prompt and press the \"Make Image\" button.",
+    "part2": "You can set an \"Initial Image\" if you want to guide the AI.\n",
+    "part3": "You can also add modifiers like \"Realistic\", \"Pencil Sketch\", \"ArtStation\" etc by browsing through the \"Image Modifiers\" section and selecting the desired modifiers.\n",
+    "part4": "Click \"Advanced Settings\" for additional settings like seed, image size, number of images to generate etc.",
+    "part5": "Enjoy! :)"
+  },
+  "current-task": "Current task",
+  "recent-create": "Recently Created",
+  "popup": {
+    "use-btn": "Use Image",
+    "use-btn2": "Use Image and Tags"
+  },
+  "history": {
+    "fave": "Favorites Only",
+    "search": "Search"
+  },
+  "advanced-settings": {
+    "sound": "Play sound on task completion",
+    "sound-disc": "Will play a sound so user can hear when image is done.",
+    "turbo": "Turbo mode",
+    "turbo-disc": "Generates images faster, but uses an additional 1 GB of GPU memory",
+    "cpu": "Use CPU instead of GPU",
+    "cpu-disc": "Warning: this will be *very* slow",
+    "gpu": "Use full precision",
+    "gpu-disc": "(for GPU-only. warning: this will consume more VRAM)",
+    "beta": "Beta Features",
+    "beta-disc": "Get the latest features immediately (but could be less stable). \nPlease restart the program after changing this.",
+    "save": "SAVE"
+  },
+  "storage": {
+    "ast": "Automatically save to",
+    "ast-disc": "File path to auto save your creations",
+    "place": "File path",
+    "cps": "Cross profile sharing",
+    "cps-disc": "Profiles will see suggestions from each other.",
+    "acb": "Allow cloud backup",
+    "acb-disc": "A button will show up for images on hover",
+    "acb-place": "Choose your",
+    "acc-api": "Api key",
+    "acb-api-place": "Your API key",
+    "save": "SAVE"
+  },
+  "import": {
+    "imp-btn": "IMPORT",
+    "exp-btn": "EXPORT",
+    "disc": "It is a good idea to leave the exported file as it is. Otherwise it may not import correctly",
+    "disc:2": "When importing, only profiles that are not already present on the will be added."
+  },
+  "about": "If you found this project useful and want to help keep it alive, please to help cover the cost of development and maintenance! Thank you for your support!\n\nPlease feel free to join the discord community or file an issue if you have any problems or suggestions in using this interface.\n\nDisclaimer: The authors of this project are not responsible for any content generated using this interface.\n\nThis license of this software forbids you from sharing any content that violates any laws, produce any harm to a person, disseminate any personal information that would be meant for harm,\nspread misinformation and target vulnerable groups. For the full list of restrictions please read the license.\n\nBy using this software, you consent to the terms and conditions of the license.\n"
+}
