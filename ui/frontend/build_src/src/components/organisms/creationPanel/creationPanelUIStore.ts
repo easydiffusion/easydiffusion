@@ -8,6 +8,7 @@ export interface ImageCreationUIOptions {
   isOpenAdvPropertySettings: boolean;
   isOpenAdvWorkflowSettings: boolean;
   isOpenImageModifier: boolean;
+  showQueue: boolean;
 
   toggleAdvancedSettings: () => void;
   toggleAdvImprovementSettings: () => void;
@@ -15,7 +16,8 @@ export interface ImageCreationUIOptions {
   toggleAdvWorkflowSettings: () => void;
 
   toggleImageModifier: () => void;
-  // addImageModifier: (modifier: string) => void;
+  toggleQueue: () => void;
+
 }
 
 export const useCreateUI = create<ImageCreationUIOptions>(
@@ -27,6 +29,7 @@ export const useCreateUI = create<ImageCreationUIOptions>(
       isOpenAdvPropertySettings: false,
       isOpenAdvWorkflowSettings: false,
       isOpenImageModifier: false,
+      showQueue: false,
 
       toggleAdvancedSettings: () => {
         set(
@@ -68,6 +71,15 @@ export const useCreateUI = create<ImageCreationUIOptions>(
           })
         );
       },
+
+      toggleQueue: () => {
+        set(
+          produce((state: ImageCreationUIOptions) => {
+            state.showQueue = !state.showQueue;
+          })
+        );
+      },
+
     }),
     {
       name: "createUI",

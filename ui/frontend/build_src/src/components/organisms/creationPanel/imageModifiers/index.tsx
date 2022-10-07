@@ -1,10 +1,16 @@
 import React, { useState } from "react";
 
-
 import {
-  PanelBox,
   MenuButton,
 } from "../../../../styles/shared.css";
+
+import {
+  card
+} from '../../../_recipes/card.css';
+
+import {
+  buttonStyle,
+} from "../../../_recipes/button.css";
 
 import {
   ImagerModifierGroups,
@@ -15,7 +21,7 @@ import {
 import { ModifierObject, useImageCreate } from "../../../../stores/imageCreateStore";
 import { useCreateUI } from "../creationPanelUIStore";
 
-import ModifierTag from "../../../atoms/modifierTag";
+import ModifierTag from "../../../molecules/modifierTag";
 
 interface ModifierListProps {
   category: string;
@@ -49,11 +55,12 @@ function ModifierGrouping({ title, category, tags }: ModifierGroupingProps) {
     setIsExpanded(!isExpanded);
   };
 
-  // console.log("ModifierGrouping", tags);
-
   return (
     <div className={ImageModifierGrouping}>
-      <button type="button" className={MenuButton} onClick={_toggleExpand}>
+      <button type="button" className={buttonStyle({
+        type: 'action',
+        color: 'accent',
+      })} onClick={_toggleExpand}>
         <h4>{title}</h4>
       </button>
       {isExpanded && <ModifierList category={category} tags={tags} />}
@@ -74,22 +81,27 @@ export default function ImageModifers() {
   };
 
   return (
-    <div className={PanelBox}>
+    <div className={card(
+      {
+        level: 1,
+        backing: 'normal'
+      }
+    )}>
       <button
         type="button"
         onClick={handleClick}
-        className="panel-box-toggle-btn"
+        className={buttonStyle({
+          type: 'action',
+          color: 'secondary',
+          size: 'large'
+        })}
       >
-        {/* TODO: swap this manual collapse stuff out for some UI component? */}
-        <h3>Image Modifiers (art styles, tags, ect)</h3>
+        Image Modifiers
       </button>
 
       {imageModifierIsOpen && (
         <ul className={ImagerModifierGroups}>
           {allModifiers.map((item, index) => {
-
-            // console.log('mod item ', item);
-
             return (
               <li key={item.category}>
                 <ModifierGrouping title={item.category} category={item.category} tags={item.modifiers} />

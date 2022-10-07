@@ -17,7 +17,7 @@ import {
   PopoverMain,
   PopoverButtonStyle,
   PopoverPanelMain,
-} from "../../../_headless/popover/index.css";
+} from "../../../_recipes/popover_headless.css";
 
 import {
   SettingContent
@@ -48,7 +48,7 @@ export default function SystemSettings() {
     state.getValueForRequestKey("use_full_precision")
   );
 
-  const isSoundEnabled = true; //useImageCreate((state) => state.isSoundEnabled());
+  const isSoundEnabled = useImageCreate((state) => state.isSoundEnabled());
 
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
   const toggleUseAutoSave = useImageCreate((state) => state.toggleUseAutoSave);

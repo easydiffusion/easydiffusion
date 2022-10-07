@@ -1,7 +1,15 @@
 import React, { useEffect } from "react";
 import { useCreateUI } from "../creationPanelUIStore";
 
-import { PanelBox } from "../../../../styles/shared.css";
+
+
+import {
+  card
+} from '../../../_recipes/card.css';
+
+import {
+  buttonStyle,
+} from "../../../_recipes/button.css";
 
 import {
   AdvancedSettingsList,
@@ -38,15 +46,24 @@ export default function AdvancedSettings() {
   );
 
   return (
-    <div className={PanelBox}>
+    <div className={card(
+      {
+        level: 1,
+        backing: 'normal'
+      }
+    )}>
       <button
         type="button"
         onClick={toggleAdvancedSettingsIsOpen}
-        className="panel-box-toggle-btn"
+        className={buttonStyle({
+          type: 'action',
+          color: 'secondary',
+          size: 'large'
+        })}
       >
-        <h3>Advanced Settings</h3>
+        Advanced Settings
       </button>
       {advancedSettingsIsOpen && <SettingsList />}
-    </div>
+    </div >
   );
 }

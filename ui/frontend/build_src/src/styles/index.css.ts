@@ -8,6 +8,10 @@ globalStyle("body", {
   minHeight: "100vh",
 });
 
+
+
+
+
 // single page style
 globalStyle("#root", {
   position: "absolute",
@@ -15,7 +19,11 @@ globalStyle("#root", {
   left: 0,
   width: "100vw",
   height: "100vh",
-  overflow: "hidden",
+  overflow: 'auto',
+  overflowX: 'hidden',
+  // "::-webkit-scrollbar": {
+  //   width: "0",
+  // },
 });
 
 // border box all
@@ -41,12 +49,14 @@ globalStyle(`h1, h2, h3, h4, h5, h6, p, label, ul, textarea`, {
 
 globalStyle(`h3`, {
   fontSize: vars.fonts.sizes.Subheadline,
-  marginBottom: vars.spacing.small,
 });
 
 globalStyle(`h4, h5`, {
   fontSize: vars.fonts.sizes.SubSubheadline,
-  marginBottom: vars.spacing.medium,
+});
+
+globalStyle(`h6`, {
+  fontSize: vars.fonts.sizes.Body,
 });
 
 globalStyle(`p, label`, {
@@ -63,4 +73,8 @@ globalStyle(`textarea`, {
 globalStyle(`a`, {
   color: vars.colors.link,
   textDecoration: "none",
+});
+
+globalStyle(`ul`, {
+  listStyle: "none",
 });

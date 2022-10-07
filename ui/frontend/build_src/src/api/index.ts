@@ -60,6 +60,7 @@ export const toggleBetaConfig = async (branch: string) => {
 export interface ImageRequest {
   session_id: string;
   prompt: string;
+  negative_prompt: string;
   seed: number;
   num_outputs: number;
   num_inference_steps: number;
@@ -135,4 +136,11 @@ export const doMakeImage = async (reqBody: ImageRequest) => {
     body: JSON.stringify(reqBody),
   });
   return res;
+};
+
+export const doStopImage = async () => {
+
+  const response = await fetch(`${API_URL}/image/stop`);
+  const data = await response.json();
+  return data;
 };

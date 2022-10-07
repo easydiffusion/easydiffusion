@@ -42,11 +42,20 @@ interface ModifiersList {
 
 type ModifiersOptionList = ModifiersList[];
 
+export interface promptTag {
+  id: string;
+  name: string;
+  type: 'positive' | 'negative';
+}
+
 interface ImageCreateState {
   parallelCount: number;
   requestOptions: ImageRequest;
   allModifiers: ModifiersOptionList;
-  tags: string[];
+
+  createTags: promptTag[];
+  // negativeTags: promptTag[];
+
   tagMap: Record<string, string[]>;
   isInpainting: boolean;
 
@@ -59,6 +68,11 @@ interface ImageCreateState {
   toggleTag: (category: string, tag: string) => void;
   hasTag: (category: string, tag: string) => boolean;
   selectedTags: () => ModifierObject[];
+  addCreateTag: (tag: promptTag) => void;
+  removeCreateTag: (id: string) => void;
+  changeCreateTagType: (id: string, type: 'positive' | 'negative') => void;
+  reorderCreateTag: (tag: promptTag, index: number) => void;
+
   builtRequest: () => ImageRequest;
 
   uiOptions: ImageCreationUiOptions;
@@ -85,6 +99,7 @@ export const useImageCreate = create<ImageCreateState>(
     requestOptions: {
       session_id: new Date().getTime().toString(),
       prompt: "a photograph of an astronaut riding a horse",
+      negative_prompt: "",
       seed: useRandomSeed(),
       num_outputs: 1,
       num_inference_steps: 50,
@@ -108,7 +123,8 @@ export const useImageCreate = create<ImageCreateState>(
     },
 
     // selected tags
-    tags: [] as string[],
+    createTags: [] as promptTag[],
+    // negativeTags: [] as promptTag[],
 
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     tagMap: {} as Record<string, string[]>,
@@ -202,7 +218,48 @@ export const useImageCreate = create<ImageCreateState>(
       return selected;
     },
 
+    addCreateTag: (tag: promptTag) => {
+      set(
+        produce((state) => {
+          state.createTags.push(tag);
+        })
+      );
+    },
 
+    removeCreateTag: (id: string) => {
+      set(
+        produce((state) => {
+          // @ts-expect-error
+          state.createTags = state.createTags.filter((t) => t.id !== id);
+        })
+
+      );
+    },
+
+    changeCreateTagType: (id: string, type: 'positive' | 'negative') => {
+      set(
+        produce((state) => {
+          // @ts-expect-error
+          const tag = state.createTags.find((t) => t.id === id);
+          if (tag) {
+            tag.type = type;
+          }
+        })
+      );
+    },
+
+
+    reorderCreateTag: (tag: promptTag, index: number) => {
+      set(
+        produce((state) => {
+          const tagIndex = state.createTags.indexOf(tag);
+          if (tagIndex !== -1) {
+            state.createTags.splice(tagIndex, 1);
+            state.createTags.splice(index, 0, tag);
+          }
+        })
+      );
+    },
 
     // the request body to send to the server
     // this is a computed value, just adding the tags to the request
@@ -212,13 +269,17 @@ export const useImageCreate = create<ImageCreateState>(
       const selectedTags = get().selectedTags();
       const tags = selectedTags.map((t: ModifierObject) => t.modifier);
 
+      const positivePrompt = state.createTags.filter((t) => t.type === "positive").map((t) => t.name).join(",");
+      const negativePrompt = state.createTags.filter((t) => t.type === "negative").map((t) => t.name).join(",");
+
       // join all the tags with a comma and add it to the prompt
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      const prompt = `${requestOptions.prompt}, ${tags.join(",")}`;
+      // const prompt = `${requestOptions.prompt}, ${tags.join(",")}`;
 
       const request = {
         ...requestOptions,
-        prompt,
+        prompt: positivePrompt,
+        negative_prompt: negativePrompt,
       };
       // if we arent using auto save clear the save path
       if (!state.uiOptions.isUseAutoSave) {
@@ -317,7 +378,6 @@ export const useImageCreate = create<ImageCreateState>(
       set(
         produce((state: ImageCreateState) => {
           state.uiOptions.isSoundEnabled = !state.uiOptions.isSoundEnabled;
-          //localStorage.setItem('ui:isSoundEnabled', state.uiOptions.isSoundEnabled);
         })
       );
     },

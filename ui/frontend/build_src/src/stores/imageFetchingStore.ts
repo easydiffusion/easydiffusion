@@ -27,7 +27,6 @@ interface ImageFetchingState {
   setStartTime: () => void;
   setNowTime: () => void;
   resetForFetching: () => void;
-
 }
 
 export const useImageFetching = create<ImageFetchingState>((set) => ({
