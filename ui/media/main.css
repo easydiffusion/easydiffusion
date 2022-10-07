@@ -70,38 +70,36 @@ label {
     font-size: 8pt;
 }
 .imgSeedLabel {
-    position: absolute;
-    transform: translateX(-100%);
-    margin-top: 5pt;
-    margin-left: -5pt;
-    font-size: 10pt;
-
-    background-color: #333;
-    opacity: 0.8;
-    color: #ddd;
-    border-radius: 3pt;
-    padding: 1pt 3pt;
-}
-.imgUseBtn {
-    position: absolute;
-    transform: translateX(-100%);
-    margin-top: 30pt;
-    margin-left: -5pt;
-}
-.imgSaveBtn {
-    position: absolute;
-    transform: translateX(-100%);
-    margin-top: 55pt;
-    margin-left: -5pt;
+    font-size: 0.8em;
+    background-color: rgb(44, 45, 48);
+    border-radius: 3px;
+    padding: 5px;
 }
 .imgItem {
-    display: inline;
-    padding-right: 10px;
+    display: inline-block;
+    margin-top: 1em;
+    margin-right: 1em;
+}
+.imgContainer {
+    display: flex;
+    justify-content: flex-end;
 }
 .imgItemInfo {
-    opacity: 0.5;
+    padding-bottom: 0.5em;
+    display: flex;
+    align-items: flex-end;
+    flex-direction: column;
+    position: absolute;
+    padding: 5px;
+    opacity: 0;
+    transition: 0.1s all;
 }
-
+.imgContainer:hover > .imgItemInfo {
+    opacity: 1;
+}
+.imgItemInfo * {
+    margin-bottom: 7px;
+}
 #container {
     width: 90%;
     margin-left: auto;
@@ -409,4 +407,7 @@ img {
     font-size: 10pt;
     color: #aaa;
     margin-bottom: 5pt;
+}
+.img-batch {
+    display: inline;
 }

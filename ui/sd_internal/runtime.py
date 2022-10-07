@@ -79,7 +79,7 @@ except:
     print('WARNING: No compatible GPU found. Using the CPU, but this will be very slow!')
     pass
 
-def load_model_ckpt(ckpt_to_use, device_to_use='cuda', turbo=False, unet_bs_to_use=1, precision_to_use='autocast', half_model_fs=False):
+def load_model_ckpt(ckpt_to_use, device_to_use='cuda', turbo=False, unet_bs_to_use=1, precision_to_use='autocast'):
     global ckpt_file, model, modelCS, modelFS, model_is_half, device, unet_bs, precision, model_fs_is_half
 
     ckpt_file = ckpt_to_use
@@ -130,14 +130,11 @@ def load_model_ckpt(ckpt_to_use, device_to_use='cuda', turbo=False, unet_bs_to_u
     if device != "cpu" and precision == "autocast":
         model.half()
         modelCS.half()
-        model_is_half = True
-    else:
-        model_is_half = False
-
-    if half_model_fs:
         modelFS.half()
+        model_is_half = True
         model_fs_is_half = True
     else:
+        model_is_half = False
         model_fs_is_half = False
 
     print('loaded ', ckpt_file, 'to', device, 'precision', precision)
@@ -208,6 +205,7 @@ def mk_img(req: Request):
         })
 
 def do_mk_img(req: Request):
+    global ckpt_file
     global model, modelCS, modelFS, device
     global model_gfpgan, model_real_esrgan
     global stop_processing
@@ -220,6 +218,15 @@ def do_mk_img(req: Request):
 
     temp_images.clear()
 
+    # custom model support:
+    #  the req.use_stable_diffusion_model needs to be a valid path
+    #  to the ckpt file (without the extension).
+
+    needs_model_reload = False
+    if ckpt_file != req.use_stable_diffusion_model:
+        ckpt_file = req.use_stable_diffusion_model
+        needs_model_reload = True
+
     model.turbo = req.turbo
     if req.use_cpu:
         if device != 'cpu':
@@ -228,6 +235,7 @@ def do_mk_img(req: Request):
             if model_is_half:
                 del model, modelCS, modelFS
                 load_model_ckpt(ckpt_file, device)
+                needs_model_reload = False
 
             load_model_gfpgan(gfpgan_file)
             load_model_real_esrgan(real_esrgan_file)
@@ -237,16 +245,18 @@ def do_mk_img(req: Request):
             device = 'cuda'
 
             if (precision == 'autocast' and (req.use_full_precision or not model_is_half)) or \
-                (precision == 'full' and not req.use_full_precision and not force_full_precision) or \
-                (req.init_image is None and model_fs_is_half) or \
-                (req.init_image is not None and not model_fs_is_half and not force_full_precision):
+                (precision == 'full' and not req.use_full_precision and not force_full_precision):
 
                 del model, modelCS, modelFS
-                load_model_ckpt(ckpt_file, device, req.turbo, unet_bs, ('full' if req.use_full_precision else 'autocast'), half_model_fs=(req.init_image is not None and not req.use_full_precision))
+                load_model_ckpt(ckpt_file, device, req.turbo, unet_bs, ('full' if req.use_full_precision else 'autocast'))
+                needs_model_reload = False
 
                 if prev_device != device:
                     load_model_gfpgan(gfpgan_file)
                     load_model_real_esrgan(real_esrgan_file)
+
+    if needs_model_reload:
+        load_model_ckpt(ckpt_file, device, req.turbo, unet_bs, precision)
 
     if req.use_face_correction != gfpgan_file:
         load_model_gfpgan(req.use_face_correction)
@@ -274,7 +284,7 @@ def do_mk_img(req: Request):
     opt_use_face_correction = req.use_face_correction
     opt_use_upscale = req.use_upscale
     opt_show_only_filtered = req.show_only_filtered_image
-    opt_format = 'png'
+    opt_format = req.output_format
     opt_sampler_name = req.sampler
 
     print(req.to_string(), '\n    device', device)
@@ -444,10 +454,10 @@ def do_mk_img(req: Request):
                             if return_orig_img:
                                 save_image(img, img_out_path)
 
-                            save_metadata(meta_out_path, prompts, opt_seed, opt_W, opt_H, opt_ddim_steps, opt_scale, opt_strength, opt_use_face_correction, opt_use_upscale, opt_sampler_name, req.negative_prompt)
+                            save_metadata(meta_out_path, prompts, opt_seed, opt_W, opt_H, opt_ddim_steps, opt_scale, opt_strength, opt_use_face_correction, opt_use_upscale, opt_sampler_name, req.negative_prompt, ckpt_file)
 
                         if return_orig_img:
-                            img_data = img_to_base64_str(img)
+                            img_data = img_to_base64_str(img, opt_format)
                             res_image_orig = ResponseImage(data=img_data, seed=opt_seed)
                             res.images.append(res_image_orig)
 
@@ -474,7 +484,7 @@ def do_mk_img(req: Request):
 
                             filtered_image = Image.fromarray(x_sample)
 
-                            filtered_img_data = img_to_base64_str(filtered_image)
+                            filtered_img_data = img_to_base64_str(filtered_image, opt_format)
                             res_image_filtered = ResponseImage(data=filtered_img_data, seed=opt_seed)
                             res.images.append(res_image_filtered)
 
@@ -505,8 +515,8 @@ def save_image(img, img_out_path):
     except:
         print('could not save the file', traceback.format_exc())
 
-def save_metadata(meta_out_path, prompts, opt_seed, opt_W, opt_H, opt_ddim_steps, opt_scale, opt_prompt_strength, opt_correct_face, opt_upscale, sampler_name, negative_prompt):
-    metadata = f"{prompts[0]}\nWidth: {opt_W}\nHeight: {opt_H}\nSeed: {opt_seed}\nSteps: {opt_ddim_steps}\nGuidance Scale: {opt_scale}\nPrompt Strength: {opt_prompt_strength}\nUse Face Correction: {opt_correct_face}\nUse Upscaling: {opt_upscale}\nSampler: {sampler_name}\nNegative Prompt: {negative_prompt}"
+def save_metadata(meta_out_path, prompts, opt_seed, opt_W, opt_H, opt_ddim_steps, opt_scale, opt_prompt_strength, opt_correct_face, opt_upscale, sampler_name, negative_prompt, ckpt_file):
+    metadata = f"{prompts[0]}\nWidth: {opt_W}\nHeight: {opt_H}\nSeed: {opt_seed}\nSteps: {opt_ddim_steps}\nGuidance Scale: {opt_scale}\nPrompt Strength: {opt_prompt_strength}\nUse Face Correction: {opt_correct_face}\nUse Upscaling: {opt_upscale}\nSampler: {sampler_name}\nNegative Prompt: {negative_prompt}\nStable Diffusion Model: {ckpt_file + '.ckpt'}"
 
     try:
         with open(meta_out_path, 'w') as f:
@@ -642,9 +652,9 @@ def load_mask(mask_str, h0, w0, newH, newW, invert=False):
     return image
 
 # https://stackoverflow.com/a/61114178
-def img_to_base64_str(img):
+def img_to_base64_str(img, output_format="PNG"):
     buffered = BytesIO()
-    img.save(buffered, format="PNG")
+    img.save(buffered, format=output_format)
     buffered.seek(0)
     img_byte = buffered.getvalue()
     img_str = "data:image/png;base64," + base64.b64encode(img_byte).decode()
