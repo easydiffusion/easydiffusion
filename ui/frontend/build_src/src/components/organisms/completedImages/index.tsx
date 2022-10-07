@@ -68,14 +68,13 @@ export default function CompletedImages() {
               return null;
             }
 
-            const seed = image.info.seed.toString(10);
 
             return (
               <li key={image.id}>
                 <button
                   className={imageContain}
                   onClick={() => {
-                    setCurrentImage({ batchId: image.batchId, imageId: image.id, seed });
+                    setCurrentImage({ batchId: image.batchId, imageId: image.id, seed: image.info.seed });
                   }}
                 >
                   <img src={image.data} />
