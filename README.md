@@ -18,12 +18,11 @@ This distribution currently uses Stable Diffusion 1.4. Once the model for 1.5 be
 - **In-Painting**
 - **Live Preview**: See the image as the AI is drawing it
 - **Task Queue**: Queue up all your ideas, without waiting for the current task to finish
-- **Custom Weights**: Use your own `.ckpt` file, by placing it inside the `stable-diffusion` folder (rename it to `custom-model.ckpt`)
+- **Custom Models**: Use your own `.ckpt` file, by placing it inside the `models/stable-diffusion` folder!
 - **Negative Prompt**: Specify aspects of the image to *remove*.
 - **Lots of Samplers:** ddim, plms, heun, euler, euler_a, dpm2, dpm2_a, lms
 - **Image Modifiers**: A library of *modifier tags* like *"Realistic"*, *"Pencil Sketch"*, *"ArtStation"* etc. Experiment with various styles quickly.
 - **New UI**: with cleaner design
-- **Waifu Model Support**: Just replace the `stable-diffusion\sd-v1-4.ckpt` file after installation with the Waifu model
 - Supports "*Text to Image*" and "*Image to Image*"
 - **NSFW Setting**: A setting in the UI to control *NSFW content*
 - **Use CPU setting**: If you don't have a compatible graphics card, but still want to run it on your CPU.
