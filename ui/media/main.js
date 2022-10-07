@@ -18,6 +18,8 @@ const IMAGE_REGEX = new RegExp('data:image/[A-Za-z]+;base64')
 let sessionId = new Date().getTime()
 
 let promptField = document.querySelector('#prompt')
+let promptsFromFileSelector = document.querySelector('#prompt_from_file')
+let promptsFromFileBtn = document.querySelector('#promptsFromFileBtn')
 let negativePromptField = document.querySelector('#negative_prompt')
 let numOutputsTotalField = document.querySelector('#num_outputs_total')
 let numOutputsParallelField = document.querySelector('#num_outputs_parallel')
@@ -588,12 +590,27 @@ async function checkTasks() {
 }
 setTimeout(checkTasks, 0)
 
-async function makeImage() {
+function makeImage() {
     if (serverStatus !== 'online') {
         alert('The server is still starting up..')
         return
     }
 
+    let prompts = promptField.value
+    prompts = prompts.split('\n')
+    prompts.forEach(prompt => {
+        prompt = prompt.trim()
+        if (prompt === '') {
+            return
+        }
+
+        createTask(prompt)
+    })
+
+    initialText.style.display = 'none'
+}
+
+function createTask(prompt) {
     let task = {
         stopped: false,
         batchesDone: 0
@@ -607,7 +624,6 @@ async function makeImage() {
 
     let streamImageProgress = (numOutputsTotal > 50 ? false : streamImageProgressField.checked)
 
-    let prompt = promptField.value
     if (activeTags.length > 0) {
         let promptTags = activeTags.map(x => x.name).join(", ")
         prompt += ", " + promptTags
@@ -729,8 +745,6 @@ async function makeImage() {
     task['previewPrompt'].innerText = prompt
 
     taskQueue.unshift(task)
-
-    initialText.style.display = 'none'
 }
 
 // create a file name with embedded prompt and metadata
@@ -1030,6 +1044,27 @@ initImageClearBtn.addEventListener('click', function() {
 
 maskSetting.addEventListener('click', function() {
     inpaintingEditorContainer.style.display = (this.checked ? 'block' : 'none')
+})
+
+promptsFromFileBtn.addEventListener('click', function() {
+    promptsFromFileSelector.click()
+})
+
+promptsFromFileSelector.addEventListener('change', function() {
+    if (promptsFromFileSelector.files.length === 0) {
+        return
+    }
+
+    let reader = new FileReader()
+    let file = promptsFromFileSelector.files[0]
+
+    reader.addEventListener('load', function() {
+        promptField.value = reader.result
+    })
+
+    if (file) {
+        reader.readAsText(file)
+    }
 })
 
 // function showMaskImagePreview() {
