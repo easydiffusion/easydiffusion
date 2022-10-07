@@ -161,6 +161,9 @@ fi
 
 
 
+mkdir -p "../models/stable-diffusion"
+echo "" > "../models/stable-diffusion/Put your custom ckpt files here.txt"
+
 if [ -f "sd-v1-4.ckpt" ]; then
     model_size=`find "sd-v1-4.ckpt" -printf "%s"`
 
