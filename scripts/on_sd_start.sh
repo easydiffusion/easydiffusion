@@ -4,11 +4,6 @@ cp sd-ui-files/scripts/on_env_start.sh scripts/
 
 source installer/etc/profile.d/conda.sh
 
-cp sd-ui-files/scripts/developer_console.sh .
-if [ -e "open_dev_console.sh" ]; then
-    rm "open_dev_console.sh"
-fi
-
 python -c "import os; import shutil; frm = 'sd-ui-files/ui/hotfix/9c24e6cd9f499d02c4f21a033736dabd365962dc80fe3aeb57a8f85ea45a20a3.26fead7ea4f0f843f6eb4055dfd25693f1a71f3c6871b184042d4b126244e142'; dst = os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'transformers', '9c24e6cd9f499d02c4f21a033736dabd365962dc80fe3aeb57a8f85ea45a20a3.26fead7ea4f0f843f6eb4055dfd25693f1a71f3c6871b184042d4b126244e142'); shutil.copyfile(frm, dst) if os.path.exists(dst) else print(''); print('Hotfixed broken JSON file from OpenAI');"
 
 # Caution, this file will make your eyes and brain bleed. It's such an unholy mess.
@@ -164,11 +159,8 @@ fi
 
 
 
-mkdir -p "../models/stable-diffusion"
-echo "" > "../models/stable-diffusion/Put your custom ckpt files here.txt"
-
 if [ -f "sd-v1-4.ckpt" ]; then
-    model_size=`find "sd-v1-4.ckpt" -printf "%s"`
+    model_size=`ls -l sd-v1-4.ckpt | awk '{print $5}'`
 
     if [ "$model_size" -eq "4265380512" ] || [ "$model_size" -eq "7703807346" ] || [ "$model_size" -eq "7703810927" ]; then
         echo "Data files (weights) necessary for Stable Diffusion were already downloaded"
@@ -184,7 +176,7 @@ if [ ! -f "sd-v1-4.ckpt" ]; then
     curl -L -k https://me.cmdr2.org/stable-diffusion-ui/sd-v1-4.ckpt > sd-v1-4.ckpt
 
     if [ -f "sd-v1-4.ckpt" ]; then
-        model_size=`find "sd-v1-4.ckpt" -printf "%s"`
+        model_size=`ls -l sd-v1-4.ckpt | awk '{print $5}'`
         if [ ! "$model_size" == "4265380512" ]; then
             printf "\n\nError: The downloaded model file was invalid! Bytes downloaded: $model_size\n\n"
             printf "\n\nError downloading the data files (weights) for Stable Diffusion. Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/blob/main/Troubleshooting.md\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
@@ -200,7 +192,7 @@ fi
 
 
 if [ -f "GFPGANv1.3.pth" ]; then
-    model_size=`find "GFPGANv1.3.pth" -printf "%s"`
+    model_size=`ls -l GFPGANv1.3.pth | awk '{print $5}'`
 
     if [ "$model_size" -eq "348632874" ]; then
         echo "Data files (weights) necessary for GFPGAN (Face Correction) were already downloaded"
@@ -216,7 +208,7 @@ if [ ! -f "GFPGANv1.3.pth" ]; then
     curl -L -k https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.3.pth > GFPGANv1.3.pth
 
     if [ -f "GFPGANv1.3.pth" ]; then
-        model_size=`find "GFPGANv1.3.pth" -printf "%s"`
+        model_size=`ls -l GFPGANv1.3.pth | awk '{print $5}'`
         if [ ! "$model_size" -eq "348632874" ]; then
             printf "\n\nError: The downloaded GFPGAN model file was invalid! Bytes downloaded: $model_size\n\n"
             printf "\n\nError downloading the data files (weights) for GFPGAN (Face Correction). Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/blob/main/Troubleshooting.md\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
@@ -232,7 +224,7 @@ fi
 
 
 if [ -f "RealESRGAN_x4plus.pth" ]; then
-    model_size=`find "RealESRGAN_x4plus.pth" -printf "%s"`
+    model_size=`ls -l RealESRGAN_x4plus.pth | awk '{print $5}'`
 
     if [ "$model_size" -eq "67040989" ]; then
         echo "Data files (weights) necessary for ESRGAN (Resolution Upscaling) x4plus were already downloaded"
@@ -248,7 +240,7 @@ if [ ! -f "RealESRGAN_x4plus.pth" ]; then
     curl -L -k https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth > RealESRGAN_x4plus.pth
 
     if [ -f "RealESRGAN_x4plus.pth" ]; then
-        model_size=`find "RealESRGAN_x4plus.pth" -printf "%s"`
+        model_size=`ls -l RealESRGAN_x4plus.pth | awk '{print $5}'`
         if [ ! "$model_size" -eq "67040989" ]; then
             printf "\n\nError: The downloaded ESRGAN x4plus model file was invalid! Bytes downloaded: $model_size\n\n"
             printf "\n\nError downloading the data files (weights) for ESRGAN (Resolution Upscaling) x4plus. Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/blob/main/Troubleshooting.md\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
@@ -264,7 +256,7 @@ fi
 
 
 if [ -f "RealESRGAN_x4plus_anime_6B.pth" ]; then
-    model_size=`find "RealESRGAN_x4plus_anime_6B.pth" -printf "%s"`
+    model_size=`ls -l RealESRGAN_x4plus_anime_6B.pth | awk '{print $5}'`
 
     if [ "$model_size" -eq "17938799" ]; then
         echo "Data files (weights) necessary for ESRGAN (Resolution Upscaling) x4plus_anime were already downloaded"
@@ -280,7 +272,7 @@ if [ ! -f "RealESRGAN_x4plus_anime_6B.pth" ]; then
     curl -L -k https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth > RealESRGAN_x4plus_anime_6B.pth
 
     if [ -f "RealESRGAN_x4plus_anime_6B.pth" ]; then
-        model_size=`find "RealESRGAN_x4plus_anime_6B.pth" -printf "%s"`
+        model_size=`ls -l RealESRGAN_x4plus_anime_6B.pth | awk '{print $5}'`
         if [ ! "$model_size" -eq "17938799" ]; then
             printf "\n\nError: The downloaded ESRGAN x4plus_anime model file was invalid! Bytes downloaded: $model_size\n\n"
             printf "\n\nError downloading the data files (weights) for ESRGAN (Resolution Upscaling) x4plus_anime. Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/blob/main/Troubleshooting.md\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"

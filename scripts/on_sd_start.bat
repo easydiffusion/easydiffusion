@@ -5,9 +5,6 @@
 @REM Caution, this file will make your eyes and brain bleed. It's such an unholy mess.
 @REM Note to self: Please rewrite this in Python. For the sake of your own sanity.
 
-@copy "sd-ui-files\scripts\Developer Console.cmd" . /Y
-if exist "Open Developer Console.cmd" del "Open Developer Console.cmd"
-
 @call python -c "import os; import shutil; frm = 'sd-ui-files\\ui\\hotfix\\9c24e6cd9f499d02c4f21a033736dabd365962dc80fe3aeb57a8f85ea45a20a3.26fead7ea4f0f843f6eb4055dfd25693f1a71f3c6871b184042d4b126244e142'; dst = os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'transformers', '9c24e6cd9f499d02c4f21a033736dabd365962dc80fe3aeb57a8f85ea45a20a3.26fead7ea4f0f843f6eb4055dfd25693f1a71f3c6871b184042d4b126244e142'); shutil.copyfile(frm, dst) if os.path.exists(dst) else print(''); print('Hotfixed broken JSON file from OpenAI');"
 
 @>nul grep -c "sd_git_cloned" scripts\install_status.txt
@@ -165,9 +162,6 @@ call WHERE uvicorn > .tmp
 )
 
 
-
-if not exist "..\models\stable-diffusion" mkdir "..\models\stable-diffusion"
-echo. > "..\models\stable-diffusion\Put your custom ckpt files here.txt"
 
 @if exist "sd-v1-4.ckpt" (
     for %%I in ("sd-v1-4.ckpt") do if "%%~zI" EQU "4265380512" (

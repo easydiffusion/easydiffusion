@@ -1,10 +1,14 @@
+<!--
+    THIS IS NO LONGER BEING SERVED REMOVE WHEN WE HAVE PORTED ANY
+     OF THE FEATURES THAT WERE PARTIALLY COMPLETE WHEN WE DID THE CUT OVER
+-->
 <!DOCTYPE html>
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="/media/favicon-16x16.png" sizes="16x16">
     <link rel="icon" type="image/png" href="/media/favicon-32x32.png" sizes="32x32">
-    <link rel="stylesheet" href="/media/main.css?v=21">
+    <link rel="stylesheet" href="/media/main.css?v=10">
     <link rel="stylesheet" href="/media/modifier-thumbnails.css?v=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <link rel="stylesheet" href="/media/drawingboard.min.css">
@@ -15,7 +19,7 @@
 <div id="container">
     <div id="top-nav">
         <div id="logo">
-            <h1>Stable Diffusion UI <small>v2.2 <span id="updateBranchLabel"></span></small></h1>
+            <h1>Stable Diffusion UI <small>v2.195 <span id="updateBranchLabel"></span></small></h1>
         </div>
         <ul id="top-nav-items">
             <li class="dropdown">
@@ -89,11 +93,6 @@
                     <li><b class="settings-subheader">Image Settings</b></li>
                     <li class="pl-5"><label for="seed">Seed:</label> <input id="seed" name="seed" size="10" value="30000"> <input id="random_seed" name="random_seed" type="checkbox" checked> <label for="random_seed">Random Image</label></li>
                     <li class="pl-5"><label for="num_outputs_total">Number of images to make:</label> <input id="num_outputs_total" name="num_outputs_total" value="1" size="1"> <label for="num_outputs_parallel">Generate in parallel:</label> <input id="num_outputs_parallel" name="num_outputs_parallel" value="1" size="1"> (images at once)</li>
-                    <li class="pl-5"><label for="stable_diffusion_model">Model:</label>
-                        <select id="stable_diffusion_model" name="stable_diffusion_model">
-                            <!-- <option value="sd-v1-4" selected>sd-v1-4</option> -->
-                        </select>
-                    </li>
                     <li id="samplerSelection" class="pl-5"><label for="sampler">Sampler:</label>
                         <select id="sampler" name="sampler">
                             <option value="plms" selected>plms</option>
@@ -155,12 +154,6 @@
                     <li class="pl-5"><label for="num_inference_steps">Number of inference steps:</label> <input id="num_inference_steps" name="num_inference_steps" size="4" value="50"></li>
                     <li class="pl-5"><label for="guidance_scale_slider">Guidance Scale:</label> <input id="guidance_scale_slider" name="guidance_scale_slider" class="editor-slider" value="75" type="range" min="10" max="500"> <input id="guidance_scale" name="guidance_scale" size="4"></li>
                     <li class="pl-5"><span id="prompt_strength_container"><label for="prompt_strength_slider">Prompt Strength:</label> <input id="prompt_strength_slider" name="prompt_strength_slider" class="editor-slider" value="80" type="range" min="0" max="99"> <input id="prompt_strength" name="prompt_strength" size="4"><br/></span></li>
-                    <li class="pl-5"><label for="output_format">Output format:</label>
-                        <select id="output_format" name="output_format">
-                            <option value="jpeg" selected>jpeg</option>
-                            <option value="png">png</option>
-                        </select>
-                    </li>
 
                     <br/>
 
@@ -224,13 +217,12 @@
 </div>
 </body>
 
-<script src="media/main.js?v=31"></script>
+<script src="media/main.js?v=14"></script>
 <script>
 async function init() {
     await loadModifiers()
     await getDiskPath()
     await getAppConfig()
-    await getModels()
 
     setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
     healthCheck()
