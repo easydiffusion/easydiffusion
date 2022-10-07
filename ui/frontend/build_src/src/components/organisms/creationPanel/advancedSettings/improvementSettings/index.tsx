@@ -21,40 +21,23 @@ import UpscaleOptions from "./upscaleOptions";
 export default function ImprovementSettings() {
   const { t } = useTranslation();
 
-  // these are conditionals that should be retired and inferred from the store
-  const isUsingFaceCorrection = useImageCreate((state) =>
-    state.isUsingFaceCorrection()
-  );
-
+  // creation state
+  const isUsingFaceCorrection = useImageCreate((state) => state.isUsingFaceCorrection());
   const isUsingUpscaling = useImageCreate((state) => state.isUsingUpscaling());
-
-  const useUpscale = useImageCreate((state) =>
-    state.getValueForRequestKey("use_upscale")
-  );
-
-  const filteredOnly = useImageCreate((state) =>
-    state.getValueForRequestKey("show_only_filtered_image")
-  );
-
-  const toggleUseFaceCorrection = useImageCreate(
-    (state) => state.toggleUseFaceCorrection
-  );
-
+  const filteredOnly = useImageCreate((state) => state.getValueForRequestKey("show_only_filtered_image"));
+  const toggleUseFaceCorrection = useImageCreate((state) => state.toggleUseFaceCorrection);
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
 
-  const improvementOpen = useCreateUI(
-    (state) => state.isOpenAdvImprovementSettings
-  );
+  // UI STATE
+  const improvementOpen = useCreateUI((state) => state.isOpenAdvImprovementSettings);
+  const toggleImprovementOpen = useCreateUI((state) => state.toggleAdvImprovementSettings);
 
-  const toggleImprovementOpen = useCreateUI(
-    (state) => state.toggleAdvImprovementSettings
-  );
-
+  // local state
   const [isFilteringDisabled, setIsFilteringDisabled] = useState(false);
   // should probably be a store selector
   useEffect(() => {
     // if either are true we arent disabled
-    if (isUsingFaceCorrection || useUpscale != "") {
+    if (isUsingFaceCorrection || isUsingUpscaling) {
       setIsFilteringDisabled(false);
     } else {
       setIsFilteringDisabled(true);

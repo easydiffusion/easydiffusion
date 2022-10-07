@@ -9,7 +9,7 @@ export const ListboxHeadless = style({
 });
 
 export const ListboxHeadlessLabel = style({
-
+  marginRight: vars.spacing.small,
 });
 
 export const ListboxHeadlessButton = style({
@@ -29,11 +29,11 @@ export const ListboxHeadlessOptions = style({
   // bottom: `vars.spacing.small`,
   transform: `translateY(100%)`,
   borderRadius: vars.trim.smallBorderRadius,
-  padding: vars.spacing.small,
+  padding: `${vars.spacing.small} 0`,
 });
 
 export const ListboxHeadlessOptionItem = style({
-  // padding: vars.spacing.small,
+  padding: `0 ${vars.spacing.small}`,
 
   selectors: {
     [`&[data-headlessui-state="active"]`]: {

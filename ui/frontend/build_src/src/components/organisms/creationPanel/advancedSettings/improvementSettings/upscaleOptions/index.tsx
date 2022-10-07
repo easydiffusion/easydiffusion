@@ -69,19 +69,16 @@ export default function UpscaleOptions() {
         <Listbox.Options className={ListboxHeadlessOptions}>
           {options.map((option) => (
             <Listbox.Option
-              // className={ListboxHeadlessOption}
               key={option.id}
               value={option}
               disabled={option.unavailable}
               as={Fragment}
             >
               {({ active, selected }) => {
-                console.log('active', active);
-                console.log('selected', selected);
+
                 return (
                   <li
                     className={ListboxHeadlessOptionItem}
-                  // data-selected={selected}
                   >
                     {option.display}
                   </li>
@@ -94,28 +91,3 @@ export default function UpscaleOptions() {
     </div>
   );
 }
-
-//  {/* <ListboxHeadless
-//         label="Sampler"
-//         value={sampler}
-//         options={SAMPLER_OPTIONS}
-//         onChange={setSampler}
-//       /> */}
-
-//   {/* <label>
-//               {t("settings.ups")}
-//               <select
-//                 id="upscale_model"
-//                 name="upscale_model"
-//                 value={useUpscale}
-//                 onChange={(e) => {
-//                   setRequestOption("use_upscale", e.target.value);
-//                 }}
-//               >
-//                 <option value="">{t("settings.no-ups")}</option>
-//                 <option value="RealESRGAN_x4plus">RealESRGAN_x4plus</option>
-//                 <option value="RealESRGAN_x4plus_anime_6B">
-//                   RealESRGAN_x4plus_anime_6B
-//                 </option>
-//               </select>
-//             </label> */}

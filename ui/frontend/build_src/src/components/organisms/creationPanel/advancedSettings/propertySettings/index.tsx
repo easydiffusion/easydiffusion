@@ -1,10 +1,12 @@
 import React from "react";
-import { useImageCreate, SAMPLER_OPTIONS } from "../../../../../stores/imageCreateStore";
+import { useImageCreate } from "../../../../../stores/imageCreateStore";
 import { useCreateUI } from "../../creationPanelUIStore";
 
 import Checkbox from "../../../../atoms/checkbox";
 import NumberInput from "../../../../atoms/numberInput";
 
+
+import SamplerOptions from "./samplerOptions";
 
 import {
   SettingItem,
@@ -186,7 +188,7 @@ export default function PropertySettings() {
           </div>
 
           <div className={SettingItem}>
-            <label>
+            {/* <label>
               {t("settings.sampler")}
               <select
                 value={sampler}
@@ -198,7 +200,9 @@ export default function PropertySettings() {
                   </option>
                 ))}
               </select>
-            </label>
+            </label> */}
+
+            <SamplerOptions></SamplerOptions>
           </div>
         </>
       )}
