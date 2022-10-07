@@ -1,0 +1,144 @@
+[
+  [
+    "Drawing Style",
+    [
+      "Cel Shading",
+      "Children's Drawing",
+      "Crosshatch",
+      "Detailed and Intricate",
+      "Doodle",
+      "Dot Art",
+      "Line Art",
+      "Sketch"
+    ]
+  ],
+  [
+    "Visual Style",
+    [
+      "2D",
+      "8-bit",
+      "16-bit",
+      "Anaglyph",
+      "Anime",
+      "CGI",
+      "Cartoon",
+      "Comic Book",
+      "Concept Art",
+      "Digital Art",
+      "Fantasy",
+      "Graphic Novel",
+      "Hard Edge Painting",
+      "Hydrodipped",
+      "Lithography",
+      "Manga",
+      "Modern Art",
+      "Mosaic",
+      "Mural",
+      "Photo",
+      "Realistic",
+      "Street Art",
+      "Visual Novel",
+      "Watercolor"
+    ]
+  ],
+  [
+    "Pen",
+    ["Chalk", "Colored Pencil", "Graphite", "Ink", "Oil Paint", "Pastel Art"]
+  ],
+  [
+    "Carving and Etching",
+    [
+      "Etching",
+      "Linocut",
+      "Paper Model",
+      "Paper-Mache",
+      "Papercutting",
+      "Pyrography",
+      "Wood-Carving"
+    ]
+  ],
+  [
+    "Camera",
+    [
+      "Aerial View",
+      "Canon50",
+      "Cinematic",
+      "Close-up",
+      "Color Grading",
+      "Dramatic",
+      "Film Grain",
+      "Fisheye Lens",
+      "Glamor Shot",
+      "Golden Hour",
+      "HD",
+      "Lens Flare",
+      "Macro",
+      "Polaroid",
+      "Vintage",
+      "War Photography",
+      "White Balance",
+      "Wildlife Photography"
+    ]
+  ],
+  [
+    "Color",
+    [
+      "Beautiful Lighting",
+      "Colorful",
+      "Dynamic Lighting",
+      "Electric Colors",
+      "Infrared",
+      "Synthwave",
+      "Warm Color Palette"
+    ]
+  ],
+  [
+    "Emotions",
+    [
+      "Angry",
+      "Disgusted",
+      "Embarrassed",
+      "Evil",
+      "Excited",
+      "Fear",
+      "Happy",
+      "Lonely",
+      "Sad",
+      "Surprised"
+    ]
+  ],
+  [
+    "Style of an artist or community",
+    [
+      "Artstation",
+      "by Agnes Lawrence Pelton",
+      "by Akihito Yoshida",
+      "by Andy Warhol",
+      "by Artgerm",
+      "by Asaf Hanuka",
+      "by Aubrey Beardsley",
+      "by Banksy",
+      "by Ben Enwonwu",
+      "by Caravaggio Michelangelo Merisi",
+      "by David Mann",
+      "by Frida Kahlo",
+      "by H.R. Giger",
+      "by Hayao Miyazaki",
+      "by Ivan Shishkin",
+      "by Johannes Vermeer",
+      "by John William Waterhouse",
+      "by Katsushika Hokusai",
+      "by Ko Young Hoon",
+      "by Leonardo da Vinci",
+      "by Lisa Frank",
+      "by Mahmoud Saïd",
+      "by Mark Brooks",
+      "by Pablo Picasso",
+      "by Richard Dadd",
+      "by Salvador Dalí",
+      "by Tivadar Csontváry Kosztka",
+      "by Yoshitaka Amano",
+      "by wlop"
+    ]
+  ]
+]
