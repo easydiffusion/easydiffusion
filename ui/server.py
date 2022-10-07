@@ -19,25 +19,11 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
-# this is needed for development.
-from fastapi.middleware.cors import CORSMiddleware
 import logging
 
 from sd_internal import Request, Response
 
 app = FastAPI()
-
-# we need to be able to run a local server for the UI (9001)
-# and still be able to hit our python port (9000)
-origins = ["*"]
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 
 model_loaded = False
 model_is_loading = False
@@ -48,9 +34,7 @@ outpath = os.path.join(os.path.expanduser("~"), OUTPUT_DIRNAME)
 # don't show access log entries for URLs that start with the given prefix
 ACCESS_LOG_SUPPRESS_PATH_PREFIXES = ['/ping', '/modifier-thumbnails']
 
-# app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'media/')), name="media")
-app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'frontend/assets/media/')), name="media")
-
+app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'media/')), name="media")
 
 # defaults from https://huggingface.co/blog/stable_diffusion
 class ImageRequest(BaseModel):
@@ -87,18 +71,7 @@ class SetAppConfigRequest(BaseModel):
 @app.get('/')
 def read_root():
     headers = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
-    return FileResponse(os.path.join(SD_UI_DIR,'frontend/dist/index.html'), headers=headers)
-
-# then get the js files
-@app.get('/index.js')
-def read_scripts():
-    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/dist/index.js'))
-
-#then get the css files
-@app.get('/index.css')
-def read_styles():
-    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/dist/index.css'))
-
+    return FileResponse(os.path.join(SD_UI_DIR, 'index.html'), headers=headers)
 
 @app.get('/ping')
 async def ping():
@@ -334,20 +307,10 @@ def getModels():
 
     return models
 
-# moved these to the root for easier pathing
-# TODO: change the vite config for public files
-@app.get('/ding.mp3')
-def read_ding():
-    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/assets/ding.mp3'))
-
-@app.get('/kofi.png')
-def read_kofi():
-    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/assets/kofi.png'))
-
 @app.get('/modifiers.json')
 def read_modifiers():
     headers = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
-    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/assets/modifiers.json'), headers=headers)
+    return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'), headers=headers)
 
 @app.get('/output_dir')
 def read_home_dir():
