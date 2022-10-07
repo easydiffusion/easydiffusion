@@ -4,13 +4,14 @@ import traceback
 import sys
 import os
 
-SCRIPT_DIR = os.getcwd()
-print('started in ', SCRIPT_DIR)
+SD_DIR = os.getcwd()
+print('started in ', SD_DIR)
 
 SD_UI_DIR = os.getenv('SD_UI_PATH', None)
 sys.path.append(os.path.dirname(SD_UI_DIR))
 
-CONFIG_DIR = os.path.join(SD_UI_DIR, '..', 'scripts')
+CONFIG_DIR = os.path.abspath(os.path.join(SD_UI_DIR, '..', 'scripts'))
+MODELS_DIR = os.path.abspath(os.path.join(SD_DIR, '..', 'models'))
 
 OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder
 
@@ -18,25 +19,11 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
-# this is needed for development.
-from fastapi.middleware.cors import CORSMiddleware
 import logging
 
 from sd_internal import Request, Response
 
 app = FastAPI()
-
-# we need to be able to run a local server for the UI (9001)
-# and still be able to hit our python port (9000)
-origins = ["*"]
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 
 model_loaded = False
 model_is_loading = False
@@ -47,9 +34,7 @@ outpath = os.path.join(os.path.expanduser("~"), OUTPUT_DIRNAME)
 # don't show access log entries for URLs that start with the given prefix
 ACCESS_LOG_SUPPRESS_PATH_PREFIXES = ['/ping', '/modifier-thumbnails']
 
-# app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'media/')), name="media")
-app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'frontend/assets/media/')), name="media")
-
+app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'media/')), name="media")
 
 # defaults from https://huggingface.co/blog/stable_diffusion
 class ImageRequest(BaseModel):
@@ -73,7 +58,9 @@ class ImageRequest(BaseModel):
     use_full_precision: bool = False
     use_face_correction: str = None # or "GFPGANv1.3"
     use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
+    use_stable_diffusion_model: str = "sd-v1-4"
     show_only_filtered_image: bool = False
+    output_format: str = "jpeg" # or "png"
 
     stream_progress_updates: bool = False
     stream_image_progress: bool = False
@@ -84,18 +71,7 @@ class SetAppConfigRequest(BaseModel):
 @app.get('/')
 def read_root():
     headers = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
-    return FileResponse(os.path.join(SD_UI_DIR,'frontend/dist/index.html'), headers=headers)
-
-# then get the js files
-@app.get('/index.js')
-def read_scripts():
-    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/dist/index.js'))
-
-#then get the css files
-@app.get('/index.css')
-def read_styles():
-    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/dist/index.css'))
-
+    return FileResponse(os.path.join(SD_UI_DIR, 'index.html'), headers=headers)
 
 @app.get('/ping')
 async def ping():
@@ -112,9 +88,7 @@ async def ping():
 
         from sd_internal import runtime
 
-        custom_weight_path = os.path.join(SCRIPT_DIR, 'custom-model.ckpt')
-        ckpt_to_use = "sd-v1-4" if not os.path.exists(custom_weight_path) else "custom-model"
-        runtime.load_model_ckpt(ckpt_to_use=ckpt_to_use)
+        runtime.load_model_ckpt(ckpt_to_use=get_initial_model_to_load())
 
         model_loaded = True
         model_is_loading = False
@@ -123,6 +97,46 @@ async def ping():
     except Exception as e:
         print(traceback.format_exc())
         return HTTPException(status_code=500, detail=str(e))
+
+# needs to support the legacy installations
+def get_initial_model_to_load():
+    custom_weight_path = os.path.join(SD_DIR, 'custom-model.ckpt')
+    ckpt_to_use = "sd-v1-4" if not os.path.exists(custom_weight_path) else "custom-model"
+
+    ckpt_to_use = os.path.join(SD_DIR, ckpt_to_use)
+
+    config = getConfig()
+    if 'model' in config and 'stable-diffusion' in config['model']:
+        model_name = config['model']['stable-diffusion']
+        model_path = resolve_model_to_use(model_name)
+
+        if os.path.exists(model_path + '.ckpt'):
+            ckpt_to_use = model_path
+        else:
+            print('Could not find the configured custom model at:', model_path + '.ckpt', '. Using the default one:', ckpt_to_use + '.ckpt')
+
+    return ckpt_to_use
+
+def resolve_model_to_use(model_name):
+    if model_name in ('sd-v1-4', 'custom-model'):
+        model_path = os.path.join(MODELS_DIR, 'stable-diffusion', model_name)
+
+        legacy_model_path = os.path.join(SD_DIR, model_name)
+        if not os.path.exists(model_path + '.ckpt') and os.path.exists(legacy_model_path + '.ckpt'):
+            model_path = legacy_model_path
+    else:
+        model_path = os.path.join(MODELS_DIR, 'stable-diffusion', model_name)
+
+    return model_path
+
+def save_model_to_config(model_name):
+    config = getConfig()
+    if 'model' not in config:
+        config['model'] = {}
+
+    config['model']['stable-diffusion'] = model_name
+
+    setConfig(config)
 
 @app.post('/image')
 def image(req : ImageRequest):
@@ -150,9 +164,14 @@ def image(req : ImageRequest):
     r.use_upscale: str = req.use_upscale
     r.use_face_correction = req.use_face_correction
     r.show_only_filtered_image = req.show_only_filtered_image
+    r.output_format = req.output_format
 
     r.stream_progress_updates = True # the underlying implementation only supports streaming
     r.stream_image_progress = req.stream_image_progress
+
+    r.use_stable_diffusion_model = resolve_model_to_use(req.use_stable_diffusion_model)
+
+    save_model_to_config(req.use_stable_diffusion_model)
 
     try:
         if not req.stream_progress_updates:
@@ -232,27 +251,66 @@ def getAppConfig():
             return HTTPException(status_code=500, detail="No config file")
 
         with open(config_json_path, 'r') as f:
-            config_json_str = f.read()
-            config = json.loads(config_json_str)
-            return config
+            return json.load(f)
     except Exception as e:
         print(traceback.format_exc())
         return HTTPException(status_code=500, detail=str(e))
 
-# moved these to the root for easier pathing
-# TODO: change the vite config for public files
-@app.get('/ding.mp3')
-def read_ding():
-    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/assets/ding.mp3'))
+def getConfig():
+    try:
+        config_json_path = os.path.join(CONFIG_DIR, 'config.json')
 
-@app.get('/kofi.png')
-def read_kofi():
-    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/assets/kofi.png'))
+        if not os.path.exists(config_json_path):
+            return {}
+
+        with open(config_json_path, 'r') as f:
+            return json.load(f)
+    except Exception as e:
+        return {}
+
+def setConfig(config):
+    try:
+        config_json_path = os.path.join(CONFIG_DIR, 'config.json')
+
+        with open(config_json_path, 'w') as f:
+            return json.dump(config, f)
+    except:
+        print(traceback.format_exc())
+
+@app.get('/models')
+def getModels():
+    models = {
+        'active': {
+            'stable-diffusion': 'sd-v1-4',
+        },
+        'options': {
+            'stable-diffusion': ['sd-v1-4'],
+        },
+    }
+
+    # custom models
+    sd_models_dir = os.path.join(MODELS_DIR, 'stable-diffusion')
+    for file in os.listdir(sd_models_dir):
+        if file.endswith('.ckpt'):
+            model_name = os.path.splitext(file)[0]
+            models['options']['stable-diffusion'].append(model_name)
+
+    # legacy
+    custom_weight_path = os.path.join(SD_DIR, 'custom-model.ckpt')
+    if os.path.exists(custom_weight_path):
+        models['active']['stable-diffusion'] = 'custom-model'
+        models['options']['stable-diffusion'].append('custom-model')
+
+    config = getConfig()
+    if 'model' in config and 'stable-diffusion' in config['model']:
+        models['active']['stable-diffusion'] = config['model']['stable-diffusion']
+
+    return models
 
 @app.get('/modifiers.json')
 def read_modifiers():
     headers = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
-    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/assets/modifiers.json'), headers=headers)
+    return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'), headers=headers)
 
 @app.get('/output_dir')
 def read_home_dir():

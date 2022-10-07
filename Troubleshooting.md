@@ -64,7 +64,7 @@ Users don't need to have the Anaconda Prompt installed to do this anymore, since
 5. Type `conda activate .\env` and press enter
 6. Type `python --version` and press enter. You should see 3.8.5.
 
-**Windows:**
+**Linux:**
 1. Open the terminal
 2. Type `cd /path/to/stable-diffusion-ui` and press enter
 3. Type `installer/bin/activate` and press enter
