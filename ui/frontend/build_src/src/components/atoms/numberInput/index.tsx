@@ -12,7 +12,7 @@ interface NumberInputProps {
   min?: number,
   max?: number,
   step?: number,
-  label?: string,
+  label: string,
   disabled?: boolean,
 }
 

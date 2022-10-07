@@ -72,10 +72,10 @@ export default function MakeButton() {
   // display logic
   // const updateDisplay = useImageDisplay((state) => state.updateDisplay);
   // new display logic
-  const makeSpace = useCreatedMedia((state) => state.makeSpace);
+  // const makeSpace = useCreatedMedia((state) => state.makeSpace);
   const removeFailedMedia = useCreatedMedia((state) => state.removeFailedMedia);
   const addCreatedMedia = useCreatedMedia((state) => state.addCreatedMedia);
-  const addCreatedMediaRecord = useCreatedMedia((state) => state.addCreatedMediaRecord);
+  // const addCreatedMediaRecord = useCreatedMedia((state) => state.addCreatedMediaRecord);
   // waiting for the python server to start sending down an image url and not a base64 string
   const hackJson = (jsonStr: string, batchId: string) => {
 
@@ -89,15 +89,13 @@ export default function MakeButton() {
         outputs.forEach((output: any, index: number) => {
 
           const { data, seed } = output as ImageOutput;
-          console.log('succeeded seed', seed);
           const seedReq = {
             ...request,
             seed,
           };
           const itemId = `${batchId}${idDelim}-${seed}-${index}`;
           // updateDisplay(batchId, data, seedReq);
-          addCreatedMedia(batchId, { id: itemId, data });
-          addCreatedMediaRecord(batchId, seed.toString(10), { id: itemId, data: seedReq });
+          addCreatedMedia(batchId, seed, seedReq, { id: itemId, data });
         });
       }
 
@@ -188,7 +186,7 @@ export default function MakeButton() {
       const reader = res.body?.getReader();
 
       if (void 0 !== reader) {
-        makeSpace(batchId, req);
+        // makeSpace(batchId, req);
         void parseRequest(batchId, reader);
       }
 

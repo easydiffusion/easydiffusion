@@ -12,69 +12,41 @@ export interface imageDataObject {
 
 interface createdMediaObject {
   batchId: string;
-  completed: boolean;
-  data: imageDataObject[] | undefined;
+  seedId: number;
+  data: imageDataObject[];
   info: ImageRequest;
 }
 
 interface createdMediaState {
   createdMediaList: createdMediaObject[];
-  createdMediaRecords: Record<string, createdMediaObject[]>;
-  makeSpace: (batchId: string, req: ImageRequest) => void;
-  addCreatedMedia: (batchId: string, data: imageDataObject) => void;
-  addCreatedMediaRecord: (batchId: string, seed: string, data: imageDataObject) => void;
-  getCreatedMedia: (batchId: string) => createdMediaObject | undefined;
+  addCreatedMedia: (batchId: string, seed: number, info: ImageRequest, data: imageDataObject) => void;
+  getCreatedMedia: (batchId: string, seed: number) => createdMediaObject | undefined;
   removeFailedMedia: (batchId: string) => void;
-
 };
 
 export const useCreatedMedia = create<createdMediaState>((set, get) => ({
   //Array<createdMedia>(),
   createdMediaList: [],
-  createdMediaRecords: {},
-  makeSpace: (batchId: string, req: ImageRequest) => {
-    set(
-      produce((state) => {
-        const item: createdMediaObject = {
+  addCreatedMedia: (batchId: string, seed: number, info: ImageRequest, data: imageDataObject) => {
+    set(produce((state) => {
+      const batch = state.createdMediaList.find((batch: { batchId: string; }) => batch.batchId === batchId);
+      if (batch) {
+        batch.data.push(data);
+      } else {
+        state.createdMediaList.push({
           batchId,
-          completed: false,
-          data: [],
-          info: req,
-        };
-        state.createdMediaList.unshift(item);
-
-      })
-    );
-  },
-  addCreatedMedia: (batchId: string, data: imageDataObject) => {
-    set(
-      produce((state) => {
-        const media = state.createdMediaList.find((item: createdMediaObject) => item.batchId === batchId);
-        if (void 0 !== media) {
-          media.data.push(data);
-        }
-      })
-    );
+          seedId: seed,
+          data: [data],
+          info,
+        });
+      }
+    }));
   },
 
-  addCreatedMediaRecord: (batchId: string, seed: string, data: imageDataObject) => {
-    set(
-      produce((state) => {
-        const media = state.createdMediaList.find((item: createdMediaObject) => item.batchId === batchId);
-        if (void 0 !== media) {
-          if (void 0 === state.createdMediaRecords[seed]) {
-            state.createdMediaRecords[seed] = [];
-          }
-          state.createdMediaRecords[seed].push(media);
-        }
-      })
-    );
-  },
-
-  getCreatedMedia: (batchId: string) => {
-    const item = get().createdMediaList.find((item: createdMediaObject) => item.batchId === batchId);
-    if (void 0 !== item) {
-      return item;
+  getCreatedMedia: (batchId: string, seed: number) => {
+    const batch = get().createdMediaList.find((batch) => batch.batchId === batchId && batch.seedId === seed);
+    if (batch) {
+      return batch;
     }
     return undefined;
   },

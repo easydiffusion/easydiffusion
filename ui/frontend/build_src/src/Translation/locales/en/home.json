@@ -41,7 +41,7 @@
     "seed": "Seed:",
     "amount-of-img": "Amount of images to make:",
     "how-many": "How many at once:",
-    "stream-img": "Stream images (this will slow down image generation):",
+    "stream-img": "Create progress images (will reduce perfomance):",
     "width": "Width:",
     "height": "Height:",
     "sampler": "Sampler:",

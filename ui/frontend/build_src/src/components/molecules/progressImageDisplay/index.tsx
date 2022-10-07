@@ -11,12 +11,12 @@ import {
 
 interface ProgressMainDisplayProps {
   batchId: string;
-  seed?: string;
+  seed?: number;
 }
 
 interface ProgressListDisplayProps {
   batchId: string;
-  seed: string;
+  seed: number;
   orientation: 'horizontal' | 'vertical';
 }
 

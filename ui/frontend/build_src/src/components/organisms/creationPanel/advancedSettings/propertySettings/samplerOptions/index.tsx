@@ -20,7 +20,7 @@ import {
 } from "../../../../../_recipes/listbox_headless.css";
 
 interface SamplerOptionsProps {
-  id: number,
+  id: string,
   value: string,
   unavailable: boolean,
 }
@@ -60,7 +60,9 @@ export default function SamplerOptions() {
     }
   }, [sampler]);
 
-  const handleChange = (option: SamplerOptionsProps) => {
+  // this type is not correct // SamplerOptionsProps
+  const handleChange = (option: any) => {
+    console.log('SAMPLER HANDLECHANGE', option);
     setRequestOption("sampler", option);
   };
 

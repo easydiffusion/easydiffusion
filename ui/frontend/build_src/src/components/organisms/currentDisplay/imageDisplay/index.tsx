@@ -126,7 +126,7 @@ export default function ImageDisplay({ batchId, seed, imageId, progressId }: Com
   useEffect(() => {
     if (batchId !== null) {
       // we always want the created media so we can get the info
-      const created = getCreatedMedia(batchId);
+      const created = getCreatedMedia(batchId, seed);
       setInfo(created?.info ?? null);
 
       if (imageId !== null) {

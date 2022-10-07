@@ -7,6 +7,7 @@ import NumberInput from "../../../../atoms/numberInput";
 
 
 import SamplerOptions from "./samplerOptions";
+import GuidanceScale from "./guidanceScale";
 
 import {
   SettingItem,
@@ -52,9 +53,9 @@ export default function PropertySettings() {
   const steps = useImageCreate((state) =>
     state.getValueForRequestKey("num_inference_steps")
   );
-  const guidanceScale = useImageCreate((state) =>
-    state.getValueForRequestKey("guidance_scale")
-  );
+  // const guidanceScale = useImageCreate((state) =>
+  //   state.getValueForRequestKey("guidance_scale")
+  // );
 
   const initImage = useImageCreate((state) =>
     state.getValueForRequestKey("init_image")
@@ -116,7 +117,7 @@ export default function PropertySettings() {
           </div>
 
           <div className={SettingItem}>
-            <label>
+            {/* <label>
               {t("settings.guide-scale")}
               <input
                 value={guidanceScale}
@@ -128,8 +129,10 @@ export default function PropertySettings() {
                 max="20"
                 step=".1"
               />
-            </label>
-            <span>{guidanceScale}</span>
+            </label> */}
+            {/* <span>{guidanceScale}</span> */}
+
+            <GuidanceScale></GuidanceScale>
           </div>
 
           {void 0 !== initImage && (

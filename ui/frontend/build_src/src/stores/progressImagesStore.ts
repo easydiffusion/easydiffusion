@@ -10,14 +10,14 @@ export interface progressDataObject {
 
 interface progressImageList {
   batchId: string;
-  progressImageBySeed: Record<string, progressDataObject[]>;
+  progressImageBySeed: Record<number, progressDataObject[]>;
 };
 
 interface progressImagesState {
   progressImagesManifest: progressImageList[];
   addProgressImage: (batchId: string, seed: string, imageData: progressDataObject) => void;
   getProgressImageBatch: (batchId: string) => progressImageList | null;
-  getProgressImageList: (batchId: string, seed: string) => progressDataObject[];
+  getProgressImageList: (batchId: string, seed: number) => progressDataObject[];
 };
 
 export const useProgressImages = create<progressImagesState>((set, get) => ({
@@ -53,7 +53,7 @@ export const useProgressImages = create<progressImagesState>((set, get) => ({
     return null;
   },
 
-  getProgressImageList: (batchId: string, seed: string) => {
+  getProgressImageList: (batchId: string, seed: number) => {
     const batch = get().progressImagesManifest.find((batch) => batch.batchId === batchId);
     if (batch) {
       return batch.progressImageBySeed[seed] || [];

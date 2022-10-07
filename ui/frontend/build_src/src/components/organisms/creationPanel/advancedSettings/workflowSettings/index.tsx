@@ -16,7 +16,6 @@ import Checkbox from "../../../../atoms/checkbox";
 import NumberInput from "../../../../atoms/numberInput";
 
 
-
 import { useTranslation } from "react-i18next";
 
 export default function WorkflowSettings() {

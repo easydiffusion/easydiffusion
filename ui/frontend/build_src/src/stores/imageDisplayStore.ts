@@ -3,7 +3,7 @@ import produce from "immer";
 
 export interface CompletedImageIds {
   batchId: string;
-  seed: string;
+  seed: number;
   imageId?: string;
   progressId?: string;
 }

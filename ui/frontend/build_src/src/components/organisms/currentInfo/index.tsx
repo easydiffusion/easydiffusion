@@ -18,12 +18,12 @@ export default function CurrentInfo() {
   const [gScale, setGScale] = useState<number>(1);
   const [prompt, setPrompt] = useState<string>('');
   const [negPrompt, setNegPrompt] = useState<string>('');
-  const [seed, setSeed] = useState<string>('');
+  const [seed, setSeed] = useState<number>(-1);
 
   const imageKeys = useImageDisplay((state) => state.currentImageKeys);
 
   // const progressImages = useProgressImages((state) => state.getProgressImages(batchId));
-  const createdMedia = useCreatedMedia((state) => state.getCreatedMedia(batchId));
+  const createdMedia = useCreatedMedia((state) => state.getCreatedMedia(batchId, seed));
 
   useEffect(() => {
     if (imageKeys != null) {
@@ -46,8 +46,7 @@ export default function CurrentInfo() {
       setGScale(guidance_scale);
       setPrompt(prompt);
       setNegPrompt(negative_prompt);
-
-      setSeed(seed.toString(10));
+      setSeed(seed);
     }
   }, [createdMedia]);
 
