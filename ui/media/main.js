@@ -596,16 +596,8 @@ function makeImage() {
         return
     }
 
-    let prompts = promptField.value
-    prompts = prompts.split('\n')
-    prompts.forEach(prompt => {
-        prompt = prompt.trim()
-        if (prompt === '') {
-            return
-        }
-
-        createTask(prompt)
-    })
+    let prompts = getPrompts()
+    prompts.forEach(createTask)
 
     initialText.style.display = 'none'
 }
@@ -745,6 +737,78 @@ function createTask(prompt) {
     task['previewPrompt'].innerText = prompt
 
     taskQueue.unshift(task)
+}
+
+function getPrompts() {
+    let prompts = promptField.value
+    prompts = prompts.split('\n')
+
+    let promptsToMake = []
+
+    prompts.forEach(prompt => {
+        prompt = prompt.trim()
+        if (prompt === '') {
+            return
+        }
+
+        let promptMatrix = prompt.split('|')
+        prompt = promptMatrix.shift().trim()
+
+        promptsToMake.push(prompt)
+
+        promptMatrix = promptMatrix.map(p => p.trim())
+        promptMatrix = promptMatrix.filter(p => p !== '')
+
+        if (promptMatrix.length > 0) {
+            let promptPermutations = permutePrompts(prompt, promptMatrix)
+            promptsToMake = promptsToMake.concat(promptPermutations)
+        }
+    })
+
+    return promptsToMake
+}
+
+function permutePrompts(promptBase, promptMatrix) {
+    let prompts = []
+    let permutations = permute(promptMatrix)
+    permutations.forEach(perm => {
+        let prompt = promptBase
+
+        if (perm.length > 0) {
+            let promptAddition = perm.join(', ')
+            if (promptAddition.trim() === '') {
+                return
+            }
+
+            prompt += ', ' + promptAddition
+        }
+
+        prompts.push(prompt)
+    })
+
+    return prompts
+}
+
+function permute(arr) {
+    let permutations = []
+    let n = arr.length
+    let n_permutations = Math.pow(2, n)
+    for (let i = 0; i < n_permutations; i++) {
+        let perm = []
+        let mask = Number(i).toString(2).padStart(n, '0')
+
+        for (let idx = 0; idx < mask.length; idx++) {
+            if (mask[idx] === '1' && arr[idx].trim() !== '') {
+                perm.push(arr[idx])
+            }
+        }
+
+        if (perm.length > 0) {
+            permutations.push(perm)
+        }
+    }
+
+    return permutations
 }
 
 // create a file name with embedded prompt and metadata
