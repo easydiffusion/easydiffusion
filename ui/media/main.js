@@ -12,7 +12,7 @@ const SHOW_ONLY_FILTERED_IMAGE_KEY = "showOnlyFilteredImage"
 const STREAM_IMAGE_PROGRESS_KEY = "streamImageProgress"
 const HEALTH_PING_INTERVAL = 5 // seconds
 const MAX_INIT_IMAGE_DIMENSION = 768
-const INPAINTING_EDITOR_SIZE = 400
+const INPAINTING_EDITOR_SIZE = 450
 
 const IMAGE_REGEX = new RegExp('data:image/[A-Za-z]+;base64')
 
@@ -281,6 +281,7 @@ function resizeInpaintingEditor() {
     inpaintingEditorContainer.style.height = heightValue + 'px'
     inpaintingEditor.opts.enlargeYourContainer = true
 
+    inpaintingEditor.opts.size = inpaintingEditor.ctx.lineWidth
     inpaintingEditor.resize()
 
     inpaintingEditor.ctx.lineCap = "round"
