@@ -279,6 +279,11 @@ function resizeInpaintingEditor() {
         widthValue = (widthValue / heightValue) * INPAINTING_EDITOR_SIZE
         heightValue = INPAINTING_EDITOR_SIZE
     }
+    if (inpaintingEditor.opts.aspectRatio === (widthValue / heightValue).toFixed(3)) {
+        // Same ratio, don't reset the canvas.
+        return
+    }
+    inpaintingEditor.opts.aspectRatio = (widthValue / heightValue).toFixed(3)
 
     inpaintingEditorContainer.style.width = widthValue + 'px'
     inpaintingEditorContainer.style.height = heightValue + 'px'
