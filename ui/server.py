@@ -333,6 +333,8 @@ async def start_browser():
     # ping once to load the model before opening the browser
     # avoid opening the browser when the FastApp server is locked loading a new model
     await ping()
+    # added sleep to avoid intermitent timeout error.
+    await asyncio.sleep(1)
     # start the browser ui
     import webbrowser
     webbrowser.open('http://localhost:9000')
