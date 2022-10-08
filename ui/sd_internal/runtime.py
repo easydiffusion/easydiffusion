@@ -249,7 +249,6 @@ def do_mk_img(req: Request):
             device = 'cpu'
 
             if model_is_half:
-                del model, modelCS, modelFS
                 load_model_ckpt(ckpt_to_use, device)
                 needs_model_reload = False
 
@@ -263,7 +262,6 @@ def do_mk_img(req: Request):
             if (precision == 'autocast' and (req.use_full_precision or not model_is_half)) or \
                 (precision == 'full' and not req.use_full_precision and not force_full_precision):
 
-                del model, modelCS, modelFS
                 load_model_ckpt(ckpt_to_use, device, req.turbo, unet_bs, ('full' if req.use_full_precision else 'autocast'))
                 needs_model_reload = False
 
