@@ -269,6 +269,9 @@ async function healthCheck() {
     }
 }
 function resizeInpaintingEditor() {
+    if (!maskSetting.checked) {
+        return
+    }
     let widthValue = parseInt(widthField.value)
     let heightValue = parseInt(heightField.value)
     if (widthValue === heightValue) {
@@ -281,6 +284,11 @@ function resizeInpaintingEditor() {
         widthValue = (widthValue / heightValue) * INPAINTING_EDITOR_SIZE
         heightValue = INPAINTING_EDITOR_SIZE
     }
+    if (inpaintingEditor.opts.aspectRatio === (widthValue / heightValue).toFixed(3)) {
+        // Same ratio, don't reset the canvas.
+        return
+    }
+    inpaintingEditor.opts.aspectRatio = (widthValue / heightValue).toFixed(3)
 
     inpaintingEditorContainer.style.width = widthValue + 'px'
     inpaintingEditorContainer.style.height = heightValue + 'px'
@@ -1145,6 +1153,7 @@ initImageClearBtn.addEventListener('click', function() {
 
 maskSetting.addEventListener('click', function() {
     inpaintingEditorContainer.style.display = (this.checked ? 'block' : 'none')
+    resizeInpaintingEditor()
 })
 
 promptsFromFileBtn.addEventListener('click', function() {
