@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from "react";
-import { Transition } from '@headlessui/react'
+
 
 import CurrentDisplay from "../../organisms/currentDisplay";
 import CompletedImages from "../../organisms/completedImages";

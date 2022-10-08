@@ -10,7 +10,7 @@ export default function StopButton() {
 
   const stopMake = async () => {
     try {
-      const res = await doStopImage();
+      await doStopImage();
     } catch (e) {
       console.log(e);
     }

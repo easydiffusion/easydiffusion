@@ -5,8 +5,6 @@ import {
   useImageCreate
 } from "../../../stores/imageCreateStore";
 
-import { API_URL } from "../../../api";
-
 import {
   IconFont,
 } from "../../../styles/shared.css";
@@ -14,7 +12,6 @@ import {
 import {
   ModifierTagMain,
   ModifierActions,
-  tagPreview,
   TagText,
   TagToggle,
 } from "./modifierTags.css";
@@ -27,7 +24,7 @@ interface ModifierTagProps {
 
 export default function ModifierTag({ name, category, previews }: ModifierTagProps) {
 
-  const previewType: 'portrait' | 'landscape' = "portrait";
+  // const previewType: 'portrait' | 'landscape' = "portrait";
 
   const [showActions, setShowActions] = useState(false);
 
@@ -47,15 +44,14 @@ export default function ModifierTag({ name, category, previews }: ModifierTagPro
     addCreateTag({ id: uuidv4(), name, type: 'negative' });
   }
 
+  // const hasTag = useImageCreate((state) => state.hasTag(category, name))
+  //   ? "selected"
+  //   : "";
+  // const toggleTag = useImageCreate((state) => state.toggleTag);
 
-  const hasTag = useImageCreate((state) => state.hasTag(category, name))
-    ? "selected"
-    : "";
-  const toggleTag = useImageCreate((state) => state.toggleTag);
-
-  const _toggleTag = () => {
-    toggleTag(category, name);
-  };
+  // const _toggleTag = () => {
+  //   toggleTag(category, name);
+  // };
 
   // , hasTag].join(" ")
   return (
@@ -73,21 +69,7 @@ export default function ModifierTag({ name, category, previews }: ModifierTagPro
           </button>
         </div>
       )}
-      {/* <div className={tagPreview}>
-        {previews.map((preview) => {
-          if (preview.name !== previewType) {
-            return null;
-          }
-          return (
-            <img
-              key={preview.name}
-              src={`${API_URL}/media/modifier-thumbnails/${preview.path}`}
-              alt={preview.name}
-              title={preview.name}
-            />
-          );
-        })}
-      </div> */}
+
     </div>
   );
 }

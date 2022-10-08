@@ -7,7 +7,7 @@ import { useImageCreate } from "../../../../stores/imageCreateStore";
 
 import BetaMode from "../../../molecules/betaMode";
 
-import Checkbox from "../../../atoms/checkbox";
+import Checkbox from "../../../atoms/headlessCheckbox";
 
 
 import {

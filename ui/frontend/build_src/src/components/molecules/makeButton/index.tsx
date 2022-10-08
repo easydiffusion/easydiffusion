@@ -33,7 +33,7 @@ import {
 
 import { useTranslation } from "react-i18next";
 
-import AudioDing from "../../molecules/audioDing";
+import AudioDing from "../_stateless/audioDing";
 
 const idDelim = "_item";
 
@@ -248,6 +248,8 @@ export default function MakeButton() {
     }
     // the request that we have built
     const req = builtRequest();
+    console.log('req', req);
+    debugger;
     queueImageRequest(req);
   };
 

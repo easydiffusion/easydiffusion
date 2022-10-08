@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { healthPing, HEALTH_PING_INTERVAL } from "../../../../api";
 
-import AudioDing from "../../../molecules/audioDing";
+import AudioDing from "../../../molecules/_stateless/audioDing";
 
 import {
   StartingStatus,

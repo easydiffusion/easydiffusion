@@ -2,8 +2,6 @@
  * basic server health
  */
 
-import type { SAMPLER_OPTIONS } from "../stores/imageCreateStore";
-
 import {
   ImageRequest,
 } from './api.d';

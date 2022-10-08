@@ -1,5 +1,5 @@
 import React, { useRef, useState, ChangeEvent } from "react";
-import DrawImage from "../../../molecules/drawImage";
+import DrawImage from "../../../molecules/_stateless/drawImage";
 
 import { useImageCreate } from "../../../../stores/imageCreateStore";
 

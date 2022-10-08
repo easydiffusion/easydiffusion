@@ -13,7 +13,7 @@ import {
   buttonStyle,
 } from "../../../../_recipes/button.css";
 
-import Checkbox from "../../../../atoms/checkbox";
+import Checkbox from "../../../../atoms/headlessCheckbox";
 
 import UpscaleOptions from "./upscaleOptions";
 

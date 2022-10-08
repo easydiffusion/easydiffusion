@@ -1,36 +1,21 @@
 /* eslint-disable @typescript-eslint/strict-boolean-expressions */
-import React, { Fragment, useEffect, useState } from "react";
-import { Listbox } from '@headlessui/react'
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useImageCreate, SAMPLER_OPTIONS } from "../../../../../../stores/imageCreateStore";
-
-import { useCreateUI } from "../../../creationPanelUIStore";
 
 import {
   IconFont,
 } from "../../../../../../styles/shared.css";
 
-import {
-  ListboxHeadless,
-  ListboxHeadlessButton,
-  ListBoxIcon,
-  ListboxHeadlessLabel,
-  ListboxHeadlessOptions,
-  ListboxHeadlessOptionItem,
-} from "../../../../../_recipes/listbox_headless.css";
+import HeadlessListbox, { listBoxOption } from "../../../../../atoms/headlessListbox";
 
-interface SamplerOptionsProps {
-  id: string,
-  value: string,
-  unavailable: boolean,
-}
-
-const samplerList = SAMPLER_OPTIONS.map((sample) => {
+const samplerList: listBoxOption[] = SAMPLER_OPTIONS.map((sample, index) => {
   return {
-    id: sample,
+    id: index,
     value: sample,
+    display: sample,
     unavailable: false,
-  }
+  };
 })
 
 
@@ -43,7 +28,6 @@ export default function SamplerOptions() {
     state.getValueForRequestKey("sampler")
   );
   const [selectedSampleOption, setSelectedSampleOption] = useState(samplerList[0])
-
 
 
   useEffect(() => {
@@ -61,61 +45,56 @@ export default function SamplerOptions() {
   }, [sampler]);
 
   // this type is not correct // SamplerOptionsProps
-  const handleChange = (option: any) => {
-    console.log('SAMPLER HANDLECHANGE', option);
-    setRequestOption("sampler", option);
+  const handleChange = (option: listBoxOption) => {
+    setRequestOption("sampler", option.value);
   };
+
+  const FAIcon = [IconFont, 'fa-solid', 'fa-chevron-down'].join(" ");
 
 
   return (
-    <div className={ListboxHeadless}>
-      <Listbox value={selectedSampleOption} onChange={handleChange}>
-        <Listbox.Label className={ListboxHeadlessLabel}>{t("settings.sampler")}</Listbox.Label>
-        <div style={{ display: 'inline-block', }}>
-          <Listbox.Button
-            className={ListboxHeadlessButton}>
-            {selectedSampleOption.value}
-            <i className={[ListBoxIcon, IconFont, 'fa-solid', 'fa-chevron-down'].join(" ")}></i>
-          </Listbox.Button>
-          <Listbox.Options className={ListboxHeadlessOptions}>
-            {samplerList.map((sample) => (
-              <Listbox.Option
-                // className={ListboxHeadlessOption}
-                key={sample.id}
-                value={sample.value}
-                disabled={sample.unavailable}
-                as={Fragment}
-              >
-                {({ active, selected }) => {
-                  // console.log('active', active);
-                  // console.log('selected', selected);
-                  return (
-                    <li
-                      className={ListboxHeadlessOptionItem}
-                    // data-selected={selected}
-                    >
-                      {sample.value}
-                    </li>
-                  )
-                }}
-              </Listbox.Option>
-            ))}
-          </Listbox.Options>
-        </div>
-      </Listbox>
-    </div>);
+    // <div className={ListboxHeadless}>
+    //   <Listbox value={selectedSampleOption} onChange={handleChange}>
+    //     <Listbox.Label className={ListboxHeadlessLabel}>{t("settings.sampler")}</Listbox.Label>
+    //     <div style={{ display: 'inline-block', }}>
+    //       <Listbox.Button
+    //         className={ListboxHeadlessButton}>
+    //         {selectedSampleOption.value}
+    //         <i className={[ListBoxIcon, IconFont, 'fa-solid', 'fa-chevron-down'].join(" ")}></i>
+    //       </Listbox.Button>
+    //       <Listbox.Options className={ListboxHeadlessOptions}>
+    //         {samplerList.map((sample) => (
+    //           <Listbox.Option
+    //             // className={ListboxHeadlessOption}
+    //             key={sample.id}
+    //             value={sample.value}
+    //             disabled={sample.unavailable}
+    //             as={Fragment}
+    //           >
+    //             {({ active, selected }) => {
+    //               // console.log('active', active);
+    //               // console.log('selected', selected);
+    //               return (
+    //                 <li
+    //                   className={ListboxHeadlessOptionItem}
+    //                 // data-selected={selected}
+    //                 >
+    //                   {sample.value}
+    //                 </li>
+    //               )
+    //             }}
+    //           </Listbox.Option>
+    //         ))}
+    //       </Listbox.Options>
+    //     </div>
+    //   </Listbox>
+    // </div>
+    <HeadlessListbox
+      options={samplerList}
+      label={t("settings.sampler")}
+      currentOption={selectedSampleOption}
+      handleChange={handleChange}
+      FAIcon={FAIcon}
+    />
+  );
 };
-
-            // {/* <label>
-            //   {t("settings.sampler")}
-            //   <select
-            //     value={sampler}
-            //     onChange={(e) => setRequestOption("sampler", e.target.value)}
-            //   >
-            //     {SAMPLER_OPTIONS.map((sampler) => (
-            //       <option key={`sampler-option_${sampler}`} value={sampler}>
-            //         {sampler}
-            //       </option>
-            //     ))}
-            //   </select>
-            // </label> */}

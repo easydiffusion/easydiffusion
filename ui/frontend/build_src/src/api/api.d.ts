@@ -44,7 +44,9 @@ export interface ImageRequest {
   use_full_precision: boolean;
   save_to_disk_path: null | string;
   use_face_correction: null | "GFPGANv1.3";
-  use_upscale: null | "RealESRGAN_x4plus" | "RealESRGAN_x4plus_anime_6B" | "";
+  use_upscale: null | "RealESRGAN_x4plus" | "RealESRGAN_x4plus_anime_6B";
+  use_stable_diffusion_model: 'sd-v1-4' | string;
+  output_format: 'jpeg' | 'png',
   show_only_filtered_image: boolean;
   init_image: undefined | string;
   prompt_strength: undefined | number;
@@ -52,7 +54,6 @@ export interface ImageRequest {
   sampler: typeof SAMPLER_OPTIONS[number];
   stream_progress_updates: true;
   stream_image_progress: boolean;
-
 }
 
 export interface ImageOutput {

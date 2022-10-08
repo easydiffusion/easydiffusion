@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, KeyboardEventHandler, Fragment } from "react";
+import React, { useState, KeyboardEventHandler, Fragment } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { Switch } from '@headlessui/react'
 
@@ -18,8 +18,6 @@ import {
   PromptCreatorMain,
   ToggleGroupMain,
   ToggleMain,
-  ToggleLabel,
-  ToggleEnabled,
   TogglePill,
   buttonRow,
   prmptBtn,

@@ -1,4 +1,4 @@
-import { style, globalStyle } from '@vanilla-extract/css';
+import { style } from '@vanilla-extract/css';
 import { vars } from "../../../styles/theme/index.css";
 
 export const CheckMain = style({

@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useEffect } from "react";
+import React, { Fragment } from "react";
 import { Switch } from '@headlessui/react'
 
 import {
@@ -10,7 +10,6 @@ import {
   CheckContent,
   CheckInner
 } from "./checkbox.css";
-import { debug } from "console";
 
 interface CheckboxProps {
   isChecked: boolean;
