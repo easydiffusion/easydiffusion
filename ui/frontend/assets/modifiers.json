@@ -1,0 +1,2717 @@
+[
+  {
+    "category": "Drawing Style",
+    "modifiers": [
+      {
+        "modifier": "Cel Shading",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "drawing_style/cel_shading/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "drawing_style/cel_shading/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Children's Drawing",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "drawing_style/children_s_drawing/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "drawing_style/children_s_drawing/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Crosshatch",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "drawing_style/crosshatch/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "drawing_style/crosshatch/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Detailed and Intricate",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "drawing_style/detailed_and_intricate/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "drawing_style/detailed_and_intricate/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Doodle",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "drawing_style/doodle/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "drawing_style/doodle/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Dot Art",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "drawing_style/dot_art/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "drawing_style/dot_art/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Line Art",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "drawing_style/line_art/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "drawing_style/line_art/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Sketch",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "drawing_style/sketch/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "drawing_style/sketch/landscape-0.jpg"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Visual Style",
+    "modifiers": [
+      {
+        "modifier": "2D",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/2d/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/2d/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "8-Bit",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/8-bit/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/8-bit/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "16-Bit",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/16-bit/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/16-bit/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Anaglyph",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/anaglyph/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/anaglyph/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Anime",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/anime/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/anime/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Art Nouveau",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/art_nouveau/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/art_nouveau/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Bauhaus",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/bauhaus/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/bauhaus/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Baroque",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/baroque/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/baroque/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "CGI",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/cgi/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/cgi/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Cartoon",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/cartoon/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/cartoon/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Comic Book",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/comic_book/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/comic_book/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Concept Art",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/concept_art/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/concept_art/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Constructivist",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/constructivist/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/constructivist/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Cubist",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/cubist/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/cubist/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Digital Art",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/digital_art/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/digital_art/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Dadaist",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/dadaist/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/dadaist/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Expressionist",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/expressionist/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/expressionist/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Fantasy",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/fantasy/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/fantasy/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Fauvist",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/fauvist/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/fauvist/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Figurative",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/figurative/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/figurative/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Graphic Novel",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/graphic_novel/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/graphic_novel/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Geometric",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/geometric/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/geometric/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Hard Edge Painting",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/hard_edge_painting/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/hard_edge_painting/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Hydrodipped",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/hydrodipped/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/hydrodipped/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Impressionistic",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/impressionistic/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/impressionistic/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Lithography",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/lithography/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/lithography/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Manga",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/manga/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/manga/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Minimalist",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/minimalist/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/minimalist/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Modern Art",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/modern_art/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/modern_art/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Mosaic",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/mosaic/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/mosaic/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Mural",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/mural/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/mural/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Naive",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/naive/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/naive/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Neoclassical",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/neoclassical/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/neoclassical/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Photo",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/photo/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/photo/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Realistic",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/realistic/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/realistic/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Rococo",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/rococo/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/rococo/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Romantic",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/romantic/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/romantic/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Street Art",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/street_art/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/street_art/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Symbolist",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/symbolist/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/symbolist/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Stuckist",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/stuckist/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/stuckist/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Surrealist",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/surrealist/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/surrealist/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Visual Novel",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/visual_novel/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/visual_novel/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Watercolor",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "visual_style/watercolor/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "visual_style/watercolor/landscape-0.jpg"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Pen",
+    "modifiers": [
+      {
+        "modifier": "Chalk",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "pen/chalk/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "pen/chalk/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Colored Pencil",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "pen/colored_pencil/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "pen/colored_pencil/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Graphite",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "pen/graphite/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "pen/graphite/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Ink",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "pen/ink/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "pen/ink/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Oil Paint",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "pen/oil_paint/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "pen/oil_paint/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Pastel Art",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "pen/pastel_art/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "pen/pastel_art/landscape-0.jpg"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Carving and Etching",
+    "modifiers": [
+      {
+        "modifier": "etching",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "carving_and_etching/etching/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "carving_and_etching/etching/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Linocut",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "carving_and_etching/linocut/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "carving_and_etching/linocut/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Paper Model",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "carving_and_etching/paper_model/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "carving_and_etching/paper_model/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Paper-Mache",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "carving_and_etching/paper-mache/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "carving_and_etching/paper-mache/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Papercutting",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "carving_and_etching/papercutting/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "carving_and_etching/papercutting/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Pyrography",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "carving_and_etching/pyrography/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "carving_and_etching/pyrography/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Wood-Carving",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "carving_and_etching/wood-carving/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "carving_and_etching/wood-carving/landscape-0.jpg"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Camera",
+    "modifiers": [
+      {
+        "modifier": "Aerial View",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "camera/aerial_view/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "camera/aerial_view/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Canon50",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "camera/canon50/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "camera/canon50/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Cinematic",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "camera/cinematic/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "camera/cinematic/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Close-up",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "camera/close-up/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "camera/close-up/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Color Grading",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "camera/color_grading/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "camera/color_grading/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Dramatic",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "camera/dramatic/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "camera/dramatic/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Film Grain",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "camera/film_grain/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "camera/film_grain/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Fisheye Lens",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "camera/fisheye_lens/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "camera/fisheye_lens/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Glamor Shot",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "camera/glamor_shot/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "camera/glamor_shot/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Golden Hour",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "camera/golden_hour/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "camera/golden_hour/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "HD",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "camera/hd/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "camera/hd/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Landscape",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "camera/landscape/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "camera/landscape/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Lens Flare",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "camera/lens_flare/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "camera/lens_flare/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Macro",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "camera/macro/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "camera/macro/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Polaroid",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "camera/polaroid/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "camera/polaroid/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Photoshoot",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "camera/photoshoot/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "camera/photoshoot/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Portrait",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "camera/portrait/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "camera/portrait/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Studio Lighting",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "camera/studio_lighting/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "camera/studio_lighting/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Vintage",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "camera/vintage/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "camera/vintage/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "War Photography",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "camera/war_photography/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "camera/war_photography/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "White Balance",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "camera/white_balance/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "camera/white_balance/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Wildlife Photography",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "camera/wildlife_photography/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "camera/wildlife_photography/landscape-0.jpg"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Color",
+    "modifiers": [
+      {
+        "modifier": "Beautiful Lighting",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "color/beautiful_lighting/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "color/beautiful_lighting/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Cold Color Palette",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "color/cold_color_palette/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "color/cold_color_palette/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Colorful",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "color/colorful/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "color/colorful/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Dynamic Lighting",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "color/dynamic_lighting/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "color/dynamic_lighting/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Electric Colors",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "color/electric_colors/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "color/electric_colors/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Infrared",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "color/infrared/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "color/infrared/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Pastel",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "color/pastel/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "color/pastel/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Neon",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "color/neon/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "color/neon/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Synthwave",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "color/synthwave/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "color/synthwave/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Warm Color Palette",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "color/warm_color_palette/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "color/warm_color_palette/landscape-0.jpg"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Emotions",
+    "modifiers": [
+      {
+        "modifier": "Angry",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "emotions/angry/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "emotions/angry/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Bitter",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "emotions/bitter/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "emotions/bitter/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Disgusted",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "emotions/disgusted/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "emotions/disgusted/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Embarrassed",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "emotions/embarrassed/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "emotions/embarrassed/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Evil",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "emotions/evil/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "emotions/evil/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Excited",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "emotions/excited/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "emotions/excited/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Fear",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "emotions/fear/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "emotions/fear/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Funny",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "emotions/funny/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "emotions/funny/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Happy",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "emotions/happy/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "emotions/happy/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Horrifying",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "emotions/horrifying/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "emotions/horrifying/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Lonely",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "emotions/lonely/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "emotions/lonely/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Sad",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "emotions/sad/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "emotions/sad/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Serene",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "emotions/serene/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "emotions/serene/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Surprised",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "emotions/surprised/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "emotions/surprised/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Melancholic",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "emotions/melancholic/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "emotions/melancholic/landscape-0.jpg"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Artist",
+    "modifiers": [
+      {
+        "modifier": "Artstation",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/artstation/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/artstation/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Agnes Lawrence Pelton",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_agnes_lawrence_pelton/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_agnes_lawrence_pelton/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Akihito Yoshida",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_akihito_yoshida/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_akihito_yoshida/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Alex Grey",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_alex_grey/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_alex_grey/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Alexander Jansson",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_alexander_jansson/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_alexander_jansson/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Alphonse Mucha",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_alphonse_mucha/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_alphonse_mucha/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Andy Warhol",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_andy_warhol/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_andy_warhol/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Artgerm",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_artgerm/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_artgerm/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Asaf Hanuka",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_asaf_hanuka/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_asaf_hanuka/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Aubrey Beardsley",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_aubrey_beardsley/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_aubrey_beardsley/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Banksy",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_banksy/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_banksy/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Beeple",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_beeple/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_beeple/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Ben Enwonwu",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_ben_enwonwu/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_ben_enwonwu/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Bob Eggleton",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_bob_eggleton/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_bob_eggleton/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Caravaggio Michelangelo Merisi",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_caravaggio_michelangelo_merisi/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_caravaggio_michelangelo_merisi/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Caspar David Friedrich",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_caspar_david_friedrich/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_caspar_david_friedrich/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Chris Foss",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_chris_foss/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_chris_foss/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Claude Monet",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_claude_monet/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_claude_monet/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Dan Mumford",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_dan_mumford/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_dan_mumford/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by David Mann",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_david_mann/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_david_mann/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Diego Velázquez",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_diego_vela_zquez/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_diego_vela_zquez/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Disney Animation Studios",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_disney_animation_studios/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_disney_animation_studios/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Édouard Manet",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_e_douard_manet/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_e_douard_manet/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Esao Andrews",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_esao_andrews/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_esao_andrews/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Frida Kahlo",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_frida_kahlo/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_frida_kahlo/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Gediminas Pranckevicius",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_gediminas_pranckevicius/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_gediminas_pranckevicius/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Georgia O'Keeffe",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_georgia_o_keeffe/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_georgia_o_keeffe/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Greg Rutkowski",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_greg_rutkowski/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_greg_rutkowski/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Gustave Doré",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_gustave_dore_/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_gustave_dore_/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Gustave Klimt",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_gustave_klimt/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_gustave_klimt/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by H.R. Giger",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_h_r_giger/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_h_r_giger/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Hayao Miyazaki",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_hayao_miyazaki/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_hayao_miyazaki/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Henri Matisse",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_henri_matisse/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_henri_matisse/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by HP Lovecraft",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_hp_lovecraft/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_hp_lovecraft/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Ivan Shishkin",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_ivan_shishkin/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_ivan_shishkin/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Jack Kirby",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_jack_kirby/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_jack_kirby/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Jackson Pollock",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_jackson_pollock/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_jackson_pollock/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by James Jean",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_james_jean/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_james_jean/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Jim Burns",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_jim_burns/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_jim_burns/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Johannes Vermeer",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_johannes_vermeer/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_johannes_vermeer/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by John William Waterhouse",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_john_william_waterhouse/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_john_william_waterhouse/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Katsushika Hokusai",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_katsushika_hokusai/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_katsushika_hokusai/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Kim Tschang Yeul",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_kim_tschang_yeul/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_kim_tschang_yeul/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Ko Young Hoon",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_ko_young_hoon/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_ko_young_hoon/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Leonardo da Vinci",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_leonardo_da_vinci/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_leonardo_da_vinci/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Lisa Frank",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_lisa_frank/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_lisa_frank/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by M.C Escher",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_m_c_escher/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_m_c_escher/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Mahmoud Saïd",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_mahmoud_sai_d/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_mahmoud_sai_d/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Makoto Shinkai",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_makoto_shinkai/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_makoto_shinkai/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Marc Simonetti",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_marc_simonetti/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_marc_simonetti/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Mark Brooks",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_mark_brooks/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_mark_brooks/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Michelangelo",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_michelangelo/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_michelangelo/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Pablo Picasso",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_pablo_picasso/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_pablo_picasso/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Paul Klee",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_paul_klee/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_paul_klee/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Peter Mohrbacher",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_peter_mohrbacher/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_peter_mohrbacher/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Pierre-Auguste Renoir",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_pierre-auguste_renoir/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_pierre-auguste_renoir/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Pixar Animation Studios",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_pixar_animation_studios/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_pixar_animation_studios/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Rembrandt",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_rembrandt/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_rembrandt/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Richard Dadd",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_richard_dadd/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_richard_dadd/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Rossdraws",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_rossdraws/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_rossdraws/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Salvador Dalí",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_salvador_dali_/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_salvador_dali_/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Sam does Arts",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_sam_does_arts/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_sam_does_arts/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Sandro Botticelli",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_sandro_botticelli/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_sandro_botticelli/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Ted Nasmith",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_ted_nasmith/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_ted_nasmith/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Ten Hundred",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_ten_hundred/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_ten_hundred/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Thomas Kinkade",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_thomas_kinkade/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_thomas_kinkade/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Tivadar Csontváry Kosztka",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_tivadar_csontva_ry_kosztka/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_tivadar_csontva_ry_kosztka/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Victo Ngai",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_victo_ngai/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_victo_ngai/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Vincent di Fate",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_vincent_di_fate/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_vincent_di_fate/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Vincent van Gogh",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_vincent_van_gogh/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_vincent_van_gogh/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Wes Anderson",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_wes_anderson/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_wes_anderson/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by wlop",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_wlop/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_wlop/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "by Yoshitaka Amano",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_yoshitaka_amano/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_yoshitaka_amano/landscape-0.jpg"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "CGI Software",
+    "modifiers": [
+      {
+        "modifier": "3D Model",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "cgi_software/3d_model/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "cgi_software/3d_model/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "3D Sculpt",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "cgi_software/3d_sculpt/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "cgi_software/3d_sculpt/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "3Ds Max Model",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "cgi_software/3ds_max_model/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "cgi_software/3ds_max_model/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Blender Model",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "cgi_software/blender_model/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "cgi_software/blender_model/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Cinema4d Model",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "cgi_software/cinema4d_model/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "cgi_software/cinema4d_model/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Maya Model",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "cgi_software/maya_model/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "cgi_software/maya_model/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Unreal Engine",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "cgi_software/unreal_engine/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "cgi_software/unreal_engine/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Zbrush Sculpt",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "cgi_software/zbrush_sculpt/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "cgi_software/zbrush_sculpt/landscape-0.jpg"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "CGI Rendering",
+    "modifiers": [
+      {
+        "modifier": "3D Render",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "cgi_rendering/3d_render/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "cgi_rendering/3d_render/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Corona Render",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "cgi_rendering/corona_render/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "cgi_rendering/corona_render/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Creature Design",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "cgi_rendering/creature_design/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "cgi_rendering/creature_design/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Cycles Render",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "cgi_rendering/cycles_render/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "cgi_rendering/cycles_render/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Detailed Render",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "cgi_rendering/detailed_render/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "cgi_rendering/detailed_render/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Environment Design",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "cgi_rendering/environment_design/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "cgi_rendering/environment_design/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Intricate Environment",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "cgi_rendering/intricate_environment/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "cgi_rendering/intricate_environment/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "LSD Render",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "cgi_rendering/lsd_render/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "cgi_rendering/lsd_render/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Octane Render",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "cgi_rendering/octane_render/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "cgi_rendering/octane_render/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "PBR",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "cgi_rendering/pbr/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "cgi_rendering/pbr/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Glass Caustics",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "cgi_rendering/glass_caustics/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "cgi_rendering/glass_caustics/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Global Illumination",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "cgi_rendering/global_illumination/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "cgi_rendering/global_illumination/landscape-0.jpg"
+          }
+        ]
+      },
+      {
+        "modifier": "Subsurface Scattering",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "cgi_rendering/subsurface_scattering/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "cgi_rendering/subsurface_scattering/landscape-0.jpg"
+          }
+        ]
+      }
+    ]
+  }
+]
