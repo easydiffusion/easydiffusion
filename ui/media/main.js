@@ -12,6 +12,7 @@ const SHOW_ONLY_FILTERED_IMAGE_KEY = "showOnlyFilteredImage"
 const STREAM_IMAGE_PROGRESS_KEY = "streamImageProgress"
 const HEALTH_PING_INTERVAL = 5 // seconds
 const MAX_INIT_IMAGE_DIMENSION = 768
+const INPAINTING_EDITOR_SIZE = 400
 
 const IMAGE_REGEX = new RegExp('data:image/[A-Za-z]+;base64')
 
@@ -261,6 +262,31 @@ async function healthCheck() {
     } catch (e) {
         setStatus('server', 'offline', 'error')
     }
+}
+function resizeInpaintingEditor() {
+    let widthValue = parseInt(widthField.value)
+    let heightValue = parseInt(heightField.value)
+    if (widthValue === heightValue) {
+        widthValue = INPAINTING_EDITOR_SIZE
+        heightValue = INPAINTING_EDITOR_SIZE
+    } else if (widthValue > heightValue) {
+        heightValue = (heightValue / widthValue) * INPAINTING_EDITOR_SIZE
+        widthValue = INPAINTING_EDITOR_SIZE
+    } else {
+        widthValue = (widthValue / heightValue) * INPAINTING_EDITOR_SIZE
+        heightValue = INPAINTING_EDITOR_SIZE
+    }
+    inpaintingEditorContainer.setAttribute("style", `width:${widthValue}px;height:${heightValue}px`)
+    inpaintingEditorContainer.style.width = widthValue + 'px'
+    inpaintingEditorContainer.style.height = heightValue + 'px'
+    inpaintingEditor.opts.enlargeYourContainer = true
+
+    inpaintingEditor.resize()
+
+    inpaintingEditor.ctx.lineCap = "round";
+    inpaintingEditor.ctx.lineJoin = "round";
+    inpaintingEditor.ctx.lineWidth = inpaintingEditor.opts.size
+    inpaintingEditor.setColor(inpaintingEditor.opts.color)
 }
 
 function showImages(req, res, outputContainer, livePreview) {
@@ -843,6 +869,8 @@ streamImageProgressField.addEventListener('click', handleBoolSettingChange(STREA
 streamImageProgressField.checked = isStreamImageProgressEnabled()
 
 diskPathField.addEventListener('change', handleStringSettingChange(DISK_PATH_KEY))
+widthField.addEventListener('change', resizeInpaintingEditor)
+heightField.addEventListener('change', resizeInpaintingEditor)
 
 saveToDiskField.addEventListener('click', function(e) {
     diskPathField.disabled = !this.checked
