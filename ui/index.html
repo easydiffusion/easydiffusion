@@ -4,7 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="/media/favicon-16x16.png" sizes="16x16">
     <link rel="icon" type="image/png" href="/media/favicon-32x32.png" sizes="32x32">
-    <link rel="stylesheet" href="/media/main.css?v=21">
+    <link rel="stylesheet" href="/media/main.css?v=22">
     <link rel="stylesheet" href="/media/modifier-thumbnails.css?v=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <link rel="stylesheet" href="/media/drawingboard.min.css">
@@ -15,7 +15,7 @@
 <div id="container">
     <div id="top-nav">
         <div id="logo">
-            <h1>Stable Diffusion UI <small>v2.2 <span id="updateBranchLabel"></span></small></h1>
+            <h1>Stable Diffusion UI <small>v2.21 <span id="updateBranchLabel"></span></small></h1>
         </div>
         <ul id="top-nav-items">
             <li class="dropdown">
@@ -57,10 +57,12 @@
                 <div id="editor-inputs-prompt" class="row">
                     <label for="prompt">Prompt</label>
                     <textarea id="prompt" class="col-free">a photograph of an astronaut riding a horse</textarea>
+                    <small>(or)</small> <button id="promptsFromFileBtn">Load prompts from a file</button> <small>(one prompt per line)</small>
+                    <input id="prompt_from_file" name="prompt_from_file" type="file" /> <!-- hidden -->
                 </div>
 
                 <div id="editor-inputs-init-image" class="row">
-                    <label for="init_image"><b>Initial Image:</b> (optional) </label> <input id="init_image" name="init_image" type="file" /><br/>
+                    <label for="init_image"><b>Initial Image (img2img):</b> (optional) </label> <input id="init_image" name="init_image" type="file" /><br/>
 
                     <div id="init_image_preview_container" class="image_preview_container">
                         <img id="init_image_preview" src="" width="100" height="100" />
@@ -96,11 +98,11 @@
                     </li>
                     <li id="samplerSelection" class="pl-5"><label for="sampler">Sampler:</label>
                         <select id="sampler" name="sampler">
-                            <option value="plms" selected>plms</option>
+                            <option value="plms">plms</option>
                             <option value="ddim">ddim</option>
                             <option value="heun">heun</option>
                             <option value="euler">euler</option>
-                            <option value="euler_a">euler_a</option>
+                            <option value="euler_a" selected>euler_a</option>
                             <option value="dpm2">dpm2</option>
                             <option value="dpm2_a">dpm2_a</option>
                             <option value="lms">lms</option>
@@ -152,7 +154,7 @@
                         </select>
                         <label for="height"><small>(height)</small></label>
                     </li>
-                    <li class="pl-5"><label for="num_inference_steps">Number of inference steps:</label> <input id="num_inference_steps" name="num_inference_steps" size="4" value="50"></li>
+                    <li class="pl-5"><label for="num_inference_steps">Number of inference steps:</label> <input id="num_inference_steps" name="num_inference_steps" size="4" value="25"></li>
                     <li class="pl-5"><label for="guidance_scale_slider">Guidance Scale:</label> <input id="guidance_scale_slider" name="guidance_scale_slider" class="editor-slider" value="75" type="range" min="10" max="500"> <input id="guidance_scale" name="guidance_scale" size="4"></li>
                     <li class="pl-5"><span id="prompt_strength_container"><label for="prompt_strength_slider">Prompt Strength:</label> <input id="prompt_strength_slider" name="prompt_strength_slider" class="editor-slider" value="80" type="range" min="0" max="99"> <input id="prompt_strength" name="prompt_strength" size="4"><br/></span></li>
                     <li class="pl-5"><label for="output_format">Output format:</label>
@@ -224,7 +226,7 @@
 </div>
 </body>
 
-<script src="media/main.js?v=31"></script>
+<script src="media/main.js?v=32"></script>
 <script>
 async function init() {
     await loadModifiers()

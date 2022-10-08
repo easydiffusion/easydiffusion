@@ -411,3 +411,6 @@ img {
 .img-batch {
     display: inline;
 }
+#prompt_from_file {
+    display: none;
+}

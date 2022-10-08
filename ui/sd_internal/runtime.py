@@ -82,7 +82,6 @@ except:
 def load_model_ckpt(ckpt_to_use, device_to_use='cuda', turbo=False, unet_bs_to_use=1, precision_to_use='autocast'):
     global ckpt_file, model, modelCS, modelFS, model_is_half, device, unet_bs, precision, model_fs_is_half
 
-    ckpt_file = ckpt_to_use
     device = device_to_use if has_valid_gpu else 'cpu'
     precision = precision_to_use if not force_full_precision else 'full'
     unet_bs = unet_bs_to_use
@@ -90,7 +89,7 @@ def load_model_ckpt(ckpt_to_use, device_to_use='cuda', turbo=False, unet_bs_to_u
     if device == 'cpu':
         precision = 'full'
 
-    sd = load_model_from_config(f"{ckpt_file}.ckpt")
+    sd = load_model_from_config(f"{ckpt_to_use}.ckpt")
     li, lo = [], []
     for key, value in sd.items():
         sp = key.split(".")
@@ -136,6 +135,8 @@ def load_model_ckpt(ckpt_to_use, device_to_use='cuda', turbo=False, unet_bs_to_u
     else:
         model_is_half = False
         model_fs_is_half = False
+
+    ckpt_file = ckpt_to_use
 
     print('loaded ', ckpt_file, 'to', device, 'precision', precision)
 
