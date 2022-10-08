@@ -10,6 +10,7 @@ const USE_FACE_CORRECTION_KEY = "useFaceCorrection"
 const USE_UPSCALING_KEY = "useUpscaling"
 const SHOW_ONLY_FILTERED_IMAGE_KEY = "showOnlyFilteredImage"
 const STREAM_IMAGE_PROGRESS_KEY = "streamImageProgress"
+const OUTPUT_FORMAT_KEY = "outputFormat"
 const HEALTH_PING_INTERVAL = 5 // seconds
 const MAX_INIT_IMAGE_DIMENSION = 768
 
@@ -202,6 +203,10 @@ function isModifiersPanelOpenEnabled() {
 
 function isStreamImageProgressEnabled() {
     return getLocalStorageBoolItem(STREAM_IMAGE_PROGRESS_KEY, false)
+}
+
+function getOutputFormat() {
+    return getLocalStorageItem(OUTPUT_FORMAT_KEY, 'jpeg')
 }
 
 function setStatus(statusType, msg, msgType) {
@@ -905,6 +910,9 @@ turboField.checked = isUseTurboModeEnabled()
 
 streamImageProgressField.addEventListener('click', handleBoolSettingChange(STREAM_IMAGE_PROGRESS_KEY))
 streamImageProgressField.checked = isStreamImageProgressEnabled()
+
+outputFormatField.addEventListener('change', handleStringSettingChange(OUTPUT_FORMAT_KEY))
+outputFormatField.value = getOutputFormat()
 
 diskPathField.addEventListener('change', handleStringSettingChange(DISK_PATH_KEY))
 
