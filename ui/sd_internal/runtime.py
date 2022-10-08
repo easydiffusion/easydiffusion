@@ -82,15 +82,16 @@ except:
 def load_model_ckpt(ckpt_to_use, device_to_use='cuda', turbo=False, unet_bs_to_use=1, precision_to_use='autocast'):
     global ckpt_file, model, modelCS, modelFS, model_is_half, device, unet_bs, precision, model_fs_is_half
 
-    ckpt_file = ckpt_to_use
     device = device_to_use if has_valid_gpu else 'cpu'
     precision = precision_to_use if not force_full_precision else 'full'
     unet_bs = unet_bs_to_use
 
+    unload_model()
+
     if device == 'cpu':
         precision = 'full'
 
-    sd = load_model_from_config(f"{ckpt_file}.ckpt")
+    sd = load_model_from_config(f"{ckpt_to_use}.ckpt")
     li, lo = [], []
     for key, value in sd.items():
         sp = key.split(".")
@@ -137,7 +138,21 @@ def load_model_ckpt(ckpt_to_use, device_to_use='cuda', turbo=False, unet_bs_to_u
         model_is_half = False
         model_fs_is_half = False
 
+    ckpt_file = ckpt_to_use
+
     print('loaded ', ckpt_file, 'to', device, 'precision', precision)
+
+def unload_model():
+    global model, modelCS, modelFS
+
+    if model is not None:
+        del model
+        del modelCS
+        del modelFS
+
+    model = None
+    modelCS = None
+    modelFS = None
 
 def load_model_gfpgan(gfpgan_to_use):
     global gfpgan_file, model_gfpgan
@@ -223,8 +238,9 @@ def do_mk_img(req: Request):
     #  to the ckpt file (without the extension).
 
     needs_model_reload = False
-    if ckpt_file != req.use_stable_diffusion_model:
-        ckpt_file = req.use_stable_diffusion_model
+    ckpt_to_use = ckpt_file
+    if ckpt_to_use != req.use_stable_diffusion_model:
+        ckpt_to_use = req.use_stable_diffusion_model
         needs_model_reload = True
 
     model.turbo = req.turbo
@@ -233,8 +249,7 @@ def do_mk_img(req: Request):
             device = 'cpu'
 
             if model_is_half:
-                del model, modelCS, modelFS
-                load_model_ckpt(ckpt_file, device)
+                load_model_ckpt(ckpt_to_use, device)
                 needs_model_reload = False
 
             load_model_gfpgan(gfpgan_file)
@@ -247,8 +262,7 @@ def do_mk_img(req: Request):
             if (precision == 'autocast' and (req.use_full_precision or not model_is_half)) or \
                 (precision == 'full' and not req.use_full_precision and not force_full_precision):
 
-                del model, modelCS, modelFS
-                load_model_ckpt(ckpt_file, device, req.turbo, unet_bs, ('full' if req.use_full_precision else 'autocast'))
+                load_model_ckpt(ckpt_to_use, device, req.turbo, unet_bs, ('full' if req.use_full_precision else 'autocast'))
                 needs_model_reload = False
 
                 if prev_device != device:
@@ -256,7 +270,7 @@ def do_mk_img(req: Request):
                     load_model_real_esrgan(real_esrgan_file)
 
     if needs_model_reload:
-        load_model_ckpt(ckpt_file, device, req.turbo, unet_bs, precision)
+        load_model_ckpt(ckpt_to_use, device, req.turbo, unet_bs, precision)
 
     if req.use_face_correction != gfpgan_file:
         load_model_gfpgan(req.use_face_correction)
