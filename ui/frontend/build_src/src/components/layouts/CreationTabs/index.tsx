@@ -1,8 +1,6 @@
 import React, { Fragment } from "react";
 import { Tab } from '@headlessui/react';
 
-
-
 import CreationPanel from "../../organisms/creationPanel";
 import QueueDisplay from "../../organisms/queueDisplay";
 
