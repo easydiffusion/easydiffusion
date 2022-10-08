@@ -1140,6 +1140,7 @@ initImageClearBtn.addEventListener('click', function() {
 
 maskSetting.addEventListener('click', function() {
     inpaintingEditorContainer.style.display = (this.checked ? 'block' : 'none')
+    resizeInpaintingEditor()
 })
 
 promptsFromFileBtn.addEventListener('click', function() {
