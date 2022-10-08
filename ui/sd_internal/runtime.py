@@ -86,6 +86,8 @@ def load_model_ckpt(ckpt_to_use, device_to_use='cuda', turbo=False, unet_bs_to_u
     precision = precision_to_use if not force_full_precision else 'full'
     unet_bs = unet_bs_to_use
 
+    unload_model()
+
     if device == 'cpu':
         precision = 'full'
 
@@ -139,6 +141,18 @@ def load_model_ckpt(ckpt_to_use, device_to_use='cuda', turbo=False, unet_bs_to_u
     ckpt_file = ckpt_to_use
 
     print('loaded ', ckpt_file, 'to', device, 'precision', precision)
+
+def unload_model():
+    global model, modelCS, modelFS
+
+    if model is not None:
+        del model
+        del modelCS
+        del modelFS
+
+    model = None
+    modelCS = None
+    modelFS = None
 
 def load_model_gfpgan(gfpgan_to_use):
     global gfpgan_file, model_gfpgan
