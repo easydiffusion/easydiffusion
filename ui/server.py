@@ -36,6 +36,9 @@ ACCESS_LOG_SUPPRESS_PATH_PREFIXES = ['/ping', '/modifier-thumbnails']
 
 app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'media/')), name="media")
 
+import asyncio
+LOOP = asyncio.get_event_loop()
+
 # defaults from https://huggingface.co/blog/stable_diffusion
 class ImageRequest(BaseModel):
     session_id: str = "session"
@@ -326,7 +329,15 @@ class LogSuppressFilter(logging.Filter):
 
         return True
 
+async def start_browser():
+    # ping once to load the model before opening the browser
+    # avoid opening the browser when the FastApp server is locked loading a new model
+    await ping()
+    # start the browser ui
+    import webbrowser
+    webbrowser.open('http://localhost:9000')
+
 logging.getLogger('uvicorn.access').addFilter(LogSuppressFilter())
 
-# start the browser ui
-import webbrowser; webbrowser.open('http://localhost:9000')
+# start a new task to preload the model and open browser
+LOOP.create_task(start_browser())
