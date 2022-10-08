@@ -9,6 +9,11 @@ Additionally, a common reason for this error is that you're using an initial ima
 
 Also try generating smaller sized images.
 
+## urllib.error.URLError: <urlopen error [Errno 11001] getaddrinfo failed>
+This can be due to a Firewall/Antivirus/Proxy/VPN blocking your network connections. Please check those.
+
+Another solution is to switch to Google's DNS server: https://developers.google.com/speed/public-dns/docs/using#windows or Cloudflare's DNS server: https://developers.cloudflare.com/1.1.1.1/setup/windows/
+
 ## basicsr module not found
 For Windows: Please download and extract basicsr from [here](https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.16/basicsr-win64.zip), and place the `basicsr` folder inside the `stable-diffusion-ui\stable-diffusion\env\lib\site-packages` folder. Then run the `Start Stable Diffusion UI.cmd` file again.
 
