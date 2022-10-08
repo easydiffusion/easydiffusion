@@ -224,8 +224,9 @@ def do_mk_img(req: Request):
     #  to the ckpt file (without the extension).
 
     needs_model_reload = False
-    if ckpt_file != req.use_stable_diffusion_model:
-        ckpt_file = req.use_stable_diffusion_model
+    ckpt_to_use = ckpt_file
+    if ckpt_to_use != req.use_stable_diffusion_model:
+        ckpt_to_use = req.use_stable_diffusion_model
         needs_model_reload = True
 
     model.turbo = req.turbo
@@ -235,7 +236,7 @@ def do_mk_img(req: Request):
 
             if model_is_half:
                 del model, modelCS, modelFS
-                load_model_ckpt(ckpt_file, device)
+                load_model_ckpt(ckpt_to_use, device)
                 needs_model_reload = False
 
             load_model_gfpgan(gfpgan_file)
@@ -249,7 +250,7 @@ def do_mk_img(req: Request):
                 (precision == 'full' and not req.use_full_precision and not force_full_precision):
 
                 del model, modelCS, modelFS
-                load_model_ckpt(ckpt_file, device, req.turbo, unet_bs, ('full' if req.use_full_precision else 'autocast'))
+                load_model_ckpt(ckpt_to_use, device, req.turbo, unet_bs, ('full' if req.use_full_precision else 'autocast'))
                 needs_model_reload = False
 
                 if prev_device != device:
@@ -257,7 +258,7 @@ def do_mk_img(req: Request):
                     load_model_real_esrgan(real_esrgan_file)
 
     if needs_model_reload:
-        load_model_ckpt(ckpt_file, device, req.turbo, unet_bs, precision)
+        load_model_ckpt(ckpt_to_use, device, req.turbo, unet_bs, precision)
 
     if req.use_face_correction != gfpgan_file:
         load_model_gfpgan(req.use_face_correction)
