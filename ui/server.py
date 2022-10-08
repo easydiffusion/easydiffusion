@@ -19,11 +19,27 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
+### REACT BRANCH ###
+from fastapi.middleware.cors import CORSMiddleware
+### REACT END ###
 import logging
 
 from sd_internal import Request, Response
 
 app = FastAPI()
+
+### REACT BRANCH ###
+# we need to be able to run a local server for the UI (9001)
+# and still be able to hit our python port (9000)
+origins = ["*"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+### REACT END ###
 
 model_loaded = False
 model_is_loading = False
@@ -34,7 +50,10 @@ outpath = os.path.join(os.path.expanduser("~"), OUTPUT_DIRNAME)
 # don't show access log entries for URLs that start with the given prefix
 ACCESS_LOG_SUPPRESS_PATH_PREFIXES = ['/ping', '/modifier-thumbnails']
 
-app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'media/')), name="media")
+### REACT BRANCH ###
+# app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'media/')), name="media")
+app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'frontend/assets/media/')), name="media")
+### REACT END ###
 
 # defaults from https://huggingface.co/blog/stable_diffusion
 class ImageRequest(BaseModel):
@@ -68,10 +87,27 @@ class ImageRequest(BaseModel):
 class SetAppConfigRequest(BaseModel):
     update_branch: str = "main"
 
+### REACT BRANCH ###
+# @app.get('/')
+# def read_root():
+#     headers = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
+#     return FileResponse(os.path.join(SD_UI_DIR, 'index.html'), headers=headers)
+
 @app.get('/')
 def read_root():
     headers = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
-    return FileResponse(os.path.join(SD_UI_DIR, 'index.html'), headers=headers)
+    return FileResponse(os.path.join(SD_UI_DIR,'frontend/dist/index.html'), headers=headers)
+
+# then get the js files
+@app.get('/index.js')
+def read_scripts():
+    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/dist/index.js'))
+
+#then get the css files
+@app.get('/index.css')
+def read_styles():
+    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/dist/index.css'))
+### REACT END ###
 
 @app.get('/ping')
 async def ping():
@@ -206,12 +242,21 @@ def stop():
         print(traceback.format_exc())
         return HTTPException(status_code=500, detail=str(e))
 
-@app.get('/image/tmp/{session_id}/{img_id}')
-def get_image(session_id, img_id):
+### REACT BRANCH ###
+# @app.get('/image/tmp/{session_id}/{img_id}')
+# def get_image(session_id, img_id):
+#     from sd_internal import runtime
+#     buf = runtime.temp_images[session_id + '/' + img_id]
+#     buf.seek(0)
+#     return StreamingResponse(buf, media_type='image/jpeg')
+
+@app.get('/image/tmp/{session_id}/{img_id}/{step}')
+def get_image(session_id, img_id, step):
     from sd_internal import runtime
-    buf = runtime.temp_images[session_id + '/' + img_id]
+    buf = runtime.temp_images[session_id + '/' + img_id + '/' + step]
     buf.seek(0)
     return StreamingResponse(buf, media_type='image/jpeg')
+### REACT END ###
 
 @app.post('/app_config')
 async def setAppConfig(req : SetAppConfigRequest):
@@ -307,10 +352,25 @@ def getModels():
 
     return models
 
+# @app.get('/modifiers.json')
+# def read_modifiers():
+#     headers = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
+#     return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'), headers=headers)
+
+### REACT BRANCH ###
+@app.get('/ding.mp3')
+def read_ding():
+    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/assets/ding.mp3'))
+
+@app.get('/kofi.png')
+def read_kofi():
+    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/assets/kofi.png'))
+
 @app.get('/modifiers.json')
 def read_modifiers():
     headers = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
-    return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'), headers=headers)
+    return FileResponse(os.path.join(SD_UI_DIR, 'frontend/assets/modifiers.json'), headers=headers)
+### REACT END ###
 
 @app.get('/output_dir')
 def read_home_dir():

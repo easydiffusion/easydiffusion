@@ -216,7 +216,10 @@ def do_mk_img(req: Request):
     res.request = req
     res.images = []
 
-    temp_images.clear()
+    ### REACT BRANCH ###
+    # keep the temp images in memory
+    # temp_images.clear()
+    ### REACT END ###
 
     # custom model support:
     #  the req.use_stable_diffusion_model needs to be a valid path
@@ -380,13 +383,43 @@ def do_mk_img(req: Request):
 
                         if req.stream_progress_updates:
                             n_steps = opt_ddim_steps if req.init_image is None else t_enc
-                            progress = {"step": i, "total_steps": n_steps}
+                            ### REACT BRANCH ###
+                            #progress = {"step": i, "total_steps": n_steps}
+
+                            progress = {
+                                "status": "progress",
+                                "progress": {
+                                    "step": i, "total_steps": n_steps
+                                }
+                            }
+                            ### REACT END ###
 
                             if req.stream_image_progress and i % 5 == 0:
                                 partial_images = []
 
-                                for i in range(batch_size):
-                                    x_samples_ddim = modelFS.decode_first_stage(x_samples[i].unsqueeze(0))
+                                ### REACT BRANCH ###
+                                # for i in range(batch_size):
+                                #     x_samples_ddim = modelFS.decode_first_stage(x_samples[i].unsqueeze(0))
+                                #     x_sample = torch.clamp((x_samples_ddim + 1.0) / 2.0, min=0.0, max=1.0)
+                                #     x_sample = 255.0 * rearrange(x_sample[0].cpu().numpy(), "c h w -> h w c")
+                                #     x_sample = x_sample.astype(np.uint8)
+                                #     img = Image.fromarray(x_sample)
+                                #     buf = BytesIO()
+                                #     img.save(buf, format='JPEG')
+                                #     buf.seek(0)
+
+                                #     del img, x_sample, x_samples_ddim
+                                #     # don't delete x_samples, it is used in the code that called this callback
+
+                                #     temp_images[str(req.session_id) + '/' + str(i)] = buf
+                                #     partial_images.append({'path': f'/image/tmp/{req.session_id}/{i}'})
+
+                                # progress['output'] = partial_images
+
+                                # use 'j' so we still have access to the original 'i' in the outer scope 
+                                for j in range(batch_size):
+                                    # all of this is the same just with j instead of i
+                                    x_samples_ddim = modelFS.decode_first_stage(x_samples[j].unsqueeze(0))
                                     x_sample = torch.clamp((x_samples_ddim + 1.0) / 2.0, min=0.0, max=1.0)
                                     x_sample = 255.0 * rearrange(x_sample[0].cpu().numpy(), "c h w -> h w c")
                                     x_sample = x_sample.astype(np.uint8)
@@ -398,10 +431,22 @@ def do_mk_img(req: Request):
                                     del img, x_sample, x_samples_ddim
                                     # don't delete x_samples, it is used in the code that called this callback
 
-                                    temp_images[str(req.session_id) + '/' + str(i)] = buf
-                                    partial_images.append({'path': f'/image/tmp/{req.session_id}/{i}'})
+                                    #TODO figure out the best place to make the random seeds
+                                    # when we have multiple samples. Incrementing by 1
+                                    # is not the best way to do this.
+                                    cur_seed = opt_seed+j
+
+                                    # more explicit pathing that doesnt get over written
+                                    sessionPath = str(req.session_id) + '/' + str(cur_seed) + '/' + str(i)
+                                    temp_images[sessionPath] = buf
+
+                                    partial_images.append({
+                                        'path': f'/image/tmp/{sessionPath}',
+                                        'seed': f'{cur_seed}'
+                                    })
 
                                 progress['output'] = partial_images
+                                ### REACT END ###
 
                             yield json.dumps(progress)
 
