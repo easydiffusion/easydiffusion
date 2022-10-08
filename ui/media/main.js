@@ -264,6 +264,9 @@ async function healthCheck() {
     }
 }
 function resizeInpaintingEditor() {
+    if (!maskSetting.checked) {
+        return
+    }
     let widthValue = parseInt(widthField.value)
     let heightValue = parseInt(heightField.value)
     if (widthValue === heightValue) {
