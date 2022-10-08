@@ -34,6 +34,7 @@ The installer will take care of whatever is needed. A friendly [Discord communit
 - **In-Painting**: Specify areas of your image to paint into
 - **Face Correction (GFPGAN) and Upscaling (RealESRGAN)**
 - **Image Modifiers**: A library of *modifier tags* like *"Realistic"*, *"Pencil Sketch"*, *"ArtStation"* etc. Experiment with various styles quickly.
+- **Loopback**: Use the output image as the input image for the next img2img task
 - **Negative Prompt**: Specify aspects of the image to *remove*.
 - **Attention/Emphasis:** () in the prompt increases the model's attention to enclosed words, and [] decreases it
 - **Weighted Prompts:** Use weights for specific words in your prompt to change their importance, e.g. `red:2.4 dragon:1.2`
