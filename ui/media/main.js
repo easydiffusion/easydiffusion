@@ -630,107 +630,94 @@ async function checkTasks() {
 }
 setTimeout(checkTasks, 0)
 
+function getCurrentUserRequest() {
+    const numOutputsTotal = parseInt(numOutputsTotalField.value)
+    const numOutputsParallel = parseInt(numOutputsParallelField.value)
+    const seed = (randomSeedField.checked ? Math.floor(Math.random() * 10000000) : parseInt(seedField.value))
+
+    const newTask = {
+        isProcessing: false,
+        stopped: false,
+        batchesDone: 0,
+        numOutputsTotal: numOutputsTotal,
+        batchCount: Math.ceil(numOutputsTotal / numOutputsParallel),
+        seed,
+
+        reqBody: {
+            session_id: sessionId,
+            seed,
+            negative_prompt: negativePromptField.value.trim(),
+            num_outputs: numOutputsParallel,
+            num_inference_steps: numInferenceStepsField.value,
+            guidance_scale: guidanceScaleField.value,
+            width: widthField.value,
+            height: heightField.value,
+            // allow_nsfw: allowNSFWField.checked,
+            turbo: turboField.checked,
+            use_cpu: useCPUField.checked,
+            use_full_precision: useFullPrecisionField.checked,
+            use_stable_diffusion_model: stableDiffusionModelField.value,
+            stream_progress_updates: true,
+            stream_image_progress: (numOutputsTotal > 50 ? false : streamImageProgressField.checked),
+            show_only_filtered_image: showOnlyFilteredImageField.checked,
+            output_format: outputFormatField.value
+        }
+    }
+    if (IMAGE_REGEX.test(initImagePreview.src)) {
+        newTask.reqBody.init_image = initImagePreview.src
+        newTask.reqBody.prompt_strength = promptStrengthField.value
+
+        // if (IMAGE_REGEX.test(maskImagePreview.src)) {
+        //     newTask.reqBody.mask = maskImagePreview.src
+        // }
+        if (maskSetting.checked) {
+            newTask.reqBody.mask = inpaintingEditor.getImg()
+        }
+        newTask.reqBody.sampler = 'ddim'
+    } else {
+        newTask.reqBody.sampler = samplerField.value
+    }
+    if (saveToDiskField.checked && diskPathField.value.trim() !== '') {
+        newTask.reqBody.save_to_disk_path = diskPathField.value.trim()
+    }
+    if (useFaceCorrectionField.checked) {
+        newTask.reqBody.use_face_correction = 'GFPGANv1.3'
+    }
+    if (useUpscalingField.checked) {
+        newTask.reqBody.use_upscale = upscaleModelField.value
+    }
+    return newTask
+}
+
 function makeImage() {
     if (serverStatus !== 'online') {
         alert('The server is still starting up..')
         return
     }
-
-    let prompts = getPrompts()
-    prompts.forEach(createTask)
+    const taskTemplate = getCurrentUserRequest()
+    const newTaskRequests = []
+    getPrompts().forEach((prompt) => newTaskRequests.push(Object.assign({}, taskTemplate, {
+        reqBody: Object.assign({ prompt: prompt }, taskTemplate.reqBody)
+    })))
+    newTaskRequests.forEach(createTask)
 
     initialText.style.display = 'none'
 }
 
-function createTask(prompt) {
-    let task = {
-        stopped: false,
-        batchesDone: 0
-    }
-
-    let seed = (randomSeedField.checked ? Math.floor(Math.random() * 10000000) : parseInt(seedField.value))
-    let numOutputsTotal = parseInt(numOutputsTotalField.value)
-    let numOutputsParallel = parseInt(numOutputsParallelField.value)
-    let batchCount = Math.ceil(numOutputsTotal / numOutputsParallel)
-    let batchSize = numOutputsParallel
-
-    let streamImageProgress = (numOutputsTotal > 50 ? false : streamImageProgressField.checked)
-
-    if (activeTags.length > 0) {
-        let promptTags = activeTags.map(x => x.name).join(", ")
-        prompt += ", " + promptTags
-    }
-
-    let reqBody = {
-        session_id: sessionId,
-        prompt: prompt,
-        negative_prompt: negativePromptField.value.trim(),
-        num_outputs: batchSize,
-        num_inference_steps: numInferenceStepsField.value,
-        guidance_scale: guidanceScaleField.value,
-        width: widthField.value,
-        height: heightField.value,
-        // allow_nsfw: allowNSFWField.checked,
-        turbo: turboField.checked,
-        use_cpu: useCPUField.checked,
-        use_full_precision: useFullPrecisionField.checked,
-        use_stable_diffusion_model: stableDiffusionModelField.value,
-        stream_progress_updates: true,
-        stream_image_progress: streamImageProgress,
-        show_only_filtered_image: showOnlyFilteredImageField.checked,
-        output_format: outputFormatField.value
-    }
-
-    if (IMAGE_REGEX.test(initImagePreview.src)) {
-        reqBody['init_image'] = initImagePreview.src
-        reqBody['prompt_strength'] = promptStrengthField.value
-
-        // if (IMAGE_REGEX.test(maskImagePreview.src)) {
-        //     reqBody['mask'] = maskImagePreview.src
-        // }
-        if (maskSetting.checked) {
-            reqBody['mask'] = inpaintingEditor.getImg()
-        }
-
-        reqBody['sampler'] = 'ddim'
-    } else {
-        reqBody['sampler'] = samplerField.value
-    }
-
-    if (saveToDiskField.checked && diskPathField.value.trim() !== '') {
-        reqBody['save_to_disk_path'] = diskPathField.value.trim()
-    }
-
-    if (useFaceCorrectionField.checked) {
-        reqBody['use_face_correction'] = 'GFPGANv1.3'
-    }
-
-    if (useUpscalingField.checked) {
-        reqBody['use_upscale'] = upscaleModelField.value
-    }
-
-    let taskConfig = `Seed: ${seed}, Sampler: ${reqBody['sampler']}, Inference Steps: ${numInferenceStepsField.value}, Guidance Scale: ${guidanceScaleField.value}, Model: ${stableDiffusionModelField.value}`
-
+function createTask(task) {
+    let taskConfig = `Seed: ${task.seed}, Sampler: ${task.reqBody.sampler}, Inference Steps: ${task.reqBody.num_inference_steps}, Guidance Scale: ${task.reqBody.guidance_scale}, Model: ${task.reqBody.use_stable_diffusion_model}`
     if (negativePromptField.value.trim() !== '') {
-        taskConfig += `, Negative Prompt: ${negativePromptField.value.trim()}`
+        taskConfig += `, Negative Prompt: ${task.reqBody.negative_prompt}`
     }
-
-    if (reqBody['init_image'] !== undefined) {
-        taskConfig += `, Prompt Strength: ${promptStrengthField.value}`
+    if (task.reqBody.init_image !== undefined) {
+        taskConfig += `, Prompt Strength: ${task.reqBody.prompt_strength}`
     }
-
     if (useFaceCorrectionField.checked) {
-        taskConfig += `, Fix Faces: ${reqBody['use_face_correction']}`
+        taskConfig += `, Fix Faces: ${task.reqBody.use_face_correction}`
     }
-
     if (useUpscalingField.checked) {
-        taskConfig += `, Upscale: ${reqBody['use_upscale']}`
+        taskConfig += `, Upscale: ${task.reqBody.use_upscale}`
     }
-
-    task['reqBody'] = reqBody
-    task['seed'] = seed
-    task['batchCount'] = batchCount
-    task['isProcessing'] = false
 
     let taskEntry = document.createElement('div')
     taskEntry.className = 'imageTaskContainer'
@@ -746,7 +733,6 @@ function createTask(prompt) {
 
     createCollapsibles(taskEntry)
 
-    task['numOutputsTotal'] = numOutputsTotal
     task['taskStatusLabel'] = taskEntry.querySelector('.taskStatusLabel')
     task['outputContainer'] = taskEntry.querySelector('.img-preview')
     task['outputMsg'] = taskEntry.querySelector('.outputMsg')
@@ -774,7 +760,7 @@ function createTask(prompt) {
 
     imagePreview.insertBefore(taskEntry, previewTools.nextSibling)
 
-    task['previewPrompt'].innerText = prompt
+    task.previewPrompt.innerText = task.reqBody.prompt
 
     taskQueue.unshift(task)
 }
@@ -784,7 +770,6 @@ function getPrompts() {
     prompts = prompts.split('\n')
 
     let promptsToMake = []
-
     prompts.forEach(prompt => {
         prompt = prompt.trim()
         if (prompt === '') {
@@ -793,7 +778,6 @@ function getPrompts() {
 
         let promptMatrix = prompt.split('|')
         prompt = promptMatrix.shift().trim()
-
         promptsToMake.push(prompt)
 
         promptMatrix = promptMatrix.map(p => p.trim())
@@ -804,8 +788,8 @@ function getPrompts() {
             promptsToMake = promptsToMake.concat(promptPermutations)
         }
     })
-
-    return promptsToMake
+    const promptTags = (activeTags.length > 0 ? activeTags.map(x => x.name).join(", ") : "")
+    return promptsToMake.map((prompt) => `${prompt}, ${promptTags}`)
 }
 
 function permutePrompts(promptBase, promptMatrix) {
