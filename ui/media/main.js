@@ -338,10 +338,10 @@ function showImages(req, res, outputContainer, livePreview) {
             const buttons = {
                 'imgUseBtn': { html: 'Use as Input', click: getUseAsInputHandler(imageItemElem) },
                 'imgSaveBtn': { html: 'Download', click: getSaveImageHandler(imageItemElem, req['output_format']) },
-                'imgX2Btn': { html: 'ImgX2', click: getStartUpscaleHandler(req, imageItemElem, 'img2img') },
+                'imgX2Btn': { html: 'ImgX2', click: getStartNewTaskHandler(req, imageItemElem, 'img2img') },
             }
             if (!req.use_upscale) {
-                buttons.upscaleBtn = { html: 'Upscale', click: getStartUpscaleHandler(req, imageItemElem, 'upscale') }
+                buttons.upscaleBtn = { html: 'Upscale', click: getStartNewTaskHandler(req, imageItemElem, 'upscale') }
             }
             const imgItemInfo = imageItemElem.querySelector('.imgItemInfo')
             const createButton = function(name, btnInfo) {
@@ -406,7 +406,7 @@ function getSaveImageHandler(imageItemElem, outputFormat) {
         imgDownload.click()
     }
 }
-function getStartUpscaleHandler(reqBody, imageItemElem) {
+function getStartNewTaskHandler(reqBody, imageItemElem, mode) {
     return function() {
         if (serverStatus !== 'online') {
             alert('The server is still starting up..')
@@ -414,15 +414,28 @@ function getStartUpscaleHandler(reqBody, imageItemElem) {
         }
         const imageElem = imageItemElem.querySelector('img')
         const newTaskRequest = getCurrentUserRequest()
-        newTaskRequest.reqBody = Object.assign({}, reqBody, {
-            num_outputs: 1,
-            width: reqBody.width * 2,
-            height: reqBody.height * 2,
-            init_image: imageElem.src,
-            sampler: 'ddim',
-            prompt_strength: '0.5',
-            num_inference_steps: Math.min(100, reqBody.num_inference_steps * 2)
-        })
+        switch (mode) {
+            case 'img2img':
+                newTaskRequest.reqBody = Object.assign({}, reqBody, {
+                    num_outputs: 1,
+                    width: reqBody.width * 2,
+                    height: reqBody.height * 2,
+                    init_image: imageElem.src,
+                    sampler: 'ddim',
+                    prompt_strength: '0.5',
+                    num_inference_steps: Math.min(100, reqBody.num_inference_steps * 2)
+                })
+                break
+            case 'upscale':
+                newTaskRequest.reqBody = Object.assign({}, reqBody, {
+                    num_outputs: 1,
+                    //use_face_correction: 'GFPGANv1.3',
+                    use_upscale: upscaleModelField.value,
+                })
+                break
+            default:
+                throw new Error("Unknown upscale mode: " + mode)
+        }
         newTaskRequest.seed = newTaskRequest.reqBody.seed
         newTaskRequest.numOutputsTotal = 1
         newTaskRequest.batchCount = 1
