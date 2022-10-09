@@ -756,10 +756,10 @@ function createTask(task) {
     if (task.reqBody.init_image !== undefined) {
         taskConfig += `, Prompt Strength: ${task.reqBody.prompt_strength}`
     }
-    if (useFaceCorrectionField.checked) {
+    if (task.reqBody.use_face_correction) {
         taskConfig += `, Fix Faces: ${task.reqBody.use_face_correction}`
     }
-    if (useUpscalingField.checked) {
+    if (task.reqBody.use_upscale) {
         taskConfig += `, Upscale: ${task.reqBody.use_upscale}`
     }
 
