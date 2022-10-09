@@ -335,21 +335,24 @@ function showImages(req, res, outputContainer, livePreview) {
                         <span class="imgSeedLabel"></span>
                         <button class="imgUseBtn">Use as Input</button>
                         <button class="imgSaveBtn">Download</button>
+                        <button class="upscaleBtn">Upscale</button>
                     </div>
                 </div>
             `
 
-            const useAsInputBtn = imageItemElem.querySelector('.imgUseBtn'),
-                saveImageBtn = imageItemElem.querySelector('.imgSaveBtn');
+            const useAsInputBtn = imageItemElem.querySelector('.imgUseBtn')
+            const saveImageBtn = imageItemElem.querySelector('.imgSaveBtn')
+            const upscaleImageBtn = imageItemElem.querySelector('.upscaleBtn')
 
             useAsInputBtn.addEventListener('click', getUseAsInputHandler(imageItemElem))
             saveImageBtn.addEventListener('click', getSaveImageHandler(imageItemElem, req['output_format']))
+            upscaleImageBtn.addEventListener('click', getStartUpscaleHandler(req, imageItemElem))
 
             outputContainer.appendChild(imageItemElem)
         }
 
-        const imageElem = imageItemElem.querySelector('img'),
-            imageSeedLabel = imageItemElem.querySelector('.imgSeedLabel');
+        const imageElem = imageItemElem.querySelector('img')
+        const imageSeedLabel = imageItemElem.querySelector('.imgSeedLabel')
 
         imageElem.src = imageData
         imageElem.width = parseInt(imageWidth)
@@ -396,6 +399,29 @@ function getSaveImageHandler(imageItemElem, outputFormat) {
         imgDownload.download = createFileName(imageSeed, outputFormat)
         imgDownload.href = imgData
         imgDownload.click()
+    }
+}
+function getStartUpscaleHandler(reqBody, imageItemElem) {
+    return function() {
+        if (serverStatus !== 'online') {
+            alert('The server is still starting up..')
+            return
+        }
+        const imageElem = imageItemElem.querySelector('img')
+        const newTaskRequest = getCurrentUserRequest()
+        newTaskRequest.reqBody = Object.assign({}, reqBody, {
+            num_outputs: 1,
+            width: reqBody.width * 2,
+            height: reqBody.height * 2,
+            init_image: imageElem.src,
+            sampler: 'ddim',
+            prompt_strength: '0.5',
+            num_inference_steps: Math.min(100, reqBody.num_inference_steps * 2)
+        })
+        newTaskRequest.seed = newTaskRequest.reqBody.seed
+        newTaskRequest.numOutputsTotal = 1
+        newTaskRequest.batchCount = 1
+        createTask(newTaskRequest)
     }
 }
 
