@@ -324,7 +324,6 @@ function showImages(req, res, outputContainer, livePreview) {
         }
 
         let imageItemElem = (index < imageItemElements.length ? imageItemElements[index] : null)
-
         if(!imageItemElem) {
             imageItemElem = document.createElement('div')
             imageItemElem.className = 'imgItem'
@@ -333,21 +332,27 @@ function showImages(req, res, outputContainer, livePreview) {
                     <img/>
                     <div class="imgItemInfo">
                         <span class="imgSeedLabel"></span>
-                        <button class="imgUseBtn">Use as Input</button>
-                        <button class="imgSaveBtn">Download</button>
-                        <button class="upscaleBtn">Upscale</button>
                     </div>
                 </div>
             `
-
-            const useAsInputBtn = imageItemElem.querySelector('.imgUseBtn')
-            const saveImageBtn = imageItemElem.querySelector('.imgSaveBtn')
-            const upscaleImageBtn = imageItemElem.querySelector('.upscaleBtn')
-
-            useAsInputBtn.addEventListener('click', getUseAsInputHandler(imageItemElem))
-            saveImageBtn.addEventListener('click', getSaveImageHandler(imageItemElem, req['output_format']))
-            upscaleImageBtn.addEventListener('click', getStartUpscaleHandler(req, imageItemElem))
-
+            const buttons = {
+                'imgUseBtn': { html: 'Use as Input', click: getUseAsInputHandler(imageItemElem) },
+                'imgSaveBtn': { html: 'Download', click: getSaveImageHandler(imageItemElem, req['output_format']) },
+                'imgX2Btn': { html: 'ImgX2', click: getStartUpscaleHandler(req, imageItemElem, 'img2img') },
+            }
+            if (!req.use_upscale) {
+                buttons.upscaleBtn = { html: 'Upscale', click: getStartUpscaleHandler(req, imageItemElem, 'upscale') }
+            }
+            const imgItemInfo = imageItemElem.querySelector('.imgItemInfo')
+            const createButton = function(name, btnInfo) {
+                const newButton = document.createElement('button')
+                newButton.classList.add(name)
+                newButton.classList.add('tasksBtns')
+                newButton.innerHTML = btnInfo.html
+                newButton.addEventListener('click', btnInfo.click)
+                imgItemInfo.appendChild(newButton)
+            }
+            Object.keys(buttons).forEach((name) => createButton(name, buttons[name]))
             outputContainer.appendChild(imageItemElem)
         }
 
