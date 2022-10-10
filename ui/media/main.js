@@ -349,7 +349,8 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             const buttons = {
                 'imgUseBtn': { html: 'Use as Input', click: getUseAsInputHandler(imageItemElem) },
                 'imgSaveBtn': { html: 'Download', click: getSaveImageHandler(imageItemElem, req['output_format']) },
-                'imgX2Btn': { html: 'ImgX2', click: getStartNewTaskHandler(req, imageItemElem, 'img2img') },
+                'imgX2Btn': { html: 'Double Size', click: getStartNewTaskHandler(req, imageItemElem, 'img2img_X2') },
+                'imgRedoBtn': { html: 'Redo', click: getStartNewTaskHandler(req, imageItemElem, 'img2img') },
             }
             if (!req.use_upscale) {
                 buttons.upscaleBtn = { html: 'Upscale', click: getStartNewTaskHandler(req, imageItemElem, 'upscale') }
@@ -413,15 +414,18 @@ function getStartNewTaskHandler(reqBody, imageItemElem, mode) {
         const newTaskRequest = getCurrentUserRequest()
         switch (mode) {
             case 'img2img':
+            case 'img2img_X2':
                 newTaskRequest.reqBody = Object.assign({}, reqBody, {
                     num_outputs: 1,
-                    width: reqBody.width * 2,
-                    height: reqBody.height * 2,
                     init_image: imageElem.src,
                     sampler: 'ddim',
                     prompt_strength: '0.5',
-                    num_inference_steps: Math.min(100, reqBody.num_inference_steps * 2)
                 })
+                if (mode === 'img2img_X2') {
+                    newTaskRequest.reqBody.width = reqBody.width * 2
+                    newTaskRequest.reqBody.height = reqBody.height * 2
+                    newTaskRequest.reqBody.num_inference_steps = Math.min(100, reqBody.num_inference_steps * 2)
+                }
                 break
             case 'upscale':
                 newTaskRequest.reqBody = Object.assign({}, reqBody, {
