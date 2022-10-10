@@ -630,13 +630,19 @@ async function checkTasks() {
     task['taskStatusLabel'].className += " activeTaskLabel"
 
     const genSeeds = Boolean(typeof task.reqBody.seed !== 'number' || (task.reqBody.seed === task.seed && task.numOutputsTotal > 1))
+    const startSeed = task.reqBody.seed || task.seed
     for (let i = 0; i < task.batchCount; i++) {
-        if (task.numOutputsTotal > 1) {
-            // Each output render need it own instance of reqBody to avoid altering the other runs after they are completed.
-            task.reqBody = Object.assign({}, task.reqBody)
+        if (task.batchCount > 1) {
+            // Each output render batch needs it's own task instance to avoid altering the other runs after they are completed.
+            task = Object.assign({}, task, {
+                reqBody: Object.assign({}, task.reqBody)
+            })
         }
         if (genSeeds) {
-            task.reqBody.seed = task.seed + (i * task.reqBody['num_outputs'])
+            task.reqBody.seed = startSeed + (i * task.reqBody.num_outputs)
+            task.seed = task.reqBody.seed
+        } else if (task.seed !== task.reqBody.seed) {
+            task.seed = task.reqBody.seed
         }
 
         let success = await doMakeImage(task)
