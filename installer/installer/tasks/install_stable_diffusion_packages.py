@@ -56,4 +56,4 @@ Downloading packages necessary for Stable Diffusion..
 ''')
 
 def is_valid_env():
-    return helpers.modules_exist_in_env(('torch', 'ldm', 'antlr4', 'transformers', 'numpy', 'gfpgan', 'realesrgan', 'basicsr'))
+    return helpers.modules_exist_in_env(('torch', 'antlr4', 'transformers', 'numpy', 'gfpgan', 'realesrgan', 'basicsr'))

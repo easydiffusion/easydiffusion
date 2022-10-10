@@ -1,3 +1,4 @@
+import os
 from os import path
 import subprocess
 import traceback
@@ -38,20 +39,24 @@ def modules_exist_in_env(modules, env_dir_path=app.project_env_dir_path):
     module_args = ' '.join(modules)
     check_modules_cmd = f'python "{check_modules_script_path}" {module_args}'
 
+    env = os.environ.copy()
+    env['PYTHONPATH'] = app.stable_diffusion_repo_dir_path + ';' + os.path.join(app.project_env_dir_path, 'lib', 'site-packages')
+
     if app.activated_env_dir_path != env_dir_path:
         activate_cmd = f'micromamba activate "{env_dir_path}"'
         check_modules_cmd = f'{activate_cmd} && {check_modules_cmd}'
 
     # activate and run the modules checker
-    output, _ = run(check_modules_cmd, get_output=True)
+    output, _ = run(check_modules_cmd, get_output=True, env=env)
     if 'Missing' in output:
+        log(output)
         return False
 
     return True
 
 def fail_with_install_error(error_msg):
     try:
-        log(traceback.format_exc())
+        log(traceback.format_stack())
         log(f'''
 
 Error: {error_msg}. Sorry about that, please try to:
