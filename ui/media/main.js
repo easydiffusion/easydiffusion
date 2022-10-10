@@ -631,6 +631,10 @@ async function checkTasks() {
 
     const genSeeds = Boolean(typeof task.reqBody.seed !== 'number' || (task.reqBody.seed === task.seed && task.numOutputsTotal > 1))
     for (let i = 0; i < task.batchCount; i++) {
+        if (task.numOutputsTotal > 1) {
+            // Each output render need it own instance of reqBody to avoid altering the other runs after they are completed.
+            task.reqBody = Object.assign({}, task.reqBody)
+        }
         if (genSeeds) {
             task.reqBody.seed = task.seed + (i * task.reqBody['num_outputs'])
         }
