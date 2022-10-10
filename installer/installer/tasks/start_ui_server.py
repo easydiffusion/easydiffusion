@@ -1,6 +1,4 @@
 import os
-import shutil
-import platform
 
 from installer import app, helpers
 

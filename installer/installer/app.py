@@ -13,10 +13,9 @@ STABLE_DIFFUSION_REPO_DIR_NAME = 'stable-diffusion'
 
 PROJECT_ENV_DIR_NAME = 'project_env'
 
-START_CMD_FILE_NAME = "Start Stable Diffusion UI.cmd" if platform.system == "Windows" else "start.sh"
-DEV_CONSOLE_CMD_FILE_NAME = "Developer Console.cmd" if platform.system == "Windows" else "developer_console.sh"
+START_CMD_FILE_NAME = "Start Stable Diffusion UI.cmd" if platform.system() == "Windows" else "start.sh"
+DEV_CONSOLE_CMD_FILE_NAME = "Developer Console.cmd" if platform.system() == "Windows" else "developer_console.sh"
 CONFIG_FILE_NAME = 'config.json'
-
 
 # top-level folders
 ENV_DIR_NAME = 'env'
