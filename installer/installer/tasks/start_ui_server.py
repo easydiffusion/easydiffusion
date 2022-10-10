@@ -1,4 +1,5 @@
 import os
+import platform
 
 from installer import app, helpers
 
@@ -9,6 +10,7 @@ def run():
     env['SD_DIR'] = app.stable_diffusion_repo_dir_path
     env['PYTHONPATH'] = app.stable_diffusion_repo_dir_path + ';' + os.path.join(app.project_env_dir_path, 'lib', 'site-packages')
     env['SD_UI_PATH'] = app.ui_dir_path
+    env['PATH'] += ';' + os.path.join(app.project_env_dir_path, 'Scripts' if platform.system() == 'Windows' else 'bin')
 
     helpers.log(f'PYTHONPATH={env["PYTHONPATH"]}')
     helpers.run('python --version', log_the_cmd=True)

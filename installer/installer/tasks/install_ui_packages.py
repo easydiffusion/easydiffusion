@@ -30,7 +30,7 @@ Downloading packages necessary for Stable Diffusion UI..
 
 def is_valid_env():
     path = os.environ['PATH']
-    path += os.path.join(app.project_env_dir_path, 'Scripts' if platform.system() == 'Windows' else 'bin')
+    path += ';' + os.path.join(app.project_env_dir_path, 'Scripts' if platform.system() == 'Windows' else 'bin')
 
     if shutil.which("uvicorn", path=path) is None:
         helpers.log("uvicorn not found!")
