@@ -461,9 +461,6 @@ async function doMakeImage(task) {
     const progressBar = task['progressBar']
 
     let res = ''
-    let seed = reqBody['seed']
-    let numOutputs = parseInt(reqBody['num_outputs'])
-
     try {
         res = await fetch('/image', {
             method: 'POST',
