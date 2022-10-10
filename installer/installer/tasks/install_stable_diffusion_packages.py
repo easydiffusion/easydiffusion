@@ -1,16 +1,20 @@
 import os
 import platform
+import shutil
 
 from installer import app, helpers
 
 def run():
+    environment_file_path = get_environment_file_path()
+    local_env_file_path = os.path.join(app.stable_diffusion_repo_dir_path, 'environment.yaml')
+
+    shutil.copy(environment_file_path, local_env_file_path)
+
     if is_valid_env():
         helpers.log("Packages necessary for Stable Diffusion were already installed")
         return
 
     log_installing_header()
-
-    environment_file_path = get_environment_file_path()
 
     env = os.environ.copy()
     env['PYTHONNOUSERSITE'] = '1'
@@ -18,7 +22,7 @@ def run():
     if not os.path.exists(app.project_env_dir_path):
         helpers.run(f'micromamba create --prefix {app.project_env_dir_path}', log_the_cmd=True)
 
-    helpers.run(f'micromamba install -y --prefix {app.project_env_dir_path} -f {environment_file_path}', env=env, log_the_cmd=True, run_in_folder=app.stable_diffusion_repo_dir_path)
+    helpers.run(f'micromamba install -y --prefix {app.project_env_dir_path} -f {local_env_file_path}', env=env, log_the_cmd=True, run_in_folder=app.stable_diffusion_repo_dir_path)
 
     if is_valid_env():
         helpers.log("Installed the packages necessary for Stable Diffusion")
