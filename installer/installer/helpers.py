@@ -20,6 +20,9 @@ def run(cmd, run_in_folder=None, env=None, get_output=False, log_the_cmd=False):
 
     out, err = p.communicate()
 
+    out = out.decode('utf-8') if isinstance(out, bytes) else out
+    err = err.decode('utf-8') if isinstance(out, bytes) else err
+
     if get_output:
         return out, err
 
