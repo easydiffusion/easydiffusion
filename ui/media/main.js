@@ -632,8 +632,11 @@ async function checkTasks() {
     task['taskStatusLabel'].innerText = "Processing"
     task['taskStatusLabel'].className += " activeTaskLabel"
 
+    const genSeeds = Boolean(typeof task.reqBody.seed !== 'number' || (task.reqBody.seed === task.seed && task.numOutputsTotal > 1))
     for (let i = 0; i < task.batchCount; i++) {
-        task.reqBody['seed'] = task.seed + (i * task.reqBody['num_outputs'])
+        if (genSeeds) {
+            task.reqBody.seed = task.seed + (i * task.reqBody['num_outputs'])
+        }
 
         let success = await doMakeImage(task)
         task.batchesDone++
