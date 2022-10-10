@@ -13,7 +13,7 @@ dependencies:
   - antlr4-python3-runtime=4.8
   - pip:
     - albumentations==0.4.3
-    - opencv-python==4.6.0
+    - opencv-python==4.6.0.66
     - pudb==2019.2
     - imageio==2.9.0
     - imageio-ffmpeg==0.4.2
