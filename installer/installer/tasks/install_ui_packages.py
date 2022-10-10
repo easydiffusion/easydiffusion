@@ -1,5 +1,6 @@
 import os
 import shutil
+import platform
 
 from installer import app, helpers
 
@@ -28,7 +29,11 @@ Downloading packages necessary for Stable Diffusion UI..
 ''')
 
 def is_valid_env():
-    if shutil.which("uvicorn") is None:
+    path = os.environ['PATH']
+    path += os.path.join(app.project_env_dir_path, 'Scripts' if platform.system() == 'Windows' else 'bin')
+
+    if shutil.which("uvicorn", path=path) is None:
+        helpers.log("uvicorn not found!")
         return False
 
     return helpers.modules_exist_in_env(('uvicorn', 'fastapi'))
