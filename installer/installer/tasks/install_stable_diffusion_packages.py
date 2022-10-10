@@ -18,7 +18,7 @@ def run():
     if not os.path.exists(app.project_env_dir_path):
         helpers.run(f'micromamba create --prefix {app.project_env_dir_path}', log_the_cmd=True)
 
-    helpers.run(f'micromamba install -y --prefix {app.project_env_dir_path} -f {environment_file_path}', env=env, log_the_cmd=True)
+    helpers.run(f'micromamba install -y --prefix {app.project_env_dir_path} -f {environment_file_path}', env=env, log_the_cmd=True, run_in_folder=app.stable_diffusion_repo_dir_path)
 
     if is_valid_env():
         helpers.log("Installed the packages necessary for Stable Diffusion")
