@@ -1,5 +1,6 @@
 from os import path
 import subprocess
+import traceback
 
 from installer import app
 
@@ -50,6 +51,7 @@ def modules_exist_in_env(modules, env_dir_path=app.project_env_dir_path):
 
 def fail_with_install_error(error_msg):
     try:
+        log(traceback.format_exc())
         log(f'''
 
 Error: {error_msg}. Sorry about that, please try to:
