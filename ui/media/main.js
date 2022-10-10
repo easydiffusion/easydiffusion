@@ -303,22 +303,16 @@ function resizeInpaintingEditor() {
     inpaintingEditor.setColor(inpaintingEditor.opts.color)
 }
 
-function showImages(req, res, outputContainer, livePreview) {
+function showImages(reqBody, res, outputContainer, livePreview) {
     let imageItemElements = outputContainer.querySelectorAll('.imgItem')
-
+    if(typeof res != 'object') return
     res.output.reverse()
-
     res.output.forEach((result, index) => {
-        if(typeof res != 'object') return
-
-        const imageData = result?.data || result?.path + '?t=' + new Date().getTime(),
-            imageSeed = result?.seed,
-            imageWidth = req.width,
-            imageHeight = req.height;
-
+        const imageData = result?.data || result?.path + '?t=' + new Date().getTime()
+        const imageWidth = reqBody.width
+        const imageHeight = reqBody.height
         if (!imageData.includes('/')) {
             // res contained no data for the image, stop execution
-
             setStatus('request', 'invalid image', 'error')
             return
         }
@@ -335,6 +329,23 @@ function showImages(req, res, outputContainer, livePreview) {
                     </div>
                 </div>
             `
+            outputContainer.appendChild(imageItemElem)
+        }
+        const imageElem = imageItemElem.querySelector('img')
+        imageElem.src = imageData
+        imageElem.width = parseInt(imageWidth)
+        imageElem.height = parseInt(imageHeight)
+        const imageInfo = imageItemElem.querySelector('.imgItemInfo')
+        imageInfo.style.visibility = (livePreview ? 'hidden' : 'visible')
+
+        if ('seed' in result && !imageElem.hasAttribute('data-seed')) {
+            const req = Object.assign({}, reqBody, {
+                seed: result?.seed || reqBody.seed
+            })
+            imageElem.setAttribute('data-seed', req.seed)
+            const imageSeedLabel = imageItemElem.querySelector('.imgSeedLabel')
+            imageSeedLabel.innerText = 'Seed: ' + req.seed
+
             const buttons = {
                 'imgUseBtn': { html: 'Use as Input', click: getUseAsInputHandler(imageItemElem) },
                 'imgSaveBtn': { html: 'Download', click: getSaveImageHandler(imageItemElem, req['output_format']) },
@@ -353,21 +364,7 @@ function showImages(req, res, outputContainer, livePreview) {
                 imgItemInfo.appendChild(newButton)
             }
             Object.keys(buttons).forEach((name) => createButton(name, buttons[name]))
-            outputContainer.appendChild(imageItemElem)
         }
-
-        const imageElem = imageItemElem.querySelector('img')
-        const imageSeedLabel = imageItemElem.querySelector('.imgSeedLabel')
-
-        imageElem.src = imageData
-        imageElem.width = parseInt(imageWidth)
-        imageElem.height = parseInt(imageHeight)
-        imageElem.setAttribute('data-seed', imageSeed)
-
-        const imageInfo = imageItemElem.querySelector('.imgItemInfo')
-        imageInfo.style.visibility = (livePreview ? 'hidden' : 'visible')
-
-        imageSeedLabel.innerText = 'Seed: ' + imageSeed
     })
 }
 
