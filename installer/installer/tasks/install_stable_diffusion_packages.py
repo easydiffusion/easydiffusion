@@ -1,5 +1,4 @@
 import os
-import shutil
 import platform
 
 from installer import app, helpers
@@ -11,19 +10,30 @@ def run():
 
     log_installing_header()
 
-    shutil.rmtree(app.project_env_dir_path, ignore_errors=True)
-
     environment_file_path = get_environment_file_path()
 
     env = os.environ.copy()
     env['PYTHONNOUSERSITE'] = '1'
 
-    if helpers.run(f'micromamba create --prefix {app.project_env_dir_path} -f {environment_file_path}', env=env) \
-        and is_valid_env():
+    if not os.path.exists(app.project_env_dir_path):
+        helpers.run(f'micromamba create --prefix {app.project_env_dir_path}', log_the_cmd=True)
 
+    helpers.run(f'micromamba install -y --prefix {app.project_env_dir_path} -f {environment_file_path}', env=env, log_the_cmd=True)
+
+    if is_valid_env():
         helpers.log("Installed the packages necessary for Stable Diffusion")
+
+        app.activated_env_dir_path = app.project_env_dir_path # so that future `run()` invocations will run in the activated env
     else:
         helpers.fail_with_install_error(error_msg="Could not install the packages necessary for Stable Diffusion")
+
+    apply_patches()
+
+def apply_patches():
+    gfpgan_repo_dir_path = os.path.join(app.stable_diffusion_repo_dir_path, 'src', 'gfpgan')
+    helpers.apply_git_patches(gfpgan_repo_dir_path, patch_file_names=(
+        "gfpgan_custom.patch",
+    ))
 
 def get_environment_file_path():
     environment_file_name = 'sd-environment-win-linux-nvidia.yaml'
@@ -42,4 +52,4 @@ Downloading packages necessary for Stable Diffusion..
 ''')
 
 def is_valid_env():
-    return helpers.modules_exist_in_env(('torch', 'ldm', 'antlr4', 'transformers', 'numpy'))
+    return helpers.modules_exist_in_env(('torch', 'ldm', 'antlr4', 'transformers', 'numpy', 'gfpgan', 'realesrgan', 'basicsr'))

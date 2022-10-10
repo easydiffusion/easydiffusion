@@ -2,18 +2,16 @@ from os import path
 
 from installer import app, helpers
 
-patch_file_names = [
-    'sd_custom.patch',
-]
-
 stable_diffusion_repo_git_path = path.join(app.stable_diffusion_repo_dir_path, '.git')
-patches_dir_path = path.join(app.installer_dir_path, 'patches')
 
 is_developer_mode = app.config.get('is_developer_mode', False)
 
 def run():
     fetch_repo()
-    apply_patches()
+
+    helpers.apply_git_patches(app.stable_diffusion_repo_dir_path, patch_file_names=(
+        "sd_custom.patch",
+    ))
 
 def fetch_repo():
     commit_id = app.config.get('stable_diffusion_commit', app.DEFAULT_STABLE_DIFFUSION_COMMIT)
@@ -37,11 +35,3 @@ def fetch_repo():
             helpers.fail_with_install_error(error_msg="Could not download Stable Diffusion")
 
         helpers.run(f'git -c advice.detachedHead=false checkout "{commit_id}"', run_in_folder=app.stable_diffusion_repo_dir_path)
-
-def apply_patches():
-    if is_developer_mode:
-        return
-
-    for patch_file_name in patch_file_names:
-        patch_file_path = path.join(patches_dir_path, patch_file_name)
-        helpers.run(f"git apply {patch_file_path}", run_in_folder=app.stable_diffusion_repo_dir_path)

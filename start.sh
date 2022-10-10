@@ -3,7 +3,6 @@
 echo "Stable Diffusion UI - v2.5"
 echo ""
 
-export START_CMD_FILENAME="start.sh"
 export SD_BASE_DIR=$(pwd)
 
 echo "Working in $SD_BASE_DIR"

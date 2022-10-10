@@ -10,6 +10,9 @@ from installer.tasks import (
     apply_project_update,
     fetch_stable_diffusion_repo,
     install_stable_diffusion_packages,
+    install_ui_packages,
+    download_weights,
+    start_ui_server,
 )
 
 tasks = [
@@ -17,6 +20,9 @@ tasks = [
     apply_project_update,
     fetch_stable_diffusion_repo,
     install_stable_diffusion_packages,
+    install_ui_packages,
+    download_weights,
+    start_ui_server,
 ]
 
 helpers.log(f'Starting Stable Diffusion UI at {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}')
