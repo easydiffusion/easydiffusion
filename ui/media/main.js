@@ -518,7 +518,11 @@ async function doMakeImage(task) {
                         }
                     }
                 } catch (e) {
-                    finalJSON += jsonStr
+                    if (e instanceof SyntaxError && e.message.startsWith('JSON.parse')) {
+                        finalJSON += jsonStr
+                    } else {
+                        throw e
+                    }
                 }
 
                 prevTime = t
