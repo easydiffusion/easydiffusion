@@ -491,12 +491,8 @@ async function doMakeImage(task) {
                 let t = new Date().getTime()
 
                 const {value, done} = await reader.read()
-                if (done) {
-                    break
-                }
 
                 let timeTaken = (prevTime === -1 ? -1 : t - prevTime)
-
                 let jsonStr = textDecoder.decode(value)
                 try {
                     // hack for a middleman buffering all the streaming updates, and unleashing them on the poor browser in one shot.
@@ -519,6 +515,9 @@ async function doMakeImage(task) {
                     } else {
                         throw e
                     }
+                }
+                if (done) {
+                    break
                 }
                 if (typeof stepUpdate === 'object' && 'step' in stepUpdate) {
                     let batchSize = stepUpdate.total_steps
