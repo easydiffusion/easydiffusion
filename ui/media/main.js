@@ -1,3 +1,4 @@
+"use strict" // Opt in to a restricted variant of JavaScript
 const SOUND_ENABLED_KEY = "soundEnabled"
 const SAVE_TO_DISK_KEY = "saveToDisk"
 const USE_CPU_KEY = "useCPU"
