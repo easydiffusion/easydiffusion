@@ -471,7 +471,8 @@ async function doMakeImage(task) {
     const previewPrompt = task['previewPrompt']
     const progressBar = task['progressBar']
 
-    let res = ''
+    let res = undefined
+    let stepUpdate = undefined
     try {
         res = await fetch('/image', {
             method: 'POST',
@@ -497,9 +498,21 @@ async function doMakeImage(task) {
                 let timeTaken = (prevTime === -1 ? -1 : t - prevTime)
 
                 let jsonStr = textDecoder.decode(value)
-                let stepUpdate = undefined
                 try {
-                    stepUpdate = JSON.parse(jsonStr)
+                    // hack for a middleman buffering all the streaming updates, and unleashing them on the poor browser in one shot.
+                    //  this results in having to parse JSON like {"step": 1}{"step": 2}...{"status": "succeeded"..}
+                    //  which is obviously invalid.
+                    // So we need to just extract the last {} section, starting from "status" to the end of the response
+                    let lastChunkIdx = jsonStr.indexOf('}{')
+                    if (lastChunkIdx !== -1) {
+                        finalJSON += jsonStr.substring(0, lastChunkIdx + 1)
+                        jsonStr = jsonStr.substring(lastChunkIdx + 2)
+                    } else {
+                        finalJSON += jsonStr
+                        jsonStr = ''
+                    }
+                    stepUpdate = JSON.parse(finalJSON)
+                    finalJSON = jsonStr
                 } catch (e) {
                     if (e instanceof SyntaxError) {
                         finalJSON += jsonStr
@@ -507,9 +520,7 @@ async function doMakeImage(task) {
                         throw e
                     }
                 }
-                if (!stepUpdate || stepUpdate.step === undefined) {
-                    finalJSON += jsonStr
-                } else {
+                if (typeof stepUpdate === 'object' && 'step' in stepUpdate) {
                     let batchSize = stepUpdate.total_steps
                     let overallStepCount = stepUpdate.step + task.batchesDone * batchSize
                     let totalSteps = batchCount * batchSize
@@ -531,6 +542,8 @@ async function doMakeImage(task) {
                     if (stepUpdate.output !== undefined) {
                         showImages(reqBody, stepUpdate, outputContainer, true)
                     }
+                } else {
+                    finalJSON = jsonStr
                 }
 
                 prevTime = t
@@ -541,7 +554,7 @@ async function doMakeImage(task) {
             }
         }
 
-        if (res.status != 200) {
+        if (!res || res.status != 200 || !stepUpdate) {
             if (serverStatus === 'online') {
                 logError('Stable Diffusion had an error: ' + await res.text(), res, outputMsg)
             } else {
@@ -549,42 +562,24 @@ async function doMakeImage(task) {
             }
             res = undefined
             progressBar.style.display = 'none'
-        } else {
-            if (finalJSON !== undefined && finalJSON.indexOf('}{') !== -1) {
-                // hack for a middleman buffering all the streaming updates, and unleashing them
-                //  on the poor browser in one shot.
-                //  this results in having to parse JSON like {"step": 1}{"step": 2}...{"status": "succeeded"..}
-                //  which is obviously invalid.
-                // So we need to just extract the last {} section, starting from "status" to the end of the response
+        } else if (stepUpdate.status !== 'succeeded') {
+            let msg = ''
+            if (res.detail !== undefined) {
+                msg = res.detail
 
-                let lastChunkIdx = finalJSON.lastIndexOf('}{')
-                if (lastChunkIdx !== -1) {
-                    let remaining = finalJSON.substring(lastChunkIdx)
-                    finalJSON = remaining.substring(1)
+                if (msg.toLowerCase().includes('out of memory')) {
+                    msg += `<br/><br/>
+                            <b>Suggestions</b>:
+                            <br/>
+                            1. If you have set an initial image, please try reducing its dimension to ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION} or smaller.<br/>
+                            2. Try disabling the '<em>Turbo mode</em>' under '<em>Advanced Settings</em>'.<br/>
+                            3. Try generating a smaller image.<br/>`
                 }
+            } else {
+                msg = res
             }
-
-            res = JSON.parse(finalJSON)
-
-            if (res.status !== 'succeeded') {
-                let msg = ''
-                if (res.detail !== undefined) {
-                    msg = res.detail
-
-                    if (msg.toLowerCase().includes('out of memory')) {
-                        msg += `<br/><br/>
-                                <b>Suggestions</b>:
-                                <br/>
-                                1. If you have set an initial image, please try reducing its dimension to ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION} or smaller.<br/>
-                                2. Try disabling the '<em>Turbo mode</em>' under '<em>Advanced Settings</em>'.<br/>
-                                3. Try generating a smaller image.<br/>`
-                    }
-                } else {
-                    msg = res
-                }
-                logError(msg, res, outputMsg)
-                res = undefined
-            }
+            logError(msg, res, outputMsg)
+            res = undefined
         }
     } catch (e) {
         console.log('request error', e)
@@ -594,11 +589,11 @@ async function doMakeImage(task) {
         res = undefined
     }
 
-    if (!res) return false
+    if (!stepUpdate) return false
 
     lastPromptUsed = reqBody['prompt']
 
-    showImages(reqBody, res, outputContainer, false)
+    showImages(reqBody, stepUpdate, outputContainer, false)
 
     return true
 }
