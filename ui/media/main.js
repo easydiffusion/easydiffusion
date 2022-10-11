@@ -417,14 +417,23 @@ function getStartNewTaskHandler(reqBody, imageItemElem, mode) {
             case 'img2img_X2':
                 newTaskRequest.reqBody = Object.assign({}, reqBody, {
                     num_outputs: 1,
-                    init_image: imageElem.src,
-                    sampler: 'ddim',
                     prompt_strength: '0.5',
                 })
+                if (!newTaskRequest.reqBody.init_image || mode === 'img2img_X2') {
+                    newTaskRequest.reqBody.sampler = 'ddim'
+                    newTaskRequest.reqBody.init_image = imageElem.src
+                } else {
+                    newTaskRequest.reqBody.seed = 1 + newTaskRequest.reqBody.seed
+                }
                 if (mode === 'img2img_X2') {
                     newTaskRequest.reqBody.width = reqBody.width * 2
                     newTaskRequest.reqBody.height = reqBody.height * 2
                     newTaskRequest.reqBody.num_inference_steps = Math.min(100, reqBody.num_inference_steps * 2)
+                    if (useUpscalingField.checked) {
+                        newTaskRequest.reqBody.use_upscale = upscaleModelField.value
+                    } else {
+                        delete newTaskRequest.reqBody.use_upscale
+                    }
                 }
                 break
             case 'upscale':
