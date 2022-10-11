@@ -486,16 +486,23 @@ async function doMakeImage(task) {
         let textDecoder = new TextDecoder()
         let finalJSON = ''
         let prevTime = -1
+        let readComplete = false
         while (true) {
             let t = new Date().getTime()
 
-            const {value, done} = await reader.read()
-            if (done && !finalJSON && !value) {
-                break
+            let jsonStr = ''
+            if (!readComplete) {
+                const {value, done} = await reader.read()
+                if (done) {
+                    readComplete = true
+                }
+                if (done && finalJSON.length <= 0 && !value) {
+                    break
+                }
+                if (value) {
+                    jsonStr = textDecoder.decode(value)
+                }
             }
-
-            let timeTaken = (prevTime === -1 ? -1 : t - prevTime)
-            let jsonStr = (value ? textDecoder.decode(value) : '')
             try {
                 // hack for a middleman buffering all the streaming updates, and unleashing them on the poor browser in one shot.
                 //  this results in having to parse JSON like {"step": 1}{"step": 2}...{"status": "succeeded"..}
@@ -518,7 +525,7 @@ async function doMakeImage(task) {
                     throw e
                 }
             }
-            if (done) {
+            if (readComplete && finalJSON.length <= 0) {
                 break
             }
             if (typeof stepUpdate === 'object' && 'step' in stepUpdate) {
@@ -528,6 +535,7 @@ async function doMakeImage(task) {
                 let percent = 100 * (overallStepCount / totalSteps)
                 percent = (percent > 100 ? 100 : percent)
                 percent = percent.toFixed(0)
+                let timeTaken = (prevTime === -1 ? -1 : t - prevTime)
 
                 let stepsRemaining = totalSteps - overallStepCount
                 stepsRemaining = (stepsRemaining < 0 ? 0 : stepsRemaining)
