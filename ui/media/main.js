@@ -501,9 +501,9 @@ async function doMakeImage(task) {
                         percent = (percent > 100 ? 100 : percent)
                         percent = percent.toFixed(0)
 
-                        stepsRemaining = totalSteps - overallStepCount
+                        let stepsRemaining = totalSteps - overallStepCount
                         stepsRemaining = (stepsRemaining < 0 ? 0 : stepsRemaining)
-                        timeRemaining = (timeTaken === -1 ? '' : stepsRemaining * timeTaken) // ms
+                        let timeRemaining = (timeTaken === -1 ? '' : stepsRemaining * timeTaken) // ms
 
                         outputMsg.innerHTML = `Batch ${task.batchesDone+1} of ${batchCount}`
                         outputMsg.innerHTML += `. Generating image(s): ${percent}%`
@@ -1086,7 +1086,7 @@ useBetaChannelField.addEventListener('click', async function(e) {
 async function getAppConfig() {
     try {
         let res = await fetch('/app_config')
-        config = await res.json()
+        const config = await res.json()
 
         if (config.update_branch === 'beta') {
             useBetaChannelField.checked = true
@@ -1102,7 +1102,7 @@ async function getAppConfig() {
 async function getModels() {
     try {
         let res = await fetch('/models')
-        models = await res.json()
+        const models = await res.json()
 
         let activeModel = models['active']
         let modelOptions = models['options']
@@ -1120,7 +1120,7 @@ async function getModels() {
             stableDiffusionModelField.appendChild(modelOption)
         })
 
-        console.log('get models response', config)
+        console.log('get models response', models)
     } catch (e) {
         console.log('get models error', e)
     }
