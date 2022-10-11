@@ -487,70 +487,66 @@ async function doMakeImage(task) {
         let finalJSON = ''
         let prevTime = -1
         while (true) {
-            try {
-                let t = new Date().getTime()
+            let t = new Date().getTime()
 
-                const {value, done} = await reader.read()
-
-                let timeTaken = (prevTime === -1 ? -1 : t - prevTime)
-                let jsonStr = textDecoder.decode(value)
-                try {
-                    // hack for a middleman buffering all the streaming updates, and unleashing them on the poor browser in one shot.
-                    //  this results in having to parse JSON like {"step": 1}{"step": 2}...{"status": "succeeded"..}
-                    //  which is obviously invalid.
-                    // So we need to just extract the last {} section, starting from "status" to the end of the response
-                    let lastChunkIdx = jsonStr.indexOf('}{')
-                    if (lastChunkIdx !== -1) {
-                        finalJSON += jsonStr.substring(0, lastChunkIdx + 1)
-                        jsonStr = jsonStr.substring(lastChunkIdx + 2)
-                    } else {
-                        finalJSON += jsonStr
-                        jsonStr = ''
-                    }
-                    stepUpdate = JSON.parse(finalJSON)
-                    finalJSON = jsonStr
-                } catch (e) {
-                    if (e instanceof SyntaxError) {
-                        finalJSON += jsonStr
-                    } else {
-                        throw e
-                    }
-                }
-                if (done) {
-                    break
-                }
-                if (typeof stepUpdate === 'object' && 'step' in stepUpdate) {
-                    let batchSize = stepUpdate.total_steps
-                    let overallStepCount = stepUpdate.step + task.batchesDone * batchSize
-                    let totalSteps = batchCount * batchSize
-                    let percent = 100 * (overallStepCount / totalSteps)
-                    percent = (percent > 100 ? 100 : percent)
-                    percent = percent.toFixed(0)
-
-                    let stepsRemaining = totalSteps - overallStepCount
-                    stepsRemaining = (stepsRemaining < 0 ? 0 : stepsRemaining)
-                    let timeRemaining = (timeTaken === -1 ? '' : stepsRemaining * timeTaken) // ms
-
-                    outputMsg.innerHTML = `Batch ${task.batchesDone+1} of ${batchCount}`
-                    outputMsg.innerHTML += `. Generating image(s): ${percent}%`
-
-                    timeRemaining = (timeTaken !== -1 ? millisecondsToStr(timeRemaining) : '')
-                    outputMsg.innerHTML += `. Time remaining (approx): ${timeRemaining}`
-                    outputMsg.style.display = 'block'
-
-                    if (stepUpdate.output !== undefined) {
-                        showImages(reqBody, stepUpdate, outputContainer, true)
-                    }
-                } else {
-                    finalJSON = jsonStr
-                }
-
-                prevTime = t
-            } catch (e) {
-                logError('Stable Diffusion had an error. Please check the logs in the command-line window.', res, outputMsg)
-                res = undefined
-                throw e
+            const {value, done} = await reader.read()
+            if (done && !finalJSON && !value) {
+                break
             }
+
+            let timeTaken = (prevTime === -1 ? -1 : t - prevTime)
+            let jsonStr = (value ? textDecoder.decode(value) : '')
+            try {
+                // hack for a middleman buffering all the streaming updates, and unleashing them on the poor browser in one shot.
+                //  this results in having to parse JSON like {"step": 1}{"step": 2}...{"status": "succeeded"..}
+                //  which is obviously invalid.
+                // So we need to just extract the last {} section, starting from "status" to the end of the response
+                let lastChunkIdx = jsonStr.indexOf('}{')
+                if (lastChunkIdx !== -1) {
+                    finalJSON += jsonStr.substring(0, lastChunkIdx + 1)
+                    jsonStr = jsonStr.substring(lastChunkIdx + 2)
+                } else {
+                    finalJSON += jsonStr
+                    jsonStr = ''
+                }
+                stepUpdate = JSON.parse(finalJSON)
+                finalJSON = jsonStr
+            } catch (e) {
+                if (e instanceof SyntaxError) {
+                    finalJSON += jsonStr
+                } else {
+                    throw e
+                }
+            }
+            if (done) {
+                break
+            }
+            if (typeof stepUpdate === 'object' && 'step' in stepUpdate) {
+                let batchSize = stepUpdate.total_steps
+                let overallStepCount = stepUpdate.step + task.batchesDone * batchSize
+                let totalSteps = batchCount * batchSize
+                let percent = 100 * (overallStepCount / totalSteps)
+                percent = (percent > 100 ? 100 : percent)
+                percent = percent.toFixed(0)
+
+                let stepsRemaining = totalSteps - overallStepCount
+                stepsRemaining = (stepsRemaining < 0 ? 0 : stepsRemaining)
+                let timeRemaining = (timeTaken === -1 ? '' : stepsRemaining * timeTaken) // ms
+
+                outputMsg.innerHTML = `Batch ${task.batchesDone+1} of ${batchCount}`
+                outputMsg.innerHTML += `. Generating image(s): ${percent}%`
+
+                timeRemaining = (timeTaken !== -1 ? millisecondsToStr(timeRemaining) : '')
+                outputMsg.innerHTML += `. Time remaining (approx): ${timeRemaining}`
+                outputMsg.style.display = 'block'
+
+                if (stepUpdate.output !== undefined) {
+                    showImages(reqBody, stepUpdate, outputContainer, true)
+                }
+            } else {
+                finalJSON = jsonStr
+            }
+            prevTime = t
         }
 
         if (!res || res.status != 200 || !stepUpdate) {
@@ -585,11 +581,10 @@ async function doMakeImage(task) {
         logError('Stable Diffusion had an error. Please check the logs in the command-line window. <br/><br/>' + e + '<br/><pre>' + e.stack + '</pre>', res, outputMsg)
         setStatus('request', 'error', 'error')
         progressBar.style.display = 'none'
-        res = undefined
     }
-
-    if (!stepUpdate) return false
-
+    if (!stepUpdate || stepUpdate.status !== 'succeeded') {
+        return false
+    }
     lastPromptUsed = reqBody['prompt']
 
     showImages(reqBody, stepUpdate, outputContainer, false)
