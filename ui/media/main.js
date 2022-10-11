@@ -518,7 +518,6 @@ async function doMakeImage(task) {
                         outputMsg.innerHTML += `. Generating image(s): ${percent}%`
 
                         timeRemaining = (timeTaken !== -1 ? millisecondsToStr(timeRemaining) : '')
-
                         outputMsg.innerHTML += `. Time remaining (approx): ${timeRemaining}`
                         outputMsg.style.display = 'block'
 
@@ -682,7 +681,6 @@ async function checkTasks() {
 
     if (successCount === task.batchCount) {
         task.outputMsg.innerText = 'Processed ' + task.numOutputsTotal + ' images in ' + time + ' seconds'
-
         // setStatus('request', 'done', 'success')
     } else {
         if (task.outputMsg.innerText.toLowerCase().indexOf('error') === -1) {
@@ -696,9 +694,17 @@ async function checkTasks() {
 
     currentTask = null
 
+    if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(checkTasks, { timeout: 30 * 1000 })
+    } else {
+        setTimeout(checkTasks, 500)
+    }
+}
+if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(checkTasks, { timeout: 30 * 1000 })
+} else {
     setTimeout(checkTasks, 10)
 }
-setTimeout(checkTasks, 0)
 
 function getCurrentUserRequest() {
     const numOutputsTotal = parseInt(numOutputsTotalField.value)
