@@ -497,40 +497,39 @@ async function doMakeImage(task) {
                 let timeTaken = (prevTime === -1 ? -1 : t - prevTime)
 
                 let jsonStr = textDecoder.decode(value)
-
+                let stepUpdate = undefined
                 try {
-                    let stepUpdate = JSON.parse(jsonStr)
-
-                    if (stepUpdate.step === undefined) {
-                        finalJSON += jsonStr
-                    } else {
-                        let batchSize = stepUpdate.total_steps
-                        let overallStepCount = stepUpdate.step + task.batchesDone * batchSize
-                        let totalSteps = batchCount * batchSize
-                        let percent = 100 * (overallStepCount / totalSteps)
-                        percent = (percent > 100 ? 100 : percent)
-                        percent = percent.toFixed(0)
-
-                        let stepsRemaining = totalSteps - overallStepCount
-                        stepsRemaining = (stepsRemaining < 0 ? 0 : stepsRemaining)
-                        let timeRemaining = (timeTaken === -1 ? '' : stepsRemaining * timeTaken) // ms
-
-                        outputMsg.innerHTML = `Batch ${task.batchesDone+1} of ${batchCount}`
-                        outputMsg.innerHTML += `. Generating image(s): ${percent}%`
-
-                        timeRemaining = (timeTaken !== -1 ? millisecondsToStr(timeRemaining) : '')
-                        outputMsg.innerHTML += `. Time remaining (approx): ${timeRemaining}`
-                        outputMsg.style.display = 'block'
-
-                        if (stepUpdate.output !== undefined) {
-                            showImages(reqBody, stepUpdate, outputContainer, true)
-                        }
-                    }
+                    stepUpdate = JSON.parse(jsonStr)
                 } catch (e) {
-                    if (e instanceof SyntaxError && e.message.startsWith('JSON.parse')) {
+                    if (e instanceof SyntaxError) {
                         finalJSON += jsonStr
                     } else {
                         throw e
+                    }
+                }
+                if (!stepUpdate || stepUpdate.step === undefined) {
+                    finalJSON += jsonStr
+                } else {
+                    let batchSize = stepUpdate.total_steps
+                    let overallStepCount = stepUpdate.step + task.batchesDone * batchSize
+                    let totalSteps = batchCount * batchSize
+                    let percent = 100 * (overallStepCount / totalSteps)
+                    percent = (percent > 100 ? 100 : percent)
+                    percent = percent.toFixed(0)
+
+                    let stepsRemaining = totalSteps - overallStepCount
+                    stepsRemaining = (stepsRemaining < 0 ? 0 : stepsRemaining)
+                    let timeRemaining = (timeTaken === -1 ? '' : stepsRemaining * timeTaken) // ms
+
+                    outputMsg.innerHTML = `Batch ${task.batchesDone+1} of ${batchCount}`
+                    outputMsg.innerHTML += `. Generating image(s): ${percent}%`
+
+                    timeRemaining = (timeTaken !== -1 ? millisecondsToStr(timeRemaining) : '')
+                    outputMsg.innerHTML += `. Time remaining (approx): ${timeRemaining}`
+                    outputMsg.style.display = 'block'
+
+                    if (stepUpdate.output !== undefined) {
+                        showImages(reqBody, stepUpdate, outputContainer, true)
                     }
                 }
 
