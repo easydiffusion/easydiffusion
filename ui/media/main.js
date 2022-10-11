@@ -558,13 +558,22 @@ async function doMakeImage(task) {
         }
 
         if (!res || res.status != 200 || !stepUpdate) {
-            if (serverStatus === 'online') {
-                logError('Stable Diffusion had an error: ' + await res.text(), res, outputMsg)
+            if (typeof res === 'object' && serverStatus === 'online') {
+                let msg = 'Stable Diffusion had an error displaying the response: '
+                try { // 'Response': body stream already read
+                    msg += await res.text()
+                } catch(e) {
+                    msg += 'No error response.'
+                }
+                if (finalJSON) {
+                    msg += ' Unread data: ' + finalJSON
+                }
+                logError(msg, res, outputMsg)
             } else {
                 logError("Stable Diffusion is still starting up, please wait. If this goes on beyond a few minutes, Stable Diffusion has probably crashed. Please check the error message in the command-line window.", res, outputMsg)
             }
-            res = undefined
             progressBar.style.display = 'none'
+            return false
         } else if (stepUpdate.status !== 'succeeded') {
             let msg = ''
             if (res.detail !== undefined) {
@@ -579,24 +588,21 @@ async function doMakeImage(task) {
                             3. Try generating a smaller image.<br/>`
                 }
             } else {
-                msg = res
+                msg = `Unexpected Read Error:<br/><br/><pre>Response:${JSON.stringify(res, undefined, 4)}<br/>StepUpdate:${JSON.stringify(stepUpdate, undefined, 4)}</pre>`
             }
             logError(msg, res, outputMsg)
-            res = undefined
+            return false
         }
+
+        lastPromptUsed = reqBody['prompt']
+        showImages(reqBody, stepUpdate, outputContainer, false)
     } catch (e) {
         console.log('request error', e)
         logError('Stable Diffusion had an error. Please check the logs in the command-line window. <br/><br/>' + e + '<br/><pre>' + e.stack + '</pre>', res, outputMsg)
         setStatus('request', 'error', 'error')
         progressBar.style.display = 'none'
-    }
-    if (!stepUpdate || stepUpdate.status !== 'succeeded') {
         return false
     }
-    lastPromptUsed = reqBody['prompt']
-
-    showImages(reqBody, stepUpdate, outputContainer, false)
-
     return true
 }
 
