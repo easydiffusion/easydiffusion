@@ -557,28 +557,10 @@ async function doMakeImage(task) {
             prevTime = t
         }
 
-        if (!res || res.status != 200 || !stepUpdate) {
-            if (typeof res === 'object' && serverStatus === 'online') {
-                let msg = 'Stable Diffusion had an error displaying the response: '
-                try { // 'Response': body stream already read
-                    msg += await res.text()
-                } catch(e) {
-                    msg += 'No error response.'
-                }
-                if (finalJSON) {
-                    msg += ' Unread data: ' + finalJSON
-                }
-                logError(msg, res, outputMsg)
-            } else {
-                logError("Stable Diffusion is still starting up, please wait. If this goes on beyond a few minutes, Stable Diffusion has probably crashed. Please check the error message in the command-line window.", res, outputMsg)
-            }
-            progressBar.style.display = 'none'
-            return false
-        } else if (stepUpdate.status !== 'succeeded') {
+        if (typeof stepUpdate === 'object' && stepUpdate.status !== 'succeeded') {
             let msg = ''
-            if (res.detail !== undefined) {
-                msg = res.detail
-
+            if ('detail' in stepUpdate && typeof stepUpdate.detail === 'string' && stepUpdate.detail.length > 0) {
+                msg = stepUpdate.detail
                 if (msg.toLowerCase().includes('out of memory')) {
                     msg += `<br/><br/>
                             <b>Suggestions</b>:
@@ -588,9 +570,29 @@ async function doMakeImage(task) {
                             3. Try generating a smaller image.<br/>`
                 }
             } else {
-                msg = `Unexpected Read Error:<br/><br/><pre>Response:${JSON.stringify(res, undefined, 4)}<br/>StepUpdate:${JSON.stringify(stepUpdate, undefined, 4)}</pre>`
+                msg = `Unexpected Read Error:<br/><pre>StepUpdate:${JSON.stringify(stepUpdate, undefined, 4)}</pre>`
             }
             logError(msg, res, outputMsg)
+            return false
+        }
+        if (typeof stepUpdate !== 'object' || !res || res.status != 200) {
+            if (serverStatus !== 'online') {
+                logError("Stable Diffusion is still starting up, please wait. If this goes on beyond a few minutes, Stable Diffusion has probably crashed. Please check the error message in the command-line window.", res, outputMsg)
+            } else if (typeof res === 'object') {
+                let msg = 'Stable Diffusion had an error reading the response: '
+                try { // 'Response': body stream already read
+                    msg += 'Read: ' + await res.text()
+                } catch(e) {
+                    msg += 'No error response. '
+                }
+                if (finalJSON) {
+                    msg += 'Buffered data: ' + finalJSON
+                }
+                logError(msg, res, outputMsg)
+            } else {
+                msg = `Unexpected Read Error:<br/><pre>Response:${res}<br/>StepUpdate:${typeof stepUpdate === 'object' ? JSON.stringify(stepUpdate, undefined, 4) : stepUpdate}</pre>`
+            }
+            progressBar.style.display = 'none'
             return false
         }
 
