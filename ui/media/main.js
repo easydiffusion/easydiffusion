@@ -669,7 +669,7 @@ async function checkTasks() {
         let success = await doMakeImage(newTask)
         task.batchesDone++
 
-        if (!newTask.isProcessing) {
+        if (!newTask.isProcessing || !success) {
             task.isProcessing = false
             break
         }
