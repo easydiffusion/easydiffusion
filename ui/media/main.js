@@ -231,14 +231,16 @@ function setStatus(statusType, msg, msgType) {
 }
 
 function logMsg(msg, level, outputMsg) {
-    if (level === 'error') {
-        outputMsg.innerHTML = '<span style="color: red">Error: ' + msg + '</span>'
-    } else if (level === 'warn') {
-        outputMsg.innerHTML = '<span style="color: orange">Warning: ' + msg + '</span>'
-    } else {
-        outputMsg.innerText = msg
+    if (outputMsg.hasChildNodes()) {
+        outputMsg.appendChild(document.createElement('br'))
     }
-
+    if (level === 'error') {
+        outputMsg.innerHTML += '<span style="color: red">Error: ' + msg + '</span>'
+    } else if (level === 'warn') {
+        outputMsg.innerHTML += '<span style="color: orange">Warning: ' + msg + '</span>'
+    } else {
+        outputMsg.innerText += msg
+    }
     console.log(level, msg)
 }
 
