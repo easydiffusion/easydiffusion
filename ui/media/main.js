@@ -1,3 +1,4 @@
+"use strict" // Opt in to a restricted variant of JavaScript
 const SOUND_ENABLED_KEY = "soundEnabled"
 const SAVE_TO_DISK_KEY = "saveToDisk"
 const USE_CPU_KEY = "useCPU"
@@ -230,14 +231,16 @@ function setStatus(statusType, msg, msgType) {
 }
 
 function logMsg(msg, level, outputMsg) {
-    if (level === 'error') {
-        outputMsg.innerHTML = '<span style="color: red">Error: ' + msg + '</span>'
-    } else if (level === 'warn') {
-        outputMsg.innerHTML = '<span style="color: orange">Warning: ' + msg + '</span>'
-    } else {
-        outputMsg.innerText = msg
+    if (outputMsg.hasChildNodes()) {
+        outputMsg.appendChild(document.createElement('br'))
     }
-
+    if (level === 'error') {
+        outputMsg.innerHTML += '<span style="color: red">Error: ' + msg + '</span>'
+    } else if (level === 'warn') {
+        outputMsg.innerHTML += '<span style="color: orange">Warning: ' + msg + '</span>'
+    } else {
+        outputMsg.innerText += msg
+    }
     console.log(level, msg)
 }
 
@@ -303,28 +306,21 @@ function resizeInpaintingEditor() {
     inpaintingEditor.setColor(inpaintingEditor.opts.color)
 }
 
-function showImages(req, res, outputContainer, livePreview) {
+function showImages(reqBody, res, outputContainer, livePreview) {
     let imageItemElements = outputContainer.querySelectorAll('.imgItem')
-
+    if(typeof res != 'object') return
     res.output.reverse()
-
     res.output.forEach((result, index) => {
-        if(typeof res != 'object') return
-
-        const imageData = result?.data || result?.path + '?t=' + new Date().getTime(),
-            imageSeed = result?.seed,
-            imageWidth = req.width,
-            imageHeight = req.height;
-
+        const imageData = result?.data || result?.path + '?t=' + new Date().getTime()
+        const imageWidth = reqBody.width
+        const imageHeight = reqBody.height
         if (!imageData.includes('/')) {
             // res contained no data for the image, stop execution
-
             setStatus('request', 'invalid image', 'error')
             return
         }
 
         let imageItemElem = (index < imageItemElements.length ? imageItemElements[index] : null)
-
         if(!imageItemElem) {
             imageItemElem = document.createElement('div')
             imageItemElem.className = 'imgItem'
@@ -333,33 +329,46 @@ function showImages(req, res, outputContainer, livePreview) {
                     <img/>
                     <div class="imgItemInfo">
                         <span class="imgSeedLabel"></span>
-                        <button class="imgUseBtn">Use as Input</button>
-                        <button class="imgSaveBtn">Download</button>
                     </div>
                 </div>
             `
-
-            const useAsInputBtn = imageItemElem.querySelector('.imgUseBtn'),
-                saveImageBtn = imageItemElem.querySelector('.imgSaveBtn');
-
-            useAsInputBtn.addEventListener('click', getUseAsInputHandler(imageItemElem))
-            saveImageBtn.addEventListener('click', getSaveImageHandler(imageItemElem, req['output_format']))
-
             outputContainer.appendChild(imageItemElem)
         }
-
-        const imageElem = imageItemElem.querySelector('img'),
-            imageSeedLabel = imageItemElem.querySelector('.imgSeedLabel');
-
+        const imageElem = imageItemElem.querySelector('img')
         imageElem.src = imageData
         imageElem.width = parseInt(imageWidth)
         imageElem.height = parseInt(imageHeight)
-        imageElem.setAttribute('data-seed', imageSeed)
-
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
         imageInfo.style.visibility = (livePreview ? 'hidden' : 'visible')
 
-        imageSeedLabel.innerText = 'Seed: ' + imageSeed
+        if ('seed' in result && !imageElem.hasAttribute('data-seed')) {
+            const req = Object.assign({}, reqBody, {
+                seed: result?.seed || reqBody.seed
+            })
+            imageElem.setAttribute('data-seed', req.seed)
+            const imageSeedLabel = imageItemElem.querySelector('.imgSeedLabel')
+            imageSeedLabel.innerText = 'Seed: ' + req.seed
+
+            const buttons = {
+                'imgUseBtn': { html: 'Use as Input', click: getUseAsInputHandler(imageItemElem) },
+                'imgSaveBtn': { html: 'Download', click: getSaveImageHandler(imageItemElem, req['output_format']) },
+                'imgX2Btn': { html: 'Double Size', click: getStartNewTaskHandler(req, imageItemElem, 'img2img_X2') },
+                'imgRedoBtn': { html: 'Redo', click: getStartNewTaskHandler(req, imageItemElem, 'img2img') },
+            }
+            if (!req.use_upscale) {
+                buttons.upscaleBtn = { html: 'Upscale', click: getStartNewTaskHandler(req, imageItemElem, 'upscale') }
+            }
+            const imgItemInfo = imageItemElem.querySelector('.imgItemInfo')
+            const createButton = function(name, btnInfo) {
+                const newButton = document.createElement('button')
+                newButton.classList.add(name)
+                newButton.classList.add('tasksBtns')
+                newButton.innerHTML = btnInfo.html
+                newButton.addEventListener('click', btnInfo.click)
+                imgItemInfo.appendChild(newButton)
+            }
+            Object.keys(buttons).forEach((name) => createButton(name, buttons[name]))
+        }
     })
 }
 
@@ -398,6 +407,53 @@ function getSaveImageHandler(imageItemElem, outputFormat) {
         imgDownload.click()
     }
 }
+function getStartNewTaskHandler(reqBody, imageItemElem, mode) {
+    return function() {
+        if (serverStatus !== 'online') {
+            alert('The server is still starting up..')
+            return
+        }
+        const imageElem = imageItemElem.querySelector('img')
+        const newTaskRequest = getCurrentUserRequest()
+        switch (mode) {
+            case 'img2img':
+            case 'img2img_X2':
+                newTaskRequest.reqBody = Object.assign({}, reqBody, { num_outputs: 1 })
+                if (!newTaskRequest.reqBody.init_image || mode === 'img2img_X2') {
+                    newTaskRequest.reqBody.sampler = 'ddim'
+                    newTaskRequest.reqBody.prompt_strength = '0.5'
+                    newTaskRequest.reqBody.init_image = imageElem.src
+                    delete newTaskRequest.reqBody.mask
+                } else {
+                    newTaskRequest.reqBody.seed = 1 + newTaskRequest.reqBody.seed
+                }
+                if (mode === 'img2img_X2') {
+                    newTaskRequest.reqBody.width = reqBody.width * 2
+                    newTaskRequest.reqBody.height = reqBody.height * 2
+                    newTaskRequest.reqBody.num_inference_steps = Math.min(100, reqBody.num_inference_steps * 2)
+                    if (useUpscalingField.checked) {
+                        newTaskRequest.reqBody.use_upscale = upscaleModelField.value
+                    } else {
+                        delete newTaskRequest.reqBody.use_upscale
+                    }
+                }
+                break
+            case 'upscale':
+                newTaskRequest.reqBody = Object.assign({}, reqBody, {
+                    num_outputs: 1,
+                    //use_face_correction: 'GFPGANv1.3',
+                    use_upscale: upscaleModelField.value,
+                })
+                break
+            default:
+                throw new Error("Unknown upscale mode: " + mode)
+        }
+        newTaskRequest.seed = newTaskRequest.reqBody.seed
+        newTaskRequest.numOutputsTotal = 1
+        newTaskRequest.batchCount = 1
+        createTask(newTaskRequest)
+    }
+}
 
 // makes a single image. don't call this directly, use makeImage() instead
 async function doMakeImage(task) {
@@ -416,10 +472,8 @@ async function doMakeImage(task) {
     const previewPrompt = task['previewPrompt']
     const progressBar = task['progressBar']
 
-    let res = ''
-    let seed = reqBody['seed']
-    let numOutputs = parseInt(reqBody['num_outputs'])
-
+    let res = undefined
+    let stepUpdate = undefined
     try {
         res = await fetch('/image', {
             method: 'POST',
@@ -433,119 +487,134 @@ async function doMakeImage(task) {
         let textDecoder = new TextDecoder()
         let finalJSON = ''
         let prevTime = -1
+        let readComplete = false
         while (true) {
-            try {
-                let t = new Date().getTime()
+            let t = new Date().getTime()
 
+            let jsonStr = ''
+            if (!readComplete) {
                 const {value, done} = await reader.read()
                 if (done) {
+                    readComplete = true
+                }
+                if (done && finalJSON.length <= 0 && !value) {
                     break
                 }
-
+                if (value) {
+                    jsonStr = textDecoder.decode(value)
+                }
+            }
+            try {
+                // hack for a middleman buffering all the streaming updates, and unleashing them on the poor browser in one shot.
+                // this results in having to parse JSON like {"step": 1}{"step": 2}{"step": 3}{"ste...
+                // which is obviously invalid and can happen at any point while rendering.
+                // So we need to extract only the next {} section
+                if (finalJSON.length > 0) {
+                    // Append new data when required
+                    if (jsonStr.length > 0) {
+                        jsonStr = finalJSON + jsonStr
+                    } else {
+                        jsonStr = finalJSON
+                    }
+                    finalJSON = ''
+                }
+                // Find next delimiter
+                let lastChunkIdx = jsonStr.indexOf('}{')
+                if (lastChunkIdx !== -1) {
+                    finalJSON = jsonStr.substring(0, lastChunkIdx + 1)
+                    jsonStr = jsonStr.substring(lastChunkIdx + 1)
+                } else {
+                    finalJSON = jsonStr
+                    jsonStr = ''
+                }
+                // Try to parse
+                stepUpdate = (finalJSON.length > 0 ? JSON.parse(finalJSON) : undefined)
+                finalJSON = jsonStr
+            } catch (e) {
+                if (e instanceof SyntaxError && !readComplete) {
+                    finalJSON += jsonStr
+                } else {
+                    throw e
+                }
+            }
+            if (readComplete && finalJSON.length <= 0) {
+                break
+            }
+            if (typeof stepUpdate === 'object' && 'step' in stepUpdate) {
+                let batchSize = stepUpdate.total_steps
+                let overallStepCount = stepUpdate.step + task.batchesDone * batchSize
+                let totalSteps = batchCount * batchSize
+                let percent = 100 * (overallStepCount / totalSteps)
+                percent = (percent > 100 ? 100 : percent)
+                percent = percent.toFixed(0)
                 let timeTaken = (prevTime === -1 ? -1 : t - prevTime)
 
-                let jsonStr = textDecoder.decode(value)
+                let stepsRemaining = totalSteps - overallStepCount
+                stepsRemaining = (stepsRemaining < 0 ? 0 : stepsRemaining)
+                let timeRemaining = (timeTaken === -1 ? '' : stepsRemaining * timeTaken) // ms
 
-                try {
-                    let stepUpdate = JSON.parse(jsonStr)
+                outputMsg.innerHTML = `Batch ${task.batchesDone+1} of ${batchCount}`
+                outputMsg.innerHTML += `. Generating image(s): ${percent}%`
 
-                    if (stepUpdate.step === undefined) {
-                        finalJSON += jsonStr
-                    } else {
-                        let batchSize = stepUpdate.total_steps
-                        let overallStepCount = stepUpdate.step + task.batchesDone * batchSize
-                        let totalSteps = batchCount * batchSize
-                        let percent = 100 * (overallStepCount / totalSteps)
-                        percent = (percent > 100 ? 100 : percent)
-                        percent = percent.toFixed(0)
+                timeRemaining = (timeTaken !== -1 ? millisecondsToStr(timeRemaining) : '')
+                outputMsg.innerHTML += `. Time remaining (approx): ${timeRemaining}`
+                outputMsg.style.display = 'block'
 
-                        stepsRemaining = totalSteps - overallStepCount
-                        stepsRemaining = (stepsRemaining < 0 ? 0 : stepsRemaining)
-                        timeRemaining = (timeTaken === -1 ? '' : stepsRemaining * timeTaken) // ms
-
-                        outputMsg.innerHTML = `Batch ${task.batchesDone+1} of ${batchCount}`
-                        outputMsg.innerHTML += `. Generating image(s): ${percent}%`
-
-                        timeRemaining = (timeTaken !== -1 ? millisecondsToStr(timeRemaining) : '')
-
-                        outputMsg.innerHTML += `. Time remaining (approx): ${timeRemaining}`
-                        outputMsg.style.display = 'block'
-
-                        if (stepUpdate.output !== undefined) {
-                            showImages(reqBody, stepUpdate, outputContainer, true)
-                        }
-                    }
-                } catch (e) {
-                    finalJSON += jsonStr
+                if (stepUpdate.output !== undefined) {
+                    showImages(reqBody, stepUpdate, outputContainer, true)
                 }
-
-                prevTime = t
-            } catch (e) {
-                logError('Stable Diffusion had an error. Please check the logs in the command-line window.', res, outputMsg)
-                res = undefined
-                throw e
             }
+            prevTime = t
         }
 
-        if (res.status != 200) {
-            if (serverStatus === 'online') {
-                logError('Stable Diffusion had an error: ' + await res.text(), res, outputMsg)
-            } else {
-                logError("Stable Diffusion is still starting up, please wait. If this goes on beyond a few minutes, Stable Diffusion has probably crashed. Please check the error message in the command-line window.", res, outputMsg)
-            }
-            res = undefined
-            progressBar.style.display = 'none'
-        } else {
-            if (finalJSON !== undefined && finalJSON.indexOf('}{') !== -1) {
-                // hack for a middleman buffering all the streaming updates, and unleashing them
-                //  on the poor browser in one shot.
-                //  this results in having to parse JSON like {"step": 1}{"step": 2}...{"status": "succeeded"..}
-                //  which is obviously invalid.
-                // So we need to just extract the last {} section, starting from "status" to the end of the response
-
-                let lastChunkIdx = finalJSON.lastIndexOf('}{')
-                if (lastChunkIdx !== -1) {
-                    let remaining = finalJSON.substring(lastChunkIdx)
-                    finalJSON = remaining.substring(1)
+        if (typeof stepUpdate === 'object' && stepUpdate.status !== 'succeeded') {
+            let msg = ''
+            if ('detail' in stepUpdate && typeof stepUpdate.detail === 'string' && stepUpdate.detail.length > 0) {
+                msg = stepUpdate.detail
+                if (msg.toLowerCase().includes('out of memory')) {
+                    msg += `<br/><br/>
+                            <b>Suggestions</b>:
+                            <br/>
+                            1. If you have set an initial image, please try reducing its dimension to ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION} or smaller.<br/>
+                            2. Try disabling the '<em>Turbo mode</em>' under '<em>Advanced Settings</em>'.<br/>
+                            3. Try generating a smaller image.<br/>`
                 }
+            } else {
+                msg = `Unexpected Read Error:<br/><pre>StepUpdate:${JSON.stringify(stepUpdate, undefined, 4)}</pre>`
             }
-
-            res = JSON.parse(finalJSON)
-
-            if (res.status !== 'succeeded') {
-                let msg = ''
-                if (res.detail !== undefined) {
-                    msg = res.detail
-
-                    if (msg.toLowerCase().includes('out of memory')) {
-                        msg += `<br/><br/>
-                                <b>Suggestions</b>:
-                                <br/>
-                                1. If you have set an initial image, please try reducing its dimension to ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION} or smaller.<br/>
-                                2. Try disabling the '<em>Turbo mode</em>' under '<em>Advanced Settings</em>'.<br/>
-                                3. Try generating a smaller image.<br/>`
-                    }
-                } else {
-                    msg = res
+            logError(msg, res, outputMsg)
+            return false
+        }
+        if (typeof stepUpdate !== 'object' || !res || res.status != 200) {
+            if (serverStatus !== 'online') {
+                logError("Stable Diffusion is still starting up, please wait. If this goes on beyond a few minutes, Stable Diffusion has probably crashed. Please check the error message in the command-line window.", res, outputMsg)
+            } else if (typeof res === 'object') {
+                let msg = 'Stable Diffusion had an error reading the response: '
+                try { // 'Response': body stream already read
+                    msg += 'Read: ' + await res.text()
+                } catch(e) {
+                    msg += 'No error response. '
+                }
+                if (finalJSON) {
+                    msg += 'Buffered data: ' + finalJSON
                 }
                 logError(msg, res, outputMsg)
-                res = undefined
+            } else {
+                msg = `Unexpected Read Error:<br/><pre>Response:${res}<br/>StepUpdate:${typeof stepUpdate === 'object' ? JSON.stringify(stepUpdate, undefined, 4) : stepUpdate}</pre>`
             }
+            progressBar.style.display = 'none'
+            return false
         }
+
+        lastPromptUsed = reqBody['prompt']
+        showImages(reqBody, stepUpdate, outputContainer, false)
     } catch (e) {
         console.log('request error', e)
         logError('Stable Diffusion had an error. Please check the logs in the command-line window. <br/><br/>' + e + '<br/><pre>' + e.stack + '</pre>', res, outputMsg)
         setStatus('request', 'error', 'error')
         progressBar.style.display = 'none'
-        res = undefined
+        return false
     }
-
-    if (!res) return false
-
-    lastPromptUsed = reqBody['prompt']
-
-    showImages(reqBody, res, outputContainer, false)
-
     return true
 }
 
@@ -588,13 +657,27 @@ async function checkTasks() {
     task['taskStatusLabel'].innerText = "Processing"
     task['taskStatusLabel'].className += " activeTaskLabel"
 
+    const genSeeds = Boolean(typeof task.reqBody.seed !== 'number' || (task.reqBody.seed === task.seed && task.numOutputsTotal > 1))
+    const startSeed = task.reqBody.seed || task.seed
     for (let i = 0; i < task.batchCount; i++) {
-        task.reqBody['seed'] = task.seed + (i * task.reqBody['num_outputs'])
+        let newTask = task;
+        if (task.batchCount > 1) {
+            // Each output render batch needs it's own task instance to avoid altering the other runs after they are completed.
+            newTask = Object.assign({}, task, {
+                reqBody: Object.assign({}, task.reqBody)
+            })
+        }
+        if (genSeeds) {
+            newTask.reqBody.seed = startSeed + (i * newTask.reqBody.num_outputs)
+            newTask.seed = newTask.reqBody.seed
+        } else if (newTask.seed !== newTask.reqBody.seed) {
+            newTask.seed = newTask.reqBody.seed
+        }
 
-        let success = await doMakeImage(task)
+        let success = await doMakeImage(newTask)
         task.batchesDone++
 
-        if (!task.isProcessing) {
+        if (!task.isProcessing || !success) {
             break
         }
 
@@ -612,7 +695,6 @@ async function checkTasks() {
 
     if (successCount === task.batchCount) {
         task.outputMsg.innerText = 'Processed ' + task.numOutputsTotal + ' images in ' + time + ' seconds'
-
         // setStatus('request', 'done', 'success')
     } else {
         if (task.outputMsg.innerText.toLowerCase().indexOf('error') === -1) {
@@ -626,111 +708,106 @@ async function checkTasks() {
 
     currentTask = null
 
+    if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(checkTasks, { timeout: 30 * 1000 })
+    } else {
+        setTimeout(checkTasks, 500)
+    }
+}
+if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(checkTasks, { timeout: 30 * 1000 })
+} else {
     setTimeout(checkTasks, 10)
 }
-setTimeout(checkTasks, 0)
+
+function getCurrentUserRequest() {
+    const numOutputsTotal = parseInt(numOutputsTotalField.value)
+    const numOutputsParallel = parseInt(numOutputsParallelField.value)
+    const seed = (randomSeedField.checked ? Math.floor(Math.random() * 10000000) : parseInt(seedField.value))
+
+    const newTask = {
+        isProcessing: false,
+        stopped: false,
+        batchesDone: 0,
+        numOutputsTotal: numOutputsTotal,
+        batchCount: Math.ceil(numOutputsTotal / numOutputsParallel),
+        seed,
+
+        reqBody: {
+            session_id: sessionId,
+            seed,
+            negative_prompt: negativePromptField.value.trim(),
+            num_outputs: numOutputsParallel,
+            num_inference_steps: numInferenceStepsField.value,
+            guidance_scale: guidanceScaleField.value,
+            width: widthField.value,
+            height: heightField.value,
+            // allow_nsfw: allowNSFWField.checked,
+            turbo: turboField.checked,
+            use_cpu: useCPUField.checked,
+            use_full_precision: useFullPrecisionField.checked,
+            use_stable_diffusion_model: stableDiffusionModelField.value,
+            stream_progress_updates: true,
+            stream_image_progress: (numOutputsTotal > 50 ? false : streamImageProgressField.checked),
+            show_only_filtered_image: showOnlyFilteredImageField.checked,
+            output_format: outputFormatField.value
+        }
+    }
+    if (IMAGE_REGEX.test(initImagePreview.src)) {
+        newTask.reqBody.init_image = initImagePreview.src
+        newTask.reqBody.prompt_strength = promptStrengthField.value
+
+        // if (IMAGE_REGEX.test(maskImagePreview.src)) {
+        //     newTask.reqBody.mask = maskImagePreview.src
+        // }
+        if (maskSetting.checked) {
+            newTask.reqBody.mask = inpaintingEditor.getImg()
+        }
+        newTask.reqBody.sampler = 'ddim'
+    } else {
+        newTask.reqBody.sampler = samplerField.value
+    }
+    if (saveToDiskField.checked && diskPathField.value.trim() !== '') {
+        newTask.reqBody.save_to_disk_path = diskPathField.value.trim()
+    }
+    if (useFaceCorrectionField.checked) {
+        newTask.reqBody.use_face_correction = 'GFPGANv1.3'
+    }
+    if (useUpscalingField.checked) {
+        newTask.reqBody.use_upscale = upscaleModelField.value
+    }
+    return newTask
+}
 
 function makeImage() {
     if (serverStatus !== 'online') {
         alert('The server is still starting up..')
         return
     }
-
-    let prompts = getPrompts()
-    prompts.forEach(createTask)
+    const taskTemplate = getCurrentUserRequest()
+    const newTaskRequests = []
+    getPrompts().forEach((prompt) => newTaskRequests.push(Object.assign({}, taskTemplate, {
+        reqBody: Object.assign({ prompt: prompt }, taskTemplate.reqBody)
+    })))
+    newTaskRequests.forEach(createTask)
 
     initialText.style.display = 'none'
 }
 
-function createTask(prompt) {
-    let task = {
-        stopped: false,
-        batchesDone: 0
-    }
-
-    let seed = (randomSeedField.checked ? Math.floor(Math.random() * 10000000) : parseInt(seedField.value))
-    let numOutputsTotal = parseInt(numOutputsTotalField.value)
-    let numOutputsParallel = parseInt(numOutputsParallelField.value)
-    let batchCount = Math.ceil(numOutputsTotal / numOutputsParallel)
-    let batchSize = numOutputsParallel
-
-    let streamImageProgress = (numOutputsTotal > 50 ? false : streamImageProgressField.checked)
-
-    if (activeTags.length > 0) {
-        let promptTags = activeTags.map(x => x.name).join(", ")
-        prompt += ", " + promptTags
-    }
-
-    let reqBody = {
-        session_id: sessionId,
-        prompt: prompt,
-        negative_prompt: negativePromptField.value.trim(),
-        num_outputs: batchSize,
-        num_inference_steps: numInferenceStepsField.value,
-        guidance_scale: guidanceScaleField.value,
-        width: widthField.value,
-        height: heightField.value,
-        // allow_nsfw: allowNSFWField.checked,
-        turbo: turboField.checked,
-        use_cpu: useCPUField.checked,
-        use_full_precision: useFullPrecisionField.checked,
-        use_stable_diffusion_model: stableDiffusionModelField.value,
-        stream_progress_updates: true,
-        stream_image_progress: streamImageProgress,
-        show_only_filtered_image: showOnlyFilteredImageField.checked,
-        output_format: outputFormatField.value
-    }
-
-    if (IMAGE_REGEX.test(initImagePreview.src)) {
-        reqBody['init_image'] = initImagePreview.src
-        reqBody['prompt_strength'] = promptStrengthField.value
-
-        // if (IMAGE_REGEX.test(maskImagePreview.src)) {
-        //     reqBody['mask'] = maskImagePreview.src
-        // }
-        if (maskSetting.checked) {
-            reqBody['mask'] = inpaintingEditor.getImg()
-        }
-
-        reqBody['sampler'] = 'ddim'
-    } else {
-        reqBody['sampler'] = samplerField.value
-    }
-
-    if (saveToDiskField.checked && diskPathField.value.trim() !== '') {
-        reqBody['save_to_disk_path'] = diskPathField.value.trim()
-    }
-
-    if (useFaceCorrectionField.checked) {
-        reqBody['use_face_correction'] = 'GFPGANv1.3'
-    }
-
-    if (useUpscalingField.checked) {
-        reqBody['use_upscale'] = upscaleModelField.value
-    }
-
-    let taskConfig = `Seed: ${seed}, Sampler: ${reqBody['sampler']}, Inference Steps: ${numInferenceStepsField.value}, Guidance Scale: ${guidanceScaleField.value}, Model: ${stableDiffusionModelField.value}`
-
+function createTask(task) {
+    let taskConfig = `Seed: ${task.seed}, Sampler: ${task.reqBody.sampler}, Inference Steps: ${task.reqBody.num_inference_steps}, Guidance Scale: ${task.reqBody.guidance_scale}, Model: ${task.reqBody.use_stable_diffusion_model}`
     if (negativePromptField.value.trim() !== '') {
-        taskConfig += `, Negative Prompt: ${negativePromptField.value.trim()}`
+        taskConfig += `, Negative Prompt: ${task.reqBody.negative_prompt}`
     }
-
-    if (reqBody['init_image'] !== undefined) {
-        taskConfig += `, Prompt Strength: ${promptStrengthField.value}`
+    if (task.reqBody.init_image !== undefined) {
+        taskConfig += `, Prompt Strength: ${task.reqBody.prompt_strength}`
     }
-
-    if (useFaceCorrectionField.checked) {
-        taskConfig += `, Fix Faces: ${reqBody['use_face_correction']}`
+    if (task.reqBody.use_face_correction) {
+        taskConfig += `, Fix Faces: ${task.reqBody.use_face_correction}`
     }
-
-    if (useUpscalingField.checked) {
-        taskConfig += `, Upscale: ${reqBody['use_upscale']}`
+    if (task.reqBody.use_upscale) {
+        taskConfig += `, Upscale: ${task.reqBody.use_upscale}`
     }
-
-    task['reqBody'] = reqBody
-    task['seed'] = seed
-    task['batchCount'] = batchCount
-    task['isProcessing'] = false
 
     let taskEntry = document.createElement('div')
     taskEntry.className = 'imageTaskContainer'
@@ -746,7 +823,6 @@ function createTask(prompt) {
 
     createCollapsibles(taskEntry)
 
-    task['numOutputsTotal'] = numOutputsTotal
     task['taskStatusLabel'] = taskEntry.querySelector('.taskStatusLabel')
     task['outputContainer'] = taskEntry.querySelector('.img-preview')
     task['outputMsg'] = taskEntry.querySelector('.outputMsg')
@@ -774,7 +850,7 @@ function createTask(prompt) {
 
     imagePreview.insertBefore(taskEntry, previewTools.nextSibling)
 
-    task['previewPrompt'].innerText = prompt
+    task.previewPrompt.innerText = task.reqBody.prompt
 
     taskQueue.unshift(task)
 }
@@ -784,7 +860,6 @@ function getPrompts() {
     prompts = prompts.split('\n')
 
     let promptsToMake = []
-
     prompts.forEach(prompt => {
         prompt = prompt.trim()
         if (prompt === '') {
@@ -793,7 +868,6 @@ function getPrompts() {
 
         let promptMatrix = prompt.split('|')
         prompt = promptMatrix.shift().trim()
-
         promptsToMake.push(prompt)
 
         promptMatrix = promptMatrix.map(p => p.trim())
@@ -804,8 +878,8 @@ function getPrompts() {
             promptsToMake = promptsToMake.concat(promptPermutations)
         }
     })
-
-    return promptsToMake
+    const promptTags = (activeTags.length > 0 ? activeTags.map(x => x.name).join(", ") : "")
+    return promptsToMake.map((prompt) => `${prompt}, ${promptTags}`)
 }
 
 function permutePrompts(promptBase, promptMatrix) {
@@ -1047,7 +1121,7 @@ useBetaChannelField.addEventListener('click', async function(e) {
 async function getAppConfig() {
     try {
         let res = await fetch('/app_config')
-        config = await res.json()
+        const config = await res.json()
 
         if (config.update_branch === 'beta') {
             useBetaChannelField.checked = true
@@ -1063,7 +1137,7 @@ async function getAppConfig() {
 async function getModels() {
     try {
         let res = await fetch('/models')
-        models = await res.json()
+        const models = await res.json()
 
         let activeModel = models['active']
         let modelOptions = models['options']
@@ -1081,7 +1155,7 @@ async function getModels() {
             stableDiffusionModelField.appendChild(modelOption)
         })
 
-        console.log('get models response', config)
+        console.log('get models response', models)
     } catch (e) {
         console.log('get models error', e)
     }
