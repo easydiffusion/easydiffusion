@@ -418,13 +418,12 @@ function getStartNewTaskHandler(reqBody, imageItemElem, mode) {
         switch (mode) {
             case 'img2img':
             case 'img2img_X2':
-                newTaskRequest.reqBody = Object.assign({}, reqBody, {
-                    num_outputs: 1,
-                    prompt_strength: '0.5',
-                })
+                newTaskRequest.reqBody = Object.assign({}, reqBody, { num_outputs: 1 })
                 if (!newTaskRequest.reqBody.init_image || mode === 'img2img_X2') {
                     newTaskRequest.reqBody.sampler = 'ddim'
+                    newTaskRequest.reqBody.prompt_strength = '0.5'
                     newTaskRequest.reqBody.init_image = imageElem.src
+                    delete newTaskRequest.reqBody.mask
                 } else {
                     newTaskRequest.reqBody.seed = 1 + newTaskRequest.reqBody.seed
                 }
