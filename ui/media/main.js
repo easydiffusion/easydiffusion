@@ -510,15 +510,26 @@ async function doMakeImage(task) {
                 //  this results in having to parse JSON like {"step": 1}{"step": 2}...{"status": "succeeded"..}
                 //  which is obviously invalid.
                 // So we need to just extract the last {} section, starting from "status" to the end of the response
+                if (finalJSON.length > 0) {
+                    // Append new data when required
+                    if (jsonStr.length > 0) {
+                        jsonStr = finalJSON + jsonStr
+                    } else {
+                        jsonStr = finalJSON
+                    }
+                    finalJSON = ''
+                }
+                // Find next delimiter
                 let lastChunkIdx = jsonStr.indexOf('}{')
                 if (lastChunkIdx !== -1) {
-                    finalJSON += jsonStr.substring(0, lastChunkIdx + 1)
-                    jsonStr = jsonStr.substring(lastChunkIdx + 2)
+                    finalJSON = jsonStr.substring(0, lastChunkIdx + 1)
+                    jsonStr = jsonStr.substring(lastChunkIdx + 1)
                 } else {
-                    finalJSON += jsonStr
+                    finalJSON = jsonStr
                     jsonStr = ''
                 }
-                stepUpdate = JSON.parse(finalJSON)
+                // Try to parse
+                stepUpdate = (finalJSON.length > 0 ? JSON.parse(finalJSON) : undefined)
                 finalJSON = jsonStr
             } catch (e) {
                 if (e instanceof SyntaxError && !readComplete) {
@@ -553,8 +564,6 @@ async function doMakeImage(task) {
                 if (stepUpdate.output !== undefined) {
                     showImages(reqBody, stepUpdate, outputContainer, true)
                 }
-            } else {
-                finalJSON = jsonStr
             }
             prevTime = t
         }
