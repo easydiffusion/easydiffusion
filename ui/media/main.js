@@ -506,7 +506,8 @@ async function doMakeImage(task) {
             }
             try {
                 // hack for a middleman buffering all the streaming updates, and unleashing them on the poor browser in one shot.
-                // this results in having to parse JSON like {"step": 1}{"step": 2}...{"status": "succeeded"..} which is obviously invalid.
+                // this results in having to parse JSON like {"step": 1}{"step": 2}{"step": 3}{"ste...
+                // which is obviously invalid and can happen at any point while rendering.
                 // So we need to extract only the next {} section
                 if (finalJSON.length > 0) {
                     // Append new data when required
