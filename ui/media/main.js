@@ -519,7 +519,7 @@ async function doMakeImage(task) {
                 stepUpdate = JSON.parse(finalJSON)
                 finalJSON = jsonStr
             } catch (e) {
-                if (e instanceof SyntaxError) {
+                if (e instanceof SyntaxError && !readComplete) {
                     finalJSON += jsonStr
                 } else {
                     throw e
