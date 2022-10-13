@@ -878,7 +878,10 @@ function getPrompts() {
             promptsToMake = promptsToMake.concat(promptPermutations)
         }
     })
-    const promptTags = (activeTags.length > 0 ? activeTags.map(x => x.name).join(", ") : "")
+    if (activeTags.length <= 0) {
+        return promptsToMake
+    }
+    const promptTags = activeTags.map(x => x.name).join(", ")
     return promptsToMake.map((prompt) => `${prompt}, ${promptTags}`)
 }
 
