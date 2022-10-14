@@ -117,7 +117,7 @@ maskResetButton.innerHTML = 'Clear'
 maskResetButton.style.fontWeight = 'normal'
 maskResetButton.style.fontSize = '10pt'
 
-let serverStatus = 'offline'
+let serverState = {'status': 'Offline'}
 let activeTags = []
 let modifiers = []
 let lastPromptUsed = ''
@@ -212,21 +212,38 @@ function getOutputFormat() {
 }
 
 function setStatus(statusType, msg, msgType) {
-    if (statusType !== 'server') {
-        return
-    }
+}
 
-    if (msgType == 'error') {
-        // msg = '<span style="color: red">' + msg + '<span>'
-        serverStatusColor.style.color = 'red'
-        serverStatusMsg.style.color = 'red'
-        serverStatusMsg.innerText = 'Stable Diffusion has stopped'
-    } else if (msgType == 'success') {
-        // msg = '<span style="color: green">' + msg + '<span>'
-        serverStatusColor.style.color = 'green'
-        serverStatusMsg.style.color = 'green'
-        serverStatusMsg.innerText = 'Stable Diffusion is ready'
-        serverStatus = 'online'
+function setServerStatus(msgType, msg) {
+    switch(msgType) {
+        case 'online':
+            serverStatusColor.style.color = 'green'
+            serverStatusMsg.style.color = 'green'
+            serverStatusMsg.innerText = 'Stable Diffusion is ' + msg
+            break
+        case 'busy':
+            serverStatusColor.style.color = 'yellow'
+            serverStatusMsg.style.color = 'yellow'
+            serverStatusMsg.innerText = 'Stable Diffusion is ' + msg
+            break
+        case 'error':
+            serverStatusColor.style.color = 'red'
+            serverStatusMsg.style.color = 'red'
+            serverStatusMsg.innerText = 'Stable Diffusion has stopped'
+            break
+    }
+}
+function isServerAvailable() {
+    if (typeof serverState !== 'object') {
+        return false
+    }
+    switch (serverState.status) {
+        case 'LoadingModel':
+        case 'Rendering':
+        case 'Online':
+            return true
+        default:
+            return false
     }
 }
 
@@ -250,6 +267,11 @@ function logError(msg, res, outputMsg) {
     console.log('request error', res)
     setStatus('request', 'error', 'error')
 }
+function asyncDelay(timeout) {
+    return new Promise(function(resolve, reject) {
+        setTimeout(resolve, timeout, true)
+    })
+}
 
 function playSound() {
     const audio = new Audio('/media/ding.mp3')
@@ -259,16 +281,34 @@ function playSound() {
 
 async function healthCheck() {
     try {
-        let res = await fetch('/ping')
-        res = await res.json()
-
-        if (res[0] == 'OK') {
-            setStatus('server', 'online', 'success')
+        let res = undefined
+        if (sessionId) {
+            res = await fetch('/ping?session_id=' + sessionId)
         } else {
-            setStatus('server', 'offline', 'error')
+            res = await fetch('/ping')
         }
+        serverState = await res.json()
+        // Set status
+        switch(serverState.status) {
+            case 'Init':
+                // Wait for init to complete before updating status.
+                break
+            case 'Online':
+                setServerStatus('online', 'ready')
+                break
+            case 'LoadingModel':
+                setServerStatus('busy', 'loading model')
+                break
+            case 'Rendering':
+                setServerStatus('busy', 'rendering')
+                break
+            default: // Unavailable
+                setServerStatus('error', serverState.status.toLowerCase())
+                break
+        }
+        serverState.time = Date.now()
     } catch (e) {
-        setStatus('server', 'offline', 'error')
+        setServerStatus('error', 'offline')
     }
 }
 function resizeInpaintingEditor() {
@@ -311,7 +351,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
     if(typeof res != 'object') return
     res.output.reverse()
     res.output.forEach((result, index) => {
-        const imageData = result?.data || result?.path + '?t=' + new Date().getTime()
+        const imageData = result?.data || result?.path + '?t=' + Date.now()
         const imageWidth = reqBody.width
         const imageHeight = reqBody.height
         if (!imageData.includes('/')) {
@@ -409,8 +449,8 @@ function getSaveImageHandler(imageItemElem, outputFormat) {
 }
 function getStartNewTaskHandler(reqBody, imageItemElem, mode) {
     return function() {
-        if (serverStatus !== 'online') {
-            alert('The server is still starting up..')
+        if (!isServerAvailable()) {
+            alert('The server is not available.')
             return
         }
         const imageElem = imageItemElem.querySelector('img')
@@ -473,37 +513,68 @@ async function doMakeImage(task) {
     const progressBar = task['progressBar']
 
     let res = undefined
-    let stepUpdate = undefined
     try {
-        res = await fetch('/image', {
-            method: 'POST',
+        const lastTask = serverState.task
+        let renderRequest = undefined
+        do {
+            res = await fetch('/render', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(reqBody)
+            })
+            renderRequest = await res.json()
+            // status_code 503, already a task running.
+        } while (renderRequest.status_code === 503 && await asyncDelay(30 * 1000))
+        if (typeof renderRequest?.stream !== 'string') {
+            console.log('Endpoint response: ', renderRequest)
+            throw new Error('Endpoint response does not contains a response stream url.')
+        }
+        task['taskStatusLabel'].innerText = "Busy/Waiting"
+        do { // Wait for server status to update.
+            await asyncDelay(250)
+            if (!isServerAvailable()) {
+                throw new Error('Connexion with server lost.')
+            }
+        } while (serverState.time > (Date.now() - (10 * 1000)) && serverState.task !== renderRequest.task)
+        if (serverState.session !== 'pending' && serverState.session !== 'running') {
+            throw new Error('Unexpected server task state: ' + serverState.session || 'Undefined')
+        }
+        do { // Wait for task to start on server.
+            await asyncDelay(1500)
+        } while (serverState?.session === 'pending')
+
+        // Task started!
+        res = await fetch(renderRequest.stream, {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(reqBody)
         })
 
+        task['taskStatusLabel'].innerText = "Processing"
+        task['taskStatusLabel'].classList.add('activeTaskLabel')
+        task['taskStatusLabel'].classList.remove('waitingTaskLabel')
+
+        let stepUpdate = undefined
         let reader = res.body.getReader()
         let textDecoder = new TextDecoder()
         let finalJSON = ''
         let prevTime = -1
         let readComplete = false
-        while (true) {
-            let t = new Date().getTime()
-
+        while (!readComplete || finalJSON.length > 0) {
+            let t = Date.now()
             let jsonStr = ''
             if (!readComplete) {
                 const {value, done} = await reader.read()
                 if (done) {
                     readComplete = true
                 }
-                if (done && finalJSON.length <= 0 && !value) {
-                    break
-                }
                 if (value) {
                     jsonStr = textDecoder.decode(value)
                 }
             }
+            stepUpdate = undefined
             try {
                 // hack for a middleman buffering all the streaming updates, and unleashing them on the poor browser in one shot.
                 // this results in having to parse JSON like {"step": 1}{"step": 2}{"step": 3}{"ste...
@@ -537,9 +608,6 @@ async function doMakeImage(task) {
                     throw e
                 }
             }
-            if (readComplete && finalJSON.length <= 0) {
-                break
-            }
             if (typeof stepUpdate === 'object' && 'step' in stepUpdate) {
                 let batchSize = stepUpdate.total_steps
                 let overallStepCount = stepUpdate.step + task.batchesDone * batchSize
@@ -564,6 +632,23 @@ async function doMakeImage(task) {
                     showImages(reqBody, stepUpdate, outputContainer, true)
                 }
             }
+            if (stepUpdate?.status) {
+                break
+            }
+            if (readComplete && finalJSON.length <= 0) {
+                if (res.status === 200) {
+                    await asyncDelay(5000)
+                    res = await fetch(renderRequest.stream, {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
+                    reader = res.body.getReader()
+                    readComplete = false
+                } else {
+                    console.log('Stream stopped: ', res)
+                }
+            }
             prevTime = t
         }
 
@@ -580,27 +665,28 @@ async function doMakeImage(task) {
                             3. Try generating a smaller image.<br/>`
                 }
             } else {
-                msg = `Unexpected Read Error:<br/><pre>StepUpdate:${JSON.stringify(stepUpdate, undefined, 4)}</pre>`
+                msg = `Unexpected Read Error:<br/><pre>StepUpdate: ${JSON.stringify(stepUpdate, undefined, 4)}</pre>`
             }
             logError(msg, res, outputMsg)
             return false
         }
         if (typeof stepUpdate !== 'object' || !res || res.status != 200) {
-            if (serverStatus !== 'online') {
+            if (!isServerAvailable()) {
                 logError("Stable Diffusion is still starting up, please wait. If this goes on beyond a few minutes, Stable Diffusion has probably crashed. Please check the error message in the command-line window.", res, outputMsg)
             } else if (typeof res === 'object') {
                 let msg = 'Stable Diffusion had an error reading the response: '
                 try { // 'Response': body stream already read
                     msg += 'Read: ' + await res.text()
                 } catch(e) {
-                    msg += 'No error response. '
+                    msg += 'Unexpected end of stream. '
                 }
                 if (finalJSON) {
                     msg += 'Buffered data: ' + finalJSON
                 }
                 logError(msg, res, outputMsg)
             } else {
-                msg = `Unexpected Read Error:<br/><pre>Response:${res}<br/>StepUpdate:${typeof stepUpdate === 'object' ? JSON.stringify(stepUpdate, undefined, 4) : stepUpdate}</pre>`
+                let msg = `Unexpected Read Error:<br/><pre>Response: ${res}<br/>StepUpdate: ${typeof stepUpdate === 'object' ? JSON.stringify(stepUpdate, undefined, 4) : stepUpdate}</pre>`
+                logError(msg, res, outputMsg)
             }
             progressBar.style.display = 'none'
             return false
@@ -654,8 +740,8 @@ async function checkTasks() {
 
     task.isProcessing = true
     task['stopTask'].innerHTML = '<i class="fa-solid fa-circle-stop"></i> Stop'
-    task['taskStatusLabel'].innerText = "Processing"
-    task['taskStatusLabel'].className += " activeTaskLabel"
+    task['taskStatusLabel'].innerText = "Starting"
+    task['taskStatusLabel'].classList.add('waitingTaskLabel')
 
     const genSeeds = Boolean(typeof task.reqBody.seed !== 'number' || (task.reqBody.seed === task.seed && task.numOutputsTotal > 1))
     const startSeed = task.reqBody.seed || task.seed
@@ -780,8 +866,8 @@ function getCurrentUserRequest() {
 }
 
 function makeImage() {
-    if (serverStatus !== 'online') {
-        alert('The server is still starting up..')
+    if (!isServerAvailable()) {
+        alert('The server is not available.')
         return
     }
     const taskTemplate = getCurrentUserRequest()
@@ -834,7 +920,7 @@ function createTask(task) {
         if (task['isProcessing']) {
             task.isProcessing = false
             try {
-                let res = await fetch('/image/stop')
+                let res = await fetch('/image/stop?session_id=' + sessionId)
             } catch (e) {
                 console.log(e)
             }
@@ -1094,9 +1180,9 @@ promptStrengthField.addEventListener('input', updatePromptStrengthSlider)
 updatePromptStrength()
 
 useBetaChannelField.addEventListener('click', async function(e) {
-    if (serverStatus !== 'online') {
+    if (!isServerAvailable()) {
         // logError('The server is still starting up..')
-        alert('The server is still starting up..')
+        alert('The server is not available.')
         e.preventDefault()
         return false
     }
