@@ -242,31 +242,17 @@ async def setAppConfig(req : SetAppConfigRequest):
         print(traceback.format_exc())
         return HTTPException(status_code=500, detail=str(e))
 
-@app.get('/app_config')
-def getAppConfig():
+def getConfig(default_val={}):
     try:
         config_json_path = os.path.join(CONFIG_DIR, 'config.json')
-
         if not os.path.exists(config_json_path):
-            return HTTPException(status_code=500, detail="No config file")
-
+            return default_val
         with open(config_json_path, 'r') as f:
             return json.load(f)
     except Exception as e:
+        print(str(e))
         print(traceback.format_exc())
-        return HTTPException(status_code=500, detail=str(e))
-
-def getConfig():
-    try:
-        config_json_path = os.path.join(CONFIG_DIR, 'config.json')
-
-        if not os.path.exists(config_json_path):
-            return {}
-
-        with open(config_json_path, 'r') as f:
-            return json.load(f)
-    except Exception as e:
-        return {}
+        return default_val
 
 def setConfig(config):
     try:
@@ -275,9 +261,9 @@ def setConfig(config):
         with open(config_json_path, 'w') as f:
             return json.dump(config, f)
     except:
+        print(str(e))
         print(traceback.format_exc())
 
-@app.get('/models')
 def getModels():
     models = {
         'active': {
@@ -307,14 +293,21 @@ def getModels():
 
     return models
 
-@app.get('/modifiers.json')
-def read_modifiers():
-    headers = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
-    return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'), headers=headers)
-
-@app.get('/output_dir')
-def read_home_dir():
-    return {outpath}
+@app.get('/get')
+def read_web_data(key:str=None):
+    if key is None: # /get without parameters, stable-diffusion easter egg.
+        return HTTPException(status_code=418, detail="StableDiffusion is drawing a teapot!") # HTTP418 I'm a teapot
+    elif key == 'app_config':
+        config = getConfig(default_val=None)
+        if config is None:
+            return HTTPException(status_code=500, detail="Config file is missing or unreadable")
+        return config
+    elif key == 'models':
+        return getModels()
+    elif key == 'modifiers': return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'), headers=NOCACHE_HEADERS)
+    elif key == 'output_dir': return {outpath}
+    else:
+        return HTTPException(status_code=404, detail=f'Request for unknown {key}') # HTTP404 Not Found
 
 # don't log certain requests
 class LogSuppressFilter(logging.Filter):
