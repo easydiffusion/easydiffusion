@@ -12,6 +12,7 @@ const USE_UPSCALING_KEY = "useUpscaling"
 const SHOW_ONLY_FILTERED_IMAGE_KEY = "showOnlyFilteredImage"
 const STREAM_IMAGE_PROGRESS_KEY = "streamImageProgress"
 const OUTPUT_FORMAT_KEY = "outputFormat"
+const AUTO_SAVE_SETTINGS_KEY = "autoSaveSettings"
 const HEALTH_PING_INTERVAL = 5 // seconds
 const MAX_INIT_IMAGE_DIMENSION = 768
 const INPAINTING_EDITOR_SIZE = 450
@@ -35,6 +36,7 @@ let widthField = document.querySelector('#width')
 let heightField = document.querySelector('#height')
 let initImageSelector = document.querySelector("#init_image")
 let initImagePreview = document.querySelector("#init_image_preview")
+let initImageSizeBox = document.querySelector("#init_image_size_box")
 let maskImageSelector = document.querySelector("#mask")
 let maskImagePreview = document.querySelector("#mask_preview")
 let turboField = document.querySelector('#turbo')
@@ -42,6 +44,9 @@ let useCPUField = document.querySelector('#use_cpu')
 let useFullPrecisionField = document.querySelector('#use_full_precision')
 let saveToDiskField = document.querySelector('#save_to_disk')
 let diskPathField = document.querySelector('#diskPath')
+let autoSaveSettingsField = document.querySelector('#auto_save_settings')
+let configureSettingsSaveBtn = document.querySelector('#configureSettingsSaveBtn')
+let restoreDefaultSettingsBtn = document.querySelector('#restoreDefaultSettingsBtn')
 // let allowNSFWField = document.querySelector("#allow_nsfw")
 let useBetaChannelField = document.querySelector("#use_beta_channel")
 let promptStrengthSlider = document.querySelector('#prompt_strength_slider')
@@ -77,6 +82,10 @@ let maskSetting = document.querySelector('#enable_mask')
 let editorModifierEntries = document.querySelector('#editor-modifiers-entries')
 let editorModifierTagsList = document.querySelector('#editor-inputs-tags-list')
 let editorTagsContainer = document.querySelector('#editor-inputs-tags-container')
+
+let saveSettingsConfigOverlay = document.querySelector('#save-settings-config')
+let saveSettingsConfigTable = document.querySelector('#save-settings-config-table')
+let saveSettingsConfigCloseBtn = document.querySelector('#save-settings-config-close-btn')
 
 let imagePreview = document.querySelector("#preview")
 let previewImageField = document.querySelector('#preview-image')
@@ -187,6 +196,10 @@ function isUseFullPrecisionEnabled() {
     return getLocalStorageBoolItem(USE_FULL_PRECISION_KEY, false)
 }
 
+function isAutoSaveSettingsEnabled() {
+    return getLocalStorageBoolItem(AUTO_SAVE_SETTINGS_KEY, false)
+}
+
 function isUseTurboModeEnabled() {
     return getLocalStorageBoolItem(USE_TURBO_MODE_KEY, true)
 }
@@ -254,7 +267,12 @@ function logError(msg, res, outputMsg) {
 function playSound() {
     const audio = new Audio('/media/ding.mp3')
     audio.volume = 0.2
-    audio.play()
+    var promise = audio.play();
+    if (promise !== undefined) {
+        promise.then(_ => {}).catch(error => {
+            console.warn("browser blocked autoplay");
+        });
+    }
 }
 
 async function healthCheck() {
@@ -1017,6 +1035,9 @@ useCPUField.checked = isUseCPUEnabled()
 useFullPrecisionField.addEventListener('click', handleBoolSettingChange(USE_FULL_PRECISION_KEY))
 useFullPrecisionField.checked = isUseFullPrecisionEnabled()
 
+autoSaveSettingsField.addEventListener('click', handleBoolSettingChange(AUTO_SAVE_SETTINGS_KEY))
+autoSaveSettingsField.checked = isAutoSaveSettingsEnabled()
+
 turboField.addEventListener('click', handleBoolSettingChange(USE_TURBO_MODE_KEY))
 turboField.checked = isUseTurboModeEnabled()
 
@@ -1187,7 +1208,7 @@ function showInitImagePreview() {
     let reader = new FileReader()
     let file = initImageSelector.files[0]
 
-    reader.addEventListener('load', function() {
+    reader.addEventListener('load', function(event) {
         // console.log(file.name, reader.result)
         initImagePreview.src = reader.result
         initImagePreviewContainer.style.display = 'block'
@@ -1208,6 +1229,8 @@ initImagePreview.addEventListener('load', function() {
     inpaintingEditorCanvasBackground.style.backgroundImage = "url('" + this.src + "')"
     // maskSetting.style.display = 'block'
     // inpaintingEditorContainer.style.display = 'block'
+    initImageSizeBox.textContent = initImagePreview.naturalWidth + " x " + initImagePreview.naturalHeight
+    initImageSizeBox.style.display = 'block'
 })
 
 initImageClearBtn.addEventListener('click', function() {
@@ -1225,7 +1248,8 @@ initImageClearBtn.addEventListener('click', function() {
     // maskSetting.style.display = 'none'
 
     promptStrengthContainer.style.display = 'none'
-    samplerSelectionContainer.style.display = 'block'
+    samplerSelectionContainer.style.display = 'table-row'
+    initImageSizeBox.style.display = 'none'
 })
 
 maskSetting.addEventListener('click', function() {
@@ -1596,3 +1620,154 @@ async function loadModifiers() {
         console.log('error fetching modifiers', e)
     }
 }
+
+// Saving settings 
+const SETTINGS_KEY = "user_settings";
+var SETTINGS_SHOULD_SAVE_MAP = {}; // key=id. dict initialized in initSettings
+var SETTINGS_VALUES = {}; // key=id. dict initialized in initSettings
+var SETTINGS_DEFAULTS = {}; // key=id. dict initialized in initSettings
+var SETTINGS_TO_SAVE = [
+    promptField,
+    seedField,
+    randomSeedField,
+    numOutputsTotalField,
+    numOutputsParallelField,
+    stableDiffusionModelField,
+    samplerField,
+    widthField,
+    heightField,
+    numInferenceStepsField,
+    guidanceScaleSlider,
+    promptStrengthSlider,
+    outputFormatField,
+    negativePromptField,
+    streamImageProgressField,
+    useFaceCorrectionField,
+    useUpscalingField,
+    showOnlyFilteredImageField,
+    upscaleModelField,
+    previewImageField,
+    modifierCardSizeSlider
+];
+
+function getSetting(element) {
+    if (element.type == "checkbox") {
+        return element.checked;
+    }
+    return element.value;
+}
+function setSetting(element, value) {
+    if (getSetting(element) == value) {
+        return; // no setting necessary
+    }
+    if (element.type == "checkbox") {
+        element.checked = value;
+    }
+    else {
+        element.value = value;
+    }
+    element.dispatchEvent(new Event("input"));
+    element.dispatchEvent(new Event("change"));
+}
+
+function saveSettings() {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({
+        values: SETTINGS_VALUES,
+        should_save: SETTINGS_SHOULD_SAVE_MAP
+    }));
+}
+
+var CURRENTLY_LOADING_SETTINGS = false;
+function loadSettings() {
+    if (!autoSaveSettingsField.checked) {
+        return;
+    }
+    var saved_settings = JSON.parse(localStorage.getItem(SETTINGS_KEY));
+    if (saved_settings) {
+        var values = saved_settings.values;
+        var should_save = saved_settings.should_save;
+        CURRENTLY_LOADING_SETTINGS = true;
+        SETTINGS_TO_SAVE.forEach(element => {
+            if (element.id in values) {
+                SETTINGS_SHOULD_SAVE_MAP[element.id] = should_save[element.id];
+                SETTINGS_VALUES[element.id] = values[element.id];
+                if (SETTINGS_SHOULD_SAVE_MAP[element.id]) {
+                    setSetting(element, SETTINGS_VALUES[element.id]);
+                }
+            }
+        });
+        CURRENTLY_LOADING_SETTINGS = false;
+    }
+    else {
+        saveSettings();
+    }
+}
+
+restoreDefaultSettingsBtn.addEventListener('click', loadDefaultSettings);
+function loadDefaultSettings() {
+    CURRENTLY_LOADING_SETTINGS = true;
+    SETTINGS_TO_SAVE.forEach(element => {
+        SETTINGS_VALUES[element.id] = SETTINGS_DEFAULTS[element.id];
+        setSetting(element, SETTINGS_VALUES[element.id]);
+    });
+    CURRENTLY_LOADING_SETTINGS = false;
+    saveSettings();
+}
+
+function settingChangeHandler(event) {
+    if (!CURRENTLY_LOADING_SETTINGS) {
+        var element = event.target;
+        var value = getSetting(element);
+        if (value != SETTINGS_VALUES[element.id]) {
+            SETTINGS_VALUES[element.id] = value;
+            saveSettings();
+        }
+    }
+}
+async function initSettings() {
+    SETTINGS_TO_SAVE.forEach(element => {
+        SETTINGS_SHOULD_SAVE_MAP[element.id] = true;
+        SETTINGS_DEFAULTS[element.id] = getSetting(element);
+        SETTINGS_VALUES[element.id] = getSetting(element);
+        element.addEventListener("input", settingChangeHandler);
+        element.addEventListener("change", settingChangeHandler);
+    });
+    loadSettings();
+    fillSaveSettingsConfigTable();
+}
+
+function fillSaveSettingsConfigTable() {
+    SETTINGS_TO_SAVE.forEach(element => {
+        var caption = element.id;
+        var label = document.querySelector(`label[for='${element.id}']`);
+        if (label) {
+            caption = label.innerText;
+            var truncate_length = 25;
+            if (caption.length > truncate_length) {
+                caption = caption.substring(0, truncate_length - 3) + "...";
+            }
+        }
+        var default_value = SETTINGS_DEFAULTS[element.id];
+        var checkbox_id = `shouldsave_${element.id}`;
+        var is_checked = SETTINGS_SHOULD_SAVE_MAP[element.id] ? "checked" : "";
+        var newrow = `<tr><td><label for="${checkbox_id}">${caption}</label></td><td><input id="${checkbox_id}" name="${checkbox_id}" ${is_checked} type="checkbox" ></td><td><small>(${default_value})</small></td></tr>`;
+        saveSettingsConfigTable.insertAdjacentHTML("beforeend", newrow);
+        var checkbox = document.getElementById(checkbox_id)
+        checkbox.addEventListener("input", event => {
+            SETTINGS_SHOULD_SAVE_MAP[element.id] = checkbox.checked;
+            saveSettings();
+        });
+    });
+}
+
+saveSettingsConfigCloseBtn.addEventListener('click', () => {
+    saveSettingsConfigOverlay.style.display = 'none';
+});
+configureSettingsSaveBtn.addEventListener('click', () => {
+    saveSettingsConfigOverlay.style.display = 'block';
+});
+saveSettingsConfigOverlay.addEventListener('click', (event) => {
+    if (event.target.id == saveSettingsConfigOverlay.id) {
+        saveSettingsConfigOverlay.style.display = 'none';
+    }
+});
