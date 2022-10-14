@@ -532,6 +532,9 @@ async function doMakeImage(task) {
             throw new Error('Endpoint response does not contains a response stream url.')
         }
         task['taskStatusLabel'].innerText = "Busy/Waiting"
+        task['taskStatusLabel'].classList.add('waitingTaskLabel')
+        task['taskStatusLabel'].classList.remove('activeTaskLabel')
+
         do { // Wait for server status to update.
             await asyncDelay(250)
             if (!isServerAvailable()) {
