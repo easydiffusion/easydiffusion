@@ -61,8 +61,10 @@
                     <input id="prompt_from_file" name="prompt_from_file" type="file" /> <!-- hidden -->
                 </div>
 
+                <label for="negative_prompt">Negative Prompt <small>(optional)</small>:</label> <input id="negative_prompt" name="negative_prompt" size="50"><br/><br/>
+
                 <div id="editor-inputs-init-image" class="row">
-                    <label for="init_image"><b>Initial Image (img2img):</b> (optional) </label> <input id="init_image" name="init_image" type="file" /><br/>
+                    <label for="init_image"><b>Initial Image (img2img):</b> <small>(optional)</small> </label> <input id="init_image" name="init_image" type="file" /><br/>
 
                     <div id="init_image_preview_container" class="image_preview_container">
                         <img id="init_image_preview" src="" width="100" height="100" />
@@ -163,11 +165,6 @@
                             <option value="png">png</option>
                         </select>
                     </li>
-
-                    <br/>
-
-                    <li><b class="settings-subheader">Prompt Settings</b></li>
-                    <li class="pl-5"><label for="negative_prompt">Negative Prompt:</label> <input id="negative_prompt" name="negative_prompt" size="55"></li>
 
                     <br/>
 
