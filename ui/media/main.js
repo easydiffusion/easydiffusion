@@ -18,7 +18,7 @@ const INPAINTING_EDITOR_SIZE = 450
 
 const IMAGE_REGEX = new RegExp('data:image/[A-Za-z]+;base64')
 
-let sessionId = new Date().getTime()
+let sessionId = Date.now()
 
 let promptField = document.querySelector('#prompt')
 let promptsFromFileSelector = document.querySelector('#prompt_from_file')
@@ -648,7 +648,7 @@ async function checkTasks() {
     let task = taskQueue.pop()
     currentTask = task
 
-    let time = new Date().getTime()
+    let time = Date.now()
 
     let successCount = 0
 
@@ -690,7 +690,7 @@ async function checkTasks() {
     task['stopTask'].innerHTML = '<i class="fa-solid fa-trash-can"></i> Remove'
     task['taskStatusLabel'].style.display = 'none'
 
-    time = new Date().getTime() - time
+    time = Date.now() - time
     time /= 1000
 
     if (successCount === task.batchCount) {
