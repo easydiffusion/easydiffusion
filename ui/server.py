@@ -279,8 +279,10 @@ def save_model_to_config(model_name):
 
 @app.get('/ping') # Get server and optionally session status.
 def ping(session_id:str=None):
-    if current_state_error or not render_thread.is_alive(): # Render thread is dead.
-        return HTTPException(status_code=500, detail=str(current_state_error))
+    if not render_thread.is_alive(): # Render thread is dead.
+        if current_state_error: return HTTPException(status_code=500, detail=str(current_state_error))
+        return HTTPException(status_code=500, detail='Render thread is dead.')
+    if current_state_error and not isinstance(current_state_error, StopAsyncIteration): return HTTPException(status_code=500, detail=str(current_state_error))
     # Alive
     response = {'status': str(current_state)}
     if session_id:
