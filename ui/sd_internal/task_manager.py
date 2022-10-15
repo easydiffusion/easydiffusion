@@ -76,7 +76,7 @@ class TaskCache():
     def _is_expired(self, timestamp: int) -> bool:
         return int(time.time()) >= timestamp
     def clean(self) -> None:
-        self._lock.acquire()
+        if not self._lock.acquire(blocking=True, timeout=10): raise Exception('TaskCache.clean failed to acquire lock within timeout.')
         try:
             # Create a list of expired keys to delete
             to_delete = []
@@ -91,11 +91,11 @@ class TaskCache():
         finally:
             self._lock.release()
     def clear(self) -> None:
-        self._lock.acquire()
+        if not self._lock.acquire(blocking=True, timeout=10): raise Exception('TaskCache.clear failed to acquire lock within timeout.')
         try: self._base.clear()
         finally: self._lock.release()
     def delete(self, key: Hashable) -> bool:
-        self._lock.acquire()
+        if not self._lock.acquire(blocking=True, timeout=10): raise Exception('TaskCache.delete failed to acquire lock within timeout.')
         try:
             if key not in self._base:
                 return False
@@ -104,7 +104,7 @@ class TaskCache():
         finally:
             self._lock.release()
     def keep(self, key: Hashable, ttl: int) -> bool:
-        self._lock.acquire()
+        if not self._lock.acquire(blocking=True, timeout=10): raise Exception('TaskCache.keep failed to acquire lock within timeout.')
         try:
             if key in self._base:
                 _, value = self._base.get(key)
@@ -114,7 +114,7 @@ class TaskCache():
         finally:
             self._lock.release()
     def put(self, key: Hashable, value: Any, ttl: int) -> bool:
-        self._lock.acquire()
+        if not self._lock.acquire(blocking=True, timeout=10): raise Exception('TaskCache.put failed to acquire lock within timeout.')
         try:
             self._base[key] = (
                 self._get_ttl_time(ttl), value
@@ -128,7 +128,7 @@ class TaskCache():
         finally:
             self._lock.release()
     def tryGet(self, key: Hashable) -> Any:
-        self._lock.acquire()
+        if not self._lock.acquire(blocking=True, timeout=10): raise Exception('TaskCache.tryGet failed to acquire lock within timeout.')
         try:
             ttl, value = self._base.get(key, (None, None))
             if ttl is not None and self._is_expired(ttl):
@@ -293,6 +293,6 @@ def render(req : ImageRequest):
 
     new_task = RenderTask(r)
     if task_cache.put(r.session_id, new_task, TASK_TTL):
-        tasks_queue.put(new_task)
+        tasks_queue.put(new_task, block=True, timeout=30)
         return new_task
     raise RuntimeError('Failed to add task to cache.')
