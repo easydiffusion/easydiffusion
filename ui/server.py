@@ -263,7 +263,7 @@ def read_web_data(key:str=None):
     elif key == 'models':
         return JSONResponse(getModels(), headers=NOCACHE_HEADERS)
     elif key == 'modifiers': return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'), headers=NOCACHE_HEADERS)
-    elif key == 'output_dir': return JSONResponse({outpath}, headers=NOCACHE_HEADERS)
+    elif key == 'output_dir': return JSONResponse({ 'output_dir': outpath }, headers=NOCACHE_HEADERS)
     else:
         return HTTPException(status_code=404, detail=f'Request for unknown {key}') # HTTP404 Not Found
 

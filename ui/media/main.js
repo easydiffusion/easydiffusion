@@ -1497,7 +1497,7 @@ async function getDiskPath() {
         let res = await fetch('/get/output_dir')
         if (res.status === 200) {
             res = await res.json()
-            res = res[0]
+            res = res.output_dir
 
             document.querySelector('#diskPath').value = res
         }
