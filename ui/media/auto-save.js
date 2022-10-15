@@ -1,40 +1,47 @@
 // Saving settings 
 
-let autoSaveSettingsField = document.querySelector('#auto_save_settings')
-let configureSettingsSaveBtn = document.querySelector('#configureSettingsSaveBtn')
-let restoreDefaultSettingsBtn = document.querySelector('#restoreDefaultSettingsBtn')
-let saveSettingsConfigOverlay = document.querySelector('#save-settings-config')
-let saveSettingsConfigTable = document.querySelector('#save-settings-config-table')
-let saveSettingsConfigCloseBtn = document.querySelector('#save-settings-config-close-btn')
-
 
 const SETTINGS_KEY = "user_settings";
 var SETTINGS_SHOULD_SAVE_MAP = {}; // key=id. dict initialized in initSettings
 var SETTINGS_VALUES = {}; // key=id. dict initialized in initSettings
 var SETTINGS_DEFAULTS = {}; // key=id. dict initialized in initSettings
-var SETTINGS_TO_SAVE = [
-    promptField,
-    seedField,
-    randomSeedField,
-    numOutputsTotalField,
-    numOutputsParallelField,
-    stableDiffusionModelField,
-    samplerField,
-    widthField,
-    heightField,
-    numInferenceStepsField,
-    guidanceScaleSlider,
-    promptStrengthSlider,
-    outputFormatField,
-    negativePromptField,
-    streamImageProgressField,
-    useFaceCorrectionField,
-    useUpscalingField,
-    showOnlyFilteredImageField,
-    upscaleModelField,
-    previewImageField,
-    modifierCardSizeSlider
+var SETTINGS_TO_SAVE = []; // list of elements initialized by initSettings
+var SETTINGS_IDS_LIST = [
+    "prompt",
+    "seed",
+    "random_seed",
+    "num_outputs_total",
+    "num_outputs_parallel",
+    "stable_diffusion_model",
+    "sampler",
+    "width",
+    "height",
+    "num_inference_steps",
+    "guidance_scale_slider",
+    "prompt_strength_slider",
+    "output_format",
+    "negative_prompt",
+    "stream_image_progress",
+    "use_face_correction",
+    "use_upscale",
+    "show_only_filtered_image",
+    "upscale_model",
+    "preview-image",
+    "modifier-card-size-slider"
 ];
+
+async function initSettings() {
+    SETTINGS_IDS_LIST.forEach(id => SETTINGS_TO_SAVE.push(document.getElementById(id)));
+    SETTINGS_TO_SAVE.forEach(element => {
+        SETTINGS_SHOULD_SAVE_MAP[element.id] = true;
+        SETTINGS_DEFAULTS[element.id] = getSetting(element);
+        SETTINGS_VALUES[element.id] = getSetting(element);
+        element.addEventListener("input", settingChangeHandler);
+        element.addEventListener("change", settingChangeHandler);
+    });
+    loadSettings();
+    fillSaveSettingsConfigTable();
+}
 
 function getSetting(element) {
     if (element.type == "checkbox") {
@@ -63,9 +70,11 @@ function saveSettings() {
     }));
 }
 
+
+let saveSettingsCheckbox = document.getElementById("auto_save_settings");
 var CURRENTLY_LOADING_SETTINGS = false;
 function loadSettings() {
-    if (!autoSaveSettingsField.checked) {
+    if (!saveSettingsCheckbox.checked) {
         return;
     }
     var saved_settings = JSON.parse(localStorage.getItem(SETTINGS_KEY));
@@ -110,18 +119,9 @@ function settingChangeHandler(event) {
         }
     }
 }
-async function initSettings() {
-    SETTINGS_TO_SAVE.forEach(element => {
-        SETTINGS_SHOULD_SAVE_MAP[element.id] = true;
-        SETTINGS_DEFAULTS[element.id] = getSetting(element);
-        SETTINGS_VALUES[element.id] = getSetting(element);
-        element.addEventListener("input", settingChangeHandler);
-        element.addEventListener("change", settingChangeHandler);
-    });
-    loadSettings();
-    fillSaveSettingsConfigTable();
-}
 
+
+let saveSettingsConfigTable = document.getElementById("save-settings-config-table");
 function fillSaveSettingsConfigTable() {
     SETTINGS_TO_SAVE.forEach(element => {
         var caption = element.id;
@@ -146,10 +146,11 @@ function fillSaveSettingsConfigTable() {
     });
 }
 
-saveSettingsConfigCloseBtn.addEventListener('click', () => {
+let saveSettingsConfigOverlay = document.getElementById("save-settings-config");
+document.getElementById("save-settings-config-close-btn").addEventListener('click', () => {
     saveSettingsConfigOverlay.style.display = 'none';
 });
-configureSettingsSaveBtn.addEventListener('click', () => {
+document.getElementById("configureSettingsSaveBtn").addEventListener('click', () => {
     saveSettingsConfigOverlay.style.display = 'block';
 });
 saveSettingsConfigOverlay.addEventListener('click', (event) => {
