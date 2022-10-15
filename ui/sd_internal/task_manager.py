@@ -70,7 +70,7 @@ class ImageRequest(BaseModel):
 class TaskCache():
     def __init__(self):
         self._base = dict()
-        self._lock: threading.Lock = threading.Lock()
+        self._lock: threading.Lock = threading.RLock()
     def _get_ttl_time(self, ttl: int) -> int:
         return int(time.time()) + ttl
     def _is_expired(self, timestamp: int) -> bool:
@@ -78,10 +78,16 @@ class TaskCache():
     def clean(self) -> None:
         self._lock.acquire()
         try:
+            # Create a list of expired keys to delete
+            to_delete = []
             for key in self._base:
                 ttl, _ = self._base[key]
                 if self._is_expired(ttl):
-                    del self._base[key]
+                    to_delete.append(key)
+            # Remove Items
+            for key in to_delete:
+                del self._base[key]
+                print(f'Session {key} expired. Data removed.')
         finally:
             self._lock.release()
     def clear(self) -> None:
@@ -126,6 +132,7 @@ class TaskCache():
         try:
             ttl, value = self._base.get(key, (None, None))
             if ttl is not None and self._is_expired(ttl):
+                print(f'Session {key} expired. Discarding data.')
                 self.delete(key)
                 return None
             return value
