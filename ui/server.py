@@ -14,7 +14,7 @@ CONFIG_DIR = os.path.abspath(os.path.join(SD_UI_DIR, '..', 'scripts'))
 MODELS_DIR = os.path.abspath(os.path.join(SD_DIR, '..', 'models'))
 
 OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder
-TASK_TTL = 15 * 60 * 1000 # Discard last session's task timeout
+TASK_TTL = 15 * 60 # Discard last session's task timeout
 
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
