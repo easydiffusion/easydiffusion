@@ -1213,7 +1213,7 @@ useBetaChannelField.addEventListener('click', async function(e) {
 
 async function getAppConfig() {
     try {
-        let res = await fetch('/get?key=app_config')
+        let res = await fetch('/get/app_config')
         const config = await res.json()
 
         if (config.update_branch === 'beta') {
@@ -1229,7 +1229,7 @@ async function getAppConfig() {
 
 async function getModels() {
     try {
-        let res = await fetch('/get?key=models')
+        let res = await fetch('/get/models')
         const models = await res.json()
 
         let activeModel = models['active']
@@ -1494,7 +1494,7 @@ async function getDiskPath() {
             return
         }
 
-        let res = await fetch('/get?key=output_dir')
+        let res = await fetch('/get/output_dir')
         if (res.status === 200) {
             res = await res.json()
             res = res[0]
@@ -1613,7 +1613,7 @@ function resizeModifierCards(val) {
 
 async function loadModifiers() {
     try {
-        let res = await fetch('/get?key=modifiers')
+        let res = await fetch('/get/modifiers')
         if (res.status === 200) {
             res = await res.json()
 

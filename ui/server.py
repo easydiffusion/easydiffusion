@@ -494,19 +494,19 @@ def getModels():
 
     return models
 
-@app.get('/get')
+@app.get('/get/{key:path}')
 def read_web_data(key:str=None):
-    if key is None: # /get without parameters, stable-diffusion easter egg.
+    if not key: # /get without parameters, stable-diffusion easter egg.
         return HTTPException(status_code=418, detail="StableDiffusion is drawing a teapot!") # HTTP418 I'm a teapot
     elif key == 'app_config':
         config = getConfig(default_val=None)
         if config is None:
             return HTTPException(status_code=500, detail="Config file is missing or unreadable")
-        return config
+        return JSONResponse(config, headers=NOCACHE_HEADERS)
     elif key == 'models':
-        return getModels()
+        return JSONResponse(getModels(), headers=NOCACHE_HEADERS)
     elif key == 'modifiers': return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'), headers=NOCACHE_HEADERS)
-    elif key == 'output_dir': return {outpath}
+    elif key == 'output_dir': return JSONResponse({outpath}, headers=NOCACHE_HEADERS)
     else:
         return HTTPException(status_code=404, detail=f'Request for unknown {key}') # HTTP404 Not Found
 
