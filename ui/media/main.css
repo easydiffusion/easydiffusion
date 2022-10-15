@@ -1,11 +1,66 @@
+:root {
+    --background-color1: rgb(32, 33, 36); /* main parts of the page */
+    --background-color2: rgb(44, 45, 48); /* main panels */
+    --background-color3: rgb(47, 49, 53);
+    --background-color4: rgb(18, 18, 19); /* settings dropdowns */
+
+    --accent-hue: 266;
+    --accent-lightness: 36%;
+
+    --text-color: #eee;
+
+    --input-text-color: #ccc;
+    --input-background-color: hsl(225, 11.1%, 14%); 
+    --input-border-color: hsl(225, 11.1%, 10%); 
+
+    /* non-theme stuff */
+    --accent-color: hsl(var(--accent-hue), 100%, var(--accent-lightness));
+    --make-image-border: 2px solid hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) - 21%));
+}
+
+
+/* Light Theme */
+/*
+:root {
+    --background-color1: white; 
+    --background-color2: #dddddd;
+    --background-color3: #e7e9eb;
+    --background-color4: #cccccc;
+
+    --text-color: black;
+
+    --input-text-color: black;
+    --input-background-color: #f8f9fa; 
+    --input-border-color: grey; 
+}
+*/
+
+/* Discord Theme */
+/* 
+:root {
+    --background-color1: #36393f;
+    --background-color2: #2f3136;
+    --background-color3: #292b2f;
+    --background-color4: #202225;
+    
+    --accent-hue: 235;
+    --accent-lightness: 65%;
+    --make-image-border: none;
+
+    --input-background-color: #202225; 
+    --input-border-color: var(--input-background-color); 
+}
+*/
+
+
 * {
     font-family: Work Sans, Verdana, Geneva, sans-serif;
 }
 
 body {
     font-size: 11pt;
-    background-color: rgb(32, 33, 36);
-    color: #eee;
+    background-color: var(--background-color1);
+    color: var(--text-color);
 }
 a {
     color: rgb(0, 102, 204);
@@ -76,7 +131,7 @@ label {
 }
 .imgSeedLabel {
     font-size: 0.8em;
-    background-color: rgb(44, 45, 48);
+    background-color: var(--background-color2);
     border-radius: 3px;
     padding: 5px;
 }
@@ -149,14 +204,14 @@ label {
 }
 #makeImage {
     flex: 0 0 70px;
-    background: rgb(80, 0, 185);
-    border: 2px solid rgb(40, 0, 78);
+    background: var(--accent-color);
+    border: var(--make-image-border);
     color: rgb(255, 221, 255);
     width: 100%;
     height: 30pt;
 }
 #makeImage:hover {
-    background: rgb(93, 0, 214);
+    background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
 }
 #stopImage {
     flex: 0 0 70px;
@@ -200,8 +255,8 @@ label {
     padding-right: 5px;
 }
 .panel-box {
-    background: rgb(44, 45, 48);
-    border: 1px solid rgb(47, 49, 53);
+    background: var(--background-color2);
+    border: 1px solid var(--background-color3);
     border-radius: 7px;
     padding: 5px;
     margin-bottom: 15px;
@@ -352,7 +407,7 @@ img {
     padding-right: 2pt;
 }
 #community-links li a {
-    color: white;
+    color: var(--text-color);
     text-decoration: none;
 }
 .dropdown {
@@ -363,8 +418,8 @@ img {
     position: absolute;
     z-index: 2;
 
-    background: rgb(18, 18, 19);
-    border: 2px solid rgb(37, 38, 41);
+    background: var(--background-color4);
+    border: 2px solid var(--background-color2);
     border-radius: 7px;
     padding: 5px;
     margin-bottom: 15px;
@@ -375,7 +430,7 @@ img {
 }
 
 .imageTaskContainer {
-    border: 1px solid #333;
+    border: 1px solid var(--background-color2);
     margin-bottom: 10pt;
     padding: 5pt;
     border-radius: 5pt;
@@ -384,7 +439,7 @@ img {
 .taskStatusLabel {
     float: left;
     font-size: 8pt;
-    background:rgb(44, 45, 48);
+    background:var(--background-color2);
     border: 1px solid rgb(61, 62, 66);
     padding: 2pt 4pt;
     border-radius: 2pt;
@@ -447,8 +502,8 @@ img {
     right: 0px;
     bottom: 3px;
     padding: 3px;
-    background: rgb(32, 33, 36);
-    color: #ccc;
+    background: var(--background-color1);
+    color: var(--input-text-color);
     opacity: 70%;
     font-size: 12px;
     border-radius: 6px 0px;
@@ -474,14 +529,12 @@ select {
 input,
 select,
 textarea {
-    background: hsl(225, 11.1%, 95%);
-    border: 2px solid hsl(225, 11.1%, 50%);
     border-radius: 6px;
     padding: 4px;
-    accent-color: rgb(80, 0, 185);
-    background: hsl(225, 11.1%, 14%);
-    border: 2px solid hsl(225, 11.1%, 10%); 
-    color: #ccc;
+    accent-color: var(--accent-color);
+    background: var(--input-background-color);
+    border: 2px solid var(--input-border-color); 
+    color: var(--input-text-color);
 }
 
 input { 
@@ -491,7 +544,7 @@ input {
 input:focus,
 select:focus,
 textarea:focus {
-    outline: 2px solid rgb(80, 0, 185);
+    outline: 2px solid var(--accent-color);
 }
 
 input[disabled],
