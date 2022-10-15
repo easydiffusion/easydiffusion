@@ -148,7 +148,7 @@ def stream(session_id:str, task_id:int):
 @app.get('/image/stop')
 def stop(session_id:str=None):
     if not session_id:
-        if task_manager.current_state == ServerStates.Online or task_manager.current_state == ServerStates.Unavailable:
+        if task_manager.current_state == task_manager.ServerStates.Online or task_manager.current_state == task_manager.ServerStates.Unavailable:
             return HTTPException(status_code=409, detail='Not currently running any tasks.') # HTTP409 Conflict
         task_manager.current_state_error = StopAsyncIteration('')
         return {'OK'}
