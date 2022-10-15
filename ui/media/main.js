@@ -117,7 +117,7 @@ maskResetButton.innerHTML = 'Clear'
 maskResetButton.style.fontWeight = 'normal'
 maskResetButton.style.fontSize = '10pt'
 
-let serverState = {'status': 'Offline'}
+let serverState = {'status': 'Offline', 'time': Date.now()}
 let activeTags = []
 let modifiers = []
 let lastPromptUsed = ''
@@ -288,6 +288,10 @@ async function healthCheck() {
             res = await fetch('/ping')
         }
         serverState = await res.json()
+        if (typeof serverState !== 'object' || typeof serverState.status !== 'string') {
+            serverState = {'status': 'Offline', 'time': Date.now()}
+            return
+        }
         // Set status
         switch(serverState.status) {
             case 'Init':
@@ -308,6 +312,7 @@ async function healthCheck() {
         }
         serverState.time = Date.now()
     } catch (e) {
+        serverState = {'status': 'Offline', 'time': Date.now()}
         setServerStatus('error', 'offline')
     }
 }
@@ -544,7 +549,7 @@ async function doMakeImage(task) {
         if (serverState.session !== 'pending' && serverState.session !== 'running' && serverState.session !== 'buffer') {
             throw new Error('Unexpected server task state: ' + serverState.session || 'Undefined')
         }
-        while (serverState?.session === 'pending') {
+        while (serverState.task === renderRequest.task && serverState.session === 'pending') {
             // Wait for task to start on server.
             await asyncDelay(1500)
         }
