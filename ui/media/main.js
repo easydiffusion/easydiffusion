@@ -273,6 +273,9 @@ function showImages(req, res, outputContainer, livePreview) {
 
         const imageData = result?.data || result?.path + '?t=' + new Date().getTime(),
             imageSeed = result?.seed,
+            imagePrompt = req.prompt,
+            imageInferenceSteps = req.num_inference_steps,
+            imageGuidanceScale = req.guidance_scale,
             imageWidth = req.width,
             imageHeight = req.height;
 
@@ -315,6 +318,10 @@ function showImages(req, res, outputContainer, livePreview) {
         imageElem.width = parseInt(imageWidth)
         imageElem.height = parseInt(imageHeight)
         imageElem.setAttribute('data-seed', imageSeed)
+        imageElem.setAttribute('data-prompt', imagePrompt)
+        imageElem.setAttribute('data-steps', imageInferenceSteps)
+        imageElem.setAttribute('data-guidance', imageGuidanceScale)
+
 
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
         imageInfo.style.visibility = (livePreview ? 'hidden' : 'visible')
@@ -351,9 +358,12 @@ function getSaveImageHandler(imageItemElem, outputFormat) {
         const imageElem = imageItemElem.querySelector('img')
         const imgData = imageElem.src
         const imageSeed = imageElem.getAttribute('data-seed')
+        const imagePrompt = imageElem.getAttribute('data-prompt')
+        const imageInferenceSteps = imageElem.getAttribute('data-steps')
+        const imageGuidanceScale = imageElem.getAttribute('data-guidance')
 
         const imgDownload = document.createElement('a')
-        imgDownload.download = createFileName(imageSeed, outputFormat)
+        imgDownload.download = createFileName(imagePrompt, imageSeed, imageInferenceSteps, imageGuidanceScale, outputFormat)
         imgDownload.href = imgData
         imgDownload.click()
     }
@@ -749,13 +759,13 @@ function createTask(prompt) {
 
 // create a file name with embedded prompt and metadata
 // for easier cateloging and comparison
-function createFileName(seed, outputFormat) {
+function createFileName(prompt, seed, steps, guidance, outputFormat) {
 
     // Most important information is the prompt
-    let underscoreName = lastPromptUsed.replace(/[^a-zA-Z0-9]/g, '_')
+    let underscoreName = prompt.replace(/[^a-zA-Z0-9]/g, '_')
     underscoreName = underscoreName.substring(0, 100)
-    const steps = numInferenceStepsField.value
-    const guidance =  guidanceScaleField.value
+    //const steps = numInferenceStepsField.value
+    //const guidance =  guidanceScaleField.value
 
     // name and the top level metadata
     let fileName = `${underscoreName}_Seed-${seed}_Steps-${steps}_Guidance-${guidance}`
