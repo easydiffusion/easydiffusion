@@ -389,7 +389,7 @@ function getUseAsInputHandler(imageItemElem) {
 
         initImagePreviewContainer.style.display = 'block'
         inpaintingEditorContainer.style.display = 'none'
-        promptStrengthContainer.style.display = 'block'
+        promptStrengthContainer.style.display = 'table-row'
         maskSetting.checked = false
         samplerSelectionContainer.style.display = 'none'
 
@@ -1198,7 +1198,7 @@ function showInitImagePreview() {
         initImagePreview.src = reader.result
         initImagePreviewContainer.style.display = 'block'
         inpaintingEditorContainer.style.display = 'none'
-        promptStrengthContainer.style.display = 'block'
+        promptStrengthContainer.style.display = 'table-row'
         samplerSelectionContainer.style.display = 'none'
         // maskSetting.checked = false
     })
