@@ -113,7 +113,9 @@ class TaskCache():
             self._base[key] = (
                 self._get_ttl_time(ttl), value
             )
-        except Exception:
+        except Exception as e:
+            print(str(e))
+            print(traceback.format_exc())
             return False
         else:
             return True
@@ -283,6 +285,7 @@ def render(req : ImageRequest):
         r.stream_image_progress = False
 
     new_task = RenderTask(r)
-    task_cache.put(r.session_id, new_task, TASK_TTL)
-    tasks_queue.put(new_task)
-    return new_task
+    if task_cache.put(r.session_id, new_task, TASK_TTL):
+        tasks_queue.put(new_task)
+        return new_task
+    raise RuntimeError('Failed to add task to cache.')
