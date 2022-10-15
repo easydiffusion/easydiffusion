@@ -55,6 +55,12 @@ Please ensure that you have an NVIDIA GPU and the latest [NVIDIA driver](http://
 
 Also, if you are using WSL (Windows), please ensure you have the latest WSL kernel by running `wsl --shutdown` and then `wsl --update`. (Thanks [AndrWeisR](https://github.com/AndrWeisR))
 
+## ModuleNotFoundError: No module named 'gfpgan'
+If you have moved your installation to a different folder or drive: The name of the installation folder is stored in many configuration files and moving it
+is therefore not possible. You can either move your installation back to the old place, or delete it and re-install to the new location.
+
+If you have not moved your installation, please contact us on the [discord server](https://discord.com/invite/u9yhsFmEkB).
+
 # For support queries
 ## Entering a conda environment in an existing installation
 This will give you an activated conda environment in the terminal, so you can run commands and force-install any packages, if required.
