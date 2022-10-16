@@ -531,9 +531,10 @@ img {
     right: 0px;
     bottom: 3px;
     padding: 3px;
-    background: var(--background-color1);
-    color: var(--input-text-color);
-    opacity: 70%;
+    background: black;
+    color: white;
+    text-shadow: 0px 0px 4px black;
+    opacity: 60%;
     font-size: 12px;
     border-radius: 6px 0px;
 }
