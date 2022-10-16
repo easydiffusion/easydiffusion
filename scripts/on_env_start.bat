@@ -34,8 +34,8 @@ if "%update_branch%"=="" (
 
     @cd sd-ui-files
 
-    @REM @call git reset --hard
-    @REM @call git checkout "%update_branch%"
+    @call git reset --hard
+    @call git checkout "%update_branch%"
     @call git pull
 
     @cd ..
