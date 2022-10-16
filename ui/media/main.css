@@ -13,6 +13,10 @@
     --input-background-color: #e9e9ed; 
     --input-border-color: #8f8f9d; 
 
+    --button-text-color: var(--input-text-color);
+    --button-color: #e9e9ed;
+    --button-border: 1px solid #8f8f9d;
+
     /* other */
     --input-border-radius: 4px;
     --input-border-size: 1px; 
@@ -22,8 +26,7 @@
 
 
 /* Light Theme */
-/*
-:root {
+/* :root {
     --background-color1: white; 
     --background-color2: #dddddd;
     --background-color3: #e7e9eb;
@@ -34,12 +37,11 @@
     --input-text-color: black;
     --input-background-color: #f8f9fa; 
     --input-border-color: grey; 
-}
-*/
+} */
+
 
 /* Discord Theme */
-/*  
-:root {
+/* :root {
     --background-color1: #36393f;
     --background-color2: #2f3136;
     --background-color3: #292b2f;
@@ -48,13 +50,17 @@
     --accent-hue: 235;
     --accent-lightness: 65%;
     --make-image-border: none;
+    
+    --button-color: var(--accent-color);
+    --button-border: none;
 
+    --input-text-color: #ccc;
     --input-border-size: 2px; 
     --input-background-color: #202225; 
     --input-border-color: var(--input-background-color); 
 } */
 
-/* Dillerm Theme */
+/* Example "Custom" Theme */
 /* :root {
     --main-hue: 222;
 	--main-saturation: 18%;
@@ -67,6 +73,9 @@
     
     --accent-hue: 212;
     --make-image-border: none;
+
+    --button-color: var(--accent-color);
+    --button-border: none;
     
     --input-border-size: 1px; 
     --input-background-color: var(--background-color3);
@@ -98,6 +107,7 @@ label {
     width: 100%;
     height: 65pt;
     font-size: 13px;
+    margin-bottom: 6px;
 }
 .image_preview_container {
     /* display: none; */
@@ -582,8 +592,18 @@ input[type="file"] {
     padding: 2px;
 }
 
+button,
+input::file-selector-button { 
+    padding: 2px 4px;
+    border-radius: 4px;
+    background: var(--button-color);
+    color: var(--button-text-color);
+    border: var(--button-border);
+}
+
 input::file-selector-button {
     padding: 0px 4px;
+    height: 19px;
 }
 
 /* input[type="range"] {
