@@ -101,7 +101,7 @@ a:visited {
     color: rgb(0, 102, 204);
 }
 label {
-    font-size: 10pt;
+    font-size: 9pt;
 }
 #prompt {
     width: 100%;
@@ -262,7 +262,7 @@ label {
     flex: 50%;
 }
 .col-fixed-10 {
-    flex: 0 0 380pt;
+    flex: 0 0 350pt;
 }
 .col-free {
     flex: 1;
@@ -570,6 +570,7 @@ textarea {
     background: var(--input-background-color);
     border: var(--input-border-size) solid var(--input-border-color); 
     color: var(--input-text-color);
+    font-size: 9pt;
 }
 
 input { 
