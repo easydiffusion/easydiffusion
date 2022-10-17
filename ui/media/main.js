@@ -7,11 +7,13 @@ const USE_TURBO_MODE_KEY = "useTurboMode"
 const DISK_PATH_KEY = "diskPath"
 const ADVANCED_PANEL_OPEN_KEY = "advancedPanelOpen"
 const MODIFIERS_PANEL_OPEN_KEY = "modifiersPanelOpen"
+const NEGATIVE_PROMPT_PANEL_OPEN_KEY = "negativePromptPanelOpen"
 const USE_FACE_CORRECTION_KEY = "useFaceCorrection"
 const USE_UPSCALING_KEY = "useUpscaling"
 const SHOW_ONLY_FILTERED_IMAGE_KEY = "showOnlyFilteredImage"
 const STREAM_IMAGE_PROGRESS_KEY = "streamImageProgress"
 const OUTPUT_FORMAT_KEY = "outputFormat"
+const AUTO_SAVE_SETTINGS_KEY = "autoSaveSettings"
 const HEALTH_PING_INTERVAL = 5 // seconds
 const MAX_INIT_IMAGE_DIMENSION = 768
 const INPAINTING_EDITOR_SIZE = 450
@@ -35,6 +37,7 @@ let widthField = document.querySelector('#width')
 let heightField = document.querySelector('#height')
 let initImageSelector = document.querySelector("#init_image")
 let initImagePreview = document.querySelector("#init_image_preview")
+let initImageSizeBox = document.querySelector("#init_image_size_box")
 let maskImageSelector = document.querySelector("#mask")
 let maskImagePreview = document.querySelector("#mask_preview")
 let turboField = document.querySelector('#turbo')
@@ -42,6 +45,7 @@ let useCPUField = document.querySelector('#use_cpu')
 let useFullPrecisionField = document.querySelector('#use_full_precision')
 let saveToDiskField = document.querySelector('#save_to_disk')
 let diskPathField = document.querySelector('#diskPath')
+let autoSaveSettingsField = document.querySelector('#auto_save_settings')
 // let allowNSFWField = document.querySelector("#allow_nsfw")
 let useBetaChannelField = document.querySelector("#use_beta_channel")
 let promptStrengthSlider = document.querySelector('#prompt_strength_slider')
@@ -73,6 +77,7 @@ let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
 // let maskImagePreviewContainer = document.querySelector('#mask_preview_container')
 // let maskImageClearBtn = document.querySelector('#mask_clear')
 let maskSetting = document.querySelector('#enable_mask')
+let negativePromptPanelHandle = document.querySelector('#negative_prompt_handle')
 
 let editorModifierEntries = document.querySelector('#editor-modifiers-entries')
 let editorModifierTagsList = document.querySelector('#editor-inputs-tags-list')
@@ -187,6 +192,10 @@ function isUseFullPrecisionEnabled() {
     return getLocalStorageBoolItem(USE_FULL_PRECISION_KEY, false)
 }
 
+function isAutoSaveSettingsEnabled() {
+    return getLocalStorageBoolItem(AUTO_SAVE_SETTINGS_KEY, false)
+}
+
 function isUseTurboModeEnabled() {
     return getLocalStorageBoolItem(USE_TURBO_MODE_KEY, true)
 }
@@ -201,6 +210,10 @@ function isAdvancedPanelOpenEnabled() {
 
 function isModifiersPanelOpenEnabled() {
     return getLocalStorageBoolItem(MODIFIERS_PANEL_OPEN_KEY, false)
+}
+
+function isNegativePromptPanelOpenEnabled() {
+    return getLocalStorageBoolItem(NEGATIVE_PROMPT_PANEL_OPEN_KEY, false)
 }
 
 function isStreamImageProgressEnabled() {
@@ -276,7 +289,12 @@ function asyncDelay(timeout) {
 function playSound() {
     const audio = new Audio('/media/ding.mp3')
     audio.volume = 0.2
-    audio.play()
+    var promise = audio.play();
+    if (promise !== undefined) {
+        promise.then(_ => {}).catch(error => {
+            console.warn("browser blocked autoplay");
+        });
+    }
 }
 
 async function healthCheck() {
@@ -357,9 +375,14 @@ function showImages(reqBody, res, outputContainer, livePreview) {
     if(typeof res != 'object') return
     res.output.reverse()
     res.output.forEach((result, index) => {
-        const imageData = result?.data || result?.path + '?t=' + Date.now()
-        const imageWidth = reqBody.width
-        const imageHeight = reqBody.height
+        const imageData = result?.data || result?.path + '?t=' + Date.now(),
+            imageSeed = result?.seed,
+            imagePrompt = reqBody.prompt,
+            imageInferenceSteps = reqBody.num_inference_steps,
+            imageGuidanceScale = reqBody.guidance_scale,
+            imageWidth = reqBody.width,
+            imageHeight = reqBody.height;
+
         if (!imageData.includes('/')) {
             // res contained no data for the image, stop execution
             setStatus('request', 'invalid image', 'error')
@@ -384,6 +407,11 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         imageElem.src = imageData
         imageElem.width = parseInt(imageWidth)
         imageElem.height = parseInt(imageHeight)
+        imageElem.setAttribute('data-prompt', imagePrompt)
+        imageElem.setAttribute('data-steps', imageInferenceSteps)
+        imageElem.setAttribute('data-guidance', imageGuidanceScale)
+
+
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
         imageInfo.style.visibility = (livePreview ? 'hidden' : 'visible')
 
@@ -429,7 +457,7 @@ function getUseAsInputHandler(imageItemElem) {
 
         initImagePreviewContainer.style.display = 'block'
         inpaintingEditorContainer.style.display = 'none'
-        promptStrengthContainer.style.display = 'block'
+        promptStrengthContainer.style.display = 'table-row'
         maskSetting.checked = false
         samplerSelectionContainer.style.display = 'none'
 
@@ -446,9 +474,12 @@ function getSaveImageHandler(imageItemElem, outputFormat) {
         const imageElem = imageItemElem.querySelector('img')
         const imgData = imageElem.src
         const imageSeed = imageElem.getAttribute('data-seed')
+        const imagePrompt = imageElem.getAttribute('data-prompt')
+        const imageInferenceSteps = imageElem.getAttribute('data-steps')
+        const imageGuidanceScale = imageElem.getAttribute('data-guidance')
 
         const imgDownload = document.createElement('a')
-        imgDownload.download = createFileName(imageSeed, outputFormat)
+        imgDownload.download = createFileName(imagePrompt, imageSeed, imageInferenceSteps, imageGuidanceScale, outputFormat)
         imgDownload.href = imgData
         imgDownload.click()
     }
@@ -464,7 +495,10 @@ function getStartNewTaskHandler(reqBody, imageItemElem, mode) {
         switch (mode) {
             case 'img2img':
             case 'img2img_X2':
-                newTaskRequest.reqBody = Object.assign({}, reqBody, { num_outputs: 1 })
+                newTaskRequest.reqBody = Object.assign({}, reqBody, {
+                    num_outputs: 1,
+                    use_cpu: useCPUField.checked,
+                })
                 if (!newTaskRequest.reqBody.init_image || mode === 'img2img_X2') {
                     newTaskRequest.reqBody.sampler = 'ddim'
                     newTaskRequest.reqBody.prompt_strength = '0.5'
@@ -1026,13 +1060,13 @@ function permute(arr) {
 
 // create a file name with embedded prompt and metadata
 // for easier cateloging and comparison
-function createFileName(seed, outputFormat) {
+function createFileName(prompt, seed, steps, guidance, outputFormat) {
 
     // Most important information is the prompt
-    let underscoreName = lastPromptUsed.replace(/[^a-zA-Z0-9]/g, '_')
+    let underscoreName = prompt.replace(/[^a-zA-Z0-9]/g, '_')
     underscoreName = underscoreName.substring(0, 100)
-    const steps = numInferenceStepsField.value
-    const guidance =  guidanceScaleField.value
+    //const steps = numInferenceStepsField.value
+    //const guidance =  guidanceScaleField.value
 
     // name and the top level metadata
     let fileName = `${underscoreName}_Seed-${seed}_Steps-${steps}_Guidance-${guidance}`
@@ -1113,6 +1147,9 @@ useCPUField.checked = isUseCPUEnabled()
 useFullPrecisionField.addEventListener('click', handleBoolSettingChange(USE_FULL_PRECISION_KEY))
 useFullPrecisionField.checked = isUseFullPrecisionEnabled()
 
+autoSaveSettingsField.addEventListener('click', handleBoolSettingChange(AUTO_SAVE_SETTINGS_KEY))
+autoSaveSettingsField.checked = isAutoSaveSettingsEnabled()
+
 turboField.addEventListener('click', handleBoolSettingChange(USE_TURBO_MODE_KEY))
 turboField.checked = isUseTurboModeEnabled()
 
@@ -1148,6 +1185,10 @@ if (isAdvancedPanelOpenEnabled()) {
 
 if (isModifiersPanelOpenEnabled()) {
     setPanelOpen(modifiersPanelHandle)
+}
+
+if (isNegativePromptPanelOpenEnabled()) {
+    setPanelOpen(negativePromptPanelHandle)
 }
 
 makeImageBtn.addEventListener('click', makeImage)
@@ -1283,12 +1324,12 @@ function showInitImagePreview() {
     let reader = new FileReader()
     let file = initImageSelector.files[0]
 
-    reader.addEventListener('load', function() {
+    reader.addEventListener('load', function(event) {
         // console.log(file.name, reader.result)
         initImagePreview.src = reader.result
         initImagePreviewContainer.style.display = 'block'
         inpaintingEditorContainer.style.display = 'none'
-        promptStrengthContainer.style.display = 'block'
+        promptStrengthContainer.style.display = 'table-row'
         samplerSelectionContainer.style.display = 'none'
         // maskSetting.checked = false
     })
@@ -1304,6 +1345,8 @@ initImagePreview.addEventListener('load', function() {
     inpaintingEditorCanvasBackground.style.backgroundImage = "url('" + this.src + "')"
     // maskSetting.style.display = 'block'
     // inpaintingEditorContainer.style.display = 'block'
+    initImageSizeBox.textContent = initImagePreview.naturalWidth + " x " + initImagePreview.naturalHeight
+    initImageSizeBox.style.display = 'block'
 })
 
 initImageClearBtn.addEventListener('click', function() {
@@ -1321,7 +1364,8 @@ initImageClearBtn.addEventListener('click', function() {
     // maskSetting.style.display = 'none'
 
     promptStrengthContainer.style.display = 'none'
-    samplerSelectionContainer.style.display = 'block'
+    samplerSelectionContainer.style.display = 'table-row'
+    initImageSizeBox.style.display = 'none'
 })
 
 maskSetting.addEventListener('click', function() {
@@ -1451,6 +1495,9 @@ function createCollapsibles(node) {
             } else if (this == modifiersPanelHandle) {
                 let state = (content.style.display === 'block' ? 'true' : 'false')
                 localStorage.setItem(MODIFIERS_PANEL_OPEN_KEY, state)
+            } else if (this == negativePromptPanelHandle) {
+                let state = (content.style.display === 'block' ? 'true' : 'false')
+                localStorage.setItem(NEGATIVE_PROMPT_PANEL_OPEN_KEY, state)
             }
         })
     })

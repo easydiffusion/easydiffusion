@@ -13,5 +13,5 @@ if [ "$0" == "bash" ]; then
 
   conda activate ./stable-diffusion/env
 else
-  bash --init-file open_dev_console.sh
+  bash --init-file developer_console.sh
 fi
