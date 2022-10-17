@@ -35,7 +35,6 @@ let widthField = document.querySelector('#width')
 let heightField = document.querySelector('#height')
 let initImageSelector = document.querySelector("#init_image")
 let initImagePreview = document.querySelector("#init_image_preview")
-let initImageSizeBox = document.querySelector("#init_image_size_box")
 let maskImageSelector = document.querySelector("#mask")
 let maskImagePreview = document.querySelector("#mask_preview")
 let turboField = document.querySelector('#turbo')
@@ -43,6 +42,7 @@ let useCPUField = document.querySelector('#use_cpu')
 let useFullPrecisionField = document.querySelector('#use_full_precision')
 let saveToDiskField = document.querySelector('#save_to_disk')
 let diskPathField = document.querySelector('#diskPath')
+let autoSaveSettingsField = document.querySelector('#auto_save_settings')
 // let allowNSFWField = document.querySelector("#allow_nsfw")
 let useBetaChannelField = document.querySelector("#use_beta_channel")
 let promptStrengthSlider = document.querySelector('#prompt_strength_slider')
@@ -255,12 +255,7 @@ function logError(msg, res, outputMsg) {
 function playSound() {
     const audio = new Audio('/media/ding.mp3')
     audio.volume = 0.2
-    var promise = audio.play();
-    if (promise !== undefined) {
-        promise.then(_ => {}).catch(error => {
-            console.warn("browser blocked autoplay");
-        });
-    }
+    audio.play()
 }
 
 async function healthCheck() {
@@ -1193,7 +1188,7 @@ function showInitImagePreview() {
     let reader = new FileReader()
     let file = initImageSelector.files[0]
 
-    reader.addEventListener('load', function(event) {
+    reader.addEventListener('load', function() {
         // console.log(file.name, reader.result)
         initImagePreview.src = reader.result
         initImagePreviewContainer.style.display = 'block'
@@ -1214,8 +1209,6 @@ initImagePreview.addEventListener('load', function() {
     inpaintingEditorCanvasBackground.style.backgroundImage = "url('" + this.src + "')"
     // maskSetting.style.display = 'block'
     // inpaintingEditorContainer.style.display = 'block'
-    initImageSizeBox.textContent = initImagePreview.naturalWidth + " x " + initImagePreview.naturalHeight
-    initImageSizeBox.style.display = 'block'
 })
 
 initImageClearBtn.addEventListener('click', function() {
@@ -1233,8 +1226,7 @@ initImageClearBtn.addEventListener('click', function() {
     // maskSetting.style.display = 'none'
 
     promptStrengthContainer.style.display = 'none'
-    samplerSelectionContainer.style.display = 'table-row'
-    initImageSizeBox.style.display = 'none'
+    samplerSelectionContainer.style.display = 'block'
 })
 
 maskSetting.addEventListener('click', function() {
