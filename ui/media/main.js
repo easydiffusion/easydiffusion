@@ -290,6 +290,7 @@ async function healthCheck() {
         serverState = await res.json()
         if (typeof serverState !== 'object' || typeof serverState.status !== 'string') {
             serverState = {'status': 'Offline', 'time': Date.now()}
+            setServerStatus('error', 'offline')
             return
         }
         // Set status
