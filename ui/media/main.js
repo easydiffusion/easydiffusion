@@ -235,8 +235,8 @@ function setServerStatus(msgType, msg) {
             serverStatusMsg.innerText = 'Stable Diffusion is ' + msg
             break
         case 'busy':
-            serverStatusColor.style.color = 'yellow'
-            serverStatusMsg.style.color = 'yellow'
+            serverStatusColor.style.color = 'rgb(200, 139, 0)'
+            serverStatusMsg.style.color = 'rgb(200, 139, 0)'
             serverStatusMsg.innerText = 'Stable Diffusion is ' + msg
             break
         case 'error':
@@ -571,7 +571,7 @@ async function doMakeImage(task) {
             console.log('Endpoint response: ', renderRequest)
             throw new Error('Endpoint response does not contains a response stream url.')
         }
-        task['taskStatusLabel'].innerText = "Busy/Waiting"
+        task['taskStatusLabel'].innerText = "Waiting"
         task['taskStatusLabel'].classList.add('waitingTaskLabel')
         task['taskStatusLabel'].classList.remove('activeTaskLabel')
 
