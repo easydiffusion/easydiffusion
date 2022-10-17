@@ -320,10 +320,10 @@ async function healthCheck() {
                 setServerStatus('online', 'ready')
                 break
             case 'LoadingModel':
-                setServerStatus('busy', 'loading model')
+                setServerStatus('busy', 'loading..')
                 break
             case 'Rendering':
-                setServerStatus('busy', 'rendering')
+                setServerStatus('busy', 'rendering..')
                 break
             default: // Unavailable
                 setServerStatus('error', serverState.status.toLowerCase())

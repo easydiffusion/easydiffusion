@@ -483,7 +483,7 @@ img {
 }
 .waitingTaskLabel {
     background:rgb(128, 89, 0);
-    border: 1px solid rgb(0, 75, 19);
+    border: 1px solid rgb(107, 75, 0);
     color:rgb(255, 242, 211)
 }
 .secondaryButton {
