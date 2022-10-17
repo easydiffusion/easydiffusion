@@ -6,6 +6,7 @@
 
     --accent-hue: 266;
     --accent-lightness: 36%;
+    --accent-lightness-hover: 40%;
 
     --text-color: #eee;
 
@@ -21,6 +22,7 @@
     --input-border-radius: 4px;
     --input-border-size: 1px; 
     --accent-color: hsl(var(--accent-hue), 100%, var(--accent-lightness));
+    --accent-color-hover: hsl(var(--accent-hue), 100%, var(--accent-lightness-hover));
     --make-image-border: 2px solid hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) - 21%));
 }
 
@@ -571,6 +573,10 @@ textarea {
     border: var(--input-border-size) solid var(--input-border-color); 
     color: var(--input-text-color);
     font-size: 9pt;
+}
+
+input:hover {
+    accent-color: var(--accent-color-hover);
 }
 
 input { 
