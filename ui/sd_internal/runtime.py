@@ -130,7 +130,7 @@ def device_init(device_selection=None):
         device_selection = device_selection.lower()
         if device_selection.startswith('gpu:'):
             device_selection = int(device_selection[4:])
-    if device_selection != 'cuda' and device_selection != 'current' and device_selection != 'gpu':
+    if device_selection != 'current' and device_selection != 'gpu':
         if device_select(device_selection):
             if isinstance(device_selection, int):
                 print(f'Setting GPU:{device_selection} as active')

@@ -78,16 +78,27 @@ def setConfig(config):
         print(traceback.format_exc())
 
     if 'render_devices' in config:
-        gpu_devices = filter(lambda dev: dev.startswith('GPU:'), config['render_devices'])
+        gpu_devices = filter(lambda dev: dev.lower().startswith('gpu') or dev.lower().startswith('cuda'), config['render_devices'])
     else:
         gpu_devices = []
+
+    has_first_cuda_device = False
+    for device in gpu_devices:
+        if not task_manager.is_first_cuda_device(device): continue
+        has_first_cuda_device = True
+        break
+    if len(gpu_devices) > 0 and not has_first_cuda_device:
+        print('WARNING: GFPGANer only works on CPU or GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.')
+        print('Using CUDA_VISIBLE_DEVICES will remap the selected devices starting at GPU:0 fixing GFPGANer')
 
     try: # config.bat
         config_bat = [
             f"@set update_branch={config['update_branch']}"
         ]
-        if len(gpu_devices) > 0:
-            config_sh.append(f"@set CUDA_VISIBLE_DEVICES={','.join(gpu_devices)}")
+        if len(gpu_devices) > 0 and not has_first_cuda_device:
+            config_sh.append('::Set the devices visible inside SD-UI here')
+            config_bat.append(f"::@set CUDA_VISIBLE_DEVICES={','.join(gpu_devices)}") # Needs better detection for edge cases, add as a comment for now.
+            print('Add the line "@set CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.bat')
         config_bat_path = os.path.join(CONFIG_DIR, 'config.bat')
         with open(config_bat_path, 'w') as f:
             f.write(f.write('\r\n'.join(config_bat)))
@@ -99,8 +110,10 @@ def setConfig(config):
             '#!/bin/bash'
             f"export update_branch={config['update_branch']}"
         ]
-        if len(gpu_devices) > 0:
-            config_sh.append(f"CUDA_VISIBLE_DEVICES={','.join(gpu_devices)}")
+        if len(gpu_devices) > 0 and not has_first_cuda_device:
+            config_sh.append('#Set the devices visible inside SD-UI here')
+            config_sh.append(f"#CUDA_VISIBLE_DEVICES={','.join(gpu_devices)}") # Needs better detection for edge cases, add as a comment for now.
+            print('Add the line "CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.sh')
         config_sh_path = os.path.join(CONFIG_DIR, 'config.sh')
         with open(config_sh_path, 'w') as f:
             f.write('\n'.join(config_sh))
@@ -344,6 +357,12 @@ if task_manager.is_alive() <= 0: # No running devices, apply defaults.
 # Allow CPU to be used for renders if not already enabled in current config.
 if task_manager.is_alive('cpu') <= 0 and allow_cpu:
     task_manager.start_render_thread('cpu')
+
+if task_manager.is_alive(0) <= 0: # Missing cuda:0, warn the user.
+    print('WARNING: GFPGANer only works on CPU or GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.')
+    print('Using CUDA_VISIBLE_DEVICES will remap the selected devices starting at GPU:0 fixing GFPGANer')
+    print('Add the line "@set CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.bat')
+    print('Add the line "CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.sh')
 
 # start the browser ui
 import webbrowser; webbrowser.open('http://localhost:9000')

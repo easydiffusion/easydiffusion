@@ -299,16 +299,19 @@ def thread_render(device):
             print(f'Session {task.request.session_id} task {id(task)} completed.')
         current_state = ServerStates.Online
 
+def is_first_cuda_device(device):
+    from . import runtime # When calling runtime from outside thread_render DO NOT USE thread specific attributes or functions.
+    return runtime.is_first_cuda_device(device)
+
 def is_alive(name=None):
-    from . import runtime # When calling runtime from here DO NOT USE thread specific attributes or functions.
     if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('is_alive' + ERR_LOCK_FAILED)
     nbr_alive = 0
     try:
         for rthread in render_threads:
             thread_name = rthread.name[len(THREAD_NAME_PREFIX):].lower()
             if name is not None:
-                if runtime.is_first_cuda_device(name):
-                    if not runtime.is_first_cuda_device(thread_name):
+                if is_first_cuda_device(name):
+                    if not is_first_cuda_device(thread_name):
                         continue
                 elif thread_name != name:
                     continue
