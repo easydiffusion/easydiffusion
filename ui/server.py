@@ -244,6 +244,7 @@ def save_model_to_config(model_name):
 
 @app.post('/render')
 def render(req : task_manager.ImageRequest):
+    if req.use_cpu and task_manager.is_alive('cpu') <= 0: return HTTPException(status_code=403, detail=f'CPU rendering is not enabled in config.json or the thread has died...') # HTTP403 Forbidden
     try:
         save_model_to_config(req.use_stable_diffusion_model)
         req.use_stable_diffusion_model = resolve_model_to_use(req.use_stable_diffusion_model)
