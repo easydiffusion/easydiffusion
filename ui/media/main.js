@@ -325,11 +325,11 @@ function showImages(reqBody, res, outputContainer, livePreview) {
     res.output.forEach((result, index) => {
         const imageData = result?.data || result?.path + '?t=' + new Date().getTime(),
             imageSeed = result?.seed,
-            imagePrompt = req.prompt,
-            imageInferenceSteps = req.num_inference_steps,
-            imageGuidanceScale = req.guidance_scale,
-            imageWidth = req.width,
-            imageHeight = req.height;
+            imagePrompt = reqBody.prompt,
+            imageInferenceSteps = reqBody.num_inference_steps,
+            imageGuidanceScale = reqBody.guidance_scale,
+            imageWidth = reqBody.width,
+            imageHeight = reqBody.height;
 
         if (!imageData.includes('/')) {
             // res contained no data for the image, stop execution
