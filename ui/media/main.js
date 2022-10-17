@@ -582,6 +582,10 @@ async function doMakeImage(task) {
             }
         } while (serverState.time > (Date.now() - (10 * 1000)) && serverState.task !== renderRequest.task)
         if (serverState.session !== 'pending' && serverState.session !== 'running' && serverState.session !== 'buffer') {
+            if (serverState.session === 'stopped') {
+                return false
+            }
+
             throw new Error('Unexpected server task state: ' + serverState.session || 'Undefined')
         }
         while (serverState.task === renderRequest.task && serverState.session === 'pending') {
