@@ -14,89 +14,31 @@ CONFIG_DIR = os.path.abspath(os.path.join(SD_UI_DIR, '..', 'scripts'))
 MODELS_DIR = os.path.abspath(os.path.join(SD_DIR, '..', 'models'))
 
 OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder
+TASK_TTL = 15 * 60 # Discard last session's task timeout
 
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-from starlette.responses import FileResponse, StreamingResponse
+from starlette.responses import FileResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel
 import logging
+import queue, threading, time
+from typing import Any, Generator, Hashable, Optional, Union
 
-from sd_internal import Request, Response
+from sd_internal import Request, Response, task_manager
 
 app = FastAPI()
-
-model_loaded = False
-model_is_loading = False
 
 modifiers_cache = None
 outpath = os.path.join(os.path.expanduser("~"), OUTPUT_DIRNAME)
 
 # don't show access log entries for URLs that start with the given prefix
-ACCESS_LOG_SUPPRESS_PATH_PREFIXES = ['/ping', '/modifier-thumbnails']
+ACCESS_LOG_SUPPRESS_PATH_PREFIXES = ['/ping', '/image', '/modifier-thumbnails']
 
+NOCACHE_HEADERS={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
 app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'media/')), name="media")
-
-# defaults from https://huggingface.co/blog/stable_diffusion
-class ImageRequest(BaseModel):
-    session_id: str = "session"
-    prompt: str = ""
-    negative_prompt: str = ""
-    init_image: str = None # base64
-    mask: str = None # base64
-    num_outputs: int = 1
-    num_inference_steps: int = 50
-    guidance_scale: float = 7.5
-    width: int = 512
-    height: int = 512
-    seed: int = 42
-    prompt_strength: float = 0.8
-    sampler: str = None # "ddim", "plms", "heun", "euler", "euler_a", "dpm2", "dpm2_a", "lms"
-    # allow_nsfw: bool = False
-    save_to_disk_path: str = None
-    turbo: bool = True
-    use_cpu: bool = False
-    use_full_precision: bool = False
-    use_face_correction: str = None # or "GFPGANv1.3"
-    use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
-    use_stable_diffusion_model: str = "sd-v1-4"
-    show_only_filtered_image: bool = False
-    output_format: str = "jpeg" # or "png"
-
-    stream_progress_updates: bool = False
-    stream_image_progress: bool = False
 
 class SetAppConfigRequest(BaseModel):
     update_branch: str = "main"
-
-@app.get('/')
-def read_root():
-    headers = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
-    return FileResponse(os.path.join(SD_UI_DIR, 'index.html'), headers=headers)
-
-@app.get('/ping')
-async def ping():
-    global model_loaded, model_is_loading
-
-    try:
-        if model_loaded:
-            return {'OK'}
-
-        if model_is_loading:
-            return {'ERROR'}
-
-        model_is_loading = True
-
-        from sd_internal import runtime
-
-        runtime.load_model_ckpt(ckpt_to_use=get_initial_model_to_load())
-
-        model_loaded = True
-        model_is_loading = False
-
-        return {'OK'}
-    except Exception as e:
-        print(traceback.format_exc())
-        return HTTPException(status_code=500, detail=str(e))
 
 # needs to support the legacy installations
 def get_initial_model_to_load():
@@ -114,7 +56,6 @@ def get_initial_model_to_load():
             ckpt_to_use = model_path
         else:
             print('Could not find the configured custom model at:', model_path + '.ckpt', '. Using the default one:', ckpt_to_use + '.ckpt')
-
     return ckpt_to_use
 
 def resolve_model_to_use(model_name):
@@ -126,8 +67,41 @@ def resolve_model_to_use(model_name):
             model_path = legacy_model_path
     else:
         model_path = os.path.join(MODELS_DIR, 'stable-diffusion', model_name)
-
     return model_path
+
+@app.on_event("shutdown")
+def shutdown_event(): # Signal render thread to close on shutdown
+    task_manager.current_state_error = SystemExit('Application shutting down.')
+
+@app.get('/')
+def read_root():
+    return FileResponse(os.path.join(SD_UI_DIR, 'index.html'), headers=NOCACHE_HEADERS)
+
+@app.get('/ping') # Get server and optionally session status.
+def ping(session_id:str=None):
+    if not task_manager.render_thread.is_alive(): # Render thread is dead.
+        if task_manager.current_state_error: return HTTPException(status_code=500, detail=str(current_state_error))
+        return HTTPException(status_code=500, detail='Render thread is dead.')
+    if task_manager.current_state_error and not isinstance(task_manager.current_state_error, StopAsyncIteration): return HTTPException(status_code=500, detail=str(current_state_error))
+    # Alive
+    response = {'status': str(task_manager.current_state)}
+    if session_id:
+        task = task_manager.task_cache.tryGet(session_id)
+        if task:
+            response['task'] = id(task)
+            if task.lock.locked():
+                response['session'] = 'running'
+            elif isinstance(task.error, StopAsyncIteration):
+                response['session'] = 'stopped'
+            elif task.error:
+                response['session'] = 'error'
+            elif not task.buffer_queue.empty():
+                response['session'] = 'buffer'
+            elif task.response:
+                response['session'] = 'completed'
+            else:
+                response['session'] = 'pending'
+    return JSONResponse(response, headers=NOCACHE_HEADERS)
 
 def save_model_to_config(model_name):
     config = getConfig()
@@ -135,83 +109,68 @@ def save_model_to_config(model_name):
         config['model'] = {}
 
     config['model']['stable-diffusion'] = model_name
-
     setConfig(config)
 
-@app.post('/image')
-def image(req : ImageRequest):
-    from sd_internal import runtime
-
-    r = Request()
-    r.session_id = req.session_id
-    r.prompt = req.prompt
-    r.negative_prompt = req.negative_prompt
-    r.init_image = req.init_image
-    r.mask = req.mask
-    r.num_outputs = req.num_outputs
-    r.num_inference_steps = req.num_inference_steps
-    r.guidance_scale = req.guidance_scale
-    r.width = req.width
-    r.height = req.height
-    r.seed = req.seed
-    r.prompt_strength = req.prompt_strength
-    r.sampler = req.sampler
-    # r.allow_nsfw = req.allow_nsfw
-    r.turbo = req.turbo
-    r.use_cpu = req.use_cpu
-    r.use_full_precision = req.use_full_precision
-    r.save_to_disk_path = req.save_to_disk_path
-    r.use_upscale: str = req.use_upscale
-    r.use_face_correction = req.use_face_correction
-    r.show_only_filtered_image = req.show_only_filtered_image
-    r.output_format = req.output_format
-
-    r.stream_progress_updates = True # the underlying implementation only supports streaming
-    r.stream_image_progress = req.stream_image_progress
-
-    r.use_stable_diffusion_model = resolve_model_to_use(req.use_stable_diffusion_model)
-
-    save_model_to_config(req.use_stable_diffusion_model)
-
+@app.post('/render')
+def render(req : task_manager.ImageRequest):
     try:
-        if not req.stream_progress_updates:
-            r.stream_image_progress = False
-
-        res = runtime.mk_img(r)
-
-        if req.stream_progress_updates:
-            return StreamingResponse(res, media_type='application/json')
-        else: # compatibility mode: buffer the streaming responses, and return the last one
-            last_result = None
-
-            for result in res:
-                last_result = result
-
-            return json.loads(last_result)
+        save_model_to_config(req.use_stable_diffusion_model)
+        req.use_stable_diffusion_model = resolve_model_to_use(req.use_stable_diffusion_model)
+        new_task = task_manager.render(req)
+        response = {
+            'status': str(task_manager.current_state), 
+            'queue': task_manager.tasks_queue.qsize(),
+            'stream': f'/image/stream/{req.session_id}/{id(new_task)}',
+            'task': id(new_task)
+        }
+        return JSONResponse(response, headers=NOCACHE_HEADERS)
+    except ChildProcessError as e: # Render thread is dead
+        return HTTPException(status_code=500, detail=f'Rendering thread has died.') # HTTP500 Internal Server Error
+    except ConnectionRefusedError as e: # Unstarted task pending, deny queueing more than one.
+        return HTTPException(status_code=503, detail=f'Session {req.session_id} has an already pending task.') # HTTP503 Service Unavailable
     except Exception as e:
-        print(traceback.format_exc())
         return HTTPException(status_code=500, detail=str(e))
+
+@app.get('/image/stream/{session_id:str}/{task_id:int}')
+def stream(session_id:str, task_id:int):
+    #TODO Move to WebSockets ??
+    task = task_manager.task_cache.tryGet(session_id)
+    if not task: return HTTPException(status_code=410, detail='No request received.') # HTTP410 Gone
+    if (id(task) != task_id): return HTTPException(status_code=409, detail=f'Wrong task id received. Expected:{id(task)}, Received:{task_id}') # HTTP409 Conflict
+    if task.buffer_queue.empty() and not task.lock.locked():
+        if task.response:
+            #print(f'Session {session_id} sending cached response')
+            return JSONResponse(task.response, headers=NOCACHE_HEADERS)
+        return HTTPException(status_code=425, detail='Too Early, task not started yet.') # HTTP425 Too Early
+    #print(f'Session {session_id} opened live render stream {id(task.buffer_queue)}')
+    return StreamingResponse(task.read_buffer_generator(), media_type='application/json')
 
 @app.get('/image/stop')
-def stop():
-    try:
-        if model_is_loading:
-            return {'ERROR'}
-
-        from sd_internal import runtime
-        runtime.stop_processing = True
-
+def stop(session_id:str=None):
+    if not session_id:
+        if task_manager.current_state == task_manager.ServerStates.Online or task_manager.current_state == task_manager.ServerStates.Unavailable:
+            return HTTPException(status_code=409, detail='Not currently running any tasks.') # HTTP409 Conflict
+        task_manager.current_state_error = StopAsyncIteration('')
         return {'OK'}
-    except Exception as e:
-        print(traceback.format_exc())
-        return HTTPException(status_code=500, detail=str(e))
+    task = task_manager.task_cache.tryGet(session_id)
+    if not task: return HTTPException(status_code=404, detail=f'Session {session_id} has no active task.') # HTTP404 Not Found
+    if isinstance(task.error, StopAsyncIteration): return HTTPException(status_code=409, detail=f'Session {session_id} task is already stopped.') # HTTP409 Conflict
+    task.error = StopAsyncIteration('')
+    return {'OK'}
 
-@app.get('/image/tmp/{session_id}/{img_id}')
+@app.get('/image/tmp/{session_id}/{img_id:int}')
 def get_image(session_id, img_id):
-    from sd_internal import runtime
-    buf = runtime.temp_images[session_id + '/' + img_id]
-    buf.seek(0)
-    return StreamingResponse(buf, media_type='image/jpeg')
+    task = task_manager.task_cache.tryGet(session_id)
+    if not task: return HTTPException(status_code=410, detail=f'Session {session_id} has not submitted a task.') # HTTP410 Gone
+    if not task.temp_images[img_id]: return HTTPException(status_code=425, detail='Too Early, task data is not available yet.') # HTTP425 Too Early
+    try:
+        img_data = task.temp_images[img_id]
+        if isinstance(img_data, str):
+            return img_data
+        img_data.seek(0)
+        return StreamingResponse(img_data, media_type='image/jpeg')
+    except KeyError as e:
+        return HTTPException(status_code=500, detail=str(e))
 
 @app.post('/app_config')
 async def setAppConfig(req : SetAppConfigRequest):
@@ -242,42 +201,27 @@ async def setAppConfig(req : SetAppConfigRequest):
         print(traceback.format_exc())
         return HTTPException(status_code=500, detail=str(e))
 
-@app.get('/app_config')
-def getAppConfig():
+def getConfig(default_val={}):
     try:
         config_json_path = os.path.join(CONFIG_DIR, 'config.json')
-
         if not os.path.exists(config_json_path):
-            return HTTPException(status_code=500, detail="No config file")
-
+            return default_val
         with open(config_json_path, 'r') as f:
             return json.load(f)
     except Exception as e:
+        print(str(e))
         print(traceback.format_exc())
-        return HTTPException(status_code=500, detail=str(e))
-
-def getConfig():
-    try:
-        config_json_path = os.path.join(CONFIG_DIR, 'config.json')
-
-        if not os.path.exists(config_json_path):
-            return {}
-
-        with open(config_json_path, 'r') as f:
-            return json.load(f)
-    except Exception as e:
-        return {}
+        return default_val
 
 def setConfig(config):
     try:
         config_json_path = os.path.join(CONFIG_DIR, 'config.json')
-
         with open(config_json_path, 'w') as f:
             return json.dump(config, f)
     except:
+        print(str(e))
         print(traceback.format_exc())
 
-@app.get('/models')
 def getModels():
     models = {
         'active': {
@@ -307,14 +251,21 @@ def getModels():
 
     return models
 
-@app.get('/modifiers.json')
-def read_modifiers():
-    headers = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
-    return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'), headers=headers)
-
-@app.get('/output_dir')
-def read_home_dir():
-    return {outpath}
+@app.get('/get/{key:path}')
+def read_web_data(key:str=None):
+    if not key: # /get without parameters, stable-diffusion easter egg.
+        return HTTPException(status_code=418, detail="StableDiffusion is drawing a teapot!") # HTTP418 I'm a teapot
+    elif key == 'app_config':
+        config = getConfig(default_val=None)
+        if config is None:
+            return HTTPException(status_code=500, detail="Config file is missing or unreadable")
+        return JSONResponse(config, headers=NOCACHE_HEADERS)
+    elif key == 'models':
+        return JSONResponse(getModels(), headers=NOCACHE_HEADERS)
+    elif key == 'modifiers': return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'), headers=NOCACHE_HEADERS)
+    elif key == 'output_dir': return JSONResponse({ 'output_dir': outpath }, headers=NOCACHE_HEADERS)
+    else:
+        return HTTPException(status_code=404, detail=f'Request for unknown {key}') # HTTP404 Not Found
 
 # don't log certain requests
 class LogSuppressFilter(logging.Filter):
@@ -323,10 +274,11 @@ class LogSuppressFilter(logging.Filter):
         for prefix in ACCESS_LOG_SUPPRESS_PATH_PREFIXES:
             if path.find(prefix) != -1:
                 return False
-
         return True
-
 logging.getLogger('uvicorn.access').addFilter(LogSuppressFilter())
+
+task_manager.default_model_to_load = get_initial_model_to_load()
+task_manager.start_render_thread()
 
 # start the browser ui
 import webbrowser; webbrowser.open('http://localhost:9000')
