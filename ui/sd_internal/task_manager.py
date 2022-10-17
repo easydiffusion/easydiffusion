@@ -217,7 +217,8 @@ def thread_render(device):
                 if not queued_task.request.use_cpu and runtime.thread_data.device == 'cpu':
                     continue # CPU Tasks
                 if queued_task.request.use_face_correction and not runtime.is_first_cuda_device(runtime.thread_data.device):
-                    continue #TODO Remove when fixed - A bug with GFPGANer and facexlib needs to be fixed before use on other devices.
+                    if not runtime.thread_data.device == 'cpu' and is_alive(0) > 0: # Allows GFPGANer on cuda:0 and use cpu only when cuda:0 is not available.
+                        continue #TODO Remove when fixed - A bug with GFPGANer and facexlib needs to be fixed before use on other devices.
                 task = queued_task
                 break
             if task is not None:
