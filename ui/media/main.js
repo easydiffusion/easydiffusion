@@ -685,7 +685,7 @@ async function doMakeImage(task) {
             }
             if (readComplete && finalJSON.length <= 0) {
                 if (res.status === 200) {
-                    await asyncDelay(5000)
+                    await asyncDelay(1000)
                     res = await fetch(renderRequest.stream, {
                         headers: {
                             'Content-Type': 'application/json'

@@ -1,6 +1,6 @@
 @echo off
 
-@copy sd-ui-files\scripts\on_env_start.bat scripts\ /Y
+@REM @copy sd-ui-files\scripts\on_env_start.bat scripts\ /Y
 
 @REM Caution, this file will make your eyes and brain bleed. It's such an unholy mess.
 @REM Note to self: Please rewrite this in Python. For the sake of your own sanity.
