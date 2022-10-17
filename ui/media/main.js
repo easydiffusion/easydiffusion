@@ -7,6 +7,7 @@ const USE_TURBO_MODE_KEY = "useTurboMode"
 const DISK_PATH_KEY = "diskPath"
 const ADVANCED_PANEL_OPEN_KEY = "advancedPanelOpen"
 const MODIFIERS_PANEL_OPEN_KEY = "modifiersPanelOpen"
+const NEGATIVE_PROMPT_PANEL_OPEN_KEY = "negativePromptPanelOpen"
 const USE_FACE_CORRECTION_KEY = "useFaceCorrection"
 const USE_UPSCALING_KEY = "useUpscaling"
 const SHOW_ONLY_FILTERED_IMAGE_KEY = "showOnlyFilteredImage"
@@ -76,6 +77,7 @@ let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
 // let maskImagePreviewContainer = document.querySelector('#mask_preview_container')
 // let maskImageClearBtn = document.querySelector('#mask_clear')
 let maskSetting = document.querySelector('#enable_mask')
+let negativePromptPanelHandle = document.querySelector('#negative_prompt_handle')
 
 let editorModifierEntries = document.querySelector('#editor-modifiers-entries')
 let editorModifierTagsList = document.querySelector('#editor-inputs-tags-list')
@@ -208,6 +210,10 @@ function isAdvancedPanelOpenEnabled() {
 
 function isModifiersPanelOpenEnabled() {
     return getLocalStorageBoolItem(MODIFIERS_PANEL_OPEN_KEY, false)
+}
+
+function isNegativePromptPanelOpenEnabled() {
+    return getLocalStorageBoolItem(NEGATIVE_PROMPT_PANEL_OPEN_KEY, false)
 }
 
 function isStreamImageProgressEnabled() {
@@ -1083,6 +1089,10 @@ if (isModifiersPanelOpenEnabled()) {
     setPanelOpen(modifiersPanelHandle)
 }
 
+if (isNegativePromptPanelOpenEnabled()) {
+    setPanelOpen(negativePromptPanelHandle)
+}
+
 makeImageBtn.addEventListener('click', makeImage)
 
 
@@ -1387,6 +1397,9 @@ function createCollapsibles(node) {
             } else if (this == modifiersPanelHandle) {
                 let state = (content.style.display === 'block' ? 'true' : 'false')
                 localStorage.setItem(MODIFIERS_PANEL_OPEN_KEY, state)
+            } else if (this == negativePromptPanelHandle) {
+                let state = (content.style.display === 'block' ? 'true' : 'false')
+                localStorage.setItem(NEGATIVE_PROMPT_PANEL_OPEN_KEY, state)
             }
         })
     })

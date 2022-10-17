@@ -712,3 +712,7 @@ input[type="range"]::-moz-range-thumb {
     padding: 10px;
     transform: translate(50%, -50%) scaleX(130%);
 }
+
+#promptsFromFileBtn {
+    font-size: 9pt;
+}
