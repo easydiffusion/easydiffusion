@@ -9,6 +9,10 @@ from typing import Any, Generator, Hashable, Optional, Union
 from pydantic import BaseModel
 from sd_internal import Request, Response
 
+ERR_LOCK_FAILED = ' failed to acquire lock within timeout.'
+LOCK_TIMEOUT = 15 # Maximum locking time in seconds before failing a task.
+# It's better to get an exception than a deadlock... ALWAYS use timeout in critical paths.
+
 class SymbolClass(type): # Print nicely formatted Symbol names.
     def __repr__(self): return self.__qualname__
     def __str__(self): return self.__name__
@@ -66,17 +70,30 @@ class ImageRequest(BaseModel):
     stream_progress_updates: bool = False
     stream_image_progress: bool = False
 
+class FilterRequest(BaseModel):
+    session_id: str = "session"
+    model: str = None
+    name: str = ""
+    init_image: str = None # base64
+    width: int = 512
+    height: int = 512
+    save_to_disk_path: str = None
+    turbo: bool = True
+    use_cpu: bool = False
+    use_full_precision: bool = False
+    output_format: str = "jpeg" # or "png"
+
 # Temporary cache to allow to query tasks results for a short time after they are completed.
 class TaskCache():
     def __init__(self):
         self._base = dict()
-        self._lock: threading.Lock = threading.RLock()
+        self._lock: threading.Lock = threading.Lock()
     def _get_ttl_time(self, ttl: int) -> int:
         return int(time.time()) + ttl
     def _is_expired(self, timestamp: int) -> bool:
         return int(time.time()) >= timestamp
     def clean(self) -> None:
-        if not self._lock.acquire(blocking=True, timeout=10): raise Exception('TaskCache.clean failed to acquire lock within timeout.')
+        if not self._lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('TaskCache.clean' + ERR_LOCK_FAILED)
         try:
             # Create a list of expired keys to delete
             to_delete = []
@@ -91,11 +108,11 @@ class TaskCache():
         finally:
             self._lock.release()
     def clear(self) -> None:
-        if not self._lock.acquire(blocking=True, timeout=10): raise Exception('TaskCache.clear failed to acquire lock within timeout.')
+        if not self._lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('TaskCache.clear' + ERR_LOCK_FAILED)
         try: self._base.clear()
         finally: self._lock.release()
     def delete(self, key: Hashable) -> bool:
-        if not self._lock.acquire(blocking=True, timeout=10): raise Exception('TaskCache.delete failed to acquire lock within timeout.')
+        if not self._lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('TaskCache.delete' + ERR_LOCK_FAILED)
         try:
             if key not in self._base:
                 return False
@@ -104,7 +121,7 @@ class TaskCache():
         finally:
             self._lock.release()
     def keep(self, key: Hashable, ttl: int) -> bool:
-        if not self._lock.acquire(blocking=True, timeout=10): raise Exception('TaskCache.keep failed to acquire lock within timeout.')
+        if not self._lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('TaskCache.keep' + ERR_LOCK_FAILED)
         try:
             if key in self._base:
                 _, value = self._base.get(key)
@@ -114,7 +131,7 @@ class TaskCache():
         finally:
             self._lock.release()
     def put(self, key: Hashable, value: Any, ttl: int) -> bool:
-        if not self._lock.acquire(blocking=True, timeout=10): raise Exception('TaskCache.put failed to acquire lock within timeout.')
+        if not self._lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('TaskCache.put' + ERR_LOCK_FAILED)
         try:
             self._base[key] = (
                 self._get_ttl_time(ttl), value
@@ -128,21 +145,23 @@ class TaskCache():
         finally:
             self._lock.release()
     def tryGet(self, key: Hashable) -> Any:
-        if not self._lock.acquire(blocking=True, timeout=10): raise Exception('TaskCache.tryGet failed to acquire lock within timeout.')
+        if not self._lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('TaskCache.tryGet' + ERR_LOCK_FAILED)
         try:
             ttl, value = self._base.get(key, (None, None))
             if ttl is not None and self._is_expired(ttl):
                 print(f'Session {key} expired. Discarding data.')
-                self.delete(key)
+                del self._base[key]
                 return None
             return value
         finally:
             self._lock.release()
 
+manager_lock = threading.Lock()
+render_threads = []
 current_state = ServerStates.Init
 current_state_error:Exception = None
 current_model_path = None
-tasks_queue = queue.Queue()
+tasks_queue = []
 task_cache = TaskCache()
 default_model_to_load = None
 
@@ -155,7 +174,8 @@ def preload_model(file_path=None):
     current_state = ServerStates.LoadingModel
     try:
         from . import runtime
-        runtime.load_model_ckpt(ckpt_to_use=file_path)
+        runtime.thread_data.ckpt_file = file_path
+        runtime.load_model_ckpt()
         current_model_path = file_path
         current_state_error = None
         current_state = ServerStates.Online
@@ -165,72 +185,96 @@ def preload_model(file_path=None):
         current_state = ServerStates.Unavailable
         print(traceback.format_exc())
 
-def thread_render():
+def thread_render(device):
     global current_state, current_state_error, current_model_path
     from . import runtime
-    current_state = ServerStates.Online
+    try:
+        runtime.device_init(device)
+    except:
+        print(traceback.format_exc())
+        return
     preload_model()
+    current_state = ServerStates.Online
     while True:
         task_cache.clean()
         if isinstance(current_state_error, SystemExit):
             current_state = ServerStates.Unavailable
             return
         task = None
-        try:
-            task = tasks_queue.get(timeout=1)
-        except queue.Empty as e:
-            if isinstance(current_state_error, SystemExit):
-                current_state = ServerStates.Unavailable
-                return
-            else: continue
+        if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT):
+            print('Render thread on device', runtime.thread_data.device, 'failed to acquire manager lock.')
+            time.sleep(1)
+            continue
+        if len(tasks_queue) <= 0:
+            manager_lock.release()
+            time.sleep(1)
+            continue
+        try: # Select a render task.
+            for queued_task in tasks_queue:
+                if queued_task.request.use_cpu and runtime.thread_data.device != 'cpu':
+                    continue # Cuda Tasks
+                if not queued_task.request.use_cpu and runtime.thread_data.device == 'cpu':
+                    continue # CPU Tasks
+                if queued_task.request.use_face_correction and not runtime.is_first_cuda_device(runtime.thread_data.device):
+                    continue #TODO Remove when fixed - A bug with GFPGANer and facexlib needs to be fixed before use on other devices.
+                task = queued_task
+                break
+            if task is not None:
+                del tasks_queue[tasks_queue.index(task)]
+        finally:
+            manager_lock.release()
+        if task is None:
+            time.sleep(1)
+            continue
         #if current_model_path != task.request.use_stable_diffusion_model:
         #    preload_model(task.request.use_stable_diffusion_model)
         if current_state_error:
             task.error = current_state_error
             continue
         print(f'Session {task.request.session_id} starting task {id(task)}')
+        if not task.lock.acquire(blocking=False): raise Exception('Got locked task from queue.')
         try:
-            task.lock.acquire(blocking=False)
+            # Open data generator.
             res = runtime.mk_img(task.request)
             if current_model_path == task.request.use_stable_diffusion_model:
                 current_state = ServerStates.Rendering
             else:
                 current_state = ServerStates.LoadingModel
+            # Start reading from generator.
+            dataQueue = None
+            if task.request.stream_progress_updates:
+                dataQueue = task.buffer_queue
+            for result in res:
+                if current_state == ServerStates.LoadingModel:
+                    current_state = ServerStates.Rendering
+                    current_model_path = task.request.use_stable_diffusion_model
+                if isinstance(current_state_error, SystemExit) or isinstance(current_state_error, StopAsyncIteration) or isinstance(task.error, StopAsyncIteration):
+                    runtime.stop_processing = True
+                    if isinstance(current_state_error, StopAsyncIteration):
+                        task.error = current_state_error
+                        current_state_error = None
+                        print(f'Session {task.request.session_id} sent cancel signal for task {id(task)}')
+                if dataQueue:
+                    dataQueue.put(result)
+                if isinstance(result, str):
+                    result = json.loads(result)
+                task.response = result
+                if 'output' in result:
+                    for out_obj in result['output']:
+                        if 'path' in out_obj:
+                            img_id = out_obj['path'][out_obj['path'].rindex('/') + 1:]
+                            task.temp_images[int(img_id)] = runtime.thread_data.temp_images[out_obj['path'][11:]]
+                        elif 'data' in out_obj:
+                            task.temp_images[result['output'].index(out_obj)] = out_obj['data']
+                # Before looping back to the generator, mark cache as still alive.
+                task_cache.keep(task.request.session_id, TASK_TTL)
         except Exception as e:
             task.error = e
-            task.lock.release()
-            tasks_queue.task_done()
             print(traceback.format_exc())
             continue
-        dataQueue = None
-        if task.request.stream_progress_updates:
-            dataQueue = task.buffer_queue
-        for result in res:
-            if current_state == ServerStates.LoadingModel:
-                current_state = ServerStates.Rendering
-                current_model_path = task.request.use_stable_diffusion_model
-            if isinstance(current_state_error, SystemExit) or isinstance(current_state_error, StopAsyncIteration) or isinstance(task.error, StopAsyncIteration):
-                runtime.stop_processing = True
-                if isinstance(current_state_error, StopAsyncIteration):
-                    task.error = current_state_error
-                    current_state_error = None
-                    print(f'Session {task.request.session_id} sent cancel signal for task {id(task)}')
-            if dataQueue:
-                dataQueue.put(result)
-            if isinstance(result, str):
-                result = json.loads(result)
-            task.response = result
-            if 'output' in result:
-                for out_obj in result['output']:
-                    if 'path' in out_obj:
-                        img_id = out_obj['path'][out_obj['path'].rindex('/') + 1:]
-                        task.temp_images[int(img_id)] = runtime.temp_images[out_obj['path'][11:]]
-                    elif 'data' in out_obj:
-                        task.temp_images[result['output'].index(out_obj)] = out_obj['data']
-            task_cache.keep(task.request.session_id, TASK_TTL)
-        # Task completed
-        task.lock.release()
-        tasks_queue.task_done()
+        finally:
+            # Task completed
+            task.lock.release()
         task_cache.keep(task.request.session_id, TASK_TTL)
         if isinstance(task.error, StopAsyncIteration):
             print(f'Session {task.request.session_id} task {id(task)} cancelled!')
@@ -240,19 +284,37 @@ def thread_render():
             print(f'Session {task.request.session_id} task {id(task)} completed.')
         current_state = ServerStates.Online
 
-render_thread = threading.Thread(target=thread_render)
+def is_alive(name=None):
+    if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('is_alive' + ERR_LOCK_FAILED)
+    nbr_alive = 0
+    try:
+        for rthread in render_threads:
+            if name and not rthread.name.endswith(name):
+                continue
+            if rthread.is_alive():
+                nbr_alive += 1
+        return nbr_alive
+    finally:
+        manager_lock.release()
 
-def start_render_thread():
-    # Start Rendering Thread
-    render_thread.daemon = True
-    render_thread.start()
+def start_render_thread(device='auto'):
+    if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('start_render_threads' + ERR_LOCK_FAILED)
+    print('Start new Rendering Thread on device', device)
+    try:
+        rthread = threading.Thread(target=thread_render, kwargs={'device': device})
+        rthread.daemon = True
+        rthread.name = 'Runner/' + device
+        rthread.start()
+        render_threads.append(rthread)
+    finally:
+        manager_lock.release()
 
 def shutdown_event(): # Signal render thread to close on shutdown
     global current_state_error
     current_state_error = SystemExit('Application shutting down.')
 
 def render(req : ImageRequest):
-    if not render_thread.is_alive(): # Render thread is dead
+    if not is_alive(): # Render thread is dead
         raise ChildProcessError('Rendering thread has died.')
     # Alive, check if task in cache
     task = task_cache.tryGet(req.session_id)
@@ -293,6 +355,12 @@ def render(req : ImageRequest):
 
     new_task = RenderTask(r)
     if task_cache.put(r.session_id, new_task, TASK_TTL):
-        tasks_queue.put(new_task, block=True, timeout=30)
-        return new_task
+        # Use twice the normal timeout for adding user requests.
+        # Tries to force task_cache.put to fail before tasks_queue.put would. 
+        if manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT * 2):
+            try:
+                tasks_queue.append(new_task)
+                return new_task
+            finally:
+                manager_lock.release()
     raise RuntimeError('Failed to add task to cache.')
