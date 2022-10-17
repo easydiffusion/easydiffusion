@@ -1,46 +1,74 @@
-# Stable Diffusion UI v2
-### A simple 1-click way to install and use [Stable Diffusion](https://github.com/CompVis/stable-diffusion) on your own computer. No dependencies or technical knowledge required.
+# Stable Diffusion UI
+### Easiest way to install and use [Stable Diffusion](https://github.com/CompVis/stable-diffusion) on your own computer. No dependencies or technical knowledge required. 1-click install, powerful features.
+
+[![Discord Server](https://img.shields.io/discord/1014774730907209781?label=Discord)](https://discord.com/invite/u9yhsFmEkB) (for support, and development discussion) | [Troubleshooting guide for common problems](Troubleshooting.md)
+
+----
+
+## Step 1: Download the installer
 
 <p float="left">
   <a href="#installation"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/develop/media/download-win.png" width="200" /></a>
   <a href="#installation"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/develop/media/download-linux.png" width="200" /></a>
 </p>
 
-[![Discord Server](https://img.shields.io/discord/1014774730907209781?label=Discord)](https://discord.com/invite/u9yhsFmEkB) (for support, and development discussion) | [Troubleshooting guide for common problems](Troubleshooting.md)
+## Step 2: Run the program
+- On Windows: Double-click `Start Stable Diffusion UI.cmd`
+- On Linux: Run `./start.sh` in a terminal
 
-️‍🔥🎉 **New!** Use Custom Weights, Task Queue, Negative Prompt, Live Preview, More Samplers, In-Painting, Face Correction (GFPGAN) and Upscaling (RealESRGAN) have been added!
+## Step 3: There is no step 3!
+It's simple to get started. You don't need to install or struggle with Python, Anaconda, Docker etc.
 
-This distribution currently uses Stable Diffusion 1.4. Once the model for 1.5 becomes publicly available, the model in this distribution will be updated.
+The installer will take care of whatever is needed. A friendly [Discord community](https://discord.com/invite/u9yhsFmEkB) will help you if you face any problems.
 
-# Features in the new v2 Version:
+----
+
+# Easy for new users, powerful features for advanced users
+### Features:
 - **No Dependencies or Technical Knowledge Required**: 1-click install for Windows 10/11 and Linux. *No dependencies*, no need for WSL or Docker or Conda or technical setup. Just download and run!
-- **Face Correction (GFPGAN) and Upscaling (RealESRGAN)**
-- **In-Painting**
+- **Clutter-free UI**: a friendly and simple UI, while providing a lot of powerful features
+- Supports "*Text to Image*" and "*Image to Image*"
+- **Custom Models**: Use your own `.ckpt` file, by placing it inside the `models/stable-diffusion` folder!
 - **Live Preview**: See the image as the AI is drawing it
 - **Task Queue**: Queue up all your ideas, without waiting for the current task to finish
-- **Custom Weights**: Use your own `.ckpt` file, by placing it inside the `stable-diffusion` folder (rename it to `custom-model.ckpt`)
-- **Negative Prompt**: Specify aspects of the image to *remove*.
-- **Lots of Samplers:** ddim, plms, heun, euler, euler_a, dpm2, dpm2_a, lms
+- **In-Painting**: Specify areas of your image to paint into
+- **Face Correction (GFPGAN) and Upscaling (RealESRGAN)**
 - **Image Modifiers**: A library of *modifier tags* like *"Realistic"*, *"Pencil Sketch"*, *"ArtStation"* etc. Experiment with various styles quickly.
-- **New UI**: with cleaner design
-- **Waifu Model Support**: Just replace the `stable-diffusion\sd-v1-4.ckpt` file after installation with the Waifu model
-- Supports "*Text to Image*" and "*Image to Image*"
+- **Loopback**: Use the output image as the input image for the next img2img task
+- **Negative Prompt**: Specify aspects of the image to *remove*.
+- **Attention/Emphasis:** () in the prompt increases the model's attention to enclosed words, and [] decreases it
+- **Weighted Prompts:** Use weights for specific words in your prompt to change their importance, e.g. `red:2.4 dragon:1.2`
+- **Prompt Matrix:** (in beta) Quickly create multiple variations of your prompt, e.g. `a photograph of an astronaut riding a horse | illustration | cinematic lighting`
+- **Lots of Samplers:** ddim, plms, heun, euler, euler_a, dpm2, dpm2_a, lms
+- **Multiple Prompts File:** Queue multiple prompts by entering one prompt per line, or by running a text file
 - **NSFW Setting**: A setting in the UI to control *NSFW content*
+- **JPEG/PNG output**
+- **Save generated images to disk**
 - **Use CPU setting**: If you don't have a compatible graphics card, but still want to run it on your CPU.
 - **Auto-updater**: Gets you the latest improvements and bug-fixes to a rapidly evolving project.
 - **Low Memory Usage**: Creates 512x512 images with less than 4GB of VRAM!
+- **Developer Console**: A developer-mode for those who want to modify their Stable Diffusion code, and edit the conda environment.
 
-![Screenshot of advanced settings](media/shot-v9.jpg?raw=true)
+### Easy for new users:
+![Screenshot of the initial UI](media/shot-v10-simple.jpg?raw=true)
 
-## Live Preview
+### Powerful features for advanced users:
+![Screenshot of advanced settings](media/shot-v10.jpg?raw=true)
+
+### Live Preview
+Useful for judging (and stopping) an image quickly, without waiting for it to finish rendering.
+
 ![live-512](https://user-images.githubusercontent.com/844287/192097249-729a0a1e-a677-485e-9ccc-16a9e848fabe.gif)
 
+### Task Queue
+![Screenshot of task queue](media/task-queue-v1.jpg?raw=true)
 
 # System Requirements
 1. Windows 10/11, or Linux. Experimental support for Mac is coming soon.
-2. An NVIDIA graphics card, preferably with 4GB or more of VRAM. But if you don't have a compatible graphics card, you can still use it with a "Use CPU" setting. It'll be very slow, but it should still work.
+2. An NVIDIA graphics card, preferably with 4GB or more of VRAM. If you don't have a compatible graphics card, it'll automatically run in the slower "CPU Mode".
+3. Minimum 8 GB of RAM.
 
-You do not need anything else. You do not need WSL, Docker or Conda. The installer will take care of it.
+You don't need to install or struggle with Python, Anaconda, Docker etc. The installer will take care of whatever is needed.
 
 # Installation
 1. **Download** [for Windows](https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.16/stable-diffusion-ui-win64.zip) or [for Linux](https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.16/stable-diffusion-ui-linux.tar.xz).
@@ -57,44 +85,8 @@ This will automatically install Stable Diffusion, set it up, and start the inter
 
 **To Uninstall:** Just delete the `stable-diffusion-ui` folder to uninstall all the downloaded packages.
 
-
-# Usage
-Open http://localhost:9000 in your browser (after running step 3 previously). It may take a few moments for the back-end to be ready.
-
-## With a text description
-1. Enter a text prompt, like `a photograph of an astronaut riding a horse` in the textbox.
-2. Press `Make Image`. This will take some time, depending on your system's processing power.
-3. See the image generated using your prompt.
-
-## With an image
-1. Click `Browse..` next to `Initial Image`. Select your desired image.
-2. An optional text prompt can help you further describe the kind of image you want to generate.
-3. Press `Make Image`. See the image generated using your prompt.
-
-You can use Face Correction or Upscaling to improve the image further.
-
-**Pro tip:** You can also click `Use as Input` on a generated image, to use it as the input image for your next generation. This can be useful for sequentially refining the generated image with a single click.
-
-**Another tip:** Images with the same aspect ratio of your generated image work best. E.g. 1:1 if you're generating images sized 512x512.
-
-## Problems? Troubleshooting
-Please try the common [troubleshooting](Troubleshooting.md) steps. If that doesn't fix it, please ask on the [discord server](https://discord.com/invite/u9yhsFmEkB), or [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues).
-
-# Image Settings
-You can also set the configuration like `seed`, `width`, `height`, `num_outputs`, `num_inference_steps` and `guidance_scale` using the 'show' button next to 'Image settings'.
-
-Use the same `seed` number to get the same image for a certain prompt. This is useful for refining a prompt without losing the basic image design. Enable the `random images` checkbox to get random images.
-
-![Screenshot of advanced settings](media/config-v6.jpg?raw=true)
-
-# System Settings
-The system settings are reachable via the cogwheel symbol on the top right. It can be used to configure whether all generated images should 
-saved be automically, or to tune the Stable Diffusion image generation.
-
-![Screenshot of advanced settings](media/system-settings-v2.jpg?raw=true)
-
-# Image Modifiers
-![Screenshot of advanced settings](media/modifiers-v1.jpg?raw=true)
+# How to use?
+Please use our [guide](https://github.com/cmdr2/stable-diffusion-ui/wiki/How-to-Use) to understand how to use the features in this UI.
 
 # Bugs reports and code contributions welcome
 If there are any problems or suggestions, please feel free to ask on the [discord server](https://discord.com/invite/u9yhsFmEkB) or [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues).

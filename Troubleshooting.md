@@ -9,6 +9,11 @@ Additionally, a common reason for this error is that you're using an initial ima
 
 Also try generating smaller sized images.
 
+## urllib.error.URLError: <urlopen error [Errno 11001] getaddrinfo failed>
+This can be due to a Firewall/Antivirus/Proxy/VPN blocking your network connections. Please check those.
+
+Another solution is to switch to Google's DNS server: https://developers.google.com/speed/public-dns/docs/using#windows or Cloudflare's DNS server: https://developers.cloudflare.com/1.1.1.1/setup/windows/
+
 ## basicsr module not found
 For Windows: Please download and extract basicsr from [here](https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.16/basicsr-win64.zip), and place the `basicsr` folder inside the `stable-diffusion-ui\stable-diffusion\env\lib\site-packages` folder. Then run the `Start Stable Diffusion UI.cmd` file again.
 
@@ -49,6 +54,12 @@ After this, you can access the server at `http://localhost:1337` (where 1337 is 
 Please ensure that you have an NVIDIA GPU and the latest [NVIDIA driver](http://www.nvidia.com/Download/index.aspx), and that you've installed [nvidia-container-toolkit](https://stackoverflow.com/a/58432877).
 
 Also, if you are using WSL (Windows), please ensure you have the latest WSL kernel by running `wsl --shutdown` and then `wsl --update`. (Thanks [AndrWeisR](https://github.com/AndrWeisR))
+
+## ModuleNotFoundError: No module named 'gfpgan'
+If you have moved your installation to a different folder or drive: The name of the installation folder is stored in many configuration files and moving it
+is therefore not possible. You can either move your installation back to the old place, or delete it and re-install to the new location.
+
+If you have not moved your installation, please contact us on the [discord server](https://discord.com/invite/u9yhsFmEkB).
 
 # For support queries
 ## Entering a conda environment in an existing installation

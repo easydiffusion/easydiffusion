@@ -59,6 +59,9 @@ if exist "Open Developer Console.cmd" del "Open Developer Console.cmd"
     @REM prevent conda from using packages from the user's home directory, to avoid conflicts
     @set PYTHONNOUSERSITE=1
 
+    set TMP=%cd%\tmp
+    set TEMP=%cd%\tmp
+
     @call conda env create --prefix env -f environment.yaml || (
         @echo. & echo "Error installing the packages necessary for Stable Diffusion. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/blob/main/Troubleshooting.md" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
         pause
@@ -92,6 +95,9 @@ set PATH=C:\Windows\System32;%PATH%
 
     @set PYTHONNOUSERSITE=1
 
+    set TMP=%cd%\tmp
+    set TEMP=%cd%\tmp
+
     @call pip install -e git+https://github.com/TencentARC/GFPGAN#egg=GFPGAN || (
         @echo. & echo "Error installing the packages necessary for GFPGAN (Face Correction). Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/blob/main/Troubleshooting.md" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
         pause
@@ -121,6 +127,9 @@ set PATH=C:\Windows\System32;%PATH%
 
     @set PYTHONNOUSERSITE=1
 
+    set TMP=%cd%\tmp
+    set TEMP=%cd%\tmp
+
     @call pip install -e git+https://github.com/xinntao/Real-ESRGAN#egg=realesrgan || (
         @echo. & echo "Error installing the packages necessary for ESRGAN (Resolution Upscaling). Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/blob/main/Troubleshooting.md" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
         pause
@@ -143,6 +152,9 @@ set PATH=C:\Windows\System32;%PATH%
     @echo. & echo "Downloading packages necessary for Stable Diffusion UI.." & echo.
 
     @set PYTHONNOUSERSITE=1
+
+    set TMP=%cd%\tmp
+    set TEMP=%cd%\tmp
 
     @call conda install -c conda-forge -y --prefix env uvicorn fastapi || (
         echo "Error installing the packages necessary for Stable Diffusion UI. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/blob/main/Troubleshooting.md" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
