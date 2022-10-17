@@ -96,7 +96,7 @@ def setConfig(config):
             f"@set update_branch={config['update_branch']}"
         ]
         if len(gpu_devices) > 0 and not has_first_cuda_device:
-            config_sh.append('::Set the devices visible inside SD-UI here')
+            config_bat.append('::Set the devices visible inside SD-UI here')
             config_bat.append(f"::@set CUDA_VISIBLE_DEVICES={','.join(gpu_devices)}") # Needs better detection for edge cases, add as a comment for now.
             print('Add the line "@set CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.bat')
         config_bat_path = os.path.join(CONFIG_DIR, 'config.bat')
