@@ -9,6 +9,7 @@ from typing import Any, Generator, Hashable, Optional, Union
 from pydantic import BaseModel
 from sd_internal import Request, Response
 
+THREAD_NAME_PREFIX = 'Runtime-Render/'
 ERR_LOCK_FAILED = ' failed to acquire lock within timeout.'
 LOCK_TIMEOUT = 15 # Maximum locking time in seconds before failing a task.
 # It's better to get an exception than a deadlock... ALWAYS use timeout in critical paths.
@@ -285,12 +286,15 @@ def thread_render(device):
         current_state = ServerStates.Online
 
 def is_alive(name=None):
+    from . import runtime # When calling runtime from here DO NOT USE thread specific attributes or functions.
     if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('is_alive' + ERR_LOCK_FAILED)
     nbr_alive = 0
     try:
         for rthread in render_threads:
-            if name and not rthread.name.endswith(name):
-                continue
+            thread_name = rthread.name[len(THREAD_NAME_PREFIX):]
+            if name and thread_name != name:
+                if not runtime.is_first_cuda_device(name) and not runtime.is_first_cuda_device(thread_name):
+                    continue
             if rthread.is_alive():
                 nbr_alive += 1
         return nbr_alive
@@ -303,7 +307,7 @@ def start_render_thread(device='auto'):
     try:
         rthread = threading.Thread(target=thread_render, kwargs={'device': device})
         rthread.daemon = True
-        rthread.name = 'Runner/' + device
+        rthread.name = THREAD_NAME_PREFIX + device
         rthread.start()
         render_threads.append(rthread)
     finally:

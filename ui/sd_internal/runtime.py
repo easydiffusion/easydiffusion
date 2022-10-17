@@ -149,12 +149,10 @@ def device_init(device_selection=None):
     thread_data.device = 'cpu'
 
 def is_first_cuda_device(device):
-    if thread_data.device == 0 or thread_data.device == '0':
-        return True
-    if thread_data.device == 'cuda' or thread_data.device == 'cuda:0':
-        return True
-    if thread_data.device == torch.device(0):
-        return True
+    if device is None: return False
+    if device == 0 or device == '0': return True
+    if device == 'cuda' or device == 'cuda:0': return True
+    if device == torch.device(0): return True
     return False
 
 def load_model_ckpt():
