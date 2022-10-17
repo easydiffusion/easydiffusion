@@ -1104,7 +1104,7 @@ async function stopAllTasks() {
     }
 
     try {
-        let res = await fetch('/image/stop')
+        let res = await fetch('/image/stop?session_id=' + sessionId)
     } catch (e) {
         console.log(e)
     }
