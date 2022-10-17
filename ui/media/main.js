@@ -12,6 +12,7 @@ const USE_UPSCALING_KEY = "useUpscaling"
 const SHOW_ONLY_FILTERED_IMAGE_KEY = "showOnlyFilteredImage"
 const STREAM_IMAGE_PROGRESS_KEY = "streamImageProgress"
 const OUTPUT_FORMAT_KEY = "outputFormat"
+const AUTO_SAVE_SETTINGS_KEY = "autoSaveSettings"
 const HEALTH_PING_INTERVAL = 5 // seconds
 const MAX_INIT_IMAGE_DIMENSION = 768
 const INPAINTING_EDITOR_SIZE = 450
@@ -43,6 +44,7 @@ let useCPUField = document.querySelector('#use_cpu')
 let useFullPrecisionField = document.querySelector('#use_full_precision')
 let saveToDiskField = document.querySelector('#save_to_disk')
 let diskPathField = document.querySelector('#diskPath')
+let autoSaveSettingsField = document.querySelector('#auto_save_settings')
 // let allowNSFWField = document.querySelector("#allow_nsfw")
 let useBetaChannelField = document.querySelector("#use_beta_channel")
 let promptStrengthSlider = document.querySelector('#prompt_strength_slider')
@@ -186,6 +188,10 @@ function isUseCPUEnabled() {
 
 function isUseFullPrecisionEnabled() {
     return getLocalStorageBoolItem(USE_FULL_PRECISION_KEY, false)
+}
+
+function isAutoSaveSettingsEnabled() {
+    return getLocalStorageBoolItem(AUTO_SAVE_SETTINGS_KEY, false)
 }
 
 function isUseTurboModeEnabled() {
@@ -1022,6 +1028,9 @@ useCPUField.checked = isUseCPUEnabled()
 
 useFullPrecisionField.addEventListener('click', handleBoolSettingChange(USE_FULL_PRECISION_KEY))
 useFullPrecisionField.checked = isUseFullPrecisionEnabled()
+
+autoSaveSettingsField.addEventListener('click', handleBoolSettingChange(AUTO_SAVE_SETTINGS_KEY))
+autoSaveSettingsField.checked = isAutoSaveSettingsEnabled()
 
 turboField.addEventListener('click', handleBoolSettingChange(USE_TURBO_MODE_KEY))
 turboField.checked = isUseTurboModeEnabled()

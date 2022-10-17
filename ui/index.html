@@ -39,6 +39,12 @@
                         <li><input id="turbo" name="turbo" type="checkbox" checked> <label for="turbo">Turbo mode <small>(generates images faster, but uses an additional 1 GB of GPU memory)</small></label></li>
                         <li><input id="use_cpu" name="use_cpu" type="checkbox"> <label for="use_cpu">Use CPU instead of GPU <small>(warning: this will be *very* slow)</small></label></li>
                         <li><input id="use_full_precision" name="use_full_precision" type="checkbox"> <label for="use_full_precision">Use full precision <small>(for GPU-only. warning: this will consume more VRAM)</small></label></li>
+                        <li>
+                            <input id="auto_save_settings" name="auto_save_settings" type="checkbox">
+                            <label for="auto_save_settings">Automatically save settings <small>(settings restored on browser load)</small></label>
+                            <button id="configureSettingsSaveBtn">Configure</button>
+                            <button id="restoreDefaultSettingsBtn">Restore Defaults</button>
+                        </li>
                         <!-- <li><input id="allow_nsfw" name="allow_nsfw" type="checkbox"> <label for="allow_nsfw">Allow NSFW Content (You confirm you are above 18 years of age)</label></li> -->
                         <br/>
                         <li><input id="use_beta_channel" name="use_beta_channel" type="checkbox"> <label for="use_beta_channel">🔥Beta channel. Get the latest features immediately (but could be less stable). Please restart the program after changing this.</label></li>
@@ -215,6 +221,17 @@
         </div>
     </div>
 
+    <div id="save-settings-config" style="display:none">
+        <div>
+            <span id="save-settings-config-close-btn">X</span>
+            <h1>Save Settings Configuration</h1>
+            <p>Select which settings should be saved and reloaded when restarting the browser</p>
+            <table id="save-settings-config-table">
+                <tr><th>Setting</th><th></th><th>Default value</th></tr>
+            </table>
+        </div>
+    </div>
+
     <div class="line-separator">&nbsp;</div>
 
     <div id="footer" class="panel-box">
@@ -229,6 +246,7 @@
 </div>
 </body>
 
+<script src="media/auto-save.js?v=1"></script>
 <script src="media/main.js?v=35"></script>
 <script>
 async function init() {
@@ -236,6 +254,7 @@ async function init() {
     await getDiskPath()
     await getAppConfig()
     await getModels()
+    await initSettings()
 
     setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
     healthCheck()

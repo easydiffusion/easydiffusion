@@ -662,3 +662,53 @@ input[type="range"]::-moz-range-thumb {
         right: 0px;
     }
 }
+
+/* Auto-Settings Styling */
+#auto_save_settings:not(:checked) ~ button {
+    display: none;
+}
+
+#save-settings-config {
+    position: fixed;
+    background: rgba(32, 33, 36, 50%);
+    top: 0px;
+    left: 0px;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1000;
+}
+
+#save-settings-config > div {
+    background: rgb(44, 45, 48);
+    max-width: 600px;
+    margin: auto;
+    margin-top: 100px;
+    border-radius: 6px;
+    padding: 30px;
+    text-align: center;
+}
+
+#save-settings-config-table {
+    margin: auto;
+}
+
+#save-settings-config-table td:first-child,
+#save-settings-config-table th:first-child {
+    float: right;
+}
+
+#save-settings-config-table td:last-child,
+#save-settings-config-table th:last-child {
+    float: left;
+}
+
+#save-settings-config-table td small {
+    color: rgb(153, 153, 153);
+}
+
+#save-settings-config-close-btn {
+    float: right;
+    cursor: pointer;
+    padding: 10px;
+    transform: translate(50%, -50%) scaleX(130%);
+}
