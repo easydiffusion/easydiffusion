@@ -130,7 +130,7 @@ def device_init(device_selection=None):
         device_selection = device_selection.lower()
         if device_selection.startswith('gpu:'):
             device_selection = int(device_selection[4:])
-    if device_selection != 'cuda' and device_selection != 'current':
+    if device_selection != 'cuda' and device_selection != 'current' and device_selection != 'gpu':
         if device_select(device_selection):
             if isinstance(device_selection, int):
                 print(f'Setting GPU:{device_selection} as active')
@@ -152,6 +152,8 @@ def is_first_cuda_device(device):
     if device is None: return False
     if device == 0 or device == '0': return True
     if device == 'cuda' or device == 'cuda:0': return True
+    if device == 'gpu' or device == 'gpu:0': return True
+    if device == 'current': return True
     if device == torch.device(0): return True
     return False
 

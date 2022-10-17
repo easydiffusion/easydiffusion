@@ -305,9 +305,12 @@ def is_alive(name=None):
     nbr_alive = 0
     try:
         for rthread in render_threads:
-            thread_name = rthread.name[len(THREAD_NAME_PREFIX):]
-            if name and thread_name != name:
-                if not runtime.is_first_cuda_device(name) and not runtime.is_first_cuda_device(thread_name):
+            thread_name = rthread.name[len(THREAD_NAME_PREFIX):].lower()
+            if name is not None:
+                if runtime.is_first_cuda_device(name):
+                    if not runtime.is_first_cuda_device(thread_name):
+                        continue
+                elif thread_name != name:
                     continue
             if rthread.is_alive():
                 nbr_alive += 1
