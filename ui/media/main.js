@@ -193,7 +193,7 @@ function isUseFullPrecisionEnabled() {
 }
 
 function isAutoSaveSettingsEnabled() {
-    return getLocalStorageBoolItem(AUTO_SAVE_SETTINGS_KEY, false)
+    return getLocalStorageBoolItem(AUTO_SAVE_SETTINGS_KEY, true)
 }
 
 function isUseTurboModeEnabled() {
