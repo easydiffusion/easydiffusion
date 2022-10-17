@@ -12,7 +12,6 @@ const USE_UPSCALING_KEY = "useUpscaling"
 const SHOW_ONLY_FILTERED_IMAGE_KEY = "showOnlyFilteredImage"
 const STREAM_IMAGE_PROGRESS_KEY = "streamImageProgress"
 const OUTPUT_FORMAT_KEY = "outputFormat"
-const AUTO_SAVE_SETTINGS_KEY = "autoSaveSettings"
 const HEALTH_PING_INTERVAL = 5 // seconds
 const MAX_INIT_IMAGE_DIMENSION = 768
 const INPAINTING_EDITOR_SIZE = 450
@@ -187,10 +186,6 @@ function isUseCPUEnabled() {
 
 function isUseFullPrecisionEnabled() {
     return getLocalStorageBoolItem(USE_FULL_PRECISION_KEY, false)
-}
-
-function isAutoSaveSettingsEnabled() {
-    return getLocalStorageBoolItem(AUTO_SAVE_SETTINGS_KEY, false)
 }
 
 function isUseTurboModeEnabled() {
@@ -389,7 +384,7 @@ function getUseAsInputHandler(imageItemElem) {
 
         initImagePreviewContainer.style.display = 'block'
         inpaintingEditorContainer.style.display = 'none'
-        promptStrengthContainer.style.display = 'block'
+        promptStrengthContainer.style.display = 'table-row'
         maskSetting.checked = false
         samplerSelectionContainer.style.display = 'none'
 
@@ -1023,9 +1018,6 @@ useCPUField.checked = isUseCPUEnabled()
 useFullPrecisionField.addEventListener('click', handleBoolSettingChange(USE_FULL_PRECISION_KEY))
 useFullPrecisionField.checked = isUseFullPrecisionEnabled()
 
-autoSaveSettingsField.addEventListener('click', handleBoolSettingChange(AUTO_SAVE_SETTINGS_KEY))
-autoSaveSettingsField.checked = isAutoSaveSettingsEnabled()
-
 turboField.addEventListener('click', handleBoolSettingChange(USE_TURBO_MODE_KEY))
 turboField.checked = isUseTurboModeEnabled()
 
@@ -1201,7 +1193,7 @@ function showInitImagePreview() {
         initImagePreview.src = reader.result
         initImagePreviewContainer.style.display = 'block'
         inpaintingEditorContainer.style.display = 'none'
-        promptStrengthContainer.style.display = 'block'
+        promptStrengthContainer.style.display = 'table-row'
         samplerSelectionContainer.style.display = 'none'
         // maskSetting.checked = false
     })
