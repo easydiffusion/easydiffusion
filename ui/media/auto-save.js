@@ -9,7 +9,6 @@ var SETTINGS_VALUES = {} // key=id. dict initialized in initSettings
 var SETTINGS_DEFAULTS = {} // key=id. dict initialized in initSettings
 var SETTINGS_TO_SAVE = [] // list of elements initialized by initSettings
 var SETTINGS_IDS_LIST = [
-    "prompt",
     "seed",
     "random_seed",
     "num_outputs_total",
