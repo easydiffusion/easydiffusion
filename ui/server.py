@@ -245,6 +245,8 @@ def save_model_to_config(model_name):
 @app.post('/render')
 def render(req : task_manager.ImageRequest):
     if req.use_cpu and task_manager.is_alive('cpu') <= 0: return HTTPException(status_code=403, detail=f'CPU rendering is not enabled in config.json or the thread has died...') # HTTP403 Forbidden
+    if req.use_face_correction and task_manager.is_alive(0) <= 0 and task_manager.is_alive('cpu') <= 0: #TODO Remove when GFPGANer is fixed upstream.
+        return HTTPException(status_code=412, detail=f'GFPGANer only works on CPU or GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.') # HTTP412 Precondition Failed
     try:
         save_model_to_config(req.use_stable_diffusion_model)
         req.use_stable_diffusion_model = resolve_model_to_use(req.use_stable_diffusion_model)
