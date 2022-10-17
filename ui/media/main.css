@@ -90,7 +90,6 @@
 }
 
 body {
-    font-family: Arial, Helvetica, sans-serif;
     font-size: 11pt;
     background-color: var(--background-color1);
     color: var(--text-color);
@@ -116,7 +115,7 @@ label {
 }
 .image_clear_btn {
     position: absolute;
-    transform: translateX(-50%) translateY(-35%);
+    transform: translate(30%, -30%);
     background: black;
     color: white;
     border: 2pt solid #ccc;
@@ -128,6 +127,8 @@ label {
     height: 16pt;
     font-family: Verdana;
     font-size: 8pt;
+    top: 0px;
+    right: 0px;
 }
 .settings-box ul {
     font-size: 9pt;
@@ -208,6 +209,7 @@ label {
 }
 .settings-box label small {
     color: rgb(153, 153, 153);
+    margin-right: 10px;
 }
 #preview {
     padding: 5px;
@@ -505,49 +507,6 @@ img {
 #prompt_from_file {
     display: none;
 }
-
-/* Auto-Settings Styling */
-#auto_save_settings:not(:checked) ~ button {
-    display: none;
-}
-
-#save-settings-config {
-    position: fixed;
-    background: rgba(32, 33, 36, 50%);
-    top: 0px;
-    left: 0px;
-    width: 100vw;
-    height: 100vh;
-    z-index: 1000;
-}
-
-#save-settings-config > div {
-    background: rgb(44, 45, 48);
-    max-width: 600px;
-    margin: auto;
-    margin-top: 100px;
-    border-radius: 6px;
-    padding: 30px;
-    text-align: center;
-}
-
-#save-settings-config-table {
-    margin: auto;
-} 
-
-#save-settings-config-table td:first-child,
-#save-settings-config-table th:first-child {
-    float: right;
-} 
-
-#save-settings-config-table td:last-child,
-#save-settings-config-table th:last-child {
-    float: left;
-} 
-
-#save-settings-config-table td small {
-    color: rgb(153, 153, 153);
-
 #init_image_preview {
     max-width: 150px;
     max-height: 150px;
