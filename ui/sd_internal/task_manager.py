@@ -157,7 +157,7 @@ class TaskCache():
         finally:
             self._lock.release()
 
-manager_lock = threading.Lock()
+manager_lock = threading.RLock()
 render_threads = []
 current_state = ServerStates.Init
 current_state_error:Exception = None
@@ -212,13 +212,26 @@ def thread_render(device):
             continue
         try: # Select a render task.
             for queued_task in tasks_queue:
-                if queued_task.request.use_cpu and runtime.thread_data.device != 'cpu':
-                    continue # Cuda Tasks
-                if not queued_task.request.use_cpu and runtime.thread_data.device == 'cpu':
-                    continue # CPU Tasks
-                if queued_task.request.use_face_correction and not runtime.is_first_cuda_device(runtime.thread_data.device):
-                    if not runtime.thread_data.device == 'cpu' and is_alive(0) > 0: # Allows GFPGANer on cuda:0 and use cpu only when cuda:0 is not available.
-                        continue #TODO Remove when fixed - A bug with GFPGANer and facexlib needs to be fixed before use on other devices.
+                cpu_alive = is_alive('cpu')
+                if queued_task.request.use_face_correction: #TODO Remove when fixed - A bug with GFPGANer and facexlib needs to be fixed before use on other devices.
+                    # Allows GFPGANer on cuda:0 and use cpu only when cuda:0 is not available.
+                    first_device_alive = True if is_alive(0) >= 1 else False
+                    if cpu_alive <= 0 and not first_device_alive:
+                        queued_task.request.use_face_correction = False
+                        print('cuda:0 and cpu are not available with the current config. Removed GFPGANer filter to run task.')
+                        continue
+                    if not queued_task.request.use_cpu:
+                        if first_device_alive:
+                            if not runtime.is_first_cuda_device(runtime.thread_data.device):
+                                continue # Wait for cuda:0
+                        elif cpu_alive > 0:
+                            print('cuda:0 is not available with the current config. Forcing task requiring GFPGANer to cpu.')
+                            queued_task.request.use_cpu = True
+                            continue
+                if queued_task.request.use_cpu and runtime.thread_data.device != 'cpu' and cpu_alive > 0:
+                    continue # CPU Tasks, Skip GPU device
+                if not queued_task.request.use_cpu and runtime.thread_data.device == 'cpu' and is_alive() > 1: # cpu is alive, so need more than one.
+                    continue # GPU Tasks, don't run on CPU unless there is nothing else.
                 task = queued_task
                 break
             if task is not None:
