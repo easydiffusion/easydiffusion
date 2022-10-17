@@ -361,7 +361,6 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         imageElem.src = imageData
         imageElem.width = parseInt(imageWidth)
         imageElem.height = parseInt(imageHeight)
-        imageElem.setAttribute('data-seed', imageSeed)
         imageElem.setAttribute('data-prompt', imagePrompt)
         imageElem.setAttribute('data-steps', imageInferenceSteps)
         imageElem.setAttribute('data-guidance', imageGuidanceScale)
