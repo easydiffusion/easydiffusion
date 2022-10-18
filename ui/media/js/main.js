@@ -16,7 +16,6 @@ const OUTPUT_FORMAT_KEY = "outputFormat"
 const AUTO_SAVE_SETTINGS_KEY = "autoSaveSettings"
 const HEALTH_PING_INTERVAL = 5 // seconds
 const MAX_INIT_IMAGE_DIMENSION = 768
-const INPAINTING_EDITOR_SIZE = 450
 
 const IMAGE_REGEX = new RegExp('data:image/[A-Za-z]+;base64')
 
@@ -80,16 +79,7 @@ let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
 let maskSetting = document.querySelector('#enable_mask')
 let negativePromptPanelHandle = document.querySelector('#negative_prompt_handle')
 
-let editorModifierEntries = document.querySelector('#editor-modifiers-entries')
-let editorModifierTagsList = document.querySelector('#editor-inputs-tags-list')
-let editorTagsContainer = document.querySelector('#editor-inputs-tags-container')
-
 let imagePreview = document.querySelector("#preview")
-let previewImageField = document.querySelector('#preview-image')
-previewImageField.onchange = () => changePreviewImages(previewImageField.value)
-
-let modifierCardSizeSlider = document.querySelector('#modifier-card-size-slider')
-modifierCardSizeSlider.onchange = () => resizeModifierCards(modifierCardSizeSlider.value)
 
 // let previewPrompt = document.querySelector('#preview-prompt')
 
@@ -105,15 +95,6 @@ let serverStatusMsg = document.querySelector('#server-status-msg')
 
 let advancedPanelHandle = document.querySelector("#editor-settings .collapsible")
 let modifiersPanelHandle = document.querySelector("#editor-modifiers .collapsible")
-let inpaintingEditorContainer = document.querySelector('#inpaintingEditor')
-let inpaintingEditor = new DrawingBoard.Board('inpaintingEditor', {
-    color: "#ffffff",
-    background: false,
-    size: 30,
-    webStorage: false,
-    controls: [{'DrawingMode': {'filler': false}}, 'Size', 'Navigation']
-})
-let inpaintingEditorCanvasBackground = document.querySelector('.drawing-board-canvas-wrapper')
 
 document.querySelector('.drawing-board-control-navigation-back').innerHTML = '<i class="fa-solid fa-rotate-left"></i>'
 document.querySelector('.drawing-board-control-navigation-forward').innerHTML = '<i class="fa-solid fa-rotate-right"></i>'
@@ -124,16 +105,11 @@ maskResetButton.style.fontWeight = 'normal'
 maskResetButton.style.fontSize = '10pt'
 
 let serverState = {'status': 'Offline', 'time': Date.now()}
-let activeTags = []
-let modifiers = []
 let lastPromptUsed = ''
 let bellPending = false
 
 let taskQueue = []
 let currentTask = null
-
-const modifierThumbnailPath = 'media/modifier-thumbnails'
-const activeCardClass = 'modifier-card-active'
 
 function getLocalStorageItem(key, fallback) {
     let item = localStorage.getItem(key)
@@ -336,40 +312,6 @@ async function healthCheck() {
         setServerStatus('error', 'offline')
     }
 }
-function resizeInpaintingEditor() {
-    if (!maskSetting.checked) {
-        return
-    }
-    let widthValue = parseInt(widthField.value)
-    let heightValue = parseInt(heightField.value)
-    if (widthValue === heightValue) {
-        widthValue = INPAINTING_EDITOR_SIZE
-        heightValue = INPAINTING_EDITOR_SIZE
-    } else if (widthValue > heightValue) {
-        heightValue = (heightValue / widthValue) * INPAINTING_EDITOR_SIZE
-        widthValue = INPAINTING_EDITOR_SIZE
-    } else {
-        widthValue = (widthValue / heightValue) * INPAINTING_EDITOR_SIZE
-        heightValue = INPAINTING_EDITOR_SIZE
-    }
-    if (inpaintingEditor.opts.aspectRatio === (widthValue / heightValue).toFixed(3)) {
-        // Same ratio, don't reset the canvas.
-        return
-    }
-    inpaintingEditor.opts.aspectRatio = (widthValue / heightValue).toFixed(3)
-
-    inpaintingEditorContainer.style.width = widthValue + 'px'
-    inpaintingEditorContainer.style.height = heightValue + 'px'
-    inpaintingEditor.opts.enlargeYourContainer = true
-
-    inpaintingEditor.opts.size = inpaintingEditor.ctx.lineWidth
-    inpaintingEditor.resize()
-
-    inpaintingEditor.ctx.lineCap = "round"
-    inpaintingEditor.ctx.lineJoin = "round"
-    inpaintingEditor.ctx.lineWidth = inpaintingEditor.opts.size
-    inpaintingEditor.setColor(inpaintingEditor.opts.color)
-}
 
 function showImages(reqBody, res, outputContainer, livePreview) {
     let imageItemElements = outputContainer.querySelectorAll('.imgItem')
@@ -464,9 +406,9 @@ function getUseAsInputHandler(imageItemElem) {
 
         // maskSetting.style.display = 'block'
 
-        randomSeedField.checked = false
-        seedField.value = imageSeed
-        seedField.disabled = false
+        // randomSeedField.checked = false
+        // seedField.value = imageSeed
+        // seedField.disabled = false
     }
 }
 
@@ -609,7 +551,6 @@ async function doMakeImage(task) {
         let reader = res.body.getReader()
         let textDecoder = new TextDecoder()
         let finalJSON = ''
-        let prevTime = -1
         let readComplete = false
         while (!readComplete || finalJSON.length > 0) {
             let t = Date.now()
@@ -664,11 +605,11 @@ async function doMakeImage(task) {
                 let percent = 100 * (overallStepCount / totalSteps)
                 percent = (percent > 100 ? 100 : percent)
                 percent = percent.toFixed(0)
-                let timeTaken = (prevTime === -1 ? -1 : t - prevTime)
+                let timeTaken = stepUpdate.step_time // sec
 
                 let stepsRemaining = totalSteps - overallStepCount
                 stepsRemaining = (stepsRemaining < 0 ? 0 : stepsRemaining)
-                let timeRemaining = (timeTaken === -1 ? '' : stepsRemaining * timeTaken) // ms
+                let timeRemaining = (timeTaken === -1 ? '' : stepsRemaining * timeTaken * 1000) // ms
 
                 outputMsg.innerHTML = `Batch ${task.batchesDone+1} of ${batchCount}`
                 outputMsg.innerHTML += `. Generating image(s): ${percent}%`
@@ -698,7 +639,6 @@ async function doMakeImage(task) {
                     console.log('Stream stopped: ', res)
                 }
             }
-            prevTime = t
         }
 
         if (typeof stepUpdate === 'object' && stepUpdate.status !== 'succeeded') {
@@ -986,12 +926,19 @@ function createTask(task) {
     imagePreview.insertBefore(taskEntry, previewTools.nextSibling)
 
     task.previewPrompt.innerText = task.reqBody.prompt
+    if (task.previewPrompt.innerText.trim() === '') {
+        task.previewPrompt.innerHTML = '&nbsp;' // allows the results to be collapsed
+    }
 
     taskQueue.unshift(task)
 }
 
 function getPrompts() {
     let prompts = promptField.value
+    if (prompts.trim() === '') {
+        return ['']
+    }
+
     prompts = prompts.split('\n')
 
     let promptsToMake = []
@@ -1039,28 +986,6 @@ function permutePrompts(promptBase, promptMatrix) {
     })
 
     return prompts
-}
-
-function permute(arr) {
-    let permutations = []
-    let n = arr.length
-    let n_permutations = Math.pow(2, n)
-    for (let i = 0; i < n_permutations; i++) {
-        let perm = []
-        let mask = Number(i).toString(2).padStart(n, '0')
-
-        for (let idx = 0; idx < mask.length; idx++) {
-            if (mask[idx] === '1' && arr[idx].trim() !== '') {
-                perm.push(arr[idx])
-            }
-        }
-
-        if (perm.length > 0) {
-            permutations.push(perm)
-        }
-    }
-
-    return permutations
 }
 
 // create a file name with embedded prompt and metadata
@@ -1165,8 +1090,18 @@ outputFormatField.addEventListener('change', handleStringSettingChange(OUTPUT_FO
 outputFormatField.value = getOutputFormat()
 
 diskPathField.addEventListener('change', handleStringSettingChange(DISK_PATH_KEY))
-widthField.addEventListener('change', resizeInpaintingEditor)
-heightField.addEventListener('change', resizeInpaintingEditor)
+widthField.addEventListener('change', onDimensionChange)
+heightField.addEventListener('change', onDimensionChange)
+
+function onDimensionChange() {
+    if (!maskSetting.checked) {
+        return
+    }
+    let widthValue = parseInt(widthField.value)
+    let heightValue = parseInt(heightField.value)
+
+    resizeInpaintingEditor(widthValue, heightValue)
+}
 
 saveToDiskField.addEventListener('click', function(e) {
     diskPathField.disabled = !this.checked
@@ -1375,7 +1310,7 @@ initImageClearBtn.addEventListener('click', function() {
 
 maskSetting.addEventListener('click', function() {
     inpaintingEditorContainer.style.display = (this.checked ? 'block' : 'none')
-    resizeInpaintingEditor()
+    onDimensionChange()
 })
 
 promptsFromFileBtn.addEventListener('click', function() {
@@ -1399,150 +1334,6 @@ promptsFromFileSelector.addEventListener('change', function() {
     }
 })
 
-// function showMaskImagePreview() {
-//     if (maskImageSelector.files.length === 0) {
-//         // maskImagePreviewContainer.style.display = 'none'
-//         return
-//     }
-
-//     let reader = new FileReader()
-//     let file = maskImageSelector.files[0]
-
-//     reader.addEventListener('load', function() {
-//         // maskImagePreview.src = reader.result
-//         // maskImagePreviewContainer.style.display = 'block'
-//     })
-
-//     if (file) {
-//         reader.readAsDataURL(file)
-//     }
-// }
-// maskImageSelector.addEventListener('change', showMaskImagePreview)
-// showMaskImagePreview()
-
-// maskImageClearBtn.addEventListener('click', function() {
-//     maskImageSelector.value = null
-//     maskImagePreview.src = ''
-//     // maskImagePreviewContainer.style.display = 'none'
-// })
-
-// https://stackoverflow.com/a/8212878
-function millisecondsToStr(milliseconds) {
-    function numberEnding (number) {
-        return (number > 1) ? 's' : ''
-    }
-
-    var temp = Math.floor(milliseconds / 1000)
-    var hours = Math.floor((temp %= 86400) / 3600)
-    var s = ''
-    if (hours) {
-        s += hours + ' hour' + numberEnding(hours) + ' '
-    }
-    var minutes = Math.floor((temp %= 3600) / 60)
-    if (minutes) {
-        s += minutes + ' minute' + numberEnding(minutes) + ' '
-    }
-    var seconds = temp % 60
-    if (!hours && minutes < 4 && seconds) {
-        s += seconds + ' second' + numberEnding(seconds)
-    }
-
-    return s
-}
-
-// https://gomakethings.com/finding-the-next-and-previous-sibling-elements-that-match-a-selector-with-vanilla-js/
-function getNextSibling(elem, selector) {
-	// Get the next sibling element
-	var sibling = elem.nextElementSibling
-
-	// If there's no selector, return the first sibling
-	if (!selector) return sibling
-
-	// If the sibling matches our selector, use it
-	// If not, jump to the next sibling and continue the loop
-	while (sibling) {
-		if (sibling.matches(selector)) return sibling
-		sibling = sibling.nextElementSibling
-	}
-}
-
-function createCollapsibles(node) {
-    if (!node) {
-        node = document
-    }
-
-    let collapsibles = node.querySelectorAll(".collapsible")
-    collapsibles.forEach(function(c) {
-        let handle = document.createElement('span')
-        handle.className = 'collapsible-handle'
-
-        if (c.className.indexOf('active') !== -1) {
-            handle.innerHTML = '&#x2796;' // minus
-        } else {
-            handle.innerHTML = '&#x2795;' // plus
-        }
-        c.insertBefore(handle, c.firstChild)
-
-        c.addEventListener('click', function() {
-            this.classList.toggle("active")
-            let content = getNextSibling(this, '.collapsible-content')
-            if (content.style.display === "block") {
-                content.style.display = "none"
-                handle.innerHTML = '&#x2795;' // plus
-            } else {
-                content.style.display = "block"
-                handle.innerHTML = '&#x2796;' // minus
-            }
-
-            if (this == advancedPanelHandle) {
-                let state = (content.style.display === 'block' ? 'true' : 'false')
-                localStorage.setItem(ADVANCED_PANEL_OPEN_KEY, state)
-            } else if (this == modifiersPanelHandle) {
-                let state = (content.style.display === 'block' ? 'true' : 'false')
-                localStorage.setItem(MODIFIERS_PANEL_OPEN_KEY, state)
-            } else if (this == negativePromptPanelHandle) {
-                let state = (content.style.display === 'block' ? 'true' : 'false')
-                localStorage.setItem(NEGATIVE_PROMPT_PANEL_OPEN_KEY, state)
-            }
-        })
-    })
-}
-createCollapsibles()
-
-function refreshTagsList() {
-    editorModifierTagsList.innerHTML = ''
-
-    if (activeTags.length == 0) {
-        editorTagsContainer.style.display = 'none'
-        return
-    } else {
-        editorTagsContainer.style.display = 'block'
-    }
-
-    activeTags.forEach((tag, index) => {
-        tag.element.querySelector('.modifier-card-image-overlay').innerText = '-'
-        tag.element.classList.add('modifier-card-tiny')
-
-        editorModifierTagsList.appendChild(tag.element)
-
-        tag.element.addEventListener('click', () => {
-            let idx = activeTags.indexOf(tag)
-
-            if (idx !== -1) {
-                activeTags[idx].originElement.classList.remove(activeCardClass)
-                activeTags[idx].originElement.querySelector('.modifier-card-image-overlay').innerText = '+'
-
-                activeTags.splice(idx, 1)
-                refreshTagsList()
-            }
-        })
-    })
-
-    let brk = document.createElement('br')
-    brk.style.clear = 'both'
-    editorModifierTagsList.appendChild(brk)
-}
-
 async function getDiskPath() {
     try {
         let diskPath = getSavedDiskPath()
@@ -1564,246 +1355,4 @@ async function getDiskPath() {
     }
 }
 
-function createModifierCard(name, previews) {
-    const modifierCard = document.createElement('div')
-    modifierCard.className = 'modifier-card'
-    modifierCard.innerHTML = `
-    <div class="modifier-card-overlay"></div>
-    <div class="modifier-card-image-container">
-        <div class="modifier-card-image-overlay">+</div>
-        <p class="modifier-card-error-label"></p>
-        <img onerror="this.remove()" alt="Modifier Image" class="modifier-card-image">
-    </div>
-    <div class="modifier-card-container">
-        <div class="modifier-card-label"><p></p></div>
-    </div>`
-
-    const image = modifierCard.querySelector('.modifier-card-image')
-    const errorText =  modifierCard.querySelector('.modifier-card-error-label')
-    const label = modifierCard.querySelector('.modifier-card-label')
-
-    errorText.innerText = 'No Image'
-
-    if (typeof previews == 'object') {
-        image.src = previews[0]; // portrait
-        image.setAttribute('preview-type', 'portrait')
-    } else {
-        image.remove()
-    }
-
-    const maxLabelLength = 30
-    const nameWithoutBy = name.replace('by ', '')
-
-    if(nameWithoutBy.length <= maxLabelLength) {
-        label.querySelector('p').innerText = nameWithoutBy
-    } else {
-        const tooltipText = document.createElement('span')
-        tooltipText.className = 'tooltip-text'
-        tooltipText.innerText = name
-
-        label.classList.add('tooltip')
-        label.appendChild(tooltipText)
-
-        label.querySelector('p').innerText = nameWithoutBy.substring(0, maxLabelLength) + '...'
-    }
-
-    return modifierCard
-}
-
-function changePreviewImages(val) {
-    const previewImages = document.querySelectorAll('.modifier-card-image-container img')
-
-    let previewArr = []
-
-    modifiers.map(x => x.modifiers).forEach(x => previewArr.push(...x.map(m => m.previews)))
-    
-    previewArr = previewArr.map(x => {
-        let obj = {}
-
-        x.forEach(preview => {
-            obj[preview.name] = preview.path
-        })
-        
-        return obj
-    })
-
-    previewImages.forEach(previewImage => {
-        const currentPreviewType = previewImage.getAttribute('preview-type')
-        const relativePreviewPath = previewImage.src.split(modifierThumbnailPath + '/').pop()
-
-        const previews = previewArr.find(preview => relativePreviewPath == preview[currentPreviewType])
-
-        if(typeof previews == 'object') {
-            let preview = null
-
-            if (val == 'portrait') {
-                preview = previews.portrait
-            }
-            else if (val == 'landscape') {
-                preview = previews.landscape
-            }
-
-            if(preview != null) {
-                previewImage.src = `${modifierThumbnailPath}/${preview}`
-                previewImage.setAttribute('preview-type', val)
-            }
-        }
-    })
-}
-
-function resizeModifierCards(val) {
-    const cardSizePrefix = 'modifier-card-size_'
-    const modifierCardClass = 'modifier-card'
-
-    const modifierCards = document.querySelectorAll(`.${modifierCardClass}`)
-    const cardSize = n => `${cardSizePrefix}${n}`
-
-    modifierCards.forEach(card => {
-        // remove existing size classes
-        const classes = card.className.split(' ').filter(c => !c.startsWith(cardSizePrefix))
-        card.className = classes.join(' ').trim()
-
-        if(val != 0) {
-            card.classList.add(cardSize(val))
-        }
-    })
-}
-
-async function loadModifiers() {
-    try {
-        let res = await fetch('/get/modifiers')
-        if (res.status === 200) {
-            res = await res.json()
-
-            modifiers = res; // update global variable
-
-            res.forEach((modifierGroup, idx) => {
-                const title = modifierGroup.category
-                const modifiers = modifierGroup.modifiers
-
-                const titleEl = document.createElement('h5')
-                titleEl.className = 'collapsible'
-                titleEl.innerText = title
-
-                const modifiersEl = document.createElement('div')
-                modifiersEl.classList.add('collapsible-content', 'editor-modifiers-leaf')
-
-                if (idx == 0) {
-                    titleEl.className += ' active'
-                    modifiersEl.style.display = 'block'
-                }
-
-                modifiers.forEach(modObj => {
-                    const modifierName = modObj.modifier
-                    const modifierPreviews = modObj?.previews?.map(preview => `${modifierThumbnailPath}/${preview.path}`)
-
-                    const modifierCard = createModifierCard(modifierName, modifierPreviews)
-
-                    if(typeof modifierCard == 'object') {
-                        modifiersEl.appendChild(modifierCard)
-
-                        modifierCard.addEventListener('click', () => {
-                            if (activeTags.map(x => x.name).includes(modifierName)) {
-                                // remove modifier from active array
-                                activeTags = activeTags.filter(x => x.name != modifierName)
-                                modifierCard.classList.remove(activeCardClass)
-                                
-                                modifierCard.querySelector('.modifier-card-image-overlay').innerText = '+'
-                            } else {
-                                // add modifier to active array
-                                activeTags.push({
-                                    'name': modifierName,
-                                    'element': modifierCard.cloneNode(true),
-                                    'originElement': modifierCard,
-                                    'previews': modifierPreviews
-                                })
-
-                                modifierCard.classList.add(activeCardClass)
-
-                                modifierCard.querySelector('.modifier-card-image-overlay').innerText = '-'
-                            }
-
-                            refreshTagsList()
-                        })
-                    }
-                })
-
-                let brk = document.createElement('br')
-                brk.style.clear = 'both'
-                modifiersEl.appendChild(brk)
-
-                let e = document.createElement('div')
-                e.appendChild(titleEl)
-                e.appendChild(modifiersEl)
-
-                editorModifierEntries.appendChild(e)
-            })
-
-            createCollapsibles(editorModifierEntries)
-        }
-    } catch (e) {
-        console.log('error fetching modifiers', e)
-    }
-}
-
-var DEFAULT_THEME = {};
-var THEMES = []; // initialized in initTheme from data in css
-
-function getThemeName(theme) {
-    theme = theme.replace("theme-", "");
-    theme = theme.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
-    return theme;
-}
-// init themefield
-function initTheme() {
-    Array.from(document.styleSheets)
-        .filter(sheet => sheet.href?.startsWith(window.location.origin))
-        .flatMap(sheet => Array.from(sheet.cssRules))
-        .forEach(rule => {
-            var selector = rule.selectorText; // TODO: also do selector == ":root", re-run un-set props
-            if (selector && selector.startsWith(".theme-")) {
-                var theme_key = selector.substring(1);
-                THEMES.push({
-                    key: theme_key,
-                    name: getThemeName(theme_key),
-                    rule: rule
-                })
-            }
-            if (selector && selector == ":root") {
-                DEFAULT_THEME = {
-                    key: "theme-default",
-                    name: "Default",
-                    rule: rule
-                };
-            }
-    });
-    
-    THEMES.forEach(theme => {
-        var new_option = document.createElement("option");
-        new_option.setAttribute("value", theme.key);
-        new_option.innerText = theme.name;
-        themeField.appendChild(new_option);
-    });
-}
-initTheme();
-
-function themeFieldChanged() {
-    var theme_key = themeField.value;
-
-    var body = document.querySelector("body");
-    body.classList.remove(...THEMES.map(theme => theme.key));
-    body.classList.add(theme_key);
-
-    body.style = "";
-    var theme = THEMES.find(t => t.key == theme_key);
-    if (theme) {
-        // refresh variables incase they are back referencing
-        Array.from(DEFAULT_THEME.rule.style)
-            .filter(cssVariable => !Array.from(theme.rule.style).includes(cssVariable))
-            .forEach(cssVariable => {
-            body.style.setProperty(cssVariable, DEFAULT_THEME.rule.style.getPropertyValue(cssVariable));
-        });
-    }
-}
-
-themeField.addEventListener('change', themeFieldChanged);
+createCollapsibles()

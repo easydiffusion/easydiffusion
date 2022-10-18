@@ -478,14 +478,18 @@ def do_mk_img(req: Request):
                     thread_data.modelFS.to(thread_data.device)
 
                     partial_x_samples = None
+                    last_callback_time = -1
                     def img_callback(x_samples, i):
-                        nonlocal partial_x_samples
+                        nonlocal partial_x_samples, last_callback_time
 
                         partial_x_samples = x_samples
 
                         if req.stream_progress_updates:
                             n_steps = req.num_inference_steps if req.init_image is None else t_enc
-                            progress = {"step": i, "total_steps": n_steps}
+                            step_time = time.time() - last_callback_time if last_callback_time != -1 else -1
+                            last_callback_time = time.time()
+
+                            progress = {"step": i, "total_steps": n_steps, "step_time": step_time}
 
                             if req.stream_image_progress and i % 5 == 0:
                                 partial_images = []
