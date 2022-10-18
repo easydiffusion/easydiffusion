@@ -58,7 +58,7 @@
     --input-border-color: var(--input-background-color); 
 }
 
-.theme-fancy {
+.theme-cool-blue {
     --main-hue: 222;
 	--main-saturation: 18%;
 	--value-base: 19%;
@@ -78,6 +78,73 @@
     --input-background-color: var(--background-color3);
 	--input-text-color: #ccc;
 	--input-border-color: var(--background-color4);
+}
+
+
+.theme-blurple {
+    --main-hue: 235;
+	--main-saturation: 18%;
+	--value-base: 16%;
+	--value-step: 3%;
+	--background-color1: hsl(var(--main-hue), var(--main-saturation), var(--value-base));
+	--background-color2: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (1 * var(--value-step))));
+	--background-color3: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (2 * var(--value-step))));
+	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (3 * var(--value-step))));
+    
+    --accent-hue: 266;
+    --make-image-border: none;
+
+    --button-color: var(--accent-color);
+    --button-border: none;
+    
+    --input-border-size: 1px; 
+    --input-background-color: var(--background-color3);
+	--input-text-color: #ccc;
+	--input-border-color: var(--background-color4);
+}
+
+.theme-super-dark {
+    --main-hue: 222;
+	--main-saturation: 18%;
+	--value-base: 5%;
+	--value-step: 5%;
+	--background-color1: hsl(var(--main-hue), var(--main-saturation), var(--value-base));
+	--background-color2: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (1 * var(--value-step))));
+	--background-color3: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (2 * var(--value-step))));
+	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (3 * var(--value-step))));
+    
+    --accent-hue: 266;
+    --make-image-border: none;
+
+    --button-color: var(--accent-color);
+    --button-border: none;
+    
+    --input-border-size: 0px; 
+    --input-background-color: var(--background-color3);
+	--input-text-color: #ccc;
+	--input-border-color: var(--background-color4);
+}
+
+.theme-wild {
+    --main-hue: 128;
+	--main-saturation: 18%;
+	--value-base: 20%;
+	--value-step: 5%;
+	--background-color1: hsl(var(--main-hue), var(--main-saturation), var(--value-base));
+	--background-color2: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (1 * var(--value-step))));
+	--background-color3: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (2 * var(--value-step))));
+	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (3 * var(--value-step))));
+    
+    --accent-hue: 212;
+    --make-image-border: none;
+
+    --button-color: var(--accent-color);
+    --button-border: none;
+    
+    --input-border-size: 1px; 
+    --input-background-color: hsl(222, var(--main-saturation), calc(var(--value-base) - (2 * var(--value-step))));
+	--input-text-color: red;
+	--input-border-color: green;
 }
 
 
@@ -687,7 +754,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 #save-settings-config > div {
-    background: rgb(44, 45, 48);
+    background: var(--background-color2);
     max-width: 600px;
     margin: auto;
     margin-top: 100px;
