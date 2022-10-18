@@ -984,12 +984,19 @@ function createTask(task) {
     imagePreview.insertBefore(taskEntry, previewTools.nextSibling)
 
     task.previewPrompt.innerText = task.reqBody.prompt
+    if (task.previewPrompt.innerText.trim() === '') {
+        task.previewPrompt.innerHTML = '&nbsp;' // allows the results to be collapsed
+    }
 
     taskQueue.unshift(task)
 }
 
 function getPrompts() {
     let prompts = promptField.value
+    if (prompts.trim() === '') {
+        return ['']
+    }
+
     prompts = prompts.split('\n')
 
     let promptsToMake = []
