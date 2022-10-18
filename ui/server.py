@@ -174,7 +174,7 @@ async def setAppConfig(req : SetAppConfigRequest):
         return JSONResponse({'status': 'OK'}, headers=NOCACHE_HEADERS)
     except Exception as e:
         print(traceback.format_exc())
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 def getModels():
     models = {
@@ -208,25 +208,25 @@ def getModels():
 @app.get('/get/{key:path}')
 def read_web_data(key:str=None):
     if not key: # /get without parameters, stable-diffusion easter egg.
-        return HTTPException(status_code=418, detail="StableDiffusion is drawing a teapot!") # HTTP418 I'm a teapot
+        raise HTTPException(status_code=418, detail="StableDiffusion is drawing a teapot!") # HTTP418 I'm a teapot
     elif key == 'app_config':
         config = getConfig(default_val=None)
         if config is None:
-            return HTTPException(status_code=500, detail="Config file is missing or unreadable")
+            raise HTTPException(status_code=500, detail="Config file is missing or unreadable")
         return JSONResponse(config, headers=NOCACHE_HEADERS)
     elif key == 'models':
         return JSONResponse(getModels(), headers=NOCACHE_HEADERS)
     elif key == 'modifiers': return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'), headers=NOCACHE_HEADERS)
     elif key == 'output_dir': return JSONResponse({ 'output_dir': outpath }, headers=NOCACHE_HEADERS)
     else:
-        return HTTPException(status_code=404, detail=f'Request for unknown {key}') # HTTP404 Not Found
+        raise HTTPException(status_code=404, detail=f'Request for unknown {key}') # HTTP404 Not Found
 
 @app.get('/ping') # Get server and optionally session status.
 def ping(session_id:str=None):
     if task_manager.is_alive() <= 0: # Check that render threads are alive.
-        if task_manager.current_state_error: return HTTPException(status_code=500, detail=str(task_manager.current_state_error))
-        return HTTPException(status_code=500, detail='Render thread is dead.')
-    if task_manager.current_state_error and not isinstance(task_manager.current_state_error, StopAsyncIteration): return HTTPException(status_code=500, detail=str(task_manager.current_state_error))
+        if task_manager.current_state_error: raise HTTPException(status_code=500, detail=str(task_manager.current_state_error))
+        raise HTTPException(status_code=500, detail='Render thread is dead.')
+    if task_manager.current_state_error and not isinstance(task_manager.current_state_error, StopAsyncIteration): raise HTTPException(status_code=500, detail=str(task_manager.current_state_error))
     # Alive
     response = {'status': str(task_manager.current_state)}
     if session_id:
@@ -257,9 +257,9 @@ def save_model_to_config(model_name):
 
 @app.post('/render')
 def render(req : task_manager.ImageRequest):
-    if req.use_cpu and task_manager.is_alive('cpu') <= 0: return HTTPException(status_code=403, detail=f'CPU rendering is not enabled in config.json or the thread has died...') # HTTP403 Forbidden
+    if req.use_cpu and task_manager.is_alive('cpu') <= 0: raise HTTPException(status_code=403, detail=f'CPU rendering is not enabled in config.json or the thread has died...') # HTTP403 Forbidden
     if req.use_face_correction and task_manager.is_alive(0) <= 0 and task_manager.is_alive('cpu') <= 0: #TODO Remove when GFPGANer is fixed upstream.
-        return HTTPException(status_code=412, detail=f'GFPGANer only works on CPU or GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.') # HTTP412 Precondition Failed
+        raise HTTPException(status_code=412, detail=f'GFPGANer only works on CPU or GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.') # HTTP412 Precondition Failed
     try:
         save_model_to_config(req.use_stable_diffusion_model)
         req.use_stable_diffusion_model = resolve_model_to_use(req.use_stable_diffusion_model)
@@ -272,23 +272,23 @@ def render(req : task_manager.ImageRequest):
         }
         return JSONResponse(response, headers=NOCACHE_HEADERS)
     except ChildProcessError as e: # Render thread is dead
-        return HTTPException(status_code=500, detail=f'Rendering thread has died.') # HTTP500 Internal Server Error
+        raise HTTPException(status_code=500, detail=f'Rendering thread has died.') # HTTP500 Internal Server Error
     except ConnectionRefusedError as e: # Unstarted task pending, deny queueing more than one.
-        return HTTPException(status_code=503, detail=f'Session {req.session_id} has an already pending task.') # HTTP503 Service Unavailable
+        raise HTTPException(status_code=503, detail=f'Session {req.session_id} has an already pending task.') # HTTP503 Service Unavailable
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get('/image/stream/{session_id:str}/{task_id:int}')
 def stream(session_id:str, task_id:int):
     #TODO Move to WebSockets ??
     task = task_manager.task_cache.tryGet(session_id)
-    if not task: return HTTPException(status_code=410, detail='No request received.') # HTTP410 Gone
-    if (id(task) != task_id): return HTTPException(status_code=409, detail=f'Wrong task id received. Expected:{id(task)}, Received:{task_id}') # HTTP409 Conflict
+    if not task: raise HTTPException(status_code=410, detail='No request received.') # HTTP410 Gone
+    if (id(task) != task_id): raise HTTPException(status_code=409, detail=f'Wrong task id received. Expected:{id(task)}, Received:{task_id}') # HTTP409 Conflict
     if task.buffer_queue.empty() and not task.lock.locked():
         if task.response:
             #print(f'Session {session_id} sending cached response')
             return JSONResponse(task.response, headers=NOCACHE_HEADERS)
-        return HTTPException(status_code=425, detail='Too Early, task not started yet.') # HTTP425 Too Early
+        raise HTTPException(status_code=425, detail='Too Early, task not started yet.') # HTTP425 Too Early
     #print(f'Session {session_id} opened live render stream {id(task.buffer_queue)}')
     return StreamingResponse(task.read_buffer_generator(), media_type='application/json')
 
@@ -296,20 +296,20 @@ def stream(session_id:str, task_id:int):
 def stop(session_id:str=None):
     if not session_id:
         if task_manager.current_state == task_manager.ServerStates.Online or task_manager.current_state == task_manager.ServerStates.Unavailable:
-            return HTTPException(status_code=409, detail='Not currently running any tasks.') # HTTP409 Conflict
+            raise HTTPException(status_code=409, detail='Not currently running any tasks.') # HTTP409 Conflict
         task_manager.current_state_error = StopAsyncIteration('')
         return {'OK'}
     task = task_manager.task_cache.tryGet(session_id)
-    if not task: return HTTPException(status_code=404, detail=f'Session {session_id} has no active task.') # HTTP404 Not Found
-    if isinstance(task.error, StopAsyncIteration): return HTTPException(status_code=409, detail=f'Session {session_id} task is already stopped.') # HTTP409 Conflict
+    if not task: raise HTTPException(status_code=404, detail=f'Session {session_id} has no active task.') # HTTP404 Not Found
+    if isinstance(task.error, StopAsyncIteration): raise HTTPException(status_code=409, detail=f'Session {session_id} task is already stopped.') # HTTP409 Conflict
     task.error = StopAsyncIteration('')
     return {'OK'}
 
 @app.get('/image/tmp/{session_id}/{img_id:int}')
 def get_image(session_id, img_id):
     task = task_manager.task_cache.tryGet(session_id)
-    if not task: return HTTPException(status_code=410, detail=f'Session {session_id} has not submitted a task.') # HTTP410 Gone
-    if not task.temp_images[img_id]: return HTTPException(status_code=425, detail='Too Early, task data is not available yet.') # HTTP425 Too Early
+    if not task: raise HTTPException(status_code=410, detail=f'Session {session_id} has not submitted a task.') # HTTP410 Gone
+    if not task.temp_images[img_id]: raise HTTPException(status_code=425, detail='Too Early, task data is not available yet.') # HTTP425 Too Early
     try:
         img_data = task.temp_images[img_id]
         if isinstance(img_data, str):
@@ -317,7 +317,7 @@ def get_image(session_id, img_id):
         img_data.seek(0)
         return StreamingResponse(img_data, media_type='image/jpeg')
     except KeyError as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get('/')
 def read_root():
