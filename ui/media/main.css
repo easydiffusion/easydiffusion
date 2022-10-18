@@ -91,7 +91,6 @@
 	--background-color3: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (2 * var(--value-step))));
 	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (3 * var(--value-step))));
     
-    --accent-hue: 266;
     --make-image-border: none;
 
     --button-color: var(--accent-color);
@@ -113,7 +112,6 @@
 	--background-color3: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (2 * var(--value-step))));
 	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (3 * var(--value-step))));
     
-    --accent-hue: 266;
     --make-image-border: none;
 
     --button-color: var(--accent-color);
