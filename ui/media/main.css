@@ -26,9 +26,7 @@
     --make-image-border: 2px solid hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) - 21%));
 }
 
-
-/* Light Theme */
-/* :root {
+.theme-light {
     --background-color1: white; 
     --background-color2: #dddddd;
     --background-color3: #e7e9eb;
@@ -39,11 +37,9 @@
     --input-text-color: black;
     --input-background-color: #f8f9fa; 
     --input-border-color: grey; 
-} */
+}
 
-
-/* Discord Theme */
-/* :root {
+.theme-discord {
     --background-color1: #36393f;
     --background-color2: #2f3136;
     --background-color3: #292b2f;
@@ -60,10 +56,9 @@
     --input-border-size: 2px; 
     --input-background-color: #202225; 
     --input-border-color: var(--input-background-color); 
-} */
+}
 
-/* Example "Custom" Theme */
-/* :root {
+.theme-cool-blue {
     --main-hue: 222;
 	--main-saturation: 18%;
 	--value-base: 19%;
@@ -83,12 +78,78 @@
     --input-background-color: var(--background-color3);
 	--input-text-color: #ccc;
 	--input-border-color: var(--background-color4);
-} */
+}
+
+
+.theme-blurple {
+    --main-hue: 235;
+	--main-saturation: 18%;
+	--value-base: 16%;
+	--value-step: 3%;
+	--background-color1: hsl(var(--main-hue), var(--main-saturation), var(--value-base));
+	--background-color2: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (1 * var(--value-step))));
+	--background-color3: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (2 * var(--value-step))));
+	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (3 * var(--value-step))));
+    
+    --make-image-border: none;
+
+    --button-color: var(--accent-color);
+    --button-border: none;
+    
+    --input-border-size: 1px; 
+    --input-background-color: var(--background-color3);
+	--input-text-color: #ccc;
+	--input-border-color: var(--background-color4);
+}
+
+.theme-super-dark {
+    --main-hue: 222;
+	--main-saturation: 18%;
+	--value-base: 5%;
+	--value-step: 5%;
+	--background-color1: hsl(var(--main-hue), var(--main-saturation), var(--value-base));
+	--background-color2: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (1 * var(--value-step))));
+	--background-color3: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (2 * var(--value-step))));
+	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (3 * var(--value-step))));
+    
+    --make-image-border: none;
+
+    --button-color: var(--accent-color);
+    --button-border: none;
+    
+    --input-border-size: 0px; 
+    --input-background-color: var(--background-color3);
+	--input-text-color: #ccc;
+	--input-border-color: var(--background-color4);
+}
+
+.theme-wild {
+    --main-hue: 128;
+	--main-saturation: 18%;
+	--value-base: 20%;
+	--value-step: 5%;
+	--background-color1: hsl(var(--main-hue), var(--main-saturation), var(--value-base));
+	--background-color2: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (1 * var(--value-step))));
+	--background-color3: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (2 * var(--value-step))));
+	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (3 * var(--value-step))));
+    
+    --accent-hue: 212;
+    --make-image-border: none;
+
+    --button-color: var(--accent-color);
+    --button-border: none;
+    
+    --input-border-size: 1px; 
+    --input-background-color: hsl(222, var(--main-saturation), calc(var(--value-base) - (2 * var(--value-step))));
+	--input-text-color: red;
+	--input-border-color: green;
+}
 
 
 * {
     font-family: Work Sans, Verdana, Geneva, sans-serif;
     box-sizing: border-box;
+    transition: background 0.5s, color 0.5s, background-color 0.5s;
 }
 
 body {
@@ -564,7 +625,8 @@ img {
 button,
 input[type="file"],
 input[type="checkbox"],
-select {
+select,
+option {
     cursor: pointer;
 }
 
@@ -690,7 +752,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 #save-settings-config > div {
-    background: rgb(44, 45, 48);
+    background: var(--background-color2);
     max-width: 600px;
     margin: auto;
     margin-top: 100px;
