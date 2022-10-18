@@ -26,6 +26,7 @@ APP_CONFIG_DEFAULT_MODELS = [
     'sd-v1-4', # Default fallback.
 ]
 
+import asyncio
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse, JSONResponse, StreamingResponse
@@ -36,6 +37,7 @@ from typing import Any, Generator, Hashable, List, Optional, Union
 
 from sd_internal import Request, Response, task_manager
 
+LOOP = asyncio.get_event_loop()
 app = FastAPI()
 
 modifiers_cache = None
@@ -348,21 +350,29 @@ if 'render_devices' in config: # Start a new thread for each device.
     for device in config['render_devices']:
         task_manager.start_render_thread(device)
 
-allow_cpu = False
-if task_manager.is_alive() <= 0: # No running devices, apply defaults.
-    # Select best device GPU device using free memory if more than one device.
-    task_manager.start_render_thread('auto')
-    allow_cpu = True
-
-# Allow CPU to be used for renders if not already enabled in current config.
-if task_manager.is_alive('cpu') <= 0 and allow_cpu:
-    task_manager.start_render_thread('cpu')
-
-if task_manager.is_alive(0) <= 0: # Missing cuda:0, warn the user.
-    print('WARNING: GFPGANer only works on CPU or GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.')
-    print('Using CUDA_VISIBLE_DEVICES will remap the selected devices starting at GPU:0 fixing GFPGANer')
-    print('Add the line "@set CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.bat')
-    print('Add the line "CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.sh')
+async def check_status():
+    device_count = 0
+    for i in range(10): # Wait for devices to register and/or change names.
+        new_count = task_manager.is_alive()
+        if device_count != new_count:
+            device_count = new_count
+            await asyncio.sleep(3)
+        else:
+            break;
+    allow_cpu = False
+    if task_manager.is_alive() <= 0: # No running devices, apply defaults.
+        # Select best device GPU device using free memory if more than one device.
+        task_manager.start_render_thread('auto')
+        allow_cpu = True
+    # Allow CPU to be used for renders if not already enabled in current config.
+    if task_manager.is_alive('cpu') <= 0 and allow_cpu:
+        task_manager.start_render_thread('cpu')
+    if not task_manager.is_alive(0) <= 0:
+        print('WARNING: GFPGANer only works on CPU or GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.')
+        print('Using CUDA_VISIBLE_DEVICES will remap the selected devices starting at GPU:0 fixing GFPGANer')
+        print('Add the line "@set CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.bat')
+        print('Add the line "CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.sh')
+LOOP.create_task(check_status())
 
 # start the browser ui
 import webbrowser; webbrowser.open('http://localhost:9000')

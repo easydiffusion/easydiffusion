@@ -3,7 +3,7 @@ import traceback
 
 TASK_TTL = 15 * 60 # Discard last session's task timeout
 
-import queue, threading, time
+import queue, threading, time, weakref
 from typing import Any, Generator, Hashable, Optional, Union
 
 from pydantic import BaseModel
@@ -165,6 +165,7 @@ current_model_path = None
 tasks_queue = []
 task_cache = TaskCache()
 default_model_to_load = None
+weak_thread_data = weakref.WeakKeyDictionary()
 
 def preload_model(file_path=None):
     global current_state, current_state_error, current_model_path
@@ -189,11 +190,17 @@ def preload_model(file_path=None):
 def thread_render(device):
     global current_state, current_state_error, current_model_path
     from . import runtime
+    weak_thread_data[threading.current_thread()] = {
+        'device': device
+    }
     try:
         runtime.device_init(device)
     except:
         print(traceback.format_exc())
         return
+    weak_thread_data[threading.current_thread()] = {
+        'device': runtime.thread_data.device
+    }
     preload_model()
     current_state = ServerStates.Online
     while True:
@@ -308,8 +315,11 @@ def is_alive(name=None):
     nbr_alive = 0
     try:
         for rthread in render_threads:
-            thread_name = rthread.name[len(THREAD_NAME_PREFIX):].lower()
             if name is not None:
+                weak_data = weak_thread_data.get(rthread)
+                if weak_data is None or weak_data['device'] is None:
+                    continue
+                thread_name = str(weak_data['device']).lower()
                 if is_first_cuda_device(name):
                     if not is_first_cuda_device(thread_name):
                         continue
