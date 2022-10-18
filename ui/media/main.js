@@ -1757,7 +1757,7 @@ function getThemeName(theme) {
 // init themefield
 function initTheme() {
     Array.from(document.styleSheets)
-        .filter(sheet => sheet.href.startsWith(window.location.origin))
+        .filter(sheet => sheet.href?.startsWith(window.location.origin))
         .flatMap(sheet => Array.from(sheet.cssRules))
         .forEach(rule => {
             var selector = rule.selectorText; // TODO: also do selector == ":root", re-run un-set props
