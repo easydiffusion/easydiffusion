@@ -609,7 +609,6 @@ async function doMakeImage(task) {
         let reader = res.body.getReader()
         let textDecoder = new TextDecoder()
         let finalJSON = ''
-        let prevTime = -1
         let readComplete = false
         while (!readComplete || finalJSON.length > 0) {
             let t = Date.now()
@@ -664,11 +663,11 @@ async function doMakeImage(task) {
                 let percent = 100 * (overallStepCount / totalSteps)
                 percent = (percent > 100 ? 100 : percent)
                 percent = percent.toFixed(0)
-                let timeTaken = (prevTime === -1 ? -1 : t - prevTime)
+                let timeTaken = stepUpdate.step_time // sec
 
                 let stepsRemaining = totalSteps - overallStepCount
                 stepsRemaining = (stepsRemaining < 0 ? 0 : stepsRemaining)
-                let timeRemaining = (timeTaken === -1 ? '' : stepsRemaining * timeTaken) // ms
+                let timeRemaining = (timeTaken === -1 ? '' : stepsRemaining * timeTaken * 1000) // ms
 
                 outputMsg.innerHTML = `Batch ${task.batchesDone+1} of ${batchCount}`
                 outputMsg.innerHTML += `. Generating image(s): ${percent}%`
@@ -698,7 +697,6 @@ async function doMakeImage(task) {
                     console.log('Stream stopped: ', res)
                 }
             }
-            prevTime = t
         }
 
         if (typeof stepUpdate === 'object' && stepUpdate.status !== 'succeeded') {
