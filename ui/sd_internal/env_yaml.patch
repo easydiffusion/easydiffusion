@@ -1,7 +1,16 @@
 diff --git a/environment.yaml b/environment.yaml
-index 7f25da8..306750f 100644
+index 7f25da8..11e761d 100644
 --- a/environment.yaml
 +++ b/environment.yaml
+@@ -3,7 +3,7 @@ channels:
+   - pytorch
+   - defaults
+ dependencies:
+-  - python=3.8.5
++  - python=3.10
+   - pip=20.3
+   - cudatoolkit=11.3
+   - pytorch=1.11.0
 @@ -23,6 +23,8 @@ dependencies:
      - torch-fidelity==0.3.0
      - transformers==4.19.2
