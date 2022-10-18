@@ -560,7 +560,8 @@ img {
 button,
 input[type="file"],
 input[type="checkbox"],
-select {
+select,
+option {
     cursor: pointer;
 }
 
