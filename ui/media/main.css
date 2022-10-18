@@ -1,8 +1,161 @@
+:root {
+    --background-color1: rgb(32, 33, 36); /* main parts of the page */
+    --background-color2: rgb(44, 45, 48); /* main panels */
+    --background-color3: rgb(47, 49, 53);
+    --background-color4: rgb(18, 18, 19); /* settings dropdowns */
+
+    --accent-hue: 266;
+    --accent-lightness: 36%;
+    --accent-lightness-hover: 40%;
+
+    --text-color: #eee;
+
+    --input-text-color: black;
+    --input-background-color: #e9e9ed; 
+    --input-border-color: #8f8f9d; 
+
+    --button-text-color: var(--input-text-color);
+    --button-color: #e9e9ed;
+    --button-border: 1px solid #8f8f9d;
+
+    /* other */
+    --input-border-radius: 4px;
+    --input-border-size: 1px; 
+    --accent-color: hsl(var(--accent-hue), 100%, var(--accent-lightness));
+    --accent-color-hover: hsl(var(--accent-hue), 100%, var(--accent-lightness-hover));
+    --make-image-border: 2px solid hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) - 21%));
+}
+
+.theme-light {
+    --background-color1: white; 
+    --background-color2: #dddddd;
+    --background-color3: #e7e9eb;
+    --background-color4: #cccccc;
+
+    --text-color: black;
+
+    --input-text-color: black;
+    --input-background-color: #f8f9fa; 
+    --input-border-color: grey; 
+}
+
+.theme-discord {
+    --background-color1: #36393f;
+    --background-color2: #2f3136;
+    --background-color3: #292b2f;
+    --background-color4: #202225;
+    
+    --accent-hue: 235;
+    --accent-lightness: 65%;
+    --make-image-border: none;
+    
+    --button-color: var(--accent-color);
+    --button-border: none;
+
+    --input-text-color: #ccc;
+    --input-border-size: 2px; 
+    --input-background-color: #202225; 
+    --input-border-color: var(--input-background-color); 
+}
+
+.theme-cool-blue {
+    --main-hue: 222;
+	--main-saturation: 18%;
+	--value-base: 19%;
+	--value-step: 3%;
+	--background-color1: hsl(var(--main-hue), var(--main-saturation), var(--value-base));
+	--background-color2: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (1 * var(--value-step))));
+	--background-color3: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (2 * var(--value-step))));
+	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (3 * var(--value-step))));
+    
+    --accent-hue: 212;
+    --make-image-border: none;
+
+    --button-color: var(--accent-color);
+    --button-border: none;
+    
+    --input-border-size: 1px; 
+    --input-background-color: var(--background-color3);
+	--input-text-color: #ccc;
+	--input-border-color: var(--background-color4);
+}
+
+
+.theme-blurple {
+    --main-hue: 235;
+	--main-saturation: 18%;
+	--value-base: 16%;
+	--value-step: 3%;
+	--background-color1: hsl(var(--main-hue), var(--main-saturation), var(--value-base));
+	--background-color2: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (1 * var(--value-step))));
+	--background-color3: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (2 * var(--value-step))));
+	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (3 * var(--value-step))));
+    
+    --make-image-border: none;
+
+    --button-color: var(--accent-color);
+    --button-border: none;
+    
+    --input-border-size: 1px; 
+    --input-background-color: var(--background-color3);
+	--input-text-color: #ccc;
+	--input-border-color: var(--background-color4);
+}
+
+.theme-super-dark {
+    --main-hue: 222;
+	--main-saturation: 18%;
+	--value-base: 5%;
+	--value-step: 5%;
+	--background-color1: hsl(var(--main-hue), var(--main-saturation), var(--value-base));
+	--background-color2: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (1 * var(--value-step))));
+	--background-color3: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (2 * var(--value-step))));
+	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (3 * var(--value-step))));
+    
+    --make-image-border: none;
+
+    --button-color: var(--accent-color);
+    --button-border: none;
+    
+    --input-border-size: 0px; 
+    --input-background-color: var(--background-color3);
+	--input-text-color: #ccc;
+	--input-border-color: var(--background-color4);
+}
+
+.theme-wild {
+    --main-hue: 128;
+	--main-saturation: 18%;
+	--value-base: 20%;
+	--value-step: 5%;
+	--background-color1: hsl(var(--main-hue), var(--main-saturation), var(--value-base));
+	--background-color2: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (1 * var(--value-step))));
+	--background-color3: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (2 * var(--value-step))));
+	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (3 * var(--value-step))));
+    
+    --accent-hue: 212;
+    --make-image-border: none;
+
+    --button-color: var(--accent-color);
+    --button-border: none;
+    
+    --input-border-size: 1px; 
+    --input-background-color: hsl(222, var(--main-saturation), calc(var(--value-base) - (2 * var(--value-step))));
+	--input-text-color: red;
+	--input-border-color: green;
+}
+
+
+* {
+    font-family: Work Sans, Verdana, Geneva, sans-serif;
+    box-sizing: border-box;
+    transition: background 0.5s, color 0.5s, background-color 0.5s;
+}
+
 body {
-    font-family: Arial, Helvetica, sans-serif;
     font-size: 11pt;
-    background-color: rgb(32, 33, 36);
-    color: #eee;
+    background-color: var(--background-color1);
+    color: var(--text-color);
 }
 a {
     color: rgb(0, 102, 204);
@@ -16,12 +169,8 @@ label {
 #prompt {
     width: 100%;
     height: 65pt;
-    box-sizing: border-box;
-}
-@media screen and (max-width: 600px) {
-    #prompt {
-        width: 95%;
-    }
+    font-size: 13px;
+    margin-bottom: 6px;
 }
 .image_preview_container {
     /* display: none; */
@@ -29,7 +178,7 @@ label {
 }
 .image_clear_btn {
     position: absolute;
-    transform: translateX(-50%) translateY(-35%);
+    transform: translate(30%, -30%);
     background: black;
     color: white;
     border: 2pt solid #ccc;
@@ -41,6 +190,8 @@ label {
     height: 16pt;
     font-family: Verdana;
     font-size: 8pt;
+    top: 0px;
+    right: 0px;
 }
 .settings-box ul {
     font-size: 9pt;
@@ -71,7 +222,7 @@ label {
 }
 .imgSeedLabel {
     font-size: 0.8em;
-    background-color: rgb(44, 45, 48);
+    background-color: var(--background-color2);
     border-radius: 3px;
     padding: 5px;
 }
@@ -101,7 +252,7 @@ label {
     margin-bottom: 7px;
 }
 #container {
-    width: 90%;
+    width: 95%;
     margin-left: auto;
     margin-right: auto;
 }
@@ -121,6 +272,7 @@ label {
 }
 .settings-box label small {
     color: rgb(153, 153, 153);
+    margin-right: 10px;
 }
 #preview {
     padding: 5px;
@@ -143,14 +295,14 @@ label {
 }
 #makeImage {
     flex: 0 0 70px;
-    background: rgb(80, 0, 185);
-    border: 2px solid rgb(40, 0, 78);
+    background: var(--accent-color);
+    border: var(--make-image-border);
     color: rgb(255, 221, 255);
     width: 100%;
     height: 30pt;
 }
 #makeImage:hover {
-    background: rgb(93, 0, 214);
+    background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
 }
 #stopImage {
     flex: 0 0 70px;
@@ -167,12 +319,13 @@ label {
 }
 .flex-container {
     display: flex;
+    width: 100%;
 }
 .col-50 {
     flex: 50%;
 }
 .col-fixed-10 {
-    flex: 0 0 380pt;
+    flex: 0 0 350pt;
 }
 .col-free {
     flex: 1;
@@ -194,8 +347,8 @@ label {
     padding-right: 5px;
 }
 .panel-box {
-    background: rgb(44, 45, 48);
-    border: 1px solid rgb(47, 49, 53);
+    background: var(--background-color2);
+    border: 1px solid var(--background-color3);
     border-radius: 7px;
     padding: 5px;
     margin-bottom: 15px;
@@ -234,18 +387,18 @@ img {
     height: 8pt;
     border-radius: 4pt; */
     font-size: 14pt;
-    color: rgb(128, 87, 0);
+    color: rgb(200, 139, 0);
     /* background-color: rgb(197, 1, 1); */
     /* transform: translateY(15%); */
     display: inline;
 }
 #server-status-msg {
-    color: rgb(128, 87, 0);
+    color: rgb(200, 139, 0);
     padding-left: 2pt;
     font-size: 10pt;
 }
 .preview-prompt {
-    font-size: 16pt;
+    font-size: 13pt;
     margin-bottom: 10pt;
 }
 #coffeeButton {
@@ -260,6 +413,9 @@ img {
 }
 .drawing-board-canvas-wrapper {
     background-size: 100% 100%;
+}
+.drawing-board-controls {
+    min-width: 273px;
 }
 .drawing-board-control > button {
     background-color: #eee;
@@ -343,7 +499,7 @@ img {
     padding-right: 2pt;
 }
 #community-links li a {
-    color: white;
+    color: var(--text-color);
     text-decoration: none;
 }
 .dropdown {
@@ -354,8 +510,8 @@ img {
     position: absolute;
     z-index: 2;
 
-    background: rgb(18, 18, 19);
-    border: 2px solid rgb(37, 38, 41);
+    background: var(--background-color4);
+    border: 2px solid var(--background-color2);
     border-radius: 7px;
     padding: 5px;
     margin-bottom: 15px;
@@ -366,7 +522,7 @@ img {
 }
 
 .imageTaskContainer {
-    border: 1px solid #333;
+    border: 1px solid var(--background-color2);
     margin-bottom: 10pt;
     padding: 5pt;
     border-radius: 5pt;
@@ -375,7 +531,7 @@ img {
 .taskStatusLabel {
     float: left;
     font-size: 8pt;
-    background:rgb(44, 45, 48);
+    background:var(--background-color2);
     border: 1px solid rgb(61, 62, 66);
     padding: 2pt 4pt;
     border-radius: 2pt;
@@ -384,7 +540,12 @@ img {
 .activeTaskLabel {
     background:rgb(0, 90, 30);
     border: 1px solid rgb(0, 75, 19);
-    color:rgb(204, 255, 217)
+    color:rgb(222, 253, 230)
+}
+.waitingTaskLabel {
+    background:rgb(128, 89, 0);
+    border: 1px solid rgb(107, 75, 0);
+    color:rgb(255, 242, 211)
 }
 .secondaryButton {
     background: rgb(132, 8, 0);
@@ -413,4 +574,218 @@ img {
 }
 #prompt_from_file {
     display: none;
+}
+#init_image_preview {
+    max-width: 150px;
+    max-height: 150px;
+	object-fit: contain;
+    border-radius: 6px;
+    transition: all 1s ease-in-out;
+}
+
+#init_image_preview:hover {
+    max-width: 500px;
+    max-height: 1000px;
+    transition: all 1s 0.5s ease-in-out;
+}
+
+#init_image_wrapper {
+    position: relative;
+    width: fit-content;
+}
+
+#init_image_size_box {
+    position: absolute;
+    right: 0px;
+    bottom: 3px;
+    padding: 3px;
+    background: black;
+    color: white;
+    text-shadow: 0px 0px 4px black;
+    opacity: 60%;
+    font-size: 12px;
+    border-radius: 6px 0px;
+}
+
+#editor-settings-entries table td {
+    padding: 0px;
+    line-height: 28px;
+}
+
+#editor-settings-entries table td:first-child {
+    float: right;
+    padding-right: 4px;
+    white-space: nowrap;
+}
+
+#negative_prompt {
+    width: 100%;
+}
+
+button,
+input[type="file"],
+input[type="checkbox"],
+select,
+option {
+    cursor: pointer;
+}
+
+input,
+select,
+textarea {
+    border-radius: var(--input-border-radius);
+    padding: 4px;
+    accent-color: var(--accent-color);
+    background: var(--input-background-color);
+    border: var(--input-border-size) solid var(--input-border-color); 
+    color: var(--input-text-color);
+    font-size: 9pt;
+}
+
+input:hover {
+    accent-color: var(--accent-color-hover);
+}
+
+input { 
+    padding: 4px 6px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 2px solid var(--accent-color);
+}
+
+input[disabled],
+select[disabled],
+textarea[disabled] {
+    opacity: 0.5;
+}
+
+input[type="file"] {
+    width: 100%;
+    padding: 2px;
+}
+
+button,
+input::file-selector-button { 
+    padding: 2px 4px;
+    border-radius: 4px;
+    background: var(--button-color);
+    color: var(--button-text-color);
+    border: var(--button-border);
+}
+
+input::file-selector-button {
+    padding: 0px 4px;
+    height: 19px;
+}
+
+/* input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0px;
+    padding: 0px;
+    cursor: pointer;
+    line-height: 29px;
+}
+
+input[type="range"]::-webkit-slider-thumb,
+input[type="range"]::-moz-range-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 12px;
+} */
+
+@media screen and (max-width: 700px) {
+    body {
+        margin: 0px;
+    }
+    #container {
+        margin: 0px;
+        padding: 10px
+    }
+    .flex-container {
+        flex-direction: column;
+    }
+    #preview {
+        margin: 0px;
+        padding: 0px;
+    }
+    #preview .collapsible-content {
+        padding: 0px;
+    }
+    #preview .collapsible-content {
+        padding: 0px;
+    }
+    .imgItem {
+        margin-right: 0px;
+    }
+    .imgItem img {
+        height: 100%;
+        width: 100%;
+        object-fit: contain;
+    }
+    .dropdown-content {
+        width: auto !important;
+        transform: none !important;
+        left: 0px;
+        right: 0px;
+    }
+}
+
+/* Auto-Settings Styling */
+#auto_save_settings:not(:checked) ~ button {
+    display: none;
+}
+
+#save-settings-config {
+    position: fixed;
+    background: rgba(32, 33, 36, 50%);
+    top: 0px;
+    left: 0px;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1000;
+}
+
+#save-settings-config > div {
+    background: var(--background-color2);
+    max-width: 600px;
+    margin: auto;
+    margin-top: 100px;
+    border-radius: 6px;
+    padding: 30px;
+    text-align: center;
+}
+
+#save-settings-config-table {
+    margin: auto;
+}
+
+#save-settings-config-table td:first-child,
+#save-settings-config-table th:first-child {
+    float: right;
+}
+
+#save-settings-config-table td:last-child,
+#save-settings-config-table th:last-child {
+    float: left;
+}
+
+#save-settings-config-table td small {
+    color: rgb(153, 153, 153);
+}
+
+#save-settings-config-close-btn {
+    float: right;
+    cursor: pointer;
+    padding: 10px;
+    transform: translate(50%, -50%) scaleX(130%);
+}
+
+#promptsFromFileBtn {
+    font-size: 9pt;
 }

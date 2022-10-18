@@ -1,3 +1,4 @@
+"use strict" // Opt in to a restricted variant of JavaScript
 const SOUND_ENABLED_KEY = "soundEnabled"
 const SAVE_TO_DISK_KEY = "saveToDisk"
 const USE_CPU_KEY = "useCPU"
@@ -6,16 +7,20 @@ const USE_TURBO_MODE_KEY = "useTurboMode"
 const DISK_PATH_KEY = "diskPath"
 const ADVANCED_PANEL_OPEN_KEY = "advancedPanelOpen"
 const MODIFIERS_PANEL_OPEN_KEY = "modifiersPanelOpen"
+const NEGATIVE_PROMPT_PANEL_OPEN_KEY = "negativePromptPanelOpen"
 const USE_FACE_CORRECTION_KEY = "useFaceCorrection"
 const USE_UPSCALING_KEY = "useUpscaling"
 const SHOW_ONLY_FILTERED_IMAGE_KEY = "showOnlyFilteredImage"
 const STREAM_IMAGE_PROGRESS_KEY = "streamImageProgress"
+const OUTPUT_FORMAT_KEY = "outputFormat"
+const AUTO_SAVE_SETTINGS_KEY = "autoSaveSettings"
 const HEALTH_PING_INTERVAL = 5 // seconds
 const MAX_INIT_IMAGE_DIMENSION = 768
+const INPAINTING_EDITOR_SIZE = 450
 
 const IMAGE_REGEX = new RegExp('data:image/[A-Za-z]+;base64')
 
-let sessionId = new Date().getTime()
+let sessionId = Date.now()
 
 let promptField = document.querySelector('#prompt')
 let promptsFromFileSelector = document.querySelector('#prompt_from_file')
@@ -32,6 +37,7 @@ let widthField = document.querySelector('#width')
 let heightField = document.querySelector('#height')
 let initImageSelector = document.querySelector("#init_image")
 let initImagePreview = document.querySelector("#init_image_preview")
+let initImageSizeBox = document.querySelector("#init_image_size_box")
 let maskImageSelector = document.querySelector("#mask")
 let maskImagePreview = document.querySelector("#mask_preview")
 let turboField = document.querySelector('#turbo')
@@ -39,6 +45,8 @@ let useCPUField = document.querySelector('#use_cpu')
 let useFullPrecisionField = document.querySelector('#use_full_precision')
 let saveToDiskField = document.querySelector('#save_to_disk')
 let diskPathField = document.querySelector('#diskPath')
+let autoSaveSettingsField = document.querySelector('#auto_save_settings')
+let themeField = document.querySelector('#theme')
 // let allowNSFWField = document.querySelector("#allow_nsfw")
 let useBetaChannelField = document.querySelector("#use_beta_channel")
 let promptStrengthSlider = document.querySelector('#prompt_strength_slider')
@@ -70,6 +78,7 @@ let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
 // let maskImagePreviewContainer = document.querySelector('#mask_preview_container')
 // let maskImageClearBtn = document.querySelector('#mask_clear')
 let maskSetting = document.querySelector('#enable_mask')
+let negativePromptPanelHandle = document.querySelector('#negative_prompt_handle')
 
 let editorModifierEntries = document.querySelector('#editor-modifiers-entries')
 let editorModifierTagsList = document.querySelector('#editor-inputs-tags-list')
@@ -114,7 +123,7 @@ maskResetButton.innerHTML = 'Clear'
 maskResetButton.style.fontWeight = 'normal'
 maskResetButton.style.fontSize = '10pt'
 
-let serverStatus = 'offline'
+let serverState = {'status': 'Offline', 'time': Date.now()}
 let activeTags = []
 let modifiers = []
 let lastPromptUsed = ''
@@ -184,6 +193,10 @@ function isUseFullPrecisionEnabled() {
     return getLocalStorageBoolItem(USE_FULL_PRECISION_KEY, false)
 }
 
+function isAutoSaveSettingsEnabled() {
+    return getLocalStorageBoolItem(AUTO_SAVE_SETTINGS_KEY, true)
+}
+
 function isUseTurboModeEnabled() {
     return getLocalStorageBoolItem(USE_TURBO_MODE_KEY, true)
 }
@@ -200,38 +213,65 @@ function isModifiersPanelOpenEnabled() {
     return getLocalStorageBoolItem(MODIFIERS_PANEL_OPEN_KEY, false)
 }
 
+function isNegativePromptPanelOpenEnabled() {
+    return getLocalStorageBoolItem(NEGATIVE_PROMPT_PANEL_OPEN_KEY, false)
+}
+
 function isStreamImageProgressEnabled() {
     return getLocalStorageBoolItem(STREAM_IMAGE_PROGRESS_KEY, false)
 }
 
-function setStatus(statusType, msg, msgType) {
-    if (statusType !== 'server') {
-        return
-    }
+function getOutputFormat() {
+    return getLocalStorageItem(OUTPUT_FORMAT_KEY, 'jpeg')
+}
 
-    if (msgType == 'error') {
-        // msg = '<span style="color: red">' + msg + '<span>'
-        serverStatusColor.style.color = 'red'
-        serverStatusMsg.style.color = 'red'
-        serverStatusMsg.innerText = 'Stable Diffusion has stopped'
-    } else if (msgType == 'success') {
-        // msg = '<span style="color: green">' + msg + '<span>'
-        serverStatusColor.style.color = 'green'
-        serverStatusMsg.style.color = 'green'
-        serverStatusMsg.innerText = 'Stable Diffusion is ready'
-        serverStatus = 'online'
+function setStatus(statusType, msg, msgType) {
+}
+
+function setServerStatus(msgType, msg) {
+    switch(msgType) {
+        case 'online':
+            serverStatusColor.style.color = 'green'
+            serverStatusMsg.style.color = 'green'
+            serverStatusMsg.innerText = 'Stable Diffusion is ' + msg
+            break
+        case 'busy':
+            serverStatusColor.style.color = 'rgb(200, 139, 0)'
+            serverStatusMsg.style.color = 'rgb(200, 139, 0)'
+            serverStatusMsg.innerText = 'Stable Diffusion is ' + msg
+            break
+        case 'error':
+            serverStatusColor.style.color = 'red'
+            serverStatusMsg.style.color = 'red'
+            serverStatusMsg.innerText = 'Stable Diffusion has stopped'
+            break
+    }
+}
+function isServerAvailable() {
+    if (typeof serverState !== 'object') {
+        return false
+    }
+    switch (serverState.status) {
+        case 'LoadingModel':
+        case 'Rendering':
+        case 'Online':
+            return true
+        default:
+            return false
     }
 }
 
 function logMsg(msg, level, outputMsg) {
-    if (level === 'error') {
-        outputMsg.innerHTML = '<span style="color: red">Error: ' + msg + '</span>'
-    } else if (level === 'warn') {
-        outputMsg.innerHTML = '<span style="color: orange">Warning: ' + msg + '</span>'
-    } else {
-        outputMsg.innerText = msg
+    if (outputMsg.hasChildNodes()) {
+        outputMsg.appendChild(document.createElement('br'))
     }
-
+    if (level === 'error') {
+        outputMsg.innerHTML += '<span style="color: red">Error: ' + msg + '</span>'
+    } else if (level === 'warn') {
+        outputMsg.innerHTML += '<span style="color: orange">Warning: ' + msg + '</span>'
+    } else {
+        outputMsg.innerText += msg
+    }
     console.log(level, msg)
 }
 
@@ -241,53 +281,116 @@ function logError(msg, res, outputMsg) {
     console.log('request error', res)
     setStatus('request', 'error', 'error')
 }
+function asyncDelay(timeout) {
+    return new Promise(function(resolve, reject) {
+        setTimeout(resolve, timeout, true)
+    })
+}
 
 function playSound() {
     const audio = new Audio('/media/ding.mp3')
     audio.volume = 0.2
-    audio.play()
+    var promise = audio.play();
+    if (promise !== undefined) {
+        promise.then(_ => {}).catch(error => {
+            console.warn("browser blocked autoplay");
+        });
+    }
 }
 
 async function healthCheck() {
     try {
-        let res = await fetch('/ping')
-        res = await res.json()
-
-        if (res[0] == 'OK') {
-            setStatus('server', 'online', 'success')
+        let res = undefined
+        if (sessionId) {
+            res = await fetch('/ping?session_id=' + sessionId)
         } else {
-            setStatus('server', 'offline', 'error')
+            res = await fetch('/ping')
         }
+        serverState = await res.json()
+        if (typeof serverState !== 'object' || typeof serverState.status !== 'string') {
+            serverState = {'status': 'Offline', 'time': Date.now()}
+            setServerStatus('error', 'offline')
+            return
+        }
+        // Set status
+        switch(serverState.status) {
+            case 'Init':
+                // Wait for init to complete before updating status.
+                break
+            case 'Online':
+                setServerStatus('online', 'ready')
+                break
+            case 'LoadingModel':
+                setServerStatus('busy', 'loading..')
+                break
+            case 'Rendering':
+                setServerStatus('busy', 'rendering..')
+                break
+            default: // Unavailable
+                setServerStatus('error', serverState.status.toLowerCase())
+                break
+        }
+        serverState.time = Date.now()
     } catch (e) {
-        setStatus('server', 'offline', 'error')
+        serverState = {'status': 'Offline', 'time': Date.now()}
+        setServerStatus('error', 'offline')
     }
 }
+function resizeInpaintingEditor() {
+    if (!maskSetting.checked) {
+        return
+    }
+    let widthValue = parseInt(widthField.value)
+    let heightValue = parseInt(heightField.value)
+    if (widthValue === heightValue) {
+        widthValue = INPAINTING_EDITOR_SIZE
+        heightValue = INPAINTING_EDITOR_SIZE
+    } else if (widthValue > heightValue) {
+        heightValue = (heightValue / widthValue) * INPAINTING_EDITOR_SIZE
+        widthValue = INPAINTING_EDITOR_SIZE
+    } else {
+        widthValue = (widthValue / heightValue) * INPAINTING_EDITOR_SIZE
+        heightValue = INPAINTING_EDITOR_SIZE
+    }
+    if (inpaintingEditor.opts.aspectRatio === (widthValue / heightValue).toFixed(3)) {
+        // Same ratio, don't reset the canvas.
+        return
+    }
+    inpaintingEditor.opts.aspectRatio = (widthValue / heightValue).toFixed(3)
 
-function showImages(req, res, outputContainer, livePreview) {
+    inpaintingEditorContainer.style.width = widthValue + 'px'
+    inpaintingEditorContainer.style.height = heightValue + 'px'
+    inpaintingEditor.opts.enlargeYourContainer = true
+
+    inpaintingEditor.opts.size = inpaintingEditor.ctx.lineWidth
+    inpaintingEditor.resize()
+
+    inpaintingEditor.ctx.lineCap = "round"
+    inpaintingEditor.ctx.lineJoin = "round"
+    inpaintingEditor.ctx.lineWidth = inpaintingEditor.opts.size
+    inpaintingEditor.setColor(inpaintingEditor.opts.color)
+}
+
+function showImages(reqBody, res, outputContainer, livePreview) {
     let imageItemElements = outputContainer.querySelectorAll('.imgItem')
-
+    if(typeof res != 'object') return
     res.output.reverse()
-
     res.output.forEach((result, index) => {
-        if(typeof res != 'object') return
-
-        const imageData = result?.data || result?.path + '?t=' + new Date().getTime(),
+        const imageData = result?.data || result?.path + '?t=' + Date.now(),
             imageSeed = result?.seed,
-            imagePrompt = req.prompt,
-            imageInferenceSteps = req.num_inference_steps,
-            imageGuidanceScale = req.guidance_scale,
-            imageWidth = req.width,
-            imageHeight = req.height;
+            imagePrompt = reqBody.prompt,
+            imageInferenceSteps = reqBody.num_inference_steps,
+            imageGuidanceScale = reqBody.guidance_scale,
+            imageWidth = reqBody.width,
+            imageHeight = reqBody.height;
 
         if (!imageData.includes('/')) {
             // res contained no data for the image, stop execution
-
             setStatus('request', 'invalid image', 'error')
             return
         }
 
         let imageItemElem = (index < imageItemElements.length ? imageItemElements[index] : null)
-
         if(!imageItemElem) {
             imageItemElem = document.createElement('div')
             imageItemElem.className = 'imgItem'
@@ -296,28 +399,15 @@ function showImages(req, res, outputContainer, livePreview) {
                     <img/>
                     <div class="imgItemInfo">
                         <span class="imgSeedLabel"></span>
-                        <button class="imgUseBtn">Use as Input</button>
-                        <button class="imgSaveBtn">Download</button>
                     </div>
                 </div>
             `
-
-            const useAsInputBtn = imageItemElem.querySelector('.imgUseBtn'),
-                saveImageBtn = imageItemElem.querySelector('.imgSaveBtn');
-
-            useAsInputBtn.addEventListener('click', getUseAsInputHandler(imageItemElem))
-            saveImageBtn.addEventListener('click', getSaveImageHandler(imageItemElem, req['output_format']))
-
             outputContainer.appendChild(imageItemElem)
         }
-
-        const imageElem = imageItemElem.querySelector('img'),
-            imageSeedLabel = imageItemElem.querySelector('.imgSeedLabel');
-
+        const imageElem = imageItemElem.querySelector('img')
         imageElem.src = imageData
         imageElem.width = parseInt(imageWidth)
         imageElem.height = parseInt(imageHeight)
-        imageElem.setAttribute('data-seed', imageSeed)
         imageElem.setAttribute('data-prompt', imagePrompt)
         imageElem.setAttribute('data-steps', imageInferenceSteps)
         imageElem.setAttribute('data-guidance', imageGuidanceScale)
@@ -326,7 +416,34 @@ function showImages(req, res, outputContainer, livePreview) {
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
         imageInfo.style.visibility = (livePreview ? 'hidden' : 'visible')
 
-        imageSeedLabel.innerText = 'Seed: ' + imageSeed
+        if ('seed' in result && !imageElem.hasAttribute('data-seed')) {
+            const req = Object.assign({}, reqBody, {
+                seed: result?.seed || reqBody.seed
+            })
+            imageElem.setAttribute('data-seed', req.seed)
+            const imageSeedLabel = imageItemElem.querySelector('.imgSeedLabel')
+            imageSeedLabel.innerText = 'Seed: ' + req.seed
+
+            const buttons = {
+                'imgUseBtn': { html: 'Use as Input', click: getUseAsInputHandler(imageItemElem) },
+                'imgSaveBtn': { html: 'Download', click: getSaveImageHandler(imageItemElem, req['output_format']) },
+                // 'imgX2Btn': { html: 'Double Size', click: getStartNewTaskHandler(req, imageItemElem, 'img2img_X2') },
+                // 'imgRedoBtn': { html: 'Redo', click: getStartNewTaskHandler(req, imageItemElem, 'img2img') },
+            }
+            // if (!req.use_upscale) {
+            //     buttons.upscaleBtn = { html: 'Upscale', click: getStartNewTaskHandler(req, imageItemElem, 'upscale') }
+            // }
+            const imgItemInfo = imageItemElem.querySelector('.imgItemInfo')
+            const createButton = function(name, btnInfo) {
+                const newButton = document.createElement('button')
+                newButton.classList.add(name)
+                newButton.classList.add('tasksBtns')
+                newButton.innerHTML = btnInfo.html
+                newButton.addEventListener('click', btnInfo.click)
+                imgItemInfo.appendChild(newButton)
+            }
+            Object.keys(buttons).forEach((name) => createButton(name, buttons[name]))
+        }
     })
 }
 
@@ -341,7 +458,7 @@ function getUseAsInputHandler(imageItemElem) {
 
         initImagePreviewContainer.style.display = 'block'
         inpaintingEditorContainer.style.display = 'none'
-        promptStrengthContainer.style.display = 'block'
+        promptStrengthContainer.style.display = 'table-row'
         maskSetting.checked = false
         samplerSelectionContainer.style.display = 'none'
 
@@ -368,6 +485,56 @@ function getSaveImageHandler(imageItemElem, outputFormat) {
         imgDownload.click()
     }
 }
+function getStartNewTaskHandler(reqBody, imageItemElem, mode) {
+    return function() {
+        if (!isServerAvailable()) {
+            alert('The server is not available.')
+            return
+        }
+        const imageElem = imageItemElem.querySelector('img')
+        const newTaskRequest = getCurrentUserRequest()
+        switch (mode) {
+            case 'img2img':
+            case 'img2img_X2':
+                newTaskRequest.reqBody = Object.assign({}, reqBody, {
+                    num_outputs: 1,
+                    use_cpu: useCPUField.checked,
+                })
+                if (!newTaskRequest.reqBody.init_image || mode === 'img2img_X2') {
+                    newTaskRequest.reqBody.sampler = 'ddim'
+                    newTaskRequest.reqBody.prompt_strength = '0.5'
+                    newTaskRequest.reqBody.init_image = imageElem.src
+                    delete newTaskRequest.reqBody.mask
+                } else {
+                    newTaskRequest.reqBody.seed = 1 + newTaskRequest.reqBody.seed
+                }
+                if (mode === 'img2img_X2') {
+                    newTaskRequest.reqBody.width = reqBody.width * 2
+                    newTaskRequest.reqBody.height = reqBody.height * 2
+                    newTaskRequest.reqBody.num_inference_steps = Math.min(100, reqBody.num_inference_steps * 2)
+                    if (useUpscalingField.checked) {
+                        newTaskRequest.reqBody.use_upscale = upscaleModelField.value
+                    } else {
+                        delete newTaskRequest.reqBody.use_upscale
+                    }
+                }
+                break
+            case 'upscale':
+                newTaskRequest.reqBody = Object.assign({}, reqBody, {
+                    num_outputs: 1,
+                    //use_face_correction: 'GFPGANv1.3',
+                    use_upscale: upscaleModelField.value,
+                })
+                break
+            default:
+                throw new Error("Unknown upscale mode: " + mode)
+        }
+        newTaskRequest.seed = newTaskRequest.reqBody.seed
+        newTaskRequest.numOutputsTotal = 1
+        newTaskRequest.batchCount = 1
+        createTask(newTaskRequest)
+    }
+}
 
 // makes a single image. don't call this directly, use makeImage() instead
 async function doMakeImage(task) {
@@ -386,136 +553,201 @@ async function doMakeImage(task) {
     const previewPrompt = task['previewPrompt']
     const progressBar = task['progressBar']
 
-    let res = ''
-    let seed = reqBody['seed']
-    let numOutputs = parseInt(reqBody['num_outputs'])
-
+    let res = undefined
     try {
-        res = await fetch('/image', {
-            method: 'POST',
+        const lastTask = serverState.task
+        let renderRequest = undefined
+        do {
+            res = await fetch('/render', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(reqBody)
+            })
+            renderRequest = await res.json()
+            // status_code 503, already a task running.
+        } while (renderRequest.status_code === 503 && await asyncDelay(30 * 1000))
+        if (typeof renderRequest?.stream !== 'string') {
+            console.log('Endpoint response: ', renderRequest)
+            throw new Error('Endpoint response does not contains a response stream url.')
+        }
+        task['taskStatusLabel'].innerText = "Waiting"
+        task['taskStatusLabel'].classList.add('waitingTaskLabel')
+        task['taskStatusLabel'].classList.remove('activeTaskLabel')
+
+        do { // Wait for server status to update.
+            await asyncDelay(250)
+            if (!isServerAvailable()) {
+                throw new Error('Connexion with server lost.')
+            }
+        } while (serverState.time > (Date.now() - (10 * 1000)) && serverState.task !== renderRequest.task)
+        if (serverState.session !== 'pending' && serverState.session !== 'running' && serverState.session !== 'buffer') {
+            if (serverState.session === 'stopped') {
+                return false
+            }
+
+            throw new Error('Unexpected server task state: ' + serverState.session || 'Undefined')
+        }
+        while (serverState.task === renderRequest.task && serverState.session === 'pending') {
+            // Wait for task to start on server.
+            await asyncDelay(1500)
+        }
+
+        // Task started!
+        res = await fetch(renderRequest.stream, {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(reqBody)
         })
 
+        task['taskStatusLabel'].innerText = "Processing"
+        task['taskStatusLabel'].classList.add('activeTaskLabel')
+        task['taskStatusLabel'].classList.remove('waitingTaskLabel')
+
+        let stepUpdate = undefined
         let reader = res.body.getReader()
         let textDecoder = new TextDecoder()
         let finalJSON = ''
-        let prevTime = -1
-        while (true) {
-            try {
-                let t = new Date().getTime()
-
+        let readComplete = false
+        while (!readComplete || finalJSON.length > 0) {
+            let t = Date.now()
+            let jsonStr = ''
+            if (!readComplete) {
                 const {value, done} = await reader.read()
                 if (done) {
-                    break
+                    readComplete = true
                 }
-
-                let timeTaken = (prevTime === -1 ? -1 : t - prevTime)
-
-                let jsonStr = textDecoder.decode(value)
-
-                try {
-                    let stepUpdate = JSON.parse(jsonStr)
-
-                    if (stepUpdate.step === undefined) {
-                        finalJSON += jsonStr
+                if (value) {
+                    jsonStr = textDecoder.decode(value)
+                }
+            }
+            stepUpdate = undefined
+            try {
+                // hack for a middleman buffering all the streaming updates, and unleashing them on the poor browser in one shot.
+                // this results in having to parse JSON like {"step": 1}{"step": 2}{"step": 3}{"ste...
+                // which is obviously invalid and can happen at any point while rendering.
+                // So we need to extract only the next {} section
+                if (finalJSON.length > 0) {
+                    // Append new data when required
+                    if (jsonStr.length > 0) {
+                        jsonStr = finalJSON + jsonStr
                     } else {
-                        let batchSize = stepUpdate.total_steps
-                        let overallStepCount = stepUpdate.step + task.batchesDone * batchSize
-                        let totalSteps = batchCount * batchSize
-                        let percent = 100 * (overallStepCount / totalSteps)
-                        percent = (percent > 100 ? 100 : percent)
-                        percent = percent.toFixed(0)
-
-                        stepsRemaining = totalSteps - overallStepCount
-                        stepsRemaining = (stepsRemaining < 0 ? 0 : stepsRemaining)
-                        timeRemaining = (timeTaken === -1 ? '' : stepsRemaining * timeTaken) // ms
-
-                        outputMsg.innerHTML = `Batch ${task.batchesDone+1} of ${batchCount}`
-                        outputMsg.innerHTML += `. Generating image(s): ${percent}%`
-
-                        timeRemaining = (timeTaken !== -1 ? millisecondsToStr(timeRemaining) : '')
-
-                        outputMsg.innerHTML += `. Time remaining (approx): ${timeRemaining}`
-                        outputMsg.style.display = 'block'
-
-                        if (stepUpdate.output !== undefined) {
-                            showImages(reqBody, stepUpdate, outputContainer, true)
-                        }
+                        jsonStr = finalJSON
                     }
-                } catch (e) {
-                    finalJSON += jsonStr
+                    finalJSON = ''
                 }
-
-                prevTime = t
+                // Find next delimiter
+                let lastChunkIdx = jsonStr.indexOf('}{')
+                if (lastChunkIdx !== -1) {
+                    finalJSON = jsonStr.substring(0, lastChunkIdx + 1)
+                    jsonStr = jsonStr.substring(lastChunkIdx + 1)
+                } else {
+                    finalJSON = jsonStr
+                    jsonStr = ''
+                }
+                // Try to parse
+                stepUpdate = (finalJSON.length > 0 ? JSON.parse(finalJSON) : undefined)
+                finalJSON = jsonStr
             } catch (e) {
-                logError('Stable Diffusion had an error. Please check the logs in the command-line window.', res, outputMsg)
-                res = undefined
-                throw e
+                if (e instanceof SyntaxError && !readComplete) {
+                    finalJSON += jsonStr
+                } else {
+                    throw e
+                }
+            }
+            if (typeof stepUpdate === 'object' && 'step' in stepUpdate) {
+                let batchSize = stepUpdate.total_steps
+                let overallStepCount = stepUpdate.step + task.batchesDone * batchSize
+                let totalSteps = batchCount * batchSize
+                let percent = 100 * (overallStepCount / totalSteps)
+                percent = (percent > 100 ? 100 : percent)
+                percent = percent.toFixed(0)
+                let timeTaken = stepUpdate.step_time // sec
+
+                let stepsRemaining = totalSteps - overallStepCount
+                stepsRemaining = (stepsRemaining < 0 ? 0 : stepsRemaining)
+                let timeRemaining = (timeTaken === -1 ? '' : stepsRemaining * timeTaken * 1000) // ms
+
+                outputMsg.innerHTML = `Batch ${task.batchesDone+1} of ${batchCount}`
+                outputMsg.innerHTML += `. Generating image(s): ${percent}%`
+
+                timeRemaining = (timeTaken !== -1 ? millisecondsToStr(timeRemaining) : '')
+                outputMsg.innerHTML += `. Time remaining (approx): ${timeRemaining}`
+                outputMsg.style.display = 'block'
+
+                if (stepUpdate.output !== undefined) {
+                    showImages(reqBody, stepUpdate, outputContainer, true)
+                }
+            }
+            if (stepUpdate?.status) {
+                break
+            }
+            if (readComplete && finalJSON.length <= 0) {
+                if (res.status === 200) {
+                    await asyncDelay(1000)
+                    res = await fetch(renderRequest.stream, {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
+                    reader = res.body.getReader()
+                    readComplete = false
+                } else {
+                    console.log('Stream stopped: ', res)
+                }
             }
         }
 
-        if (res.status != 200) {
-            if (serverStatus === 'online') {
-                logError('Stable Diffusion had an error: ' + await res.text(), res, outputMsg)
-            } else {
-                logError("Stable Diffusion is still starting up, please wait. If this goes on beyond a few minutes, Stable Diffusion has probably crashed. Please check the error message in the command-line window.", res, outputMsg)
-            }
-            res = undefined
-            progressBar.style.display = 'none'
-        } else {
-            if (finalJSON !== undefined && finalJSON.indexOf('}{') !== -1) {
-                // hack for a middleman buffering all the streaming updates, and unleashing them
-                //  on the poor browser in one shot.
-                //  this results in having to parse JSON like {"step": 1}{"step": 2}...{"status": "succeeded"..}
-                //  which is obviously invalid.
-                // So we need to just extract the last {} section, starting from "status" to the end of the response
-
-                let lastChunkIdx = finalJSON.lastIndexOf('}{')
-                if (lastChunkIdx !== -1) {
-                    let remaining = finalJSON.substring(lastChunkIdx)
-                    finalJSON = remaining.substring(1)
+        if (typeof stepUpdate === 'object' && stepUpdate.status !== 'succeeded') {
+            let msg = ''
+            if ('detail' in stepUpdate && typeof stepUpdate.detail === 'string' && stepUpdate.detail.length > 0) {
+                msg = stepUpdate.detail
+                if (msg.toLowerCase().includes('out of memory')) {
+                    msg += `<br/><br/>
+                            <b>Suggestions</b>:
+                            <br/>
+                            1. If you have set an initial image, please try reducing its dimension to ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION} or smaller.<br/>
+                            2. Try disabling the '<em>Turbo mode</em>' under '<em>Advanced Settings</em>'.<br/>
+                            3. Try generating a smaller image.<br/>`
                 }
+            } else {
+                msg = `Unexpected Read Error:<br/><pre>StepUpdate: ${JSON.stringify(stepUpdate, undefined, 4)}</pre>`
             }
-
-            res = JSON.parse(finalJSON)
-
-            if (res.status !== 'succeeded') {
-                let msg = ''
-                if (res.detail !== undefined) {
-                    msg = res.detail
-
-                    if (msg.toLowerCase().includes('out of memory')) {
-                        msg += `<br/><br/>
-                                <b>Suggestions</b>:
-                                <br/>
-                                1. If you have set an initial image, please try reducing its dimension to ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION} or smaller.<br/>
-                                2. Try disabling the '<em>Turbo mode</em>' under '<em>Advanced Settings</em>'.<br/>
-                                3. Try generating a smaller image.<br/>`
-                    }
-                } else {
-                    msg = res
+            logError(msg, res, outputMsg)
+            return false
+        }
+        if (typeof stepUpdate !== 'object' || !res || res.status != 200) {
+            if (!isServerAvailable()) {
+                logError("Stable Diffusion is still starting up, please wait. If this goes on beyond a few minutes, Stable Diffusion has probably crashed. Please check the error message in the command-line window.", res, outputMsg)
+            } else if (typeof res === 'object') {
+                let msg = 'Stable Diffusion had an error reading the response: '
+                try { // 'Response': body stream already read
+                    msg += 'Read: ' + await res.text()
+                } catch(e) {
+                    msg += 'Unexpected end of stream. '
+                }
+                if (finalJSON) {
+                    msg += 'Buffered data: ' + finalJSON
                 }
                 logError(msg, res, outputMsg)
-                res = undefined
+            } else {
+                let msg = `Unexpected Read Error:<br/><pre>Response: ${res}<br/>StepUpdate: ${typeof stepUpdate === 'object' ? JSON.stringify(stepUpdate, undefined, 4) : stepUpdate}</pre>`
+                logError(msg, res, outputMsg)
             }
+            progressBar.style.display = 'none'
+            return false
         }
+
+        lastPromptUsed = reqBody['prompt']
+        showImages(reqBody, stepUpdate, outputContainer, false)
     } catch (e) {
         console.log('request error', e)
         logError('Stable Diffusion had an error. Please check the logs in the command-line window. <br/><br/>' + e + '<br/><pre>' + e.stack + '</pre>', res, outputMsg)
         setStatus('request', 'error', 'error')
         progressBar.style.display = 'none'
-        res = undefined
+        return false
     }
-
-    if (!res) return false
-
-    lastPromptUsed = reqBody['prompt']
-
-    showImages(reqBody, res, outputContainer, false)
-
     return true
 }
 
@@ -549,22 +781,36 @@ async function checkTasks() {
     let task = taskQueue.pop()
     currentTask = task
 
-    let time = new Date().getTime()
+    let time = Date.now()
 
     let successCount = 0
 
     task.isProcessing = true
     task['stopTask'].innerHTML = '<i class="fa-solid fa-circle-stop"></i> Stop'
-    task['taskStatusLabel'].innerText = "Processing"
-    task['taskStatusLabel'].className += " activeTaskLabel"
+    task['taskStatusLabel'].innerText = "Starting"
+    task['taskStatusLabel'].classList.add('waitingTaskLabel')
 
+    const genSeeds = Boolean(typeof task.reqBody.seed !== 'number' || (task.reqBody.seed === task.seed && task.numOutputsTotal > 1))
+    const startSeed = task.reqBody.seed || task.seed
     for (let i = 0; i < task.batchCount; i++) {
-        task.reqBody['seed'] = task.seed + (i * task.reqBody['num_outputs'])
+        let newTask = task;
+        if (task.batchCount > 1) {
+            // Each output render batch needs it's own task instance to avoid altering the other runs after they are completed.
+            newTask = Object.assign({}, task, {
+                reqBody: Object.assign({}, task.reqBody)
+            })
+        }
+        if (genSeeds) {
+            newTask.reqBody.seed = startSeed + (i * newTask.reqBody.num_outputs)
+            newTask.seed = newTask.reqBody.seed
+        } else if (newTask.seed !== newTask.reqBody.seed) {
+            newTask.seed = newTask.reqBody.seed
+        }
 
-        let success = await doMakeImage(task)
+        let success = await doMakeImage(newTask)
         task.batchesDone++
 
-        if (!task.isProcessing) {
+        if (!task.isProcessing || !success) {
             break
         }
 
@@ -577,12 +823,11 @@ async function checkTasks() {
     task['stopTask'].innerHTML = '<i class="fa-solid fa-trash-can"></i> Remove'
     task['taskStatusLabel'].style.display = 'none'
 
-    time = new Date().getTime() - time
+    time = Date.now() - time
     time /= 1000
 
     if (successCount === task.batchCount) {
         task.outputMsg.innerText = 'Processed ' + task.numOutputsTotal + ' images in ' + time + ' seconds'
-
         // setStatus('request', 'done', 'success')
     } else {
         if (task.outputMsg.innerText.toLowerCase().indexOf('error') === -1) {
@@ -596,119 +841,106 @@ async function checkTasks() {
 
     currentTask = null
 
+    if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(checkTasks, { timeout: 30 * 1000 })
+    } else {
+        setTimeout(checkTasks, 500)
+    }
+}
+if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(checkTasks, { timeout: 30 * 1000 })
+} else {
     setTimeout(checkTasks, 10)
 }
-setTimeout(checkTasks, 0)
+
+function getCurrentUserRequest() {
+    const numOutputsTotal = parseInt(numOutputsTotalField.value)
+    const numOutputsParallel = parseInt(numOutputsParallelField.value)
+    const seed = (randomSeedField.checked ? Math.floor(Math.random() * 10000000) : parseInt(seedField.value))
+
+    const newTask = {
+        isProcessing: false,
+        stopped: false,
+        batchesDone: 0,
+        numOutputsTotal: numOutputsTotal,
+        batchCount: Math.ceil(numOutputsTotal / numOutputsParallel),
+        seed,
+
+        reqBody: {
+            session_id: sessionId,
+            seed,
+            negative_prompt: negativePromptField.value.trim(),
+            num_outputs: numOutputsParallel,
+            num_inference_steps: numInferenceStepsField.value,
+            guidance_scale: guidanceScaleField.value,
+            width: widthField.value,
+            height: heightField.value,
+            // allow_nsfw: allowNSFWField.checked,
+            turbo: turboField.checked,
+            use_cpu: useCPUField.checked,
+            use_full_precision: useFullPrecisionField.checked,
+            use_stable_diffusion_model: stableDiffusionModelField.value,
+            stream_progress_updates: true,
+            stream_image_progress: (numOutputsTotal > 50 ? false : streamImageProgressField.checked),
+            show_only_filtered_image: showOnlyFilteredImageField.checked,
+            output_format: outputFormatField.value
+        }
+    }
+    if (IMAGE_REGEX.test(initImagePreview.src)) {
+        newTask.reqBody.init_image = initImagePreview.src
+        newTask.reqBody.prompt_strength = promptStrengthField.value
+
+        // if (IMAGE_REGEX.test(maskImagePreview.src)) {
+        //     newTask.reqBody.mask = maskImagePreview.src
+        // }
+        if (maskSetting.checked) {
+            newTask.reqBody.mask = inpaintingEditor.getImg()
+        }
+        newTask.reqBody.sampler = 'ddim'
+    } else {
+        newTask.reqBody.sampler = samplerField.value
+    }
+    if (saveToDiskField.checked && diskPathField.value.trim() !== '') {
+        newTask.reqBody.save_to_disk_path = diskPathField.value.trim()
+    }
+    if (useFaceCorrectionField.checked) {
+        newTask.reqBody.use_face_correction = 'GFPGANv1.3'
+    }
+    if (useUpscalingField.checked) {
+        newTask.reqBody.use_upscale = upscaleModelField.value
+    }
+    return newTask
+}
 
 function makeImage() {
-    if (serverStatus !== 'online') {
-        alert('The server is still starting up..')
+    if (!isServerAvailable()) {
+        alert('The server is not available.')
         return
     }
-
-    let prompts = promptField.value
-    prompts = prompts.split('\n')
-    prompts.forEach(prompt => {
-        prompt = prompt.trim()
-        if (prompt === '') {
-            return
-        }
-
-        createTask(prompt)
-    })
+    const taskTemplate = getCurrentUserRequest()
+    const newTaskRequests = []
+    getPrompts().forEach((prompt) => newTaskRequests.push(Object.assign({}, taskTemplate, {
+        reqBody: Object.assign({ prompt: prompt }, taskTemplate.reqBody)
+    })))
+    newTaskRequests.forEach(createTask)
 
     initialText.style.display = 'none'
 }
 
-function createTask(prompt) {
-    let task = {
-        stopped: false,
-        batchesDone: 0
-    }
-
-    let seed = (randomSeedField.checked ? Math.floor(Math.random() * 10000000) : parseInt(seedField.value))
-    let numOutputsTotal = parseInt(numOutputsTotalField.value)
-    let numOutputsParallel = parseInt(numOutputsParallelField.value)
-    let batchCount = Math.ceil(numOutputsTotal / numOutputsParallel)
-    let batchSize = numOutputsParallel
-
-    let streamImageProgress = (numOutputsTotal > 50 ? false : streamImageProgressField.checked)
-
-    if (activeTags.length > 0) {
-        let promptTags = activeTags.map(x => x.name).join(", ")
-        prompt += ", " + promptTags
-    }
-
-    let reqBody = {
-        session_id: sessionId,
-        prompt: prompt,
-        negative_prompt: negativePromptField.value.trim(),
-        num_outputs: batchSize,
-        num_inference_steps: numInferenceStepsField.value,
-        guidance_scale: guidanceScaleField.value,
-        width: widthField.value,
-        height: heightField.value,
-        // allow_nsfw: allowNSFWField.checked,
-        turbo: turboField.checked,
-        use_cpu: useCPUField.checked,
-        use_full_precision: useFullPrecisionField.checked,
-        use_stable_diffusion_model: stableDiffusionModelField.value,
-        stream_progress_updates: true,
-        stream_image_progress: streamImageProgress,
-        show_only_filtered_image: showOnlyFilteredImageField.checked,
-        output_format: outputFormatField.value
-    }
-
-    if (IMAGE_REGEX.test(initImagePreview.src)) {
-        reqBody['init_image'] = initImagePreview.src
-        reqBody['prompt_strength'] = promptStrengthField.value
-
-        // if (IMAGE_REGEX.test(maskImagePreview.src)) {
-        //     reqBody['mask'] = maskImagePreview.src
-        // }
-        if (maskSetting.checked) {
-            reqBody['mask'] = inpaintingEditor.getImg()
-        }
-
-        reqBody['sampler'] = 'ddim'
-    } else {
-        reqBody['sampler'] = samplerField.value
-    }
-
-    if (saveToDiskField.checked && diskPathField.value.trim() !== '') {
-        reqBody['save_to_disk_path'] = diskPathField.value.trim()
-    }
-
-    if (useFaceCorrectionField.checked) {
-        reqBody['use_face_correction'] = 'GFPGANv1.3'
-    }
-
-    if (useUpscalingField.checked) {
-        reqBody['use_upscale'] = upscaleModelField.value
-    }
-
-    let taskConfig = `Seed: ${seed}, Sampler: ${reqBody['sampler']}, Inference Steps: ${numInferenceStepsField.value}, Guidance Scale: ${guidanceScaleField.value}, Model: ${stableDiffusionModelField.value}`
-
+function createTask(task) {
+    let taskConfig = `Seed: ${task.seed}, Sampler: ${task.reqBody.sampler}, Inference Steps: ${task.reqBody.num_inference_steps}, Guidance Scale: ${task.reqBody.guidance_scale}, Model: ${task.reqBody.use_stable_diffusion_model}`
     if (negativePromptField.value.trim() !== '') {
-        taskConfig += `, Negative Prompt: ${negativePromptField.value.trim()}`
+        taskConfig += `, Negative Prompt: ${task.reqBody.negative_prompt}`
     }
-
-    if (reqBody['init_image'] !== undefined) {
-        taskConfig += `, Prompt Strength: ${promptStrengthField.value}`
+    if (task.reqBody.init_image !== undefined) {
+        taskConfig += `, Prompt Strength: ${task.reqBody.prompt_strength}`
     }
-
-    if (useFaceCorrectionField.checked) {
-        taskConfig += `, Fix Faces: ${reqBody['use_face_correction']}`
+    if (task.reqBody.use_face_correction) {
+        taskConfig += `, Fix Faces: ${task.reqBody.use_face_correction}`
     }
-
-    if (useUpscalingField.checked) {
-        taskConfig += `, Upscale: ${reqBody['use_upscale']}`
+    if (task.reqBody.use_upscale) {
+        taskConfig += `, Upscale: ${task.reqBody.use_upscale}`
     }
-
-    task['reqBody'] = reqBody
-    task['seed'] = seed
-    task['batchCount'] = batchCount
-    task['isProcessing'] = false
 
     let taskEntry = document.createElement('div')
     taskEntry.className = 'imageTaskContainer'
@@ -724,7 +956,6 @@ function createTask(prompt) {
 
     createCollapsibles(taskEntry)
 
-    task['numOutputsTotal'] = numOutputsTotal
     task['taskStatusLabel'] = taskEntry.querySelector('.taskStatusLabel')
     task['outputContainer'] = taskEntry.querySelector('.img-preview')
     task['outputMsg'] = taskEntry.querySelector('.outputMsg')
@@ -736,7 +967,7 @@ function createTask(prompt) {
         if (task['isProcessing']) {
             task.isProcessing = false
             try {
-                let res = await fetch('/image/stop')
+                let res = await fetch('/image/stop?session_id=' + sessionId)
             } catch (e) {
                 console.log(e)
             }
@@ -752,9 +983,89 @@ function createTask(prompt) {
 
     imagePreview.insertBefore(taskEntry, previewTools.nextSibling)
 
-    task['previewPrompt'].innerText = prompt
+    task.previewPrompt.innerText = task.reqBody.prompt
+    if (task.previewPrompt.innerText.trim() === '') {
+        task.previewPrompt.innerHTML = '&nbsp;' // allows the results to be collapsed
+    }
 
     taskQueue.unshift(task)
+}
+
+function getPrompts() {
+    let prompts = promptField.value
+    if (prompts.trim() === '') {
+        return ['']
+    }
+
+    prompts = prompts.split('\n')
+
+    let promptsToMake = []
+    prompts.forEach(prompt => {
+        prompt = prompt.trim()
+        if (prompt === '') {
+            return
+        }
+
+        let promptMatrix = prompt.split('|')
+        prompt = promptMatrix.shift().trim()
+        promptsToMake.push(prompt)
+
+        promptMatrix = promptMatrix.map(p => p.trim())
+        promptMatrix = promptMatrix.filter(p => p !== '')
+
+        if (promptMatrix.length > 0) {
+            let promptPermutations = permutePrompts(prompt, promptMatrix)
+            promptsToMake = promptsToMake.concat(promptPermutations)
+        }
+    })
+    if (activeTags.length <= 0) {
+        return promptsToMake
+    }
+    const promptTags = activeTags.map(x => x.name).join(", ")
+    return promptsToMake.map((prompt) => `${prompt}, ${promptTags}`)
+}
+
+function permutePrompts(promptBase, promptMatrix) {
+    let prompts = []
+    let permutations = permute(promptMatrix)
+    permutations.forEach(perm => {
+        let prompt = promptBase
+
+        if (perm.length > 0) {
+            let promptAddition = perm.join(', ')
+            if (promptAddition.trim() === '') {
+                return
+            }
+
+            prompt += ', ' + promptAddition
+        }
+
+        prompts.push(prompt)
+    })
+
+    return prompts
+}
+
+function permute(arr) {
+    let permutations = []
+    let n = arr.length
+    let n_permutations = Math.pow(2, n)
+    for (let i = 0; i < n_permutations; i++) {
+        let perm = []
+        let mask = Number(i).toString(2).padStart(n, '0')
+
+        for (let idx = 0; idx < mask.length; idx++) {
+            if (mask[idx] === '1' && arr[idx].trim() !== '') {
+                perm.push(arr[idx])
+            }
+        }
+
+        if (perm.length > 0) {
+            permutations.push(perm)
+        }
+    }
+
+    return permutations
 }
 
 // create a file name with embedded prompt and metadata
@@ -803,7 +1114,7 @@ async function stopAllTasks() {
     }
 
     try {
-        let res = await fetch('/image/stop')
+        let res = await fetch('/image/stop?session_id=' + sessionId)
     } catch (e) {
         console.log(e)
     }
@@ -846,13 +1157,21 @@ useCPUField.checked = isUseCPUEnabled()
 useFullPrecisionField.addEventListener('click', handleBoolSettingChange(USE_FULL_PRECISION_KEY))
 useFullPrecisionField.checked = isUseFullPrecisionEnabled()
 
+autoSaveSettingsField.addEventListener('click', handleBoolSettingChange(AUTO_SAVE_SETTINGS_KEY))
+autoSaveSettingsField.checked = isAutoSaveSettingsEnabled()
+
 turboField.addEventListener('click', handleBoolSettingChange(USE_TURBO_MODE_KEY))
 turboField.checked = isUseTurboModeEnabled()
 
 streamImageProgressField.addEventListener('click', handleBoolSettingChange(STREAM_IMAGE_PROGRESS_KEY))
 streamImageProgressField.checked = isStreamImageProgressEnabled()
 
+outputFormatField.addEventListener('change', handleStringSettingChange(OUTPUT_FORMAT_KEY))
+outputFormatField.value = getOutputFormat()
+
 diskPathField.addEventListener('change', handleStringSettingChange(DISK_PATH_KEY))
+widthField.addEventListener('change', resizeInpaintingEditor)
+heightField.addEventListener('change', resizeInpaintingEditor)
 
 saveToDiskField.addEventListener('click', function(e) {
     diskPathField.disabled = !this.checked
@@ -876,6 +1195,10 @@ if (isAdvancedPanelOpenEnabled()) {
 
 if (isModifiersPanelOpenEnabled()) {
     setPanelOpen(modifiersPanelHandle)
+}
+
+if (isNegativePromptPanelOpenEnabled()) {
+    setPanelOpen(negativePromptPanelHandle)
 }
 
 makeImageBtn.addEventListener('click', makeImage)
@@ -918,9 +1241,9 @@ promptStrengthField.addEventListener('input', updatePromptStrengthSlider)
 updatePromptStrength()
 
 useBetaChannelField.addEventListener('click', async function(e) {
-    if (serverStatus !== 'online') {
+    if (!isServerAvailable()) {
         // logError('The server is still starting up..')
-        alert('The server is still starting up..')
+        alert('The server is not available.')
         e.preventDefault()
         return false
     }
@@ -947,8 +1270,8 @@ useBetaChannelField.addEventListener('click', async function(e) {
 
 async function getAppConfig() {
     try {
-        let res = await fetch('/app_config')
-        config = await res.json()
+        let res = await fetch('/get/app_config')
+        const config = await res.json()
 
         if (config.update_branch === 'beta') {
             useBetaChannelField.checked = true
@@ -963,8 +1286,8 @@ async function getAppConfig() {
 
 async function getModels() {
     try {
-        let res = await fetch('/models')
-        models = await res.json()
+        let res = await fetch('/get/models')
+        const models = await res.json()
 
         let activeModel = models['active']
         let modelOptions = models['options']
@@ -982,7 +1305,7 @@ async function getModels() {
             stableDiffusionModelField.appendChild(modelOption)
         })
 
-        console.log('get models response', config)
+        console.log('get models response', models)
     } catch (e) {
         console.log('get models error', e)
     }
@@ -1011,12 +1334,12 @@ function showInitImagePreview() {
     let reader = new FileReader()
     let file = initImageSelector.files[0]
 
-    reader.addEventListener('load', function() {
+    reader.addEventListener('load', function(event) {
         // console.log(file.name, reader.result)
         initImagePreview.src = reader.result
         initImagePreviewContainer.style.display = 'block'
         inpaintingEditorContainer.style.display = 'none'
-        promptStrengthContainer.style.display = 'block'
+        promptStrengthContainer.style.display = 'table-row'
         samplerSelectionContainer.style.display = 'none'
         // maskSetting.checked = false
     })
@@ -1032,6 +1355,8 @@ initImagePreview.addEventListener('load', function() {
     inpaintingEditorCanvasBackground.style.backgroundImage = "url('" + this.src + "')"
     // maskSetting.style.display = 'block'
     // inpaintingEditorContainer.style.display = 'block'
+    initImageSizeBox.textContent = initImagePreview.naturalWidth + " x " + initImagePreview.naturalHeight
+    initImageSizeBox.style.display = 'block'
 })
 
 initImageClearBtn.addEventListener('click', function() {
@@ -1049,11 +1374,13 @@ initImageClearBtn.addEventListener('click', function() {
     // maskSetting.style.display = 'none'
 
     promptStrengthContainer.style.display = 'none'
-    samplerSelectionContainer.style.display = 'block'
+    samplerSelectionContainer.style.display = 'table-row'
+    initImageSizeBox.style.display = 'none'
 })
 
 maskSetting.addEventListener('click', function() {
     inpaintingEditorContainer.style.display = (this.checked ? 'block' : 'none')
+    resizeInpaintingEditor()
 })
 
 promptsFromFileBtn.addEventListener('click', function() {
@@ -1178,6 +1505,9 @@ function createCollapsibles(node) {
             } else if (this == modifiersPanelHandle) {
                 let state = (content.style.display === 'block' ? 'true' : 'false')
                 localStorage.setItem(MODIFIERS_PANEL_OPEN_KEY, state)
+            } else if (this == negativePromptPanelHandle) {
+                let state = (content.style.display === 'block' ? 'true' : 'false')
+                localStorage.setItem(NEGATIVE_PROMPT_PANEL_OPEN_KEY, state)
             }
         })
     })
@@ -1227,10 +1557,10 @@ async function getDiskPath() {
             return
         }
 
-        let res = await fetch('/output_dir')
+        let res = await fetch('/get/output_dir')
         if (res.status === 200) {
             res = await res.json()
-            res = res[0]
+            res = res.output_dir
 
             document.querySelector('#diskPath').value = res
         }
@@ -1338,14 +1668,15 @@ function resizeModifierCards(val) {
         const classes = card.className.split(' ').filter(c => !c.startsWith(cardSizePrefix))
         card.className = classes.join(' ').trim()
 
-        if(val != 0)
+        if(val != 0) {
             card.classList.add(cardSize(val))
+        }
     })
 }
 
 async function loadModifiers() {
     try {
-        let res = await fetch('/modifiers.json?v=2')
+        let res = await fetch('/get/modifiers')
         if (res.status === 200) {
             res = await res.json()
 
@@ -1419,3 +1750,65 @@ async function loadModifiers() {
         console.log('error fetching modifiers', e)
     }
 }
+
+var DEFAULT_THEME = {};
+var THEMES = []; // initialized in initTheme from data in css
+
+function getThemeName(theme) {
+    theme = theme.replace("theme-", "");
+    theme = theme.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
+    return theme;
+}
+// init themefield
+function initTheme() {
+    Array.from(document.styleSheets)
+        .filter(sheet => sheet.href?.startsWith(window.location.origin))
+        .flatMap(sheet => Array.from(sheet.cssRules))
+        .forEach(rule => {
+            var selector = rule.selectorText; // TODO: also do selector == ":root", re-run un-set props
+            if (selector && selector.startsWith(".theme-")) {
+                var theme_key = selector.substring(1);
+                THEMES.push({
+                    key: theme_key,
+                    name: getThemeName(theme_key),
+                    rule: rule
+                })
+            }
+            if (selector && selector == ":root") {
+                DEFAULT_THEME = {
+                    key: "theme-default",
+                    name: "Default",
+                    rule: rule
+                };
+            }
+    });
+    
+    THEMES.forEach(theme => {
+        var new_option = document.createElement("option");
+        new_option.setAttribute("value", theme.key);
+        new_option.innerText = theme.name;
+        themeField.appendChild(new_option);
+    });
+}
+initTheme();
+
+function themeFieldChanged() {
+    var theme_key = themeField.value;
+
+    var body = document.querySelector("body");
+    body.classList.remove(...THEMES.map(theme => theme.key));
+    body.classList.add(theme_key);
+
+    body.style = "";
+    var theme = THEMES.find(t => t.key == theme_key);
+    if (theme) {
+        // refresh variables incase they are back referencing
+        Array.from(DEFAULT_THEME.rule.style)
+            .filter(cssVariable => !Array.from(theme.rule.style).includes(cssVariable))
+            .forEach(cssVariable => {
+            body.style.setProperty(cssVariable, DEFAULT_THEME.rule.style.getPropertyValue(cssVariable));
+        });
+    }
+}
+
+themeField.addEventListener('change', themeFieldChanged);
