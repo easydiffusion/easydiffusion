@@ -28,7 +28,8 @@ var SETTINGS_IDS_LIST = [
     "show_only_filtered_image",
     "upscale_model",
     "preview-image",
-    "modifier-card-size-slider"
+    "modifier-card-size-slider",
+    "theme"
 ]
 
 async function initSettings() {
