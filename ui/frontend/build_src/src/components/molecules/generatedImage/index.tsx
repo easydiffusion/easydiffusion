@@ -1,6 +1,6 @@
 import React from "react";
 
-import { ImageRequest } from "../../../api/api.d";
+import { ImageRequest } from "@api/api.d";
 
 import {
   generatedImageMain,

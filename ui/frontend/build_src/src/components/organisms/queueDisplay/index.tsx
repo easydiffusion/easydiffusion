@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from "react";
-import { ImageRequest } from "../../../api/api.d";
+import { ImageRequest } from "@api/api.d";
 
 import {
   QueueStatus,
   QueuedRequest,
   useRequestQueue
-} from "../../../stores/requestQueueStore";
+} from "@stores/requestQueueStore";
 
 import {
   QueueDisplayMain,
@@ -14,9 +14,9 @@ import {
 
 import {
   buttonStyle
-} from "../../_recipes/button.css";
+} from "@recipes/button.css";
 
-import ClearQueue from "../../molecules/clearQueue";
+import ClearQueue from "@molecules/clearQueue";
 import QueueItem from "./queueItem";
 
 export default function QueueDisplay() {

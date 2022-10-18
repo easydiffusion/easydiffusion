@@ -5,7 +5,10 @@ import { devtools } from "zustand/middleware";
 
 import { useRandomSeed } from "../utils";
 
-import { ImageRequest } from "../api/api.d";
+import { ImageRequest } from "@api/api.d";
+
+import { promptTag } from "./store.d";
+
 
 export interface ImageCreationUiOptions {
   isUseRandomSeed: boolean;
@@ -42,19 +45,20 @@ interface ModifiersList {
 
 type ModifiersOptionList = ModifiersList[];
 
-export interface promptTag {
-  id: string;
-  name: string;
-  type: 'positive' | 'negative';
+
+interface creationObject {
+  req: ImageRequest;
 }
 
 interface ImageCreateState {
   parallelCount: number;
+
+  // creations: creationObject[];
+
   requestOptions: ImageRequest;
+  // createTags: promptTag[];
+
   allModifiers: ModifiersOptionList;
-
-  createTags: promptTag[];
-
   tagMap: Record<string, string[]>;
   isInpainting: boolean;
 
@@ -64,13 +68,14 @@ interface ImageCreateState {
   setAllModifiers: (modifiers: ModifiersOptionList) => void;
 
   setModifierOptions: (key: string, value: any) => void;
-  toggleTag: (category: string, tag: string) => void;
-  hasTag: (category: string, tag: string) => boolean;
-  selectedTags: () => ModifierObject[];
-  addCreateTag: (tag: promptTag) => void;
-  removeCreateTag: (id: string) => void;
-  changeCreateTagType: (id: string, type: 'positive' | 'negative') => void;
-  reorderCreateTag: (tag: promptTag, index: number) => void;
+  // toggleTag: (category: string, tag: string) => void;
+  // hasTag: (category: string, tag: string) => boolean;
+  // selectedTags: () => ModifierObject[];
+  modifyPrompt: (prompt: string, type: string) => void;
+  // addCreateTag: (tag: promptTag) => void;
+  // removeCreateTag: (id: string) => void;
+  // changeCreateTagType: (id: string, type: 'positive' | 'negative') => void;
+  // reorderCreateTag: (tag: promptTag, index: number) => void;
 
   builtRequest: () => ImageRequest;
 
@@ -218,48 +223,89 @@ export const useImageCreate = create<ImageCreateState>(
       return selected;
     },
 
-    addCreateTag: (tag: promptTag) => {
-      set(
-        produce((state) => {
-          state.createTags.push(tag);
-        })
-      );
-    },
+    modifyPrompt: (prompt: string, type: string) => {
+      // if the type is positive
+      if (type === 'positive') {
+        // get the current prompt from the request
+        const currentPrompt = get().requestOptions.prompt;
+        // if the prompt doesnt have a comma at the end add one
+        if (!currentPrompt.endsWith(',')) {
+          prompt = currentPrompt + ', ' + prompt + ',';
+        }
+        else {
+          prompt = currentPrompt + prompt + ', ';
+        }
 
-    removeCreateTag: (id: string) => {
-      set(
-        produce((state) => {
-          // @ts-expect-error
-          state.createTags = state.createTags.filter((t) => t.id !== id);
-        })
-
-      );
-    },
-
-    changeCreateTagType: (id: string, type: 'positive' | 'negative') => {
-      set(
-        produce((state) => {
-          // @ts-expect-error
-          const tag = state.createTags.find((t) => t.id === id);
-          if (tag) {
-            tag.type = type;
+        // set the prompt
+        set(
+          produce((state) => {
+            state.requestOptions.prompt = prompt;
           }
-        })
-      );
-    },
+          )
+        );
+      }
+      else {
+        // get the current negative prompt from the request
+        const currentNegativePrompt = get().requestOptions.negative_prompt;
+        if (!currentNegativePrompt.endsWith(',')) {
+          prompt = currentNegativePrompt + ', ' + prompt + ',';
+        }
+        else {
+          prompt = currentNegativePrompt + prompt + ', ';
+        }
 
-
-    reorderCreateTag: (tag: promptTag, index: number) => {
-      set(
-        produce((state) => {
-          const tagIndex = state.createTags.indexOf(tag);
-          if (tagIndex !== -1) {
-            state.createTags.splice(tagIndex, 1);
-            state.createTags.splice(index, 0, tag);
+        // set the prompt
+        set(
+          produce((state) => {
+            state.requestOptions.negative_prompt = prompt;
           }
-        })
-      );
+          )
+        );
+      }
     },
+
+    // addCreateTag: (tag: promptTag) => {
+    //   set(
+    //     produce((state) => {
+    //       state.createTags.push(tag);
+    //     })
+    //   );
+    // },
+
+    // removeCreateTag: (id: string) => {
+    //   set(
+    //     produce((state) => {
+    //       // @ts-expect-error
+    //       state.createTags = state.createTags.filter((t) => t.id !== id);
+    //     })
+
+    //   );
+    // },
+
+    // changeCreateTagType: (id: string, type: 'positive' | 'negative') => {
+    //   set(
+    //     produce((state) => {
+    //       // @ts-expect-error
+    //       const tag = state.createTags.find((t) => t.id === id);
+    //       if (tag) {
+    //         tag.type = type;
+    //       }
+    //     })
+    //   );
+    // },
+
+
+    // reorderCreateTag: (tag: promptTag, index: number) => {
+    //   set(
+    //     produce((state) => {
+    //       const tagIndex = state.createTags.indexOf(tag);
+    //       if (tagIndex !== -1) {
+    //         state.createTags.splice(tagIndex, 1);
+    //         state.createTags.splice(index, 0, tag);
+    //       }
+    //     })
+    //   );
+    // },
 
     // the request body to send to the server
     // this is a computed value, just adding the tags to the request
@@ -269,19 +315,21 @@ export const useImageCreate = create<ImageCreateState>(
       //const selectedTags = get().selectedTags();
       // const tags = selectedTags.map((t: ModifierObject) => t.modifier);
 
-      const positivePrompt = state.createTags.filter((t) => t.type === "positive").map((t) => t.name).join(",");
-      const negativePrompt = state.createTags.filter((t) => t.type === "negative").map((t) => t.name).join(",");
+      // const positivePrompt = state.createTags.filter((t) => t.type === "positive").map((t) => t.name).join(",");
+      // const negativePrompt = state.createTags.filter((t) => t.type === "negative").map((t) => t.name).join(",");
 
       // join all the tags with a comma and add it to the prompt
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      const fullPrompt = `${requestOptions.prompt}, ${positivePrompt}`;
-      const fullNegativePrompt = `${requestOptions.negative_prompt}, ${negativePrompt}`;
+      // const fullPrompt = `${requestOptions.prompt}, ${positivePrompt}`;
+      // const fullNegativePrompt = `${requestOptions.negative_prompt}, ${negativePrompt}`;
 
       const request = {
         ...requestOptions,
-        prompt: fullPrompt,
-        negative_prompt: fullNegativePrompt,
+        // prompt: fullPrompt,
+        // negative_prompt: fullNegativePrompt,
       };
+
+
       // if we arent using auto save clear the save path
       if (!state.uiOptions.isUseAutoSave) {
         // maybe this is "None" ?
@@ -292,12 +340,6 @@ export const useImageCreate = create<ImageCreateState>(
       if (void 0 === request.init_image) {
         request.prompt_strength = undefined;
       }
-
-      //     typeof state.getValueForRequestKey("use_face_correction") ===
-      //     "string"
-      //     ? null
-      //     : "GFPGANv1.3";
-      // state.requestOptions.use_face_correction = isSeting;
 
       // make sure you look above for the "null" value
       // this patches over a a backend issue if you dont ask for a filtered image

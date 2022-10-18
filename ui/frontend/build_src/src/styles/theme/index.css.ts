@@ -4,6 +4,39 @@ import {
   createTheme,
 } from "@vanilla-extract/css";
 
+import { createVar, style } from '@vanilla-extract/css';
+
+
+export const backgroundHueVar = createVar();
+export const backgroundSaturationVar = createVar();
+export const backgroundLightnessVar = createVar();
+
+export const backgroundMainColor = style({
+  vars: {
+    [backgroundHueVar]: '210',
+    [backgroundSaturationVar]: '6%',
+    [backgroundLightnessVar]: '13%',
+  }
+});
+
+export const backgroundMainColorLight = style({
+  vars: {
+    [backgroundHueVar]: '210',
+    [backgroundSaturationVar]: '4%',
+    [backgroundLightnessVar]: '18%',
+  }
+});
+
+export const backgroundMainColorDark = style({
+  vars: {
+    [backgroundHueVar]: '210',
+    [backgroundSaturationVar]: '3%',
+    [backgroundLightnessVar]: '7%',
+  }
+});
+
+
+
 const app = createGlobalTheme(":root", {
   spacing: {
     none: "0",
@@ -36,9 +69,33 @@ const app = createGlobalTheme(":root", {
 
   // 60 degree color difference
   // step downs
-  brandHue: '265', // purple
-  secondaryHue: '225', // deep blue
-  tertiaryHue: '145', // grass green
+  brandHue: '210', // sky blue
+  secondaryHue: '145', // grass green
+  tertiaryHue: '50', // burnt yellow
+
+  saturationBase: '60%',
+  saturationStep: '10%',
+  saturationDimStep: '1',
+  saturationDimmerStep: '3',
+  saturationDimmestStep: '5',
+
+  backgroundSaturation: '6%',
+  backgroundLightness: '13%',
+
+  backgroundLightSaturation: '4%',
+  backgroundLightLightness: '18%',
+
+  backgroundDarkSaturation: '3%',
+  backgroundDarkLightness: '7%',
+
+  lightnessBase: '45%',
+  lightnessStep: '5%',
+  lightnessDimStep: '1',
+  lightnessBrightStep: '3',
+
+  // backgroundMain: 'hsl(225, 6%, 13%)',
+  // backgroundLight: 'hsl(225, 4%, 18%)',
+  // backgroundDark: 'hsl(225, 3%, 7%)',
 
   // step ups
   errorHue: '0',
@@ -87,5 +144,7 @@ const app = createGlobalTheme(":root", {
     link: "#0066cc", // blue
   }
 });
+
+export const backgroundColorVar = createVar();
 
 export const vars = { ...app };

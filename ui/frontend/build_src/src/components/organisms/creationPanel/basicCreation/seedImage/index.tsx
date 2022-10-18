@@ -1,5 +1,5 @@
-import React, { useRef, ChangeEvent } from "react";
-
+import React, { useRef, ChangeEvent, useCallback } from "react";
+import { useDropzone } from 'react-dropzone'
 
 
 import { XButton } from "../../../../../styles/shared.css";
@@ -34,12 +34,11 @@ export default function SeedImage(_props: any) {
 
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
 
-  const _startFileSelect = () => {
-    imageInputRef.current?.click();
-  };
-  const _handleFileSelect = (event: ChangeEvent<HTMLInputElement>) => {
-    // @ts-expect-error
-    const file = event.target.files[0];
+
+  const onDrop = useCallback(acceptedFiles => {
+    // Do something with the files
+
+    const file = acceptedFiles[0];
 
     if (void 0 !== file) {
       const reader = new FileReader();
@@ -50,7 +49,10 @@ export default function SeedImage(_props: any) {
       };
       reader.readAsDataURL(file);
     }
-  };
+
+  }, [])
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
+
 
   const toggleInpainting = useImageCreate((state) => state.toggleInpainting);
 
@@ -65,8 +67,17 @@ export default function SeedImage(_props: any) {
 
   return (
     <div className={ImageInputDisplay}>
-      <div>
-        <label className={InputLabel}>
+      <div {...getRootProps()}>
+
+        <input {...getInputProps()} />
+        {
+          isDragActive
+            ? <p>Drop the files here ...</p>
+            : <p>Drag drop some files here, or click to select files</p>
+        }
+
+
+        {/* <label className={InputLabel}>
           <b>{t("home.initial-img-txt")}</b>
         </label>
         <input
@@ -78,7 +89,7 @@ export default function SeedImage(_props: any) {
         />
         <button className={buttonStyle()} onClick={_startFileSelect}>
           {t("home.initial-img-btn")}
-        </button>
+        </button> */}
       </div>
 
       <div className={ImageFixer}>

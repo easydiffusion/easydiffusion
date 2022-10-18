@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useImageCreate } from "../../../../../../stores/imageCreateStore";
+import { useImageCreate } from "@stores/imageCreateStore";
 
-import HeadlessListbox, { listBoxOption } from "../../../../../atoms/headlessListbox";
+import HeadlessListbox, { listBoxOption } from "@atoms/headlessListbox";
 
 import {
   IconFont,
-} from "../../../../../../styles/shared.css";
+} from "@styles/shared.css";
 
 const options: listBoxOption[] = [
   { id: 1, value: null, display: 'No Upscaling', unavailable: false },

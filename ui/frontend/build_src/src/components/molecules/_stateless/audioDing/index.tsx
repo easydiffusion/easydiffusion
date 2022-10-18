@@ -1,5 +1,5 @@
 import React from "react";
-import { API_URL } from "../../../../api";
+import { API_URL } from "@api/index";
 
 const url = `${API_URL}/ding.mp3`;
 

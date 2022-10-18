@@ -1,6 +1,6 @@
 
 import { recipe } from "@vanilla-extract/recipes";
-import { vars } from "../../styles/theme/index.css";
+import { vars } from "@styles/theme/index.css";
 
 export const tabStyles = recipe({
   base: {

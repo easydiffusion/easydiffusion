@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useImageFetching } from '../../../stores/imageFetchingStore';
+import { useImageFetching } from '@stores/imageFetchingStore';
 
 export default function TimeRemaining() {
 

@@ -1,7 +1,7 @@
 import { style, globalStyle } from "@vanilla-extract/css";
 
 
-import { vars } from "../../../styles/theme/index.css";
+import { vars } from "@styles/theme/index.css";
 
 export const QueueDisplayMain = style({
   display: "flex",

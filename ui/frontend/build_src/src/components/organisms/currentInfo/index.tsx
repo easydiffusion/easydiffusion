@@ -42,7 +42,6 @@ export default function CurrentInfo() {
           seed
         }
       } = createdMedia;
-      console.log('SET FOR NEW MEDIA', seed)
       setGScale(guidance_scale);
       setPrompt(prompt);
       setNegPrompt(negative_prompt);
@@ -54,11 +53,13 @@ export default function CurrentInfo() {
     <div className={currentInfoMain}>
       {batchId != '' && (
         <>
-          <div>id: {batchId}</div>
-          <div>guidance_scale: {gScale}</div>
-          <div>prompt: {prompt}</div>
-          <div>negative_prompt: {negPrompt}</div>
-          <div>seed: {seed}</div>
+          <div>
+            <div>id: {batchId}</div>
+            <div>guidance_scale: {gScale}</div>
+            <div>prompt: {prompt}</div>
+            <div>negative_prompt: {negPrompt}</div>
+            <div>seed: {seed}</div>
+          </div>
 
           <ProgressImageDisplay batchId={batchId} seed={seed}></ProgressImageDisplay>
 

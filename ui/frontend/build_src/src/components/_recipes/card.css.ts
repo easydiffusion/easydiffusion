@@ -1,5 +1,5 @@
 import { recipe } from "@vanilla-extract/recipes";
-import { vars } from "../../styles/theme/index.css";
+import { vars } from "@styles/theme/index.css";
 
 export const card = recipe({
 
@@ -35,6 +35,7 @@ export const card = recipe({
     },
 
     level: {
+      down: { boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15) inset" },
       flat: {},
       1: { boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15)" },
       2: { boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15)" },

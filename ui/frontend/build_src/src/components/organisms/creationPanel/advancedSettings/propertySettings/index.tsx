@@ -1,9 +1,9 @@
 import React from "react";
-import { useImageCreate } from "../../../../../stores/imageCreateStore";
+import { useImageCreate } from "@stores/imageCreateStore";
 import { useCreateUI } from "../../creationPanelUIStore";
 
-import Checkbox from "../../../../atoms/headlessCheckbox";
-import NumberInput from "../../../../atoms/numberInput";
+import Checkbox from "@atoms/headlessCheckbox";
+import NumberInput from "@atoms/numberInput";
 
 
 import SamplerOptions from "./samplerOptions";
@@ -12,7 +12,7 @@ import SizeSelection from "./sizeSelection";
 
 import {
   SettingItem,
-} from "../../../../../styles/shared.css";
+} from "@styles/shared.css";
 
 import {
   buttonStyle,

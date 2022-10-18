@@ -1,12 +1,6 @@
 import React from "react";
 
 import { useImageCreate } from "../../../../../../stores/imageCreateStore";
-import ModifierTag from "../../../../../molecules/modifierTag";
-
-// import {
-//   card
-// } from '../../../../../_recipes/card.css';
-
 
 
 import PromptTag from "../../../../../molecules/promptTag";
@@ -17,7 +11,6 @@ import {
 
 
 export default function ActiveTags() {
-  const selectedtags = useImageCreate((state) => state.selectedTags());
 
   const createTags = useImageCreate((state) => state.createTags);
 

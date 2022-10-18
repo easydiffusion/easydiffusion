@@ -6,9 +6,118 @@
 
 
 import { recipe } from "@vanilla-extract/recipes";
-import { vars } from "../../styles/theme/index.css";
+import { vars } from "@styles/theme/index.css";
 // import { sprinkles } from "../../styles/sprinkles/index.css";
 
+const buttonVariants = {
+  color: {
+    primary: {
+      '--button-hue': vars.brandHue,
+      '--button-base-saturation': vars.colorMod.saturation.normal,
+      '--button-base-lightness': vars.colorMod.lightness.normal,
+    },
+    secondary: {
+      '--button-hue': vars.secondaryHue,
+      '--button-base-saturation': vars.colorMod.saturation.normal,
+      '--button-base-lightness': vars.colorMod.lightness.normal,
+    },
+    tertiary: {
+      '--button-hue': vars.tertiaryHue,
+      '--button-base-saturation': vars.colorMod.saturation.normal,
+      '--button-base-lightness': vars.colorMod.lightness.normal,
+    },
+    cancel: {
+      '--button-hue': vars.errorHue,
+      '--button-base-saturation': vars.colorMod.saturation.normal,
+      '--button-base-lightness': vars.colorMod.lightness.normal,
+    },
+    accent: {
+      '--button-hue': vars.backgroundAccentHue,
+      '--button-base-saturation': vars.backgroundAccentSaturation,
+      '--button-base-lightness': vars.backgroundAccentLightness,
+    },
+    clear: {
+      backgroundColor: "transparent",
+    },
+  },
+
+  type: {
+    fill: {
+      backgroundColor: `hsl(var(--button-hue),var(--button-base-saturation),${vars.colorMod.lightness.normal})`,
+      border: `1px solid hsl(var(--button-hue),var(--button-base-saturation),${vars.colorMod.lightness.normal})`,
+      ":hover": {
+        backgroundColor: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.normal})`,
+        border: `1px solid hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.normal})`,
+      },
+      ":active": {
+        backgroundColor: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.dim})`,
+        border: `1px solid hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.dim})`,
+      },
+
+      ":focus": {
+        backgroundColor: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.dim})`,
+        border: `1px solid hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.dim})`,
+      },
+
+      ":disabled": {
+        backgroundColor: `hsl(var(--button-hue),${vars.colorMod.saturation.dim},${vars.colorMod.lightness.dim})`,
+        border: `1px solid hsl(var(--button-hue),${vars.colorMod.saturation.dim},${vars.colorMod.lightness.dim})`,
+      },
+    },
+    outline: {
+      backgroundColor: "transparent",
+      border: `1px solid hsl(var(--button-hue),var(--button-base-saturation),${vars.colorMod.lightness.normal})`,
+      ":hover": {
+        borderColor: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.normal})`,
+      },
+
+      ":active": {
+        borderColor: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.dim})`,
+      },
+
+      ":focus": {
+        borderColor: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.dim})`,
+      },
+
+      ":disabled": {
+        borderColor: `hsl(var(--button-hue),${vars.colorMod.saturation.dim},${vars.colorMod.lightness.dim})`,
+      },
+    },
+    action: {
+      backgroundColor: "transparent",
+      color: `hsl(var(--button-hue),var(--button-base-saturation),${vars.colorMod.lightness.normal})`,
+      textDecoration: "underline",
+      paddingLeft: 0,
+      paddingRight: 0,
+      ":hover": {
+        color: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.normal})`,
+      },
+
+      ":active": {
+        color: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.dim})`,
+      },
+
+      ":focus": {
+        color: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.dim})`,
+      },
+
+      ":disabled": {
+        color: `hsl(var(--button-hue),${vars.colorMod.saturation.dim},${vars.colorMod.lightness.dim})`,
+      },
+    }
+  },
+
+  size: {
+    slim: {
+      padding: vars.spacing.min,
+      fontSize: vars.fonts.sizes.Caption,
+    },
+    large: {
+      width: "100%",
+      fontSize: vars.fonts.sizes.Headline,
+    }
+  }
+};
 
 export const buttonStyle = recipe({
 
@@ -21,126 +130,144 @@ export const buttonStyle = recipe({
     borderRadius: vars.trim.smallBorderRadius,
   },
 
-  variants: {
-    color: {
-      primary: {
-        // @ts-expect-error
-        '--button-hue': vars.brandHue,
-        '--button-base-saturation': vars.colorMod.saturation.normal,
-        '--button-base-lightness': vars.colorMod.lightness.normal,
-      },
-      secondary: {
-        // @ts-expect-error
-        '--button-hue': vars.secondaryHue,
-        '--button-base-saturation': vars.colorMod.saturation.normal,
-        '--button-base-lightness': vars.colorMod.lightness.normal,
-      },
-      tertiary: {
-        // @ts-expect-error
-        '--button-hue': vars.tertiaryHue,
-        '--button-base-saturation': vars.colorMod.saturation.normal,
-        '--button-base-lightness': vars.colorMod.lightness.normal,
-      },
-      cancel: {
-        // @ts-expect-error
-        '--button-hue': vars.errorHue,
-        '--button-base-saturation': vars.colorMod.saturation.normal,
-        '--button-base-lightness': vars.colorMod.lightness.normal,
-      },
-      accent: {
-        // @ts-expect-error
-        '--button-hue': vars.backgroundAccentHue,
-        '--button-base-saturation': vars.backgroundAccentSaturation,
-        '--button-base-lightness': vars.backgroundAccentLightness,
-      },
-      clear: {
-        backgroundColor: "transparent",
-      },
-    },
+  // @ts-expect-error
+  variants: buttonVariants,
 
-    type: {
-      fill: {
-        backgroundColor: `hsl(var(--button-hue),var(--button-base-saturation),${vars.colorMod.lightness.normal})`,
-        border: `1px solid hsl(var(--button-hue),var(--button-base-saturation),${vars.colorMod.lightness.normal})`,
-        ":hover": {
-          backgroundColor: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.normal})`,
-          border: `1px solid hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.normal})`,
-        },
-        ":active": {
-          backgroundColor: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.dim})`,
-          border: `1px solid hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.dim})`,
-        },
+  // variants: {
+  //   color: {
+  //     primary: {
+  //       // @ts-expect-error
+  //       '--button-hue': vars.brandHue,
+  //       '--button-base-saturation': vars.colorMod.saturation.normal,
+  //       '--button-base-lightness': vars.colorMod.lightness.normal,
+  //     },
+  //     secondary: {
+  //       // @ts-expect-error
+  //       '--button-hue': vars.secondaryHue,
+  //       '--button-base-saturation': vars.colorMod.saturation.normal,
+  //       '--button-base-lightness': vars.colorMod.lightness.normal,
+  //     },
+  //     tertiary: {
+  //       // @ts-expect-error
+  //       '--button-hue': vars.tertiaryHue,
+  //       '--button-base-saturation': vars.colorMod.saturation.normal,
+  //       '--button-base-lightness': vars.colorMod.lightness.normal,
+  //     },
+  //     cancel: {
+  //       // @ts-expect-error
+  //       '--button-hue': vars.errorHue,
+  //       '--button-base-saturation': vars.colorMod.saturation.normal,
+  //       '--button-base-lightness': vars.colorMod.lightness.normal,
+  //     },
+  //     accent: {
+  //       // @ts-expect-error
+  //       '--button-hue': vars.backgroundAccentHue,
+  //       '--button-base-saturation': vars.backgroundAccentSaturation,
+  //       '--button-base-lightness': vars.backgroundAccentLightness,
+  //     },
+  //     clear: {
+  //       backgroundColor: "transparent",
+  //     },
+  //   },
 
-        ":focus": {
-          backgroundColor: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.dim})`,
-          border: `1px solid hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.dim})`,
-        },
+  //   type: {
+  //     fill: {
+  //       backgroundColor: `hsl(var(--button-hue),var(--button-base-saturation),${vars.colorMod.lightness.normal})`,
+  //       border: `1px solid hsl(var(--button-hue),var(--button-base-saturation),${vars.colorMod.lightness.normal})`,
+  //       ":hover": {
+  //         backgroundColor: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.normal})`,
+  //         border: `1px solid hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.normal})`,
+  //       },
+  //       ":active": {
+  //         backgroundColor: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.dim})`,
+  //         border: `1px solid hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.dim})`,
+  //       },
 
-        ":disabled": {
-          backgroundColor: `hsl(var(--button-hue),${vars.colorMod.saturation.dim},${vars.colorMod.lightness.dim})`,
-          border: `1px solid hsl(var(--button-hue),${vars.colorMod.saturation.dim},${vars.colorMod.lightness.dim})`,
-        },
-      },
-      outline: {
-        backgroundColor: "transparent",
-        border: `1px solid hsl(var(--button-hue),var(--button-base-saturation),${vars.colorMod.lightness.normal})`,
-        ":hover": {
-          borderColor: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.normal})`,
-        },
+  //       ":focus": {
+  //         backgroundColor: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.dim})`,
+  //         border: `1px solid hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.dim})`,
+  //       },
 
-        ":active": {
-          borderColor: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.dim})`,
-        },
+  //       ":disabled": {
+  //         backgroundColor: `hsl(var(--button-hue),${vars.colorMod.saturation.dim},${vars.colorMod.lightness.dim})`,
+  //         border: `1px solid hsl(var(--button-hue),${vars.colorMod.saturation.dim},${vars.colorMod.lightness.dim})`,
+  //       },
+  //     },
+  //     outline: {
+  //       backgroundColor: "transparent",
+  //       border: `1px solid hsl(var(--button-hue),var(--button-base-saturation),${vars.colorMod.lightness.normal})`,
+  //       ":hover": {
+  //         borderColor: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.normal})`,
+  //       },
 
-        ":focus": {
-          borderColor: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.dim})`,
-        },
+  //       ":active": {
+  //         borderColor: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.dim})`,
+  //       },
 
-        ":disabled": {
-          borderColor: `hsl(var(--button-hue),${vars.colorMod.saturation.dim},${vars.colorMod.lightness.dim})`,
-        },
-      },
-      action: {
-        backgroundColor: "transparent",
-        color: `hsl(var(--button-hue),var(--button-base-saturation),${vars.colorMod.lightness.normal})`,
-        textDecoration: "underline",
-        paddingLeft: 0,
-        paddingRight: 0,
-        ":hover": {
-          color: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.normal})`,
-        },
+  //       ":focus": {
+  //         borderColor: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.dim})`,
+  //       },
 
-        ":active": {
-          color: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.dim})`,
-        },
+  //       ":disabled": {
+  //         borderColor: `hsl(var(--button-hue),${vars.colorMod.saturation.dim},${vars.colorMod.lightness.dim})`,
+  //       },
+  //     },
+  //     action: {
+  //       backgroundColor: "transparent",
+  //       color: `hsl(var(--button-hue),var(--button-base-saturation),${vars.colorMod.lightness.normal})`,
+  //       textDecoration: "underline",
+  //       paddingLeft: 0,
+  //       paddingRight: 0,
+  //       ":hover": {
+  //         color: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.normal})`,
+  //       },
 
-        ":focus": {
-          color: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.dim})`,
-        },
+  //       ":active": {
+  //         color: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.dim})`,
+  //       },
 
-        ":disabled": {
-          color: `hsl(var(--button-hue),${vars.colorMod.saturation.dim},${vars.colorMod.lightness.dim})`,
-        },
-      }
-    },
+  //       ":focus": {
+  //         color: `hsl(var(--button-hue),${vars.colorMod.saturation.bright},${vars.colorMod.lightness.dim})`,
+  //       },
 
-    size: {
-      slim: {
-        padding: vars.spacing.min,
-        fontSize: vars.fonts.sizes.Caption,
-      },
-      large: {
-        width: "100%",
-        fontSize: vars.fonts.sizes.Headline,
-      }
-    }
-  },
+  //       ":disabled": {
+  //         color: `hsl(var(--button-hue),${vars.colorMod.saturation.dim},${vars.colorMod.lightness.dim})`,
+  //       },
+  //     }
+  //   },
+
+  //   size: {
+  //     slim: {
+  //       padding: vars.spacing.min,
+  //       fontSize: vars.fonts.sizes.Caption,
+  //     },
+  //     large: {
+  //       width: "100%",
+  //       fontSize: vars.fonts.sizes.Headline,
+  //     }
+  //   }
+  // },
 
   defaultVariants: {
     color: "primary",
     type: "fill",
   },
 
+});
+
+
+// TODO : make this a small circular button
+export const iconButtonStyle = recipe({
+  base: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: vars.spacing.min,
+    // borderRadius: vars.borderRadius,
+    border: "none",
+    cursor: "pointer",
+    transition: "background-color 0.2s ease-in-out",
+  },
 });
 
 

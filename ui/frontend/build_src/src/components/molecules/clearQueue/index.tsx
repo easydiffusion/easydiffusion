@@ -1,6 +1,6 @@
 import React from "react";
-import { doStopImage } from "../../../api";
-import { useRequestQueue } from "../../../stores/requestQueueStore";
+import { doStopImage } from "@api/index";
+import { useRequestQueue } from "@stores/requestQueueStore";
 
 import {
   buttonStyle

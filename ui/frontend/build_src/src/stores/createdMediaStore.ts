@@ -2,7 +2,7 @@
 import create from "zustand";
 import produce from "immer";
 
-import { ImageRequest } from "../api/api.d";
+import { ImageRequest } from "@api/api.d";
 
 // same as progressDataObject
 export interface imageDataObject {

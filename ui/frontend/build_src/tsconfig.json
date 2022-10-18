@@ -2,7 +2,17 @@
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
-      "@stores": ["src/stores"]
+      "@api/*": ["./src/api/*"],
+      "@stores/*": ["./src/stores/*"],
+      "@components/*": ["./src/components/*"],
+      "@recipes/*": ["./src/_recipes/*"],
+      "@atoms/*": ["./src/components/atoms/*"],
+      "@molecules/*": ["./src/components/molecules/*"],
+      "@organisms/*": ["./src/components/organisms/*"],
+      "@layouts/*": ["./src/components/layouts/*"],
+      "@pages/*": ["./src/pages/*"],
+      "@styles/*": ["./src/styles/*"],
+      "@translations/*": ["./src/Translation/*"]
     },
 
     "target": "ESNext",

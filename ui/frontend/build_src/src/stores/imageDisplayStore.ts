@@ -10,13 +10,15 @@ export interface CompletedImageIds {
 
 interface ImageDisplayState {
   currentImageKeys: CompletedImageIds | null
+  shouldDisplayWhenComplete: boolean,
   setCurrentImage: (image: CompletedImageIds) => void;
   clearDisplay: () => void;
+  toggleDisplayComplete: () => void;
 }
 
 export const useImageDisplay = create<ImageDisplayState>((set, get) => ({
   currentImageKeys: null,
-
+  shouldDisplayWhenComplete: true,
   setCurrentImage: (image) => {
     set(
       produce((state) => {
@@ -29,6 +31,14 @@ export const useImageDisplay = create<ImageDisplayState>((set, get) => ({
     set(
       produce((state) => {
         state.currentImage = null;
+      })
+    );
+  },
+  toggleDisplayComplete: () => {
+    set(
+      produce((state) => {
+        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+        state.shouldDisplayWhenComplete = !(state.shouldDisplayWhenComplete);
       })
     );
   }

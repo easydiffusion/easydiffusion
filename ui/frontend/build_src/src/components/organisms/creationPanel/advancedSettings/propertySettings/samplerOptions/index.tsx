@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useImageCreate, SAMPLER_OPTIONS } from "../../../../../../stores/imageCreateStore";
+import { useImageCreate, SAMPLER_OPTIONS } from "@stores/imageCreateStore";
 
 import {
   IconFont,
-} from "../../../../../../styles/shared.css";
+} from "@styles/shared.css";
 
-import HeadlessListbox, { listBoxOption } from "../../../../../atoms/headlessListbox";
+import HeadlessListbox, { listBoxOption } from "@atoms/headlessListbox";
 
 const samplerList: listBoxOption[] = SAMPLER_OPTIONS.map((sample, index) => {
   return {

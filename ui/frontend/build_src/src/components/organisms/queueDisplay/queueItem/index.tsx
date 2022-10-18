@@ -54,6 +54,9 @@ export default function QueueItem({ request }: QueueItemProps) {
     updateStatus(batchId, QueueStatus.pending);
   }
 
+  const reusePrompt = () => {
+  }
+
   const sendToTop = () => {
     sendPendingToTop(batchId);
   }
@@ -85,13 +88,21 @@ export default function QueueItem({ request }: QueueItemProps) {
         )}
 
         {status === QueueStatus.complete && (
-          <button
-            className={buttonStyle({
-              size: "large",
-            })}
-            onClick={removeFromQueue}>
-            Clear
-          </button>
+          <>
+            <button
+              className={buttonStyle({
+              })}
+              onClick={removeFromQueue}>
+              Clear
+            </button>
+            <button
+              className={buttonStyle({
+                color: "secondary",
+              })}
+              onClick={reusePrompt}>
+              Reuse Prompt
+            </button>
+          </>
         )}
 
         {status === QueueStatus.pending && (

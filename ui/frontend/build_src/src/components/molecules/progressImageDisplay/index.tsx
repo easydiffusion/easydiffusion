@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 
-import { API_URL } from "../../../api";
-import { useProgressImages } from "../../../stores/progressImagesStore";
-import { useImageDisplay } from "../../../stores/imageDisplayStore";
+import { API_URL } from "@api/index";
+import { useProgressImages } from "@stores/progressImagesStore";
+import { useImageDisplay } from "@stores/imageDisplayStore";
 
 import {
   progressImageDisplayStyle,

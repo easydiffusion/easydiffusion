@@ -1,43 +1,54 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import React, { useEffect, useRef } from "react";
 
-import { useImageCreate } from "../../../stores/imageCreateStore";
+import { useImageCreate } from "../../../../../stores/imageCreateStore";
+
+import {
+  usePromptMatrix
+} from "../../../../../stores/promptMatrixStore";
+
 import {
   QueueStatus,
   useRequestQueue
-} from "../../../stores/requestQueueStore";
+} from "../../../../../stores/requestQueueStore";
+
 import {
   FetchingStates,
   useImageFetching
-} from "../../../stores/imageFetchingStore";
-import { useProgressImages } from "../../../stores/progressImagesStore";
-import { useCreatedMedia } from "../../../stores/createdMediaStore";
-import { useImageDisplay } from "../../../stores/imageDisplayStore";
+} from "../../../../../stores/imageFetchingStore";
+import { useProgressImages } from "../../../../../stores/progressImagesStore";
+import { useCreatedMedia } from "../../../../../stores/createdMediaStore";
+import { useImageDisplay } from "../../../../../stores/imageDisplayStore";
 
 import { v4 as uuidv4 } from "uuid";
 
-import { useRandomSeed } from "../../../utils";
+import { useRandomSeed } from "../../../../../utils";
 import {
   ImageRequest,
   ImageReturnType,
   ImageOutput,
-} from "../../../api/api.d";
+} from "../../../../../api/api";
 
 import {
   doMakeImage,
-} from "../../../api";
+} from "../../../../../api";
 
 import {
   buttonStyle
-} from "../../_recipes/button.css";
+} from "../../../../_recipes/button.css";
 
 import { useTranslation } from "react-i18next";
 
-import AudioDing from "../_stateless/audioDing";
+import AudioDing from "../../../../molecules/_stateless/audioDing";
 
 const idDelim = "_item";
 
-export default function MakeButton() {
+interface Props {
+  className?: string;
+}
+
+
+export default function MakeButton({ className }: Props) {
   const { t } = useTranslation();
 
   const dingRef = useRef<HTMLAudioElement>();
@@ -47,8 +58,13 @@ export default function MakeButton() {
   const builtRequest = useImageCreate((state) => state.builtRequest);
   const isRandomSeed = useImageCreate((state) => state.isRandomSeed());
   const setRequestOption = useImageCreate((state) => state.setRequestOptions);
-
   const isSoundEnabled = useImageCreate((state) => state.isSoundEnabled());
+
+  // request modify logic
+  const promptsList = usePromptMatrix((state) => state.getSafeList());
+
+  const shouldClearOnCreate = usePromptMatrix((state) => state.shouldClearOnCreate);
+  const clearPromptMatrix = usePromptMatrix((state) => state.clearPromptMatrix);
 
   // request queue logic
   const addtoQueue = useRequestQueue((state) => state.addtoQueue);
@@ -64,19 +80,19 @@ export default function MakeButton() {
   const setStartTime = useImageFetching((state) => state.setStartTime);
   const setNowTime = useImageFetching((state) => state.setNowTime);
   const resetForFetching = useImageFetching((state) => state.resetForFetching);
-  const appendData = useImageFetching((state) => state.appendData);
 
   // progress images logic
   const addProgressImage = useProgressImages((state) => state.addProgressImage);
 
-  // display logic
-  // const updateDisplay = useImageDisplay((state) => state.updateDisplay);
-  // new display logic
-  // const makeSpace = useCreatedMedia((state) => state.makeSpace);
+  // created logic
   const removeFailedMedia = useCreatedMedia((state) => state.removeFailedMedia);
   const addCreatedMedia = useCreatedMedia((state) => state.addCreatedMedia);
-  // const addCreatedMediaRecord = useCreatedMedia((state) => state.addCreatedMediaRecord);
-  // waiting for the python server to start sending down an image url and not a base64 string
+
+  // display logic
+  const shouldDisplayWhenComplete = useImageDisplay((state) => state.shouldDisplayWhenComplete);
+  const setCurrentImage = useImageDisplay((state) => state.setCurrentImage);
+
+
   const hackJson = (jsonStr: string, batchId: string) => {
 
     try {
@@ -96,6 +112,21 @@ export default function MakeButton() {
           const itemId = `${batchId}${idDelim}-${seed}-${index}`;
           // updateDisplay(batchId, data, seedReq);
           addCreatedMedia(batchId, seed, seedReq, { id: itemId, data });
+
+
+          if (shouldDisplayWhenComplete) {
+            setCurrentImage({ batchId, imageId: itemId, seed });
+          }
+
+          // const setCurrentImage = useImageDisplay((state) => state.setCurrentImage);
+          // const setProgressAsCurrent = (progressId: string) => {
+          //   console.log('setProgressAsCurrent - batchId', batchId);
+          //   console.log('progressId', progressId);
+          //   if (batchId != null && seed != null) {
+          //     setCurrentImage({ batchId, progressId, seed });
+          //   }
+          // }
+
         });
       }
 
@@ -199,45 +230,63 @@ export default function MakeButton() {
   }
 
   const queueImageRequest = (req: ImageRequest) => {
-    // the actual number of request we will make
-    const requests = [];
-    // the number of images we will make
-    let { num_outputs } = req;
-    if (parallelCount > num_outputs) {
-      requests.push(num_outputs);
-    } else {
-      // while we have at least 1 image to make
-      while (num_outputs >= 1) {
-        // subtract the parallel count from the number of images to make
-        num_outputs -= parallelCount;
 
-        // if we are still 0 or greater we can make the full parallel count
-        if (num_outputs <= 0) {
-          requests.push(parallelCount);
-        }
-        // otherwise we can only make the remaining images
-        else {
-          requests.push(Math.abs(num_outputs));
+    promptsList.forEach((prompt) => {
+
+      // marry the modifiers to the prompt
+      const { options } = prompt;
+      // TODO clean up some of the comma logic
+      const positivePrompt = options.filter((t) => t.type === "positive").map((t) => t.name).join(",");
+      const negativePrompt = options.filter((t) => t.type === "negative").map((t) => t.name).join(",");
+      const fullPrompt = `${req.prompt}, ${positivePrompt}`;
+      const fullNegativePrompt = `${req.negative_prompt}, ${negativePrompt}`;
+      req.prompt = fullPrompt;
+      req.negative_prompt = fullNegativePrompt;
+
+      // the actual number of request we will make
+      const requests = [];
+      // the number of images we will make
+      let { num_outputs } = req;
+      if (parallelCount > num_outputs) {
+        requests.push(num_outputs);
+      } else {
+        // while we have at least 1 image to make
+        while (num_outputs >= 1) {
+          // subtract the parallel count from the number of images to make
+          num_outputs -= parallelCount;
+
+          // if we are still 0 or greater we can make the full parallel count
+          if (num_outputs <= 0) {
+            requests.push(parallelCount);
+          }
+          // otherwise we can only make the remaining images
+          else {
+            requests.push(Math.abs(num_outputs));
+          }
         }
       }
-    }
 
-    requests.forEach((num, index) => {
-      // get the seed we want to use
-      let seed = req.seed;
-      if (index !== 0) {
-        // we want to use a random seed for subsequent requests
-        seed = useRandomSeed();
-      }
-      // add the request to the queue
-      addtoQueue(uuidv4(), {
-        ...req,
-        // updated the number of images to make
-        num_outputs: num,
-        // update the seed
-        seed,
+      requests.forEach((num, index) => {
+        // get the seed we want to use
+        let seed = req.seed;
+        if (index !== 0) {
+          // we want to use a random seed for subsequent requests
+          seed = useRandomSeed();
+        }
+        // add the request to the queue
+        addtoQueue(uuidv4(), {
+          ...req,
+          // updated the number of images to make
+          num_outputs: num,
+          // update the seed
+          seed,
+        });
       });
     });
+
+    if (shouldClearOnCreate) {
+      clearPromptMatrix();
+    }
   }
 
   const makeImageQueue = async () => {
@@ -281,9 +330,9 @@ export default function MakeButton() {
   return (
     <>
       <button
-        className={buttonStyle({
-          size: "large",
-        })}
+        className={[className, buttonStyle({
+          size: 'large',
+        })].join(" ")}
         onClick={() => {
           void makeImageQueue();
         }}

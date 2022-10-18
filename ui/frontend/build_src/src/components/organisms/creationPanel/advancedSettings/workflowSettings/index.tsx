@@ -1,5 +1,6 @@
 import React from "react";
 import { useImageCreate } from "../../../../../stores/imageCreateStore";
+import { useImageDisplay } from "../../../../../stores/imageDisplayStore";
 
 import { useCreateUI } from "../../creationPanelUIStore";
 
@@ -38,6 +39,11 @@ export default function WorkflowSettings() {
     (state) => state.toggleAdvWorkflowSettings
   );
 
+
+  const shouldDisplayWhenComplete = useImageDisplay((state) => state.shouldDisplayWhenComplete);
+  const toggleDisplayComplete = useImageDisplay((state) => state.toggleDisplayComplete);
+
+
   return (
     <div>
       <button type="button" className={buttonStyle({
@@ -52,6 +58,7 @@ export default function WorkflowSettings() {
             <NumberInput
               label={t("settings.amount-of-img")}
               value={numOutputs}
+              min={1}
               onChange={(value) => setRequestOption("num_outputs", value)}
             ></NumberInput>
           </div>
@@ -59,6 +66,7 @@ export default function WorkflowSettings() {
           <div className={SettingItem}>
             <NumberInput
               label={t("settings.how-many")}
+              min={1}
               value={parallelCount}
               onChange={(value) => setParallelCount(value)}
             ></NumberInput>
@@ -81,6 +89,16 @@ export default function WorkflowSettings() {
               }
             ></Checkbox>
           </div>
+
+          <div className={SettingItem}>
+            <Checkbox
+              isChecked={shouldDisplayWhenComplete}
+              label="Display Completed"
+              toggleCheck={toggleDisplayComplete}
+            ></Checkbox>
+          </div>
+
+
         </>
       )}
     </div>

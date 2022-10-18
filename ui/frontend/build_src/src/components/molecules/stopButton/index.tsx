@@ -1,5 +1,5 @@
 import React from "react";
-import { doStopImage } from "../../../api";
+import { doStopImage } from "@api/index";
 
 
 import {

@@ -2,7 +2,7 @@
 import { style, globalStyle } from "@vanilla-extract/css";
 
 // import { recipe } from "@vanilla-extract/recipes";
-import { vars } from "../../styles/theme/index.css";
+import { vars } from "@styles/theme/index.css";
 
 import {
   card

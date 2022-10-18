@@ -4,6 +4,7 @@ import {
 } from '@vanilla-extract/sprinkles';
 
 import { vars } from '../theme/index.css';
+
 const hues = {
   brand: vars.brandHue,
   secondary: vars.secondaryHue,
@@ -42,7 +43,6 @@ const colors = {
   tertiaryFocus: `hsl(${hues.tertiary},${saturation.bright},${lightness.dim})`,
   tertiaryDim: `hsl(${hues.tertiary},${saturation.dim},${lightness.dim})`,
 };
-
 
 const stateProperties = defineProperties({
   properties: {

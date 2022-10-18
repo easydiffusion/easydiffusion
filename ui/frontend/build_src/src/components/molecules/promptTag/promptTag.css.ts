@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { style, globalStyle } from '@vanilla-extract/css';
 
-import { XButton } from "../../../styles/shared.css";
-import { vars } from '../../../styles/theme/index.css';
+import { XButton } from "@styles/shared.css";
+import { vars } from '@styles/theme/index.css';
 import { card } from '../../_recipes/card.css';
 
 

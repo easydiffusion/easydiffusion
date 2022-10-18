@@ -9,16 +9,16 @@ import {
 } from "./home.css";
 
 import { useQuery } from "@tanstack/react-query";
-import { getSaveDirectory, loadModifications } from "../../api";
-import Mockifiers from "../../components/organisms/creationPanel/imageModifiers/modifiers.mock";
+import { getSaveDirectory, loadModifications } from "@api/index";
+import { useImageCreate } from "@stores/imageCreateStore";
+import Mockifiers from "@organisms/creationPanel/imageModifiers/modifiers.mock";
 
-import { useImageCreate } from "../../stores/imageCreateStore";
 
 // Todo - import components here
-import HeaderDisplay from "../../components/organisms/headerDisplay";
-import BasicDisplay from "../../components/layouts/basicDisplay";
-import FooterDisplay from "../../components/organisms/footerDisplay";
-import CreationTabs from "../../components/layouts/creationTabs";
+import HeaderDisplay from "@organisms/headerDisplay";
+import BasicDisplay from "@layouts/basicDisplay";
+import FooterDisplay from "@organisms/footerDisplay";
+import CreationTabs from "@layouts/creationTabs";
 
 function Home() {
   // Get the original save directory

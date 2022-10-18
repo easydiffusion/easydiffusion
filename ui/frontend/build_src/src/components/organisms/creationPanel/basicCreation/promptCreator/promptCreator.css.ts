@@ -88,13 +88,13 @@ globalStyle(`${TogglePill} p`, {
 });
 
 
-export const buttonRow = style({
+export const inputRow = style({
   marginTop: vars.spacing.small,
   display: 'flex',
   flexDirection: 'row',
 });
 
-globalStyle(`${buttonRow} > button`, {
+globalStyle(`${inputRow} > button`, {
   flexGrow: 1,
-  marginLeft: vars.spacing.medium,
+  marginRight: vars.spacing.medium,
 });

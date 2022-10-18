@@ -1,9 +1,11 @@
 import React, { Fragment } from "react";
 import { Switch } from '@headlessui/react'
 
+// import { useImageDisplay } from "@stores/imageDisplayStore";
+
 import {
   IconFont,
-} from "../../../styles/shared.css";
+} from "@styles/shared.css";
 
 import {
   CheckMain,
@@ -33,7 +35,7 @@ export default function Checkbox({ isChecked, label, isLabelFirst, toggleCheck, 
         data-disabled={disabled}
       >
         {/* TODO Make the lable first logic more eligant? */}
-        {(isLabelFirst === true) && <Switch.Label> {label} </Switch.Label>}
+        {(isLabelFirst == true) && <Switch.Label> {label} </Switch.Label>}
         <Switch className={CheckContent} checked={isChecked} onChange={handChange}>
           <div
             className={CheckInner}

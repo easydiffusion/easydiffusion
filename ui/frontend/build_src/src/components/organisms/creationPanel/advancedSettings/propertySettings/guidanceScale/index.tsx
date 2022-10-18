@@ -1,7 +1,7 @@
 import React, { ChangeEvent } from "react";
 
-import NumberRange from "../../../../../atoms/numberRange";
-import { useImageCreate } from "../../../../../../stores/imageCreateStore";
+import NumberRange from "@atoms/numberRange";
+import { useImageCreate } from "@stores/imageCreateStore";
 
 
 export default function GuidanceScale() {

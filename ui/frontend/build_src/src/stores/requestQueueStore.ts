@@ -1,7 +1,7 @@
 import create from "zustand";
 import produce from "immer";
 
-import { ImageRequest } from "../api/api.d";
+import { ImageRequest } from "@api/api.d";
 
 export enum QueueStatus {
   pending = "pending",
@@ -31,7 +31,6 @@ interface RequestQueueState {
   removeCompleted: () => void;
   removeErrored: () => void;
   clearQueue: () => void;
-
 }
 
 export const useRequestQueue = create<RequestQueueState>((set, get) => ({

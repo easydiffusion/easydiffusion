@@ -1,5 +1,4 @@
 import { style } from '@vanilla-extract/css';
-import { vars } from '../../../../../../styles/theme/index.css';
 export const ActiveTagListMain = style({
   display: 'flex',
   flexDirection: 'row',

@@ -1,7 +1,13 @@
-import { style } from '@vanilla-extract/css';
+import { style, globalStyle } from '@vanilla-extract/css';
 import { vars } from "../../../styles/theme/index.css";
 
 export const CheckMain = style({
+  display: 'flex',
+  alignItems: 'center',
+});
+
+globalStyle(`${CheckMain} >:first-child`, {
+  marginRight: '10px'
 });
 
 export const CheckContent = style({
@@ -32,6 +38,7 @@ export const CheckContent = style({
     }
   }
 });
+
 
 export const CheckInner = style({
   color: vars.backgroundAccentMain,

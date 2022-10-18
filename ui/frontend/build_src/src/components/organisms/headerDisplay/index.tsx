@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
-import { KEY_CONFIG, getConfig } from "../../../api";
+import { KEY_CONFIG, getConfig } from "@api/index";
 
 import StatusDisplay from "./statusDisplay";
 

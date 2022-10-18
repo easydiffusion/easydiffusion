@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import Checkbox from "../../atoms/headlessCheckbox";
+import Checkbox from "@atoms/headlessCheckbox";
 
 import {
   KEY_CONFIG,
   getConfig,
   KEY_TOGGLE_CONFIG,
   toggleBetaConfig,
-} from "../../../api";
+} from "@api/index";
 
 import { useTranslation } from "react-i18next";
 

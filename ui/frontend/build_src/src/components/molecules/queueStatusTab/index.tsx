@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import TimeRemaining from "../../atoms/timeRemaining";
+import TimeRemaining from "@atoms/timeRemaining";
 
-import { FetchingStates, useImageFetching } from "../../../stores/imageFetchingStore";
-import { useRequestQueue } from "../../../stores/requestQueueStore";
+import { FetchingStates, useImageFetching } from "@stores/imageFetchingStore";
+import { useRequestQueue } from "@stores/requestQueueStore";
 
 export default function QueueStatusTab() {
 
