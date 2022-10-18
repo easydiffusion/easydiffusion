@@ -616,7 +616,7 @@ Negative Prompt: {req.negative_prompt}
 Stable Diffusion model: {req.use_stable_diffusion_model + '.ckpt'}
 '''
     try:
-        with open(meta_out_path, 'w') as f:
+        with open(meta_out_path, 'w', encoding='utf-8') as f:
             f.write(metadata)
     except:
         print('could not save the file', traceback.format_exc())
