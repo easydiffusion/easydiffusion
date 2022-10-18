@@ -16,7 +16,6 @@ const OUTPUT_FORMAT_KEY = "outputFormat"
 const AUTO_SAVE_SETTINGS_KEY = "autoSaveSettings"
 const HEALTH_PING_INTERVAL = 5 // seconds
 const MAX_INIT_IMAGE_DIMENSION = 768
-const INPAINTING_EDITOR_SIZE = 450
 
 const IMAGE_REGEX = new RegExp('data:image/[A-Za-z]+;base64')
 
@@ -105,15 +104,6 @@ let serverStatusMsg = document.querySelector('#server-status-msg')
 
 let advancedPanelHandle = document.querySelector("#editor-settings .collapsible")
 let modifiersPanelHandle = document.querySelector("#editor-modifiers .collapsible")
-let inpaintingEditorContainer = document.querySelector('#inpaintingEditor')
-let inpaintingEditor = new DrawingBoard.Board('inpaintingEditor', {
-    color: "#ffffff",
-    background: false,
-    size: 30,
-    webStorage: false,
-    controls: [{'DrawingMode': {'filler': false}}, 'Size', 'Navigation']
-})
-let inpaintingEditorCanvasBackground = document.querySelector('.drawing-board-canvas-wrapper')
 
 document.querySelector('.drawing-board-control-navigation-back').innerHTML = '<i class="fa-solid fa-rotate-left"></i>'
 document.querySelector('.drawing-board-control-navigation-forward').innerHTML = '<i class="fa-solid fa-rotate-right"></i>'
@@ -335,40 +325,6 @@ async function healthCheck() {
         serverState = {'status': 'Offline', 'time': Date.now()}
         setServerStatus('error', 'offline')
     }
-}
-function resizeInpaintingEditor() {
-    if (!maskSetting.checked) {
-        return
-    }
-    let widthValue = parseInt(widthField.value)
-    let heightValue = parseInt(heightField.value)
-    if (widthValue === heightValue) {
-        widthValue = INPAINTING_EDITOR_SIZE
-        heightValue = INPAINTING_EDITOR_SIZE
-    } else if (widthValue > heightValue) {
-        heightValue = (heightValue / widthValue) * INPAINTING_EDITOR_SIZE
-        widthValue = INPAINTING_EDITOR_SIZE
-    } else {
-        widthValue = (widthValue / heightValue) * INPAINTING_EDITOR_SIZE
-        heightValue = INPAINTING_EDITOR_SIZE
-    }
-    if (inpaintingEditor.opts.aspectRatio === (widthValue / heightValue).toFixed(3)) {
-        // Same ratio, don't reset the canvas.
-        return
-    }
-    inpaintingEditor.opts.aspectRatio = (widthValue / heightValue).toFixed(3)
-
-    inpaintingEditorContainer.style.width = widthValue + 'px'
-    inpaintingEditorContainer.style.height = heightValue + 'px'
-    inpaintingEditor.opts.enlargeYourContainer = true
-
-    inpaintingEditor.opts.size = inpaintingEditor.ctx.lineWidth
-    inpaintingEditor.resize()
-
-    inpaintingEditor.ctx.lineCap = "round"
-    inpaintingEditor.ctx.lineJoin = "round"
-    inpaintingEditor.ctx.lineWidth = inpaintingEditor.opts.size
-    inpaintingEditor.setColor(inpaintingEditor.opts.color)
 }
 
 function showImages(reqBody, res, outputContainer, livePreview) {
@@ -1170,8 +1126,18 @@ outputFormatField.addEventListener('change', handleStringSettingChange(OUTPUT_FO
 outputFormatField.value = getOutputFormat()
 
 diskPathField.addEventListener('change', handleStringSettingChange(DISK_PATH_KEY))
-widthField.addEventListener('change', resizeInpaintingEditor)
-heightField.addEventListener('change', resizeInpaintingEditor)
+widthField.addEventListener('change', onDimensionChange)
+heightField.addEventListener('change', onDimensionChange)
+
+function onDimensionChange() {
+    if (!maskSetting.checked) {
+        return
+    }
+    let widthValue = parseInt(widthField.value)
+    let heightValue = parseInt(heightField.value)
+
+    resizeInpaintingEditor(widthValue, heightValue)
+}
 
 saveToDiskField.addEventListener('click', function(e) {
     diskPathField.disabled = !this.checked
@@ -1380,7 +1346,7 @@ initImageClearBtn.addEventListener('click', function() {
 
 maskSetting.addEventListener('click', function() {
     inpaintingEditorContainer.style.display = (this.checked ? 'block' : 'none')
-    resizeInpaintingEditor()
+    onDimensionChange()
 })
 
 promptsFromFileBtn.addEventListener('click', function() {
