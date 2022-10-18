@@ -464,9 +464,9 @@ function getUseAsInputHandler(imageItemElem) {
 
         // maskSetting.style.display = 'block'
 
-        randomSeedField.checked = false
-        seedField.value = imageSeed
-        seedField.disabled = false
+        // randomSeedField.checked = false
+        // seedField.value = imageSeed
+        // seedField.disabled = false
     }
 }
 
