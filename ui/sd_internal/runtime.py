@@ -197,7 +197,7 @@ def load_model_real_esrgan(real_esrgan_to_use):
 
     print('loaded ', real_esrgan_to_use, 'to', device, 'precision', precision)
 
-def get_base_path(disk_path, session_id, prompt, ext, suffix=None):
+def get_base_path(disk_path, session_id, prompt, img_id, ext, suffix=None):
     if disk_path is None: return None
     if session_id is None: return None
     if ext is None: raise Exception('Missing ext')
@@ -206,7 +206,6 @@ def get_base_path(disk_path, session_id, prompt, ext, suffix=None):
     os.makedirs(session_out_path, exist_ok=True)
 
     prompt_flattened = filename_regex.sub('_', prompt)[:50]
-    img_id = str(uuid.uuid4())[-8:]
 
     if suffix is not None:
         return os.path.join(session_out_path, f"{prompt_flattened}_{img_id}_{suffix}.{ext}")
@@ -317,6 +316,8 @@ def do_mk_img(req: Request):
     opt_f = 8
     opt_ddim_eta = 0.0
     opt_init_img = req.init_image
+    img_id = base64.b64encode(int(time.time()).to_bytes(8, 'big')).decode() # Generate unique ID based on time.
+    img_id = img_id.translate({43:None, 47:None, 61:None})[-8:] # Remove + / = and keep last 8 chars.
 
     print(req.to_string(), '\n    device', device)
 
@@ -474,9 +475,9 @@ def do_mk_img(req: Request):
 
                         if req.save_to_disk_path is not None:
                             if return_orig_img:
-                                img_out_path = get_base_path(req.save_to_disk_path, req.session_id, prompts[0], req.output_format)
+                                img_out_path = get_base_path(req.save_to_disk_path, req.session_id, prompts[0], img_id, req.output_format)
                                 save_image(img, img_out_path)
-                            meta_out_path = get_base_path(req.save_to_disk_path, req.session_id, prompts[0], 'txt')
+                            meta_out_path = get_base_path(req.save_to_disk_path, req.session_id, prompts[0], img_id, 'txt')
                             save_metadata(meta_out_path, req, prompts[0], opt_seed)
 
                         if return_orig_img:
@@ -503,7 +504,7 @@ def do_mk_img(req: Request):
                                 response_image = ResponseImage(data=filtered_img_data, seed=req.seed)
                                 res.images.append(response_image)
                                 if req.save_to_disk_path is not None:
-                                    filtered_img_out_path = get_base_path(req.save_to_disk_path, req.session_id, prompts[0], req.output_format, "_".join(filters_applied))
+                                    filtered_img_out_path = get_base_path(req.save_to_disk_path, req.session_id, prompts[0], img_id, req.output_format, "_".join(filters_applied))
                                     save_image(filtered_image, filtered_img_out_path)
                                     response_image.path_abs = filtered_img_out_path
                                 del filtered_image
