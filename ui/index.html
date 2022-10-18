@@ -4,10 +4,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="/media/favicon-16x16.png" sizes="16x16">
     <link rel="icon" type="image/png" href="/media/favicon-32x32.png" sizes="32x32">
-    <link rel="stylesheet" href="/media/main.css?v=22">
+    <link rel="stylesheet" href="/media/main.css?v=25">
     <link rel="stylesheet" href="/media/modifier-thumbnails.css?v=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <link rel="stylesheet" href="/media/drawingboard.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"> 
     <script src="/media/jquery-3.6.1.min.js"></script>
     <script src="/media/drawingboard.min.js"></script>
 </head>
@@ -15,13 +16,13 @@
 <div id="container">
     <div id="top-nav">
         <div id="logo">
-            <h1>Stable Diffusion UI <small>v2.22 <span id="updateBranchLabel"></span></small></h1>
+            <h1>Stable Diffusion UI <small>v2.27 <span id="updateBranchLabel"></span></small></h1>
         </div>
         <ul id="top-nav-items">
             <li class="dropdown">
                 <span><i class="fa fa-comments icon"></i> Help & Community</span>
                 <ul id="community-links" class="dropdown-content">
-                    <li><a href="https://github.com/cmdr2/stable-diffusion-ui/blob/main/Troubleshooting.md" target="_blank"><i class="fa-solid fa-circle-question fa-fw"></i> Usual problems and solutions</a></li>
+                    <li><a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" target="_blank"><i class="fa-solid fa-circle-question fa-fw"></i> Usual problems and solutions</a></li>
                     <li><a href="https://discord.com/invite/u9yhsFmEkB" target="_blank"><i class="fa-brands fa-discord fa-fw"></i> Discord user community</a></li>
                     <li><a href="https://www.reddit.com/r/StableDiffusionUI/" target="_blank"><i class="fa-brands fa-reddit fa-fw"></i> Reddit community</a></li>
                     <li><a href="https://github.com/cmdr2/stable-diffusion-ui" target="_blank"><i class="fa-brands fa-github fa-fw"></i> Source code on GitHub</a></li>
@@ -38,6 +39,12 @@
                         <li><input id="turbo" name="turbo" type="checkbox" checked> <label for="turbo">Turbo mode <small>(generates images faster, but uses an additional 1 GB of GPU memory)</small></label></li>
                         <li><input id="use_cpu" name="use_cpu" type="checkbox"> <label for="use_cpu">Use CPU instead of GPU <small>(warning: this will be *very* slow)</small></label></li>
                         <li><input id="use_full_precision" name="use_full_precision" type="checkbox"> <label for="use_full_precision">Use full precision <small>(for GPU-only. warning: this will consume more VRAM)</small></label></li>
+                        <li>
+                            <input id="auto_save_settings" name="auto_save_settings" type="checkbox">
+                            <label for="auto_save_settings">Automatically save settings <small>(settings restored on browser load)</small></label>
+                            <button id="configureSettingsSaveBtn">Configure</button>
+                            <button id="restoreDefaultSettingsBtn">Restore Defaults</button>
+                        </li>
                         <!-- <li><input id="allow_nsfw" name="allow_nsfw" type="checkbox"> <label for="allow_nsfw">Allow NSFW Content (You confirm you are above 18 years of age)</label></li> -->
                         <br/>
                         <li><input id="use_beta_channel" name="use_beta_channel" type="checkbox"> <label for="use_beta_channel">🔥Beta channel. Get the latest features immediately (but could be less stable). Please restart the program after changing this.</label></li>
@@ -55,18 +62,25 @@
             </div>
             <div id="editor-inputs">
                 <div id="editor-inputs-prompt" class="row">
-                    <label for="prompt">Prompt</label>
+                    <label for="prompt"><b>Enter Prompt</b></label> <small>or</small> <button id="promptsFromFileBtn">Load from a file</button>
                     <textarea id="prompt" class="col-free">a photograph of an astronaut riding a horse</textarea>
-                    <small>(or)</small> <button id="promptsFromFileBtn">Load prompts from a file</button> <small>(one prompt per line)</small>
                     <input id="prompt_from_file" name="prompt_from_file" type="file" /> <!-- hidden -->
+
+                    <label for="negative_prompt" class="collapsible" id="negative_prompt_handle">Negative Prompt <small>(optional)</small></label>
+                    <div class="collapsible-content">
+                        <input id="negative_prompt" name="negative_prompt" placeholder="list the things to remove from the image (e.g. fog, green)">
+                    </div>
                 </div>
 
                 <div id="editor-inputs-init-image" class="row">
-                    <label for="init_image"><b>Initial Image (img2img):</b> (optional) </label> <input id="init_image" name="init_image" type="file" /><br/>
+                    <label for="init_image">Initial Image (img2img) <small>(optional)</small> </label> <input id="init_image" name="init_image" type="file" /><br/>
 
                     <div id="init_image_preview_container" class="image_preview_container">
-                        <img id="init_image_preview" src="" width="100" height="100" />
-                        <button class="init_image_clear image_clear_btn">X</button>
+                        <div id="init_image_wrapper">
+                            <img id="init_image_preview" src="" />
+                            <span id="init_image_size_box"></span>
+                            <button class="init_image_clear image_clear_btn">X</button>
+                        </div>
 
                         <br/>
                         <input id="enable_mask" name="enable_mask" type="checkbox"> <label for="enable_mask">In-Painting (beta) <small>(select the area which the AI will paint into)</small></label>
@@ -88,15 +102,16 @@
             <div id="editor-settings" class="panel-box settings-box">
                 <h4 class="collapsible">Image Settings</h4>
                 <ul id="editor-settings-entries" class="collapsible-content">
-                    <li><b class="settings-subheader">Image Settings</b></li>
-                    <li class="pl-5"><label for="seed">Seed:</label> <input id="seed" name="seed" size="10" value="30000"> <input id="random_seed" name="random_seed" type="checkbox" checked> <label for="random_seed">Random Image</label></li>
-                    <li class="pl-5"><label for="num_outputs_total">Number of images to make:</label> <input id="num_outputs_total" name="num_outputs_total" value="1" size="1"> <label for="num_outputs_parallel">Generate in parallel:</label> <input id="num_outputs_parallel" name="num_outputs_parallel" value="1" size="1"> (images at once)</li>
-                    <li class="pl-5"><label for="stable_diffusion_model">Model:</label>
+                    <li><table>
+                    <tr><b class="settings-subheader">Image Settings</b></tr>
+                    <tr class="pl-5"><td><label for="seed">Seed:</label></td><td><input id="seed" name="seed" size="10" value="30000"> <input id="random_seed" name="random_seed" type="checkbox" checked> <label for="random_seed">Random</label></td></tr>
+                    <tr class="pl-5"><td><label for="num_outputs_total">Number of Images:</label></td><td><input id="num_outputs_total" name="num_outputs_total" value="1" size="1"> <label><small>(total)</small></label> <input id="num_outputs_parallel" name="num_outputs_parallel" value="1" size="1"> <label for="num_outputs_parallel"><small>(in parallel)</small></label></td></tr>
+                    <tr class="pl-5"><td><label for="stable_diffusion_model">Model:</label></td><td>
                         <select id="stable_diffusion_model" name="stable_diffusion_model">
                             <!-- <option value="sd-v1-4" selected>sd-v1-4</option> -->
                         </select>
-                    </li>
-                    <li id="samplerSelection" class="pl-5"><label for="sampler">Sampler:</label>
+                    </td></tr>
+                    <tr id="samplerSelection" class="pl-5"><td><label for="sampler">Sampler:</label></td><td>
                         <select id="sampler" name="sampler">
                             <option value="plms">plms</option>
                             <option value="ddim">ddim</option>
@@ -107,8 +122,8 @@
                             <option value="dpm2_a">dpm2_a</option>
                             <option value="lms">lms</option>
                         </select>
-                    </li>
-                    <li class="pl-5"><label>Image Size: </label>
+                    </td></tr>
+                    <tr class="pl-5"><td><label>Image Size: </label></td><td>
                         <select id="width" name="width" value="512">
                             <option value="128">128 (*)</option>
                             <option value="192">192</option>
@@ -153,29 +168,25 @@
                             <option value="2048">2048</option>
                         </select>
                         <label for="height"><small>(height)</small></label>
-                    </li>
-                    <li class="pl-5"><label for="num_inference_steps">Number of inference steps:</label> <input id="num_inference_steps" name="num_inference_steps" size="4" value="25"></li>
-                    <li class="pl-5"><label for="guidance_scale_slider">Guidance Scale:</label> <input id="guidance_scale_slider" name="guidance_scale_slider" class="editor-slider" value="75" type="range" min="10" max="500"> <input id="guidance_scale" name="guidance_scale" size="4"></li>
-                    <li class="pl-5"><span id="prompt_strength_container"><label for="prompt_strength_slider">Prompt Strength:</label> <input id="prompt_strength_slider" name="prompt_strength_slider" class="editor-slider" value="80" type="range" min="0" max="99"> <input id="prompt_strength" name="prompt_strength" size="4"><br/></span></li>
-                    <li class="pl-5"><label for="output_format">Output format:</label>
+                    </td></tr>
+                    <tr class="pl-5"><td><label for="num_inference_steps">Inference Steps:</label></td><td> <input id="num_inference_steps" name="num_inference_steps" size="4" value="25"></td></tr>
+                    <tr class="pl-5"><td><label for="guidance_scale_slider">Guidance Scale:</label></td><td> <input id="guidance_scale_slider" name="guidance_scale_slider" class="editor-slider" value="75" type="range" min="10" max="500"> <input id="guidance_scale" name="guidance_scale" size="4"></td></tr>
+                    <tr id="prompt_strength_container" class="pl-5"><td><label for="prompt_strength_slider">Prompt Strength:</label></td><td> <input id="prompt_strength_slider" name="prompt_strength_slider" class="editor-slider" value="80" type="range" min="0" max="99"> <input id="prompt_strength" name="prompt_strength" size="4"><br/></td></tr></span>
+                    <tr class="pl-5"><td><label for="output_format">Output Format:</label></td><td>
                         <select id="output_format" name="output_format">
                             <option value="jpeg" selected>jpeg</option>
                             <option value="png">png</option>
                         </select>
-                    </li>
-
-                    <br/>
-
-                    <li><b class="settings-subheader">Prompt Settings</b></li>
-                    <li class="pl-5"><label for="negative_prompt">Negative Prompt:</label> <input id="negative_prompt" name="negative_prompt" size="55"></li>
+                    </td></tr>
+                    </li></table>
 
                     <br/>
 
                     <li><b class="settings-subheader">Render Settings</b></li>
-                    <li class="pl-5"><input id="stream_image_progress" name="stream_image_progress" type="checkbox"> <label for="stream_image_progress">Show a live preview of the image <small>(uses more VRAM, slightly slower image creation)</small></label></li>
+                    <li class="pl-5"><input id="stream_image_progress" name="stream_image_progress" type="checkbox"> <label for="stream_image_progress">Show a live preview <small>(uses more VRAM, slightly slower image creation)</small></label></li>
                     <li class="pl-5"><input id="use_face_correction" name="use_face_correction" type="checkbox" checked> <label for="use_face_correction">Fix incorrect faces and eyes <small>(uses GFPGAN)</small></label></li>
                     <li class="pl-5">
-                        <input id="use_upscale" name="use_upscale" type="checkbox"> <label for="use_upscale">Upscale the image to 4x resolution using </label>
+                        <input id="use_upscale" name="use_upscale" type="checkbox"> <label for="use_upscale">Upscale image by 4x with </label>
                         <select id="upscale_model" name="upscale_model">
                             <option value="RealESRGAN_x4plus" selected>RealESRGAN_x4plus</option>
                             <option value="RealESRGAN_x4plus_anime_6B">RealESRGAN_x4plus_anime_6B</option>
@@ -212,6 +223,17 @@
         </div>
     </div>
 
+    <div id="save-settings-config" style="display:none">
+        <div>
+            <span id="save-settings-config-close-btn">X</span>
+            <h1>Save Settings Configuration</h1>
+            <p>Select which settings should be saved and reloaded when restarting the browser</p>
+            <table id="save-settings-config-table">
+                <tr><th>Setting</th><th></th><th>Default value</th></tr>
+            </table>
+        </div>
+    </div>
+
     <div class="line-separator">&nbsp;</div>
 
     <div id="footer" class="panel-box">
@@ -226,13 +248,15 @@
 </div>
 </body>
 
-<script src="media/main.js?v=34"></script>
+<script src="media/auto-save.js?v=2"></script>
+<script src="media/main.js?v=37"></script>
 <script>
 async function init() {
     await loadModifiers()
     await getDiskPath()
     await getAppConfig()
     await getModels()
+    await initSettings()
 
     setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
     healthCheck()

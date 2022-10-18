@@ -368,6 +368,7 @@ def render(req : ImageRequest):
     r.save_to_disk_path = req.save_to_disk_path
     r.use_upscale: str = req.use_upscale
     r.use_face_correction = req.use_face_correction
+    r.use_stable_diffusion_model = req.use_stable_diffusion_model
     r.show_only_filtered_image = req.show_only_filtered_image
     r.output_format = req.output_format
 
