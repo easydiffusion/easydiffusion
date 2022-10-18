@@ -10,6 +10,10 @@ if exist "Open Developer Console.cmd" del "Open Developer Console.cmd"
 
 @call python -c "import os; import shutil; frm = 'sd-ui-files\\ui\\hotfix\\9c24e6cd9f499d02c4f21a033736dabd365962dc80fe3aeb57a8f85ea45a20a3.26fead7ea4f0f843f6eb4055dfd25693f1a71f3c6871b184042d4b126244e142'; dst = os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'transformers', '9c24e6cd9f499d02c4f21a033736dabd365962dc80fe3aeb57a8f85ea45a20a3.26fead7ea4f0f843f6eb4055dfd25693f1a71f3c6871b184042d4b126244e142'); shutil.copyfile(frm, dst) if os.path.exists(dst) else print(''); print('Hotfixed broken JSON file from OpenAI');"
 
+if exist "%cd%\profile" (
+    set USERPROFILE=%cd%\profile
+)
+
 @>nul grep -c "sd_git_cloned" scripts\install_status.txt
 @if "%ERRORLEVEL%" EQU "0" (
     @echo "Stable Diffusion's git repository was already installed. Updating.."
@@ -59,6 +63,7 @@ if exist "Open Developer Console.cmd" del "Open Developer Console.cmd"
     @REM prevent conda from using packages from the user's home directory, to avoid conflicts
     @set PYTHONNOUSERSITE=1
 
+    set USERPROFILE=%cd%\profile
     set TMP=%cd%\tmp
     set TEMP=%cd%\tmp
 
@@ -95,6 +100,7 @@ set PATH=C:\Windows\System32;%PATH%
 
     @set PYTHONNOUSERSITE=1
 
+    set USERPROFILE=%cd%\profile
     set TMP=%cd%\tmp
     set TEMP=%cd%\tmp
 
@@ -127,6 +133,7 @@ set PATH=C:\Windows\System32;%PATH%
 
     @set PYTHONNOUSERSITE=1
 
+    set USERPROFILE=%cd%\profile
     set TMP=%cd%\tmp
     set TEMP=%cd%\tmp
 
@@ -153,6 +160,7 @@ set PATH=C:\Windows\System32;%PATH%
 
     @set PYTHONNOUSERSITE=1
 
+    set USERPROFILE=%cd%\profile
     set TMP=%cd%\tmp
     set TEMP=%cd%\tmp
 
