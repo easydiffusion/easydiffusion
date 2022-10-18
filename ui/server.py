@@ -187,13 +187,13 @@ async def setAppConfig(req : SetAppConfigRequest):
         config_bat_path = os.path.join(CONFIG_DIR, 'config.bat')
         config_sh_path = os.path.join(CONFIG_DIR, 'config.sh')
 
-        with open(config_json_path, 'w') as f:
+        with open(config_json_path, 'w', encoding='utf-8') as f:
             f.write(config_json_str)
 
-        with open(config_bat_path, 'w') as f:
+        with open(config_bat_path, 'w', encoding='utf-8') as f:
             f.write(config_bat_str)
 
-        with open(config_sh_path, 'w') as f:
+        with open(config_sh_path, 'w', encoding='utf-8') as f:
             f.write(config_sh_str)
 
         return {'OK'}
@@ -206,7 +206,7 @@ def getConfig(default_val={}):
         config_json_path = os.path.join(CONFIG_DIR, 'config.json')
         if not os.path.exists(config_json_path):
             return default_val
-        with open(config_json_path, 'r') as f:
+        with open(config_json_path, 'r', encoding='utf-8') as f:
             return json.load(f)
     except Exception as e:
         print(str(e))
@@ -216,7 +216,7 @@ def getConfig(default_val={}):
 def setConfig(config):
     try:
         config_json_path = os.path.join(CONFIG_DIR, 'config.json')
-        with open(config_json_path, 'w') as f:
+        with open(config_json_path, 'w', encoding='utf-8') as f:
             return json.dump(config, f)
     except:
         print(str(e))
