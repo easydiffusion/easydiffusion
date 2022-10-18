@@ -26,9 +26,7 @@
     --make-image-border: 2px solid hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) - 21%));
 }
 
-
-/* Light Theme */
-/* :root {
+.theme-light {
     --background-color1: white; 
     --background-color2: #dddddd;
     --background-color3: #e7e9eb;
@@ -39,11 +37,9 @@
     --input-text-color: black;
     --input-background-color: #f8f9fa; 
     --input-border-color: grey; 
-} */
+}
 
-
-/* Discord Theme */
-/* :root {
+.theme-discord {
     --background-color1: #36393f;
     --background-color2: #2f3136;
     --background-color3: #292b2f;
@@ -60,10 +56,9 @@
     --input-border-size: 2px; 
     --input-background-color: #202225; 
     --input-border-color: var(--input-background-color); 
-} */
+}
 
-/* Example "Custom" Theme */
-/* :root {
+.theme-fancy {
     --main-hue: 222;
 	--main-saturation: 18%;
 	--value-base: 19%;
@@ -83,12 +78,13 @@
     --input-background-color: var(--background-color3);
 	--input-text-color: #ccc;
 	--input-border-color: var(--background-color4);
-} */
+}
 
 
 * {
     font-family: Work Sans, Verdana, Geneva, sans-serif;
     box-sizing: border-box;
+    transition: background 0.5s, color 0.5s, background-color 0.5s;
 }
 
 body {
