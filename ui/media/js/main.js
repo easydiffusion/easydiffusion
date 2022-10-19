@@ -369,12 +369,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             const buttons = {
                 'imgUseBtn': { text: 'Use as Input', on_click: onUseAsInputClick },
                 'imgSaveBtn': { text: 'Download', on_click: onDownloadImageClick },
-                'imgX2Btn': { text: 'Double Size', on_click: getStartNewTaskHandler('img2img_X2') },
-                'imgRedoBtn': { text: 'Redo', on_click: getStartNewTaskHandler('img2img') },
                 'makeSimilarBtn': { text: 'Make Similar Images', on_click: onMakeSimilarClick },
-            }
-            if (!req.use_upscale) {
-                buttons.upscaleBtn = { text: 'Upscale', on_click: getStartNewTaskHandler('upscale') }
             }
 
             // include the plugins
