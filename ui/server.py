@@ -356,6 +356,7 @@ async def check_status(): # Task to Validate user config shortly after startup.
         device_count = new_count
 
     if 'render_devices' in config and task_manager.is_alive() <= 0: # No running devices, probably invalid user config. Try to apply defaults.
+        print('WARNING: No active render devices after loading config. Validate "render_devices" in config.json')
         task_manager.start_render_thread('auto') # Detect best device for renders
         task_manager.start_render_thread('cpu') # Allow CPU to be used for renders
         await asyncio.sleep(3) # delay message after thread start.
