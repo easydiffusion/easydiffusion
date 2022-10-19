@@ -266,6 +266,7 @@ async function init() {
     await getAppConfig()
     await getModels()
     await initSettings()
+    await loadUIPlugins()
 
     setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
     healthCheck()

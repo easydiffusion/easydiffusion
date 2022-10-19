@@ -369,7 +369,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             let buttons = [
                 { text: 'Use as Input', on_click: onUseAsInputClick },
                 { text: 'Download', on_click: onDownloadImageClick },
-                { text: 'Make Similar Images', on_click: onMakeSimilarClick },
+                { text: 'Make Similar Images', on_click: onMakeSimilarClick }
             ]
 
             // include the plugins
@@ -421,56 +421,6 @@ function onDownloadImageClick(req, img) {
     imgDownload.download = createFileName(imagePrompt, imageSeed, imageInferenceSteps, imageGuidanceScale, req['output_format'])
     imgDownload.href = imgData
     imgDownload.click()
-}
-
-function getStartNewTaskHandler(mode) {
-    return function(reqBody, img) {
-        if (!isServerAvailable()) {
-            alert('The server is not available.')
-            return
-        }
-        const newTaskRequest = getCurrentUserRequest()
-        switch (mode) {
-            case 'img2img':
-            case 'img2img_X2':
-                newTaskRequest.reqBody = Object.assign({}, reqBody, {
-                    num_outputs: 1,
-                    use_cpu: useCPUField.checked,
-                })
-                if (!newTaskRequest.reqBody.init_image || mode === 'img2img_X2') {
-                    newTaskRequest.reqBody.sampler = 'ddim'
-                    newTaskRequest.reqBody.prompt_strength = '0.5'
-                    newTaskRequest.reqBody.init_image = img.src
-                    delete newTaskRequest.reqBody.mask
-                } else {
-                    newTaskRequest.reqBody.seed = 1 + newTaskRequest.reqBody.seed
-                }
-                if (mode === 'img2img_X2') {
-                    newTaskRequest.reqBody.width = reqBody.width * 2
-                    newTaskRequest.reqBody.height = reqBody.height * 2
-                    newTaskRequest.reqBody.num_inference_steps = Math.min(100, reqBody.num_inference_steps * 2)
-                    if (useUpscalingField.checked) {
-                        newTaskRequest.reqBody.use_upscale = upscaleModelField.value
-                    } else {
-                        delete newTaskRequest.reqBody.use_upscale
-                    }
-                }
-                break
-            case 'upscale':
-                newTaskRequest.reqBody = Object.assign({}, reqBody, {
-                    num_outputs: 1,
-                    //use_face_correction: 'GFPGANv1.3',
-                    use_upscale: upscaleModelField.value,
-                })
-                break
-            default:
-                throw new Error("Unknown upscale mode: " + mode)
-        }
-        newTaskRequest.seed = newTaskRequest.reqBody.seed
-        newTaskRequest.numOutputsTotal = 1
-        newTaskRequest.batchCount = 1
-        createTask(newTaskRequest)
-    }
 }
 
 function onMakeSimilarClick(req, img) {
