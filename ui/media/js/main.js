@@ -371,7 +371,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                 { text: 'Download', on_click: onDownloadImageClick },
                 { text: 'Make Similar Images', on_click: onMakeSimilarClick },
                 { text: 'Draw another 25 steps', on_click: onContinueDrawingClick },
-                { text: 'Upscale', on_click: onUpscaleClick, filter: (req, img) => !req.use_upscale },
+                { text: 'Upscale (new)', on_click: onUpscaleClick, filter: (req, img) => !req.use_upscale },
                 { text: 'Fix Faces', on_click: onFixFacesClick, filter: (req, img) => !req.use_face_correction }
             ]
 
