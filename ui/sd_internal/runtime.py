@@ -289,7 +289,6 @@ def get_base_path(disk_path, session_id, prompt, img_id, ext, suffix=None):
     os.makedirs(session_out_path, exist_ok=True)
 
     prompt_flattened = filename_regex.sub('_', prompt)[:50]
-    
 
     if suffix is not None:
         return os.path.join(session_out_path, f"{prompt_flattened}_{img_id}_{suffix}.{ext}")
@@ -388,7 +387,6 @@ def do_mk_img(req: Request):
     opt_f = 8
     opt_ddim_eta = 0.0
     opt_init_img = req.init_image
-    
 
     print(req.to_string(), '\n    device', thread_data.device)
     print('\n\n    Using precision:', thread_data.precision)
