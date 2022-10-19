@@ -376,6 +376,10 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             if (!req.use_upscale) {
                 buttons.upscaleBtn = { text: 'Upscale', on_click: getStartNewTaskHandler('upscale') }
             }
+
+            // include the plugins
+            Object.assign(buttons, PLUGINS['IMAGE_INFO_BUTTONS'])
+
             const imgItemInfo = imageItemElem.querySelector('.imgItemInfo')
             const createButton = function(name, btnInfo) {
                 const newButton = document.createElement('button')
@@ -383,7 +387,8 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                 newButton.classList.add('tasksBtns')
                 newButton.innerText = btnInfo.text
                 newButton.addEventListener('click', function() {
-                    btnInfo.on_click(req, imageItemElem)
+                    let img = imageItemElem.querySelector('img')
+                    btnInfo.on_click(req, img)
                 })
                 imgItemInfo.appendChild(newButton)
             }
@@ -392,9 +397,8 @@ function showImages(reqBody, res, outputContainer, livePreview) {
     })
 }
 
-function onUseAsInputClick(req, imageItemElem) {
-    const imageElem = imageItemElem.querySelector('img')
-    const imgData = imageElem.src
+function onUseAsInputClick(req, img) {
+    const imgData = img.src
 
     initImageSelector.value = null
     initImagePreview.src = imgData
@@ -406,13 +410,12 @@ function onUseAsInputClick(req, imageItemElem) {
     samplerSelectionContainer.style.display = 'none'
 }
 
-function onDownloadImageClick(req, imageItemElem) {
-    const imageElem = imageItemElem.querySelector('img')
-    const imgData = imageElem.src
-    const imageSeed = imageElem.getAttribute('data-seed')
-    const imagePrompt = imageElem.getAttribute('data-prompt')
-    const imageInferenceSteps = imageElem.getAttribute('data-steps')
-    const imageGuidanceScale = imageElem.getAttribute('data-guidance')
+function onDownloadImageClick(req, img) {
+    const imgData = img.src
+    const imageSeed = img.getAttribute('data-seed')
+    const imagePrompt = img.getAttribute('data-prompt')
+    const imageInferenceSteps = img.getAttribute('data-steps')
+    const imageGuidanceScale = img.getAttribute('data-guidance')
 
     const imgDownload = document.createElement('a')
     imgDownload.download = createFileName(imagePrompt, imageSeed, imageInferenceSteps, imageGuidanceScale, req['output_format'])
@@ -421,12 +424,11 @@ function onDownloadImageClick(req, imageItemElem) {
 }
 
 function getStartNewTaskHandler(mode) {
-    return function(reqBody, imageItemElem) {
+    return function(reqBody, img) {
         if (!isServerAvailable()) {
             alert('The server is not available.')
             return
         }
-        const imageElem = imageItemElem.querySelector('img')
         const newTaskRequest = getCurrentUserRequest()
         switch (mode) {
             case 'img2img':
@@ -438,7 +440,7 @@ function getStartNewTaskHandler(mode) {
                 if (!newTaskRequest.reqBody.init_image || mode === 'img2img_X2') {
                     newTaskRequest.reqBody.sampler = 'ddim'
                     newTaskRequest.reqBody.prompt_strength = '0.5'
-                    newTaskRequest.reqBody.init_image = imageElem.src
+                    newTaskRequest.reqBody.init_image = img.src
                     delete newTaskRequest.reqBody.mask
                 } else {
                     newTaskRequest.reqBody.seed = 1 + newTaskRequest.reqBody.seed
@@ -471,10 +473,7 @@ function getStartNewTaskHandler(mode) {
     }
 }
 
-function onMakeSimilarClick(req, imageItemElem) {
-    const similarImagesCount = 5
-    const imageElem = imageItemElem.querySelector('img')
-
+function onMakeSimilarClick(req, img) {
     let newTaskRequest = getCurrentUserRequest()
 
     newTaskRequest.reqBody = Object.assign({}, req, {
@@ -483,7 +482,7 @@ function onMakeSimilarClick(req, imageItemElem) {
         num_inference_steps: 50,
         guidance_scale: 7.5,
         prompt_strength: 0.7,
-        init_image: imageElem.src,
+        init_image: img.src,
         seed: Math.floor(Math.random() * 10000000)
     })
 
