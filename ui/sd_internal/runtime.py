@@ -250,9 +250,9 @@ def load_model_gfpgan():
     if thread_data.gfpgan_file is None:
         print('load_model_gfpgan called without setting gfpgan_file')
         return
-    if thread_data.device != 'cpu' and not is_first_cuda_device(thread_data.device):
+    if not is_first_cuda_device(thread_data.device):
         #TODO Remove when fixed - A bug with GFPGANer and facexlib needs to be fixed before use on other devices.
-        raise Exception(f'Current device {torch.device(thread_data.device)} is not {torch.device(0)}.')
+        raise Exception(f'Current device {torch.device(thread_data.device)} is not {torch.device(0)}. Cannot run GFPGANer.')
     model_path = thread_data.gfpgan_file + ".pth"
     thread_data.model_gfpgan = GFPGANer(device=torch.device(thread_data.device), model_path=model_path, upscale=1, arch='clean', channel_multiplier=2, bg_upsampler=None)
     print('loaded', thread_data.gfpgan_file, 'to', thread_data.model_gfpgan.device, 'precision', thread_data.precision)
@@ -369,10 +369,10 @@ def do_mk_img(req: Request):
     if needs_model_reload:
         load_model_ckpt()
 
-    if req.use_face_correction != thread_data.gfpgan_file:
+    if req.use_face_correction is not None and req.use_face_correction != thread_data.gfpgan_file:
         thread_data.gfpgan_file = req.use_face_correction
         load_model_gfpgan()
-    if req.use_upscale != thread_data.real_esrgan_file:
+    if req.use_upscale is not None and req.use_upscale != thread_data.real_esrgan_file:
         thread_data.real_esrgan_file = req.use_upscale
         load_model_real_esrgan()
 

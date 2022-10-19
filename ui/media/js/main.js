@@ -524,12 +524,16 @@ async function doMakeImage(task) {
                 throw new Error('Connexion with server lost.')
             }
         } while (serverState.time > (Date.now() - (10 * 1000)) && serverState.task !== renderRequest.task)
-        if (serverState.session !== 'pending' && serverState.session !== 'running' && serverState.session !== 'buffer') {
-            if (serverState.session === 'stopped') {
+        switch(serverState.session) {
+            case 'pending':
+            case 'running':
+            case 'buffer':
+            case 'error': // Still valid, Update UI with error message
+                break
+            case 'stopped':
                 return false
-            }
-
-            throw new Error('Unexpected server task state: ' + serverState.session || 'Undefined')
+            default:
+                throw new Error('Unexpected server task state: ' + serverState.session || 'Undefined')
         }
         while (serverState.task === renderRequest.task && serverState.session === 'pending') {
             // Wait for task to start on server.
