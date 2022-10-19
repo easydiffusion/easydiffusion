@@ -318,6 +318,7 @@ def is_alive(name=None):
             if name is not None:
                 weak_data = weak_thread_data.get(rthread)
                 if weak_data is None or weak_data['device'] is None:
+                    print('The thread', rthread.name, 'is registered but has no data store in the task manager.')
                     continue
                 thread_name = str(weak_data['device']).lower()
                 if is_first_cuda_device(name):

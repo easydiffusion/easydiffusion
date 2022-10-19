@@ -340,6 +340,34 @@ class LogSuppressFilter(logging.Filter):
 logging.getLogger('uvicorn.access').addFilter(LogSuppressFilter())
 
 config = getConfig()
+
+async def check_status(): # Task to Validate user config shortly after startup.
+    # Check that the loaded config.json yielded a server in a known valid state.
+    # Issues found, try to fix and warn the user.
+    device_count = 0
+    for i in range(10): # Wait for devices to register and/or change names.
+        new_count = task_manager.is_alive()
+        if device_count == new_count: break;
+        device_count = new_count
+        await asyncio.sleep(3)
+
+    if 'render_devices' in config and task_manager.is_alive() <= 0: # No running devices, probably invalid user config. Try to apply defaults.
+        task_manager.start_render_thread('auto') # Detect best device for renders
+        task_manager.start_render_thread('cpu') # Allow CPU to be used for renders
+        await asyncio.sleep(10) # delay message after thread start.
+
+    display_warning = False
+    if not 'render_devices' in config and task_manager.is_alive(0) <= 0: # No config set, is on auto mode and without cuda:0
+        task_manager.start_render_thread('cuda') # An other cuda device is better and cuda:0 is missing, start it...
+        display_warning = True # And warn user to update settings...
+        await asyncio.sleep(10) # delay message after thread start.
+
+    if display_warning or task_manager.is_alive(0) <= 0:
+        print('WARNING: GFPGANer only works on CPU or GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.')
+        print('Using CUDA_VISIBLE_DEVICES will remap the selected devices starting at GPU:0 fixing GFPGANer')
+        print('Add the line "@set CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.bat')
+        print('Add the line "CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.sh')
+
 # Start the task_manager
 task_manager.default_model_to_load = resolve_model_to_use()
 if 'render_devices' in config: # Start a new thread for each device.
@@ -349,29 +377,13 @@ if 'render_devices' in config: # Start a new thread for each device.
         raise Exception('Invalid render_devices value in config.')
     for device in config['render_devices']:
         task_manager.start_render_thread(device)
+else:
+    # Select best device GPU device using free memory if more than one device.
+    #task_manager.start_render_thread('cuda') # Starts silently on cuda:0
+    task_manager.start_render_thread('auto') # Detect best device for renders
+    task_manager.start_render_thread('cpu') # Allow CPU to be used for renders
 
-async def check_status():
-    device_count = 0
-    for i in range(10): # Wait for devices to register and/or change names.
-        new_count = task_manager.is_alive()
-        if device_count != new_count:
-            device_count = new_count
-            await asyncio.sleep(3)
-        else:
-            break;
-    allow_cpu = False
-    if task_manager.is_alive() <= 0: # No running devices, apply defaults.
-        # Select best device GPU device using free memory if more than one device.
-        task_manager.start_render_thread('auto')
-        allow_cpu = True
-    # Allow CPU to be used for renders if not already enabled in current config.
-    if task_manager.is_alive('cpu') <= 0 and allow_cpu:
-        task_manager.start_render_thread('cpu')
-    if not task_manager.is_alive(0) <= 0:
-        print('WARNING: GFPGANer only works on CPU or GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.')
-        print('Using CUDA_VISIBLE_DEVICES will remap the selected devices starting at GPU:0 fixing GFPGANer')
-        print('Add the line "@set CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.bat')
-        print('Add the line "CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.sh')
+# Task to Validate user config shortly after startup.
 LOOP.create_task(check_status())
 
 # start the browser ui
