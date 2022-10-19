@@ -26,7 +26,7 @@ const COLLAPSIBLE_PANELS = []; // filled in by createCollapsibles with all the e
 // on-init call this for any panels that are marked open
 function toggleCollapsible(element) {
     var collapsibleHeader = element.querySelector(".collapsible");
-    var handle = element.firstChild;
+    var handle = element.querySelector(".collapsible-handle");
     collapsibleHeader.classList.toggle("active")
     let content = getNextSibling(collapsibleHeader, '.collapsible-content')
     if (content.style.display === "block") {
@@ -37,16 +37,16 @@ function toggleCollapsible(element) {
         handle.innerHTML = '&#x2796;' // minus
     }
     
-    if (COLLAPSIBLES_INITIALIZED && COLLAPSIBLE_PANELS.includes(element.parentElement)) {
+    if (COLLAPSIBLES_INITIALIZED && COLLAPSIBLE_PANELS.includes(element)) {
         saveCollapsibles();
     }
 }
 
 function saveCollapsibles() {
     var values = {};
-    console.log(COLLAPSIBLE_PANELS);
     COLLAPSIBLE_PANELS.forEach(element => {
-        values[element.id] = element.querySelector(".collapsible").className.indexOf("active") !== -1;
+        var value = element.querySelector(".collapsible").className.indexOf("active") !== -1;
+        values[element.id] = value;
     });
     localStorage.setItem(COLLAPSIBLES_KEY, JSON.stringify(values));
 }
@@ -57,10 +57,6 @@ function createCollapsibles(node) {
         node = document;
         save = true;
     }
-    // FIX: problem here is that the elements we're getting in c are the buttons, and they are the children of the things with collapsible stuff
-    // FIX: gotta get parent
-
-    // default closed.
     let collapsibles = node.querySelectorAll(".collapsible")
     collapsibles.forEach(function(c) {
         if (save && c.parentElement.id) {
@@ -87,12 +83,12 @@ function createCollapsibles(node) {
             saved = localStorage.getItem(COLLAPSIBLES_KEY);
         }
         var values = JSON.parse(saved);
-        Object.keys(values).forEach(element_id => {
-            if (values[element_id]) {
-                var element = COLLAPSIBLE_PANELS.find(e => e.id == element_id);
+        COLLAPSIBLE_PANELS.forEach(element => {
+            var value = element.querySelector(".collapsible").className.indexOf("active") !== -1;
+            if (values[element.id] != value) {
                 toggleCollapsible(element);
             }
-        });
+        })
         COLLAPSIBLES_INITIALIZED = true;
     }
 }

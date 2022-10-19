@@ -62,6 +62,9 @@ function getSetting(element) {
     return element.value
 }
 function setSetting(element, value) {
+    if (typeof element === "string" || element instanceof String) {
+        element = SETTINGS_TO_SAVE.find(e => e.id == element);
+    }
     if (getSetting(element) == value) {
         return // no setting necessary
     }
@@ -85,10 +88,11 @@ function saveSettings() {
 
 var CURRENTLY_LOADING_SETTINGS = false
 function loadSettings() {
-    if (!saveSettingsCheckbox.checked) {
+    var saved_settings = JSON.parse(localStorage.getItem(SETTINGS_KEY))
+    if (!saved_settings.values["auto_save_settings"]) {
+        setSetting("auto_save_settings", false);
         return
     }
-    var saved_settings = JSON.parse(localStorage.getItem(SETTINGS_KEY))
     if (saved_settings) {
         var values = saved_settings.values
         var should_save = saved_settings.should_save
