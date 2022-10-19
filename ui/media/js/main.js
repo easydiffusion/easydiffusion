@@ -370,6 +370,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                 { text: 'Use as Input', on_click: onUseAsInputClick },
                 { text: 'Download', on_click: onDownloadImageClick },
                 { text: 'Make Similar Images', on_click: onMakeSimilarClick },
+                { text: 'Draw another 25 steps', on_click: onContinueDrawingClick },
                 { text: 'Upscale', on_click: onUpscaleClick, filter: (req, img) => !req.use_upscale },
                 { text: 'Fix Faces', on_click: onFixFacesClick, filter: (req, img) => !req.use_face_correction }
             ]
@@ -473,6 +474,24 @@ function onFixFacesClick(req, img) {
         num_outputs: 1,
         use_cpu: useCPUField.checked,
         use_face_correction: 'GFPGANv1.3',
+        seed: imageSeed
+    })
+
+    newTaskRequest.numOutputsTotal = 1
+    newTaskRequest.batchCount = 1
+    newTaskRequest.seed = newTaskRequest.reqBody.seed
+
+    createTask(newTaskRequest)
+}
+
+function onContinueDrawingClick(req, img) {
+    let newTaskRequest = getCurrentUserRequest()
+    const imageSeed = img.getAttribute('data-seed')
+
+    newTaskRequest.reqBody = Object.assign({}, req, {
+        num_outputs: 1,
+        use_cpu: useCPUField.checked,
+        num_inference_steps: parseInt(req.num_inference_steps) + 25,
         seed: imageSeed
     })
 
