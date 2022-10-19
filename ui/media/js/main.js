@@ -367,13 +367,14 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             imageSeedLabel.innerText = 'Seed: ' + req.seed
 
             const buttons = {
-                'imgUseBtn': { html: 'Use as Input', click: getUseAsInputHandler(imageItemElem) },
-                'imgSaveBtn': { html: 'Download', click: getSaveImageHandler(imageItemElem, req['output_format']) },
-                'imgX2Btn': { html: 'Double Size', click: getStartNewTaskHandler(req, imageItemElem, 'img2img_X2') },
-                'imgRedoBtn': { html: 'Redo', click: getStartNewTaskHandler(req, imageItemElem, 'img2img') },
+                'imgUseBtn': { html: 'Use as Input', click: onUseAsInputClick },
+                'imgSaveBtn': { html: 'Download', click: onDownloadImageClick },
+                'imgX2Btn': { html: 'Double Size', click: getStartNewTaskHandler('img2img_X2') },
+                'imgRedoBtn': { html: 'Redo', click: getStartNewTaskHandler('img2img') },
+                'makeSimilarBtn': { html: 'Make Similar Images', click: onMakeSimilarClick },
             }
             if (!req.use_upscale) {
-                buttons.upscaleBtn = { html: 'Upscale', click: getStartNewTaskHandler(req, imageItemElem, 'upscale') }
+                buttons.upscaleBtn = { html: 'Upscale', click: getStartNewTaskHandler('upscale') }
             }
             const imgItemInfo = imageItemElem.querySelector('.imgItemInfo')
             const createButton = function(name, btnInfo) {
@@ -381,7 +382,9 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                 newButton.classList.add(name)
                 newButton.classList.add('tasksBtns')
                 newButton.innerHTML = btnInfo.html
-                newButton.addEventListener('click', btnInfo.click)
+                newButton.addEventListener('click', function() {
+                    btnInfo.click(req, imageItemElem)
+                })
                 imgItemInfo.appendChild(newButton)
             }
             Object.keys(buttons).forEach((name) => createButton(name, buttons[name]))
@@ -389,46 +392,36 @@ function showImages(reqBody, res, outputContainer, livePreview) {
     })
 }
 
-function getUseAsInputHandler(imageItemElem) {
-    return function() {
-        const imageElem = imageItemElem.querySelector('img')
-        const imgData = imageElem.src
-        const imageSeed = imageElem.getAttribute('data-seed')
+function onUseAsInputClick(req, imageItemElem) {
+    const imageElem = imageItemElem.querySelector('img')
+    const imgData = imageElem.src
 
-        initImageSelector.value = null
-        initImagePreview.src = imgData
+    initImageSelector.value = null
+    initImagePreview.src = imgData
 
-        initImagePreviewContainer.style.display = 'block'
-        inpaintingEditorContainer.style.display = 'none'
-        promptStrengthContainer.style.display = 'table-row'
-        maskSetting.checked = false
-        samplerSelectionContainer.style.display = 'none'
-
-        // maskSetting.style.display = 'block'
-
-        // randomSeedField.checked = false
-        // seedField.value = imageSeed
-        // seedField.disabled = false
-    }
+    initImagePreviewContainer.style.display = 'block'
+    inpaintingEditorContainer.style.display = 'none'
+    promptStrengthContainer.style.display = 'table-row'
+    maskSetting.checked = false
+    samplerSelectionContainer.style.display = 'none'
 }
 
-function getSaveImageHandler(imageItemElem, outputFormat) {
-    return function() {
-        const imageElem = imageItemElem.querySelector('img')
-        const imgData = imageElem.src
-        const imageSeed = imageElem.getAttribute('data-seed')
-        const imagePrompt = imageElem.getAttribute('data-prompt')
-        const imageInferenceSteps = imageElem.getAttribute('data-steps')
-        const imageGuidanceScale = imageElem.getAttribute('data-guidance')
+function onDownloadImageClick(req, imageItemElem) {
+    const imageElem = imageItemElem.querySelector('img')
+    const imgData = imageElem.src
+    const imageSeed = imageElem.getAttribute('data-seed')
+    const imagePrompt = imageElem.getAttribute('data-prompt')
+    const imageInferenceSteps = imageElem.getAttribute('data-steps')
+    const imageGuidanceScale = imageElem.getAttribute('data-guidance')
 
-        const imgDownload = document.createElement('a')
-        imgDownload.download = createFileName(imagePrompt, imageSeed, imageInferenceSteps, imageGuidanceScale, outputFormat)
-        imgDownload.href = imgData
-        imgDownload.click()
-    }
+    const imgDownload = document.createElement('a')
+    imgDownload.download = createFileName(imagePrompt, imageSeed, imageInferenceSteps, imageGuidanceScale, req['output_format'])
+    imgDownload.href = imgData
+    imgDownload.click()
 }
-function getStartNewTaskHandler(reqBody, imageItemElem, mode) {
-    return function() {
+
+function getStartNewTaskHandler(mode) {
+    return function(reqBody, imageItemElem) {
         if (!isServerAvailable()) {
             alert('The server is not available.')
             return
@@ -476,6 +469,31 @@ function getStartNewTaskHandler(reqBody, imageItemElem, mode) {
         newTaskRequest.batchCount = 1
         createTask(newTaskRequest)
     }
+}
+
+function onMakeSimilarClick(req, imageItemElem) {
+    const similarImagesCount = 5
+    const imageElem = imageItemElem.querySelector('img')
+
+    let newTaskRequest = getCurrentUserRequest()
+
+    newTaskRequest.reqBody = Object.assign({}, req, {
+        num_outputs: 1,
+        use_cpu: useCPUField.checked,
+        num_inference_steps: 50,
+        guidance_scale: 7.5,
+        prompt_strength: 0.7,
+        init_image: imageElem.src,
+        seed: Math.floor(Math.random() * 10000000)
+    })
+
+    newTaskRequest.numOutputsTotal = 5
+    newTaskRequest.batchCount = 5
+    newTaskRequest.seed = newTaskRequest.reqBody.seed
+
+    delete newTaskRequest.reqBody.mask
+
+    createTask(newTaskRequest)
 }
 
 // makes a single image. don't call this directly, use makeImage() instead
