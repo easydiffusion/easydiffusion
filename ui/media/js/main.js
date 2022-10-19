@@ -367,23 +367,23 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             imageSeedLabel.innerText = 'Seed: ' + req.seed
 
             const buttons = {
-                'imgUseBtn': { html: 'Use as Input', click: onUseAsInputClick },
-                'imgSaveBtn': { html: 'Download', click: onDownloadImageClick },
-                'imgX2Btn': { html: 'Double Size', click: getStartNewTaskHandler('img2img_X2') },
-                'imgRedoBtn': { html: 'Redo', click: getStartNewTaskHandler('img2img') },
-                'makeSimilarBtn': { html: 'Make Similar Images', click: onMakeSimilarClick },
+                'imgUseBtn': { text: 'Use as Input', on_click: onUseAsInputClick },
+                'imgSaveBtn': { text: 'Download', on_click: onDownloadImageClick },
+                'imgX2Btn': { text: 'Double Size', on_click: getStartNewTaskHandler('img2img_X2') },
+                'imgRedoBtn': { text: 'Redo', on_click: getStartNewTaskHandler('img2img') },
+                'makeSimilarBtn': { text: 'Make Similar Images', on_click: onMakeSimilarClick },
             }
             if (!req.use_upscale) {
-                buttons.upscaleBtn = { html: 'Upscale', click: getStartNewTaskHandler('upscale') }
+                buttons.upscaleBtn = { text: 'Upscale', on_click: getStartNewTaskHandler('upscale') }
             }
             const imgItemInfo = imageItemElem.querySelector('.imgItemInfo')
             const createButton = function(name, btnInfo) {
                 const newButton = document.createElement('button')
                 newButton.classList.add(name)
                 newButton.classList.add('tasksBtns')
-                newButton.innerHTML = btnInfo.html
+                newButton.innerText = btnInfo.text
                 newButton.addEventListener('click', function() {
-                    btnInfo.click(req, imageItemElem)
+                    btnInfo.on_click(req, imageItemElem)
                 })
                 imgItemInfo.appendChild(newButton)
             }
