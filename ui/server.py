@@ -346,21 +346,21 @@ async def check_status(): # Task to Validate user config shortly after startup.
     # Issues found, try to fix and warn the user.
     device_count = 0
     for i in range(10): # Wait for devices to register and/or change names.
+        await asyncio.sleep(3)
         new_count = task_manager.is_alive()
         if device_count == new_count: break;
         device_count = new_count
-        await asyncio.sleep(3)
 
     if 'render_devices' in config and task_manager.is_alive() <= 0: # No running devices, probably invalid user config. Try to apply defaults.
         task_manager.start_render_thread('auto') # Detect best device for renders
         task_manager.start_render_thread('cpu') # Allow CPU to be used for renders
-        await asyncio.sleep(10) # delay message after thread start.
+        await asyncio.sleep(3) # delay message after thread start.
 
     display_warning = False
     if not 'render_devices' in config and task_manager.is_alive(0) <= 0: # No config set, is on auto mode and without cuda:0
         task_manager.start_render_thread('cuda') # An other cuda device is better and cuda:0 is missing, start it...
         display_warning = True # And warn user to update settings...
-        await asyncio.sleep(10) # delay message after thread start.
+        await asyncio.sleep(3) # delay message after thread start.
 
     if display_warning or task_manager.is_alive(0) <= 0:
         print('WARNING: GFPGANer only works on CPU or GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.')
@@ -378,8 +378,7 @@ if 'render_devices' in config: # Start a new thread for each device.
     for device in config['render_devices']:
         task_manager.start_render_thread(device)
 else:
-    # Select best device GPU device using free memory if more than one device.
-    #task_manager.start_render_thread('cuda') # Starts silently on cuda:0
+    # Select best GPU device using free memory, if more than one device.
     task_manager.start_render_thread('auto') # Detect best device for renders
     task_manager.start_render_thread('cpu') # Allow CPU to be used for renders
 

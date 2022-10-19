@@ -351,23 +351,14 @@ def do_mk_img(req: Request):
         thread_data.ckpt_file = req.use_stable_diffusion_model
         needs_model_reload = True
 
-    if req.use_cpu:
-        if thread_data.device != 'cpu':
-            thread_data.device = 'cpu'
-            if thread_data.model_is_half:
-                load_model_ckpt()
-                needs_model_reload = False
+    if thread_data.has_valid_gpu:
+        if (thread_data.precision == 'autocast' and (req.use_full_precision or not thread_data.model_is_half)) or \
+            (thread_data.precision == 'full' and not req.use_full_precision and not thread_data.force_full_precision):
+            thread_data.precision = 'full' if req.use_full_precision else 'autocast'
+            load_model_ckpt()
             load_model_gfpgan()
             load_model_real_esrgan()
-    else:
-        if thread_data.has_valid_gpu:
-            if (thread_data.precision == 'autocast' and (req.use_full_precision or not thread_data.model_is_half)) or \
-                (thread_data.precision == 'full' and not req.use_full_precision and not thread_data.force_full_precision):
-                thread_data.precision = 'full' if req.use_full_precision else 'autocast'
-                load_model_ckpt()
-                load_model_gfpgan()
-                load_model_real_esrgan()
-                needs_model_reload = False
+            needs_model_reload = False
 
     if needs_model_reload:
         load_model_ckpt()
@@ -593,7 +584,8 @@ def do_mk_img(req: Request):
                     move_fs_to_cpu()
                     gc()
                     del x_samples, x_samples_ddim, x_sample
-                    print(f'memory_final = {round(torch.cuda.memory_allocated(thread_data.device) / 1e6, 2)}Mo')
+                    if thread_data.device != 'cpu':
+                        print(f'memory_final = {round(torch.cuda.memory_allocated(thread_data.device) / 1e6, 2)}Mo')
 
     print('Task completed')
 
