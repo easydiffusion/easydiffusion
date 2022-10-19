@@ -369,7 +369,8 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             let buttons = [
                 { text: 'Use as Input', on_click: onUseAsInputClick },
                 { text: 'Download', on_click: onDownloadImageClick },
-                { text: 'Make Similar Images', on_click: onMakeSimilarClick }
+                { text: 'Make Similar Images', on_click: onMakeSimilarClick },
+                { text: 'Upscale', on_click: onUpscaleClick, filter: (req, img) => !req.use_upscale }
             ]
 
             // include the plugins
@@ -441,6 +442,24 @@ function onMakeSimilarClick(req, img) {
     newTaskRequest.seed = newTaskRequest.reqBody.seed
 
     delete newTaskRequest.reqBody.mask
+
+    createTask(newTaskRequest)
+}
+
+function onUpscaleClick(req, img) {
+    let newTaskRequest = getCurrentUserRequest()
+    const imageSeed = img.getAttribute('data-seed')
+
+    newTaskRequest.reqBody = Object.assign({}, req, {
+        num_outputs: 1,
+        use_cpu: useCPUField.checked,
+        use_upscale: upscaleModelField.value,
+        seed: imageSeed
+    })
+
+    newTaskRequest.numOutputsTotal = 1
+    newTaskRequest.batchCount = 1
+    newTaskRequest.seed = newTaskRequest.reqBody.seed
 
     createTask(newTaskRequest)
 }
@@ -710,7 +729,7 @@ async function checkTasks() {
             })
         }
         if (genSeeds) {
-            newTask.reqBody.seed = startSeed + (i * newTask.reqBody.num_outputs)
+            newTask.reqBody.seed = parseInt(startSeed) + (i * newTask.reqBody.num_outputs)
             newTask.seed = newTask.reqBody.seed
         } else if (newTask.seed !== newTask.reqBody.seed) {
             newTask.seed = newTask.reqBody.seed
