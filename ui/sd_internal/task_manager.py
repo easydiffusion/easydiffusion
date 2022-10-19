@@ -237,10 +237,20 @@ def thread_render(device):
                         continue
                     if not runtime.is_first_cuda_device(runtime.thread_data.device):
                         continue # Wait for cuda:0
-                if queued_task.request.use_cpu and runtime.thread_data.device != 'cpu' and is_alive('cpu') > 0:
-                    continue # CPU Tasks, Skip GPU device
-                if not queued_task.request.use_cpu and runtime.thread_data.device == 'cpu' and is_alive() > 1: # cpu is alive, so need more than one.
-                    continue # GPU Tasks, don't run on CPU unless there is nothing else.
+                if queued_task.request.use_cpu and runtime.thread_data.device != 'cpu':
+                    if is_alive('cpu') > 0:
+                        continue # CPU Tasks, Skip GPU device
+                    else:
+                        queued_task.error = Exception('Cpu is not enabled in render_devices.')
+                        task = queued_task
+                        continue
+                if not queued_task.request.use_cpu and runtime.thread_data.device == 'cpu':
+                    if is_alive() > 1: # cpu is alive, so need more than one.
+                        continue # GPU Tasks, don't run on CPU unless there is nothing else.
+                    else:
+                        queued_task.error = Exception('No active gpu found. Please check the error message in the command-line window at startup.')
+                        task = queued_task
+                        continue
                 task = queued_task
                 break
             if task is not None:

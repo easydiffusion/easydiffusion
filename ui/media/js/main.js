@@ -509,10 +509,10 @@ async function doMakeImage(task) {
             })
             renderRequest = await res.json()
             // status_code 503, already a task running.
-        } while (renderRequest.status_code === 503 && await asyncDelay(30 * 1000))
+        } while (res.status === 503 && await asyncDelay(30 * 1000))
         if (typeof renderRequest?.stream !== 'string') {
             console.log('Endpoint response: ', renderRequest)
-            throw new Error('Endpoint response does not contains a response stream url.')
+            throw new Error(renderRequest.detail || 'Endpoint response does not contains a response stream url.')
         }
         task['taskStatusLabel'].innerText = "Waiting"
         task['taskStatusLabel'].classList.add('waitingTaskLabel')
