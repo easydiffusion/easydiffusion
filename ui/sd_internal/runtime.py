@@ -1,3 +1,9 @@
+"""runtime.py: torch device owned by a thread.
+Notes:
+    Avoid device switching, transfering all models will get too complex.
+    To use a diffrent device signal the current render device to exit
+    And then start a new clean thread for the new device.
+"""
 import json
 import os, re
 import traceback

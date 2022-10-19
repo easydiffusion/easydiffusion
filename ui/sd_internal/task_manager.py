@@ -1,3 +1,9 @@
+"""task_manager.py: manage tasks dispatching and render threads.
+Notes:
+    render_threads should be the only hard reference held by the manager to the threads.
+    Use weak_thread_data to store all other data using weak keys.
+    This will allow for garbage collection after the thread dies.
+"""
 import json
 import traceback
 
@@ -340,6 +346,11 @@ def start_render_thread(device='auto'):
         rthread.daemon = True
         rthread.name = THREAD_NAME_PREFIX + device
         rthread.start()
+        timeout = LOCK_TIMEOUT
+        while not rthread.is_alive():
+            if timeout <= 0: raise Exception('render_thread', rthread.name, 'failed to start before timeout or has crashed.')
+            timeout -= 1
+            time.sleep(1)
         render_threads.append(rthread)
     finally:
         manager_lock.release()

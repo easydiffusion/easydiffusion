@@ -1,3 +1,7 @@
+"""server.py: FastAPI SD-UI Web Host.
+Notes:
+    async endpoints always run on the main thread. Without they run on the thread pool.
+"""
 import json
 import traceback
 
@@ -343,7 +347,7 @@ config = getConfig()
 
 async def check_status(): # Task to Validate user config shortly after startup.
     # Check that the loaded config.json yielded a server in a known valid state.
-    # Issues found, try to fix and warn the user.
+    # When issues are found, try to fix them when possible and warn the user.
     device_count = 0
     for i in range(10): # Wait for devices to register and/or change names.
         await asyncio.sleep(3)
