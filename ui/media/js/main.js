@@ -940,14 +940,34 @@ function getPrompts() {
     }
 
     prompts = prompts.split('\n')
+    prompts = prompts.map(prompt => prompt.trim())
+    prompts = prompts.filter(prompt => prompt !== '')
 
+    let promptsToMake = applySetOperator(prompts)
+    promptsToMake = applyPermuteOperator(promptsToMake)
+
+    if (activeTags.length <= 0) {
+        return promptsToMake
+    }
+
+    const promptTags = activeTags.map(x => x.name).join(", ")
+    return promptsToMake.map((prompt) => `${prompt}, ${promptTags}`)
+}
+
+function applySetOperator(prompts) {
+    let promptsToMake = []
+    let braceExpander = new BraceExpander()
+    prompts.forEach(prompt => {
+        let expandedPrompts = braceExpander.expand(prompt)
+        promptsToMake = promptsToMake.concat(expandedPrompts)
+    })
+
+    return promptsToMake
+}
+
+function applyPermuteOperator(prompts) {
     let promptsToMake = []
     prompts.forEach(prompt => {
-        prompt = prompt.trim()
-        if (prompt === '') {
-            return
-        }
-
         let promptMatrix = prompt.split('|')
         prompt = promptMatrix.shift().trim()
         promptsToMake.push(prompt)
@@ -960,11 +980,8 @@ function getPrompts() {
             promptsToMake = promptsToMake.concat(promptPermutations)
         }
     })
-    if (activeTags.length <= 0) {
-        return promptsToMake
-    }
-    const promptTags = activeTags.map(x => x.name).join(", ")
-    return promptsToMake.map((prompt) => `${prompt}, ${promptTags}`)
+
+    return promptsToMake
 }
 
 function permutePrompts(promptBase, promptMatrix) {
