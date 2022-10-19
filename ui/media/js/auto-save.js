@@ -29,7 +29,14 @@ var SETTINGS_IDS_LIST = [
     "upscale_model",
     "preview-image",
     "modifier-card-size-slider",
-    "theme"
+    "theme",
+    "save_to_disk",
+    "diskPath",
+    "sound_toggle",
+    "turbo",
+    "use_cpu",
+    "use_full_precision",
+    "auto_save_settings"
 ]
 
 async function initSettings() {
@@ -46,6 +53,9 @@ async function initSettings() {
 }
 
 function getSetting(element) {
+    if (element instanceof String) {
+        element = SETTINGS_TO_SAVE.find(e => e.id == element);
+    }
     if (element.type == "checkbox") {
         return element.checked
     }

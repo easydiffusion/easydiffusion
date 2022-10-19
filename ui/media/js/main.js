@@ -1,19 +1,4 @@
 "use strict" // Opt in to a restricted variant of JavaScript
-const SOUND_ENABLED_KEY = "soundEnabled"
-const SAVE_TO_DISK_KEY = "saveToDisk"
-const USE_CPU_KEY = "useCPU"
-const USE_FULL_PRECISION_KEY = "useFullPrecision"
-const USE_TURBO_MODE_KEY = "useTurboMode"
-const DISK_PATH_KEY = "diskPath"
-const ADVANCED_PANEL_OPEN_KEY = "advancedPanelOpen"
-const MODIFIERS_PANEL_OPEN_KEY = "modifiersPanelOpen"
-const NEGATIVE_PROMPT_PANEL_OPEN_KEY = "negativePromptPanelOpen"
-const USE_FACE_CORRECTION_KEY = "useFaceCorrection"
-const USE_UPSCALING_KEY = "useUpscaling"
-const SHOW_ONLY_FILTERED_IMAGE_KEY = "showOnlyFilteredImage"
-const STREAM_IMAGE_PROGRESS_KEY = "streamImageProgress"
-const OUTPUT_FORMAT_KEY = "outputFormat"
-const AUTO_SAVE_SETTINGS_KEY = "autoSaveSettings"
 const HEALTH_PING_INTERVAL = 5 // seconds
 const MAX_INIT_IMAGE_DIMENSION = 768
 
@@ -77,7 +62,6 @@ let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
 // let maskImagePreviewContainer = document.querySelector('#mask_preview_container')
 // let maskImageClearBtn = document.querySelector('#mask_clear')
 let maskSetting = document.querySelector('#enable_mask')
-let negativePromptPanelHandle = document.querySelector('#negative_prompt_handle')
 
 let imagePreview = document.querySelector("#preview")
 
@@ -93,8 +77,6 @@ let soundToggle = document.querySelector('#sound_toggle')
 let serverStatusColor = document.querySelector('#server-status-color')
 let serverStatusMsg = document.querySelector('#server-status-msg')
 
-let advancedPanelHandle = document.querySelector("#editor-settings .collapsible")
-let modifiersPanelHandle = document.querySelector("#editor-modifiers .collapsible")
 
 document.querySelector('.drawing-board-control-navigation-back').innerHTML = '<i class="fa-solid fa-rotate-left"></i>'
 document.querySelector('.drawing-board-control-navigation-forward').innerHTML = '<i class="fa-solid fa-rotate-right"></i>'
@@ -110,15 +92,6 @@ let bellPending = false
 
 let taskQueue = []
 let currentTask = null
-
-function getLocalStorageItem(key, fallback) {
-    let item = localStorage.getItem(key)
-    if (item === null) {
-        return fallback
-    }
-
-    return item
-}
 
 function getLocalStorageBoolItem(key, fallback) {
     let item = localStorage.getItem(key)
@@ -142,63 +115,11 @@ function handleStringSettingChange(key) {
 }
 
 function isSoundEnabled() {
-    return getLocalStorageBoolItem(SOUND_ENABLED_KEY, true)
-}
-
-function isFaceCorrectionEnabled() {
-    return getLocalStorageBoolItem(USE_FACE_CORRECTION_KEY, false)
-}
-
-function isUpscalingEnabled() {
-    return getLocalStorageBoolItem(USE_UPSCALING_KEY, false)
-}
-
-function isShowOnlyFilteredImageEnabled() {
-    return getLocalStorageBoolItem(SHOW_ONLY_FILTERED_IMAGE_KEY, true)
-}
-
-function isSaveToDiskEnabled() {
-    return getLocalStorageBoolItem(SAVE_TO_DISK_KEY, false)
-}
-
-function isUseCPUEnabled() {
-    return getLocalStorageBoolItem(USE_CPU_KEY, false)
-}
-
-function isUseFullPrecisionEnabled() {
-    return getLocalStorageBoolItem(USE_FULL_PRECISION_KEY, false)
-}
-
-function isAutoSaveSettingsEnabled() {
-    return getLocalStorageBoolItem(AUTO_SAVE_SETTINGS_KEY, true)
-}
-
-function isUseTurboModeEnabled() {
-    return getLocalStorageBoolItem(USE_TURBO_MODE_KEY, true)
+    return getSetting("sound_toggle")
 }
 
 function getSavedDiskPath() {
-    return getLocalStorageItem(DISK_PATH_KEY, '')
-}
-
-function isAdvancedPanelOpenEnabled() {
-    return getLocalStorageBoolItem(ADVANCED_PANEL_OPEN_KEY, false)
-}
-
-function isModifiersPanelOpenEnabled() {
-    return getLocalStorageBoolItem(MODIFIERS_PANEL_OPEN_KEY, false)
-}
-
-function isNegativePromptPanelOpenEnabled() {
-    return getLocalStorageBoolItem(NEGATIVE_PROMPT_PANEL_OPEN_KEY, false)
-}
-
-function isStreamImageProgressEnabled() {
-    return getLocalStorageBoolItem(STREAM_IMAGE_PROGRESS_KEY, false)
-}
-
-function getOutputFormat() {
-    return getLocalStorageItem(OUTPUT_FORMAT_KEY, 'jpeg')
+    return getSetting("diskPath")
 }
 
 function setStatus(statusType, msg, msgType) {
@@ -1056,40 +977,6 @@ stopImageBtn.addEventListener('click', async function() {
     await stopAllTasks()
 })
 
-soundToggle.addEventListener('click', handleBoolSettingChange(SOUND_ENABLED_KEY))
-soundToggle.checked = isSoundEnabled()
-
-saveToDiskField.checked = isSaveToDiskEnabled()
-diskPathField.disabled = !saveToDiskField.checked
-
-useFaceCorrectionField.addEventListener('click', handleBoolSettingChange(USE_FACE_CORRECTION_KEY))
-useFaceCorrectionField.checked = isFaceCorrectionEnabled()
-
-useUpscalingField.checked = isUpscalingEnabled()
-upscaleModelField.disabled = !useUpscalingField.checked
-
-showOnlyFilteredImageField.addEventListener('click', handleBoolSettingChange(SHOW_ONLY_FILTERED_IMAGE_KEY))
-showOnlyFilteredImageField.checked = isShowOnlyFilteredImageEnabled()
-
-useCPUField.addEventListener('click', handleBoolSettingChange(USE_CPU_KEY))
-useCPUField.checked = isUseCPUEnabled()
-
-useFullPrecisionField.addEventListener('click', handleBoolSettingChange(USE_FULL_PRECISION_KEY))
-useFullPrecisionField.checked = isUseFullPrecisionEnabled()
-
-autoSaveSettingsField.addEventListener('click', handleBoolSettingChange(AUTO_SAVE_SETTINGS_KEY))
-autoSaveSettingsField.checked = isAutoSaveSettingsEnabled()
-
-turboField.addEventListener('click', handleBoolSettingChange(USE_TURBO_MODE_KEY))
-turboField.checked = isUseTurboModeEnabled()
-
-streamImageProgressField.addEventListener('click', handleBoolSettingChange(STREAM_IMAGE_PROGRESS_KEY))
-streamImageProgressField.checked = isStreamImageProgressEnabled()
-
-outputFormatField.addEventListener('change', handleStringSettingChange(OUTPUT_FORMAT_KEY))
-outputFormatField.value = getOutputFormat()
-
-diskPathField.addEventListener('change', handleStringSettingChange(DISK_PATH_KEY))
 widthField.addEventListener('change', onDimensionChange)
 heightField.addEventListener('change', onDimensionChange)
 
@@ -1105,31 +992,11 @@ function onDimensionChange() {
 
 saveToDiskField.addEventListener('click', function(e) {
     diskPathField.disabled = !this.checked
-    handleBoolSettingChange(SAVE_TO_DISK_KEY)(e)
 })
 
 useUpscalingField.addEventListener('click', function(e) {
     upscaleModelField.disabled = !this.checked
-    handleBoolSettingChange(USE_UPSCALING_KEY)(e)
 })
-
-function setPanelOpen(panelHandle) {
-    let panelContents = panelHandle.nextElementSibling
-    panelHandle.classList.add('active')
-    panelContents.style.display = 'block'
-}
-
-if (isAdvancedPanelOpenEnabled()) {
-    setPanelOpen(advancedPanelHandle)
-}
-
-if (isModifiersPanelOpenEnabled()) {
-    setPanelOpen(modifiersPanelHandle)
-}
-
-if (isNegativePromptPanelOpenEnabled()) {
-    setPanelOpen(negativePromptPanelHandle)
-}
 
 makeImageBtn.addEventListener('click', makeImage)
 

@@ -14,13 +14,58 @@ function getNextSibling(elem, selector) {
 	}
 }
 
-function createCollapsibles(node) {
-    if (!node) {
-        node = document
-    }
 
+
+/* Panel Stuff */
+
+// true = open
+var COLLAPSIBLES_INITIALIZED = false;
+const COLLAPSIBLES_KEY = "collapsibles";
+const COLLAPSIBLE_PANELS = []; // filled in by createCollapsibles with all the elements matching .collapsible
+
+// on-init call this for any panels that are marked open
+function toggleCollapsible(element) {
+    var collapsibleHeader = element.querySelector(".collapsible");
+    var handle = element.firstChild;
+    collapsibleHeader.classList.toggle("active")
+    let content = getNextSibling(collapsibleHeader, '.collapsible-content')
+    if (content.style.display === "block") {
+        content.style.display = "none"
+        handle.innerHTML = '&#x2795;' // plus
+    } else {
+        content.style.display = "block"
+        handle.innerHTML = '&#x2796;' // minus
+    }
+    
+    if (COLLAPSIBLES_INITIALIZED && COLLAPSIBLE_PANELS.includes(element.parentElement)) {
+        saveCollapsibles();
+    }
+}
+
+function saveCollapsibles() {
+    var values = {};
+    console.log(COLLAPSIBLE_PANELS);
+    COLLAPSIBLE_PANELS.forEach(element => {
+        values[element.id] = element.querySelector(".collapsible").className.indexOf("active") !== -1;
+    });
+    localStorage.setItem(COLLAPSIBLES_KEY, JSON.stringify(values));
+}
+
+function createCollapsibles(node) {
+    var save = false;
+    if (!node) {
+        node = document;
+        save = true;
+    }
+    // FIX: problem here is that the elements we're getting in c are the buttons, and they are the children of the things with collapsible stuff
+    // FIX: gotta get parent
+
+    // default closed.
     let collapsibles = node.querySelectorAll(".collapsible")
     collapsibles.forEach(function(c) {
+        if (save && c.parentElement.id) {
+            COLLAPSIBLE_PANELS.push(c.parentElement);
+        }
         let handle = document.createElement('span')
         handle.className = 'collapsible-handle'
 
@@ -32,28 +77,24 @@ function createCollapsibles(node) {
         c.insertBefore(handle, c.firstChild)
 
         c.addEventListener('click', function() {
-            this.classList.toggle("active")
-            let content = getNextSibling(this, '.collapsible-content')
-            if (content.style.display === "block") {
-                content.style.display = "none"
-                handle.innerHTML = '&#x2795;' // plus
-            } else {
-                content.style.display = "block"
-                handle.innerHTML = '&#x2796;' // minus
+            toggleCollapsible(c.parentElement);
+        });
+    });
+    if (save) {
+        var saved = localStorage.getItem(COLLAPSIBLES_KEY);
+        if (!saved) {
+            saveCollapsibles();
+            saved = localStorage.getItem(COLLAPSIBLES_KEY);
+        }
+        var values = JSON.parse(saved);
+        Object.keys(values).forEach(element_id => {
+            if (values[element_id]) {
+                var element = COLLAPSIBLE_PANELS.find(e => e.id == element_id);
+                toggleCollapsible(element);
             }
-
-            if (this == advancedPanelHandle) {
-                let state = (content.style.display === 'block' ? 'true' : 'false')
-                localStorage.setItem(ADVANCED_PANEL_OPEN_KEY, state)
-            } else if (this == modifiersPanelHandle) {
-                let state = (content.style.display === 'block' ? 'true' : 'false')
-                localStorage.setItem(MODIFIERS_PANEL_OPEN_KEY, state)
-            } else if (this == negativePromptPanelHandle) {
-                let state = (content.style.display === 'block' ? 'true' : 'false')
-                localStorage.setItem(NEGATIVE_PROMPT_PANEL_OPEN_KEY, state)
-            }
-        })
-    })
+        });
+        COLLAPSIBLES_INITIALIZED = true;
+    }
 }
 
 function permute(arr) {
