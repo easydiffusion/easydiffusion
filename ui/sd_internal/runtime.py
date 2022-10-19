@@ -206,6 +206,7 @@ def get_base_path(disk_path, session_id, prompt, img_id, ext, suffix=None):
     os.makedirs(session_out_path, exist_ok=True)
 
     prompt_flattened = filename_regex.sub('_', prompt)[:50]
+    
 
     if suffix is not None:
         return os.path.join(session_out_path, f"{prompt_flattened}_{img_id}_{suffix}.{ext}")
@@ -316,8 +317,7 @@ def do_mk_img(req: Request):
     opt_f = 8
     opt_ddim_eta = 0.0
     opt_init_img = req.init_image
-    img_id = base64.b64encode(int(time.time()).to_bytes(8, 'big')).decode() # Generate unique ID based on time.
-    img_id = img_id.translate({43:None, 47:None, 61:None})[-8:] # Remove + / = and keep last 8 chars.
+    
 
     print(req.to_string(), '\n    device', device)
 
@@ -462,6 +462,8 @@ def do_mk_img(req: Request):
 
                     print("saving images")
                     for i in range(batch_size):
+                        img_id = base64.b64encode(int(time.time()+i).to_bytes(8, 'big')).decode() # Generate unique ID based on time.
+                        img_id = img_id.translate({43:None, 47:None, 61:None})[-8:] # Remove + / = and keep last 8 chars.
 
                         x_samples_ddim = modelFS.decode_first_stage(x_samples[i].unsqueeze(0))
                         x_sample = torch.clamp((x_samples_ddim + 1.0) / 2.0, min=0.0, max=1.0)
