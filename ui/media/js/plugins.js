@@ -16,6 +16,11 @@ const PLUGINS = {
      *     })
      *     newTaskRequest.seed = newTaskRequest.reqBody.seed
      *     createTask(newTaskRequest)
+     *   },
+     *   filter: function(origRequest, image) {
+     *     // this is an optional function. return true/false to show/hide the button
+     *     // if this function isn't set, the button will always be visible
+     *     return true
      *   }
      * }
      */

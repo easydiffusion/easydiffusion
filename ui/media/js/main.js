@@ -381,18 +381,25 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             Object.assign(buttons, PLUGINS['IMAGE_INFO_BUTTONS'])
 
             const imgItemInfo = imageItemElem.querySelector('.imgItemInfo')
+            const img = imageItemElem.querySelector('img')
             const createButton = function(name, btnInfo) {
                 const newButton = document.createElement('button')
                 newButton.classList.add(name)
                 newButton.classList.add('tasksBtns')
                 newButton.innerText = btnInfo.text
                 newButton.addEventListener('click', function() {
-                    let img = imageItemElem.querySelector('img')
                     btnInfo.on_click(req, img)
                 })
                 imgItemInfo.appendChild(newButton)
             }
-            Object.keys(buttons).forEach((name) => createButton(name, buttons[name]))
+            Object.keys(buttons).forEach((name) => {
+                const btn = buttons[name]
+                if (btn.filter && btn.filter(req, img) === false) {
+                    return
+                }
+
+                createButton(name, btn)
+            })
         }
     })
 }
