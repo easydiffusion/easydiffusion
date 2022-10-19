@@ -5,7 +5,7 @@ const PLUGINS = {
      * Register new buttons to show on each output image.
      * 
      * Example:
-     * PLUGINS['IMAGE_INFO_BUTTONS']['myCustomVariationButton'] = {
+     * PLUGINS['IMAGE_INFO_BUTTONS'].push({
      *   text: 'Make a Similar Image',
      *   on_click: function(origRequest, image) {
      *     let newTaskRequest = getCurrentUserRequest()
@@ -22,15 +22,15 @@ const PLUGINS = {
      *     // if this function isn't set, the button will always be visible
      *     return true
      *   }
-     * }
+     * })
      */
-    IMAGE_INFO_BUTTONS: {}
+    IMAGE_INFO_BUTTONS: []
 }
 
 
-PLUGINS['IMAGE_INFO_BUTTONS']['custom_imgX2Btn'] = { text: 'Double Size', on_click: getStartNewTaskHandler('img2img_X2') }
-PLUGINS['IMAGE_INFO_BUTTONS']['custom_imgRedoBtn'] = { text: 'Redo', on_click: getStartNewTaskHandler('img2img') }
-PLUGINS['IMAGE_INFO_BUTTONS']['custom_upscaleBtn'] = { text: 'Upscale', on_click: getStartNewTaskHandler('upscale'), filter: (req, img) => !req.use_upscale }
+PLUGINS['IMAGE_INFO_BUTTONS'].push({ text: 'Double Size', on_click: getStartNewTaskHandler('img2img_X2') })
+PLUGINS['IMAGE_INFO_BUTTONS'].push({ text: 'Redo', on_click: getStartNewTaskHandler('img2img') })
+PLUGINS['IMAGE_INFO_BUTTONS'].push({ text: 'Upscale', on_click: getStartNewTaskHandler('upscale'), filter: (req, img) => !req.use_upscale })
 
 function getStartNewTaskHandler(mode) {
     return function(reqBody, img) {

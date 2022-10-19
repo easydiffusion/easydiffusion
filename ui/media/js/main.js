@@ -366,20 +366,19 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             const imageSeedLabel = imageItemElem.querySelector('.imgSeedLabel')
             imageSeedLabel.innerText = 'Seed: ' + req.seed
 
-            const buttons = {
-                'imgUseBtn': { text: 'Use as Input', on_click: onUseAsInputClick },
-                'imgSaveBtn': { text: 'Download', on_click: onDownloadImageClick },
-                'makeSimilarBtn': { text: 'Make Similar Images', on_click: onMakeSimilarClick },
-            }
+            let buttons = [
+                { text: 'Use as Input', on_click: onUseAsInputClick },
+                { text: 'Download', on_click: onDownloadImageClick },
+                { text: 'Make Similar Images', on_click: onMakeSimilarClick },
+            ]
 
             // include the plugins
-            Object.assign(buttons, PLUGINS['IMAGE_INFO_BUTTONS'])
+            buttons = buttons.concat(PLUGINS['IMAGE_INFO_BUTTONS'])
 
             const imgItemInfo = imageItemElem.querySelector('.imgItemInfo')
             const img = imageItemElem.querySelector('img')
-            const createButton = function(name, btnInfo) {
+            const createButton = function(btnInfo) {
                 const newButton = document.createElement('button')
-                newButton.classList.add(name)
                 newButton.classList.add('tasksBtns')
                 newButton.innerText = btnInfo.text
                 newButton.addEventListener('click', function() {
@@ -387,13 +386,12 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                 })
                 imgItemInfo.appendChild(newButton)
             }
-            Object.keys(buttons).forEach((name) => {
-                const btn = buttons[name]
+            buttons.forEach(btn => {
                 if (btn.filter && btn.filter(req, img) === false) {
                     return
                 }
 
-                createButton(name, btn)
+                createButton(btn)
             })
         }
     })
