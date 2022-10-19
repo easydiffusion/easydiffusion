@@ -94,7 +94,7 @@ def setConfig(config):
         has_first_cuda_device = True
         break
     if len(gpu_devices) > 0 and not has_first_cuda_device:
-        print('WARNING: GFPGANer only works on CPU or GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.')
+        print('WARNING: GFPGANer only works on GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.')
         print('Using CUDA_VISIBLE_DEVICES will remap the selected devices starting at GPU:0 fixing GFPGANer')
 
     try: # config.bat
@@ -369,7 +369,7 @@ async def check_status(): # Task to Validate user config shortly after startup.
         await asyncio.sleep(3) # delay message after thread start.
 
     if display_warning or task_manager.is_alive(0) <= 0:
-        print('WARNING: GFPGANer only works on CPU or GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.')
+        print('WARNING: GFPGANer only works on GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.')
         print('Using CUDA_VISIBLE_DEVICES will remap the selected devices starting at GPU:0 fixing GFPGANer')
         print('Add the line "@set CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.bat')
         print('Add the line "CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.sh')
