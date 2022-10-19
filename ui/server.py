@@ -360,6 +360,7 @@ async def check_status(): # Task to Validate user config shortly after startup.
         task_manager.start_render_thread('auto') # Detect best device for renders
         task_manager.start_render_thread('cpu') # Allow CPU to be used for renders
         await asyncio.sleep(3) # delay message after thread start.
+        print('Default render devices loaded to replace missing render_devices', config['render_devices'])
 
     display_warning = False
     if not 'render_devices' in config and task_manager.is_alive(0) <= 0: # No config set, is on auto mode and without cuda:0
