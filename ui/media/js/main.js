@@ -426,12 +426,20 @@ function onDownloadImageClick(req, img) {
     imgDownload.click()
 }
 
-function onMakeSimilarClick(req, img) {
-    let newTaskRequest = getCurrentUserRequest()
+function modifyCurrentRequest(req, reqDiff) {
+    const newTaskRequest = getCurrentUserRequest()
 
-    newTaskRequest.reqBody = Object.assign({}, req, {
+    newTaskRequest.reqBody = Object.assign({}, req, reqDiff, {
+        use_cpu: useCPUField.checked
+    })
+    newTaskRequest.seed = newTaskRequest.reqBody.seed
+
+    return newTaskRequest
+}
+
+function onMakeSimilarClick(req, img) {
+    const newTaskRequest = modifyCurrentRequest(req, {
         num_outputs: 1,
-        use_cpu: useCPUField.checked,
         num_inference_steps: 50,
         guidance_scale: 7.5,
         prompt_strength: 0.7,
@@ -441,65 +449,42 @@ function onMakeSimilarClick(req, img) {
 
     newTaskRequest.numOutputsTotal = 5
     newTaskRequest.batchCount = 5
-    newTaskRequest.seed = newTaskRequest.reqBody.seed
 
     delete newTaskRequest.reqBody.mask
 
     createTask(newTaskRequest)
 }
 
-function onUpscaleClick(req, img) {
-    let newTaskRequest = getCurrentUserRequest()
+function enqueueImageVariationTask(req, img, reqDiff) {
     const imageSeed = img.getAttribute('data-seed')
 
-    newTaskRequest.reqBody = Object.assign({}, req, {
-        num_outputs: 1,
-        use_cpu: useCPUField.checked,
-        use_upscale: upscaleModelField.value,
+    const newTaskRequest = modifyCurrentRequest(req, reqDiff, {
+        num_outputs: 1, // this can be user-configurable in the future
         seed: imageSeed
     })
 
-    newTaskRequest.numOutputsTotal = 1
+    newTaskRequest.numOutputsTotal = 1 // this can be user-configurable in the future
     newTaskRequest.batchCount = 1
-    newTaskRequest.seed = newTaskRequest.reqBody.seed
 
     createTask(newTaskRequest)
+}
+
+function onUpscaleClick(req, img) {
+    enqueueImageVariationTask(req, img, {
+        use_upscale: upscaleModelField.value
+    })
 }
 
 function onFixFacesClick(req, img) {
-    let newTaskRequest = getCurrentUserRequest()
-    const imageSeed = img.getAttribute('data-seed')
-
-    newTaskRequest.reqBody = Object.assign({}, req, {
-        num_outputs: 1,
-        use_cpu: useCPUField.checked,
-        use_face_correction: 'GFPGANv1.3',
-        seed: imageSeed
+    enqueueImageVariationTask(req, img, {
+        use_face_correction: 'GFPGANv1.3'
     })
-
-    newTaskRequest.numOutputsTotal = 1
-    newTaskRequest.batchCount = 1
-    newTaskRequest.seed = newTaskRequest.reqBody.seed
-
-    createTask(newTaskRequest)
 }
 
 function onContinueDrawingClick(req, img) {
-    let newTaskRequest = getCurrentUserRequest()
-    const imageSeed = img.getAttribute('data-seed')
-
-    newTaskRequest.reqBody = Object.assign({}, req, {
-        num_outputs: 1,
-        use_cpu: useCPUField.checked,
-        num_inference_steps: parseInt(req.num_inference_steps) + 25,
-        seed: imageSeed
+    enqueueImageVariationTask(req, img, {
+        num_inference_steps: parseInt(req.num_inference_steps) + 25
     })
-
-    newTaskRequest.numOutputsTotal = 1
-    newTaskRequest.batchCount = 1
-    newTaskRequest.seed = newTaskRequest.reqBody.seed
-
-    createTask(newTaskRequest)
 }
 
 // makes a single image. don't call this directly, use makeImage() instead
