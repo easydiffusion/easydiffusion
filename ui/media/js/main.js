@@ -257,11 +257,6 @@ function logError(msg, res, outputMsg) {
     console.log('request error', res)
     setStatus('request', 'error', 'error')
 }
-function asyncDelay(timeout) {
-    return new Promise(function(resolve, reject) {
-        setTimeout(resolve, timeout, true)
-    })
-}
 
 function playSound() {
     const audio = new Audio('/media/ding.mp3')
@@ -493,6 +488,11 @@ async function doMakeImage(task) {
         return
     }
 
+    const RETRY_DELAY_IF_BUFFER_IS_EMPTY = 1000 // ms
+    const RETRY_DELAY_IF_SERVER_IS_BUSY = 30 * 1000 // ms, status_code 503, already a task running
+    const TASK_START_DELAY_ON_SERVER = 1500 // ms
+    const SERVER_STATE_VALIDITY_DURATION = 10 * 1000 // ms
+
     const reqBody = task.reqBody
     const batchCount = task.batchCount
     const outputContainer = document.createElement('div')
@@ -518,11 +518,13 @@ async function doMakeImage(task) {
             })
             renderRequest = await res.json()
             // status_code 503, already a task running.
-        } while (renderRequest.status_code === 503 && await asyncDelay(30 * 1000))
+        } while (renderRequest.status_code === 503 && await asyncDelay(RETRY_DELAY_IF_SERVER_IS_BUSY))
+
         if (typeof renderRequest?.stream !== 'string') {
             console.log('Endpoint response: ', renderRequest)
             throw new Error('Endpoint response does not contains a response stream url.')
         }
+
         task['taskStatusLabel'].innerText = "Waiting"
         task['taskStatusLabel'].classList.add('waitingTaskLabel')
         task['taskStatusLabel'].classList.remove('activeTaskLabel')
@@ -532,7 +534,8 @@ async function doMakeImage(task) {
             if (!isServerAvailable()) {
                 throw new Error('Connexion with server lost.')
             }
-        } while (serverState.time > (Date.now() - (10 * 1000)) && serverState.task !== renderRequest.task)
+        } while (Date.now() < (serverState.time + SERVER_STATE_VALIDITY_DURATION) && serverState.task !== renderRequest.task)
+
         if (serverState.session !== 'pending' && serverState.session !== 'running' && serverState.session !== 'buffer') {
             if (serverState.session === 'stopped') {
                 return false
@@ -540,9 +543,10 @@ async function doMakeImage(task) {
 
             throw new Error('Unexpected server task state: ' + serverState.session || 'Undefined')
         }
+
         while (serverState.task === renderRequest.task && serverState.session === 'pending') {
             // Wait for task to start on server.
-            await asyncDelay(1500)
+            await asyncDelay(TASK_START_DELAY_ON_SERVER)
         }
 
         // Task started!
@@ -636,7 +640,7 @@ async function doMakeImage(task) {
             }
             if (readComplete && finalJSON.length <= 0) {
                 if (res.status === 200) {
-                    await asyncDelay(1000)
+                    await asyncDelay(RETRY_DELAY_IF_BUFFER_IS_EMPTY)
                     res = await fetch(renderRequest.stream, {
                         headers: {
                             'Content-Type': 'application/json'
@@ -1201,7 +1205,7 @@ updatePromptStrength()
 useBetaChannelField.addEventListener('click', async function(e) {
     if (!isServerAvailable()) {
         // logError('The server is still starting up..')
-        alert('The server is not available.')
+        alert('The server is still starting up..')
         e.preventDefault()
         return false
     }
