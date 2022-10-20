@@ -206,6 +206,7 @@ def get_base_path(disk_path, session_id, prompt, img_id, ext, suffix=None):
     os.makedirs(session_out_path, exist_ok=True)
 
     prompt_flattened = filename_regex.sub('_', prompt)[:50]
+    
 
     if suffix is not None:
         return os.path.join(session_out_path, f"{prompt_flattened}_{img_id}_{suffix}.{ext}")
@@ -505,7 +506,7 @@ def do_mk_img(req: Request):
                             if (len(filters_applied) > 0):
                                 filtered_image = Image.fromarray(x_sample)
                                 filtered_img_data = img_to_base64_str(filtered_image, req.output_format)
-                                response_image = ResponseImage(data=filtered_img_data, seed=req.seed)
+                                response_image = ResponseImage(data=filtered_img_data, seed=opt_seed)
                                 res.images.append(response_image)
                                 if req.save_to_disk_path is not None:
                                     filtered_img_out_path = get_base_path(req.save_to_disk_path, req.session_id, prompts[0], img_id, req.output_format, "_".join(filters_applied))

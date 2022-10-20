@@ -1,0 +1,146 @@
+:root {
+    --background-color1: rgb(32, 33, 36); /* main parts of the page */
+    --background-color2: rgb(44, 45, 48); /* main panels */
+    --background-color3: rgb(47, 49, 53);
+    --background-color4: rgb(18, 18, 19); /* settings dropdowns */
+
+    --accent-hue: 266;
+    --accent-lightness: 36%;
+    --accent-lightness-hover: 40%;
+
+    --text-color: #eee;
+
+    --input-text-color: black;
+    --input-background-color: #e9e9ed; 
+    --input-border-color: #8f8f9d; 
+
+    --button-text-color: var(--input-text-color);
+    --button-color: #e9e9ed;
+    --button-border: 1px solid #8f8f9d;
+
+    /* other */
+    --input-border-radius: 4px;
+    --input-border-size: 1px; 
+    --accent-color: hsl(var(--accent-hue), 100%, var(--accent-lightness));
+    --accent-color-hover: hsl(var(--accent-hue), 100%, var(--accent-lightness-hover));
+    --make-image-border: 2px solid hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) - 21%));
+}
+
+.theme-light {
+    --background-color1: white; 
+    --background-color2: #dddddd;
+    --background-color3: #e7e9eb;
+    --background-color4: #cccccc;
+
+    --text-color: black;
+
+    --input-text-color: black;
+    --input-background-color: #f8f9fa; 
+    --input-border-color: grey; 
+}
+
+.theme-discord {
+    --background-color1: #36393f;
+    --background-color2: #2f3136;
+    --background-color3: #292b2f;
+    --background-color4: #202225;
+    
+    --accent-hue: 235;
+    --accent-lightness: 65%;
+    --make-image-border: none;
+    
+    --button-color: var(--accent-color);
+    --button-border: none;
+
+    --input-text-color: #ccc;
+    --input-border-size: 2px; 
+    --input-background-color: #202225; 
+    --input-border-color: var(--input-background-color); 
+}
+
+.theme-cool-blue {
+    --main-hue: 222;
+	--main-saturation: 18%;
+	--value-base: 19%;
+	--value-step: 3%;
+	--background-color1: hsl(var(--main-hue), var(--main-saturation), var(--value-base));
+	--background-color2: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (1 * var(--value-step))));
+	--background-color3: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (2 * var(--value-step))));
+	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (3 * var(--value-step))));
+    
+    --accent-hue: 212;
+    --make-image-border: none;
+
+    --button-color: var(--accent-color);
+    --button-border: none;
+    
+    --input-border-size: 1px; 
+    --input-background-color: var(--background-color3);
+	--input-text-color: #ccc;
+	--input-border-color: var(--background-color4);
+}
+
+
+.theme-blurple {
+    --main-hue: 235;
+	--main-saturation: 18%;
+	--value-base: 16%;
+	--value-step: 3%;
+	--background-color1: hsl(var(--main-hue), var(--main-saturation), var(--value-base));
+	--background-color2: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (1 * var(--value-step))));
+	--background-color3: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (2 * var(--value-step))));
+	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (3 * var(--value-step))));
+    
+    --make-image-border: none;
+
+    --button-color: var(--accent-color);
+    --button-border: none;
+    
+    --input-border-size: 1px; 
+    --input-background-color: var(--background-color3);
+	--input-text-color: #ccc;
+	--input-border-color: var(--background-color4);
+}
+
+.theme-super-dark {
+    --main-hue: 222;
+	--main-saturation: 18%;
+	--value-base: 5%;
+	--value-step: 5%;
+	--background-color1: hsl(var(--main-hue), var(--main-saturation), var(--value-base));
+	--background-color2: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (1 * var(--value-step))));
+	--background-color3: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (2 * var(--value-step))));
+	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (3 * var(--value-step))));
+    
+    --make-image-border: none;
+
+    --button-color: var(--accent-color);
+    --button-border: none;
+    
+    --input-border-size: 0px; 
+    --input-background-color: var(--background-color3);
+	--input-text-color: #ccc;
+	--input-border-color: var(--background-color4);
+}
+
+.theme-wild {
+    --main-hue: 128;
+	--main-saturation: 18%;
+	--value-base: 20%;
+	--value-step: 5%;
+	--background-color1: hsl(var(--main-hue), var(--main-saturation), var(--value-base));
+	--background-color2: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (1 * var(--value-step))));
+	--background-color3: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (2 * var(--value-step))));
+	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (3 * var(--value-step))));
+    
+    --accent-hue: 212;
+    --make-image-border: none;
+
+    --button-color: var(--accent-color);
+    --button-border: none;
+    
+    --input-border-size: 1px; 
+    --input-background-color: hsl(222, var(--main-saturation), calc(var(--value-base) - (2 * var(--value-step))));
+	--input-text-color: red;
+	--input-border-color: green;
+}
