@@ -1172,6 +1172,7 @@ function updateGuidanceScaleSlider() {
     }
 
     guidanceScaleSlider.value = guidanceScaleField.value * 10
+    guidanceScaleSlider.dispatchEvent(new Event("change"))
 }
 
 guidanceScaleSlider.addEventListener('input', updateGuidanceScale)
@@ -1190,6 +1191,7 @@ function updatePromptStrengthSlider() {
     }
 
     promptStrengthSlider.value = promptStrengthField.value * 100
+    promptStrengthSlider.dispatchEvent(new Event("change"))
 }
 
 promptStrengthSlider.addEventListener('input', updatePromptStrength)
