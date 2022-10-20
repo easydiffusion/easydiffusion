@@ -317,7 +317,6 @@ def do_mk_img(req: Request):
     opt_f = 8
     opt_ddim_eta = 0.0
     opt_init_img = req.init_image
-    
 
     print(req.to_string(), '\n    device', device)
 
