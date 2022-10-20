@@ -274,3 +274,9 @@ function BraceExpander() {
     }
 
 }
+
+function asyncDelay(timeout) {
+    return new Promise(function(resolve, reject) {
+        setTimeout(resolve, timeout, true)
+    })
+}
