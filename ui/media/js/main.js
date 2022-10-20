@@ -285,116 +285,140 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             const imageSeedLabel = imageItemElem.querySelector('.imgSeedLabel')
             imageSeedLabel.innerText = 'Seed: ' + req.seed
 
-            const buttons = {
-                'imgUseBtn': { html: 'Use as Input', click: getUseAsInputHandler(imageItemElem) },
-                'imgSaveBtn': { html: 'Download', click: getSaveImageHandler(imageItemElem, req['output_format']) },
-                'imgX2Btn': { html: 'Double Size', click: getStartNewTaskHandler(req, imageItemElem, 'img2img_X2') },
-                'imgRedoBtn': { html: 'Redo', click: getStartNewTaskHandler(req, imageItemElem, 'img2img') },
-            }
-            if (!req.use_upscale) {
-                buttons.upscaleBtn = { html: 'Upscale', click: getStartNewTaskHandler(req, imageItemElem, 'upscale') }
-            }
+            let buttons = [
+                { text: 'Use as Input', on_click: onUseAsInputClick },
+                { text: 'Download', on_click: onDownloadImageClick },
+                { text: 'Make Similar Images', on_click: onMakeSimilarClick },
+                { text: 'Draw another 25 steps', on_click: onContinueDrawingClick },
+                { text: 'Upscale (new)', on_click: onUpscaleClick, filter: (req, img) => !req.use_upscale },
+                { text: 'Fix Faces', on_click: onFixFacesClick, filter: (req, img) => !req.use_face_correction }
+            ]
+
+            // include the plugins
+            buttons = buttons.concat(PLUGINS['IMAGE_INFO_BUTTONS'])
+
             const imgItemInfo = imageItemElem.querySelector('.imgItemInfo')
-            const createButton = function(name, btnInfo) {
+            const img = imageItemElem.querySelector('img')
+            const createButton = function(btnInfo) {
                 const newButton = document.createElement('button')
-                newButton.classList.add(name)
                 newButton.classList.add('tasksBtns')
-                newButton.innerHTML = btnInfo.html
-                newButton.addEventListener('click', btnInfo.click)
+                newButton.innerText = btnInfo.text
+                newButton.addEventListener('click', function() {
+                    btnInfo.on_click(req, img)
+                })
                 imgItemInfo.appendChild(newButton)
             }
-            Object.keys(buttons).forEach((name) => createButton(name, buttons[name]))
+            buttons.forEach(btn => {
+                if (btn.filter && btn.filter(req, img) === false) {
+                    return
+                }
+
+                createButton(btn)
+            })
         }
     })
 }
 
-function getUseAsInputHandler(imageItemElem) {
-    return function() {
-        const imageElem = imageItemElem.querySelector('img')
-        const imgData = imageElem.src
-        const imageSeed = imageElem.getAttribute('data-seed')
+function onUseAsInputClick(req, img) {
+    const imgData = img.src
 
-        initImageSelector.value = null
-        initImagePreview.src = imgData
+    initImageSelector.value = null
+    initImagePreview.src = imgData
 
-        initImagePreviewContainer.style.display = 'block'
-        inpaintingEditorContainer.style.display = 'none'
-        promptStrengthContainer.style.display = 'table-row'
-        maskSetting.checked = false
-        samplerSelectionContainer.style.display = 'none'
-
-        // maskSetting.style.display = 'block'
-
-        // randomSeedField.checked = false
-        // seedField.value = imageSeed
-        // seedField.disabled = false
-    }
+    initImagePreviewContainer.style.display = 'block'
+    inpaintingEditorContainer.style.display = 'none'
+    promptStrengthContainer.style.display = 'table-row'
+    maskSetting.checked = false
+    samplerSelectionContainer.style.display = 'none'
 }
 
-function getSaveImageHandler(imageItemElem, outputFormat) {
-    return function() {
-        const imageElem = imageItemElem.querySelector('img')
-        const imgData = imageElem.src
-        const imageSeed = imageElem.getAttribute('data-seed')
-        const imagePrompt = imageElem.getAttribute('data-prompt')
-        const imageInferenceSteps = imageElem.getAttribute('data-steps')
-        const imageGuidanceScale = imageElem.getAttribute('data-guidance')
+function onDownloadImageClick(req, img) {
+    const imgData = img.src
+    const imageSeed = img.getAttribute('data-seed')
+    const imagePrompt = img.getAttribute('data-prompt')
+    const imageInferenceSteps = img.getAttribute('data-steps')
+    const imageGuidanceScale = img.getAttribute('data-guidance')
 
-        const imgDownload = document.createElement('a')
-        imgDownload.download = createFileName(imagePrompt, imageSeed, imageInferenceSteps, imageGuidanceScale, outputFormat)
-        imgDownload.href = imgData
-        imgDownload.click()
-    }
+    const imgDownload = document.createElement('a')
+    imgDownload.download = createFileName(imagePrompt, imageSeed, imageInferenceSteps, imageGuidanceScale, req['output_format'])
+    imgDownload.href = imgData
+    imgDownload.click()
 }
-function getStartNewTaskHandler(reqBody, imageItemElem, mode) {
-    return function() {
-        if (!isServerAvailable()) {
-            alert('The server is not available.')
-            return
-        }
-        const imageElem = imageItemElem.querySelector('img')
-        const newTaskRequest = getCurrentUserRequest()
-        switch (mode) {
-            case 'img2img':
-            case 'img2img_X2':
-                newTaskRequest.reqBody = Object.assign({}, reqBody, {
-                    num_outputs: 1,
-                    use_cpu: useCPUField.checked,
-                })
-                if (!newTaskRequest.reqBody.init_image || mode === 'img2img_X2') {
-                    newTaskRequest.reqBody.sampler = 'ddim'
-                    newTaskRequest.reqBody.prompt_strength = '0.5'
-                    newTaskRequest.reqBody.init_image = imageElem.src
-                    delete newTaskRequest.reqBody.mask
-                } else {
-                    newTaskRequest.reqBody.seed = 1 + newTaskRequest.reqBody.seed
-                }
-                if (mode === 'img2img_X2') {
-                    newTaskRequest.reqBody.width = reqBody.width * 2
-                    newTaskRequest.reqBody.height = reqBody.height * 2
-                    newTaskRequest.reqBody.num_inference_steps = Math.min(100, reqBody.num_inference_steps * 2)
-                    if (useUpscalingField.checked) {
-                        newTaskRequest.reqBody.use_upscale = upscaleModelField.value
-                    } else {
-                        delete newTaskRequest.reqBody.use_upscale
-                    }
-                }
-                break
-            case 'upscale':
-                newTaskRequest.reqBody = Object.assign({}, reqBody, {
-                    num_outputs: 1,
-                    //use_face_correction: 'GFPGANv1.3',
-                    use_upscale: upscaleModelField.value,
-                })
-                break
-            default:
-                throw new Error("Unknown upscale mode: " + mode)
-        }
-        newTaskRequest.seed = newTaskRequest.reqBody.seed
-        newTaskRequest.numOutputsTotal = 1
-        newTaskRequest.batchCount = 1
-        createTask(newTaskRequest)
-    }
+
+function onMakeSimilarClick(req, img) {
+    let newTaskRequest = getCurrentUserRequest()
+
+    newTaskRequest.reqBody = Object.assign({}, req, {
+        num_outputs: 1,
+        use_cpu: useCPUField.checked,
+        num_inference_steps: 50,
+        guidance_scale: 7.5,
+        prompt_strength: 0.7,
+        init_image: img.src,
+        seed: Math.floor(Math.random() * 10000000)
+    })
+
+    newTaskRequest.numOutputsTotal = 5
+    newTaskRequest.batchCount = 5
+    newTaskRequest.seed = newTaskRequest.reqBody.seed
+
+    delete newTaskRequest.reqBody.mask
+
+    createTask(newTaskRequest)
+}
+
+function onUpscaleClick(req, img) {
+    let newTaskRequest = getCurrentUserRequest()
+    const imageSeed = img.getAttribute('data-seed')
+
+    newTaskRequest.reqBody = Object.assign({}, req, {
+        num_outputs: 1,
+        use_cpu: useCPUField.checked,
+        use_upscale: upscaleModelField.value,
+        seed: imageSeed
+    })
+
+    newTaskRequest.numOutputsTotal = 1
+    newTaskRequest.batchCount = 1
+    newTaskRequest.seed = newTaskRequest.reqBody.seed
+
+    createTask(newTaskRequest)
+}
+
+function onFixFacesClick(req, img) {
+    let newTaskRequest = getCurrentUserRequest()
+    const imageSeed = img.getAttribute('data-seed')
+
+    newTaskRequest.reqBody = Object.assign({}, req, {
+        num_outputs: 1,
+        use_cpu: useCPUField.checked,
+        use_face_correction: 'GFPGANv1.3',
+        seed: imageSeed
+    })
+
+    newTaskRequest.numOutputsTotal = 1
+    newTaskRequest.batchCount = 1
+    newTaskRequest.seed = newTaskRequest.reqBody.seed
+
+    createTask(newTaskRequest)
+}
+
+function onContinueDrawingClick(req, img) {
+    let newTaskRequest = getCurrentUserRequest()
+    const imageSeed = img.getAttribute('data-seed')
+
+    newTaskRequest.reqBody = Object.assign({}, req, {
+        num_outputs: 1,
+        use_cpu: useCPUField.checked,
+        num_inference_steps: parseInt(req.num_inference_steps) + 25,
+        seed: imageSeed
+    })
+
+    newTaskRequest.numOutputsTotal = 1
+    newTaskRequest.batchCount = 1
+    newTaskRequest.seed = newTaskRequest.reqBody.seed
+
+    createTask(newTaskRequest)
 }
 
 // makes a single image. don't call this directly, use makeImage() instead
@@ -662,7 +686,7 @@ async function checkTasks() {
             })
         }
         if (genSeeds) {
-            newTask.reqBody.seed = startSeed + (i * newTask.reqBody.num_outputs)
+            newTask.reqBody.seed = parseInt(startSeed) + (i * newTask.reqBody.num_outputs)
             newTask.seed = newTask.reqBody.seed
         } else if (newTask.seed !== newTask.reqBody.seed) {
             newTask.seed = newTask.reqBody.seed
@@ -859,14 +883,34 @@ function getPrompts() {
     }
 
     prompts = prompts.split('\n')
+    prompts = prompts.map(prompt => prompt.trim())
+    prompts = prompts.filter(prompt => prompt !== '')
 
+    let promptsToMake = applySetOperator(prompts)
+    promptsToMake = applyPermuteOperator(promptsToMake)
+
+    if (activeTags.length <= 0) {
+        return promptsToMake
+    }
+
+    const promptTags = activeTags.map(x => x.name).join(", ")
+    return promptsToMake.map((prompt) => `${prompt}, ${promptTags}`)
+}
+
+function applySetOperator(prompts) {
+    let promptsToMake = []
+    let braceExpander = new BraceExpander()
+    prompts.forEach(prompt => {
+        let expandedPrompts = braceExpander.expand(prompt)
+        promptsToMake = promptsToMake.concat(expandedPrompts)
+    })
+
+    return promptsToMake
+}
+
+function applyPermuteOperator(prompts) {
     let promptsToMake = []
     prompts.forEach(prompt => {
-        prompt = prompt.trim()
-        if (prompt === '') {
-            return
-        }
-
         let promptMatrix = prompt.split('|')
         prompt = promptMatrix.shift().trim()
         promptsToMake.push(prompt)
@@ -879,11 +923,8 @@ function getPrompts() {
             promptsToMake = promptsToMake.concat(promptPermutations)
         }
     })
-    if (activeTags.length <= 0) {
-        return promptsToMake
-    }
-    const promptTags = activeTags.map(x => x.name).join(", ")
-    return promptsToMake.map((prompt) => `${prompt}, ${promptTags}`)
+
+    return promptsToMake
 }
 
 function permutePrompts(promptBase, promptMatrix) {

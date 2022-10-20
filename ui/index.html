@@ -6,6 +6,7 @@
     <link rel="icon" type="image/png" href="/media/images/favicon-32x32.png" sizes="32x32">
     <link rel="stylesheet" href="/media/css/fonts.css?v=1">
     <link rel="stylesheet" href="/media/css/themes.css?v=1">
+    <link rel="stylesheet" href="/media/css/auto-save.css?v=1">
     <link rel="stylesheet" href="/media/css/main.css?v=1">
     <link rel="stylesheet" href="/media/css/auto-save.css?v=1">
     <link rel="stylesheet" href="/media/css/modifier-thumbnails.css?v=1">
@@ -18,7 +19,7 @@
 <div id="container">
     <div id="top-nav">
         <div id="logo">
-            <h1>Stable Diffusion UI <small>v2.29 <span id="updateBranchLabel"></span></small></h1>
+            <h1>Stable Diffusion UI <small>v2.3.2 <span id="updateBranchLabel"></span></small></h1>
         </div>
         <ul id="top-nav-items">
             <li class="dropdown">
@@ -107,7 +108,7 @@
                 <ul id="editor-settings-entries" class="collapsible-content">
                     <li><table>
                     <tr><b class="settings-subheader">Image Settings</b></tr>
-                    <tr class="pl-5"><td><label for="seed">Seed:</label></td><td><input id="seed" name="seed" size="10" value="30000"> <input id="random_seed" name="random_seed" type="checkbox" checked> <label for="random_seed">Random</label></td></tr>
+                    <tr class="pl-5"><td><label for="seed">Seed:</label></td><td><input id="seed" name="seed" size="10" value="30000"> <input id="random_seed" name="random_seed" type="checkbox" checked><label for="random_seed">Random</label></td></tr>
                     <tr class="pl-5"><td><label for="num_outputs_total">Number of Images:</label></td><td><input id="num_outputs_total" name="num_outputs_total" value="1" size="1"> <label><small>(total)</small></label> <input id="num_outputs_parallel" name="num_outputs_parallel" value="1" size="1"> <label for="num_outputs_parallel"><small>(in parallel)</small></label></td></tr>
                     <tr class="pl-5"><td><label for="stable_diffusion_model">Model:</label></td><td>
                         <select id="stable_diffusion_model" name="stable_diffusion_model">
@@ -250,11 +251,12 @@
 </div>
 </body>
 
-<script src="media/js/utils.js?v=1"></script>
+<script src="media/js/plugins.js?v=1"></script>
+<script src="media/js/utils.js?v=2"></script>
 <script src="media/js/inpainting-editor.js?v=1"></script>
 <script src="media/js/image-modifiers.js"></script>
 <script src="media/js/auto-save.js?v=1"></script>
-<script src="media/js/main.js?v=1"></script>
+<script src="media/js/main.js?v=2"></script>
 <script src="media/js/themes.js?v=1"></script>
 <script>
 async function init() {
@@ -263,7 +265,7 @@ async function init() {
     await getDiskPath()
     await getAppConfig()
     await loadModifiers()
-
+    await loadUIPlugins()
 
     setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
     healthCheck()
