@@ -1,15 +1,18 @@
 /* Auto-Settings Styling */
+#auto_save_settings ~ button {
+    margin: 5px;
+}
 #auto_save_settings:not(:checked) ~ button {
     display: none;
 }
 
 #save-settings-config {
-    position: fixed;
+    position: absolute;
     background: rgba(32, 33, 36, 50%);
     top: 0px;
     left: 0px;
-    width: 100vw;
-    height: 100vh;
+    right: 0px;
+    bottom: 0px;
     z-index: 1000;
 }
 
@@ -17,7 +20,7 @@
     background: var(--background-color3);
     max-width: 600px;
     margin: auto;
-    margin-top: 100px;
+    margin-top: 50px;
     border-radius: 6px;
     padding: 30px;
     text-align: center;
@@ -25,6 +28,11 @@
 
 #save-settings-config-table {
     margin: auto;
+}
+
+#save-settings-config-table th {
+    padding-top: 15px;
+    padding-bottom: 5px;
 }
 
 #save-settings-config-table td:first-child,
@@ -46,4 +54,21 @@
     cursor: pointer;
     padding: 10px;
     transform: translate(50%, -50%) scaleX(130%);
+}
+
+#reset-image-settings {
+    cursor: pointer;
+    float: right;
+    padding: 8px;
+    opacity: 1;
+    transition: opacity 0.5;
+}
+
+.collapsible:not(.active) #reset-image-settings {
+    display: none;
+}
+
+#reset-image-settings.hidden {
+    opacity: 0;
+    pointer-events: none;
 }

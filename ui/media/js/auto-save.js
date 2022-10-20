@@ -1,14 +1,13 @@
 // Saving settings
-let saveSettingsCheckbox = document.getElementById("auto_save_settings")
 let saveSettingsConfigTable = document.getElementById("save-settings-config-table")
 let saveSettingsConfigOverlay = document.getElementById("save-settings-config")
+let resetImageSettingsButton = document.getElementById("reset-image-settings")
 
-const SETTINGS_KEY = "user_settings"
-var SETTINGS_SHOULD_SAVE_MAP = {} // key=id. dict initialized in initSettings
-var SETTINGS_VALUES = {} // key=id. dict initialized in initSettings
-var SETTINGS_DEFAULTS = {} // key=id. dict initialized in initSettings
-var SETTINGS_TO_SAVE = [] // list of elements initialized by initSettings
-var SETTINGS_IDS_LIST = [
+const SETTINGS_KEY = "user_settings_v2"
+
+const SETTINGS = {} // key=id. dict initialized in initSettings. { element, default, value, ignore }
+const SETTINGS_IDS_LIST = [
+    "prompt",
     "seed",
     "random_seed",
     "num_outputs_total",
@@ -18,8 +17,8 @@ var SETTINGS_IDS_LIST = [
     "width",
     "height",
     "num_inference_steps",
-    "guidance_scale_slider",
-    "prompt_strength_slider",
+    "guidance_scale",
+    "prompt_strength",
     "output_format",
     "negative_prompt",
     "stream_image_progress",
@@ -39,22 +38,49 @@ var SETTINGS_IDS_LIST = [
     "auto_save_settings"
 ]
 
+const IGNORE_BY_DEFAULT = [
+    "prompt"
+]
+
+const SETTINGS_SECTIONS = [ // gets the "keys" property filled in with an ordered list of settings in this section via initSettings
+    { id: "editor-inputs",   name: "Prompt" },
+    { id: "editor-settings", name: "Image Settings" },
+    { id: "system-settings", name: "System Settings" },
+    { id: "container",       name: "Other" }
+]
+
 async function initSettings() {
-    SETTINGS_IDS_LIST.forEach(id => SETTINGS_TO_SAVE.push(document.getElementById(id)))
-    SETTINGS_TO_SAVE.forEach(element => {
-        SETTINGS_SHOULD_SAVE_MAP[element.id] = true
-        SETTINGS_DEFAULTS[element.id] = getSetting(element)
-        SETTINGS_VALUES[element.id] = getSetting(element)
+    SETTINGS_IDS_LIST.forEach(id => {
+        var element = document.getElementById(id)
+        var label = document.querySelector(`label[for='${element.id}']`)
+        SETTINGS[id] = {
+            key: id,
+            element: element,
+            label: getSettingLabel(element),
+            default: getSetting(element),
+            value: getSetting(element),
+            ignore: IGNORE_BY_DEFAULT.includes(id)
+        }
         element.addEventListener("input", settingChangeHandler)
         element.addEventListener("change", settingChangeHandler)
     })
+    var unsorted_settings_ids = [...SETTINGS_IDS_LIST]
+    SETTINGS_SECTIONS.forEach(section => {
+        var name = section.name
+        var element = document.getElementById(section.id)
+        var children = Array.from(element.querySelectorAll(unsorted_settings_ids.map(id => `#${id}`).join(",")))
+        section.keys = []
+        children.forEach(e => {
+            section.keys.push(e.id)
+        })
+        unsorted_settings_ids = unsorted_settings_ids.filter(id => children.find(e => e.id == id) == undefined)
+    })
     loadSettings()
-    fillSaveSettingsConfigTable()
 }
 
 function getSetting(element) {
-    if (element instanceof String) {
-        element = SETTINGS_TO_SAVE.find(e => e.id == element);
+    if (typeof element === "string" || element instanceof String) {
+        element = SETTINGS[element].element
     }
     if (element.type == "checkbox") {
         return element.checked
@@ -63,8 +89,9 @@ function getSetting(element) {
 }
 function setSetting(element, value) {
     if (typeof element === "string" || element instanceof String) {
-        element = SETTINGS_TO_SAVE.find(e => e.id == element);
+        element = SETTINGS[element].element
     }
+    SETTINGS[element.id].value = value
     if (getSetting(element) == value) {
         return // no setting necessary
     }
@@ -79,31 +106,32 @@ function setSetting(element, value) {
 }
 
 function saveSettings() {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify({
-        values: SETTINGS_VALUES,
-        should_save: SETTINGS_SHOULD_SAVE_MAP
-    }))
+    var saved_settings = Object.values(SETTINGS).map(setting => {
+        return {
+            key: setting.key,
+            value: setting.value,
+            ignore: setting.ignore
+        }
+    })
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(saved_settings))
 }
-
 
 var CURRENTLY_LOADING_SETTINGS = false
 function loadSettings() {
-    var saved_settings = JSON.parse(localStorage.getItem(SETTINGS_KEY))
-    if (!saved_settings.values["auto_save_settings"]) {
-        setSetting("auto_save_settings", false);
-        return
-    }
-    if (saved_settings) {
-        var values = saved_settings.values
-        var should_save = saved_settings.should_save
+    var saved_settings_text = localStorage.getItem(SETTINGS_KEY)
+    if (saved_settings_text) {
+        var saved_settings = JSON.parse(saved_settings_text)
+        if (saved_settings.find(s => s.key == "auto_save_settings").value == false) {
+            setSetting("auto_save_settings", false)
+            return
+        }
         CURRENTLY_LOADING_SETTINGS = true
-        SETTINGS_TO_SAVE.forEach(element => {
-            if (element.id in values) {
-                SETTINGS_SHOULD_SAVE_MAP[element.id] = should_save[element.id]
-                SETTINGS_VALUES[element.id] = values[element.id]
-                if (SETTINGS_SHOULD_SAVE_MAP[element.id]) {
-                    setSetting(element, SETTINGS_VALUES[element.id])
-                }
+        saved_settings.map(saved_setting => {
+            var setting = SETTINGS[saved_setting.key]
+            setting.ignore = saved_setting.ignore
+            if (!setting.ignore) {
+                setting.value = saved_setting.value
+                setSetting(setting.element, setting.value)
             }
         })
         CURRENTLY_LOADING_SETTINGS = false
@@ -113,12 +141,13 @@ function loadSettings() {
     }
 }
 
-document.querySelector('#restoreDefaultSettingsBtn').addEventListener('click', loadDefaultSettings)
-function loadDefaultSettings() {
+function loadDefaultSettingsSection(section_id) {
     CURRENTLY_LOADING_SETTINGS = true
-    SETTINGS_TO_SAVE.forEach(element => {
-        SETTINGS_VALUES[element.id] = SETTINGS_DEFAULTS[element.id]
-        setSetting(element, SETTINGS_VALUES[element.id])
+    var section = SETTINGS_SECTIONS.find(s => s.id == section_id);
+    section.keys.forEach(key => {
+        var setting = SETTINGS[key];
+        setting.value = setting.default
+        setSetting(setting.element, setting.value)
     })
     CURRENTLY_LOADING_SETTINGS = false
     saveSettings()
@@ -128,33 +157,50 @@ function settingChangeHandler(event) {
     if (!CURRENTLY_LOADING_SETTINGS) {
         var element = event.target
         var value = getSetting(element)
-        if (value != SETTINGS_VALUES[element.id]) {
-            SETTINGS_VALUES[element.id] = value
+        if (value != SETTINGS[element.id].value) {
+            SETTINGS[element.id].value = value
             saveSettings()
         }
     }
 }
 
+function getSettingLabel(element) {
+    var labelElement = document.querySelector(`label[for='${element.id}']`)
+    var label = labelElement?.innerText || element.id
+    var truncate_length = 30
+    if (label.includes(" (")) {
+        label = label.substring(0, label.indexOf(" ("))
+    }
+    if (label.length > truncate_length) {
+        label = label.substring(0, truncate_length - 3) + "..."
+    }
+    label = label.replace("➕", "")
+    label = label.replace("➖", "")
+    return label
+}
+
 function fillSaveSettingsConfigTable() {
-    SETTINGS_TO_SAVE.forEach(element => {
-        var caption = element.id
-        var label = document.querySelector(`label[for='${element.id}']`)
-        if (label) {
-            caption = label.innerText
-            var truncate_length = 25
-            if (caption.length > truncate_length) {
-                caption = caption.substring(0, truncate_length - 3) + "..."
+    saveSettingsConfigTable.textContent = ""
+    SETTINGS_SECTIONS.forEach(section => {
+        var section_row = `<tr><th>${section.name}</th><td></td></tr>`
+        saveSettingsConfigTable.insertAdjacentHTML("beforeend", section_row)
+        section.keys.forEach(key => {
+            var setting = SETTINGS[key]
+            var element = setting.element
+            var checkbox_id = `shouldsave_${element.id}`
+            var is_checked = setting.ignore ? "" : "checked"
+            var value = setting.value
+            var value_truncate_length = 30
+            if ((typeof value === "string" || value instanceof String) && value.length > value_truncate_length) {
+                value = value.substring(0, value_truncate_length - 3) + "..."
             }
-        }
-        var default_value = SETTINGS_DEFAULTS[element.id]
-        var checkbox_id = `shouldsave_${element.id}`
-        var is_checked = SETTINGS_SHOULD_SAVE_MAP[element.id] ? "checked" : ""
-        var newrow = `<tr><td><label for="${checkbox_id}">${caption}</label></td><td><input id="${checkbox_id}" name="${checkbox_id}" ${is_checked} type="checkbox" ></td><td><small>(${default_value})</small></td></tr>`
-        saveSettingsConfigTable.insertAdjacentHTML("beforeend", newrow)
-        var checkbox = document.getElementById(checkbox_id)
-        checkbox.addEventListener("input", event => {
-            SETTINGS_SHOULD_SAVE_MAP[element.id] = checkbox.checked
-            saveSettings()
+            var newrow = `<tr><td><label for="${checkbox_id}">${setting.label}</label></td><td><input id="${checkbox_id}" name="${checkbox_id}" ${is_checked} type="checkbox" ></td><td><small>(${value})</small></td></tr>`
+            saveSettingsConfigTable.insertAdjacentHTML("beforeend", newrow)
+            var checkbox = document.getElementById(checkbox_id)
+            checkbox.addEventListener("input", event => {
+                setting.ignore = !checkbox.checked
+                saveSettings()
+            })
         })
     })
 }
@@ -163,10 +209,18 @@ document.getElementById("save-settings-config-close-btn").addEventListener('clic
     saveSettingsConfigOverlay.style.display = 'none'
 })
 document.getElementById("configureSettingsSaveBtn").addEventListener('click', () => {
+    fillSaveSettingsConfigTable()
     saveSettingsConfigOverlay.style.display = 'block'
 })
 saveSettingsConfigOverlay.addEventListener('click', (event) => {
     if (event.target.id == saveSettingsConfigOverlay.id) {
         saveSettingsConfigOverlay.style.display = 'none'
     }
+})
+document.getElementById("save-settings-config-close-btn").addEventListener('click', () => {
+    saveSettingsConfigOverlay.style.display = 'none'
+})
+resetImageSettingsButton.addEventListener('click', event => {
+    loadDefaultSettingsSection("editor-settings");
+    event.stopPropagation()
 })

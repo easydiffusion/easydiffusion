@@ -47,7 +47,6 @@
                             <label for="auto_save_settings">Automatically save settings <small>(settings restored on browser load)</small></label>
                             <br/>
                             <button id="configureSettingsSaveBtn">Configure</button>
-                            <button id="restoreDefaultSettingsBtn">Restore Defaults</button>
                         </li>
                         <!-- <li><input id="allow_nsfw" name="allow_nsfw" type="checkbox"> <label for="allow_nsfw">Allow NSFW Content (You confirm you are above 18 years of age)</label></li> -->
                         <br/>
@@ -104,7 +103,7 @@
             <div class="line-separator">&nbsp;</div>
 
             <div id="editor-settings" class="panel-box settings-box">
-                <h4 class="collapsible">Image Settings</h4>
+                <h4 class="collapsible">Image Settings<i id="reset-image-settings" class="fa-solid fa-arrow-rotate-left"></i></h4>
                 <ul id="editor-settings-entries" class="collapsible-content">
                     <li><table>
                     <tr><b class="settings-subheader">Image Settings</b></tr>
@@ -231,9 +230,8 @@
         <div>
             <span id="save-settings-config-close-btn">X</span>
             <h1>Save Settings Configuration</h1>
-            <p>Select which settings should be saved and reloaded when restarting the browser</p>
+            <p>Select which settings should be remembered when restarting the browser</p>
             <table id="save-settings-config-table">
-                <tr><th>Setting</th><th></th><th>Default value</th></tr>
             </table>
         </div>
     </div>
@@ -260,11 +258,12 @@
 <script src="media/js/themes.js?v=1"></script>
 <script>
 async function init() {
-    await loadModifiers()
+    await initSettings()
+    await getModels()
     await getDiskPath()
     await getAppConfig()
-    await getModels()
-    await initSettings()
+    await loadModifiers()
+
 
     setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
     healthCheck()

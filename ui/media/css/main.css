@@ -1,7 +1,10 @@
 * {
     font-family: Work Sans, Verdana, Geneva, sans-serif;
     box-sizing: border-box;
-    transition: background 0.5s, color 0.5s, background-color 0.5s;
+}
+
+html {
+    position: relative;
 }
 
 body {

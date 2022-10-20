@@ -29,8 +29,6 @@ let useCPUField = document.querySelector('#use_cpu')
 let useFullPrecisionField = document.querySelector('#use_full_precision')
 let saveToDiskField = document.querySelector('#save_to_disk')
 let diskPathField = document.querySelector('#diskPath')
-let autoSaveSettingsField = document.querySelector('#auto_save_settings')
-let themeField = document.querySelector('#theme')
 // let allowNSFWField = document.querySelector("#allow_nsfw")
 let useBetaChannelField = document.querySelector("#use_beta_channel")
 let promptStrengthSlider = document.querySelector('#prompt_strength_slider')
@@ -187,11 +185,11 @@ function asyncDelay(timeout) {
 function playSound() {
     const audio = new Audio('/media/ding.mp3')
     audio.volume = 0.2
-    var promise = audio.play();
+    var promise = audio.play()
     if (promise !== undefined) {
         promise.then(_ => {}).catch(error => {
-            console.warn("browser blocked autoplay");
-        });
+            console.warn("browser blocked autoplay")
+        })
     }
 }
 
@@ -656,7 +654,7 @@ async function checkTasks() {
     const genSeeds = Boolean(typeof task.reqBody.seed !== 'number' || (task.reqBody.seed === task.seed && task.numOutputsTotal > 1))
     const startSeed = task.reqBody.seed || task.seed
     for (let i = 0; i < task.batchCount; i++) {
-        let newTask = task;
+        let newTask = task
         if (task.batchCount > 1) {
             // Each output render batch needs it's own task instance to avoid altering the other runs after they are completed.
             newTask = Object.assign({}, task, {
@@ -1003,6 +1001,7 @@ makeImageBtn.addEventListener('click', makeImage)
 
 function updateGuidanceScale() {
     guidanceScaleField.value = guidanceScaleSlider.value / 10
+    guidanceScaleField.dispatchEvent(new Event("change"))
 }
 
 function updateGuidanceScaleSlider() {
@@ -1021,6 +1020,7 @@ updateGuidanceScale()
 
 function updatePromptStrength() {
     promptStrengthField.value = promptStrengthSlider.value / 100
+    promptStrengthField.dispatchEvent(new Event("change"))
 }
 
 function updatePromptStrengthSlider() {
@@ -1083,10 +1083,12 @@ async function getAppConfig() {
 
 async function getModels() {
     try {
+        var model_setting_key = "stable_diffusion_model"
+        var selectedModel = SETTINGS[model_setting_key].value
         let res = await fetch('/get/models')
         const models = await res.json()
 
-        let activeModel = models['active']
+        // let activeModel = models['active']
         let modelOptions = models['options']
         let stableDiffusionOptions = modelOptions['stable-diffusion']
 
@@ -1095,12 +1097,18 @@ async function getModels() {
             modelOption.value = modelName
             modelOption.innerText = modelName
 
-            if (modelName === activeModel['stable-diffusion']) {
+            if (modelName === selectedModel) {
                 modelOption.selected = true
             }
 
             stableDiffusionModelField.appendChild(modelOption)
         })
+
+        // TODO: set default for model here too
+        SETTINGS[model_setting_key].default = stableDiffusionOptions[0]
+        if (getSetting(model_setting_key) == '' || SETTINGS[model_setting_key].value == '') {
+            setSetting(model_setting_key, stableDiffusionOptions[0])
+        }
 
         console.log('get models response', models)
     } catch (e) {
@@ -1203,19 +1211,15 @@ promptsFromFileSelector.addEventListener('change', function() {
 
 async function getDiskPath() {
     try {
-        let diskPath = getSavedDiskPath()
+        var diskPath = getSetting("diskPath")
+        if (diskPath == '' || diskPath == undefined || diskPath == "undefined") {
+            let res = await fetch('/get/output_dir')
+            if (res.status === 200) {
+                res = await res.json()
+                res = res.output_dir
 
-        if (diskPath !== '') {
-            diskPathField.value = diskPath
-            return
-        }
-
-        let res = await fetch('/get/output_dir')
-        if (res.status === 200) {
-            res = await res.json()
-            res = res.output_dir
-
-            document.querySelector('#diskPath').value = res
+                setSetting("diskPath", res)
+            }
         }
     } catch (e) {
         console.log('error fetching output dir path', e)
