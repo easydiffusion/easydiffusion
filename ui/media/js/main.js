@@ -711,7 +711,7 @@ async function checkTasks() {
         setStatus('request', 'done', 'success')
         setTimeout(checkTasks, 500)
         stopImageBtn.style.display = 'none'
-        makeImageBtn.innerHTML = 'Make Image'
+        renameMakeImageButton()
 
         currentTask = null
 
@@ -728,7 +728,7 @@ async function checkTasks() {
     setStatus('request', 'fetching..')
 
     stopImageBtn.style.display = 'block'
-    makeImageBtn.innerHTML = 'Enqueue Next Image'
+    renameMakeImageButton()
     bellPending = true
 
     previewTools.style.display = 'block'
@@ -1122,6 +1122,21 @@ outputFormatField.value = getOutputFormat()
 diskPathField.addEventListener('change', handleStringSettingChange(DISK_PATH_KEY))
 widthField.addEventListener('change', onDimensionChange)
 heightField.addEventListener('change', onDimensionChange)
+
+function renameMakeImageButton() {
+    let totalImages = Math.max(parseInt(numOutputsTotalField.value), parseInt(numOutputsParallelField.value))
+    let imageLabel = 'Image'
+    if (totalImages > 1) {
+        imageLabel = totalImages + ' Images'
+    }
+    if (taskQueue.length == 0) {
+        makeImageBtn.innerText = 'Make ' + imageLabel
+    } else {
+        makeImageBtn.innerText = 'Enqueue Next ' + imageLabel
+    }
+}
+numOutputsTotalField.addEventListener('change', renameMakeImageButton)
+numOutputsParallelField.addEventListener('change', renameMakeImageButton)
 
 function onDimensionChange() {
     if (!maskSetting.checked) {
