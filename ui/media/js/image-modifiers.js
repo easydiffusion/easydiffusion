@@ -263,7 +263,7 @@ function saveCustomModifiers() {
 }
 
 function loadCustomModifiers() {
-    let customModifiers = localStorage.getItem(CUSTOM_MODIFIERS_KEY)
+    let customModifiers = localStorage.getItem(CUSTOM_MODIFIERS_KEY, '')
     customModifiersTextBox.value = customModifiers
 
     if (customModifiersGroupElement !== undefined) {
