@@ -10,6 +10,7 @@ let previewImageField = document.querySelector('#preview-image')
 let modifierSettingsBtn = document.querySelector('#modifier-settings-btn')
 let modifierSettingsOverlay = document.querySelector('#modifier-settings-config')
 let customModifiersTextBox = document.querySelector('#custom-modifiers-input')
+let customModifierEntriesToolbar = document.querySelector('#editor-modifiers-entries-toolbar')
 
 const modifierThumbnailPath = 'media/modifier-thumbnails'
 const activeCardClass = 'modifier-card-active'
@@ -120,7 +121,7 @@ function createModifierGroup(modifierGroup, initiallyExpanded) {
     e.appendChild(titleEl)
     e.appendChild(modifiersEl)
 
-    editorModifierEntries.insertBefore(e, editorModifierEntries.firstChild)
+    editorModifierEntries.insertBefore(e, customModifierEntriesToolbar.nextSibling)
 
     return e
 }

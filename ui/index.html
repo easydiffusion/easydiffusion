@@ -204,14 +204,16 @@
                 <button id="modifier-settings-btn" title="Add custom modifiers"><i class="fa fa-gear"></i></button>
                 <h4 class="collapsible">Image Modifiers (art styles, tags etc)</h4>
                 <div id="editor-modifiers-entries" class="collapsible-content">
-                    <label for="preview-image">Image Style:</label>
-                    <select id="preview-image" name="preview-image" value="portrait">
-                        <option value="portrait" selected="">Face</option>
-                        <option value="landscape">Landscape</option>
-                    </select>
-                    &nbsp;
-                    <label for="modifier-card-size-slider">Thumbnail Size:</label>
-                    <input id="modifier-card-size-slider" name="modifier-card-size-slider" value="0" type="range" min="-3" max="5">
+                    <div id="editor-modifiers-entries-toolbar">
+                        <label for="preview-image">Image Style:</label>
+                        <select id="preview-image" name="preview-image" value="portrait">
+                            <option value="portrait" selected="">Face</option>
+                            <option value="landscape">Landscape</option>
+                        </select>
+                        &nbsp;
+                        <label for="modifier-card-size-slider">Thumbnail Size:</label>
+                        <input id="modifier-card-size-slider" name="modifier-card-size-slider" value="0" type="range" min="-3" max="5">
+                    </div>
                 </div>
             </div>
         </div>
@@ -263,7 +265,7 @@
 <script src="media/js/plugins.js?v=1"></script>
 <script src="media/js/utils.js?v=3"></script>
 <script src="media/js/inpainting-editor.js?v=1"></script>
-<script src="media/js/image-modifiers.js?v=2"></script>
+<script src="media/js/image-modifiers.js?v=3"></script>
 <script src="media/js/auto-save.js?v=1"></script>
 <script src="media/js/main.js?v=3"></script>
 <script src="media/js/themes.js?v=1"></script>
