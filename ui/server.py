@@ -364,24 +364,27 @@ async def check_status(): # Task to Validate user config shortly after startup.
     # Check that the loaded config.json yielded a server in a known valid state.
     # When issues are found, try to fix them when possible and warn the user.
     device_count = 0
-    for i in range(10): # Wait for devices to register and/or change names.
-        await asyncio.sleep(3)
+    # Wait for devices to register and/or change names.
+    THREAD_START_DELAY = 5 # seconds - Give time for devices/threads to start.
+    for i in range(10): # Maximum number of retry.
+        await asyncio.sleep(THREAD_START_DELAY)
         new_count = task_manager.is_alive()
-        if device_count == new_count: break;
+        # Stops retry once no more devices show up.
+        if new_count > 0 and device_count == new_count: break
         device_count = new_count
 
     if 'render_devices' in config and task_manager.is_alive() <= 0: # No running devices, probably invalid user config. Try to apply defaults.
         print('WARNING: No active render devices after loading config. Validate "render_devices" in config.json')
         task_manager.start_render_thread('auto') # Detect best device for renders
         task_manager.start_render_thread('cpu') # Allow CPU to be used for renders
-        await asyncio.sleep(3) # delay message after thread start.
+        await asyncio.sleep(THREAD_START_DELAY) # delay message after thread start.
         print('Default render devices loaded to replace missing render_devices', config['render_devices'])
 
     display_warning = False
     if not 'render_devices' in config and task_manager.is_alive(0) <= 0: # No config set, is on auto mode and without cuda:0
         task_manager.start_render_thread('cuda') # An other cuda device is better and cuda:0 is missing, start it...
         display_warning = True # And warn user to update settings...
-        await asyncio.sleep(3) # delay message after thread start.
+        await asyncio.sleep(THREAD_START_DELAY) # delay message after thread start.
 
     if display_warning or task_manager.is_alive(0) <= 0:
         print('WARNING: GFPGANer only works on GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.')
