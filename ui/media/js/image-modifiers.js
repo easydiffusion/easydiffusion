@@ -270,7 +270,7 @@ function loadCustomModifiers() {
         customModifiersGroupElement.remove()
     }
 
-    if (customModifiers.trim() !== '') {
+    if (customModifiers && customModifiers.trim() !== '') {
         customModifiers = customModifiers.split('\n')
         customModifiers = customModifiers.filter(m => m.trim() !== '')
         customModifiers = customModifiers.map(function(m) {
