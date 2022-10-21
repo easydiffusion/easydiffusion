@@ -36,7 +36,7 @@ class RenderTask(): # Task with output queue and completion lock.
     def __init__(self, req: Request):
         self.request: Request = req # Initial Request
         self.response: Any = None # Copy of the last reponse
-        self.temp_images:[] = [None] * req.num_outputs * (1 if req.show_only_filtered_image else 2)
+        self.temp_images:list = [None] * req.num_outputs * (1 if req.show_only_filtered_image else 2)
         self.error: Exception = None
         self.lock: threading.Lock = threading.Lock() # Locks at task start and unlocks when task is completed
         self.buffer_queue: queue.Queue = queue.Queue() # Queue of JSON string segments
