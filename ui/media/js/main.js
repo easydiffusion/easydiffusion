@@ -453,10 +453,12 @@ function onMakeSimilarClick(req, img) {
 function enqueueImageVariationTask(req, img, reqDiff) {
     const imageSeed = img.getAttribute('data-seed')
 
-    const newTaskRequest = modifyCurrentRequest(req, reqDiff, {
+    reqDiff = Object.assign({}, reqDiff, {
         num_outputs: 1, // this can be user-configurable in the future
         seed: imageSeed
     })
+
+    const newTaskRequest = modifyCurrentRequest(req, reqDiff)
 
     newTaskRequest.numOutputsTotal = 1 // this can be user-configurable in the future
     newTaskRequest.batchCount = 1
