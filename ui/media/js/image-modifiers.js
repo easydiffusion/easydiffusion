@@ -1,14 +1,19 @@
 let activeTags = []
 let modifiers = []
+let customModifiersGroupElement = undefined
 
 let editorModifierEntries = document.querySelector('#editor-modifiers-entries')
 let editorModifierTagsList = document.querySelector('#editor-inputs-tags-list')
 let editorTagsContainer = document.querySelector('#editor-inputs-tags-container')
 let modifierCardSizeSlider = document.querySelector('#modifier-card-size-slider')
 let previewImageField = document.querySelector('#preview-image')
+let modifierSettingsBtn = document.querySelector('#modifier-settings-btn')
+let modifierSettingsOverlay = document.querySelector('#modifier-settings-config')
+let customModifiersTextBox = document.querySelector('#custom-modifiers-input')
 
 const modifierThumbnailPath = 'media/modifier-thumbnails'
 const activeCardClass = 'modifier-card-active'
+const CUSTOM_MODIFIERS_KEY = "customModifiers"
 
 function createModifierCard(name, previews) {
     const modifierCard = document.createElement('div')
@@ -56,6 +61,70 @@ function createModifierCard(name, previews) {
     return modifierCard
 }
 
+function createModifierGroup(modifierGroup, initiallyExpanded) {
+    const title = modifierGroup.category
+    const modifiers = modifierGroup.modifiers
+
+    const titleEl = document.createElement('h5')
+    titleEl.className = 'collapsible'
+    titleEl.innerText = title
+
+    const modifiersEl = document.createElement('div')
+    modifiersEl.classList.add('collapsible-content', 'editor-modifiers-leaf')
+
+    if (initiallyExpanded === true) {
+        titleEl.className += ' active'
+        modifiersEl.style.display = 'block'
+    }
+
+    modifiers.forEach(modObj => {
+        const modifierName = modObj.modifier
+        const modifierPreviews = modObj?.previews?.map(preview => `${modifierThumbnailPath}/${preview.path}`)
+
+        const modifierCard = createModifierCard(modifierName, modifierPreviews)
+
+        if(typeof modifierCard == 'object') {
+            modifiersEl.appendChild(modifierCard)
+
+            modifierCard.addEventListener('click', () => {
+                if (activeTags.map(x => x.name).includes(modifierName)) {
+                    // remove modifier from active array
+                    activeTags = activeTags.filter(x => x.name != modifierName)
+                    modifierCard.classList.remove(activeCardClass)
+
+                    modifierCard.querySelector('.modifier-card-image-overlay').innerText = '+'
+                } else {
+                    // add modifier to active array
+                    activeTags.push({
+                        'name': modifierName,
+                        'element': modifierCard.cloneNode(true),
+                        'originElement': modifierCard,
+                        'previews': modifierPreviews
+                    })
+
+                    modifierCard.classList.add(activeCardClass)
+
+                    modifierCard.querySelector('.modifier-card-image-overlay').innerText = '-'
+                }
+
+                refreshTagsList()
+            })
+        }
+    })
+
+    let brk = document.createElement('br')
+    brk.style.clear = 'both'
+    modifiersEl.appendChild(brk)
+
+    let e = document.createElement('div')
+    e.appendChild(titleEl)
+    e.appendChild(modifiersEl)
+
+    editorModifierEntries.insertBefore(e, editorModifierEntries.firstChild)
+
+    return e
+}
+
 async function loadModifiers() {
     try {
         let res = await fetch('/get/modifiers')
@@ -64,66 +133,10 @@ async function loadModifiers() {
 
             modifiers = res; // update global variable
 
+            res.reverse()
+
             res.forEach((modifierGroup, idx) => {
-                const title = modifierGroup.category
-                const modifiers = modifierGroup.modifiers
-
-                const titleEl = document.createElement('h5')
-                titleEl.className = 'collapsible'
-                titleEl.innerText = title
-
-                const modifiersEl = document.createElement('div')
-                modifiersEl.classList.add('collapsible-content', 'editor-modifiers-leaf')
-
-                if (idx == 0) {
-                    titleEl.className += ' active'
-                    modifiersEl.style.display = 'block'
-                }
-
-                modifiers.forEach(modObj => {
-                    const modifierName = modObj.modifier
-                    const modifierPreviews = modObj?.previews?.map(preview => `${modifierThumbnailPath}/${preview.path}`)
-
-                    const modifierCard = createModifierCard(modifierName, modifierPreviews)
-
-                    if(typeof modifierCard == 'object') {
-                        modifiersEl.appendChild(modifierCard)
-
-                        modifierCard.addEventListener('click', () => {
-                            if (activeTags.map(x => x.name).includes(modifierName)) {
-                                // remove modifier from active array
-                                activeTags = activeTags.filter(x => x.name != modifierName)
-                                modifierCard.classList.remove(activeCardClass)
-                                
-                                modifierCard.querySelector('.modifier-card-image-overlay').innerText = '+'
-                            } else {
-                                // add modifier to active array
-                                activeTags.push({
-                                    'name': modifierName,
-                                    'element': modifierCard.cloneNode(true),
-                                    'originElement': modifierCard,
-                                    'previews': modifierPreviews
-                                })
-
-                                modifierCard.classList.add(activeCardClass)
-
-                                modifierCard.querySelector('.modifier-card-image-overlay').innerText = '-'
-                            }
-
-                            refreshTagsList()
-                        })
-                    }
-                })
-
-                let brk = document.createElement('br')
-                brk.style.clear = 'both'
-                modifiersEl.appendChild(brk)
-
-                let e = document.createElement('div')
-                e.appendChild(titleEl)
-                e.appendChild(modifiersEl)
-
-                editorModifierEntries.appendChild(e)
+                createModifierGroup(modifierGroup, idx === res.length - 1)
             })
 
             createCollapsibles(editorModifierEntries)
@@ -131,6 +144,8 @@ async function loadModifiers() {
     } catch (e) {
         console.log('error fetching modifiers', e)
     }
+
+    loadCustomModifiers()
 }
 
 function refreshTagsList() {
@@ -228,3 +243,51 @@ function resizeModifierCards(val) {
 
 modifierCardSizeSlider.onchange = () => resizeModifierCards(modifierCardSizeSlider.value)
 previewImageField.onchange = () => changePreviewImages(previewImageField.value)
+
+modifierSettingsBtn.addEventListener('click', function() {
+    modifierSettingsOverlay.style.display = 'block'
+})
+document.getElementById("modifier-settings-config-close-btn").addEventListener('click', () => {
+    modifierSettingsOverlay.style.display = 'none'
+})
+modifierSettingsOverlay.addEventListener('click', (event) => {
+    if (event.target.id == modifierSettingsOverlay.id) {
+        modifierSettingsOverlay.style.display = 'none'
+    }
+})
+
+function saveCustomModifiers() {
+    localStorage.setItem(CUSTOM_MODIFIERS_KEY, customModifiersTextBox.value.trim())
+
+    loadCustomModifiers()
+}
+
+function loadCustomModifiers() {
+    let customModifiers = localStorage.getItem(CUSTOM_MODIFIERS_KEY)
+    customModifiersTextBox.value = customModifiers
+
+    if (customModifiersGroupElement !== undefined) {
+        customModifiersGroupElement.remove()
+    }
+
+    if (customModifiers.trim() !== '') {
+        customModifiers = customModifiers.split('\n')
+        customModifiers = customModifiers.filter(m => m.trim() !== '')
+        customModifiers = customModifiers.map(function(m) {
+            return {
+                "modifier": m
+            }
+        })
+
+        let customGroup = {
+            'category': 'Custom Modifiers',
+            'modifiers': customModifiers
+        }
+
+        customModifiersGroupElement = createModifierGroup(customGroup, true)
+
+        createCollapsibles(customModifiersGroupElement)
+    }
+}
+
+customModifiersTextBox.addEventListener('change', saveCustomModifiers)
