@@ -518,7 +518,7 @@ async function doMakeImage(task) {
             })
             renderRequest = await res.json()
             // status_code 503, already a task running.
-        } while (renderRequest.status_code === 503 && await asyncDelay(RETRY_DELAY_IF_SERVER_IS_BUSY))
+        } while (res.status === 503 && await asyncDelay(RETRY_DELAY_IF_SERVER_IS_BUSY))
 
         if (typeof renderRequest?.stream !== 'string') {
             console.log('Endpoint response: ', renderRequest)
