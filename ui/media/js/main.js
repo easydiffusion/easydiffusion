@@ -421,10 +421,10 @@ function onDownloadImageClick(req, img) {
     imgDownload.click()
 }
 
-function modifyCurrentRequest(req, reqDiff) {
+function modifyCurrentRequest(req, ...reqDiff) {
     const newTaskRequest = getCurrentUserRequest()
 
-    newTaskRequest.reqBody = Object.assign({}, req, reqDiff, {
+    newTaskRequest.reqBody = Object.assign({}, req, ...reqDiff, {
         use_cpu: useCPUField.checked
     })
     newTaskRequest.seed = newTaskRequest.reqBody.seed
@@ -453,12 +453,10 @@ function onMakeSimilarClick(req, img) {
 function enqueueImageVariationTask(req, img, reqDiff) {
     const imageSeed = img.getAttribute('data-seed')
 
-    reqDiff = Object.assign({}, reqDiff, {
+    const newTaskRequest = modifyCurrentRequest(req, reqDiff, {
         num_outputs: 1, // this can be user-configurable in the future
         seed: imageSeed
     })
-
-    const newTaskRequest = modifyCurrentRequest(req, reqDiff)
 
     newTaskRequest.numOutputsTotal = 1 // this can be user-configurable in the future
     newTaskRequest.batchCount = 1
