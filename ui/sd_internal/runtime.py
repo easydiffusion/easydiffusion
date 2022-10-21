@@ -576,7 +576,7 @@ def do_mk_img(req: Request):
                             if (len(filters_applied) > 0):
                                 filtered_image = Image.fromarray(x_sample)
                                 filtered_img_data = img_to_base64_str(filtered_image, req.output_format)
-                                response_image = ResponseImage(data=filtered_img_data, seed=req.seed)
+                                response_image = ResponseImage(data=filtered_img_data, seed=opt_seed)
                                 res.images.append(response_image)
                                 if req.save_to_disk_path is not None:
                                     filtered_img_out_path = get_base_path(req.save_to_disk_path, req.session_id, prompts[0], img_id, req.output_format, "_".join(filters_applied))
