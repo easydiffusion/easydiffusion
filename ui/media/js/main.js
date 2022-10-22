@@ -535,6 +535,7 @@ async function doMakeImage(task) {
                 throw new Error('Connexion with server lost.')
             }
         } while (Date.now() < (serverState.time + SERVER_STATE_VALIDITY_DURATION) && serverState.task !== renderRequest.task)
+
         switch(serverState.session) {
             case 'pending':
             case 'running':
