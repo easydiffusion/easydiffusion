@@ -270,8 +270,8 @@ def wait_move(model, target_device=None): # Send to target_device and wait until
     if start_mem <= 0: return
     model_name = model.__class__.__name__
     print(f'Device:{thread_data.device} - Sending model {model_name} to {target_device} | Memory transfer starting. Memory Used: {round(start_mem)}Mo')
-    model.to(target_device)
     start_time = time.time()
+    model.to(target_device)
     time_step = start_time
     WARNING_TIMEOUT = 1.5 # seconds - Show activity in console after timeout.
     last_mem = start_mem
