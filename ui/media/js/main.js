@@ -538,9 +538,16 @@ async function doMakeImage(task) {
             case 'pending':
             case 'running':
             case 'buffer':
-            case 'error': // Still valid, Update UI with error message
+                // Normal expected messages.
                 break
+            case 'completed':
+                console.warn('Server %o render request %o completed unexpectedly', serverState, renderRequest)
+                break // Continue anyway to try to read cached result.
+            case 'error':
+                console.error('Server %o render request %o has failed', serverState, renderRequest)
+                break // Still valid, Update UI with error message
             case 'stopped':
+                console.log('Server %o render request %o was stopped', serverState, renderRequest)
                 return false
             default:
                 throw new Error('Unexpected server task state: ' + serverState.session || 'Undefined')
