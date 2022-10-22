@@ -153,7 +153,7 @@ def resolve_model_to_use(model_name:str=None):
     for default_model in APP_CONFIG_DEFAULT_MODELS:
         default_model_path = os.path.join(SD_DIR, default_model + '.ckpt')
         if os.path.exists(default_model_path):
-            print('Could not find the configured custom model at:', model_path + '.ckpt', '. Using the default one:', default_model_path + '.ckpt')
+            print(f'Could not find the configured custom model {model_name}.ckpt. Using the default one: {default_model_path}.ckpt')
             return default_model_path
     raise Exception('No valid models found.')
 
