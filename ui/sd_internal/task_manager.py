@@ -193,6 +193,50 @@ def preload_model(file_path=None):
         current_state = ServerStates.Unavailable
         print(traceback.format_exc())
 
+def thread_get_next_task():
+    if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT):
+        print('Render thread on device', runtime.thread_data.device, 'failed to acquire manager lock.')
+        return None
+    if len(tasks_queue) <= 0:
+        manager_lock.release()
+        return None
+    from . import runtime
+    task = None
+    try:  # Select a render task.
+        for queued_task in tasks_queue:
+            if queued_task.request.use_face_correction:  # TODO Remove when fixed - A bug with GFPGANer and facexlib needs to be fixed before use on other devices.
+                if is_alive(0) <= 0:  # Allows GFPGANer only on cuda:0.
+                    queued_task.error = Exception('cuda:0 is not available with the current config. Remove GFPGANer filter to run task.')
+                    task = queued_task
+                    break
+                if queued_task.request.use_cpu:
+                    queued_task.error = Exception('Cpu cannot be used to run this task. Remove GFPGANer filter to run task.')
+                    task = queued_task
+                    break
+                if not runtime.is_first_cuda_device(runtime.thread_data.device):
+                    continue  # Wait for cuda:0
+            if queued_task.request.use_cpu and runtime.thread_data.device != 'cpu':
+                if is_alive('cpu') > 0:
+                    continue  # CPU Tasks, Skip GPU device
+                else:
+                    queued_task.error = Exception('Cpu is not enabled in render_devices.')
+                    task = queued_task
+                    break
+            if not queued_task.request.use_cpu and runtime.thread_data.device == 'cpu':
+                if is_alive() > 1:  # cpu is alive, so need more than one.
+                    continue  # GPU Tasks, don't run on CPU unless there is nothing else.
+                else:
+                    queued_task.error = Exception('No active gpu found. Please check the error message in the command-line window at startup.')
+                    task = queued_task
+                    break
+            task = queued_task
+            break
+        if task is not None:
+            del tasks_queue[tasks_queue.index(task)]
+        return task
+    finally:
+        manager_lock.release()
+
 def thread_render(device):
     global current_state, current_state_error, current_model_path
     from . import runtime
@@ -215,60 +259,19 @@ def thread_render(device):
         if isinstance(current_state_error, SystemExit):
             current_state = ServerStates.Unavailable
             return
-        task = None
-        if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT):
-            print('Render thread on device', runtime.thread_data.device, 'failed to acquire manager lock.')
-            time.sleep(1)
-            continue
-        if len(tasks_queue) <= 0:
-            manager_lock.release()
-            time.sleep(1)
-            continue
-        try: # Select a render task.
-            for queued_task in tasks_queue:
-                if queued_task.request.use_face_correction: #TODO Remove when fixed - A bug with GFPGANer and facexlib needs to be fixed before use on other devices.
-                    if is_alive(0) <= 0: # Allows GFPGANer only on cuda:0.
-                        queued_task.error = Exception('cuda:0 is not available with the current config. Remove GFPGANer filter to run task.')
-                        task = queued_task
-                        continue
-                    if queued_task.request.use_cpu:
-                        queued_task.error = Exception('Cpu cannot be used to run this task. Remove GFPGANer filter to run task.')
-                        task = queued_task
-                        continue
-                    if not runtime.is_first_cuda_device(runtime.thread_data.device):
-                        continue # Wait for cuda:0
-                if queued_task.request.use_cpu and runtime.thread_data.device != 'cpu':
-                    if is_alive('cpu') > 0:
-                        continue # CPU Tasks, Skip GPU device
-                    else:
-                        queued_task.error = Exception('Cpu is not enabled in render_devices.')
-                        task = queued_task
-                        continue
-                if not queued_task.request.use_cpu and runtime.thread_data.device == 'cpu':
-                    if is_alive() > 1: # cpu is alive, so need more than one.
-                        continue # GPU Tasks, don't run on CPU unless there is nothing else.
-                    else:
-                        queued_task.error = Exception('No active gpu found. Please check the error message in the command-line window at startup.')
-                        task = queued_task
-                        continue
-                task = queued_task
-                break
-            if task is not None:
-                del tasks_queue[tasks_queue.index(task)]
-        finally:
-            manager_lock.release()
+        task = thread_get_next_task()
         if task is None:
             time.sleep(1)
             continue
         if task.error is not None:
             print(task.error)
-            task.response = { "status": 'failed', "detail": str(task.error) }
+            task.response = {"status": 'failed', "detail": str(task.error)}
             task.buffer_queue.put(json.dumps(task.response))
             continue
-        #if current_model_path != task.request.use_stable_diffusion_model:
-        #    preload_model(task.request.use_stable_diffusion_model)
         if current_state_error:
             task.error = current_state_error
+            task.response = {"status": 'failed', "detail": str(task.error)}
+            task.buffer_queue.put(json.dumps(task.response))
             continue
         print(f'Session {task.request.session_id} starting task {id(task)}')
         if not task.lock.acquire(blocking=False): raise Exception('Got locked task from queue.')
@@ -288,7 +291,7 @@ def thread_render(device):
                     current_state = ServerStates.Rendering
                     current_model_path = task.request.use_stable_diffusion_model
                 if isinstance(current_state_error, SystemExit) or isinstance(current_state_error, StopAsyncIteration) or isinstance(task.error, StopAsyncIteration):
-                    runtime.stop_processing = True
+                    runtime.thread_data.stop_processing = True
                     if isinstance(current_state_error, StopAsyncIteration):
                         task.error = current_state_error
                         current_state_error = None
