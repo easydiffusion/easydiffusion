@@ -519,6 +519,7 @@ async function doMakeImage(task) {
             renderRequest = await res.json()
             // status_code 503, already a task running.
         } while (res.status === 503 && await asyncDelay(RETRY_DELAY_IF_SERVER_IS_BUSY))
+
         if (typeof renderRequest?.stream !== 'string') {
             console.log('Endpoint response: ', renderRequest)
             throw new Error(renderRequest.detail || 'Endpoint response does not contains a response stream url.')
@@ -534,6 +535,7 @@ async function doMakeImage(task) {
                 throw new Error('Connexion with server lost.')
             }
         } while (Date.now() < (serverState.time + SERVER_STATE_VALIDITY_DURATION) && serverState.task !== renderRequest.task)
+
         switch(serverState.session) {
             case 'pending':
             case 'running':
