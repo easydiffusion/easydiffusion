@@ -78,6 +78,9 @@ function createCollapsibles(node) {
     })
     if (save) {
         var saved = localStorage.getItem(COLLAPSIBLES_KEY)
+        if (!saved) { 
+            saved = tryLoadOldCollapsibles();
+        }
         if (!saved) {
             saveCollapsibles()
             saved = localStorage.getItem(COLLAPSIBLES_KEY)
@@ -91,6 +94,28 @@ function createCollapsibles(node) {
         })
         COLLAPSIBLES_INITIALIZED = true
     }
+}
+
+function tryLoadOldCollapsibles() {
+    var old_map = {
+        "advancedPanelOpen": "editor-settings",
+        "modifiersPanelOpen": "editor-modifiers",
+        "negativePromptPanelOpen": "editor-inputs-prompt"
+    };
+    if (localStorage.getItem(Object.keys(old_map)[0])) {
+        var result = {};
+        Object.keys(old_map).forEach(key => {
+            var value = localStorage.getItem(key);
+            if (value !== null) {
+                result[old_map[key]] = value == true || value == "true"
+                localStorage.removeItem(key)
+            }
+        });
+        result = JSON.stringify(result)
+        localStorage.setItem(COLLAPSIBLES_KEY, result)
+        return result
+    }
+    return null;
 }
 
 function permute(arr) {

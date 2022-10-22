@@ -137,6 +137,9 @@ function loadSettings() {
         CURRENTLY_LOADING_SETTINGS = false
     }
     else {
+        CURRENTLY_LOADING_SETTINGS = true
+        tryLoadOldSettings();
+        CURRENTLY_LOADING_SETTINGS = false
         saveSettings()
     }
 }
@@ -224,3 +227,70 @@ resetImageSettingsButton.addEventListener('click', event => {
     loadDefaultSettingsSection("editor-settings");
     event.stopPropagation()
 })
+
+
+function tryLoadOldSettings() {
+    console.log("Loading old user settings")
+    // load v1 auto-save.js settings
+    var old_map = {
+        "guidance_scale_slider": "guidance_scale",
+        "prompt_strength_slider": "prompt_strength"
+    }
+    var settings_key_v1 = "user_settings"
+    var saved_settings_text = localStorage.getItem(settings_key_v1)
+    if (saved_settings_text) {
+        var saved_settings = JSON.parse(saved_settings_text)
+        Object.keys(saved_settings.should_save).forEach(key => {
+            key = key in old_map ? old_map[key] : key
+            SETTINGS[key].ignore = !saved_settings.should_save[key]
+        });
+        Object.keys(saved_settings.values).forEach(key => {
+            key = key in old_map ? old_map[key] : key
+            var setting = SETTINGS[key]
+            if (!setting.ignore) {
+                setting.value = saved_settings.values[key]
+                setSetting(setting.element, setting.value)
+            }
+        });
+        localStorage.removeItem(settings_key_v1)
+    }
+
+    // load old individually stored items
+    var individual_settings_map = { // maps old localStorage-key to new SETTINGS-key
+        "soundEnabled": "sound_toggle",
+        "saveToDisk": "save_to_disk",
+        "useCPU": "use_cpu",
+        "useFullPrecision": "use_full_precision",
+        "useTurboMode": "turbo",
+        "diskPath": "diskPath",
+        "useFaceCorrection": "use_face_correction",
+        "useUpscaling": "use_upscale",
+        "showOnlyFilteredImage": "show_only_filtered_image",
+        "streamImageProgress": "stream_image_progress",
+        "outputFormat": "output_format",
+        "autoSaveSettings": "auto_save_settings",
+    };
+    Object.keys(individual_settings_map).forEach(localStorageKey => {
+        var localStorageValue = localStorage.getItem(localStorageKey);
+        if (localStorageValue !== null) {
+            var setting = SETTINGS[individual_settings_map[localStorageKey]]
+            if (setting.element.type == "checkbox" && (typeof localStorageValue === "string" || localStorageValue instanceof String)) {
+                localStorageValue = localStorageValue == "true"
+            }
+            setting.value = localStorageValue
+            setSetting(setting.element, setting.value)
+            localStorage.removeItem(localStorageKey);
+        }
+    })
+
+    // load collapsibles stuff
+}
+
+
+
+
+
+// PANEL STUFF
+// const ADVANCED_PANEL_OPEN_KEY = "advancedPanelOpen"
+// const MODIFIERS_PANEL_OPEN_KEY = "modifiersPanelOpen"
+// const NEGATIVE_PROMPT_PANEL_OPEN_KEY = "negativePromptPanelOpen"
