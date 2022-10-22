@@ -522,7 +522,7 @@ async function doMakeImage(task) {
 
         if (typeof renderRequest?.stream !== 'string') {
             console.log('Endpoint response: ', renderRequest)
-            throw new Error('Endpoint response does not contains a response stream url.')
+            throw new Error(renderRequest.detail || 'Endpoint response does not contains a response stream url.')
         }
 
         task['taskStatusLabel'].innerText = "Waiting"
@@ -536,12 +536,23 @@ async function doMakeImage(task) {
             }
         } while (Date.now() < (serverState.time + SERVER_STATE_VALIDITY_DURATION) && serverState.task !== renderRequest.task)
 
-        if (serverState.session !== 'pending' && serverState.session !== 'running' && serverState.session !== 'buffer') {
-            if (serverState.session === 'stopped') {
+        switch(serverState.session) {
+            case 'pending':
+            case 'running':
+            case 'buffer':
+                // Normal expected messages.
+                break
+            case 'completed':
+                console.warn('Server %o render request %o completed unexpectedly', serverState, renderRequest)
+                break // Continue anyway to try to read cached result.
+            case 'error':
+                console.error('Server %o render request %o has failed', serverState, renderRequest)
+                break // Still valid, Update UI with error message
+            case 'stopped':
+                console.log('Server %o render request %o was stopped', serverState, renderRequest)
                 return false
-            }
-
-            throw new Error('Unexpected server task state: ' + serverState.session || 'Undefined')
+            default:
+                throw new Error('Unexpected server task state: ' + serverState.session || 'Undefined')
         }
 
         while (serverState.task === renderRequest.task && serverState.session === 'pending') {
@@ -711,7 +722,7 @@ async function checkTasks() {
         setStatus('request', 'done', 'success')
         setTimeout(checkTasks, 500)
         stopImageBtn.style.display = 'none'
-        makeImageBtn.innerHTML = 'Make Image'
+        renameMakeImageButton()
 
         currentTask = null
 
@@ -728,7 +739,7 @@ async function checkTasks() {
     setStatus('request', 'fetching..')
 
     stopImageBtn.style.display = 'block'
-    makeImageBtn.innerHTML = 'Enqueue Next Image'
+    renameMakeImageButton()
     bellPending = true
 
     previewTools.style.display = 'block'
@@ -1122,6 +1133,21 @@ outputFormatField.value = getOutputFormat()
 diskPathField.addEventListener('change', handleStringSettingChange(DISK_PATH_KEY))
 widthField.addEventListener('change', onDimensionChange)
 heightField.addEventListener('change', onDimensionChange)
+
+function renameMakeImageButton() {
+    let totalImages = Math.max(parseInt(numOutputsTotalField.value), parseInt(numOutputsParallelField.value))
+    let imageLabel = 'Image'
+    if (totalImages > 1) {
+        imageLabel = totalImages + ' Images'
+    }
+    if (taskQueue.length == 0) {
+        makeImageBtn.innerText = 'Make ' + imageLabel
+    } else {
+        makeImageBtn.innerText = 'Enqueue Next ' + imageLabel
+    }
+}
+numOutputsTotalField.addEventListener('change', renameMakeImageButton)
+numOutputsParallelField.addEventListener('change', renameMakeImageButton)
 
 function onDimensionChange() {
     if (!maskSetting.checked) {
