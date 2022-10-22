@@ -576,3 +576,67 @@ input::file-selector-button {
 #promptsFromFileBtn {
     font-size: 9pt;
 }
+
+#reset-image-settings {
+    position: relative;
+}
+
+.simple-tooltip {
+	border-radius: 3px;
+	font-weight: bold;
+	font-size: 16px;
+    background-color: var(--background-color3);
+
+	visibility: hidden;
+	opacity: 0;
+	position: absolute;
+	white-space: nowrap;
+	padding: 8px 12px;
+	transition: 0.3s all;
+
+    pointer-events: none;
+}
+
+@media (hover: hover) {
+    :hover > .simple-tooltip {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+/* position specific */
+.simple-tooltip.right {
+    right: 0px;
+    top: 50%;
+    transform: translate(calc(100% - 15%), -50%);
+}
+:hover > .simple-tooltip.right {
+    transform: translate(100%, -50%);
+}
+
+.simple-tooltip.top {
+    top: 0px;
+    left: 50%;
+    transform: translate(-50%, calc(-100% + 15%));
+}
+:hover > .simple-tooltip.top {
+    transform: translate(-50%, -100%);
+}
+
+.simple-tooltip.left {
+    left: 0px;
+    top: 50%;
+    transform: translate(calc(-100% + 15%), -50%);
+}
+:hover > .simple-tooltip.left {
+    transform: translate(-100%, -50%);
+}
+
+.simple-tooltip.bottom {
+    bottom: 0px;
+    left: 50%;
+    transform: translate(-50%, calc(100% - 15%));
+}
+:hover > .simple-tooltip.bottom {
+    transform: translate(-50%, 100%);
+}
