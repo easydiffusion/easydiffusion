@@ -251,7 +251,7 @@ def ping(session_id:str=None):
     # Alive
     response = {'status': str(task_manager.current_state)}
     if session_id:
-        task = task_manager.task_cache.tryGet(session_id)
+        task = task_manager.get_cached_task(session_id)
         if task:
             response['task'] = id(task)
             if task.lock.locked():
@@ -302,7 +302,7 @@ def render(req : task_manager.ImageRequest):
 @app.get('/image/stream/{session_id:str}/{task_id:int}')
 def stream(session_id:str, task_id:int):
     #TODO Move to WebSockets ??
-    task = task_manager.task_cache.tryGet(session_id)
+    task = task_manager.get_cached_task(session_id, update_ttl=True)
     if not task: raise HTTPException(status_code=410, detail='No request received.') # HTTP410 Gone
     if (id(task) != task_id): raise HTTPException(status_code=409, detail=f'Wrong task id received. Expected:{id(task)}, Received:{task_id}') # HTTP409 Conflict
     if task.buffer_queue.empty() and not task.lock.locked():
@@ -320,7 +320,7 @@ def stop(session_id:str=None):
             raise HTTPException(status_code=409, detail='Not currently running any tasks.') # HTTP409 Conflict
         task_manager.current_state_error = StopAsyncIteration('')
         return {'OK'}
-    task = task_manager.task_cache.tryGet(session_id)
+    task = task_manager.get_cached_task(session_id)
     if not task: raise HTTPException(status_code=404, detail=f'Session {session_id} has no active task.') # HTTP404 Not Found
     if isinstance(task.error, StopAsyncIteration): raise HTTPException(status_code=409, detail=f'Session {session_id} task is already stopped.') # HTTP409 Conflict
     task.error = StopAsyncIteration('')
@@ -328,7 +328,7 @@ def stop(session_id:str=None):
 
 @app.get('/image/tmp/{session_id}/{img_id:int}')
 def get_image(session_id, img_id):
-    task = task_manager.task_cache.tryGet(session_id)
+    task = task_manager.get_cached_task(session_id, update_ttl=True)
     if not task: raise HTTPException(status_code=410, detail=f'Session {session_id} has not submitted a task.') # HTTP410 Gone
     if not task.temp_images[img_id]: raise HTTPException(status_code=425, detail='Too Early, task data is not available yet.') # HTTP425 Too Early
     try:

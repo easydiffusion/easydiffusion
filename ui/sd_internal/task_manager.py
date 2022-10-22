@@ -326,6 +326,13 @@ def thread_render(device):
             print(f'Session {task.request.session_id} task {id(task)} completed.')
         current_state = ServerStates.Online
 
+def get_cached_task(session_id:str, update_ttl:bool=False):
+    # By calling keep before tryGet, wont discard if was expired.
+    if update_ttl and not task_cache.keep(session_id, TASK_TTL):
+        # Failed to keep task, already gone.
+        return None
+    return task_cache.tryGet(session_id)
+
 def is_first_cuda_device(device):
     from . import runtime # When calling runtime from outside thread_render DO NOT USE thread specific attributes or functions.
     return runtime.is_first_cuda_device(device)
