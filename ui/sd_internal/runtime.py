@@ -171,9 +171,9 @@ def load_model_ckpt():
 
     if not thread_data.precision:
         thread_data.precision = 'full' if thread_data.force_full_precision else 'autocast'
+
     if not thread_data.unet_bs:
         thread_data.unet_bs = 1
-
 
     if thread_data.device == 'cpu':
         thread_data.precision = 'full'
@@ -207,9 +207,9 @@ def load_model_ckpt():
     model.turbo = thread_data.turbo
     if thread_data.device != 'cpu':
         model.to(thread_data.device)
-        #if thread_data.reduced_memory:
-            #model.model1.to("cpu")
-            #model.model2.to("cpu")
+    #if thread_data.reduced_memory:
+        #model.model1.to("cpu")
+        #model.model2.to("cpu")
     thread_data.model = model
 
     modelCS = instantiate_from_config(config.modelCondStage)
@@ -464,7 +464,7 @@ def do_mk_img(req: Request):
         thread_data.turbo = req.turbo
         thread_data.model.turbo = req.turbo
 
-     # Start by cleaning memory, loading and unloading things can leave memory allocated.
+    # Start by cleaning memory, loading and unloading things can leave memory allocated.
     gc()
 
     opt_prompt = req.prompt
