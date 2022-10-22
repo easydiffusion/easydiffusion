@@ -403,7 +403,7 @@ def update_temp_img(req, x_samples):
     return partial_images
 
 # Build and return the apropriate generator for do_mk_img
-def get_image_progess_generator(req, extra_props=None):
+def get_image_progress_generator(req, extra_props=None):
     if not req.stream_progress_updates:
         def empty_callback(x_samples, i): return x_samples
         return empty_callback
@@ -563,7 +563,7 @@ def do_mk_img(req: Request):
                         thread_data.modelFS.to(thread_data.device)
 
                     n_steps = req.num_inference_steps if req.init_image is None else t_enc
-                    img_callback = get_image_progess_generator(req, {"total_steps": n_steps})
+                    img_callback = get_image_progress_generator(req, {"total_steps": n_steps})
 
                     # run the handler
                     try:
