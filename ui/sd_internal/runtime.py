@@ -663,7 +663,6 @@ def do_mk_img(req: Request):
                         print(f'memory_final = {round(torch.cuda.memory_allocated(thread_data.device) / 1e6, 2)}Mo')
 
     print('Task completed')
-
     yield json.dumps(res.json())
 
 def save_image(img, img_out_path):
@@ -697,6 +696,7 @@ def _txt2img(opt_W, opt_H, opt_n_samples, opt_ddim_steps, opt_scale, start_code,
 
     # Send to CPU and wait until complete.
     wait_model_move_to(thread_data.modelCS, 'cpu')
+
     if sampler_name == 'ddim':
         thread_data.model.make_schedule(ddim_num_steps=opt_ddim_steps, ddim_eta=opt_ddim_eta, verbose=False)
 
