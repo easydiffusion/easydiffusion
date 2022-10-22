@@ -1,7 +1,7 @@
 import json
 import traceback
 
-TASK_TTL = 15 * 60 # Discard last session's task timeout
+TASK_TTL = 15 * 60 # seconds, Discard last session's task timeout
 
 import queue, threading, time
 from typing import Any, Generator, Hashable, Optional, Union

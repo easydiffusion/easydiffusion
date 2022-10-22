@@ -176,11 +176,6 @@ function logError(msg, res, outputMsg) {
     console.log('request error', res)
     setStatus('request', 'error', 'error')
 }
-function asyncDelay(timeout) {
-    return new Promise(function(resolve, reject) {
-        setTimeout(resolve, timeout, true)
-    })
-}
 
 function playSound() {
     const audio = new Audio('/media/ding.mp3')
@@ -290,7 +285,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                 { text: 'Download', on_click: onDownloadImageClick },
                 { text: 'Make Similar Images', on_click: onMakeSimilarClick },
                 { text: 'Draw another 25 steps', on_click: onContinueDrawingClick },
-                { text: 'Upscale (new)', on_click: onUpscaleClick, filter: (req, img) => !req.use_upscale },
+                { text: 'Upscale', on_click: onUpscaleClick, filter: (req, img) => !req.use_upscale },
                 { text: 'Fix Faces', on_click: onFixFacesClick, filter: (req, img) => !req.use_face_correction }
             ]
 
@@ -345,12 +340,20 @@ function onDownloadImageClick(req, img) {
     imgDownload.click()
 }
 
-function onMakeSimilarClick(req, img) {
-    let newTaskRequest = getCurrentUserRequest()
+function modifyCurrentRequest(req, reqDiff) {
+    const newTaskRequest = getCurrentUserRequest()
 
-    newTaskRequest.reqBody = Object.assign({}, req, {
+    newTaskRequest.reqBody = Object.assign({}, req, reqDiff, {
+        use_cpu: useCPUField.checked
+    })
+    newTaskRequest.seed = newTaskRequest.reqBody.seed
+
+    return newTaskRequest
+}
+
+function onMakeSimilarClick(req, img) {
+    const newTaskRequest = modifyCurrentRequest(req, {
         num_outputs: 1,
-        use_cpu: useCPUField.checked,
         num_inference_steps: 50,
         guidance_scale: 7.5,
         prompt_strength: 0.7,
@@ -360,65 +363,42 @@ function onMakeSimilarClick(req, img) {
 
     newTaskRequest.numOutputsTotal = 5
     newTaskRequest.batchCount = 5
-    newTaskRequest.seed = newTaskRequest.reqBody.seed
 
     delete newTaskRequest.reqBody.mask
 
     createTask(newTaskRequest)
 }
 
-function onUpscaleClick(req, img) {
-    let newTaskRequest = getCurrentUserRequest()
+function enqueueImageVariationTask(req, img, reqDiff) {
     const imageSeed = img.getAttribute('data-seed')
 
-    newTaskRequest.reqBody = Object.assign({}, req, {
-        num_outputs: 1,
-        use_cpu: useCPUField.checked,
-        use_upscale: upscaleModelField.value,
+    const newTaskRequest = modifyCurrentRequest(req, reqDiff, {
+        num_outputs: 1, // this can be user-configurable in the future
         seed: imageSeed
     })
 
-    newTaskRequest.numOutputsTotal = 1
+    newTaskRequest.numOutputsTotal = 1 // this can be user-configurable in the future
     newTaskRequest.batchCount = 1
-    newTaskRequest.seed = newTaskRequest.reqBody.seed
 
     createTask(newTaskRequest)
+}
+
+function onUpscaleClick(req, img) {
+    enqueueImageVariationTask(req, img, {
+        use_upscale: upscaleModelField.value
+    })
 }
 
 function onFixFacesClick(req, img) {
-    let newTaskRequest = getCurrentUserRequest()
-    const imageSeed = img.getAttribute('data-seed')
-
-    newTaskRequest.reqBody = Object.assign({}, req, {
-        num_outputs: 1,
-        use_cpu: useCPUField.checked,
-        use_face_correction: 'GFPGANv1.3',
-        seed: imageSeed
+    enqueueImageVariationTask(req, img, {
+        use_face_correction: 'GFPGANv1.3'
     })
-
-    newTaskRequest.numOutputsTotal = 1
-    newTaskRequest.batchCount = 1
-    newTaskRequest.seed = newTaskRequest.reqBody.seed
-
-    createTask(newTaskRequest)
 }
 
 function onContinueDrawingClick(req, img) {
-    let newTaskRequest = getCurrentUserRequest()
-    const imageSeed = img.getAttribute('data-seed')
-
-    newTaskRequest.reqBody = Object.assign({}, req, {
-        num_outputs: 1,
-        use_cpu: useCPUField.checked,
-        num_inference_steps: parseInt(req.num_inference_steps) + 25,
-        seed: imageSeed
+    enqueueImageVariationTask(req, img, {
+        num_inference_steps: parseInt(req.num_inference_steps) + 25
     })
-
-    newTaskRequest.numOutputsTotal = 1
-    newTaskRequest.batchCount = 1
-    newTaskRequest.seed = newTaskRequest.reqBody.seed
-
-    createTask(newTaskRequest)
 }
 
 // makes a single image. don't call this directly, use makeImage() instead
@@ -426,6 +406,11 @@ async function doMakeImage(task) {
     if (task.stopped) {
         return
     }
+
+    const RETRY_DELAY_IF_BUFFER_IS_EMPTY = 1000 // ms
+    const RETRY_DELAY_IF_SERVER_IS_BUSY = 30 * 1000 // ms, status_code 503, already a task running
+    const TASK_START_DELAY_ON_SERVER = 1500 // ms
+    const SERVER_STATE_VALIDITY_DURATION = 10 * 1000 // ms
 
     const reqBody = task.reqBody
     const batchCount = task.batchCount
@@ -452,11 +437,13 @@ async function doMakeImage(task) {
             })
             renderRequest = await res.json()
             // status_code 503, already a task running.
-        } while (renderRequest.status_code === 503 && await asyncDelay(30 * 1000))
+        } while (res.status === 503 && await asyncDelay(RETRY_DELAY_IF_SERVER_IS_BUSY))
+
         if (typeof renderRequest?.stream !== 'string') {
             console.log('Endpoint response: ', renderRequest)
             throw new Error('Endpoint response does not contains a response stream url.')
         }
+
         task['taskStatusLabel'].innerText = "Waiting"
         task['taskStatusLabel'].classList.add('waitingTaskLabel')
         task['taskStatusLabel'].classList.remove('activeTaskLabel')
@@ -466,7 +453,8 @@ async function doMakeImage(task) {
             if (!isServerAvailable()) {
                 throw new Error('Connexion with server lost.')
             }
-        } while (serverState.time > (Date.now() - (10 * 1000)) && serverState.task !== renderRequest.task)
+        } while (Date.now() < (serverState.time + SERVER_STATE_VALIDITY_DURATION) && serverState.task !== renderRequest.task)
+
         if (serverState.session !== 'pending' && serverState.session !== 'running' && serverState.session !== 'buffer') {
             if (serverState.session === 'stopped') {
                 return false
@@ -474,9 +462,10 @@ async function doMakeImage(task) {
 
             throw new Error('Unexpected server task state: ' + serverState.session || 'Undefined')
         }
+
         while (serverState.task === renderRequest.task && serverState.session === 'pending') {
             // Wait for task to start on server.
-            await asyncDelay(1500)
+            await asyncDelay(TASK_START_DELAY_ON_SERVER)
         }
 
         // Task started!
@@ -570,7 +559,7 @@ async function doMakeImage(task) {
             }
             if (readComplete && finalJSON.length <= 0) {
                 if (res.status === 200) {
-                    await asyncDelay(1000)
+                    await asyncDelay(RETRY_DELAY_IF_BUFFER_IS_EMPTY)
                     res = await fetch(renderRequest.stream, {
                         headers: {
                             'Content-Type': 'application/json'
@@ -641,7 +630,7 @@ async function checkTasks() {
         setStatus('request', 'done', 'success')
         setTimeout(checkTasks, 500)
         stopImageBtn.style.display = 'none'
-        makeImageBtn.innerHTML = 'Make Image'
+        renameMakeImageButton()
 
         currentTask = null
 
@@ -658,7 +647,7 @@ async function checkTasks() {
     setStatus('request', 'fetching..')
 
     stopImageBtn.style.display = 'block'
-    makeImageBtn.innerHTML = 'Enqueue Next Image'
+    renameMakeImageButton()
     bellPending = true
 
     previewTools.style.display = 'block'
@@ -1019,6 +1008,21 @@ stopImageBtn.addEventListener('click', async function() {
 widthField.addEventListener('change', onDimensionChange)
 heightField.addEventListener('change', onDimensionChange)
 
+function renameMakeImageButton() {
+    let totalImages = Math.max(parseInt(numOutputsTotalField.value), parseInt(numOutputsParallelField.value))
+    let imageLabel = 'Image'
+    if (totalImages > 1) {
+        imageLabel = totalImages + ' Images'
+    }
+    if (taskQueue.length == 0) {
+        makeImageBtn.innerText = 'Make ' + imageLabel
+    } else {
+        makeImageBtn.innerText = 'Enqueue Next ' + imageLabel
+    }
+}
+numOutputsTotalField.addEventListener('change', renameMakeImageButton)
+numOutputsParallelField.addEventListener('change', renameMakeImageButton)
+
 function onDimensionChange() {
     if (!maskSetting.checked) {
         return
@@ -1053,6 +1057,7 @@ function updateGuidanceScaleSlider() {
     }
 
     guidanceScaleSlider.value = guidanceScaleField.value * 10
+    guidanceScaleSlider.dispatchEvent(new Event("change"))
 }
 
 guidanceScaleSlider.addEventListener('input', updateGuidanceScale)
@@ -1072,6 +1077,7 @@ function updatePromptStrengthSlider() {
     }
 
     promptStrengthSlider.value = promptStrengthField.value * 100
+    promptStrengthSlider.dispatchEvent(new Event("change"))
 }
 
 promptStrengthSlider.addEventListener('input', updatePromptStrength)
@@ -1081,7 +1087,7 @@ updatePromptStrength()
 useBetaChannelField.addEventListener('click', async function(e) {
     if (!isServerAvailable()) {
         // logError('The server is still starting up..')
-        alert('The server is not available.')
+        alert('The server is still starting up..')
         e.preventDefault()
         return false
     }
