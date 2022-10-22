@@ -19,6 +19,8 @@ if [ "$0" == "bash" ]; then
   which conda
   conda --version
 
+  echo ""
+
   # activate the environment
   CONDA_BASEPATH=$(conda info --base)
   source "$CONDA_BASEPATH/etc/profile.d/conda.sh" # otherwise conda complains about 'shell not initialized' (needed when running in a script)

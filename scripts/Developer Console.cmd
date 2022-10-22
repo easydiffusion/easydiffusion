@@ -19,6 +19,8 @@ call python --version
 call where conda
 call conda --version
 
+echo.
+
 @rem activate the environment
 call conda activate .\stable-diffusion\env
 
