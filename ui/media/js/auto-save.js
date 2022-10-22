@@ -282,15 +282,4 @@ function tryLoadOldSettings() {
             localStorage.removeItem(localStorageKey);
         }
     })
-
-    // load collapsibles stuff
 }
-
-
-
-
-
-// PANEL STUFF
-// const ADVANCED_PANEL_OPEN_KEY = "advancedPanelOpen"
-// const MODIFIERS_PANEL_OPEN_KEY = "modifiersPanelOpen"
-// const NEGATIVE_PROMPT_PANEL_OPEN_KEY = "negativePromptPanelOpen"
