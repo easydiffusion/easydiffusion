@@ -288,7 +288,7 @@ def wait_model_move_to(model, target_device): # Send to target_device and wait u
         if time.time() - time_step > WARNING_TIMEOUT: # Long delay, print to console to show activity.
             print(f'Device:{thread_data.device} - Waiting for Memory transfer. Memory Used: {round(mem)}Mo, Transfered: {round(start_mem - mem)}Mo')
             time_step = time.time()
-    print(f'Device:{thread_data.device} - {model_name} Moved: {round(start_mem - mem)}Mo in {round(time.time() - start_time, 3)} seconds to {target_device}')
+    print(f'Device:{thread_data.device} - {model_name} Moved: {round(start_mem - last_mem)}Mo in {round(time.time() - start_time, 3)} seconds to {target_device}')
 
 def load_model_gfpgan():
     if thread_data.gfpgan_file is None: raise ValueError(f'Thread gfpgan_file is undefined.')
