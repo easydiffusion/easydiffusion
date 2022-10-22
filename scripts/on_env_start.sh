@@ -36,6 +36,7 @@ fi
 rm -rf ui
 cp -Rf sd-ui-files/ui .
 cp sd-ui-files/scripts/on_sd_start.sh scripts/
+cp sd-ui-files/scripts/bootstrap.sh scripts/
 cp sd-ui-files/scripts/start.sh .
 cp sd-ui-files/scripts/developer_console.sh .
 
