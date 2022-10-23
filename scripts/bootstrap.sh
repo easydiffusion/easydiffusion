@@ -27,6 +27,7 @@ if [ "$OS_NAME" == "linux" ] && [ "$OS_ARCH" == "arm64" ]; then OS_ARCH="aarch64
 # config
 export MAMBA_ROOT_PREFIX="$(pwd)/installer_files/mamba"
 INSTALL_ENV_DIR="$(pwd)/installer_files/env"
+LEGACY_INSTALL_ENV_DIR="$(pwd)/installer/env"
 MICROMAMBA_DOWNLOAD_URL="https://micro.mamba.pm/api/micromamba/${OS_NAME}-${OS_ARCH}/latest"
 
 # figure out whether git and conda needs to be installed
@@ -34,7 +35,7 @@ if [ -e "$INSTALL_ENV_DIR" ]; then export PATH="$INSTALL_ENV_DIR/bin:$PATH"; fi
 
 PACKAGES_TO_INSTALL=""
 
-if [ ! -e "$INSTALL_ENV_DIR/etc/profile.d/conda.sh" ]; then PACKAGES_TO_INSTALL="$PACKAGES_TO_INSTALL conda"; fi
+if [ ! -e "$LEGACY_INSTALL_ENV_DIR/etc/profile.d/conda.sh" ] && [ ! -e "$INSTALL_ENV_DIR/etc/profile.d/conda.sh" ]; then PACKAGES_TO_INSTALL="$PACKAGES_TO_INSTALL conda"; fi
 if ! hash "git" &>/dev/null; then PACKAGES_TO_INSTALL="$PACKAGES_TO_INSTALL git"; fi
 
 # (if necessary) install git and conda into a contained environment
