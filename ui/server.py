@@ -12,6 +12,7 @@ sys.path.append(os.path.dirname(SD_UI_DIR))
 
 CONFIG_DIR = os.path.abspath(os.path.join(SD_UI_DIR, '..', 'scripts'))
 MODELS_DIR = os.path.abspath(os.path.join(SD_DIR, '..', 'models'))
+UI_PLUGINS_DIR = os.path.abspath(os.path.join(SD_DIR, '..', 'plugins', 'ui'))
 
 OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder
 TASK_TTL = 15 * 60 # Discard last session's task timeout
@@ -31,11 +32,15 @@ app = FastAPI()
 modifiers_cache = None
 outpath = os.path.join(os.path.expanduser("~"), OUTPUT_DIRNAME)
 
+os.makedirs(UI_PLUGINS_DIR, exist_ok=True)
+
 # don't show access log entries for URLs that start with the given prefix
 ACCESS_LOG_SUPPRESS_PATH_PREFIXES = ['/ping', '/image', '/modifier-thumbnails']
 
 NOCACHE_HEADERS={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
-app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'media/')), name="media")
+
+app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'media')), name="media")
+app.mount('/plugins', StaticFiles(directory=UI_PLUGINS_DIR), name="plugins")
 
 class SetAppConfigRequest(BaseModel):
     update_branch: str = "main"
@@ -251,6 +256,15 @@ def getModels():
 
     return models
 
+def getUIPlugins():
+    plugins = []
+
+    for file in os.listdir(UI_PLUGINS_DIR):
+        if file.endswith('.plugin.js'):
+            plugins.append(f'/plugins/{file}')
+
+    return plugins
+
 @app.get('/get/{key:path}')
 def read_web_data(key:str=None):
     if not key: # /get without parameters, stable-diffusion easter egg.
@@ -264,6 +278,7 @@ def read_web_data(key:str=None):
         return JSONResponse(getModels(), headers=NOCACHE_HEADERS)
     elif key == 'modifiers': return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'), headers=NOCACHE_HEADERS)
     elif key == 'output_dir': return JSONResponse({ 'output_dir': outpath }, headers=NOCACHE_HEADERS)
+    elif key == 'ui_plugins': return JSONResponse(getUIPlugins(), headers=NOCACHE_HEADERS)
     else:
         raise HTTPException(status_code=404, detail=f'Request for unknown {key}') # HTTP404 Not Found
 

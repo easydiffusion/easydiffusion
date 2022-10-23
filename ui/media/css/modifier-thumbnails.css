@@ -214,3 +214,36 @@
     margin-bottom: 0.5em;
     vertical-align: middle;
 }
+#modifier-settings-btn {
+    float: right;
+}
+
+#modifier-settings-config {
+    position: fixed;
+    background: rgba(32, 33, 36, 50%);
+    top: 0px;
+    left: 0px;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1000;
+}
+
+#modifier-settings-config > div {
+    background: var(--background-color2);
+    max-width: 600px;
+    margin: auto;
+    margin-top: 100px;
+    border-radius: 6px;
+    padding: 30px;
+    text-align: center;
+}
+#modifier-settings-config-close-btn {
+    float: right;
+    cursor: pointer;
+    padding: 10px;
+    transform: translate(50%, -50%) scaleX(130%);
+}
+#modifier-settings-config textarea {
+    width: 90%;
+    height: 150px;
+}
