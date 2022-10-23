@@ -73,7 +73,7 @@ def device_select(device):
     # otherwise these NVIDIA cards create green images
     thread_data.force_full_precision = ('nvidia' in device_name.lower() or 'geforce' in device_name.lower()) and (' 1660' in device_name or ' 1650' in device_name)
     if thread_data.force_full_precision:
-        print('forcing full precision on NVIDIA 16xx cards, to avoid green images. GPU detected: ', gpu_name)
+        print('forcing full precision on NVIDIA 16xx cards, to avoid green images. GPU detected: ', device_name)
 
     thread_data.device = device
     thread_data.has_valid_gpu = True
