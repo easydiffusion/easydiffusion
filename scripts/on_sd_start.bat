@@ -15,7 +15,7 @@ if exist "%cd%\profile" (
     set USERPROFILE=%cd%\profile
 )
 
-@>nul grep -c "sd_git_cloned" scripts\install_status.txt
+@>nul findstr /m "sd_git_cloned" scripts\install_status.txt
 @if "%ERRORLEVEL%" EQU "0" (
     @echo "Stable Diffusion's git repository was already installed. Updating.."
 
@@ -51,7 +51,7 @@ if exist "%cd%\profile" (
 
 @cd stable-diffusion
 
-@>nul grep -c "conda_sd_env_created" ..\scripts\install_status.txt
+@>nul findstr /m "conda_sd_env_created" ..\scripts\install_status.txt
 @if "%ERRORLEVEL%" EQU "0" (
     @echo "Packages necessary for Stable Diffusion were already installed"
 
@@ -93,7 +93,7 @@ if exist "%cd%\profile" (
 
 set PATH=C:\Windows\System32;%PATH%
 
-@>nul grep -c "conda_sd_gfpgan_deps_installed" ..\scripts\install_status.txt
+@>nul findstr /m "conda_sd_gfpgan_deps_installed" ..\scripts\install_status.txt
 @if "%ERRORLEVEL%" EQU "0" (
     @echo "Packages necessary for GFPGAN (Face Correction) were already installed"
 ) else (
@@ -126,7 +126,7 @@ set PATH=C:\Windows\System32;%PATH%
     @echo conda_sd_gfpgan_deps_installed >> ..\scripts\install_status.txt
 )
 
-@>nul grep -c "conda_sd_esrgan_deps_installed" ..\scripts\install_status.txt
+@>nul findstr /m "conda_sd_esrgan_deps_installed" ..\scripts\install_status.txt
 @if "%ERRORLEVEL%" EQU "0" (
     @echo "Packages necessary for ESRGAN (Resolution Upscaling) were already installed"
 ) else (
@@ -153,7 +153,7 @@ set PATH=C:\Windows\System32;%PATH%
     @echo conda_sd_esrgan_deps_installed >> ..\scripts\install_status.txt
 )
 
-@>nul grep -c "conda_sd_ui_deps_installed" ..\scripts\install_status.txt
+@>nul findstr /m "conda_sd_ui_deps_installed" ..\scripts\install_status.txt
 @if "%ERRORLEVEL%" EQU "0" (
     echo "Packages necessary for Stable Diffusion UI were already installed"
 ) else (
@@ -173,14 +173,14 @@ set PATH=C:\Windows\System32;%PATH%
 )
 
 call WHERE uvicorn > .tmp
-@>nul grep -c "uvicorn" .tmp
+@>nul findstr /m "uvicorn" .tmp
 @if "%ERRORLEVEL%" NEQ "0" (
     @echo. & echo "UI packages not found! Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
     pause
     exit /b
 )
 
-@>nul grep -c "conda_sd_ui_deps_installed" ..\scripts\install_status.txt
+@>nul findstr /m "conda_sd_ui_deps_installed" ..\scripts\install_status.txt
 @if "%ERRORLEVEL%" NEQ "0" (
     @echo conda_sd_ui_deps_installed >> ..\scripts\install_status.txt
 )
@@ -318,7 +318,7 @@ echo. > "..\models\stable-diffusion\Put your custom ckpt files here.txt"
 
 
 
-@>nul grep -c "sd_install_complete" ..\scripts\install_status.txt
+@>nul findstr /m "sd_install_complete" ..\scripts\install_status.txt
 @if "%ERRORLEVEL%" NEQ "0" (
     @echo sd_weights_downloaded >> ..\scripts\install_status.txt
     @echo sd_install_complete >> ..\scripts\install_status.txt
