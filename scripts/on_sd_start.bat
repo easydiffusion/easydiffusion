@@ -23,7 +23,7 @@ if exist "%cd%\profile" (
 
     @call git reset --hard
     @call git pull
-    @call git checkout f6cfebffa752ee11a7b07497b8529d5971de916c
+    @call git -c advice.detachedHead=false checkout f6cfebffa752ee11a7b07497b8529d5971de916c
 
     @call git apply ..\ui\sd_internal\ddim_callback.patch
     @call git apply ..\ui\sd_internal\env_yaml.patch
@@ -41,7 +41,7 @@ if exist "%cd%\profile" (
     )
 
     @cd stable-diffusion
-    @call git checkout f6cfebffa752ee11a7b07497b8529d5971de916c
+    @call git -c advice.detachedHead=false checkout f6cfebffa752ee11a7b07497b8529d5971de916c
 
     @call git apply ..\ui\sd_internal\ddim_callback.patch
     @call git apply ..\ui\sd_internal\env_yaml.patch

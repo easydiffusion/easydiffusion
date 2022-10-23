@@ -16,7 +16,7 @@ if [ -f "scripts/install_status.txt" ] && [ `grep -c sd_ui_git_cloned scripts/in
     cd sd-ui-files
 
     git reset --hard
-    git checkout "$update_branch"
+    git -c advice.detachedHead=false checkout "$update_branch"
     git pull
 
     cd ..

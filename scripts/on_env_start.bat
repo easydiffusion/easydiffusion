@@ -33,7 +33,7 @@ if "%update_branch%"=="" (
     @cd sd-ui-files
 
     @call git reset --hard
-    @call git checkout "%update_branch%"
+    @call git -c advice.detachedHead=false checkout "%update_branch%"
     @call git pull
 
     @cd ..
