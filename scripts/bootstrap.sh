@@ -27,7 +27,7 @@ if [ "$OS_NAME" == "linux" ] && [ "$OS_ARCH" == "arm64" ]; then OS_ARCH="aarch64
 # config
 export MAMBA_ROOT_PREFIX="$(pwd)/installer_files/mamba"
 INSTALL_ENV_DIR="$(pwd)/installer_files/env"
-LEGACY_INSTALL_ENV_DIR="$(pwd)/installer/env"
+LEGACY_INSTALL_ENV_DIR="$(pwd)/installer"
 MICROMAMBA_DOWNLOAD_URL="https://micro.mamba.pm/api/micromamba/${OS_NAME}-${OS_ARCH}/latest"
 
 # figure out whether git and conda needs to be installed
