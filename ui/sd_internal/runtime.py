@@ -473,7 +473,6 @@ def do_mk_img(req: Request):
     opt_C = 4
     opt_f = 8
     opt_ddim_eta = 0.0
-    opt_init_img = req.init_image
 
     print(req.to_string(), '\n    device', thread_data.device)
     print('\n\n    Using precision:', thread_data.precision)
@@ -532,7 +531,6 @@ def do_mk_img(req: Request):
     else:
         session_out_path = None
 
-    seeds = ""
     with torch.no_grad():
         for n in trange(opt_n_iter, desc="Sampling"):
             for prompts in tqdm(data, desc="data"):
@@ -651,8 +649,7 @@ def do_mk_img(req: Request):
                                     save_image(filtered_image, filtered_img_out_path)
                                     response_image.path_abs = filtered_img_out_path
                                 del filtered_image
-
-                        seeds += str(opt_seed) + ","
+                        # Filter Applied, move to next seed
                         opt_seed += 1
 
                     if thread_data.reduced_memory:
