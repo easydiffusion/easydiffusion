@@ -46,6 +46,8 @@ if [ "$PACKAGES_TO_INSTALL" != "" ]; then
         mkdir -p "$MAMBA_ROOT_PREFIX"
         curl -L "$MICROMAMBA_DOWNLOAD_URL" | tar -xvj "$MAMBA_ROOT_PREFIX/micromamba"
 
+        chmod u+x "$MAMBA_ROOT_PREFIX/micromamba"
+
         # test the mamba binary
         echo "Micromamba version:"
         "$MAMBA_ROOT_PREFIX/micromamba" --version
