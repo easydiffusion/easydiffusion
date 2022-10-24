@@ -251,7 +251,7 @@ def ping(session_id:str=None):
     # Alive
     response = {'status': str(task_manager.current_state)}
     if session_id:
-        task = task_manager.get_cached_task(session_id)
+        task = task_manager.get_cached_task(session_id, update_ttl=True)
         if task:
             response['task'] = id(task)
             if task.lock.locked():
@@ -320,7 +320,7 @@ def stop(session_id:str=None):
             raise HTTPException(status_code=409, detail='Not currently running any tasks.') # HTTP409 Conflict
         task_manager.current_state_error = StopAsyncIteration('')
         return {'OK'}
-    task = task_manager.get_cached_task(session_id)
+    task = task_manager.get_cached_task(session_id, update_ttl=False)
     if not task: raise HTTPException(status_code=404, detail=f'Session {session_id} has no active task.') # HTTP404 Not Found
     if isinstance(task.error, StopAsyncIteration): raise HTTPException(status_code=409, detail=f'Session {session_id} task is already stopped.') # HTTP409 Conflict
     task.error = StopAsyncIteration('')
