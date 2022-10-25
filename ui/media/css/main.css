@@ -579,6 +579,7 @@ input::file-selector-button {
 
 #reset-image-settings {
     position: relative;
+    transform: translateY(-15%);
 }
 
 .simple-tooltip {
