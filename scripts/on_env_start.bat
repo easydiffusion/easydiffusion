@@ -14,7 +14,7 @@ if "%update_branch%"=="" (
     set update_branch=main
 )
 
-@>nul grep -c "conda_sd_ui_deps_installed" scripts\install_status.txt
+@>nul findstr /m "conda_sd_ui_deps_installed" scripts\install_status.txt
 @if "%ERRORLEVEL%" NEQ "0" (
     for /f "tokens=*" %%a in ('python -c "import os; parts = os.getcwd().split(os.path.sep); print(len(parts))"') do if "%%a" NEQ "2" (
         echo. & echo "!!!! WARNING !!!!" & echo.
@@ -28,7 +28,7 @@ if "%update_branch%"=="" (
     )
 )
 
-@>nul grep -c "sd_ui_git_cloned" scripts\install_status.txt
+@>nul findstr /m "sd_ui_git_cloned" scripts\install_status.txt
 @if "%ERRORLEVEL%" EQU "0" (
     @echo "Stable Diffusion UI's git repository was already installed. Updating from %update_branch%.."
 
