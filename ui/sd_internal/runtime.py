@@ -589,9 +589,6 @@ def do_mk_img(req: Request):
                     print("decoding images")
                     img_data = [None] * batch_size
                     for i in range(batch_size):
-                        img_id = base64.b64encode(int(time.time()+i).to_bytes(8, 'big')).decode() # Generate unique ID based on time.
-                        img_id = img_id.translate({43:None, 47:None, 61:None})[-8:] # Remove + / = and keep last 8 chars.
-
                         x_samples_ddim = thread_data.modelFS.decode_first_stage(x_samples[i].unsqueeze(0))
                         x_sample = torch.clamp((x_samples_ddim + 1.0) / 2.0, min=0.0, max=1.0)
                         x_sample = 255.0 * rearrange(x_sample[0].cpu().numpy(), "c h w -> h w c")
@@ -606,6 +603,8 @@ def do_mk_img(req: Request):
                     print("saving images")
                     for i in range(batch_size):
                         img = Image.fromarray(img_data[i])
+                        img_id = base64.b64encode(int(time.time()+i).to_bytes(8, 'big')).decode() # Generate unique ID based on time.
+                        img_id = img_id.translate({43:None, 47:None, 61:None})[-8:] # Remove + / = and keep last 8 chars.
 
                         has_filters =   (req.use_face_correction is not None and req.use_face_correction.startswith('GFPGAN')) or \
                                         (req.use_upscale is not None and req.use_upscale.startswith('RealESRGAN'))
