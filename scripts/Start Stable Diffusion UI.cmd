@@ -11,6 +11,9 @@ call scripts\bootstrap.bat
 @rem set new installer's PATH, if it downloaded any packages
 if exist "installer_files\env" set PATH=%cd%\installer_files\env;%cd%\installer_files\env\Library\bin;%cd%\installer_files\env\Scripts;%cd%\installer_files\Library\usr\bin;%PATH%
 
+@rem activate the installer env
+conda activate
+
 @rem Test the bootstrap
 call where git
 call git --version

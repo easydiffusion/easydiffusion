@@ -3,9 +3,6 @@
 cp sd-ui-files/scripts/on_env_start.sh scripts/
 cp sd-ui-files/scripts/bootstrap.sh scripts/
 
-CONDA_BASEPATH=$(conda info --base)
-source "$CONDA_BASEPATH/etc/profile.d/conda.sh" # otherwise conda complains about 'shell not initialized' (needed when running in a script)
-
 # remove the old version of the dev console script, if it's still present
 if [ -e "open_dev_console.sh" ]; then
     rm "open_dev_console.sh"
@@ -61,10 +58,6 @@ else
 
     # prevent conda from using packages from the user's home directory, to avoid conflicts
     export PYTHONNOUSERSITE=1
-
-    # deactivate any pre-activated conda environments, by returning to (base) and then deactivating that
-    conda activate
-    conda deactivate
 
     if conda env create --prefix env --force -f environment.yaml ; then
         echo "Installed. Testing.."
