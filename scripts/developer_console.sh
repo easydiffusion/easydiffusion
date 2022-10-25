@@ -8,6 +8,12 @@ if [ "$0" == "bash" ]; then
   if [ -e "installer" ]; then export PATH="$(pwd)/installer/bin:$PATH"; fi
   if [ -e "installer_files/env" ]; then export PATH="$(pwd)/installer_files/env/bin:$PATH"; fi
 
+  # activate the installer env
+  CONDA_BASEPATH=$(conda info --base)
+  source "$CONDA_BASEPATH/etc/profile.d/conda.sh" # avoids the 'shell not initialized' error
+
+  conda activate
+
   # test the environment
   echo "Environment Info:"
   which git
