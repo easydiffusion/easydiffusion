@@ -305,7 +305,7 @@ fi
 printf "\n\nStable Diffusion is ready!\n\n"
 
 SD_PATH=`pwd`
-export PYTHONPATH="$SD_PATH;$SD_PATH/env/lib/python3.8/site-packages"
+export PYTHONPATH="$SD_PATH:$SD_PATH/env/lib/python3.8/site-packages"
 echo "PYTHONPATH=$PYTHONPATH"
 
 cd ..
