@@ -381,7 +381,7 @@ def shutdown_event(): # Signal render thread to close on shutdown
     current_state_error = SystemExit('Application shutting down.')
 
 def render(req : ImageRequest):
-    if not is_alive(): # Render thread is dead
+    if is_alive() <= 0: # Render thread is dead
         raise ChildProcessError('Rendering thread has died.')
     # Alive, check if task in cache
     task = task_cache.tryGet(req.session_id)
