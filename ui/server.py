@@ -85,9 +85,9 @@ def read_root():
 @app.get('/ping') # Get server and optionally session status.
 def ping(session_id:str=None):
     if not task_manager.render_thread.is_alive(): # Render thread is dead.
-        if task_manager.current_state_error: raise HTTPException(status_code=500, detail=str(current_state_error))
+        if task_manager.current_state_error: raise HTTPException(status_code=500, detail=str(task_manager.current_state_error))
         raise HTTPException(status_code=500, detail='Render thread is dead.')
-    if task_manager.current_state_error and not isinstance(task_manager.current_state_error, StopAsyncIteration): raise HTTPException(status_code=500, detail=str(current_state_error))
+    if task_manager.current_state_error and not isinstance(task_manager.current_state_error, StopAsyncIteration): raise HTTPException(status_code=500, detail=str(task_manager.current_state_error))
     # Alive
     response = {'status': str(task_manager.current_state)}
     if session_id:
@@ -223,7 +223,7 @@ def setConfig(config):
         config_json_path = os.path.join(CONFIG_DIR, 'config.json')
         with open(config_json_path, 'w', encoding='utf-8') as f:
             return json.dump(config, f)
-    except:
+    except Exception as e:
         print(str(e))
         print(traceback.format_exc())
 
