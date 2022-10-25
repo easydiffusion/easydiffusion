@@ -91,7 +91,12 @@ Please use our [guide](https://github.com/cmdr2/stable-diffusion-ui/wiki/How-to-
 # Bugs reports and code contributions welcome
 If there are any problems or suggestions, please feel free to ask on the [discord server](https://discord.com/invite/u9yhsFmEkB) or [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues).
 
-Also, please feel free to submit a pull request, if you have any code contributions in mind. Join the [discord server](https://discord.com/invite/u9yhsFmEkB) for development-related discussions, and for helping other users.
+We could really use programming help on these aspects:
+* User Interface: https://github.com/users/cmdr2/projects/1/views/1
+* Engine: https://github.com/users/cmdr2/projects/3/views/1
+* Installer: https://github.com/users/cmdr2/projects/4/views/1
+
+If you have any code contributions in mind, please feel free to say Hi to us on the [discord server](https://discord.com/invite/u9yhsFmEkB). We use the Discord server for development-related discussions, and for helping users.
 
 # Disclaimer
 The authors of this project are not responsible for any content generated using this interface.
