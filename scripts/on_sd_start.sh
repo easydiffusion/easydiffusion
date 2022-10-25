@@ -6,6 +6,11 @@ cp sd-ui-files/scripts/bootstrap.sh scripts/
 CONDA_BASEPATH=$(conda info --base)
 source "$CONDA_BASEPATH/etc/profile.d/conda.sh" # otherwise conda complains about 'shell not initialized' (needed when running in a script)
 
+# deactivate any pre-activated conda environments
+for i in $(seq ${CONDA_SHLVL}); do
+    conda deactivate
+done
+
 # remove the old version of the dev console script, if it's still present
 if [ -e "open_dev_console.sh" ]; then
     rm "open_dev_console.sh"
