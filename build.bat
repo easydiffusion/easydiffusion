@@ -9,7 +9,7 @@ set /p answer=Are you a developer of this project (Y/N)?
 if /i "%answer:~,1%" NEQ "Y" exit /b
 
 mkdir dist\win\stable-diffusion-ui\scripts
-mkdir dist\linux-mac\stable-diffusion-ui\scripts
+@REM mkdir dist\linux-mac\stable-diffusion-ui\scripts
 
 @rem copy the installer files for Windows
 
@@ -23,13 +23,13 @@ echo. > dist\win\stable-diffusion-ui\scripts\install_status.txt
 
 @rem copy the installer files for Linux and Mac
 
-copy scripts\on_env_start.sh dist\linux-mac\stable-diffusion-ui\scripts\
-copy scripts\bootstrap.sh dist\linux-mac\stable-diffusion-ui\scripts\
-copy scripts\start.sh dist\linux-mac\stable-diffusion-ui\
-copy LICENSE dist\linux-mac\stable-diffusion-ui\
-copy "CreativeML Open RAIL-M License" dist\linux-mac\stable-diffusion-ui\
-copy "How to install and run.txt" dist\linux-mac\stable-diffusion-ui\
-echo. > dist\linux-mac\stable-diffusion-ui\scripts\install_status.txt
+@REM copy scripts\on_env_start.sh dist\linux-mac\stable-diffusion-ui\scripts\
+@REM copy scripts\bootstrap.sh dist\linux-mac\stable-diffusion-ui\scripts\
+@REM copy scripts\start.sh dist\linux-mac\stable-diffusion-ui\
+@REM copy LICENSE dist\linux-mac\stable-diffusion-ui\
+@REM copy "CreativeML Open RAIL-M License" dist\linux-mac\stable-diffusion-ui\
+@REM copy "How to install and run.txt" dist\linux-mac\stable-diffusion-ui\
+@REM echo. > dist\linux-mac\stable-diffusion-ui\scripts\install_status.txt
 
 @rem make the zip
 
@@ -37,12 +37,12 @@ cd dist\win
 call powershell Compress-Archive -Path stable-diffusion-ui -DestinationPath ..\stable-diffusion-ui-win-x64.zip
 cd ..\..
 
-cd dist\linux-mac
-call powershell Compress-Archive -Path stable-diffusion-ui -DestinationPath ..\stable-diffusion-ui-linux-x64.zip
-call powershell Compress-Archive -Path stable-diffusion-ui -DestinationPath ..\stable-diffusion-ui-linux-arm64.zip
-call powershell Compress-Archive -Path stable-diffusion-ui -DestinationPath ..\stable-diffusion-ui-mac-x64.zip
-call powershell Compress-Archive -Path stable-diffusion-ui -DestinationPath ..\stable-diffusion-ui-mac-arm64.zip
-cd ..\..
+@REM cd dist\linux-mac
+@REM call powershell Compress-Archive -Path stable-diffusion-ui -DestinationPath ..\stable-diffusion-ui-linux-x64.zip
+@REM call powershell Compress-Archive -Path stable-diffusion-ui -DestinationPath ..\stable-diffusion-ui-linux-arm64.zip
+@REM call powershell Compress-Archive -Path stable-diffusion-ui -DestinationPath ..\stable-diffusion-ui-mac-x64.zip
+@REM call powershell Compress-Archive -Path stable-diffusion-ui -DestinationPath ..\stable-diffusion-ui-mac-arm64.zip
+@REM cd ..\..
 
 echo "Build ready. Upload the zip files inside the 'dist' folder."
 
