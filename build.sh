@@ -21,7 +21,7 @@ cp scripts/bootstrap.bat dist/win/stable-diffusion-ui/scripts/
 cp "scripts/Start Stable Diffusion UI.cmd" dist/win/stable-diffusion-ui/
 cp LICENSE dist/win/stable-diffusion-ui/
 cp "CreativeML Open RAIL-M License" dist/win/stable-diffusion-ui/
-cp "/How to install and run.txt" dist/win/stable-diffusion-ui/
+cp "How to install and run.txt" dist/win/stable-diffusion-ui/
 echo. > dist/win/stable-diffusion-ui/scripts/install_status.txt
 
 # copy the installer files for Linux and Mac
@@ -31,7 +31,7 @@ cp scripts/bootstrap.sh dist/linux-mac/stable-diffusion-ui/scripts/
 cp scripts/start.sh dist/linux-mac/stable-diffusion-ui/
 cp LICENSE dist/linux-mac/stable-diffusion-ui/
 cp "CreativeML Open RAIL-M License" dist/linux-mac/stable-diffusion-ui/
-cp "/How to install and run.txt" dist/linux-mac/stable-diffusion-ui/
+cp "How to install and run.txt" dist/linux-mac/stable-diffusion-ui/
 echo. > dist/linux-mac/stable-diffusion-ui/scripts/install_status.txt
 
 # make the zip
