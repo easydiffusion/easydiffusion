@@ -209,7 +209,7 @@ echo. > "..\models\stable-diffusion\Put your custom ckpt files here.txt"
 @if not exist "sd-v1-4.ckpt" (
     @echo. & echo "Downloading data files (weights) for Stable Diffusion.." & echo.
 
-    @call curl -L -k https://me.cmdr2.org/stable-diffusion-ui/sd-v1-4.ckpt > sd-v1-4.ckpt
+    @call curl -C - --retry 20 --retry-all-errors --retry-delay 5 -L -k https://me.cmdr2.org/stable-diffusion-ui/sd-v1-4.ckpt > sd-v1-4.ckpt
 
     @if exist "sd-v1-4.ckpt" (
         for %%I in ("sd-v1-4.ckpt") do if "%%~zI" NEQ "4265380512" (
@@ -239,7 +239,7 @@ echo. > "..\models\stable-diffusion\Put your custom ckpt files here.txt"
 @if not exist "GFPGANv1.3.pth" (
     @echo. & echo "Downloading data files (weights) for GFPGAN (Face Correction).." & echo.
 
-    @call curl -L -k https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.3.pth > GFPGANv1.3.pth
+    @call curl -C - --retry 20 --retry-all-errors --retry-delay 5 -L -k https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.3.pth > GFPGANv1.3.pth
 
     @if exist "GFPGANv1.3.pth" (
         for %%I in ("GFPGANv1.3.pth") do if "%%~zI" NEQ "348632874" (
@@ -269,7 +269,7 @@ echo. > "..\models\stable-diffusion\Put your custom ckpt files here.txt"
 @if not exist "RealESRGAN_x4plus.pth" (
     @echo. & echo "Downloading data files (weights) for ESRGAN (Resolution Upscaling) x4plus.." & echo.
 
-    @call curl -L -k https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth > RealESRGAN_x4plus.pth
+    @call curl -C - --retry 20 --retry-all-errors --retry-delay 5 -L -k https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth > RealESRGAN_x4plus.pth
 
     @if exist "RealESRGAN_x4plus.pth" (
         for %%I in ("RealESRGAN_x4plus.pth") do if "%%~zI" NEQ "67040989" (
@@ -299,7 +299,7 @@ echo. > "..\models\stable-diffusion\Put your custom ckpt files here.txt"
 @if not exist "RealESRGAN_x4plus_anime_6B.pth" (
     @echo. & echo "Downloading data files (weights) for ESRGAN (Resolution Upscaling) x4plus_anime.." & echo.
 
-    @call curl -L -k https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth > RealESRGAN_x4plus_anime_6B.pth
+    @call curl -C - --retry 20 --retry-all-errors --retry-delay 5 -L -k https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth > RealESRGAN_x4plus_anime_6B.pth
 
     @if exist "RealESRGAN_x4plus_anime_6B.pth" (
         for %%I in ("RealESRGAN_x4plus_anime_6B.pth") do if "%%~zI" NEQ "17938799" (
