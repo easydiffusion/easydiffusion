@@ -622,8 +622,8 @@ def do_mk_img(req: Request):
                             save_metadata(meta_out_path, req, prompts[0], opt_seed)
 
                         if return_orig_img:
-                            img_data = img_to_base64_str(img, req.output_format)
-                            res_image_orig = ResponseImage(data=img_data, seed=opt_seed)
+                            img_str = img_to_base64_str(img, req.output_format)
+                            res_image_orig = ResponseImage(data=img_str, seed=opt_seed)
                             res.images.append(res_image_orig)
 
                             if req.save_to_disk_path is not None:
