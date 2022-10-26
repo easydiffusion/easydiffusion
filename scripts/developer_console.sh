@@ -4,14 +4,36 @@ if [ "$0" == "bash" ]; then
   echo "Opening Stable Diffusion UI - Developer Console.."
   echo ""
 
-  source installer/bin/activate
+  # set legacy and new installer's PATH, if they exist
+  if [ -e "installer" ]; then export PATH="$(pwd)/installer/bin:$PATH"; fi
+  if [ -e "installer_files/env" ]; then export PATH="$(pwd)/installer_files/env/bin:$PATH"; fi
 
-  conda-unpack
+  # activate the installer env
+  CONDA_BASEPATH=$(conda info --base)
+  source "$CONDA_BASEPATH/etc/profile.d/conda.sh" # avoids the 'shell not initialized' error
 
-  conda --version
+  conda activate
+
+  # test the environment
+  echo "Environment Info:"
+  which git
   git --version
 
+  which conda
+  conda --version
+
+  echo ""
+
+  # activate the environment
+  CONDA_BASEPATH=$(conda info --base)
+  source "$CONDA_BASEPATH/etc/profile.d/conda.sh" # otherwise conda complains about 'shell not initialized' (needed when running in a script)
+
   conda activate ./stable-diffusion/env
+
+  which python
+  python --version
+
+  echo ""
 else
   bash --init-file developer_console.sh
 fi

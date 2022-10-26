@@ -1,10 +1,15 @@
 #!/bin/bash
 
 cp sd-ui-files/scripts/on_env_start.sh scripts/
+cp sd-ui-files/scripts/bootstrap.sh scripts/
 
-source installer/etc/profile.d/conda.sh
+# activate the installer env
+CONDA_BASEPATH=$(conda info --base)
+source "$CONDA_BASEPATH/etc/profile.d/conda.sh" # avoids the 'shell not initialized' error
 
-cp sd-ui-files/scripts/developer_console.sh .
+conda activate
+
+# remove the old version of the dev console script, if it's still present
 if [ -e "open_dev_console.sh" ]; then
     rm "open_dev_console.sh"
 fi
@@ -21,7 +26,7 @@ if [ -e "scripts/install_status.txt" ] && [ `grep -c sd_git_cloned scripts/insta
 
     git reset --hard
     git pull
-    git checkout f6cfebffa752ee11a7b07497b8529d5971de916c
+    git -c advice.detachedHead=false checkout f6cfebffa752ee11a7b07497b8529d5971de916c
 
     git apply ../ui/sd_internal/ddim_callback.patch
     git apply ../ui/sd_internal/env_yaml.patch
@@ -39,7 +44,7 @@ else
     fi
 
     cd stable-diffusion
-    git checkout f6cfebffa752ee11a7b07497b8529d5971de916c
+    git -c advice.detachedHead=false checkout f6cfebffa752ee11a7b07497b8529d5971de916c
 
     git apply ../ui/sd_internal/ddim_callback.patch
     git apply ../ui/sd_internal/env_yaml.patch
@@ -303,14 +308,15 @@ fi
 printf "\n\nStable Diffusion is ready!\n\n"
 
 SD_PATH=`pwd`
-export PYTHONPATH="$SD_PATH;$SD_PATH/env/lib/python3.8/site-packages"
+export PYTHONPATH="$SD_PATH:$SD_PATH/env/lib/python3.8/site-packages"
 echo "PYTHONPATH=$PYTHONPATH"
+
+which python
+python --version
 
 cd ..
 export SD_UI_PATH=`pwd`/ui
 cd stable-diffusion
-
-python --version
 
 uvicorn server:app --app-dir "$SD_UI_PATH" --port 9000 --host 0.0.0.0
 
