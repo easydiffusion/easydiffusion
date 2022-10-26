@@ -95,6 +95,7 @@ We could really use programming help on these aspects:
 * User Interface: https://github.com/users/cmdr2/projects/1/views/1
 * Engine: https://github.com/users/cmdr2/projects/3/views/1
 * Installer: https://github.com/users/cmdr2/projects/4/views/1
+* Documentation: https://github.com/users/cmdr2/projects/5/views/1
 
 If you have any code contributions in mind, please feel free to say Hi to us on the [discord server](https://discord.com/invite/u9yhsFmEkB). We use the Discord server for development-related discussions, and for helping users.
 
