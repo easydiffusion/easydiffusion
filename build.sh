@@ -11,8 +11,8 @@ case $yn in
     * ) exit;;
 esac
 
-mkdir -p dist/win/stable-diffusion-ui
-mkdir -p dist/linux-mac/stable-diffusion-ui
+mkdir -p dist/win/stable-diffusion-ui/scripts
+mkdir -p dist/linux-mac/stable-diffusion-ui/scripts
 
 # copy the installer files for Windows
 

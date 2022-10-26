@@ -8,8 +8,8 @@
 set /p answer=Are you a developer of this project (Y/N)?
 if /i "%answer:~,1%" NEQ "Y" exit /b
 
-mkdir dist\win\stable-diffusion-ui
-mkdir dist\linux-mac\stable-diffusion-ui
+mkdir dist\win\stable-diffusion-ui\scripts
+mkdir dist\linux-mac\stable-diffusion-ui\scripts
 
 @rem copy the installer files for Windows
 
