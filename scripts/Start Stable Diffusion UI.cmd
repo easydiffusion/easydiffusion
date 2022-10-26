@@ -15,9 +15,6 @@ if exist "installer_files\env" set PATH=%cd%\installer_files\env;%cd%\installer_
 call where git
 call git --version
 
-call where python
-call python --version
-
 call where conda
 call conda --version
 
