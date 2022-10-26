@@ -5,7 +5,7 @@
 
 ----
 
-## Step 1: Download the installer, and unzip it
+## Step 1: Download the installer
 
 <p float="left">
   <a href="#installation"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/develop/media/download-win.png" width="200" /></a>
