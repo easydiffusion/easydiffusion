@@ -1,3 +1,4 @@
+const themeField = document.getElementById("theme");
 var DEFAULT_THEME = {};
 var THEMES = []; // initialized in initTheme from data in css
 
@@ -36,6 +37,15 @@ function initTheme() {
         new_option.innerText = theme.name;
         themeField.appendChild(new_option);
     });
+
+    
+    // setup the style transitions a second after app initializes, so initial style is instant
+    setTimeout(() => {
+        var body = document.querySelector("body");
+        var style = document.createElement('style');
+        style.innerHTML = "* { transition: background 0.5s, color 0.5s, background-color 0.5s; }";
+        body.appendChild(style);
+    }, 1000);
 }
 initTheme();
 
@@ -45,6 +55,8 @@ function themeFieldChanged() {
     var body = document.querySelector("body");
     body.classList.remove(...THEMES.map(theme => theme.key));
     body.classList.add(theme_key);
+    
+    // 
 
     body.style = "";
     var theme = THEMES.find(t => t.key == theme_key);

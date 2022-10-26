@@ -1,19 +1,4 @@
 "use strict" // Opt in to a restricted variant of JavaScript
-const SOUND_ENABLED_KEY = "soundEnabled"
-const SAVE_TO_DISK_KEY = "saveToDisk"
-const USE_CPU_KEY = "useCPU"
-const USE_FULL_PRECISION_KEY = "useFullPrecision"
-const USE_TURBO_MODE_KEY = "useTurboMode"
-const DISK_PATH_KEY = "diskPath"
-const ADVANCED_PANEL_OPEN_KEY = "advancedPanelOpen"
-const MODIFIERS_PANEL_OPEN_KEY = "modifiersPanelOpen"
-const NEGATIVE_PROMPT_PANEL_OPEN_KEY = "negativePromptPanelOpen"
-const USE_FACE_CORRECTION_KEY = "useFaceCorrection"
-const USE_UPSCALING_KEY = "useUpscaling"
-const SHOW_ONLY_FILTERED_IMAGE_KEY = "showOnlyFilteredImage"
-const STREAM_IMAGE_PROGRESS_KEY = "streamImageProgress"
-const OUTPUT_FORMAT_KEY = "outputFormat"
-const AUTO_SAVE_SETTINGS_KEY = "autoSaveSettings"
 const HEALTH_PING_INTERVAL = 5 // seconds
 const MAX_INIT_IMAGE_DIMENSION = 768
 
@@ -44,8 +29,6 @@ let useCPUField = document.querySelector('#use_cpu')
 let useFullPrecisionField = document.querySelector('#use_full_precision')
 let saveToDiskField = document.querySelector('#save_to_disk')
 let diskPathField = document.querySelector('#diskPath')
-let autoSaveSettingsField = document.querySelector('#auto_save_settings')
-let themeField = document.querySelector('#theme')
 // let allowNSFWField = document.querySelector("#allow_nsfw")
 let useBetaChannelField = document.querySelector("#use_beta_channel")
 let promptStrengthSlider = document.querySelector('#prompt_strength_slider')
@@ -77,7 +60,6 @@ let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
 // let maskImagePreviewContainer = document.querySelector('#mask_preview_container')
 // let maskImageClearBtn = document.querySelector('#mask_clear')
 let maskSetting = document.querySelector('#enable_mask')
-let negativePromptPanelHandle = document.querySelector('#negative_prompt_handle')
 
 let imagePreview = document.querySelector("#preview")
 
@@ -93,8 +75,6 @@ let soundToggle = document.querySelector('#sound_toggle')
 let serverStatusColor = document.querySelector('#server-status-color')
 let serverStatusMsg = document.querySelector('#server-status-msg')
 
-let advancedPanelHandle = document.querySelector("#editor-settings .collapsible")
-let modifiersPanelHandle = document.querySelector("#editor-modifiers .collapsible")
 
 document.querySelector('.drawing-board-control-navigation-back').innerHTML = '<i class="fa-solid fa-rotate-left"></i>'
 document.querySelector('.drawing-board-control-navigation-forward').innerHTML = '<i class="fa-solid fa-rotate-right"></i>'
@@ -110,15 +90,6 @@ let bellPending = false
 
 let taskQueue = []
 let currentTask = null
-
-function getLocalStorageItem(key, fallback) {
-    let item = localStorage.getItem(key)
-    if (item === null) {
-        return fallback
-    }
-
-    return item
-}
 
 function getLocalStorageBoolItem(key, fallback) {
     let item = localStorage.getItem(key)
@@ -142,63 +113,11 @@ function handleStringSettingChange(key) {
 }
 
 function isSoundEnabled() {
-    return getLocalStorageBoolItem(SOUND_ENABLED_KEY, true)
-}
-
-function isFaceCorrectionEnabled() {
-    return getLocalStorageBoolItem(USE_FACE_CORRECTION_KEY, false)
-}
-
-function isUpscalingEnabled() {
-    return getLocalStorageBoolItem(USE_UPSCALING_KEY, false)
-}
-
-function isShowOnlyFilteredImageEnabled() {
-    return getLocalStorageBoolItem(SHOW_ONLY_FILTERED_IMAGE_KEY, true)
-}
-
-function isSaveToDiskEnabled() {
-    return getLocalStorageBoolItem(SAVE_TO_DISK_KEY, false)
-}
-
-function isUseCPUEnabled() {
-    return getLocalStorageBoolItem(USE_CPU_KEY, false)
-}
-
-function isUseFullPrecisionEnabled() {
-    return getLocalStorageBoolItem(USE_FULL_PRECISION_KEY, false)
-}
-
-function isAutoSaveSettingsEnabled() {
-    return getLocalStorageBoolItem(AUTO_SAVE_SETTINGS_KEY, true)
-}
-
-function isUseTurboModeEnabled() {
-    return getLocalStorageBoolItem(USE_TURBO_MODE_KEY, true)
+    return getSetting("sound_toggle")
 }
 
 function getSavedDiskPath() {
-    return getLocalStorageItem(DISK_PATH_KEY, '')
-}
-
-function isAdvancedPanelOpenEnabled() {
-    return getLocalStorageBoolItem(ADVANCED_PANEL_OPEN_KEY, false)
-}
-
-function isModifiersPanelOpenEnabled() {
-    return getLocalStorageBoolItem(MODIFIERS_PANEL_OPEN_KEY, false)
-}
-
-function isNegativePromptPanelOpenEnabled() {
-    return getLocalStorageBoolItem(NEGATIVE_PROMPT_PANEL_OPEN_KEY, false)
-}
-
-function isStreamImageProgressEnabled() {
-    return getLocalStorageBoolItem(STREAM_IMAGE_PROGRESS_KEY, false)
-}
-
-function getOutputFormat() {
-    return getLocalStorageItem(OUTPUT_FORMAT_KEY, 'jpeg')
+    return getSetting("diskPath")
 }
 
 function setStatus(statusType, msg, msgType) {
@@ -261,11 +180,11 @@ function logError(msg, res, outputMsg) {
 function playSound() {
     const audio = new Audio('/media/ding.mp3')
     audio.volume = 0.2
-    var promise = audio.play();
+    var promise = audio.play()
     if (promise !== undefined) {
         promise.then(_ => {}).catch(error => {
-            console.warn("browser blocked autoplay");
-        });
+            console.warn("browser blocked autoplay")
+        })
     }
 }
 
@@ -522,7 +441,7 @@ async function doMakeImage(task) {
 
         if (typeof renderRequest?.stream !== 'string') {
             console.log('Endpoint response: ', renderRequest)
-            throw new Error(renderRequest.detail || 'Endpoint response does not contains a response stream url.')
+            throw new Error(renderRequest?.detail || 'Endpoint response does not contains a response stream url.')
         }
 
         task['taskStatusLabel'].innerText = "Waiting"
@@ -759,7 +678,7 @@ async function checkTasks() {
     const genSeeds = Boolean(typeof task.reqBody.seed !== 'number' || (task.reqBody.seed === task.seed && task.numOutputsTotal > 1))
     const startSeed = task.reqBody.seed || task.seed
     for (let i = 0; i < task.batchCount; i++) {
-        let newTask = task;
+        let newTask = task
         if (task.batchCount > 1) {
             // Each output render batch needs it's own task instance to avoid altering the other runs after they are completed.
             newTask = Object.assign({}, task, {
@@ -1097,40 +1016,6 @@ stopImageBtn.addEventListener('click', async function() {
     await stopAllTasks()
 })
 
-soundToggle.addEventListener('click', handleBoolSettingChange(SOUND_ENABLED_KEY))
-soundToggle.checked = isSoundEnabled()
-
-saveToDiskField.checked = isSaveToDiskEnabled()
-diskPathField.disabled = !saveToDiskField.checked
-
-useFaceCorrectionField.addEventListener('click', handleBoolSettingChange(USE_FACE_CORRECTION_KEY))
-useFaceCorrectionField.checked = isFaceCorrectionEnabled()
-
-useUpscalingField.checked = isUpscalingEnabled()
-upscaleModelField.disabled = !useUpscalingField.checked
-
-showOnlyFilteredImageField.addEventListener('click', handleBoolSettingChange(SHOW_ONLY_FILTERED_IMAGE_KEY))
-showOnlyFilteredImageField.checked = isShowOnlyFilteredImageEnabled()
-
-useCPUField.addEventListener('click', handleBoolSettingChange(USE_CPU_KEY))
-useCPUField.checked = isUseCPUEnabled()
-
-useFullPrecisionField.addEventListener('click', handleBoolSettingChange(USE_FULL_PRECISION_KEY))
-useFullPrecisionField.checked = isUseFullPrecisionEnabled()
-
-autoSaveSettingsField.addEventListener('click', handleBoolSettingChange(AUTO_SAVE_SETTINGS_KEY))
-autoSaveSettingsField.checked = isAutoSaveSettingsEnabled()
-
-turboField.addEventListener('click', handleBoolSettingChange(USE_TURBO_MODE_KEY))
-turboField.checked = isUseTurboModeEnabled()
-
-streamImageProgressField.addEventListener('click', handleBoolSettingChange(STREAM_IMAGE_PROGRESS_KEY))
-streamImageProgressField.checked = isStreamImageProgressEnabled()
-
-outputFormatField.addEventListener('change', handleStringSettingChange(OUTPUT_FORMAT_KEY))
-outputFormatField.value = getOutputFormat()
-
-diskPathField.addEventListener('change', handleStringSettingChange(DISK_PATH_KEY))
 widthField.addEventListener('change', onDimensionChange)
 heightField.addEventListener('change', onDimensionChange)
 
@@ -1161,37 +1046,18 @@ function onDimensionChange() {
 
 saveToDiskField.addEventListener('click', function(e) {
     diskPathField.disabled = !this.checked
-    handleBoolSettingChange(SAVE_TO_DISK_KEY)(e)
 })
 
 useUpscalingField.addEventListener('click', function(e) {
     upscaleModelField.disabled = !this.checked
-    handleBoolSettingChange(USE_UPSCALING_KEY)(e)
 })
-
-function setPanelOpen(panelHandle) {
-    let panelContents = panelHandle.nextElementSibling
-    panelHandle.classList.add('active')
-    panelContents.style.display = 'block'
-}
-
-if (isAdvancedPanelOpenEnabled()) {
-    setPanelOpen(advancedPanelHandle)
-}
-
-if (isModifiersPanelOpenEnabled()) {
-    setPanelOpen(modifiersPanelHandle)
-}
-
-if (isNegativePromptPanelOpenEnabled()) {
-    setPanelOpen(negativePromptPanelHandle)
-}
 
 makeImageBtn.addEventListener('click', makeImage)
 
 
 function updateGuidanceScale() {
     guidanceScaleField.value = guidanceScaleSlider.value / 10
+    guidanceScaleField.dispatchEvent(new Event("change"))
 }
 
 function updateGuidanceScaleSlider() {
@@ -1211,6 +1077,7 @@ updateGuidanceScale()
 
 function updatePromptStrength() {
     promptStrengthField.value = promptStrengthSlider.value / 100
+    promptStrengthField.dispatchEvent(new Event("change"))
 }
 
 function updatePromptStrengthSlider() {
@@ -1274,10 +1141,12 @@ async function getAppConfig() {
 
 async function getModels() {
     try {
+        var model_setting_key = "stable_diffusion_model"
+        var selectedModel = SETTINGS[model_setting_key].value
         let res = await fetch('/get/models')
         const models = await res.json()
 
-        let activeModel = models['active']
+        // let activeModel = models['active']
         let modelOptions = models['options']
         let stableDiffusionOptions = modelOptions['stable-diffusion']
 
@@ -1286,12 +1155,18 @@ async function getModels() {
             modelOption.value = modelName
             modelOption.innerText = modelName
 
-            if (modelName === activeModel['stable-diffusion']) {
+            if (modelName === selectedModel) {
                 modelOption.selected = true
             }
 
             stableDiffusionModelField.appendChild(modelOption)
         })
+
+        // TODO: set default for model here too
+        SETTINGS[model_setting_key].default = stableDiffusionOptions[0]
+        if (getSetting(model_setting_key) == '' || SETTINGS[model_setting_key].value == '') {
+            setSetting(model_setting_key, stableDiffusionOptions[0])
+        }
 
         console.log('get models response', models)
     } catch (e) {
@@ -1394,19 +1269,15 @@ promptsFromFileSelector.addEventListener('change', function() {
 
 async function getDiskPath() {
     try {
-        let diskPath = getSavedDiskPath()
+        var diskPath = getSetting("diskPath")
+        if (diskPath == '' || diskPath == undefined || diskPath == "undefined") {
+            let res = await fetch('/get/output_dir')
+            if (res.status === 200) {
+                res = await res.json()
+                res = res.output_dir
 
-        if (diskPath !== '') {
-            diskPathField.value = diskPath
-            return
-        }
-
-        let res = await fetch('/get/output_dir')
-        if (res.status === 200) {
-            res = await res.json()
-            res = res.output_dir
-
-            document.querySelector('#diskPath').value = res
+                setSetting("diskPath", res)
+            }
         }
     } catch (e) {
         console.log('error fetching output dir path', e)
