@@ -16,9 +16,6 @@ echo "Environment Info:"
 call where git
 call git --version
 
-call where python
-call python --version
-
 call where conda
 call conda --version
 
@@ -26,5 +23,10 @@ echo.
 
 @rem activate the environment
 call conda activate .\stable-diffusion\env
+
+call where python
+call python --version
+
+echo.
 
 cmd /k

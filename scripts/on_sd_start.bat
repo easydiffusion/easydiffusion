@@ -336,6 +336,9 @@ echo. > "..\models\stable-diffusion\Put your custom ckpt files here.txt"
 @cd ..\..\..
 @echo PYTHONPATH=%PYTHONPATH%
 
+call where python
+call python --version
+
 @cd ..
 @set SD_UI_PATH=%cd%\ui
 @cd stable-diffusion

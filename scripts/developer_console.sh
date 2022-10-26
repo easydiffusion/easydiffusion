@@ -19,9 +19,6 @@ if [ "$0" == "bash" ]; then
   which git
   git --version
 
-  which python
-  python --version
-
   which conda
   conda --version
 
@@ -32,6 +29,11 @@ if [ "$0" == "bash" ]; then
   source "$CONDA_BASEPATH/etc/profile.d/conda.sh" # otherwise conda complains about 'shell not initialized' (needed when running in a script)
 
   conda activate ./stable-diffusion/env
+
+  which python
+  python --version
+
+  echo ""
 else
   bash --init-file developer_console.sh
 fi

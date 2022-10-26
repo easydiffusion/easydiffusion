@@ -13,9 +13,6 @@ if [ -e "installer_files/env" ]; then export PATH="$(pwd)/installer_files/env/bi
 which git
 git --version
 
-which python
-python --version
-
 which conda
 conda --version
 
