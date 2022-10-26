@@ -14,13 +14,54 @@ function getNextSibling(elem, selector) {
 	}
 }
 
+
+
+/* Panel Stuff */
+
+// true = open
+var COLLAPSIBLES_INITIALIZED = false;
+const COLLAPSIBLES_KEY = "collapsibles";
+const COLLAPSIBLE_PANELS = []; // filled in by createCollapsibles with all the elements matching .collapsible
+
+// on-init call this for any panels that are marked open
+function toggleCollapsible(element) {
+    var collapsibleHeader = element.querySelector(".collapsible");
+    var handle = element.querySelector(".collapsible-handle");
+    collapsibleHeader.classList.toggle("active")
+    let content = getNextSibling(collapsibleHeader, '.collapsible-content')
+    if (content.style.display === "block") {
+        content.style.display = "none"
+        handle.innerHTML = '&#x2795;' // plus
+    } else {
+        content.style.display = "block"
+        handle.innerHTML = '&#x2796;' // minus
+    }
+    
+    if (COLLAPSIBLES_INITIALIZED && COLLAPSIBLE_PANELS.includes(element)) {
+        saveCollapsibles()
+    }
+}
+
+function saveCollapsibles() {
+    var values = {}
+    COLLAPSIBLE_PANELS.forEach(element => {
+        var value = element.querySelector(".collapsible").className.indexOf("active") !== -1
+        values[element.id] = value
+    })
+    localStorage.setItem(COLLAPSIBLES_KEY, JSON.stringify(values))
+}
+
 function createCollapsibles(node) {
+    var save = false
     if (!node) {
         node = document
+        save = true
     }
-
     let collapsibles = node.querySelectorAll(".collapsible")
     collapsibles.forEach(function(c) {
+        if (save && c.parentElement.id) {
+            COLLAPSIBLE_PANELS.push(c.parentElement)
+        }
         let handle = document.createElement('span')
         handle.className = 'collapsible-handle'
 
@@ -32,28 +73,49 @@ function createCollapsibles(node) {
         c.insertBefore(handle, c.firstChild)
 
         c.addEventListener('click', function() {
-            this.classList.toggle("active")
-            let content = getNextSibling(this, '.collapsible-content')
-            if (content.style.display === "block") {
-                content.style.display = "none"
-                handle.innerHTML = '&#x2795;' // plus
-            } else {
-                content.style.display = "block"
-                handle.innerHTML = '&#x2796;' // minus
-            }
-
-            if (this == advancedPanelHandle) {
-                let state = (content.style.display === 'block' ? 'true' : 'false')
-                localStorage.setItem(ADVANCED_PANEL_OPEN_KEY, state)
-            } else if (this == modifiersPanelHandle) {
-                let state = (content.style.display === 'block' ? 'true' : 'false')
-                localStorage.setItem(MODIFIERS_PANEL_OPEN_KEY, state)
-            } else if (this == negativePromptPanelHandle) {
-                let state = (content.style.display === 'block' ? 'true' : 'false')
-                localStorage.setItem(NEGATIVE_PROMPT_PANEL_OPEN_KEY, state)
-            }
+            toggleCollapsible(c.parentElement)
         })
     })
+    if (save) {
+        var saved = localStorage.getItem(COLLAPSIBLES_KEY)
+        if (!saved) { 
+            saved = tryLoadOldCollapsibles();
+        }
+        if (!saved) {
+            saveCollapsibles()
+            saved = localStorage.getItem(COLLAPSIBLES_KEY)
+        }
+        var values = JSON.parse(saved)
+        COLLAPSIBLE_PANELS.forEach(element => {
+            var value = element.querySelector(".collapsible").className.indexOf("active") !== -1
+            if (values[element.id] != value) {
+                toggleCollapsible(element)
+            }
+        })
+        COLLAPSIBLES_INITIALIZED = true
+    }
+}
+
+function tryLoadOldCollapsibles() {
+    var old_map = {
+        "advancedPanelOpen": "editor-settings",
+        "modifiersPanelOpen": "editor-modifiers",
+        "negativePromptPanelOpen": "editor-inputs-prompt"
+    };
+    if (localStorage.getItem(Object.keys(old_map)[0])) {
+        var result = {};
+        Object.keys(old_map).forEach(key => {
+            var value = localStorage.getItem(key);
+            if (value !== null) {
+                result[old_map[key]] = value == true || value == "true"
+                localStorage.removeItem(key)
+            }
+        });
+        result = JSON.stringify(result)
+        localStorage.setItem(COLLAPSIBLES_KEY, result)
+        return result
+    }
+    return null;
 }
 
 function permute(arr) {
