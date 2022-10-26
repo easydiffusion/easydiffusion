@@ -3,6 +3,12 @@
 cp sd-ui-files/scripts/on_env_start.sh scripts/
 cp sd-ui-files/scripts/bootstrap.sh scripts/
 
+# activate the installer env
+CONDA_BASEPATH=$(conda info --base)
+source "$CONDA_BASEPATH/etc/profile.d/conda.sh" # avoids the 'shell not initialized' error
+
+conda activate
+
 # remove the old version of the dev console script, if it's still present
 if [ -e "open_dev_console.sh" ]; then
     rm "open_dev_console.sh"
