@@ -11,45 +11,40 @@ case $yn in
     * ) exit;;
 esac
 
-export PYTHONNOUSERSITE=1
+# mkdir -p dist/win/stable-diffusion-ui/scripts
+mkdir -p dist/linux-mac/stable-diffusion-ui/scripts
 
-mkdir -p dist/stable-diffusion-ui
+# copy the installer files for Windows
 
-echo "Downloading components for the installer.."
+# cp scripts/on_env_start.bat dist/win/stable-diffusion-ui/scripts/
+# cp scripts/bootstrap.bat dist/win/stable-diffusion-ui/scripts/
+# cp "scripts/Start Stable Diffusion UI.cmd" dist/win/stable-diffusion-ui/
+# cp LICENSE dist/win/stable-diffusion-ui/
+# cp "CreativeML Open RAIL-M License" dist/win/stable-diffusion-ui/
+# cp "How to install and run.txt" dist/win/stable-diffusion-ui/
+# echo "" > dist/win/stable-diffusion-ui/scripts/install_status.txt
 
-source ~/miniconda3/etc/profile.d/conda.sh
+# copy the installer files for Linux and Mac
 
-conda install -c conda-forge -y conda-pack
+cp scripts/on_env_start.sh dist/linux-mac/stable-diffusion-ui/scripts/
+cp scripts/bootstrap.sh dist/linux-mac/stable-diffusion-ui/scripts/
+cp scripts/start.sh dist/linux-mac/stable-diffusion-ui/
+cp LICENSE dist/linux-mac/stable-diffusion-ui/
+cp "CreativeML Open RAIL-M License" dist/linux-mac/stable-diffusion-ui/
+cp "How to install and run.txt" dist/linux-mac/stable-diffusion-ui/
+echo "" > dist/linux-mac/stable-diffusion-ui/scripts/install_status.txt
 
-conda env create --prefix installer -f environment.yaml
-conda activate ./installer
+# make the zip
 
-echo "Creating a distributable package.."
+# cd dist/win
+# zip -r ../stable-diffusion-ui-win-x64.zip stable-diffusion-ui
+# cd ../..
 
-conda pack --n-threads -1 --prefix installer --format tar
-
-cd dist/stable-diffusion-ui
-mkdir installer
-
-tar -xf ../../installer.tar -C installer
-
-mkdir scripts
-
-cp ../../scripts/on_env_start.sh scripts/
-cp ../../scripts/start.sh .
-cp ../../LICENSE .
-cp "../../CreativeML Open RAIL-M License" .
-cp "../../How to install and run.txt" .
-echo "" > scripts/install_status.txt
-
-chmod u+x start.sh
-
-echo "Build ready. Zip the 'dist/stable-diffusion-ui' folder."
-
-echo "Cleaning up.."
-
+cd dist/linux-mac
+zip -r ../stable-diffusion-ui-linux-x64.zip stable-diffusion-ui
+zip -r ../stable-diffusion-ui-linux-arm64.zip stable-diffusion-ui
+zip -r ../stable-diffusion-ui-mac-x64.zip stable-diffusion-ui
+zip -r ../stable-diffusion-ui-mac-arm64.zip stable-diffusion-ui
 cd ../..
 
-rm -rf installer
-
-rm installer.tar
+echo "Build ready. Upload the zip files inside the 'dist' folder."

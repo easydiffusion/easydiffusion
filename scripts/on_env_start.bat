@@ -4,8 +4,6 @@
 
 set PATH=C:\Windows\System32;%PATH%
 
-@cd ..
-
 if exist "scripts\config.bat" (
     @call scripts\config.bat
 )
@@ -35,7 +33,7 @@ if "%update_branch%"=="" (
     @cd sd-ui-files
 
     @call git reset --hard
-    @call git checkout "%update_branch%"
+    @call git -c advice.detachedHead=false checkout "%update_branch%"
     @call git pull
 
     @cd ..
@@ -54,6 +52,7 @@ if "%update_branch%"=="" (
 
 @xcopy sd-ui-files\ui ui /s /i /Y
 @copy sd-ui-files\scripts\on_sd_start.bat scripts\ /Y
+@copy sd-ui-files\scripts\bootstrap.bat scripts\ /Y
 @copy "sd-ui-files\scripts\Start Stable Diffusion UI.cmd" . /Y
 @copy "sd-ui-files\scripts\Developer Console.cmd" . /Y
 

@@ -8,40 +8,42 @@
 set /p answer=Are you a developer of this project (Y/N)?
 if /i "%answer:~,1%" NEQ "Y" exit /b
 
-@set PYTHONNOUSERSITE=1
+mkdir dist\win\stable-diffusion-ui\scripts
+@REM mkdir dist\linux-mac\stable-diffusion-ui\scripts
 
-@mkdir dist\stable-diffusion-ui
+@rem copy the installer files for Windows
 
-@echo "Downloading components for the installer.."
+copy scripts\on_env_start.bat dist\win\stable-diffusion-ui\scripts\
+copy scripts\bootstrap.bat dist\win\stable-diffusion-ui\scripts\
+copy "scripts\Start Stable Diffusion UI.cmd" dist\win\stable-diffusion-ui\
+copy LICENSE dist\win\stable-diffusion-ui\
+copy "CreativeML Open RAIL-M License" dist\win\stable-diffusion-ui\
+copy "How to install and run.txt" dist\win\stable-diffusion-ui\
+echo. > dist\win\stable-diffusion-ui\scripts\install_status.txt
 
-@call conda env create --prefix installer -f environment.yaml
-@call conda activate .\installer
+@rem copy the installer files for Linux and Mac
 
-@echo "Creating a distributable package.."
+@REM copy scripts\on_env_start.sh dist\linux-mac\stable-diffusion-ui\scripts\
+@REM copy scripts\bootstrap.sh dist\linux-mac\stable-diffusion-ui\scripts\
+@REM copy scripts\start.sh dist\linux-mac\stable-diffusion-ui\
+@REM copy LICENSE dist\linux-mac\stable-diffusion-ui\
+@REM copy "CreativeML Open RAIL-M License" dist\linux-mac\stable-diffusion-ui\
+@REM copy "How to install and run.txt" dist\linux-mac\stable-diffusion-ui\
+@REM echo. > dist\linux-mac\stable-diffusion-ui\scripts\install_status.txt
 
-@call conda install -c conda-forge -y conda-pack
-@call conda pack --n-threads -1 --prefix installer --format tar
+@rem make the zip
 
-@cd dist\stable-diffusion-ui
-@mkdir installer
+cd dist\win
+call powershell Compress-Archive -Path stable-diffusion-ui -DestinationPath ..\stable-diffusion-ui-win-x64.zip
+cd ..\..
 
-@call tar -xf ..\..\installer.tar -C installer
+@REM cd dist\linux-mac
+@REM call powershell Compress-Archive -Path stable-diffusion-ui -DestinationPath ..\stable-diffusion-ui-linux-x64.zip
+@REM call powershell Compress-Archive -Path stable-diffusion-ui -DestinationPath ..\stable-diffusion-ui-linux-arm64.zip
+@REM call powershell Compress-Archive -Path stable-diffusion-ui -DestinationPath ..\stable-diffusion-ui-mac-x64.zip
+@REM call powershell Compress-Archive -Path stable-diffusion-ui -DestinationPath ..\stable-diffusion-ui-mac-arm64.zip
+@REM cd ..\..
 
-@mkdir scripts
+echo "Build ready. Upload the zip files inside the 'dist' folder."
 
-@copy ..\..\scripts\on_env_start.bat scripts\
-@copy "..\..\scripts\Start Stable Diffusion UI.cmd" .
-@copy ..\..\LICENSE .
-@copy "..\..\CreativeML Open RAIL-M License" .
-@copy "..\..\How to install and run.txt" .
-@echo. > scripts\install_status.txt
-
-@echo "Build ready. Zip the 'dist\stable-diffusion-ui' folder."
-
-@echo "Cleaning up.."
-
-@cd ..\..
-
-@rmdir /s /q installer
-
-@del installer.tar
+pause
