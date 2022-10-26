@@ -374,9 +374,17 @@ def mk_img(req: Request):
         yield from do_mk_img(req)
     except Exception as e:
         print(traceback.format_exc())
-        # Model crashed, release all resources in unknown state.
-        unload_models()
-        unload_filters()
+
+        if thread_data.reduced_memory:
+            thread_data.modelFS.to('cpu')
+            thread_data.modelCS.to('cpu')
+            thread_data.model.model1.to("cpu")
+            thread_data.model.model2.to("cpu")
+        else:
+            # Model crashed, release all resources in unknown state.
+            unload_models()
+            unload_filters()
+
         gc() # Release from memory.
         yield json.dumps({
             "status": 'failed',
