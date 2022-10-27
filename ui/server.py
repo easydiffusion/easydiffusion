@@ -141,10 +141,10 @@ def resolve_model_to_use(model_name:str=None):
         models_dir_path = os.path.join(MODELS_DIR, 'stable-diffusion', model_name)
         if os.path.exists(models_dir_path + '.ckpt'):
             return models_dir_path
-        models_direct_dir_path = os.path.join(SD_DIR, model_name)
-        if os.path.exists(models_direct_dir_path + '.ckpt'):
+        if os.path.exists(model_name + '.ckpt'):
             # Direct Path to file
-            return models_direct_dir_path
+            model_name = os.path.abspath(model_name)
+            return model_name
     # Default locations
     if model_name in APP_CONFIG_DEFAULT_MODELS:
         default_model_path = os.path.join(SD_DIR, model_name)
