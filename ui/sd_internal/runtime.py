@@ -113,6 +113,7 @@ def device_init(device_selection=None):
         return
     if not torch.cuda.is_available():
         print('WARNING: torch.cuda is not available. Using the CPU, but this will be very slow!')
+        thread_data.device = 'cpu'
         return
     device_count = torch.cuda.device_count()
     if device_count <= 1 and device_selection == 'auto':
