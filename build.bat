@@ -34,14 +34,12 @@ echo. > dist\win\stable-diffusion-ui\scripts\install_status.txt
 @rem make the zip
 
 cd dist\win
-call powershell Compress-Archive -Path stable-diffusion-ui -DestinationPath ..\stable-diffusion-ui-win-x64.zip
+call powershell Compress-Archive -Path stable-diffusion-ui -DestinationPath ..\stable-diffusion-ui-windows.zip
 cd ..\..
 
 @REM cd dist\linux-mac
-@REM call powershell Compress-Archive -Path stable-diffusion-ui -DestinationPath ..\stable-diffusion-ui-linux-x64.zip
-@REM call powershell Compress-Archive -Path stable-diffusion-ui -DestinationPath ..\stable-diffusion-ui-linux-arm64.zip
-@REM call powershell Compress-Archive -Path stable-diffusion-ui -DestinationPath ..\stable-diffusion-ui-mac-x64.zip
-@REM call powershell Compress-Archive -Path stable-diffusion-ui -DestinationPath ..\stable-diffusion-ui-mac-arm64.zip
+@REM call powershell Compress-Archive -Path stable-diffusion-ui -DestinationPath ..\stable-diffusion-ui-linux.zip
+@REM call powershell Compress-Archive -Path stable-diffusion-ui -DestinationPath ..\stable-diffusion-ui-mac.zip
 @REM cd ..\..
 
 echo "Build ready. Upload the zip files inside the 'dist' folder."

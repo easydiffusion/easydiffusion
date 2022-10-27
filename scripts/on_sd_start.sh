@@ -186,7 +186,7 @@ fi
 if [ ! -f "sd-v1-4.ckpt" ]; then
     echo "Downloading data files (weights) for Stable Diffusion.."
 
-    curl -C - --retry 20 --retry-all-errors --retry-delay 5 -L -k https://me.cmdr2.org/stable-diffusion-ui/sd-v1-4.ckpt > sd-v1-4.ckpt
+    curl -L -k https://me.cmdr2.org/stable-diffusion-ui/sd-v1-4.ckpt > sd-v1-4.ckpt
 
     if [ -f "sd-v1-4.ckpt" ]; then
         model_size=`find "sd-v1-4.ckpt" -printf "%s"`
@@ -218,7 +218,7 @@ fi
 if [ ! -f "GFPGANv1.3.pth" ]; then
     echo "Downloading data files (weights) for GFPGAN (Face Correction).."
 
-    curl -C - --retry 20 --retry-all-errors --retry-delay 5 -L -k https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.3.pth > GFPGANv1.3.pth
+    curl -L -k https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.3.pth > GFPGANv1.3.pth
 
     if [ -f "GFPGANv1.3.pth" ]; then
         model_size=`find "GFPGANv1.3.pth" -printf "%s"`
@@ -250,7 +250,7 @@ fi
 if [ ! -f "RealESRGAN_x4plus.pth" ]; then
     echo "Downloading data files (weights) for ESRGAN (Resolution Upscaling) x4plus.."
 
-    curl -C - --retry 20 --retry-all-errors --retry-delay 5 -L -k https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth > RealESRGAN_x4plus.pth
+    curl -L -k https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth > RealESRGAN_x4plus.pth
 
     if [ -f "RealESRGAN_x4plus.pth" ]; then
         model_size=`find "RealESRGAN_x4plus.pth" -printf "%s"`
@@ -282,7 +282,7 @@ fi
 if [ ! -f "RealESRGAN_x4plus_anime_6B.pth" ]; then
     echo "Downloading data files (weights) for ESRGAN (Resolution Upscaling) x4plus_anime.."
 
-    curl -C - --retry 20 --retry-all-errors --retry-delay 5 -L -k https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth > RealESRGAN_x4plus_anime_6B.pth
+    curl -L -k https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth > RealESRGAN_x4plus_anime_6B.pth
 
     if [ -f "RealESRGAN_x4plus_anime_6B.pth" ]; then
         model_size=`find "RealESRGAN_x4plus_anime_6B.pth" -printf "%s"`
