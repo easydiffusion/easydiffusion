@@ -27,7 +27,12 @@ if "%ERRORLEVEL%" NEQ "0" set PACKAGES_TO_INSTALL=%PACKAGES_TO_INSTALL% git
 @rem (if necessary) install git and conda into a contained environment
 if "%PACKAGES_TO_INSTALL%" NEQ "" (
     @rem download micromamba
-    if not exist "%MAMBA_ROOT_PREFIX%\micromamba.exe" (
+    set download_umamba=T
+
+    call "%MAMBA_ROOT_PREFIX%\micromamba.exe" --version >.tmp1 2>.tmp2
+    if "%ERRORLEVEL%" EQU "0" set download_umamba=F
+
+    if "%download_umamba%" == "T" (
         echo "Downloading micromamba from %MICROMAMBA_DOWNLOAD_URL% to %MAMBA_ROOT_PREFIX%\micromamba.exe"
 
         mkdir "%MAMBA_ROOT_PREFIX%"
