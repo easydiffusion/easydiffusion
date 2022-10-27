@@ -11,6 +11,7 @@ set MAMBA_ROOT_PREFIX=%cd%\installer_files\mamba
 set INSTALL_ENV_DIR=%cd%\installer_files\env
 set LEGACY_INSTALL_ENV_DIR=%cd%\installer
 set MICROMAMBA_DOWNLOAD_URL=https://github.com/cmdr2/stable-diffusion-ui/releases/download/v1.1/micromamba.exe
+set umamba_exists=F
 
 @rem figure out whether git and conda needs to be installed
 if exist "%INSTALL_ENV_DIR%" set PATH=%INSTALL_ENV_DIR%;%INSTALL_ENV_DIR%\Library\bin;%INSTALL_ENV_DIR%\Scripts;%INSTALL_ENV_DIR%\Library\usr\bin;%PATH%
@@ -24,15 +25,13 @@ if not exist "%LEGACY_INSTALL_ENV_DIR%\etc\profile.d\conda.sh" (
 call git --version >.tmp1 2>.tmp2
 if "%ERRORLEVEL%" NEQ "0" set PACKAGES_TO_INSTALL=%PACKAGES_TO_INSTALL% git
 
+call "%MAMBA_ROOT_PREFIX%\micromamba.exe" --version >.tmp1 2>.tmp2
+if "%ERRORLEVEL%" EQU "0" set umamba_exists=T
+
 @rem (if necessary) install git and conda into a contained environment
 if "%PACKAGES_TO_INSTALL%" NEQ "" (
     @rem download micromamba
-    set download_umamba=T
-
-    call "%MAMBA_ROOT_PREFIX%\micromamba.exe" --version >.tmp1 2>.tmp2
-    if "%ERRORLEVEL%" EQU "0" set download_umamba=F
-
-    if "%download_umamba%" == "T" (
+    if "%umamba_exists%" == "F" (
         echo "Downloading micromamba from %MICROMAMBA_DOWNLOAD_URL% to %MAMBA_ROOT_PREFIX%\micromamba.exe"
 
         mkdir "%MAMBA_ROOT_PREFIX%"
