@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#cp sd-ui-files/scripts/on_env_start.sh scripts/
-#cp sd-ui-files/scripts/bootstrap.sh scripts/
+cp sd-ui-files/scripts/on_env_start.sh scripts/
+cp sd-ui-files/scripts/bootstrap.sh scripts/
 
 # activate the installer env
 CONDA_BASEPATH=$(conda info --base)
