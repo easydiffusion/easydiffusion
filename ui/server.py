@@ -137,13 +137,14 @@ def resolve_model_to_use(model_name:str=None):
         if 'model' in config and 'stable-diffusion' in config['model']:
             model_name = config['model']['stable-diffusion']
     if model_name:
-        if os.path.exists(model_name + '.ckpt'):
-            # Direct Path to file
-            return model_name
         # Check models directory
         models_dir_path = os.path.join(MODELS_DIR, 'stable-diffusion', model_name)
         if os.path.exists(models_dir_path + '.ckpt'):
             return models_dir_path
+        models_direct_dir_path = os.path.join(SD_DIR, model_name)
+        if os.path.exists(models_direct_dir_path + '.ckpt'):
+            # Direct Path to file
+            return models_direct_dir_path
     # Default locations
     if model_name in APP_CONFIG_DEFAULT_MODELS:
         default_model_path = os.path.join(SD_DIR, model_name)
@@ -151,9 +152,10 @@ def resolve_model_to_use(model_name:str=None):
             return default_model_path
     # Can't find requested model, check the default paths.
     for default_model in APP_CONFIG_DEFAULT_MODELS:
-        default_model_path = os.path.join(SD_DIR, default_model + '.ckpt')
-        if os.path.exists(default_model_path):
-            print(f'Could not find the configured custom model {model_name}.ckpt. Using the default one: {default_model_path}.ckpt')
+        default_model_path = os.path.join(SD_DIR, default_model)
+        if os.path.exists(default_model_path + '.ckpt'):
+            if model_name is not None:
+                print(f'Could not find the configured custom model {model_name}.ckpt. Using the default one: {default_model_path}.ckpt')
             return default_model_path
     raise Exception('No valid models found.')
 
