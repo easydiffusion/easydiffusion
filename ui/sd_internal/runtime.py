@@ -77,6 +77,8 @@ def device_select(device):
 
     thread_data.device = device
     thread_data.has_valid_gpu = True
+    # Apply force_full_precision if was set.
+    thread_data.precision = 'full' if thread_data.force_full_precision else 'autocast'
     return True
 
 def device_init(device_selection=None):
