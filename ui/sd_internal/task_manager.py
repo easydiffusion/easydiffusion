@@ -252,7 +252,7 @@ def thread_render(device):
     }
     if runtime.thread_data.device != 'cpu' or is_alive() == 1:
         preload_model()
-    current_state = ServerStates.Online
+        current_state = ServerStates.Online
     while True:
         task_cache.clean()
         if isinstance(current_state_error, SystemExit):
