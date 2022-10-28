@@ -113,7 +113,7 @@ def setConfig(config):
             print('Add the line "@set CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.bat')
         config_bat_path = os.path.join(CONFIG_DIR, 'config.bat')
         with open(config_bat_path, 'w', encoding='utf-8') as f:
-            f.write(f.write('\r\n'.join(config_bat)))
+            f.write('\r\n'.join(config_bat))
     except Exception as e:
         print(traceback.format_exc())
 
