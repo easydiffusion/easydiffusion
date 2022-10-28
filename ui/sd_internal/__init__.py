@@ -23,6 +23,7 @@ class Request:
     use_face_correction: str = None # or "GFPGANv1.3"
     use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
     use_stable_diffusion_model: str = "sd-v1-4"
+    use_vae_model: str = None
     show_only_filtered_image: bool = False
     output_format: str = "jpeg" # or "png"
 
@@ -45,6 +46,7 @@ class Request:
             "use_face_correction": self.use_face_correction,
             "use_upscale": self.use_upscale,
             "use_stable_diffusion_model": self.use_stable_diffusion_model,
+            "use_vae_model": self.use_vae_model,
             "output_format": self.output_format,
         }
 
@@ -67,6 +69,7 @@ class Request:
     use_face_correction: {self.use_face_correction}
     use_upscale: {self.use_upscale}
     use_stable_diffusion_model: {self.use_stable_diffusion_model}
+    use_vae_model: {self.use_vae_model}
     show_only_filtered_image: {self.show_only_filtered_image}
     output_format: {self.output_format}
 

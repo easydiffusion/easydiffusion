@@ -87,6 +87,7 @@ def device_init(device_selection=None):
     thread_data.temp_images = {}
 
     thread_data.ckpt_file = None
+    thread_data.vae_file = None
     thread_data.gfpgan_file = None
     thread_data.real_esrgan_file = None
 
@@ -184,7 +185,7 @@ def load_model_ckpt():
     if thread_data.device == 'cpu':
         thread_data.precision = 'full'
 
-    print('loading', thread_data.ckpt_file, 'to', thread_data.device, 'using precision', thread_data.precision)
+    print('loading', thread_data.ckpt_file + '.ckpt', 'to', thread_data.device, 'using precision', thread_data.precision)
     sd = load_model_from_config(thread_data.ckpt_file + '.ckpt')
     li, lo = [], []
     for key, value in sd.items():
@@ -231,6 +232,16 @@ def load_model_ckpt():
 
     modelFS = instantiate_from_config(config.modelFirstStage)
     _, _ = modelFS.load_state_dict(sd, strict=False)
+
+    if thread_data.vae_file is not None:
+        if os.path.exists(thread_data.vae_file + '.vae.pt'):
+            print(f"Loading VAE weights from: {thread_data.vae_file}.vae.pt")
+            vae_ckpt = torch.load(thread_data.vae_file + '.vae.pt', map_location="cpu")
+            vae_dict = {k: v for k, v in vae_ckpt["state_dict"].items() if k[0:4] != "loss"}
+            modelFS.first_stage_model.load_state_dict(vae_dict, strict=False)
+        else:
+            print(f'Cannot find VAE file: {thread_data.vae_file}.vae.pt')
+
     modelFS.eval()
     if thread_data.device != 'cpu':
         if thread_data.reduced_memory:
@@ -459,8 +470,9 @@ def do_mk_img(req: Request):
     if not os.path.exists(req.use_stable_diffusion_model + '.ckpt'): raise FileNotFoundError(f'Cannot find {req.use_stable_diffusion_model}.ckpt')
 
     needs_model_reload = False
-    if not thread_data.model or thread_data.ckpt_file != req.use_stable_diffusion_model:
+    if not thread_data.model or thread_data.ckpt_file != req.use_stable_diffusion_model or thread_data.vae_file != req.use_vae_model:
         thread_data.ckpt_file = req.use_stable_diffusion_model
+        thread_data.vae_file = req.use_vae_model
         needs_model_reload = True
 
     if thread_data.has_valid_gpu:

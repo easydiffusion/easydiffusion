@@ -39,6 +39,7 @@ let useFaceCorrectionField = document.querySelector("#use_face_correction")
 let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
 let stableDiffusionModelField = document.querySelector('#stable_diffusion_model')
+let vaeModelField = document.querySelector('#default_vae_model')
 let outputFormatField = document.querySelector('#output_format')
 let showOnlyFilteredImageField = document.querySelector("#show_only_filtered_image")
 let updateBranchLabel = document.querySelector("#updateBranchLabel")
@@ -1104,15 +1105,13 @@ promptStrengthSlider.addEventListener('input', updatePromptStrength)
 promptStrengthField.addEventListener('input', updatePromptStrengthSlider)
 updatePromptStrength()
 
-useBetaChannelField.addEventListener('click', async function(e) {
-    if (!isServerAvailable()) {
-        // logError('The server is still starting up..')
-        alert('The server is still starting up..')
-        e.preventDefault()
-        return false
-    }
-
-    let updateBranch = (this.checked ? 'beta' : 'main')
+async function changeAppConfig(configDelta) {
+    // if (!isServerAvailable()) {
+    //     // logError('The server is still starting up..')
+    //     alert('The server is still starting up..')
+    //     e.preventDefault()
+    //     return false
+    // }
 
     try {
         let res = await fetch('/app_config', {
@@ -1120,9 +1119,7 @@ useBetaChannelField.addEventListener('click', async function(e) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                'update_branch': updateBranch
-            })
+            body: JSON.stringify(configDelta)
         })
         res = await res.json()
 
@@ -1130,6 +1127,20 @@ useBetaChannelField.addEventListener('click', async function(e) {
     } catch (e) {
         console.log('set config status error', e)
     }
+}
+
+useBetaChannelField.addEventListener('click', async function(e) {
+    let updateBranch = (this.checked ? 'beta' : 'main')
+
+    await changeAppConfig({
+        'update_branch': updateBranch
+    })
+})
+
+vaeModelField.addEventListener('change', async function() {
+    await changeAppConfig({
+        'model_vae': this.value
+    })
 })
 
 async function getAppConfig() {
@@ -1155,21 +1166,28 @@ async function getModels() {
         let res = await fetch('/get/models')
         const models = await res.json()
 
-        // let activeModel = models['active']
+        let activeModels = models['active']
         let modelOptions = models['options']
         let stableDiffusionOptions = modelOptions['stable-diffusion']
+        let vaeOptions = modelOptions['vae']
+        let activeVae = activeModels['vae']
 
-        stableDiffusionOptions.forEach(modelName => {
-            let modelOption = document.createElement('option')
-            modelOption.value = modelName
-            modelOption.innerText = modelName
+        function createModelOptions(modelField, selectedModel) {
+            return function(modelName) {
+                let modelOption = document.createElement('option')
+                modelOption.value = modelName
+                modelOption.innerText = modelName
 
-            if (modelName === selectedModel) {
-                modelOption.selected = true
+                if (modelName === selectedModel) {
+                    modelOption.selected = true
+                }
+
+                modelField.appendChild(modelOption)
             }
+        }
 
-            stableDiffusionModelField.appendChild(modelOption)
-        })
+        stableDiffusionOptions.forEach(createModelOptions(stableDiffusionModelField, selectedModel))
+        vaeOptions.forEach(createModelOptions(vaeModelField, activeVae))
 
         // TODO: set default for model here too
         SETTINGS[model_setting_key].default = stableDiffusionOptions[0]

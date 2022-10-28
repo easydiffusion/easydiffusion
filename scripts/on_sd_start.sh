@@ -300,6 +300,38 @@ if [ ! -f "RealESRGAN_x4plus_anime_6B.pth" ]; then
 fi
 
 
+if [ -f "../models/stable-diffusion/vae-ft-mse-840000-ema-pruned.vae.pt" ]; then
+    model_size=`find ../models/stable-diffusion/vae-ft-mse-840000-ema-pruned.vae.pt -printf "%s"`
+
+    if [ "$model_size" -eq "334695179" ]; then
+        echo "Data files (weights) necessary for the default VAE (sd-vae-ft-mse-original) were already downloaded"
+    else
+        printf "\n\nThe model file present at models/stable-diffusion/vae-ft-mse-840000-ema-pruned.vae.pt is invalid. It is only $model_size bytes in size. Re-downloading.."
+        rm ../models/stable-diffusion/vae-ft-mse-840000-ema-pruned.vae.pt
+    fi
+fi
+
+if [ ! -f "../models/stable-diffusion/vae-ft-mse-840000-ema-pruned.vae.pt" ]; then
+    echo "Downloading data files (weights) for the default VAE (sd-vae-ft-mse-original).."
+
+    curl -L -k https://huggingface.co/stabilityai/sd-vae-ft-mse-original/resolve/main/vae-ft-mse-840000-ema-pruned.ckpt > ../models/stable-diffusion/vae-ft-mse-840000-ema-pruned.vae.pt
+
+    if [ -f "../models/stable-diffusion/vae-ft-mse-840000-ema-pruned.vae.pt" ]; then
+        model_size=`find ../models/stable-diffusion/vae-ft-mse-840000-ema-pruned.vae.pt -printf "%s"`
+        if [ ! "$model_size" -eq "334695179" ]; then
+            printf "\n\nError: The downloaded default VAE (sd-vae-ft-mse-original) file was invalid! Bytes downloaded: $model_size\n\n"
+            printf "\n\nError downloading the data files (weights) for the default VAE (sd-vae-ft-mse-original). Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
+            read -p "Press any key to continue"
+            exit
+        fi
+    else
+        printf "\n\nError downloading the data files (weights) for the default VAE (sd-vae-ft-mse-original). Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
+        read -p "Press any key to continue"
+        exit
+    fi
+fi
+
+
 if [ `grep -c sd_install_complete ../scripts/install_status.txt` -gt "0" ]; then
     echo sd_weights_downloaded >> ../scripts/install_status.txt
     echo sd_install_complete >> ../scripts/install_status.txt

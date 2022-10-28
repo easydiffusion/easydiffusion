@@ -73,6 +73,7 @@ class ImageRequest(BaseModel):
     use_face_correction: str = None # or "GFPGANv1.3"
     use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
     use_stable_diffusion_model: str = "sd-v1-4"
+    use_vae_model: str = None
     show_only_filtered_image: bool = False
     output_format: str = "jpeg" # or "png"
 
@@ -170,27 +171,34 @@ render_threads = []
 current_state = ServerStates.Init
 current_state_error:Exception = None
 current_model_path = None
+current_vae_path = None
 tasks_queue = []
 task_cache = TaskCache()
 default_model_to_load = None
+default_vae_to_load = None
 weak_thread_data = weakref.WeakKeyDictionary()
 
-def preload_model(file_path=None):
+def preload_model(ckpt_file_path=None, vae_file_path=None):
     global current_state, current_state_error, current_model_path
-    if file_path == None:
-        file_path = default_model_to_load
-    if file_path == current_model_path:
+    if ckpt_file_path == None:
+        ckpt_file_path = default_model_to_load
+    if vae_file_path == None:
+        vae_file_path = default_vae_to_load
+    if ckpt_file_path == current_model_path and vae_file_path == current_vae_path:
         return
     current_state = ServerStates.LoadingModel
     try:
         from . import runtime
-        runtime.thread_data.ckpt_file = file_path
+        runtime.thread_data.ckpt_file = ckpt_file_path
+        runtime.thread_data.vae_file = vae_file_path
         runtime.load_model_ckpt()
-        current_model_path = file_path
+        current_model_path = ckpt_file_path
+        current_vae_path = vae_file_path
         current_state_error = None
         current_state = ServerStates.Online
     except Exception as e:
         current_model_path = None
+        current_vae_path = None
         current_state_error = e
         current_state = ServerStates.Unavailable
         print(traceback.format_exc())
@@ -240,7 +248,7 @@ def thread_get_next_task():
         manager_lock.release()
 
 def thread_render(device):
-    global current_state, current_state_error, current_model_path
+    global current_state, current_state_error, current_model_path, current_vae_path
     from . import runtime
     try:
         runtime.device_init(device)
@@ -289,6 +297,7 @@ def thread_render(device):
                 if current_state == ServerStates.LoadingModel:
                     current_state = ServerStates.Rendering
                     current_model_path = task.request.use_stable_diffusion_model
+                    current_vae_path = task.request.use_vae_model
                 if isinstance(current_state_error, SystemExit) or isinstance(current_state_error, StopAsyncIteration) or isinstance(task.error, StopAsyncIteration):
                     runtime.thread_data.stop_processing = True
                     if isinstance(current_state_error, StopAsyncIteration):
@@ -411,6 +420,7 @@ def render(req : ImageRequest):
     r.use_upscale: str = req.use_upscale
     r.use_face_correction = req.use_face_correction
     r.use_stable_diffusion_model = req.use_stable_diffusion_model
+    r.use_vae_model = req.use_vae_model
     r.show_only_filtered_image = req.show_only_filtered_image
     r.output_format = req.output_format
 

@@ -18,7 +18,7 @@
 <div id="container">
     <div id="top-nav">
         <div id="logo">
-            <h1>Stable Diffusion UI <small>v2.3.7 <span id="updateBranchLabel"></span></small></h1>
+            <h1>Stable Diffusion UI <small>v2.3.8 <span id="updateBranchLabel"></span></small></h1>
         </div>
         <ul id="top-nav-items">
             <li class="dropdown">
@@ -38,6 +38,12 @@
                         <br/>
                         <li><label for="theme">Theme: </label><select id="theme" name="theme"><option value="theme-default">Default</option></select></li>
                         <li><input id="save_to_disk" name="save_to_disk" type="checkbox"> <label for="save_to_disk">Automatically save to <input id="diskPath" name="diskPath" size="40" disabled></label></li>
+                        <li>
+                            <label for="default_vae_model">Default VAE:</label></td><td>
+                            <select id="default_vae_model" name="default_vae_model">
+                                <!-- <option value="vae-ft-mse-840000-ema-pruned" selected>vae-ft-mse-840000-ema-pruned</option> -->
+                            </select>
+                        </li>
                         <li><input id="sound_toggle" name="sound_toggle" type="checkbox" checked> <label for="sound_toggle">Play sound on task completion</label></li>
                         <li><input id="turbo" name="turbo" type="checkbox" checked> <label for="turbo">Turbo mode <small>(generates images faster, but uses an additional 1 GB of GPU memory)</small></label></li>
                         <li><input id="use_cpu" name="use_cpu" type="checkbox"> <label for="use_cpu">Use CPU instead of GPU <small>(warning: this will be *very* slow)</small></label></li>
@@ -273,7 +279,7 @@
 <script src="media/js/inpainting-editor.js?v=1"></script>
 <script src="media/js/image-modifiers.js?v=3"></script>
 <script src="media/js/auto-save.js?v=2"></script>
-<script src="media/js/main.js?v=5"></script>
+<script src="media/js/main.js?v=6"></script>
 <script src="media/js/themes.js?v=2"></script>
 <script>
 async function init() {

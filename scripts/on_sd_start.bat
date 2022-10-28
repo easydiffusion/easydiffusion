@@ -321,6 +321,36 @@ echo. > "..\models\stable-diffusion\Put your custom ckpt files here.txt"
 
 
 
+@if exist "..\models\stable-diffusion\vae-ft-mse-840000-ema-pruned.vae.pt" (
+    for %%I in ("..\models\stable-diffusion\vae-ft-mse-840000-ema-pruned.vae.pt") do if "%%~zI" EQU "334695179" (
+        echo "Data files (weights) necessary for the default VAE (sd-vae-ft-mse-original) were already downloaded"
+    ) else (
+        echo. & echo "The default VAE (sd-vae-ft-mse-original) file present at models\stable-diffusion\vae-ft-mse-840000-ema-pruned.vae.pt is invalid. It is only %%~zI bytes in size. Re-downloading.." & echo.
+        del "..\models\stable-diffusion\vae-ft-mse-840000-ema-pruned.vae.pt"
+    )
+)
+
+@if not exist "..\models\stable-diffusion\vae-ft-mse-840000-ema-pruned.vae.pt" (
+    @echo. & echo "Downloading data files (weights) for the default VAE (sd-vae-ft-mse-original).." & echo.
+
+    @call curl -L -k https://huggingface.co/stabilityai/sd-vae-ft-mse-original/resolve/main/vae-ft-mse-840000-ema-pruned.ckpt > ..\models\stable-diffusion\vae-ft-mse-840000-ema-pruned.vae.pt
+
+    @if exist "..\models\stable-diffusion\vae-ft-mse-840000-ema-pruned.vae.pt" (
+        for %%I in ("..\models\stable-diffusion\vae-ft-mse-840000-ema-pruned.vae.pt") do if "%%~zI" NEQ "334695179" (
+            echo. & echo "Error: The downloaded default VAE (sd-vae-ft-mse-original) file was invalid! Bytes downloaded: %%~zI" & echo.
+            echo. & echo "Error downloading the data files (weights) for the default VAE (sd-vae-ft-mse-original). Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
+            pause
+            exit /b
+        )
+    ) else (
+        @echo. & echo "Error downloading the data files (weights) for the default VAE (sd-vae-ft-mse-original). Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
+        pause
+        exit /b
+    )
+)
+
+
+
 @>nul findstr /m "sd_install_complete" ..\scripts\install_status.txt
 @if "%ERRORLEVEL%" NEQ "0" (
     @echo sd_weights_downloaded >> ..\scripts\install_status.txt
