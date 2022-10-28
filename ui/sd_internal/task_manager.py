@@ -250,7 +250,7 @@ def thread_render(device):
     weak_thread_data[threading.current_thread()] = {
         'device': runtime.thread_data.device
     }
-    if runtime.thread_data.device != 'cpu':
+    if runtime.thread_data.device != 'cpu' or is_alive() == 1:
         preload_model()
     current_state = ServerStates.Online
     while True:
