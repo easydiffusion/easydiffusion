@@ -362,8 +362,6 @@ config = getConfig()
 
 # Start the task_manager
 task_manager.default_model_to_load = resolve_model_to_use()
-# Check that the loaded config.json yielded a server in a known valid state.
-# When issues are found, try to fix them when possible and warn the user.
 if 'render_devices' in config:  # Start a new thread for each device.
     if isinstance(config['render_devices'], str):
         config['render_devices'] = config['render_devices'].split(',')
