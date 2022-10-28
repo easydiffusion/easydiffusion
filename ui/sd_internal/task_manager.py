@@ -20,6 +20,8 @@ ERR_LOCK_FAILED = ' failed to acquire lock within timeout.'
 LOCK_TIMEOUT = 15 # Maximum locking time in seconds before failing a task.
 # It's better to get an exception than a deadlock... ALWAYS use timeout in critical paths.
 
+DEVICE_START_TIMEOUT = 60 # seconds - Maximum time to wait for a render device to init.
+
 class SymbolClass(type): # Print nicely formatted Symbol names.
     def __repr__(self): return self.__qualname__
     def __str__(self): return self.__name__
@@ -240,9 +242,6 @@ def thread_get_next_task():
 def thread_render(device):
     global current_state, current_state_error, current_model_path
     from . import runtime
-    weak_thread_data[threading.current_thread()] = {
-        'device': device
-    }
     try:
         runtime.device_init(device)
     except:
@@ -251,7 +250,7 @@ def thread_render(device):
     weak_thread_data[threading.current_thread()] = {
         'device': runtime.thread_data.device
     }
-    if runtime.thread_data.device != 'cpu':
+    if runtime.thread_data.device != 'cpu' or is_alive() == 1:
         preload_model()
     current_state = ServerStates.Online
     while True:
@@ -367,8 +366,8 @@ def start_render_thread(device='auto'):
         rthread.daemon = True
         rthread.name = THREAD_NAME_PREFIX + device
         rthread.start()
-        timeout = LOCK_TIMEOUT
-        while not rthread.is_alive():
+        timeout = DEVICE_START_TIMEOUT
+        while not rthread.is_alive() or not rthread in weak_thread_data or not 'device' in weak_thread_data[rthread]:
             if timeout <= 0: raise Exception('render_thread', rthread.name, 'failed to start before timeout or has crashed.')
             timeout -= 1
             time.sleep(1)
