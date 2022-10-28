@@ -565,7 +565,7 @@ async function doMakeImage(task) {
                 if (percent == 100) {
                     task.progressBar.style.height = "0px"
                     task.progressBar.style.border = "0px solid var(--background-color3)"
-                    task['progressBar'].classList.remove("active")
+                    task.progressBar.classList.remove("active")
                 }
 
                 if (stepUpdate.output !== undefined) {
@@ -718,6 +718,9 @@ async function checkTasks() {
 
     if (successCount === task.batchCount) {
         task.outputMsg.innerText = 'Processed ' + task.numOutputsTotal + ' images in ' + time + ' seconds'
+        task.progressBar.style.height = "0px"
+        task.progressBar.style.border = "0px solid var(--background-color3)"
+        task.progressBar.classList.remove("active")
         // setStatus('request', 'done', 'success')
     } else {
         if (task.outputMsg.innerText.toLowerCase().indexOf('error') === -1) {
@@ -856,7 +859,7 @@ function createTask(task) {
     task['stopTask'].addEventListener('click', async function() {
         if (task['isProcessing']) {
             task.isProcessing = false
-            task['progressBar'].classList.remove("active")
+            task.progressBar.classList.remove("active")
             try {
                 let res = await fetch('/image/stop?session_id=' + sessionId)
             } catch (e) {
