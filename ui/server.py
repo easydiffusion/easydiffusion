@@ -90,7 +90,7 @@ def setConfig(config):
         print(traceback.format_exc())
 
     if 'render_devices' in config:
-        gpu_devices = filter(lambda dev: dev.lower().startswith('gpu') or dev.lower().startswith('cuda'), config['render_devices'])
+        gpu_devices = list(filter(lambda dev: dev.lower().startswith('gpu') or dev.lower().startswith('cuda'), config['render_devices']))
     else:
         gpu_devices = []
 
