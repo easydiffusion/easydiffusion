@@ -74,11 +74,11 @@ def device_select(device):
     thread_data.force_full_precision = ('nvidia' in device_name.lower() or 'geforce' in device_name.lower()) and (' 1660' in device_name or ' 1650' in device_name)
     if thread_data.force_full_precision:
         print('forcing full precision on NVIDIA 16xx cards, to avoid green images. GPU detected: ', device_name)
+        # Apply force_full_precision now.
+        thread_data.precision = 'full'
 
     thread_data.device = device
     thread_data.has_valid_gpu = True
-    # Apply force_full_precision if was set.
-    thread_data.precision = 'full' if thread_data.force_full_precision else 'autocast'
     return True
 
 def device_init(device_selection=None):
