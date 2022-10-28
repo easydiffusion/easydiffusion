@@ -119,7 +119,7 @@ def setConfig(config):
 
     try: # config.sh
         config_sh = [
-            '#!/bin/bash'
+            '#!/bin/bash',
             f"export update_branch={config['update_branch']}"
         ]
         if len(gpu_devices) > 0 and not has_first_cuda_device:
