@@ -64,9 +64,6 @@ label {
     font-size: small;
     padding-bottom: 3pt;
 }
-#progressBar {
-    font-size: small;
-}
 #footer {
     font-size: small;
     padding-left: 10pt;
@@ -131,6 +128,9 @@ label {
 }
 #preview {
     padding: 5px;
+}
+#preview .collapsible-content {
+    padding: 0px 15px;
 }
 #editor-inputs {
     margin-bottom: 20px;
@@ -640,4 +640,41 @@ input::file-selector-button {
 }
 :hover > .simple-tooltip.bottom {
     transform: translate(-50%, 100%);
+}
+.progress-bar {
+    background: var(--background-color3);
+    border-radius: 4px;
+    border: 2px solid var(--background-color3);
+    height: 16px;
+    position: relative;
+    transition: 0.25s 1s border, 0.25s 1s height;
+}
+.progress-bar > div {
+    background: var(--accent-color);
+    border-radius: 4px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0%;
+    transition: width 1s ease-in-out;
+}
+/* animated progress-bar */
+.progress-bar.active {
+    background: repeating-linear-gradient(-65deg, 
+        var(--background-color2), 
+        var(--background-color2) 4px, 
+        var(--background-color3) 5px, 
+        var(--background-color3) 9px, 
+        var(--background-color2) 10px);
+    background-size: 200% auto;
+    background-position: 0 100%;
+    animation: progress-anim 2s infinite;
+    animation-fill-mode: forwards;
+    animation-timing-function: linear;
+}
+
+@keyframes progress-anim { 
+    0%   { background-position: -55px 0; }
+    100% { background-position: 0 0; }
 }

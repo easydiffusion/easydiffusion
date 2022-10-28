@@ -68,7 +68,6 @@ let imagePreview = document.querySelector("#preview")
 let showConfigToggle = document.querySelector('#configToggleBtn')
 // let configBox = document.querySelector('#config')
 // let outputMsg = document.querySelector('#outputMsg')
-// let progressBar = document.querySelector("#progressBar")
 
 let soundToggle = document.querySelector('#sound_toggle')
 
@@ -422,6 +421,7 @@ async function doMakeImage(task) {
     const outputMsg = task['outputMsg']
     const previewPrompt = task['previewPrompt']
     const progressBar = task['progressBar']
+    const progressBarInner = progressBar.querySelector("div")
 
     let res = undefined
     try {
@@ -561,6 +561,13 @@ async function doMakeImage(task) {
                 outputMsg.innerHTML += `. Time remaining (approx): ${timeRemaining}`
                 outputMsg.style.display = 'block'
 
+                progressBarInner.style.width = `${percent}%`
+                if (percent == 100) {
+                    task.progressBar.style.height = "0px"
+                    task.progressBar.style.border = "0px solid var(--background-color3)"
+                    task['progressBar'].classList.remove("active")
+                }
+
                 if (stepUpdate.output !== undefined) {
                     showImages(reqBody, stepUpdate, outputContainer, true)
                 }
@@ -620,7 +627,6 @@ async function doMakeImage(task) {
                 let msg = `Unexpected Read Error:<br/><pre>Response: ${res}<br/>StepUpdate: ${typeof stepUpdate === 'object' ? JSON.stringify(stepUpdate, undefined, 4) : stepUpdate}</pre>`
                 logError(msg, res, outputMsg)
             }
-            progressBar.style.display = 'none'
             return false
         }
 
@@ -630,7 +636,6 @@ async function doMakeImage(task) {
         console.log('request error', e)
         logError('Stable Diffusion had an error. Please check the logs in the command-line window. <br/><br/>' + e + '<br/><pre>' + e.stack + '</pre>', res, outputMsg)
         setStatus('request', 'error', 'error')
-        progressBar.style.display = 'none'
         return false
     }
     return true
@@ -835,7 +840,7 @@ function createTask(task) {
                             <div class="taskConfig">${taskConfig}</div>
                             <div class="collapsible-content" style="display: block">
                                 <div class="outputMsg"></div>
-                                <div class="progressBar"></div>
+                                <div class="progress-bar active"><div></div></div>
                                 <div class="img-preview">
                             </div>`
 
@@ -845,12 +850,13 @@ function createTask(task) {
     task['outputContainer'] = taskEntry.querySelector('.img-preview')
     task['outputMsg'] = taskEntry.querySelector('.outputMsg')
     task['previewPrompt'] = taskEntry.querySelector('.preview-prompt')
-    task['progressBar'] = taskEntry.querySelector('.progressBar')
+    task['progressBar'] = taskEntry.querySelector('.progress-bar')
     task['stopTask'] = taskEntry.querySelector('.stopTask')
 
     task['stopTask'].addEventListener('click', async function() {
         if (task['isProcessing']) {
             task.isProcessing = false
+            task['progressBar'].classList.remove("active")
             try {
                 let res = await fetch('/image/stop?session_id=' + sessionId)
             } catch (e) {
