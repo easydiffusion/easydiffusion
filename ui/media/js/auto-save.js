@@ -208,20 +208,10 @@ function fillSaveSettingsConfigTable() {
     })
 }
 
-document.getElementById("save-settings-config-close-btn").addEventListener('click', () => {
-    saveSettingsConfigOverlay.style.display = 'none'
-})
+
 document.getElementById("configureSettingsSaveBtn").addEventListener('click', () => {
     fillSaveSettingsConfigTable()
-    saveSettingsConfigOverlay.style.display = 'block'
-})
-saveSettingsConfigOverlay.addEventListener('click', (event) => {
-    if (event.target.id == saveSettingsConfigOverlay.id) {
-        saveSettingsConfigOverlay.style.display = 'none'
-    }
-})
-document.getElementById("save-settings-config-close-btn").addEventListener('click', () => {
-    saveSettingsConfigOverlay.style.display = 'none'
+    saveSettingsConfigOverlay.classList.add("active")
 })
 resetImageSettingsButton.addEventListener('click', event => {
     loadDefaultSettingsSection("editor-settings");

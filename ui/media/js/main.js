@@ -1311,4 +1311,19 @@ async function getDiskPath() {
     }
 }
 
+/* setup popup handlers */
+document.querySelectorAll('.popup').forEach(popup => {
+    popup.addEventListener('click', event => {
+        if (event.target == popup) {
+            popup.classList.remove("active")
+        }
+    })
+    var closeButton = popup.querySelector(".close-button")
+    if (closeButton) {
+        closeButton.addEventListener('click', () => {
+            popup.classList.remove("active")
+        })
+    }
+})
+
 createCollapsibles()

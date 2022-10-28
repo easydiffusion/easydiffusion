@@ -246,15 +246,7 @@ modifierCardSizeSlider.onchange = () => resizeModifierCards(modifierCardSizeSlid
 previewImageField.onchange = () => changePreviewImages(previewImageField.value)
 
 modifierSettingsBtn.addEventListener('click', function() {
-    modifierSettingsOverlay.style.display = 'block'
-})
-document.getElementById("modifier-settings-config-close-btn").addEventListener('click', () => {
-    modifierSettingsOverlay.style.display = 'none'
-})
-modifierSettingsOverlay.addEventListener('click', (event) => {
-    if (event.target.id == modifierSettingsOverlay.id) {
-        modifierSettingsOverlay.style.display = 'none'
-    }
+    modifierSettingsOverlay.classList.add("active")
 })
 
 function saveCustomModifiers() {
