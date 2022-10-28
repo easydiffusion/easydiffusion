@@ -85,7 +85,7 @@ def setConfig(config):
     try: # config.json
         config_json_path = os.path.join(CONFIG_DIR, 'config.json')
         with open(config_json_path, 'w', encoding='utf-8') as f:
-            return json.dump(config, f)
+            json.dump(config, f)
     except:
         print(traceback.format_exc())
 
