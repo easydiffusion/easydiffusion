@@ -407,7 +407,7 @@ display_warning = False
 if task_manager.is_alive() <= 0: # Either no defauls or no devices after loading config.
     # Select best GPU device using free memory, if more than one device.
     if task_manager.start_render_thread('auto'): # Detect best device for renders
-        if task_manager.is_alive(0) <= 0: # is not cuda:0
+        if task_manager.is_alive(0) <= 0 and task_manager.is_alive('cpu') <= 0:  # is not cuda:0 and auto didnt use CPU.
             if task_manager.start_render_thread('cuda'): # An other cuda device is better and cuda:0 is missing, start it...
                 display_warning = True # And warn user to update settings...
             else:
