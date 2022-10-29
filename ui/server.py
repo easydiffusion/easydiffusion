@@ -397,7 +397,8 @@ if 'render_devices' in config:  # Start a new thread for each device.
     if not isinstance(config['render_devices'], list):
         raise Exception('Invalid render_devices value in config.')
     for device in config['render_devices']:
-        task_manager.start_render_thread(device)
+        if not task_manager.start_render_thread(device):
+            print(device, 'failed to start.')
     if task_manager.is_alive() <= 0: # No running devices, probably invalid user config.
         print('WARNING: No active render devices after loading config. Validate "render_devices" in config.json')
         print('Loading default render devices to replace invalid render_devices field from config', config['render_devices'])
@@ -405,13 +406,20 @@ if 'render_devices' in config:  # Start a new thread for each device.
 display_warning = False
 if task_manager.is_alive() <= 0: # Either no defauls or no devices after loading config.
     # Select best GPU device using free memory, if more than one device.
-    task_manager.start_render_thread('auto') # Detect best device for renders
-    if task_manager.is_alive(0) <= 0: # without cuda:0
-        task_manager.start_render_thread('cuda') # An other cuda device is better and cuda:0 is missing, start it...
-        display_warning = True # And warn user to update settings...
+    if task_manager.start_render_thread('auto'): # Detect best device for renders
+        if task_manager.is_alive(0) <= 0:  # has no cuda:0
+            if task_manager.is_alive('cpu') >= 1:  # auto used CPU.
+                pass # Maybe add warning here about CPU mode...
+            elif task_manager.start_render_thread('cuda'): # An other cuda device is better and cuda:0 is missing, try to start it...
+                display_warning = True # And warn user to update settings...
+            else:
+                print('Failed to start GPU:0...')
+    else:
+        print('Failed to start gpu device.')
     if task_manager.is_alive('cpu') <= 0:
         # Allow CPU to be used for renders
-        task_manager.start_render_thread('cpu')
+        if not task_manager.start_render_thread('cpu'):
+            print('Failed to start CPU render device...')
 
 if display_warning or task_manager.is_alive(0) <= 0:
     print('WARNING: GFPGANer only works on GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.')
