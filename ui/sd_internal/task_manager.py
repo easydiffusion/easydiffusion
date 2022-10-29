@@ -375,14 +375,16 @@ def start_render_thread(device='auto'):
         rthread.daemon = True
         rthread.name = THREAD_NAME_PREFIX + device
         rthread.start()
-        timeout = DEVICE_START_TIMEOUT
-        while not rthread.is_alive() or not rthread in weak_thread_data or not 'device' in weak_thread_data[rthread]:
-            if timeout <= 0: raise Exception('render_thread', rthread.name, 'failed to start before timeout or has crashed.')
-            timeout -= 1
-            time.sleep(1)
         render_threads.append(rthread)
     finally:
         manager_lock.release()
+    timeout = DEVICE_START_TIMEOUT
+    while not rthread.is_alive() or not rthread in weak_thread_data or not 'device' in weak_thread_data[rthread]:
+        if timeout <= 0:
+            return False
+        timeout -= 1
+        time.sleep(1)
+    return True
 
 def shutdown_event(): # Signal render thread to close on shutdown
     global current_state_error
