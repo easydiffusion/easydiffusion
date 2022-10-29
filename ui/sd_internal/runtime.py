@@ -183,6 +183,7 @@ def device_init(device_selection=None):
         return
     print('WARNING: No compatible GPU found. Using the CPU, but this will be very slow!')
     thread_data.device = 'cpu'
+    thread_data.device_name = get_processor_name()
 
 def is_first_cuda_device(device):
     if device is None: return False
