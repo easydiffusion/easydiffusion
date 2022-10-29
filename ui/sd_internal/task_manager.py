@@ -21,6 +21,7 @@ LOCK_TIMEOUT = 15 # Maximum locking time in seconds before failing a task.
 # It's better to get an exception than a deadlock... ALWAYS use timeout in critical paths.
 
 DEVICE_START_TIMEOUT = 60 # seconds - Maximum time to wait for a render device to init.
+CPU_UNLOAD_TIMEOUT = 4 * 60 # seconds - Idle time before CPU unload resource when GPUs are present.
 
 class SymbolClass(type): # Print nicely formatted Symbol names.
     def __repr__(self): return self.__qualname__
@@ -269,6 +270,11 @@ def thread_render(device):
             return
         task = thread_get_next_task()
         if task is None:
+            if runtime.thread_data.device == 'cpu' and is_alive() > 1 and hasattr(runtime.thread_data, 'lastActive') and time.time() - runtime.thread_data.lastActive > CPU_UNLOAD_TIMEOUT:
+                # GPUs present and CPU is idle. Unload resources.
+                runtime.unload_models()
+                runtime.unload_filters()
+                del runtime.thread_data.lastActive
             time.sleep(1)
             continue
         if task.error is not None:
@@ -284,6 +290,9 @@ def thread_render(device):
         print(f'Session {task.request.session_id} starting task {id(task)}')
         if not task.lock.acquire(blocking=False): raise Exception('Got locked task from queue.')
         try:
+            if runtime.thread_data.device == 'cpu' and is_alive() > 1:
+                # CPU is not the only device. Keep track of active time to unload resources later.
+                runtime.thread_data.lastActive = time.time()
             # Open data generator.
             res = runtime.mk_img(task.request)
             if current_model_path == task.request.use_stable_diffusion_model:
