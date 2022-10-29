@@ -6,54 +6,28 @@
     display: none;
 }
 
-#save-settings-config {
-    position: absolute;
-    background: rgba(32, 33, 36, 50%);
-    top: 0px;
-    left: 0px;
-    right: 0px;
-    bottom: 0px;
-    z-index: 1000;
-}
-
-#save-settings-config > div {
-    background: var(--background-color3);
-    max-width: 600px;
-    margin: auto;
-    margin-top: 50px;
-    border-radius: 6px;
-    padding: 30px;
-    text-align: center;
-}
-
-#save-settings-config-table {
+.form-table {
     margin: auto;
 }
 
-#save-settings-config-table th {
+.form-table th {
     padding-top: 15px;
     padding-bottom: 5px;
 }
 
-#save-settings-config-table td:first-child,
-#save-settings-config-table th:first-child {
+.form-table td:first-child > *,
+.form-table th:first-child > * {
     float: right;
+    white-space: nowrap;
 }
 
-#save-settings-config-table td:last-child,
-#save-settings-config-table th:last-child {
+.form-table td:last-child > *,
+.form-table th:last-child > * {
     float: left;
 }
 
-#save-settings-config-table td small {
+.form-table small {
     color: rgb(153, 153, 153);
-}
-
-#save-settings-config-close-btn {
-    float: right;
-    cursor: pointer;
-    padding: 10px;
-    transform: translate(50%, -50%) scaleX(130%);
 }
 
 #reset-image-settings {
@@ -71,4 +45,21 @@
 #reset-image-settings.hidden {
     opacity: 0;
     pointer-events: none;
+}
+
+#system-settings .form-table td {
+    height: 24px;
+}
+
+#system-settings .form-table td:last-child div {
+    display: flex;
+    align-items: center;
+}
+#system-settings .form-table td:last-child div > :not([type="checkbox"]):first-child {
+    margin-left: 3px;
+}
+
+#system-settings .form-table td:last-child div small {
+    padding-left: 5px;
+    text-align: left;
 }

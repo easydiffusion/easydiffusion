@@ -52,7 +52,9 @@ const SETTINGS_SECTIONS = [ // gets the "keys" property filled in with an ordere
 async function initSettings() {
     SETTINGS_IDS_LIST.forEach(id => {
         var element = document.getElementById(id)
-        var label = document.querySelector(`label[for='${element.id}']`)
+        if (!element) {
+            console.error(`Missing settings element ${id}`)
+        }
         SETTINGS[id] = {
             key: id,
             element: element,
@@ -126,8 +128,12 @@ function loadSettings() {
             return
         }
         CURRENTLY_LOADING_SETTINGS = true
-        saved_settings.map(saved_setting => {
+        saved_settings.forEach(saved_setting => {
             var setting = SETTINGS[saved_setting.key]
+            if (!setting) {
+                console.warn(`Attempted to load setting ${saved_setting.key}, but no setting found`);
+                return null;
+            }
             setting.ignore = saved_setting.ignore
             if (!setting.ignore) {
                 setting.value = saved_setting.value
@@ -208,20 +214,22 @@ function fillSaveSettingsConfigTable() {
     })
 }
 
-document.getElementById("save-settings-config-close-btn").addEventListener('click', () => {
-    saveSettingsConfigOverlay.style.display = 'none'
+// configureSettingsSaveBtn
+
+
+
+
+var autoSaveSettings = document.getElementById("auto_save_settings")
+var configSettingsButton = document.createElement("button")
+configSettingsButton.textContent = "Configure"
+configSettingsButton.style.margin = "0px 5px"
+autoSaveSettings.insertAdjacentElement("afterend", configSettingsButton)
+autoSaveSettings.addEventListener("change", () => {
+    configSettingsButton.style.display = autoSaveSettings.checked ? "block" : "none"
 })
-document.getElementById("configureSettingsSaveBtn").addEventListener('click', () => {
+configSettingsButton.addEventListener('click', () => {
     fillSaveSettingsConfigTable()
-    saveSettingsConfigOverlay.style.display = 'block'
-})
-saveSettingsConfigOverlay.addEventListener('click', (event) => {
-    if (event.target.id == saveSettingsConfigOverlay.id) {
-        saveSettingsConfigOverlay.style.display = 'none'
-    }
-})
-document.getElementById("save-settings-config-close-btn").addEventListener('click', () => {
-    saveSettingsConfigOverlay.style.display = 'none'
+    saveSettingsConfigOverlay.classList.add("active")
 })
 resetImageSettingsButton.addEventListener('click', event => {
     loadDefaultSettingsSection("editor-settings");

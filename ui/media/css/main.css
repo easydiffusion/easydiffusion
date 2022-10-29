@@ -311,6 +311,8 @@ img {
     float: left;
     display: inline;
     padding-left: 20pt;
+}
+#top-nav-items > li:first-child {
     cursor: default;
 }
 #initial-text {
@@ -322,20 +324,6 @@ img {
     font-weight: bold;
 }
 .pl-5 {
-    padding-left: 5pt;
-}
-#system-settings {
-    width: 360pt;
-    transform: translateX(-100%) translateX(70pt);
-
-    padding-top: 10pt;
-    padding-bottom: 10pt;
-}
-#system-settings ul {
-    margin: 0;
-    padding: 0;
-}
-#system-settings li {
     padding-left: 5pt;
 }
 #community-links {
@@ -677,4 +665,47 @@ input::file-selector-button {
 @keyframes progress-anim { 
     0%   { background-position: -55px 0; }
     100% { background-position: 0 0; }
+}
+
+.popup:not(.active) {
+    visibility: hidden;
+    opacity: 0;
+}
+
+.popup {
+    position: absolute;
+    background: rgba(32, 33, 36, 50%);
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    z-index: 1000;
+    opacity: 1;
+    transition: 0s visibility, 0.3s opacity;
+}
+
+.popup > div {
+    position: relative;
+    background: var(--background-color2);
+    border: solid 1px var(--background-color3);
+    max-width: 700px;
+    margin: auto;
+    margin-top: 50px;
+    border-radius: 6px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0px 0px 30px black;
+}
+
+.popup .close-button {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    transform: scale(150%);
+    cursor: pointer;
+    padding: 24px;
+}
+
+#settings-button {
+    cursor: pointer;
 }

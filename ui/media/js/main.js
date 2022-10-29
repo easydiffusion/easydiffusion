@@ -1054,11 +1054,13 @@ function onDimensionChange() {
     resizeInpaintingEditor(widthValue, heightValue)
 }
 
-saveToDiskField.addEventListener('click', function(e) {
+diskPathField.disabled = !saveToDiskField.checked
+saveToDiskField.addEventListener('change', function(e) {
     diskPathField.disabled = !this.checked
 })
 
-useUpscalingField.addEventListener('click', function(e) {
+upscaleModelField.disabled = !useUpscalingField.checked
+useUpscalingField.addEventListener('change', function(e) {
     upscaleModelField.disabled = !this.checked
 })
 
@@ -1310,5 +1312,21 @@ async function getDiskPath() {
         console.log('error fetching output dir path', e)
     }
 }
+
+
+/* setup popup handlers */
+document.querySelectorAll('.popup').forEach(popup => {
+    popup.addEventListener('click', event => {
+        if (event.target == popup) {
+            popup.classList.remove("active")
+        }
+    })
+    var closeButton = popup.querySelector(".close-button")
+    if (closeButton) {
+        closeButton.addEventListener('click', () => {
+            popup.classList.remove("active")
+        })
+    }
+})
 
 createCollapsibles()
