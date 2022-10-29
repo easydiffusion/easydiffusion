@@ -343,7 +343,7 @@ function onDownloadImageClick(req, img) {
 function modifyCurrentRequest(req, ...reqDiff) {
     const newTaskRequest = getCurrentUserRequest()
 
-    newTaskRequest.reqBody = Object.assign({}, req, ...reqDiff, {
+    newTaskRequest.reqBody = Object.assign(newTaskRequest.reqBody, req, ...reqDiff, {
         use_cpu: useCPUField.checked
     })
     newTaskRequest.seed = newTaskRequest.reqBody.seed
