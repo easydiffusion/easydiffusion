@@ -45,6 +45,25 @@ from io import BytesIO
 from threading import local as LocalThreadVars
 thread_data = LocalThreadVars()
 
+def get_processor_name():
+    try:
+        import platform, subprocess
+        if platform.system() == "Windows":
+            return platform.processor()
+        elif platform.system() == "Darwin":
+            os.environ['PATH'] = os.environ['PATH'] + os.pathsep + '/usr/sbin'
+            command ="sysctl -n machdep.cpu.brand_string"
+            return subprocess.check_output(command).strip()
+        elif platform.system() == "Linux":
+            command = "cat /proc/cpuinfo"
+            all_info = subprocess.check_output(command, shell=True).decode().strip()
+            for line in all_info.split("\n"):
+                if "model name" in line:
+                    return re.sub( ".*model name.*:", "", line,1).strip()
+    except:
+        print(traceback.format_exc())
+        return "cpu"
+
 def device_would_fail(device):
     if device == 'cpu': return None
     # Returns None when no issues found, otherwise returns the detected error str.
@@ -68,17 +87,17 @@ def device_select(device):
         print(failure_msg)
         return False
 
-    device_name = torch.cuda.get_device_name(device)
+    thread_data.device_name = torch.cuda.get_device_name(device)
+    thread_data.device = device
 
-    # otherwise these NVIDIA cards create green images
-    thread_data.force_full_precision = ('nvidia' in device_name.lower() or 'geforce' in device_name.lower()) and (' 1660' in device_name or ' 1650' in device_name)
+    # Force full precision on 1660 and 1650 NVIDIA cards to avoid creating green images
+    device_name = thread_data.device_name.lower()
+    thread_data.force_full_precision = ('nvidia' in device_name or 'geforce' in device_name) and (' 1660' in device_name or ' 1650' in device_name)
     if thread_data.force_full_precision:
-        print('forcing full precision on NVIDIA 16xx cards, to avoid green images. GPU detected: ', device_name)
+        print('forcing full precision on NVIDIA 16xx cards, to avoid green images. GPU detected: ', thread_data.device_name)
         # Apply force_full_precision now before models are loaded.
         thread_data.precision = 'full'
 
-    thread_data.device = device
-    thread_data.has_valid_gpu = True
     return True
 
 def device_init(device_selection=None):
@@ -100,24 +119,26 @@ def device_init(device_selection=None):
     thread_data.model_is_half = False
     thread_data.model_fs_is_half = False
     thread_data.device = None
+    thread_data.device_name = None
     thread_data.unet_bs = 1
     thread_data.precision = 'autocast'
     thread_data.sampler_plms = None
     thread_data.sampler_ddim = None
 
     thread_data.turbo = False
-    thread_data.has_valid_gpu = False
     thread_data.force_full_precision = False
     thread_data.reduced_memory = True
 
     if device_selection.lower() == 'cpu':
-        print('CPU requested, skipping gpu init.')
         thread_data.device = 'cpu'
+        thread_data.device_name = get_processor_name()
+        print('Render device CPU available as', thread_data.device_name)
         return
     if not torch.cuda.is_available():
         if device_selection == 'auto' or device_selection == 'current':
             print('WARNING: torch.cuda is not available. Using the CPU, but this will be very slow!')
             thread_data.device = 'cpu'
+            thread_data.device_name = get_processor_name()
             return
         else:
             raise EnvironmentError('torch.cuda is not available.')
@@ -475,7 +496,7 @@ def do_mk_img(req: Request):
         thread_data.vae_file = req.use_vae_model
         needs_model_reload = True
 
-    if thread_data.has_valid_gpu:
+    if thread_data.device != 'cpu':
         if (thread_data.precision == 'autocast' and (req.use_full_precision or not thread_data.model_is_half)) or \
             (thread_data.precision == 'full' and not req.use_full_precision and not thread_data.force_full_precision):
             thread_data.precision = 'full' if req.use_full_precision else 'autocast'
@@ -500,7 +521,7 @@ def do_mk_img(req: Request):
     opt_f = 8
     opt_ddim_eta = 0.0
 
-    print(req.to_string(), '\n    device', thread_data.device)
+    print(req, '\n    device', torch.device(thread_data.device), "as", thread_data.device_name)
     print('\n\n    Using precision:', thread_data.precision)
 
     seed_everything(opt_seed)
