@@ -39,7 +39,8 @@ var PARAMETERS = [
 	{
 		id: "save_to_disk",
 		type: ParameterType.checkbox,
-		label: "Automatically Save Images",
+		label: "Auto-Save Images",
+		note: "automatically saves images to the specified location",
 		default: false,
 	},
 	{
@@ -58,7 +59,8 @@ var PARAMETERS = [
 	{
 		id: "sound_toggle",
 		type: ParameterType.checkbox,
-		label: "Play sound on task completion",
+		label: "Enable Sound",
+		note: "plays a sound on task completion",
 		default: true,
 	},
 	{
@@ -78,15 +80,15 @@ var PARAMETERS = [
 	{
 		id: "use_full_precision",
 		type: ParameterType.checkbox,
-		label: "Use full precision",
+		label: "Use Full Precision",
 		note: "for GPU-only. warning: this will consume more VRAM",
 		default: false,
 	},
 	{
 		id: "auto_save_settings",
 		type: ParameterType.checkbox,
-		label: "Automatically save settings",
-		note: "settings restored on browser load",
+		label: "Auto-Save Settings",
+		note: "restores settings on browser load",
 		default: true,
 	},
 	{
