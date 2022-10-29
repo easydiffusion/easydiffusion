@@ -403,7 +403,7 @@ if 'render_devices' in config:  # Start a new thread for each device.
     if not isinstance(config['render_devices'], list):
         raise Exception('Invalid render_devices value in config.')
     for device in config['render_devices']:
-        if task_manager.is_alive(device):
+        if task_manager.is_alive(device) >= 1:
             print(device, 'already registered.')
             continue
         if not task_manager.start_render_thread(device):
