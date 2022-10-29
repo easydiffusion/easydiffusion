@@ -668,7 +668,8 @@ input::file-selector-button {
 }
 
 .popup:not(.active) {
-    display: none;
+    visibility: hidden;
+    opacity: 0;
 }
 
 .popup {
@@ -679,6 +680,8 @@ input::file-selector-button {
     right: 0px;
     bottom: 0px;
     z-index: 1000;
+    opacity: 1;
+    transition: 0s visibility, 0.3s opacity;
 }
 
 .popup > div {
@@ -691,6 +694,7 @@ input::file-selector-button {
     border-radius: 6px;
     padding: 30px;
     text-align: center;
+    box-shadow: 0px 0px 30px black;
 }
 
 .popup .close-button {
