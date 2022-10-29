@@ -204,13 +204,13 @@ def preload_model(ckpt_file_path=None, vae_file_path=None):
         print(traceback.format_exc())
 
 def thread_get_next_task():
+    from . import runtime
     if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT):
         print('Render thread on device', runtime.thread_data.device, 'failed to acquire manager lock.')
         return None
     if len(tasks_queue) <= 0:
         manager_lock.release()
         return None
-    from . import runtime
     task = None
     try:  # Select a render task.
         for queued_task in tasks_queue:
