@@ -311,6 +311,8 @@ img {
     float: left;
     display: inline;
     padding-left: 20pt;
+}
+#top-nav-items > li:first-child {
     cursor: default;
 }
 #initial-text {
@@ -322,20 +324,6 @@ img {
     font-weight: bold;
 }
 .pl-5 {
-    padding-left: 5pt;
-}
-#system-settings {
-    width: 360pt;
-    transform: translateX(-100%) translateX(70pt);
-
-    padding-top: 10pt;
-    padding-bottom: 10pt;
-}
-#system-settings ul {
-    margin: 0;
-    padding: 0;
-}
-#system-settings li {
     padding-left: 5pt;
 }
 #community-links {
@@ -712,4 +700,8 @@ input::file-selector-button {
     transform: scale(150%);
     cursor: pointer;
     padding: 24px;
+}
+
+#settings-button {
+    cursor: pointer;
 }

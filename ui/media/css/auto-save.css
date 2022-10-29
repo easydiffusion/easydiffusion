@@ -6,26 +6,27 @@
     display: none;
 }
 
-#save-settings-config-table {
+.form-table {
     margin: auto;
 }
 
-#save-settings-config-table th {
+.form-table th {
     padding-top: 15px;
     padding-bottom: 5px;
 }
 
-#save-settings-config-table td:first-child,
-#save-settings-config-table th:first-child {
+.form-table td:first-child > *,
+.form-table th:first-child > * {
     float: right;
+    white-space: nowrap;
 }
 
-#save-settings-config-table td:last-child,
-#save-settings-config-table th:last-child {
+.form-table td:last-child > *,
+.form-table th:last-child > * {
     float: left;
 }
 
-#save-settings-config-table td small {
+.form-table small {
     color: rgb(153, 153, 153);
 }
 
@@ -44,4 +45,21 @@
 #reset-image-settings.hidden {
     opacity: 0;
     pointer-events: none;
+}
+
+#system-settings .form-table td {
+    height: 24px;
+}
+
+#system-settings .form-table td:last-child div {
+    display: flex;
+    align-items: center;
+}
+#system-settings .form-table td:last-child div > :not([type="checkbox"]):first-child {
+    margin-left: 3px;
+}
+
+#system-settings .form-table td:last-child div small {
+    padding-left: 5px;
+    text-align: left;
 }

@@ -8,7 +8,7 @@
  var ParameterType = {
     checkbox: "checkbox",
 	select: "select",
-	text: "text",
+	custom: "custom",
 };
 
 /**
@@ -43,10 +43,12 @@ var PARAMETERS = [
 		default: false,
 	},
 	{
-		id: "diskPath", // TODO: auto-disabling of this based on save_to_disk
-		type: ParameterType.text,
+		id: "diskPath",
+		type: ParameterType.custom,
 		label: "Save Location",
-		default: "", // Note: default value is generated
+		render: (parameter) => {
+			return `<input id="${parameter.id}" name="${parameter.id}" size="40" disabled>`
+		}
 	},
 	{
 		id: "default_vae_model",
@@ -95,3 +97,39 @@ var PARAMETERS = [
 		default: false,
 	},
 ];
+
+
+function getParameterElement(parameter) {
+	switch (parameter.type) {
+		case ParameterType.checkbox:
+			var is_checked = parameter.default ? " checked" : "";
+			return `<input id="${parameter.id}" name="${parameter.id}"${is_checked} type="checkbox">`
+		case ParameterType.select:
+			var options = (parameter.options || []).map(option => `<option value="${option.value}">${option.label}</option>`).join("")
+			return `<select id="${parameter.id}" name="${parameter.id}">${options}</select>`
+		case ParameterType.custom:
+			return parameter.render(parameter)
+		default:
+			console.error(`Invalid type for parameter ${parameter.id}`);
+			return "ERROR: Invalid Type"
+	}
+}
+
+var parametersTable = document.querySelector("#system-settings table")
+/* fill in the system settings popup table */
+function initParameters() {
+	PARAMETERS.forEach(parameter => {
+		var element = getParameterElement(parameter)
+		var note = parameter.note ? `<small>${parameter.note}</small>` : "";
+		var newrow = `<tr>
+			<td><label for="${parameter.id}">${parameter.label}</label></td>
+			<td><div>${element}${note}<div></td></tr>`
+		parametersTable.insertAdjacentHTML("beforeend", newrow)
+	})
+}
+
+initParameters();
+
+document.getElementById("settings-button").addEventListener('click', event => {
+    document.getElementById("system-settings").classList.add("active")
+})
