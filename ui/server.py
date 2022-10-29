@@ -96,7 +96,7 @@ def setConfig(config):
 
     has_first_cuda_device = False
     for device in gpu_devices:
-        if not task_manager.is_first_cuda_device(device): continue
+        if not task_manager.is_first_cuda_device(device.lower()): continue
         has_first_cuda_device = True
         break
     if len(gpu_devices) > 0 and not has_first_cuda_device:
