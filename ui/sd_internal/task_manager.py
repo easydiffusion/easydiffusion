@@ -238,8 +238,8 @@ def thread_get_next_task():
                     task = queued_task
                     break
             if not queued_task.render_device and runtime.thread_data.device == 'cpu' and is_alive() > 1:
-                 # not asking for any specific devices, cpu want to grab task but other render devices are alive.
-                    continue  # Skip Tasks, don't run on CPU unless there is nothing else or user asked for it.
+                # not asking for any specific devices, cpu want to grab task but other render devices are alive.
+                continue  # Skip Tasks, don't run on CPU unless there is nothing else or user asked for it.
             task = queued_task
             break
         if task is not None:
