@@ -356,7 +356,11 @@ def get_devices():
     try:
         device_dict = {}
         for rthread in render_threads:
+            if not rthread.is_alive():
+                continue
             weak_data = weak_thread_data.get(rthread)
+            if not weak_data or not 'device' in weak_data or not 'device_name' in weak_data:
+                continue
             device_dict.update({weak_data['device']:weak_data['device_name']})
         return device_dict
     finally:
