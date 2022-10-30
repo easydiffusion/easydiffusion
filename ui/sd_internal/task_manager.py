@@ -253,8 +253,11 @@ def thread_render(device):
     from . import runtime
     try:
         runtime.device_init(device)
-    except:
+    except Exception as e:
         print(traceback.format_exc())
+        weak_thread_data[threading.current_thread()] = {
+            'error': e
+        }
         return
     weak_thread_data[threading.current_thread()] = {
         'device': runtime.thread_data.device,
@@ -377,8 +380,7 @@ def is_alive(name=None):
         for rthread in render_threads:
             if name is not None:
                 weak_data = weak_thread_data.get(rthread)
-                if weak_data is None or weak_data['device'] is None:
-                    print('The thread', rthread.name, 'is registered but has no data store in the task manager.')
+                if weak_data is None or not 'device' in weak_data or weak_data['device'] is None:
                     continue
                 thread_name = str(weak_data['device']).lower()
                 if is_first_cuda_device(name):
@@ -405,6 +407,8 @@ def start_render_thread(device='auto'):
         manager_lock.release()
     timeout = DEVICE_START_TIMEOUT
     while not rthread.is_alive() or not rthread in weak_thread_data or not 'device' in weak_thread_data[rthread]:
+        if rthread in weak_thread_data and 'error' in weak_thread_data[rthread]:
+            return False
         if timeout <= 0:
             return False
         timeout -= 1
