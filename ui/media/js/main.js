@@ -340,10 +340,10 @@ function onDownloadImageClick(req, img) {
     imgDownload.click()
 }
 
-function modifyCurrentRequest(req, ...reqDiff) {
+function modifyCurrentRequest(...reqDiff) {
     const newTaskRequest = getCurrentUserRequest()
 
-    newTaskRequest.reqBody = Object.assign(newTaskRequest.reqBody, req, ...reqDiff, {
+    newTaskRequest.reqBody = Object.assign(newTaskRequest.reqBody, ...reqDiff, {
         use_cpu: useCPUField.checked
     })
     newTaskRequest.seed = newTaskRequest.reqBody.seed
