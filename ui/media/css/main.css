@@ -559,6 +559,26 @@ input::file-selector-button {
         left: 0px;
         right: 0px;
     }
+    .popup > div {
+        padding-left: 5px !important;
+        padding-right: 5px !important;
+    }
+    .popup > div input, .popup > div select {
+        max-width: 40vw;
+    }
+    .popup .close-button {
+        padding: 0px !important;
+        margin: 24px !important;
+    }
+    #reset-image-settings .simple-tooltip.right {
+        right: initial;
+        left: 0px;
+        top: 50%;
+        transform: translate(calc(-100% + 15%), -50%);
+    }
+    :hover > #reset-image-settings .simple-tooltip.right {
+        transform: translate(100%, -50%);
+    }
 }
 
 #promptsFromFileBtn {
