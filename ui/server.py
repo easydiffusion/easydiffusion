@@ -397,6 +397,7 @@ config = getConfig()
 # Start the task_manager
 task_manager.default_model_to_load = resolve_ckpt_to_use()
 task_manager.default_vae_to_load = resolve_vae_to_use(ckpt_model_path=task_manager.default_model_to_load)
+display_warning = False
 if 'render_devices' in config:  # Start a new thread for each device.
     if isinstance(config['render_devices'], str):
         config['render_devices'] = config['render_devices'].split(',')
@@ -411,8 +412,9 @@ if 'render_devices' in config:  # Start a new thread for each device.
     if task_manager.is_alive() <= 0: # No running devices, probably invalid user config.
         print('WARNING: No active render devices after loading config. Validate "render_devices" in config.json')
         print('Loading default render devices to replace invalid render_devices field from config', config['render_devices'])
+    elif task_manager.is_alive(0) <= 0: # Missing GPU:0
+        display_warning = True # Warn user to update settings...
 
-display_warning = False
 if task_manager.is_alive() <= 0: # Either no defauls or no devices after loading config.
     # Select best GPU device using free memory, if more than one device.
     if task_manager.start_render_thread('auto'): # Detect best device for renders
@@ -430,12 +432,11 @@ if task_manager.is_alive() <= 0: # Either no defauls or no devices after loading
         if not task_manager.start_render_thread('cpu'):
             print('Failed to start CPU render device...')
 
-if display_warning or task_manager.is_alive(0) <= 0:
+if display_warning:
     print('WARNING: GFPGANer only works on GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.')
     print('Using CUDA_VISIBLE_DEVICES will remap the selected devices starting at GPU:0 fixing GFPGANer')
     print('Add the line "@set CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.bat')
     print('Add the line "CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.sh')
-
 del display_warning
 
 # start the browser ui
