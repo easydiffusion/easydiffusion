@@ -229,7 +229,7 @@ function parseTaskFromText(str) {
 
     // Prompt
     afterPromptRe.lastIndex = 0
-    const match = afterPromptRe.exec(str);
+    const match = afterPromptRe.exec(str)
     if (match) {
         let prompt = str.slice(0, match.index)
         str = str.slice(prompt.length)
@@ -263,7 +263,7 @@ function parseTaskFromText(str) {
             taskReqBody[key] = TASK_MAPPING[key].parse(val.trim())
             console.log(TASK_MAPPING[key].name + ':', taskReqBody[key])
             if (!str) {
-                break;
+                break
             }
         }
     }
