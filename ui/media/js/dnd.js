@@ -209,6 +209,18 @@ function restoreTaskToUI(task) {
     }
 }
 
+function readUIasJSON() {
+    const reqBody = {}
+    for (const key in TASK_MAPPING) {
+        reqBody[key] = TASK_MAPPING[key].readUI()
+    }
+    return {
+        'numOutputsTotal': parseInt(numOutputsTotalField.value),
+        'seed': TASK_MAPPING['seed'].readUI(),
+        'reqBody': reqBody
+    }
+}
+
 const TASK_TEXT_MAPPING = {
     width: 'Width',
     height: 'Height',
@@ -331,3 +343,41 @@ function dragOverHandler(ev) {
 
 document.addEventListener("drop", dropHandler)
 document.addEventListener("dragover", dragOverHandler)
+
+// Adds a copy icon if the browser grants permission to write to clipboard.
+function checkWriteToClipboardPermission (result) {
+    if (result.state == "granted" || result.state == "prompt") {
+        const style = document.createElement('style');
+        style.textContent = `
+        #copy-image-settings {
+            cursor: pointer;
+            padding: 8px;
+            opacity: 1;
+            transition: opacity 0.5;
+        }
+        .collapsible:not(.active) #copy-image-settings {
+            display: none;
+        }
+        #copy-image-settings.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }`;
+        document.head.append(style);
+        const resetSettings = document.getElementById('reset-image-settings')
+        const copyIcon = document.createElement('i')
+        copyIcon.id = 'copy-image-settings'
+        copyIcon.className = 'fa-solid fa-clipboard'
+        copyIcon.innerHTML = `<span class="simple-tooltip right">Copy Image Settings</span>`
+        copyIcon.addEventListener('click', (event) => {
+            event.stopPropagation()
+            navigator.clipboard.writeText(JSON.stringify(readUIasJSON()))
+        })
+        resetSettings.parentNode.insertBefore(copyIcon, resetSettings)
+    }
+}
+navigator.permissions.query({ name: "clipboard-write" }).then(checkWriteToClipboardPermission, (e) => {
+    if (e instanceof TypeError && typeof navigator?.clipboard?.writeText === 'function') {
+        // Fix for firefox https://bugzilla.mozilla.org/show_bug.cgi?id=1560373
+        checkWriteToClipboardPermission({state:"granted"})
+    }
+})
