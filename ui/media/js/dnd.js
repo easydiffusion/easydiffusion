@@ -208,8 +208,7 @@ function restoreTaskToUI(task) {
         }
     }
 }
-
-function readUIasJSON() {
+function readUI() {
     const reqBody = {}
     for (const key in TASK_MAPPING) {
         reqBody[key] = TASK_MAPPING[key].readUI()
@@ -370,7 +369,7 @@ function checkWriteToClipboardPermission (result) {
         copyIcon.innerHTML = `<span class="simple-tooltip right">Copy Image Settings</span>`
         copyIcon.addEventListener('click', (event) => {
             event.stopPropagation()
-            navigator.clipboard.writeText(JSON.stringify(readUIasJSON()))
+            navigator.clipboard.writeText(JSON.stringify(readUI()))
         })
         resetSettings.parentNode.insertBefore(copyIcon, resetSettings)
     }
