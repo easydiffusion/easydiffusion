@@ -685,11 +685,13 @@ def img_to_base64_str(img, output_format="PNG"):
     img.save(buffered, format=output_format)
     buffered.seek(0)
     img_byte = buffered.getvalue()
-    img_str = "data:image/png;base64," + base64.b64encode(img_byte).decode()
+    mime_type = "image/png" if output_format.lower() == "png" else "image/jpeg"
+    img_str = f"data:{mime_type};base64," + base64.b64encode(img_byte).decode()
     return img_str
 
 def base64_str_to_img(img_str):
-    img_str = img_str[len("data:image/png;base64,"):]
+    mime_type = "image/png" if img_str.startswith("data:image/png;") else "image/jpeg"
+    img_str = img_str[len(f"data:{mime_type};base64,"):]
     data = base64.b64decode(img_str)
     buffered = BytesIO(data)
     img = Image.open(buffered)
