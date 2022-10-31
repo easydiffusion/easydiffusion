@@ -17,14 +17,22 @@ const TASK_MAPPING = {
     },
     width: { name: 'Width',
         setUI: (width) => {
+            const oldVal = widthField.value
             widthField.value = width
+            if (!widthField.value) {
+                widthField.value = oldVal
+            }
         },
         readUI: () => parseInt(widthField.value),
         parse: (val) => parseInt(val)
     },
     height: { name: 'Height',
         setUI: (height) => {
+            const oldVal = heightField.value
             heightField.value = height
+            if (!heightField.value) {
+                heightField.value = oldVal
+            }
         },
         readUI: () => parseInt(heightField.value),
         parse: (val) => parseInt(val)
@@ -103,7 +111,11 @@ const TASK_MAPPING = {
     },
     use_stable_diffusion_model: { name: 'Stable Diffusion model',
         setUI: (use_stable_diffusion_model) => {
+            const oldVal = stableDiffusionModelField.value
             stableDiffusionModelField.value = use_stable_diffusion_model
+            if (!stableDiffusionModelField.value) {
+                stableDiffusionModelField.value = oldVal
+            }
         },
         readUI: () => stableDiffusionModelField.value,
         parse: (val) => val
