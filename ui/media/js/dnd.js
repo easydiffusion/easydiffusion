@@ -112,7 +112,17 @@ const TASK_MAPPING = {
     use_stable_diffusion_model: { name: 'Stable Diffusion model',
         setUI: (use_stable_diffusion_model) => {
             const oldVal = stableDiffusionModelField.value
+
+            const pathIdx = use_stable_diffusion_model.lastIndexOf('/')
+            if (pathIdx >= 0) {
+                use_stable_diffusion_model = use_stable_diffusion_model.slice(pathIdx + 1)
+            }
+            if (use_stable_diffusion_model.endsWith('.ckpt')) {
+                use_stable_diffusion_model = use_stable_diffusion_model.slice(0, use_stable_diffusion_model.length - 5)
+            }
+
             stableDiffusionModelField.value = use_stable_diffusion_model
+
             if (!stableDiffusionModelField.value) {
                 stableDiffusionModelField.value = oldVal
             }
