@@ -1,32 +1,37 @@
+"use strict";
+
 // https://gomakethings.com/finding-the-next-and-previous-sibling-elements-that-match-a-selector-with-vanilla-js/
 function getNextSibling(elem, selector) {
-	// Get the next sibling element
-	var sibling = elem.nextElementSibling
+    // Get the next sibling element
+    const sibling = elem.nextElementSibling
 
-	// If there's no selector, return the first sibling
-	if (!selector) return sibling
+    // If there's no selector, return the first sibling
+    if (!selector) {
+        return sibling
+    }
 
-	// If the sibling matches our selector, use it
-	// If not, jump to the next sibling and continue the loop
-	while (sibling) {
-		if (sibling.matches(selector)) return sibling
-		sibling = sibling.nextElementSibling
-	}
+    // If the sibling matches our selector, use it
+    // If not, jump to the next sibling and continue the loop
+    while (sibling) {
+        if (sibling.matches(selector)) {
+            return sibling
+        }
+        sibling = sibling.nextElementSibling
+    }
 }
-
 
 
 /* Panel Stuff */
 
 // true = open
-var COLLAPSIBLES_INITIALIZED = false;
+let COLLAPSIBLES_INITIALIZED = false;
 const COLLAPSIBLES_KEY = "collapsibles";
 const COLLAPSIBLE_PANELS = []; // filled in by createCollapsibles with all the elements matching .collapsible
 
 // on-init call this for any panels that are marked open
 function toggleCollapsible(element) {
-    var collapsibleHeader = element.querySelector(".collapsible");
-    var handle = element.querySelector(".collapsible-handle");
+    const collapsibleHeader = element.querySelector(".collapsible");
+    const handle = element.querySelector(".collapsible-handle");
     collapsibleHeader.classList.toggle("active")
     let content = getNextSibling(collapsibleHeader, '.collapsible-content')
     if (!collapsibleHeader.classList.contains("active")) {
@@ -47,16 +52,16 @@ function toggleCollapsible(element) {
 }
 
 function saveCollapsibles() {
-    var values = {}
+    let values = {}
     COLLAPSIBLE_PANELS.forEach(element => {
-        var value = element.querySelector(".collapsible").className.indexOf("active") !== -1
+        let value = element.querySelector(".collapsible").className.indexOf("active") !== -1
         values[element.id] = value
     })
     localStorage.setItem(COLLAPSIBLES_KEY, JSON.stringify(values))
 }
 
 function createCollapsibles(node) {
-    var save = false
+    let save = false
     if (!node) {
         node = document
         save = true
@@ -81,7 +86,7 @@ function createCollapsibles(node) {
         })
     })
     if (save) {
-        var saved = localStorage.getItem(COLLAPSIBLES_KEY)
+        let saved = localStorage.getItem(COLLAPSIBLES_KEY)
         if (!saved) { 
             saved = tryLoadOldCollapsibles();
         }
@@ -89,9 +94,9 @@ function createCollapsibles(node) {
             saveCollapsibles()
             saved = localStorage.getItem(COLLAPSIBLES_KEY)
         }
-        var values = JSON.parse(saved)
+        let values = JSON.parse(saved)
         COLLAPSIBLE_PANELS.forEach(element => {
-            var value = element.querySelector(".collapsible").className.indexOf("active") !== -1
+            let value = element.querySelector(".collapsible").className.indexOf("active") !== -1
             if (values[element.id] != value) {
                 toggleCollapsible(element)
             }
@@ -101,17 +106,17 @@ function createCollapsibles(node) {
 }
 
 function tryLoadOldCollapsibles() {
-    var old_map = {
+    const old_map = {
         "advancedPanelOpen": "editor-settings",
         "modifiersPanelOpen": "editor-modifiers",
         "negativePromptPanelOpen": "editor-inputs-prompt"
     };
     if (localStorage.getItem(Object.keys(old_map)[0])) {
-        var result = {};
+        let result = {};
         Object.keys(old_map).forEach(key => {
-            var value = localStorage.getItem(key);
+            const value = localStorage.getItem(key);
             if (value !== null) {
-                result[old_map[key]] = value == true || value == "true"
+                result[old_map[key]] = (value == true || value == "true")
                 localStorage.removeItem(key)
             }
         });
@@ -150,17 +155,17 @@ function millisecondsToStr(milliseconds) {
         return (number > 1) ? 's' : ''
     }
 
-    var temp = Math.floor(milliseconds / 1000)
-    var hours = Math.floor((temp %= 86400) / 3600)
-    var s = ''
+    let temp = Math.floor(milliseconds / 1000)
+    let hours = Math.floor((temp %= 86400) / 3600)
+    let s = ''
     if (hours) {
         s += hours + ' hour' + numberEnding(hours) + ' '
     }
-    var minutes = Math.floor((temp %= 3600) / 60)
+    let minutes = Math.floor((temp %= 3600) / 60)
     if (minutes) {
         s += minutes + ' minute' + numberEnding(minutes) + ' '
     }
-    var seconds = temp % 60
+    let seconds = temp % 60
     if (!hours && minutes < 4 && seconds) {
         s += seconds + ' second' + numberEnding(seconds)
     }
@@ -178,7 +183,7 @@ function BraceExpander() {
     function bracePair(tkns, iPosn, iNest, lstCommas) {
         if (iPosn >= tkns.length || iPosn < 0) return null;
 
-        var t = tkns[iPosn],
+        let t = tkns[iPosn],
             n = (t === '{') ? (
                 iNest + 1
             ) : (t === '}' ? (
@@ -198,7 +203,7 @@ function BraceExpander() {
     function andTree(dctSofar, tkns) {
         if (!tkns.length) return [dctSofar, []];
 
-        var dctParse = dctSofar ? dctSofar : {
+        let dctParse = dctSofar ? dctSofar : {
                 fn: and,
                 args: []
             },
@@ -231,14 +236,14 @@ function BraceExpander() {
     // Parse of a PARADIGM subtree
     function orTree(dctSofar, tkns, lstCommas) {
         if (!tkns.length) return [dctSofar, []];
-        var iLast = lstCommas.length;
+        let iLast = lstCommas.length;
 
         return {
             fn: or,
             args: splitsAt(
                 lstCommas, tkns
             ).map(function (x, i) {
-                var ts = x.slice(
+                let ts = x.slice(
                     1, i === iLast ? (
                         -1
                     ) : void 0
@@ -256,7 +261,7 @@ function BraceExpander() {
     // List of unescaped braces and commas, and remaining strings
     function tokens(str) {
         // Filter function excludes empty splitting artefacts
-        var toS = function (x) {
+        let toS = function (x) {
             return x.toString();
         };
 
@@ -270,7 +275,7 @@ function BraceExpander() {
     // PARSE TREE OPERATOR (1 of 2)
     // Each possible head * each possible tail
     function and(args) {
-        var lng = args.length,
+        let lng = args.length,
             head = lng ? args[0] : null,
             lstHead = "string" === typeof head ? (
                 [head]
@@ -330,7 +335,7 @@ function BraceExpander() {
     // s -> [s]
     this.expand = function(s) {
         // BRACE EXPRESSION PARSED
-        var dctParse = andTree(null, tokens(s))[0];
+        let dctParse = andTree(null, tokens(s))[0];
 
         // ABSTRACT SYNTAX TREE LOGGED
         // console.log(pp(dctParse));
@@ -341,10 +346,74 @@ function BraceExpander() {
 
 }
 
+
+/** Pause the execution of an async function until timer elapse.
+ * @Returns a promise that will resolve after the specified timeout.
+ */
 function asyncDelay(timeout) {
     return new Promise(function(resolve, reject) {
         setTimeout(resolve, timeout, true)
     })
+}
+
+function PromiseSource() {
+    const srcPromise = new Promise((resolve, reject) => {
+        Object.defineProperties(this, {
+            resolve: { value: resolve, writable: false }
+            , reject: { value: reject, writable: false }
+        })
+    })
+    Object.defineProperties(this, {
+        promise: {value: makeQuerablePromise(srcPromise), writable: false}
+    })
+}
+
+/** A debounce is a higher-order function, which is a function that returns another function
+ * that, as long as it continues to be invoked, will not be triggered.
+ * The function will be called after it stops being called for N milliseconds.
+ * If `immediate` is passed, trigger the function on the leading edge, instead of the trailing.
+ * @Returns a promise that will resolve to func return value.
+ */
+function debounce (func, wait, immediate) {
+    if (typeof wait === "undefined") {
+        wait = 40
+    }
+    if (typeof wait !== "number") {
+        throw new Error("wait is not an number.")
+    }
+    let timeout = null
+    let lastPromiseSrc = new PromiseSource()
+    const applyFn = function(context, args) {
+        let result = undefined
+        try {
+            result = func.apply(context, args)
+        } catch (err) {
+            lastPromiseSrc.reject(err)
+        }
+        if (result instanceof Promise) {
+            result.then(lastPromiseSrc.resolve, lastPromiseSrc.reject)
+        } else {
+            lastPromiseSrc.resolve(result)
+        }
+    }
+    return function(...args) {
+        const callNow = Boolean(immediate && !timeout)
+        const context = this;
+        if (timeout) {
+            clearTimeout(timeout)
+        }
+        timeout = setTimeout(function () {
+            if (!immediate) {
+                applyFn(context, args)
+            }
+            lastPromiseSrc = new PromiseSource()
+            timeout = null
+        }, wait)
+        if (callNow) {
+            applyFn(context, args)
+        }
+        return lastPromiseSrc.promise
+    }
 }
 
 function preventNonNumericalInput(e) {
@@ -357,4 +426,81 @@ function preventNonNumericalInput(e) {
     if (!charStr.match(re)) {
         e.preventDefault();
     }
+}
+
+/** Returns the global object for the current execution environement.
+ * @Returns window in a browser, global in node and self in a ServiceWorker.
+ * @Notes Allows unit testing and use of the engine outside of a browser.
+ */
+function getGlobal() {
+    if (typeof globalThis === 'object') {
+        return globalThis
+    } else if (typeof global === 'object') {
+        return global
+    } else if (typeof self === 'object') {
+        return self
+    }
+    try {
+        return Function('return this')()
+    } catch {
+        // If the Function constructor fails, we're in a browser with eval disabled by CSP headers.
+        return window
+    } // Returns undefined if global can't be found.
+}
+
+/** Check if x is an Array or a TypedArray.
+ * @Returns true if x is an Array or a TypedArray, false otherwise.
+ */
+function isArrayOrTypedArray(x) {
+    return Boolean(typeof x === 'object' && (Array.isArray(x) || (ArrayBuffer.isView(x) && !(x instanceof DataView))))
+}
+
+function makeQuerablePromise(promise) {
+    if (typeof promise !== 'object') {
+        throw new Error('promise is not an object.')
+    }
+    if (!(promise instanceof Promise)) {
+        throw new Error('Argument is not a promise.')
+    }
+    // Don't modify a promise that's been already modified.
+    if ('isResolved' in promise || 'isRejected' in promise || 'isPending' in promise) {
+        return promise
+    }
+    let isPending = true
+    let isRejected = false
+    let rejectReason = undefined
+    let isResolved = false
+    let resolvedValue = undefined
+    const qurPro = promise.then(
+        function(val){
+            isResolved = true
+            isPending = false
+            resolvedValue = val
+            return val
+        }
+        , function(reason) {
+            rejectReason = reason
+            isRejected = true
+            isPending = false
+            throw reason
+        }
+    )
+    Object.defineProperties(qurPro, {
+        'isResolved': {
+            get: () => isResolved
+        }
+        , 'resolvedValue': {
+            get: () => resolvedValue
+        }
+        , 'isPending': {
+            get: () => isPending
+        }
+        , 'isRejected': {
+            get: () => isRejected
+        }
+        , 'rejectReason': {
+            get: () => rejectReason
+        }
+    })
+    return qurPro
 }

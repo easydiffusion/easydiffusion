@@ -317,12 +317,15 @@
 </div>
 </body>
 
+<script src="media/js/utils.js?v=4"></script>
+<script src="media/js/engine.js?v=1"></script>
 <script src="media/js/parameters.js?v=4"></script>
 <script src="media/js/plugins.js?v=1"></script>
-<script src="media/js/utils.js?v=6"></script>
+
 <script src="media/js/inpainting-editor.js?v=1"></script>
 <script src="media/js/image-modifiers.js?v=6"></script>
 <script src="media/js/auto-save.js?v=7"></script>
+
 <script src="media/js/main.js?v=13"></script>
 <script src="media/js/themes.js?v=4"></script>
 <script src="media/js/dnd.js?v=8"></script>
@@ -336,8 +339,12 @@ async function init() {
     await loadUIPlugins()
     await getDevices()
 
-    setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
-    healthCheck()
+    SD.init({
+        events: {
+            statusChange: setServerStatus
+            , idle: onIdle
+        }
+    })
 
     playSound()
 }
