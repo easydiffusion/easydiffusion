@@ -107,10 +107,15 @@ def setConfig(config):
         config_bat = [
             f"@set update_branch={config['update_branch']}"
         ]
-        if len(gpu_devices) > 0 and not has_first_cuda_device:
-            config_bat.append('::Set the devices visible inside SD-UI here')
-            config_bat.append(f"::@set CUDA_VISIBLE_DEVICES={','.join(gpu_devices)}") # Needs better detection for edge cases, add as a comment for now.
-            print('Add the line "@set CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.bat')
+        if os.getenv('CUDA_VISIBLE_DEVICES') is None:
+            if len(gpu_devices) > 0 and not has_first_cuda_device:
+                config_bat.append('::Set the devices visible inside SD-UI here')
+                config_bat.append(f"::@set CUDA_VISIBLE_DEVICES={','.join(gpu_devices)}") # Needs better detection for edge cases, add as a comment for now.
+                print('Add the line "@set CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.bat')
+        else:
+            config_bat.append(f"@set CUDA_VISIBLE_DEVICES={os.getenv('CUDA_VISIBLE_DEVICES')}")
+            if len(gpu_devices) > 0 and not has_first_cuda_device:
+                print('GPU:0 seems to be missing! Validate that CUDA_VISIBLE_DEVICES is set properly.')
         config_bat_path = os.path.join(CONFIG_DIR, 'config.bat')
         with open(config_bat_path, 'w', encoding='utf-8') as f:
             f.write('\r\n'.join(config_bat))
@@ -122,10 +127,15 @@ def setConfig(config):
             '#!/bin/bash',
             f"export update_branch={config['update_branch']}"
         ]
-        if len(gpu_devices) > 0 and not has_first_cuda_device:
-            config_sh.append('#Set the devices visible inside SD-UI here')
-            config_sh.append(f"#CUDA_VISIBLE_DEVICES={','.join(gpu_devices)}") # Needs better detection for edge cases, add as a comment for now.
-            print('Add the line "CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.sh')
+        if os.getenv('CUDA_VISIBLE_DEVICES') is None:
+            if len(gpu_devices) > 0 and not has_first_cuda_device:
+                config_sh.append('#Set the devices visible inside SD-UI here')
+                config_sh.append(f"#CUDA_VISIBLE_DEVICES={','.join(gpu_devices)}") # Needs better detection for edge cases, add as a comment for now.
+                print('Add the line "CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.sh')
+        else:
+            config_sh.append(f"export CUDA_VISIBLE_DEVICES=\"{os.getenv('CUDA_VISIBLE_DEVICES')}\"")
+            if len(gpu_devices) > 0 and not has_first_cuda_device:
+                print('GPU:0 seems to be missing! Validate that CUDA_VISIBLE_DEVICES is set properly.')
         config_sh_path = os.path.join(CONFIG_DIR, 'config.sh')
         with open(config_sh_path, 'w', encoding='utf-8') as f:
             f.write('\n'.join(config_sh))
