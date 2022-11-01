@@ -336,8 +336,6 @@ def get_image(session_id, img_id):
     if not task.temp_images[img_id]: raise HTTPException(status_code=425, detail='Too Early, task data is not available yet.') # HTTP425 Too Early
     try:
         img_data = task.temp_images[img_id]
-        if isinstance(img_data, str):
-            return img_data
         img_data.seek(0)
         return StreamingResponse(img_data, media_type='image/jpeg')
     except KeyError as e:

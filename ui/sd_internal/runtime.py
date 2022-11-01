@@ -870,9 +870,13 @@ def img_to_base64_str(img, output_format="PNG"):
     img_str = "data:image/png;base64," + base64.b64encode(img_byte).decode()
     return img_str
 
-def base64_str_to_img(img_str):
+def base64_str_to_buffer(img_str):
     img_str = img_str[len("data:image/png;base64,"):]
     data = base64.b64decode(img_str)
     buffered = BytesIO(data)
+    return buffered
+
+def base64_str_to_img(img_str):
+    buffered = base64_str_to_buffer(img_str)
     img = Image.open(buffered)
     return img
