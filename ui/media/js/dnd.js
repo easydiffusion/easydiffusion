@@ -117,8 +117,9 @@ const TASK_MAPPING = {
             if (pathIdx >= 0) {
                 use_stable_diffusion_model = use_stable_diffusion_model.slice(pathIdx + 1)
             }
-            if (use_stable_diffusion_model.endsWith('.ckpt')) {
-                use_stable_diffusion_model = use_stable_diffusion_model.slice(0, use_stable_diffusion_model.length - 5)
+            const modelExt = '.ckpt'
+            if (use_stable_diffusion_model.endsWith(modelExt)) {
+                use_stable_diffusion_model = use_stable_diffusion_model.slice(0, use_stable_diffusion_model.length - modelExt.length)
             }
 
             stableDiffusionModelField.value = use_stable_diffusion_model
