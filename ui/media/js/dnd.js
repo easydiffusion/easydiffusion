@@ -369,7 +369,7 @@ function checkWriteToClipboardPermission (result) {
         copyIcon.innerHTML = `<span class="simple-tooltip right">Copy Image Settings</span>`
         copyIcon.addEventListener('click', (event) => {
             event.stopPropagation()
-            navigator.clipboard.writeText(JSON.stringify(readUI()))
+            navigator.clipboard.writeText(JSON.stringify(readUI(), undefined, 4))
         })
         resetSettings.parentNode.insertBefore(copyIcon, resetSettings)
     }
