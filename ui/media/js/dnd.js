@@ -59,6 +59,7 @@ const TASK_MAPPING = {
     guidance_scale: { name: 'Guidance Scale',
         setUI: (guidance_scale) => {
             guidanceScaleField.value = guidance_scale
+            updateGuidanceScaleSlider()
         },
         readUI: () => parseFloat(guidanceScaleField.value),
         parse: (val) => parseFloat(val)
@@ -66,6 +67,7 @@ const TASK_MAPPING = {
     prompt_strength: { name: 'Prompt Strength',
         setUI: (prompt_strength) => {
             promptStrengthField.value = prompt_strength
+            updatePromptStrengthSlider()
         },
         readUI: () => parseFloat(promptStrengthField.value),
         parse: (val) => parseFloat(val)
