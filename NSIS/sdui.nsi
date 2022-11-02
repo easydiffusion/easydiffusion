@@ -232,7 +232,7 @@ Function .onInit
    System::Int64Op $4 / 1048576
    Pop $4
 
-   ${If} $4 < "80000"
+   ${If} $4 < "8000"
       MessageBox MB_OK|MB_ICONEXCLAMATION "Warning!$\n$\nYour system has less than 8GB of memory (RAM).$\n$\n\
 You can still try to install Stable Diffusion UI,$\nbut it might have problems to start, or run$\nvery slowly."
    ${EndIf}
