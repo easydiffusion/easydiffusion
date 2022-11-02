@@ -383,6 +383,15 @@ img {
     border-radius: 5pt;
     box-shadow: 0 20px 28px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
 }
+.taskAction {
+    padding-bottom: 0.5em;
+    display: inline-flex;
+    align-items: flex-end;
+    flex-direction: row;
+    padding: 5px;
+    transition: 0.1s all;
+    float: right;
+}
 .taskStatusLabel {
     float: left;
     font-size: 8pt;
@@ -412,8 +421,20 @@ img {
 .secondaryButton:hover {
     background: rgb(177, 27, 0);
 }
+.useSettings {
+	background: var(--accent-color);
+    border: 1px solid rgb(0, 29, 122);
+    color: rgb(255, 221, 255);
+    padding: 3pt 6pt;
+    border-radius: 5px;
+	margin-right: 6pt;
+}
+.useSettings:hover {
+    background: rgb(0, 27, 177);
+}
 .stopTask {
     float: right;
+	display: inline-block;
 }
 #preview-tools {
     display: none;

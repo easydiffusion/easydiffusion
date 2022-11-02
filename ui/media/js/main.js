@@ -677,6 +677,12 @@ async function checkTasks() {
 
     const genSeeds = Boolean(typeof task.reqBody.seed !== 'number' || (task.reqBody.seed === task.seed && task.numOutputsTotal > 1))
     const startSeed = task.reqBody.seed || task.seed
+
+	// update the seed *before* starting the processing, so interrupting the processing retains the latest seed
+    if (randomSeedField.checked) {
+        seedField.value = task.seed
+    }
+	
     for (let i = 0; i < task.batchCount; i++) {
         let newTask = task
         if (task.batchCount > 1) {
@@ -706,6 +712,8 @@ async function checkTasks() {
 
     task.isProcessing = false
     task['stopTask'].innerHTML = '<i class="fa-solid fa-trash-can"></i> Remove'
+    task['useSettings'].innerHTML = '<i class="fa-solid fa-redo"></i> Use Settings'
+    task['useSettings'].style.display = 'block'
     task['taskStatusLabel'].style.display = 'none'
 
     time = Date.now() - time
@@ -718,10 +726,6 @@ async function checkTasks() {
         if (task.outputMsg.innerText.toLowerCase().indexOf('error') === -1) {
             task.outputMsg.innerText = 'Task ended after ' + time + ' seconds'
         }
-    }
-
-    if (randomSeedField.checked) {
-        seedField.value = task.seed
     }
 
     currentTask = null
@@ -768,7 +772,9 @@ function getCurrentUserRequest() {
             stream_progress_updates: true,
             stream_image_progress: (numOutputsTotal > 50 ? false : streamImageProgressField.checked),
             show_only_filtered_image: showOnlyFilteredImageField.checked,
-            output_format: outputFormatField.value
+            output_format: outputFormatField.value,
+            use_face_correction: useFaceCorrectionField.checked,
+            use_upscale: (useUpscalingField.checked ? upscaleModelField.value : undefined)
         }
     }
     if (IMAGE_REGEX.test(initImagePreview.src)) {
@@ -830,7 +836,10 @@ function createTask(task) {
     let taskEntry = document.createElement('div')
     taskEntry.className = 'imageTaskContainer'
     taskEntry.innerHTML = ` <div class="taskStatusLabel">Enqueued</div>
-                            <button class="secondaryButton stopTask"><i class="fa-solid fa-trash-can"></i> Remove</button>
+                            <div class="taskAction">
+                                <button class="secondaryButton useSettings" style="display: none"><i class="fa-solid fa-redo"></i>  Use Settings</button>
+                                <button class="secondaryButton stopTask"><i class="fa-solid fa-trash-can"></i> Remove</button>
+                            </div>
                             <div class="preview-prompt collapsible active"></div>
                             <div class="taskConfig">${taskConfig}</div>
                             <div class="collapsible-content" style="display: block">
@@ -847,6 +856,7 @@ function createTask(task) {
     task['previewPrompt'] = taskEntry.querySelector('.preview-prompt')
     task['progressBar'] = taskEntry.querySelector('.progressBar')
     task['stopTask'] = taskEntry.querySelector('.stopTask')
+    task['useSettings'] = taskEntry.querySelector('.useSettings')
 
     task['stopTask'].addEventListener('click', async function() {
         if (task['isProcessing']) {
@@ -864,6 +874,11 @@ function createTask(task) {
 
             taskEntry.remove()
         }
+    })
+
+    task['useSettings'].addEventListener('click', async function() {
+		restoreTaskToUI(task)
+		clearModifiers()
     })
 
     imagePreview.insertBefore(taskEntry, previewTools.nextSibling)
@@ -887,10 +902,10 @@ function getPrompts() {
     prompts = prompts.filter(prompt => prompt !== '')
 
     if (activeTags.length > 0) {
-	const promptTags = activeTags.map(x => x.name).join(", ")
-	prompts = prompts.map((prompt) => `${prompt}, ${promptTags}`)
+        const promptTags = activeTags.map(x => x.name).join(", ")
+        prompts = prompts.map((prompt) => `${prompt}, ${promptTags}`)
     }
-	
+
     let promptsToMake = applySetOperator(prompts)
     promptsToMake = applyPermuteOperator(promptsToMake)
 
@@ -1177,7 +1192,7 @@ async function getModels() {
 function checkRandomSeed() {
     if (randomSeedField.checked) {
         seedField.disabled = true
-        seedField.value = "0"
+        //seedField.value = "0"
     } else {
         seedField.disabled = false
     }

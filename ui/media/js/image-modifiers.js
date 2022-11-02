@@ -291,4 +291,12 @@ function loadCustomModifiers() {
     }
 }
 
+function clearModifiers() {
+	activeTags.forEach(tag => {
+		tag.originElement.classList.remove(activeCardClass)
+	})
+	activeTags.length = 0
+	refreshTagsList()
+}
+
 customModifiersTextBox.addEventListener('change', saveCustomModifiers)
