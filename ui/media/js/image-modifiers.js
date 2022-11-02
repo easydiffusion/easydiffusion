@@ -75,7 +75,6 @@ function createModifierGroup(modifierGroup, initiallyExpanded) {
 
     if (initiallyExpanded === true) {
         titleEl.className += ' active'
-        modifiersEl.style.display = 'block'
     }
 
     modifiers.forEach(modObj => {

@@ -8,8 +8,9 @@ html {
 }
 
 body {
+    margin: 0;
     font-size: 11pt;
-    background-color: var(--background-color1);
+    background-color: var(--background-color2);
     color: var(--text-color);
 }
 a {
@@ -104,36 +105,38 @@ label {
     margin-bottom: 7px;
 }
 #container {
-    width: 95%;
-    margin-left: auto;
-    margin-right: auto;
-}
-@media screen and (max-width: 1800px) {
-    #container {
-        width: 100%;
-    }
+    width: 100%;
+    margin: 0px;
 }
 #logo small {
     font-size: 11pt;
 }
 #editor {
-    padding: 5px;
+    background: var(--background-color2);
+    padding: 8px 8px 24px 8px;
+    display: flex;
+    flex-direction: column;
 }
 #editor label {
     font-weight: normal;
+}
+#editor h4 {
+    margin: 0px;
+    white-space: nowrap;
+}
+#editor .collapsible-content {
+    width: 100%;
 }
 .settings-box label small {
     color: rgb(153, 153, 153);
     margin-right: 10px;
 }
 #preview {
-    padding: 5px;
+    padding: 8px;
+    background: var(--background-color1);
 }
 #preview .collapsible-content {
     padding: 0px 15px;
-}
-#editor-inputs {
-    margin-bottom: 20px;
 }
 #editor-inputs-prompt {
     flex: 1;
@@ -189,7 +192,7 @@ label {
     cursor: pointer;
 }
 .collapsible-content {
-    display: none;
+    display: block;
     padding-left: 15px;
 }
 .collapsible-content h5 {
@@ -201,41 +204,47 @@ label {
     color: white;
     padding-right: 5px;
 }
+.collapsible:not(.active) ~ .collapsible-content  {
+    display: none !important;
+}
+
 .panel-box {
     background: var(--background-color2);
     border: 1px solid var(--background-color3);
-    border-radius: 7px;
+    border-radius: 6px;
     padding: 5px;
-    margin-bottom: 15px;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
 }
 .panel-box h4 {
     margin: 0;
     padding: 2px 0;
 }
+#editor-modifiers {
+    max-width: 600px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
 #editor-modifiers .editor-modifiers-leaf {
     padding-top: 10pt;
     padding-bottom: 10pt;
-}
-#preview {
-    margin-left: 10pt;
 }
 img {
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
 }
 .line-separator {
-    background: rgb(56, 56, 56);
-    height: 1pt;
-    margin: 15pt 0;
+    background: var(--background-color3);
+    height: 8px;
+    margin: 16px 0px;
 }
 #editor-inputs-tags-container {
     margin-top: 5pt;
     display: none;
 }
 #server-status {
-    display: inline;
-    float: right;
-    transform: translateY(-5pt);
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    text-align: right;
 }
 #server-status-color {
     /* width: 8pt;
@@ -288,8 +297,9 @@ img {
 }
 
 #top-nav {
-    padding-top: 3pt;
-    padding-bottom: 15pt;
+    position: relative;
+    background: var(--background-color4);
+    display: flex;
 }
 #top-nav .icon {
     padding-right: 4pt;
@@ -298,6 +308,7 @@ img {
 }
 #logo {
     display: inline;
+    padding: 12px;
 }
 #logo h1 {
     display: inline;
@@ -450,6 +461,20 @@ img {
     border-radius: 6px 0px;
 }
 
+#editor-settings-entries {
+    display: flex;
+    flex-direction: column;
+}
+
+#editor-settings-entries > div {
+    margin-top: 15px;
+}
+
+#editor-settings-entries ul {
+    margin: 0px;
+    padding: 0px;
+}
+
 #editor-settings-entries table td {
     padding: 0px;
     line-height: 28px;
@@ -525,12 +550,14 @@ input::file-selector-button {
 }
 
 @media screen and (max-width: 700px) {
+    #top-nav {
+        flex-direction: column;
+    }
     body {
         margin: 0px;
     }
     #container {
         margin: 0px;
-        padding: 10px
     }
     .flex-container {
         flex-direction: column;
@@ -565,9 +592,29 @@ input::file-selector-button {
     font-size: 9pt;
 }
 
-#reset-image-settings {
+.section-button {
     position: relative;
     transform: translateY(-13%);
+}
+
+.section-button {
+    cursor: pointer;
+    float: right;
+    padding: 8px;
+    opacity: 1;
+    transition: opacity 0.5;
+}
+
+.section-button {
+    cursor: pointer;
+    float: right;
+    padding: 8px;
+    opacity: 1;
+    transition: opacity 0.5;
+}
+
+.collapsible:not(.active) .section-button {
+    display: none;
 }
 
 .simple-tooltip {
@@ -706,6 +753,60 @@ input::file-selector-button {
     padding: 24px;
 }
 
-#settings-button {
+#tab-container {
+    display: flex;
+    align-items: flex-end;
+}
+
+#tab-container > span {
+    padding: 8px 16px;
+    border-radius: 4px 4px 0px 0px;
+    margin-left: 8px;
     cursor: pointer;
+    background: var(--background-color2);
+    opacity: 50%;
+    transition: opacity 0.25s;
+}
+
+#tab-container > span:hover {
+    opacity: 75%;
+}
+
+#tab-container > span.active {
+    opacity: 100%;
+}
+
+#tab-content {
+    border-top: 8px solid var(--background-color2);
+}
+
+
+@media (min-width: 700px) {
+    #editor {
+        max-width: 500px;
+    }
+
+
+    /* FLOATING FIXED STUFF */
+    #tab-content {
+        flex-direction: column;
+    }
+
+    #editor {
+        flex-direction: row;
+        max-width: none;
+        max-height: 500px;
+    }
+
+    #editor .line-separator {
+        height: inherit;
+        flex-basis: 8px;
+        flex-grow: 0;
+        flex-shrink: 0;
+        margin: 0px 16px;
+    }
+
+    #editor-settings-entries {
+        flex-direction: row;
+    }
 }

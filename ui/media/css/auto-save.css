@@ -30,23 +30,6 @@
     color: rgb(153, 153, 153);
 }
 
-#reset-image-settings {
-    cursor: pointer;
-    float: right;
-    padding: 8px;
-    opacity: 1;
-    transition: opacity 0.5;
-}
-
-.collapsible:not(.active) #reset-image-settings {
-    display: none;
-}
-
-#reset-image-settings.hidden {
-    opacity: 0;
-    pointer-events: none;
-}
-
 #system-settings .form-table td {
     height: 24px;
 }

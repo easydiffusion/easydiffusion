@@ -70,7 +70,8 @@ async function initSettings() {
     SETTINGS_SECTIONS.forEach(section => {
         var name = section.name
         var element = document.getElementById(section.id)
-        var children = Array.from(element.querySelectorAll(unsorted_settings_ids.map(id => `#${id}`).join(",")))
+        var unsorted_ids = unsorted_settings_ids.map(id => `#${id}`).join(",")
+        var children = unsorted_ids == "" ? [] : Array.from(element.querySelectorAll(unsorted_ids));
         section.keys = []
         children.forEach(e => {
             section.keys.push(e.id)
