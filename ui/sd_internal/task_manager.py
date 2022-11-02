@@ -21,6 +21,7 @@ LOCK_TIMEOUT = 15 # Maximum locking time in seconds before failing a task.
 # It's better to get an exception than a deadlock... ALWAYS use timeout in critical paths.
 
 DEVICE_START_TIMEOUT = 60 # seconds - Maximum time to wait for a render device to init.
+CPU_UNLOAD_TIMEOUT = 4 * 60 # seconds - Idle time before CPU unload resource when GPUs are present.
 
 class SymbolClass(type): # Print nicely formatted Symbol names.
     def __repr__(self): return self.__qualname__
@@ -38,6 +39,7 @@ class RenderTask(): # Task with output queue and completion lock.
     def __init__(self, req: Request):
         self.request: Request = req # Initial Request
         self.response: Any = None # Copy of the last reponse
+        self.render_device = None
         self.temp_images:list = [None] * req.num_outputs * (1 if req.show_only_filtered_image else 2)
         self.error: Exception = None
         self.lock: threading.Lock = threading.Lock() # Locks at task start and unlocks when task is completed
@@ -68,7 +70,8 @@ class ImageRequest(BaseModel):
     # allow_nsfw: bool = False
     save_to_disk_path: str = None
     turbo: bool = True
-    use_cpu: bool = False
+    use_cpu: bool = False ##TODO Remove after UI and plugins transition.
+    render_device: str = None
     use_full_precision: bool = False
     use_face_correction: str = None # or "GFPGANv1.3"
     use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
@@ -89,7 +92,7 @@ class FilterRequest(BaseModel):
     height: int = 512
     save_to_disk_path: str = None
     turbo: bool = True
-    use_cpu: bool = False
+    render_device: str = None
     use_full_precision: bool = False
     output_format: str = "jpeg" # or "png"
 
@@ -219,26 +222,24 @@ def thread_get_next_task():
                     queued_task.error = Exception('cuda:0 is not available with the current config. Remove GFPGANer filter to run task.')
                     task = queued_task
                     break
-                if queued_task.request.use_cpu:
+                if queued_task.render_device == 'cpu':
                     queued_task.error = Exception('Cpu cannot be used to run this task. Remove GFPGANer filter to run task.')
                     task = queued_task
                     break
                 if not runtime.is_first_cuda_device(runtime.thread_data.device):
                     continue  # Wait for cuda:0
-            if queued_task.request.use_cpu and runtime.thread_data.device != 'cpu':
-                if is_alive('cpu') > 0:
-                    continue  # CPU Tasks, Skip GPU device
+            if queued_task.render_device and runtime.thread_data.device != queued_task.render_device:
+                # Is asking for a specific render device.
+                if is_alive(queued_task.render_device) > 0:
+                    continue  # requested device alive, skip current one.
                 else:
-                    queued_task.error = Exception('Cpu is not enabled in render_devices.')
+                    # Requested device is not active, return error to UI.
+                    queued_task.error = Exception(str(queued_task.render_device) + ' is not currently active.')
                     task = queued_task
                     break
-            if not queued_task.request.use_cpu and runtime.thread_data.device == 'cpu':
-                if is_alive() > 1:  # cpu is alive, so need more than one.
-                    continue  # GPU Tasks, don't run on CPU unless there is nothing else.
-                else:
-                    queued_task.error = Exception('No active gpu found. Please check the error message in the command-line window at startup.')
-                    task = queued_task
-                    break
+            if not queued_task.render_device and runtime.thread_data.device == 'cpu' and is_alive() > 1:
+                # not asking for any specific devices, cpu want to grab task but other render devices are alive.
+                continue  # Skip Tasks, don't run on CPU unless there is nothing else or user asked for it.
             task = queued_task
             break
         if task is not None:
@@ -252,11 +253,15 @@ def thread_render(device):
     from . import runtime
     try:
         runtime.device_init(device)
-    except:
+    except Exception as e:
         print(traceback.format_exc())
+        weak_thread_data[threading.current_thread()] = {
+            'error': e
+        }
         return
     weak_thread_data[threading.current_thread()] = {
-        'device': runtime.thread_data.device
+        'device': runtime.thread_data.device,
+        'device_name': runtime.thread_data.device_name
     }
     if runtime.thread_data.device != 'cpu' or is_alive() == 1:
         preload_model()
@@ -268,6 +273,11 @@ def thread_render(device):
             return
         task = thread_get_next_task()
         if task is None:
+            if runtime.thread_data.device == 'cpu' and is_alive() > 1 and hasattr(runtime.thread_data, 'lastActive') and time.time() - runtime.thread_data.lastActive > CPU_UNLOAD_TIMEOUT:
+                # GPUs present and CPU is idle. Unload resources.
+                runtime.unload_models()
+                runtime.unload_filters()
+                del runtime.thread_data.lastActive
             time.sleep(1)
             continue
         if task.error is not None:
@@ -280,9 +290,12 @@ def thread_render(device):
             task.response = {"status": 'failed', "detail": str(task.error)}
             task.buffer_queue.put(json.dumps(task.response))
             continue
-        print(f'Session {task.request.session_id} starting task {id(task)}')
+        print(f'Session {task.request.session_id} starting task {id(task)} on {runtime.thread_data.device_name}')
         if not task.lock.acquire(blocking=False): raise Exception('Got locked task from queue.')
         try:
+            if runtime.thread_data.device == 'cpu' and is_alive() > 1:
+                # CPU is not the only device. Keep track of active time to unload resources later.
+                runtime.thread_data.lastActive = time.time()
             # Open data generator.
             res = runtime.mk_img(task.request)
             if current_model_path == task.request.use_stable_diffusion_model:
@@ -331,7 +344,7 @@ def thread_render(device):
         elif task.error is not None:
             print(f'Session {task.request.session_id} task {id(task)} failed!')
         else:
-            print(f'Session {task.request.session_id} task {id(task)} completed.')
+            print(f'Session {task.request.session_id} task {id(task)} completed by {runtime.thread_data.device_name}.')
         current_state = ServerStates.Online
 
 def get_cached_task(session_id:str, update_ttl:bool=False):
@@ -340,6 +353,21 @@ def get_cached_task(session_id:str, update_ttl:bool=False):
         # Failed to keep task, already gone.
         return None
     return task_cache.tryGet(session_id)
+
+def get_devices():
+    if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('get_devices' + ERR_LOCK_FAILED)
+    try:
+        device_dict = {}
+        for rthread in render_threads:
+            if not rthread.is_alive():
+                continue
+            weak_data = weak_thread_data.get(rthread)
+            if not weak_data or not 'device' in weak_data or not 'device_name' in weak_data:
+                continue
+            device_dict.update({weak_data['device']:weak_data['device_name']})
+        return device_dict
+    finally:
+        manager_lock.release()
 
 def is_first_cuda_device(device):
     from . import runtime # When calling runtime from outside thread_render DO NOT USE thread specific attributes or functions.
@@ -352,8 +380,7 @@ def is_alive(name=None):
         for rthread in render_threads:
             if name is not None:
                 weak_data = weak_thread_data.get(rthread)
-                if weak_data is None or weak_data['device'] is None:
-                    print('The thread', rthread.name, 'is registered but has no data store in the task manager.')
+                if weak_data is None or not 'device' in weak_data or weak_data['device'] is None:
                     continue
                 thread_name = str(weak_data['device']).lower()
                 if is_first_cuda_device(name):
@@ -380,6 +407,8 @@ def start_render_thread(device='auto'):
         manager_lock.release()
     timeout = DEVICE_START_TIMEOUT
     while not rthread.is_alive() or not rthread in weak_thread_data or not 'device' in weak_thread_data[rthread]:
+        if rthread in weak_thread_data and 'error' in weak_thread_data[rthread]:
+            return False
         if timeout <= 0:
             return False
         timeout -= 1
@@ -416,7 +445,6 @@ def render(req : ImageRequest):
     r.sampler = req.sampler
     # r.allow_nsfw = req.allow_nsfw
     r.turbo = req.turbo
-    r.use_cpu = req.use_cpu
     r.use_full_precision = req.use_full_precision
     r.save_to_disk_path = req.save_to_disk_path
     r.use_upscale: str = req.use_upscale
@@ -433,6 +461,8 @@ def render(req : ImageRequest):
         r.stream_image_progress = False
 
     new_task = RenderTask(r)
+    new_task.render_device = req.render_device
+
     if task_cache.put(r.session_id, new_task, TASK_TTL):
         # Use twice the normal timeout for adding user requests.
         # Tries to force task_cache.put to fail before tasks_queue.put would. 

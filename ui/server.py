@@ -271,6 +271,8 @@ def read_web_data(key:str=None):
         if config is None:
             raise HTTPException(status_code=500, detail="Config file is missing or unreadable")
         return JSONResponse(config, headers=NOCACHE_HEADERS)
+    elif key == 'devices':
+        return JSONResponse(task_manager.get_devices(), headers=NOCACHE_HEADERS)
     elif key == 'models':
         return JSONResponse(getModels(), headers=NOCACHE_HEADERS)
     elif key == 'modifiers': return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'), headers=NOCACHE_HEADERS)
@@ -315,7 +317,11 @@ def save_model_to_config(model_name):
 
 @app.post('/render')
 def render(req : task_manager.ImageRequest):
-    if req.use_cpu and task_manager.is_alive('cpu') <= 0: raise HTTPException(status_code=403, detail=f'CPU rendering is not enabled in config.json or the thread has died...') # HTTP403 Forbidden
+    if req.use_cpu:  # TODO Remove after transition.
+        print('WARNING Replace {use_cpu: true} by {render_device: "cpu"}')
+        req.render_device = 'cpu'
+        del req.use_cpu
+    if req.render_device and task_manager.is_alive(req.render_device) <= 0: raise HTTPException(status_code=403, detail=f'{req.render_device} rendering is not enabled in config.json or the thread has died...') # HTTP403 Forbidden
     if req.use_face_correction and task_manager.is_alive(0) <= 0: #TODO Remove when GFPGANer is fixed upstream.
         raise HTTPException(status_code=412, detail=f'GFPGANer only works GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.') # HTTP412 Precondition Failed
     try:
@@ -401,19 +407,24 @@ config = getConfig()
 # Start the task_manager
 task_manager.default_model_to_load = resolve_ckpt_to_use()
 task_manager.default_vae_to_load = resolve_vae_to_use(ckpt_model_path=task_manager.default_model_to_load)
+display_warning = False
 if 'render_devices' in config:  # Start a new thread for each device.
     if isinstance(config['render_devices'], str):
         config['render_devices'] = config['render_devices'].split(',')
     if not isinstance(config['render_devices'], list):
         raise Exception('Invalid render_devices value in config.')
     for device in config['render_devices']:
+        if task_manager.is_alive(device) >= 1:
+            print(device, 'already registered.')
+            continue
         if not task_manager.start_render_thread(device):
             print(device, 'failed to start.')
     if task_manager.is_alive() <= 0: # No running devices, probably invalid user config.
         print('WARNING: No active render devices after loading config. Validate "render_devices" in config.json')
         print('Loading default render devices to replace invalid render_devices field from config', config['render_devices'])
+    elif task_manager.is_alive(0) <= 0: # Missing GPU:0
+        display_warning = True # Warn user to update settings...
 
-display_warning = False
 if task_manager.is_alive() <= 0: # Either no defauls or no devices after loading config.
     # Select best GPU device using free memory, if more than one device.
     if task_manager.start_render_thread('auto'): # Detect best device for renders
@@ -431,12 +442,11 @@ if task_manager.is_alive() <= 0: # Either no defauls or no devices after loading
         if not task_manager.start_render_thread('cpu'):
             print('Failed to start CPU render device...')
 
-if display_warning or task_manager.is_alive(0) <= 0:
+if display_warning:
     print('WARNING: GFPGANer only works on GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.')
     print('Using CUDA_VISIBLE_DEVICES will remap the selected devices starting at GPU:0 fixing GFPGANer')
     print('Add the line "@set CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.bat')
     print('Add the line "CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.sh')
-
 del display_warning
 
 # start the browser ui
