@@ -290,7 +290,7 @@ def thread_render(device):
             task.response = {"status": 'failed', "detail": str(task.error)}
             task.buffer_queue.put(json.dumps(task.response))
             continue
-        print(f'Session {task.request.session_id} starting task {id(task)}')
+        print(f'Session {task.request.session_id} starting task {id(task)} on {runtime.thread_data.device_name}')
         if not task.lock.acquire(blocking=False): raise Exception('Got locked task from queue.')
         try:
             if runtime.thread_data.device == 'cpu' and is_alive() > 1:
@@ -344,7 +344,7 @@ def thread_render(device):
         elif task.error is not None:
             print(f'Session {task.request.session_id} task {id(task)} failed!')
         else:
-            print(f'Session {task.request.session_id} task {id(task)} completed.')
+            print(f'Session {task.request.session_id} task {id(task)} completed by {runtime.thread_data.device_name}.')
         current_state = ServerStates.Online
 
 def get_cached_task(session_id:str, update_ttl:bool=False):
