@@ -363,13 +363,21 @@ def load_model_real_esrgan():
     thread_data.model_real_esrgan.model.name = thread_data.real_esrgan_file
     print('loaded ', thread_data.real_esrgan_file, 'to', thread_data.model_real_esrgan.device, 'precision', thread_data.precision)
 
+
+def get_session_out_path(disk_path, session_id):
+    if disk_path is None: return None
+    if session_id is None: return None
+
+    session_out_path = os.path.join(disk_path, filename_regex.sub('_',session_id))
+    os.makedirs(session_out_path, exist_ok=True)
+    return session_out_path
+
 def get_base_path(disk_path, session_id, prompt, img_id, ext, suffix=None):
     if disk_path is None: return None
     if session_id is None: return None
     if ext is None: raise Exception('Missing ext')
 
-    session_out_path = os.path.join(disk_path, session_id)
-    os.makedirs(session_out_path, exist_ok=True)
+    session_out_path = get_session_out_path(disk_path, session_id)
 
     prompt_flattened = filename_regex.sub('_', prompt)[:50]
 
@@ -574,8 +582,7 @@ def do_mk_img(req: Request):
         print(f"target t_enc is {t_enc} steps")
 
     if req.save_to_disk_path is not None:
-        session_out_path = os.path.join(req.save_to_disk_path, req.session_id)
-        os.makedirs(session_out_path, exist_ok=True)
+        session_out_path = get_session_out_path(req.save_to_disk_path, req.session_id)
     else:
         session_out_path = None
 
