@@ -351,6 +351,13 @@ function dragOverHandler(ev) {
 document.addEventListener("drop", dropHandler)
 document.addEventListener("dragover", dragOverHandler)
 
+const TASK_REQ_NO_EXPORT = [
+    "use_cpu",
+    "turbo",
+    "use_full_precision",
+    "save_to_disk_path"
+]
+
 // Adds a copy icon if the browser grants permission to write to clipboard.
 function checkWriteToClipboardPermission (result) {
     if (result.state == "granted" || result.state == "prompt") {
@@ -361,7 +368,9 @@ function checkWriteToClipboardPermission (result) {
         copyIcon.innerHTML = `<span class="simple-tooltip right">Copy Image Settings</span>`
         copyIcon.addEventListener('click', (event) => {
             event.stopPropagation()
-            navigator.clipboard.writeText(JSON.stringify(readUI(), undefined, 4))
+            const uiState = readUI()
+            TASK_REQ_NO_EXPORT.forEach((key) => delete uiState.reqBody[key])
+            navigator.clipboard.writeText(JSON.stringify(uiState, undefined, 4))
         })
         resetSettings.parentNode.insertBefore(copyIcon, resetSettings)
     }
