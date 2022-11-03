@@ -589,6 +589,19 @@ input::file-selector-button {
     position: relative;
     transform: translateY(-13%);
 }
+ #copy-image-settings {
+    cursor: pointer;
+    padding: 8px;
+    opacity: 1;
+    transition: opacity 0.5;
+}
+.collapsible:not(.active) #copy-image-settings {
+    display: none;
+}
+#copy-image-settings.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
 
 .simple-tooltip {
 	border-radius: 3px;
