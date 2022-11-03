@@ -349,22 +349,6 @@ document.addEventListener("dragover", dragOverHandler)
 // Adds a copy icon if the browser grants permission to write to clipboard.
 function checkWriteToClipboardPermission (result) {
     if (result.state == "granted" || result.state == "prompt") {
-        const style = document.createElement('style');
-        style.textContent = `
-        #copy-image-settings {
-            cursor: pointer;
-            padding: 8px;
-            opacity: 1;
-            transition: opacity 0.5;
-        }
-        .collapsible:not(.active) #copy-image-settings {
-            display: none;
-        }
-        #copy-image-settings.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }`;
-        document.head.append(style);
         const resetSettings = document.getElementById('reset-image-settings')
         const copyIcon = document.createElement('i')
         copyIcon.id = 'copy-image-settings'
