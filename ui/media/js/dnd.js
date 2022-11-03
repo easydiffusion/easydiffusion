@@ -41,9 +41,11 @@ const TASK_MAPPING = {
         setUI: (seed) => {
             if (!seed) {
                 randomSeedField.checked = true
+                seedField.disabled = true
                 return
             }
             randomSeedField.checked = false
+            seedField.disabled = false
             seedField.value = seed
         },
         readUI: () => (randomSeedField.checked ? Math.floor(Math.random() * 10000000) : parseInt(seedField.value)),
@@ -115,7 +117,10 @@ const TASK_MAPPING = {
         setUI: (use_stable_diffusion_model) => {
             const oldVal = stableDiffusionModelField.value
 
-            const pathIdx = use_stable_diffusion_model.lastIndexOf('/')
+            let pathIdx = use_stable_diffusion_model.lastIndexOf('/') // Linux, Mac paths
+            if (pathIdx < 0) {
+                pathIdx = use_stable_diffusion_model.lastIndexOf('\\') // Windows paths.
+            }
             if (pathIdx >= 0) {
                 use_stable_diffusion_model = use_stable_diffusion_model.slice(pathIdx + 1)
             }
@@ -346,6 +351,13 @@ function dragOverHandler(ev) {
 document.addEventListener("drop", dropHandler)
 document.addEventListener("dragover", dragOverHandler)
 
+const TASK_REQ_NO_EXPORT = [
+    "use_cpu",
+    "turbo",
+    "use_full_precision",
+    "save_to_disk_path"
+]
+
 // Adds a copy icon if the browser grants permission to write to clipboard.
 function checkWriteToClipboardPermission (result) {
     if (result.state == "granted" || result.state == "prompt") {
@@ -356,7 +368,9 @@ function checkWriteToClipboardPermission (result) {
         copyIcon.innerHTML = `<span class="simple-tooltip right">Copy Image Settings</span>`
         copyIcon.addEventListener('click', (event) => {
             event.stopPropagation()
-            navigator.clipboard.writeText(JSON.stringify(readUI(), undefined, 4))
+            const uiState = readUI()
+            TASK_REQ_NO_EXPORT.forEach((key) => delete uiState.reqBody[key])
+            navigator.clipboard.writeText(JSON.stringify(uiState, undefined, 4))
         })
         resetSettings.parentNode.insertBefore(copyIcon, resetSettings)
     }
