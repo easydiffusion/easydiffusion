@@ -283,4 +283,13 @@ function loadCustomModifiers() {
     }
 }
 
+// Empty the modifiers when reusing existing settings to avoid duplicate modifiers.
+// Restoring the modifiers will require more in-depth changes. This is a quick workaround for now.
+function clearModifiers() {
+	activeTags.forEach(tag => {
+		tag.originElement.classList.remove(activeCardClass)
+	})
+	activeTags.length = 0
+	refreshTagsList()
+}
 customModifiersTextBox.addEventListener('change', saveCustomModifiers)
