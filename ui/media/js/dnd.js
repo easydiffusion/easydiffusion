@@ -41,9 +41,11 @@ const TASK_MAPPING = {
         setUI: (seed) => {
             if (!seed) {
                 randomSeedField.checked = true
+                seedField.disabled = true
                 return
             }
             randomSeedField.checked = false
+            seedField.disabled = false
             seedField.value = seed
         },
         readUI: () => (randomSeedField.checked ? Math.floor(Math.random() * 10000000) : parseInt(seedField.value)),
