@@ -117,7 +117,10 @@ const TASK_MAPPING = {
         setUI: (use_stable_diffusion_model) => {
             const oldVal = stableDiffusionModelField.value
 
-            const pathIdx = use_stable_diffusion_model.lastIndexOf('/')
+            let pathIdx = use_stable_diffusion_model.lastIndexOf('/') // Linux, Mac paths
+            if (pathIdx < 0) {
+                pathIdx = use_stable_diffusion_model.lastIndexOf('\\') // Windows paths.
+            }
             if (pathIdx >= 0) {
                 use_stable_diffusion_model = use_stable_diffusion_model.slice(pathIdx + 1)
             }
