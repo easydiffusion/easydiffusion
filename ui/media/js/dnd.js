@@ -1,5 +1,35 @@
 "use strict" // Opt in to a restricted variant of JavaScript
 
+function parseBoolean(stringValue) {
+    if (typeof stringValue === 'boolean') {
+        return stringValue
+    }
+    if (typeof stringValue === 'number') {
+        return stringValue !== 0
+    }
+    if (typeof stringValue !== 'string') {
+        return false
+    }
+    switch(stringValue?.toLowerCase()?.trim()) {
+        case "true":
+        case "yes":
+        case "1":
+          return true;
+
+        case "false":
+        case "no":
+        case "0":
+        case null:
+        case undefined:
+          return false;
+    }
+    try {
+        return Boolean(JSON.parse(stringValue));
+    } catch {
+        return Boolean(stringValue)
+    }
+}
+
 const TASK_MAPPING = {
     prompt: { name: 'Prompt',
         setUI: (prompt) => {
@@ -93,10 +123,10 @@ const TASK_MAPPING = {
 
     use_face_correction: { name: 'Use Face Correction',
         setUI: (use_face_correction) => {
-            useFaceCorrectionField.checked = Boolean(use_face_correction)
+            useFaceCorrectionField.checked = parseBoolean(use_face_correction)
         },
         readUI: () => useFaceCorrectionField.checked,
-        parse: (val) => val
+        parse: (val) => parseBoolean(val)
     },
     use_upscale: { name: 'Use Upscaling',
         setUI: (use_upscale) => {
