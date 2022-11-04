@@ -114,8 +114,8 @@
                 <ul id="editor-settings-entries" class="collapsible-content">
                     <li><table>
                     <tr><b class="settings-subheader">Image Settings</b></tr>
-                    <tr class="pl-5"><td><label for="seed">Seed:</label></td><td><input id="seed" name="seed" size="10" value="30000"> <input id="random_seed" name="random_seed" type="checkbox" checked><label for="random_seed">Random</label></td></tr>
-                    <tr class="pl-5"><td><label for="num_outputs_total">Number of Images:</label></td><td><input id="num_outputs_total" name="num_outputs_total" value="1" size="1"> <label><small>(total)</small></label> <input id="num_outputs_parallel" name="num_outputs_parallel" value="1" size="1"> <label for="num_outputs_parallel"><small>(in parallel)</small></label></td></tr>
+                    <tr class="pl-5"><td><label for="seed">Seed:</label></td><td><input id="seed" name="seed" size="10" value="30000" onkeypress="preventNonNumericalInput(event)"> <input id="random_seed" name="random_seed" type="checkbox" checked><label for="random_seed">Random</label></td></tr>
+                    <tr class="pl-5"><td><label for="num_outputs_total">Number of Images:</label></td><td><input id="num_outputs_total" name="num_outputs_total" value="1" size="1" onkeypress="preventNonNumericalInput(event)"> <label><small>(total)</small></label> <input id="num_outputs_parallel" name="num_outputs_parallel" value="1" size="1" onkeypress="preventNonNumericalInput(event)"> <label for="num_outputs_parallel"><small>(in parallel)</small></label></td></tr>
                     <tr class="pl-5"><td><label for="stable_diffusion_model">Model:</label></td><td>
                         <select id="stable_diffusion_model" name="stable_diffusion_model">
                             <!-- <option value="sd-v1-4" selected>sd-v1-4</option> -->
@@ -179,9 +179,9 @@
                         </select>
                         <label for="height"><small>(height)</small></label>
                     </td></tr>
-                    <tr class="pl-5"><td><label for="num_inference_steps">Inference Steps:</label></td><td> <input id="num_inference_steps" name="num_inference_steps" size="4" value="25"></td></tr>
-                    <tr class="pl-5"><td><label for="guidance_scale_slider">Guidance Scale:</label></td><td> <input id="guidance_scale_slider" name="guidance_scale_slider" class="editor-slider" value="75" type="range" min="10" max="500"> <input id="guidance_scale" name="guidance_scale" size="4"></td></tr>
-                    <tr id="prompt_strength_container" class="pl-5"><td><label for="prompt_strength_slider">Prompt Strength:</label></td><td> <input id="prompt_strength_slider" name="prompt_strength_slider" class="editor-slider" value="80" type="range" min="0" max="99"> <input id="prompt_strength" name="prompt_strength" size="4"><br/></td></tr></span>
+                    <tr class="pl-5"><td><label for="num_inference_steps">Inference Steps:</label></td><td> <input id="num_inference_steps" name="num_inference_steps" size="4" value="25" onkeypress="preventNonNumericalInput(event)"></td></tr>
+                    <tr class="pl-5"><td><label for="guidance_scale_slider">Guidance Scale:</label></td><td> <input id="guidance_scale_slider" name="guidance_scale_slider" class="editor-slider" value="75" type="range" min="10" max="500"> <input id="guidance_scale" name="guidance_scale" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"></td></tr>
+                    <tr id="prompt_strength_container" class="pl-5"><td><label for="prompt_strength_slider">Prompt Strength:</label></td><td> <input id="prompt_strength_slider" name="prompt_strength_slider" class="editor-slider" value="80" type="range" min="0" max="99"> <input id="prompt_strength" name="prompt_strength" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"><br/></td></tr></span>
                     <tr class="pl-5"><td><label for="output_format">Output Format:</label></td><td>
                         <select id="output_format" name="output_format">
                             <option value="jpeg" selected>jpeg</option>
@@ -272,7 +272,7 @@
 </body>
 
 <script src="media/js/plugins.js?v=1"></script>
-<script src="media/js/utils.js?v=4"></script>
+<script src="media/js/utils.js?v=5"></script>
 <script src="media/js/inpainting-editor.js?v=1"></script>
 <script src="media/js/image-modifiers.js?v=3"></script>
 <script src="media/js/auto-save.js?v=2"></script>
