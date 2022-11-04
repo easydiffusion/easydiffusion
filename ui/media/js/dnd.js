@@ -130,8 +130,14 @@ const TASK_MAPPING = {
     },
     use_upscale: { name: 'Use Upscaling',
         setUI: (use_upscale) => {
-            useUpscalingField.checked = Boolean(use_upscale)
+            const oldVal = upscaleModelField.value
             upscaleModelField.value = use_upscale
+            if (upscaleModelField.value) { // Is a valid value for the field.
+                useUpscalingField.checked = true
+            } else { // Not a valid value, restore the old value and disable the filter.
+                upscaleModelField.value = oldVal
+                useUpscalingField.checked = false
+            }
         },
         readUI: () => (useUpscalingField.checked ? upscaleModelField.value : undefined),
         parse: (val) => val
