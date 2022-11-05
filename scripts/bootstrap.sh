@@ -6,6 +6,9 @@
 
 # This enables a user to install this project without manually installing conda and git.
 
+source ./scripts/functions.sh
+
+set -o pipefail
 
 OS_NAME=$(uname -s)
 case "${OS_NAME}" in
@@ -49,6 +52,13 @@ if [ "$PACKAGES_TO_INSTALL" != "" ]; then
 
         mkdir -p "$MAMBA_ROOT_PREFIX"
         curl -L "$MICROMAMBA_DOWNLOAD_URL" | tar -xvj bin/micromamba -O > "$MAMBA_ROOT_PREFIX/micromamba"
+	if [ "$?" != "0" ]; then
+	    echo
+	    echo "EE micromamba download failed"
+	    echo "EE If the lines above contain 'bzip2: Cannot exec', your system doesn't have bzip2 installed"
+	    echo "EE If there are network errors, please check your internet setup"
+	    fail "micromamba download failed"
+	fi
 
         chmod u+x "$MAMBA_ROOT_PREFIX/micromamba"
 
@@ -59,15 +69,17 @@ if [ "$PACKAGES_TO_INSTALL" != "" ]; then
 
     # create the installer env
     if [ ! -e "$INSTALL_ENV_DIR" ]; then
-        "$MAMBA_ROOT_PREFIX/micromamba" create -y --prefix "$INSTALL_ENV_DIR"
+        "$MAMBA_ROOT_PREFIX/micromamba" create -y --prefix "$INSTALL_ENV_DIR" || fail "unable to create the install environment"
+    fi
+   
+    if [ ! -e "$INSTALL_ENV_DIR" ]; then
+        fail "There was a problem while installing$PACKAGES_TO_INSTALL using micromamba. Cannot continue."
     fi
 
     echo "Packages to install:$PACKAGES_TO_INSTALL"
 
     "$MAMBA_ROOT_PREFIX/micromamba" install -y --prefix "$INSTALL_ENV_DIR" -c conda-forge $PACKAGES_TO_INSTALL
-
-    if [ ! -e "$INSTALL_ENV_DIR" ]; then
-        echo "There was a problem while installing$PACKAGES_TO_INSTALL using micromamba. Cannot continue."
-        exit
+    if [ "$?" != "0" ]; then
+        fail "Installation of the packages '$PACKAGES_TO_INSTALL' failed."
     fi
 fi

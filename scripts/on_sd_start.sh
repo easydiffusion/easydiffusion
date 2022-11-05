@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source ./scripts/functions.sh
+
 cp sd-ui-files/scripts/on_env_start.sh scripts/
 cp sd-ui-files/scripts/bootstrap.sh scripts/
 
@@ -7,14 +9,14 @@ cp sd-ui-files/scripts/bootstrap.sh scripts/
 CONDA_BASEPATH=$(conda info --base)
 source "$CONDA_BASEPATH/etc/profile.d/conda.sh" # avoids the 'shell not initialized' error
 
-conda activate
+conda activate || fail "Failed to activate conda"
 
 # remove the old version of the dev console script, if it's still present
 if [ -e "open_dev_console.sh" ]; then
     rm "open_dev_console.sh"
 fi
 
-python -c "import os; import shutil; frm = 'sd-ui-files/ui/hotfix/9c24e6cd9f499d02c4f21a033736dabd365962dc80fe3aeb57a8f85ea45a20a3.26fead7ea4f0f843f6eb4055dfd25693f1a71f3c6871b184042d4b126244e142'; dst = os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'transformers', '9c24e6cd9f499d02c4f21a033736dabd365962dc80fe3aeb57a8f85ea45a20a3.26fead7ea4f0f843f6eb4055dfd25693f1a71f3c6871b184042d4b126244e142'); shutil.copyfile(frm, dst) if os.path.exists(dst) else print(''); print('Hotfixed broken JSON file from OpenAI');"
+python -c "import os; import shutil; frm = 'sd-ui-files/ui/hotfix/9c24e6cd9f499d02c4f21a033736dabd365962dc80fe3aeb57a8f85ea45a20a3.26fead7ea4f0f843f6eb4055dfd25693f1a71f3c6871b184042d4b126244e142'; dst = os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'transformers', '9c24e6cd9f499d02c4f21a033736dabd365962dc80fe3aeb57a8f85ea45a20a3.26fead7ea4f0f843f6eb4055dfd25693f1a71f3c6871b184042d4b126244e142'); shutil.copyfile(frm, dst) if os.path.exists(dst) else print(''); print('Hotfixed broken JSON file from OpenAI');" 
 
 # Caution, this file will make your eyes and brain bleed. It's such an unholy mess.
 # Note to self: Please rewrite this in Python. For the sake of your own sanity.
@@ -28,8 +30,8 @@ if [ -e "scripts/install_status.txt" ] && [ `grep -c sd_git_cloned scripts/insta
     git pull
     git -c advice.detachedHead=false checkout f6cfebffa752ee11a7b07497b8529d5971de916c
 
-    git apply ../ui/sd_internal/ddim_callback.patch
-    git apply ../ui/sd_internal/env_yaml.patch
+    git apply ../ui/sd_internal/ddim_callback.patch || fail "ddim patch failed"
+    git apply ../ui/sd_internal/env_yaml.patch || fail "yaml patch failed"
 
     cd ..
 else
@@ -38,16 +40,14 @@ else
     if git clone https://github.com/basujindal/stable-diffusion.git ; then
         echo sd_git_cloned >> scripts/install_status.txt
     else
-        printf "\n\nError downloading Stable Diffusion. Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
-        read -p "Press any key to continue"
-        exit
+        fail "git clone of basujindal/stable-diffusion.git failed"
     fi
 
     cd stable-diffusion
     git -c advice.detachedHead=false checkout f6cfebffa752ee11a7b07497b8529d5971de916c
 
-    git apply ../ui/sd_internal/ddim_callback.patch
-    git apply ../ui/sd_internal/env_yaml.patch
+    git apply ../ui/sd_internal/ddim_callback.patch || fail "ddim patch failed"
+    git apply ../ui/sd_internal/env_yaml.patch || fail "yaml patch failed"
 
     cd ..
 fi
@@ -57,7 +57,7 @@ cd stable-diffusion
 if [ `grep -c conda_sd_env_created ../scripts/install_status.txt` -gt "0" ]; then
     echo "Packages necessary for Stable Diffusion were already installed"
 
-    conda activate ./env
+    conda activate ./env || fail "conda activate failed"
 else
     printf "\n\nDownloading packages necessary for Stable Diffusion..\n"
     printf "\n\n***** This will take some time (depending on the speed of the Internet connection) and may appear to be stuck, but please be patient ***** ..\n\n"
@@ -68,26 +68,20 @@ else
     if conda env create --prefix env --force -f environment.yaml ; then
         echo "Installed. Testing.."
     else
-        printf "\n\nError installing the packages necessary for Stable Diffusion. Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
-        read -p "Press any key to continue"
-        exit
+        fail "'conda env create' failed"
     fi
 
-    conda activate ./env
+    conda activate ./env || fail "conda activate failed"
 
     if conda install -c conda-forge --prefix ./env -y antlr4-python3-runtime=4.8 ; then
         echo "Installed. Testing.."
     else
-        printf "\n\nError installing antlr4-python3-runtime for Stable Diffusion. Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
-        read -p "Press any key to continue"
-        exit
+        fail "Error installing antlr4-python3-runtime"
     fi
 
     out_test=`python -c "import torch; import ldm; import transformers; import numpy; import antlr4; print(42)"`
     if [ "$out_test" != "42" ]; then
-        printf "\n\nDependency test failed! Error installing the packages necessary for Stable Diffusion. Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
-        read -p "Press any key to continue"
-        exit
+        fail "Dependency test failed"
     fi
 
     echo conda_sd_env_created >> ../scripts/install_status.txt
@@ -103,16 +97,15 @@ else
     if pip install -e git+https://github.com/TencentARC/GFPGAN#egg=GFPGAN ; then
         echo "Installed. Testing.."
     else
-        printf "\n\nError installing the packages necessary for GFPGAN (Face Correction). Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
-        read -p "Press any key to continue"
-        exit
+        fail "Error installing the packages necessary for GFPGAN (Face Correction)."
     fi
 
     out_test=`python -c "from gfpgan import GFPGANer; print(42)"`
     if [ "$out_test" != "42" ]; then
-        printf "\n\nDependency test failed! Error installing the packages necessary for GFPGAN (Face Correction). Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
-        read -p "Press any key to continue"
-        exit
+        echo "EE The dependency check has failed. This usually means that some system libraries are missing."
+	echo "EE On Debian/Ubuntu systems, this are often these packages: libsm6 libxext6 libxrender-dev"
+	echo "EE Other Linux distributions might have different package names for these libraries."
+        fail "GFPGAN dependency test failed"
     fi
 
     echo conda_sd_gfpgan_deps_installed >> ../scripts/install_status.txt
@@ -128,16 +121,12 @@ else
     if pip install -e git+https://github.com/xinntao/Real-ESRGAN#egg=realesrgan ; then
         echo "Installed. Testing.."
     else
-        printf "\n\nError installing the packages necessary for ESRGAN (Resolution Upscaling). Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
-        read -p "Press any key to continue"
-        exit
+        fail "Error installing the packages necessary for ESRGAN"
     fi
 
     out_test=`python -c "from basicsr.archs.rrdbnet_arch import RRDBNet; from realesrgan import RealESRGANer; print(42)"`
     if [ "$out_test" != "42" ]; then
-        printf "\n\nDependency test failed! Error installing the packages necessary for ESRGAN (Resolution Upscaling). Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
-        read -p "Press any key to continue"
-        exit
+        fail "ESRGAN dependency test failed"
     fi
 
     echo conda_sd_esrgan_deps_installed >> ../scripts/install_status.txt
@@ -153,15 +142,11 @@ else
     if conda install -c conda-forge --prefix ./env -y uvicorn fastapi ; then
         echo "Installed. Testing.."
     else
-        printf "\n\nError installing the packages necessary for Stable Diffusion UI. Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
-        read -p "Press any key to continue"
-        exit
+        fail "'conda install uvicorn' failed" 
     fi
 
     if ! command -v uvicorn &> /dev/null; then
-        printf "\n\nUI packages not found! Error installing the packages necessary for Stable Diffusion UI. Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
-        read -p "Press any key to continue"
-        exit
+        fail "UI packages not found!"
     fi
 
     echo conda_sd_ui_deps_installed >> ../scripts/install_status.txt
@@ -191,15 +176,10 @@ if [ ! -f "sd-v1-4.ckpt" ]; then
     if [ -f "sd-v1-4.ckpt" ]; then
         model_size=`find "sd-v1-4.ckpt" -printf "%s"`
         if [ ! "$model_size" == "4265380512" ]; then
-            printf "\n\nError: The downloaded model file was invalid! Bytes downloaded: $model_size\n\n"
-            printf "\n\nError downloading the data files (weights) for Stable Diffusion. Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
-            read -p "Press any key to continue"
-            exit
+	    fail "The downloaded model file was invalid! Bytes downloaded: $model_size"
         fi
     else
-        printf "\n\nError downloading the data files (weights) for Stable Diffusion. Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
-        read -p "Press any key to continue"
-        exit
+        fail "Error downloading the data files (weights) for Stable Diffusion"
     fi
 fi
 
@@ -223,15 +203,10 @@ if [ ! -f "GFPGANv1.3.pth" ]; then
     if [ -f "GFPGANv1.3.pth" ]; then
         model_size=`find "GFPGANv1.3.pth" -printf "%s"`
         if [ ! "$model_size" -eq "348632874" ]; then
-            printf "\n\nError: The downloaded GFPGAN model file was invalid! Bytes downloaded: $model_size\n\n"
-            printf "\n\nError downloading the data files (weights) for GFPGAN (Face Correction). Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
-            read -p "Press any key to continue"
-            exit
+            fail "The downloaded GFPGAN model file was invalid! Bytes downloaded: $model_size"
         fi
     else
-        printf "\n\nError downloading the data files (weights) for GFPGAN (Face Correction). Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
-        read -p "Press any key to continue"
-        exit
+        fail "Error downloading the data files (weights) for GFPGAN (Face Correction)."
     fi
 fi
 
@@ -255,15 +230,10 @@ if [ ! -f "RealESRGAN_x4plus.pth" ]; then
     if [ -f "RealESRGAN_x4plus.pth" ]; then
         model_size=`find "RealESRGAN_x4plus.pth" -printf "%s"`
         if [ ! "$model_size" -eq "67040989" ]; then
-            printf "\n\nError: The downloaded ESRGAN x4plus model file was invalid! Bytes downloaded: $model_size\n\n"
-            printf "\n\nError downloading the data files (weights) for ESRGAN (Resolution Upscaling) x4plus. Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
-            read -p "Press any key to continue"
-            exit
+            fail "The downloaded ESRGAN x4plus model file was invalid! Bytes downloaded: $model_size"
         fi
     else
-        printf "\n\nError downloading the data files (weights) for ESRGAN (Resolution Upscaling) x4plus. Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
-        read -p "Press any key to continue"
-        exit
+        fail "Error downloading the data files (weights) for ESRGAN (Resolution Upscaling) x4plus"
     fi
 fi
 
@@ -287,15 +257,10 @@ if [ ! -f "RealESRGAN_x4plus_anime_6B.pth" ]; then
     if [ -f "RealESRGAN_x4plus_anime_6B.pth" ]; then
         model_size=`find "RealESRGAN_x4plus_anime_6B.pth" -printf "%s"`
         if [ ! "$model_size" -eq "17938799" ]; then
-            printf "\n\nError: The downloaded ESRGAN x4plus_anime model file was invalid! Bytes downloaded: $model_size\n\n"
-            printf "\n\nError downloading the data files (weights) for ESRGAN (Resolution Upscaling) x4plus_anime. Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
-            read -p "Press any key to continue"
-            exit
+            fail "The downloaded ESRGAN x4plus_anime model file was invalid! Bytes downloaded: $model_size"
         fi
     else
-        printf "\n\nError downloading the data files (weights) for ESRGAN (Resolution Upscaling) x4plus_anime. Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
-        read -p "Press any key to continue"
-        exit
+        fail "Error downloading the data files (weights) for ESRGAN (Resolution Upscaling) x4plus_anime."
     fi
 fi
 
@@ -318,6 +283,6 @@ cd ..
 export SD_UI_PATH=`pwd`/ui
 cd stable-diffusion
 
-uvicorn server:app --app-dir "$SD_UI_PATH" --port 9000 --host 0.0.0.0
+uvicorn server:app --app-dir "$SD_UI_PATH" --port ${SDUI_BIND_PORT:-9000} --host ${SDUI_BIND_IP:-0.0.0.0}
 
 read -p "Press any key to continue"
