@@ -3,7 +3,9 @@
 #
 
 fail() {
+    echo
     echo "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE"
+    echo
     if [ "$1" != "" ]; then
         echo ERROR: $1
     else
