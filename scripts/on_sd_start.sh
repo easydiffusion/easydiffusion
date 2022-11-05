@@ -283,6 +283,6 @@ cd ..
 export SD_UI_PATH=`pwd`/ui
 cd stable-diffusion
 
-uvicorn server:app --app-dir "$SD_UI_PATH" --port ${SDUI_BIND_PORT:-9000} --host ${SDUI_BIND_IP:-0.0.0.0}
+uvicorn server:app --app-dir "$SD_UI_PATH" --port ${SD_UI_BIND_PORT:-9000} --host ${SD_UI_BIND_IP:-0.0.0.0}
 
 read -p "Press any key to continue"

@@ -1,5 +1,6 @@
 @echo off
 
+cd /d %~dp0
 set PATH=C:\Windows\System32;%PATH%
 
 @rem set legacy installer's PATH, if it exists

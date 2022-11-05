@@ -37,6 +37,12 @@ if "%PACKAGES_TO_INSTALL%" NEQ "" (
         mkdir "%MAMBA_ROOT_PREFIX%"
         call curl -L "%MICROMAMBA_DOWNLOAD_URL%" > "%MAMBA_ROOT_PREFIX%\micromamba.exe"
 
+	if "%ERRORLEVEL%" NEQ "0" (
+	    echo "There was a problem downloading micromamba. Cannot continue."
+	    pause
+	    exit /b
+	)
+
         @rem test the mamba binary
         echo Micromamba version:
         call "%MAMBA_ROOT_PREFIX%\micromamba.exe" --version
