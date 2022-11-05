@@ -13,11 +13,13 @@ function parseBoolean(stringValue) {
     switch(stringValue?.toLowerCase()?.trim()) {
         case "true":
         case "yes":
+        case "on":
         case "1":
           return true;
 
         case "false":
         case "no":
+        case "off":
         case "0":
         case null:
         case undefined:
