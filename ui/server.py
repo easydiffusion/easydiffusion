@@ -120,9 +120,9 @@ def setConfig(config):
         config_bat_path = os.path.join(CONFIG_DIR, 'config.bat')
 
         if os.getenv('SD_UI_BIND_PORT') is not None:
-	    config_bat.append(f"@set SD_UI_BIND_PORT={os.getenv('SD_UI_BIND_PORT')}")
+            config_bat.append(f"@set SD_UI_BIND_PORT={os.getenv('SD_UI_BIND_PORT')}")
         if os.getenv('SD_UI_BIND_IP') is not None:
-	    config_bat.append(f"@set SD_UI_BIND_IP={os.getenv('SD_UI_BIND_IP')}")
+            config_bat.append(f"@set SD_UI_BIND_IP={os.getenv('SD_UI_BIND_IP')}")
 
 
         with open(config_bat_path, 'w', encoding='utf-8') as f:
@@ -146,9 +146,9 @@ def setConfig(config):
                 print('GPU:0 seems to be missing! Validate that CUDA_VISIBLE_DEVICES is set properly.')
 
         if os.getenv('SD_UI_BIND_PORT') is not None:
-	    config_sh.append(f"export SD_UI_BIND_PORT={os.getenv('SD_UI_BIND_PORT')}")
+            config_sh.append(f"export SD_UI_BIND_PORT={os.getenv('SD_UI_BIND_PORT')}")
         if os.getenv('SD_UI_BIND_IP') is not None:
-	    config_sh.append(f"export SD_UI_BIND_IP={os.getenv('SD_UI_BIND_IP')}")
+            config_sh.append(f"export SD_UI_BIND_IP={os.getenv('SD_UI_BIND_IP')}")
 
         config_sh_path = os.path.join(CONFIG_DIR, 'config.sh')
         with open(config_sh_path, 'w', encoding='utf-8') as f:
