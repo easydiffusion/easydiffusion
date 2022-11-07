@@ -342,3 +342,15 @@ function asyncDelay(timeout) {
         setTimeout(resolve, timeout, true)
     })
 }
+
+function preventNonNumericalInput(e) {
+    e = e || window.event;
+    let charCode = (typeof e.which == "undefined") ? e.keyCode : e.which;
+    let charStr = String.fromCharCode(charCode);
+    let re = e.target.getAttribute('pattern') || '^[0-9]+$'
+    re = new RegExp(re)
+
+    if (!charStr.match(re)) {
+        e.preventDefault();
+    }
+}
