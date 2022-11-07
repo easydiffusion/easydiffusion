@@ -129,7 +129,9 @@ def device_init(device_selection=None):
     thread_data.force_full_precision = False
     thread_data.reduced_memory = True
 
-    if device_selection.lower() == 'cpu':
+    device_selection = device_selection.lower()
+
+    if device_selection == 'cpu':
         thread_data.device = 'cpu'
         thread_data.device_name = get_processor_name()
         print('Render device CPU available as', thread_data.device_name)
@@ -162,10 +164,10 @@ def device_init(device_selection=None):
             print(f'Setting GPU:{device} as active')
             torch.cuda.device(device)
             return
-    if isinstance(device_selection, str):
-        device_selection = device_selection.lower()
-        if device_selection.startswith('gpu:'):
-            device_selection = int(device_selection[4:])
+
+    if device_selection.startswith('gpu:'):
+        device_selection = int(device_selection[4:])
+
     if device_selection != 'cuda' and device_selection != 'current' and device_selection != 'gpu':
         if device_select(device_selection):
             if isinstance(device_selection, int):
