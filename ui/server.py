@@ -407,7 +407,6 @@ config = getConfig()
 # Start the task_manager
 task_manager.default_model_to_load = resolve_ckpt_to_use()
 task_manager.default_vae_to_load = resolve_vae_to_use(ckpt_model_path=task_manager.default_model_to_load)
-display_warning = False
 if 'render_devices' in config:  # Start a new thread for each device.
     if isinstance(config['render_devices'], str):
         config['render_devices'] = config['render_devices'].split(',')
@@ -422,32 +421,24 @@ if 'render_devices' in config:  # Start a new thread for each device.
     if task_manager.is_alive() <= 0: # No running devices, probably invalid user config.
         print('WARNING: No active render devices after loading config. Validate "render_devices" in config.json')
         print('Loading default render devices to replace invalid render_devices field from config', config['render_devices'])
-    elif task_manager.is_alive(0) <= 0: # Missing GPU:0
-        display_warning = True # Warn user to update settings...
 
 if task_manager.is_alive() <= 0: # Either no defauls or no devices after loading config.
     # Select best GPU device using free memory, if more than one device.
     if task_manager.start_render_thread('auto'): # Detect best device for renders
-        if task_manager.is_alive(0) <= 0:  # has no cuda:0
-            if task_manager.is_alive('cpu') >= 1:  # auto used CPU.
-                pass # Maybe add warning here about CPU mode...
-            elif task_manager.start_render_thread('cuda'): # An other cuda device is better and cuda:0 is missing, try to start it...
-                display_warning = True # And warn user to update settings...
-            else:
-                print('Failed to start GPU:0...')
+        # if cuda:0 is missing, another cuda device is better. try to start it...
+        if task_manager.is_alive(0) <= 0 and task_manager.is_alive('cpu') <= 0 and not task_manager.start_render_thread('cuda'):
+            print('Failed to start GPU:0...')
     else:
         print('Failed to start gpu device.')
-    if task_manager.is_alive('cpu') <= 0:
-        # Allow CPU to be used for renders
-        if not task_manager.start_render_thread('cpu'):
-            print('Failed to start CPU render device...')
+    if task_manager.is_alive('cpu') <= 0 and not task_manager.start_render_thread('cpu'): # Allow CPU to be used for renders
+        print('Failed to start CPU render device...')
 
-if display_warning:
+is_using_a_gpu = (task_manager.is_alive() > task_manager.is_alive('cpu'))
+if is_using_a_gpu and task_manager.is_alive(0) <= 0:
     print('WARNING: GFPGANer only works on GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.')
     print('Using CUDA_VISIBLE_DEVICES will remap the selected devices starting at GPU:0 fixing GFPGANer')
     print('Add the line "@set CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.bat')
     print('Add the line "CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.sh')
-del display_warning
 
 # start the browser ui
 import webbrowser; webbrowser.open('http://localhost:9000')

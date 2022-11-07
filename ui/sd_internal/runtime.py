@@ -136,12 +136,12 @@ def device_init(device_selection=None):
         return
     if not torch.cuda.is_available():
         if device_selection == 'auto' or device_selection == 'current':
-            print('WARNING: torch.cuda is not available. Using the CPU, but this will be very slow!')
+            print('WARNING: Could not find a compatible GPU. Using the CPU, but this will be very slow!')
             thread_data.device = 'cpu'
             thread_data.device_name = get_processor_name()
             return
         else:
-            raise EnvironmentError('torch.cuda is not available.')
+            raise EnvironmentError(f'Could not find a compatible GPU for the requested device_selection: {device_selection}!')
     device_count = torch.cuda.device_count()
     if device_count <= 1 and device_selection == 'auto':
         device_selection = 'current' # Use 'auto' only when there is more than one compatible device found.
