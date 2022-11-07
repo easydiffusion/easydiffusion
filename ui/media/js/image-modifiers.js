@@ -149,6 +149,36 @@ async function loadModifiers() {
     loadCustomModifiers()
 }
 
+function refreshModifiers(newTags) {
+    const editorModifiers = document.querySelector('#editor-modifiers')
+    const allModifiers = editorModifiers.querySelectorAll('.modifier-card')
+    allModifiers.forEach(modifierCard => {
+        const modifierName = modifierCard.querySelector('.modifier-card-label').innerText
+        if (newTags.map(x => x.name).includes(modifierName)) {
+            if (!activeTags.map(x => x.name).includes(modifierName)) {
+                // add modifier to active array
+                activeTags.push({
+                    'name': modifierName,
+                    'element': modifierCard.cloneNode(true),
+                    'originElement': modifierCard
+                })
+    
+                modifierCard.classList.add(activeCardClass)
+    
+                modifierCard.querySelector('.modifier-card-image-overlay').innerText = '-'
+            }
+        } else {
+            if (activeTags.map(x => x.name).includes(modifierName)) {
+                // remove modifier from active array
+                activeTags = activeTags.filter(x => x.name != modifierName)
+                modifierCard.classList.remove(activeCardClass)
+    
+                modifierCard.querySelector('.modifier-card-image-overlay').innerText = '+'
+            }
+        }
+    })
+}
+
 function refreshTagsList() {
     editorModifierTagsList.innerHTML = ''
 
@@ -283,13 +313,4 @@ function loadCustomModifiers() {
     }
 }
 
-// Empty the modifiers when reusing existing settings to avoid duplicate modifiers.
-// Restoring the modifiers will require more in-depth changes. This is a quick workaround for now.
-function clearModifiers() {
-	activeTags.forEach(tag => {
-		tag.originElement.classList.remove(activeCardClass)
-	})
-	activeTags.length = 0
-	refreshTagsList()
-}
 customModifiersTextBox.addEventListener('change', saveCustomModifiers)

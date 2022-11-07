@@ -684,11 +684,11 @@ async function checkTasks() {
     const genSeeds = Boolean(typeof task.reqBody.seed !== 'number' || (task.reqBody.seed === task.seed && task.numOutputsTotal > 1))
     const startSeed = task.reqBody.seed || task.seed
 
-	// update the seed *before* starting the processing, so interrupting the processing retains the latest seed
+    // update the seed *before* starting the processing, so interrupting the processing retains the latest seed
     if (randomSeedField.checked) {
         seedField.value = task.seed
     }
-	
+
     for (let i = 0; i < task.batchCount; i++) {
         let newTask = task
         if (task.batchCount > 1) {
@@ -718,8 +718,6 @@ async function checkTasks() {
 
     task.isProcessing = false
     task['stopTask'].innerHTML = '<i class="fa-solid fa-trash-can"></i> Remove'
-    task['useSettings'].innerHTML = '<i class="fa-solid fa-redo"></i> Use Settings'
-    task['useSettings'].style.display = 'block'
     task['taskStatusLabel'].style.display = 'none'
 
     time = Date.now() - time
@@ -735,10 +733,6 @@ async function checkTasks() {
         if (task.outputMsg.innerText.toLowerCase().indexOf('error') === -1) {
             task.outputMsg.innerText = 'Task ended after ' + time + ' seconds'
         }
-    }
-
-    if (randomSeedField.checked) {
-        seedField.value = task.seed
     }
 
     currentTask = null
@@ -778,6 +772,8 @@ function getCurrentUserRequest() {
             width: widthField.value,
             height: heightField.value,
             // allow_nsfw: allowNSFWField.checked,
+            save_to_disk: (diskPathField.value.trim() !== '' ? saveToDiskField.checked : false),
+            save_to_disk_path: diskPathField.value.trim(),
             turbo: turboField.checked,
             use_cpu: useCPUField.checked,
             use_full_precision: useFullPrecisionField.checked,
@@ -787,7 +783,11 @@ function getCurrentUserRequest() {
             show_only_filtered_image: showOnlyFilteredImageField.checked,
             output_format: outputFormatField.value,
             use_face_correction: useFaceCorrectionField.checked,
-            use_upscale: (useUpscalingField.checked ? upscaleModelField.value : undefined)
+            face_correction_method: 'GFPGANv1.3', // hardcoded for now
+            use_upscale: useUpscalingField.checked,
+            upscale_model: upscaleModelField.value,
+            original_prompt: promptField.value,
+            active_tags: ([...activeTags])
         }
     }
     if (IMAGE_REGEX.test(initImagePreview.src)) {
@@ -797,21 +797,11 @@ function getCurrentUserRequest() {
         // if (IMAGE_REGEX.test(maskImagePreview.src)) {
         //     newTask.reqBody.mask = maskImagePreview.src
         // }
-        if (maskSetting.checked) {
-            newTask.reqBody.mask = inpaintingEditor.getImg()
-        }
+        newTask.reqBody.mask = maskSetting.checked ? inpaintingEditor.getImg() : undefined // need to have an entry in reqBody for inpainting unchecking to work when reusing settings
         newTask.reqBody.sampler = 'ddim'
     } else {
         newTask.reqBody.sampler = samplerField.value
-    }
-    if (saveToDiskField.checked && diskPathField.value.trim() !== '') {
-        newTask.reqBody.save_to_disk_path = diskPathField.value.trim()
-    }
-    if (useFaceCorrectionField.checked) {
-        newTask.reqBody.use_face_correction = 'GFPGANv1.3'
-    }
-    if (useUpscalingField.checked) {
-        newTask.reqBody.use_upscale = upscaleModelField.value
+        newTask.reqBody.init_image = undefined // needed to trigger the processing of the initial image setting in TASK_MAPPING
     }
     return newTask
 }
@@ -850,7 +840,7 @@ function createTask(task) {
     taskEntry.className = 'imageTaskContainer'
     taskEntry.innerHTML = ` <div class="taskStatusLabel">Enqueued</div>
                             <div class="taskAction">
-                                <button class="secondaryButton useSettings" style="display: none"><i class="fa-solid fa-redo"></i>  Use Settings</button>
+                                <button class="secondaryButton useSettings"><i class="fa-solid fa-redo"></i>  Use Settings</button>
                                 <button class="secondaryButton stopTask"><i class="fa-solid fa-trash-can"></i> Remove</button>
                             </div>
                             <div class="preview-prompt collapsible active"></div>
@@ -891,8 +881,7 @@ function createTask(task) {
 
     task['useSettings'].addEventListener('click', async function() {
         TASK_REQ_NO_EXPORT.forEach((key) => delete task.reqBody[key]) // don't restore system settings when restoring tasks
-		restoreTaskToUI(task)
-		clearModifiers() // temporary workaround while adding full modifiers restore.
+        restoreTaskToUI(task)
     })
     imagePreview.insertBefore(taskEntry, previewTools.nextSibling)
 
@@ -1234,6 +1223,26 @@ randomSeedField.addEventListener('input', checkRandomSeed)
 checkRandomSeed()
 
 function showInitImagePreview() {
+    if (IMAGE_REGEX.test(initImagePreview.src)) {
+        initImagePreviewContainer.style.display = 'block'
+        inpaintingEditorContainer.style.display = 'none'
+        promptStrengthContainer.style.display = 'table-row'
+        //samplerSelectionContainer.style.display = 'none'
+        // maskSetting.checked = false
+        inpaintingEditorContainer.style.display = maskSetting.checked ? 'block' : 'none'
+    } else {
+        initImagePreviewContainer.style.display = 'none'
+        // inpaintingEditorContainer.style.display = 'none'
+        promptStrengthContainer.style.display = 'none'
+        // maskSetting.style.display = 'none'
+    }
+}
+
+function showInitImageFilePreview() {
+    if (IMAGE_REGEX.test(initImagePreview.src)) {
+        return
+    }
+    
     if (initImageSelector.files.length === 0) {
         initImagePreviewContainer.style.display = 'none'
         // inpaintingEditorContainer.style.display = 'none'
@@ -1259,8 +1268,8 @@ function showInitImagePreview() {
         reader.readAsDataURL(file)
     }
 }
-initImageSelector.addEventListener('change', showInitImagePreview)
-showInitImagePreview()
+initImageSelector.addEventListener('change', showInitImageFilePreview)
+showInitImageFilePreview()
 
 initImagePreview.addEventListener('load', function() {
     inpaintingEditorCanvasBackground.style.backgroundImage = "url('" + this.src + "')"

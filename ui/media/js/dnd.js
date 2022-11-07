@@ -8,6 +8,13 @@ const TASK_MAPPING = {
         readUI: () => promptField.value,
         parse: (val) => val
     },
+    original_prompt: { name: 'Original Prompt',
+        setUI: (original_prompt) => {
+            promptField.value = original_prompt
+        },
+        readUI: () => promptField.value,
+        parse: (val) => val
+    },
     negative_prompt: { name: 'Negative Prompt',
         setUI: (negative_prompt) => {
             negativePromptField.value = negative_prompt
@@ -77,15 +84,17 @@ const TASK_MAPPING = {
 
     init_image:  { name: 'Initial Image',
         setUI: (init_image) => {
-            initImagePreview.src = init_image
+            initImagePreview.src = (init_image == undefined ? '' : init_image)
+            showInitImagePreview()
         },
         readUI: () => initImagePreview.src,
         parse: (val) => val
     },
     mask:  { name: 'Mask',
         setUI: (mask) => {
-            inpaintingEditor.setImg(mask)
+            Boolean(mask) ? inpaintingEditor.setImg(mask) : inpaintingEditor.resetBackground()
             maskSetting.checked = Boolean(mask)
+            showInitImagePreview()
         },
         readUI: () => (maskSetting.checked ? inpaintingEditor.getImg() : undefined),
         parse: (val) => val
@@ -93,17 +102,30 @@ const TASK_MAPPING = {
 
     use_face_correction: { name: 'Use Face Correction',
         setUI: (use_face_correction) => {
-            useFaceCorrectionField.checked = Boolean(use_face_correction)
+            useFaceCorrectionField.checked = use_face_correction
         },
         readUI: () => useFaceCorrectionField.checked,
         parse: (val) => val
     },
+    face_correction_method: { name: 'Face Correction Method',
+        setUI: (use_face_correction) => {
+            // nothing to set in the UI yet
+        },
+        readUI: () => "GFPGANv1.3", // hardcoded for now as there's nothing to read from the UI (yet)
+        parse: (val) => val
+    },
     use_upscale: { name: 'Use Upscaling',
         setUI: (use_upscale) => {
-            useUpscalingField.checked = Boolean(use_upscale)
-            upscaleModelField.value = use_upscale
+            useUpscalingField.checked = use_upscale
         },
-        readUI: () => (useUpscalingField.checked ? upscaleModelField.value : undefined),
+        readUI: () => useUpscalingField.checked,
+        parse: (val) => val
+    },
+    upscale_model: { name: 'Upscaling Model',
+        setUI: (upscale_model) => {
+            upscaleModelField.value = upscale_model
+        },
+        readUI: () => upscaleModelField.value,
         parse: (val) => val
     },
     sampler: { name: 'Sampler',
@@ -166,7 +188,7 @@ const TASK_MAPPING = {
             useFullPrecisionField.checked = use_full_precision
         },
         readUI: () => useFullPrecisionField.checked,
-        parse: (val) => Boolean(val)
+        parse: (val) => val
     },
 
     stream_image_progress: { name: 'Stream Image Progress',
@@ -174,14 +196,14 @@ const TASK_MAPPING = {
             streamImageProgressField.checked = (parseInt(numOutputsTotalField.value) > 50 ? false : stream_image_progress)
         },
         readUI: () => streamImageProgressField.checked,
-        parse: (val) => Boolean(val)
+        parse: (val) => val
     },
     show_only_filtered_image: { name: 'Show only the corrected/upscaled image',
         setUI: (show_only_filtered_image) => {
             showOnlyFilteredImageField.checked = show_only_filtered_image
         },
         readUI: () => showOnlyFilteredImageField.checked,
-        parse: (val) => Boolean(val)
+        parse: (val) => val
     },
     output_format: { name: 'Output Format',
         setUI: (output_format) => {
@@ -190,12 +212,27 @@ const TASK_MAPPING = {
         readUI: () => outputFormatField.value,
         parse: (val) => val
     },
-    save_to_disk_path: { name: 'Save to disk path',
+    save_to_disk: { name: 'Save to Disk',
+        setUI: (save_to_disk) => {
+            saveToDiskField.checked = save_to_disk
+            diskPathField.disabled = !saveToDiskField.checked
+        },
+        readUI: () => saveToDiskField.checked,
+        parse: (val) => val
+    },
+    save_to_disk_path: { name: 'Save Location',
         setUI: (save_to_disk_path) => {
-            saveToDiskField.checked = Boolean(save_to_disk_path)
             diskPathField.value = save_to_disk_path
         },
         readUI: () => diskPathField.value,
+        parse: (val) => val
+    },
+    active_tags: { name: 'Active Tags',
+        setUI: (active_tags) => {
+            refreshModifiers(active_tags)
+            refreshTagsList()
+        },
+        readUI: () => activeTags,
         parse: (val) => val
     }
 }
@@ -355,6 +392,7 @@ const TASK_REQ_NO_EXPORT = [
     "use_cpu",
     "turbo",
     "use_full_precision",
+    "save_to_disk",
     "save_to_disk_path"
 ]
 

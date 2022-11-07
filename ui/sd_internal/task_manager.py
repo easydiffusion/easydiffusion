@@ -68,6 +68,7 @@ class ImageRequest(BaseModel):
     prompt_strength: float = 0.8
     sampler: str = None # "ddim", "plms", "heun", "euler", "euler_a", "dpm2", "dpm2_a", "lms"
     # allow_nsfw: bool = False
+    save_to_disk: bool = False
     save_to_disk_path: str = None
     turbo: bool = True
     use_cpu: bool = False ##TODO Remove after UI and plugins transition.
@@ -90,6 +91,7 @@ class FilterRequest(BaseModel):
     init_image: str = None # base64
     width: int = 512
     height: int = 512
+    save_to_disk: bool = False
     save_to_disk_path: str = None
     turbo: bool = True
     render_device: str = None
@@ -446,6 +448,7 @@ def render(req : ImageRequest):
     # r.allow_nsfw = req.allow_nsfw
     r.turbo = req.turbo
     r.use_full_precision = req.use_full_precision
+    r.save_to_disk = req.save_to_disk
     r.save_to_disk_path = req.save_to_disk_path
     r.use_upscale: str = req.use_upscale
     r.use_face_correction = req.use_face_correction

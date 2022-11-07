@@ -581,7 +581,7 @@ def do_mk_img(req: Request):
         t_enc = int(req.prompt_strength * req.num_inference_steps)
         print(f"target t_enc is {t_enc} steps")
 
-    if req.save_to_disk_path is not None:
+    if req.save_to_disk:
         session_out_path = get_session_out_path(req.save_to_disk_path, req.session_id)
     else:
         session_out_path = None
@@ -669,7 +669,7 @@ def do_mk_img(req: Request):
                         if thread_data.stop_processing:
                             return_orig_img = True
 
-                        if req.save_to_disk_path is not None:
+                        if req.save_to_disk:
                             if return_orig_img:
                                 img_out_path = get_base_path(req.save_to_disk_path, req.session_id, prompts[0], img_id, req.output_format)
                                 save_image(img, img_out_path)
@@ -681,7 +681,7 @@ def do_mk_img(req: Request):
                             res_image_orig = ResponseImage(data=img_str, seed=opt_seed)
                             res.images.append(res_image_orig)
 
-                            if req.save_to_disk_path is not None:
+                            if req.save_to_disk:
                                 res_image_orig.path_abs = img_out_path
                         del img
 
@@ -698,7 +698,7 @@ def do_mk_img(req: Request):
                                 filtered_img_data = img_to_base64_str(filtered_image, req.output_format)
                                 response_image = ResponseImage(data=filtered_img_data, seed=opt_seed)
                                 res.images.append(response_image)
-                                if req.save_to_disk_path is not None:
+                                if req.save_to_disk:
                                     filtered_img_out_path = get_base_path(req.save_to_disk_path, req.session_id, prompts[0], img_id, req.output_format, "_".join(filters_applied))
                                     save_image(filtered_image, filtered_img_out_path)
                                     response_image.path_abs = filtered_img_out_path
