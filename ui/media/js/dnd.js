@@ -13,11 +13,13 @@ function parseBoolean(stringValue) {
     switch(stringValue?.toLowerCase()?.trim()) {
         case "true":
         case "yes":
+        case "on":
         case "1":
           return true;
 
         case "false":
         case "no":
+        case "off":
         case "0":
         case null:
         case undefined:
@@ -406,6 +408,10 @@ function checkWriteToClipboardPermission (result) {
             event.stopPropagation()
             const uiState = readUI()
             TASK_REQ_NO_EXPORT.forEach((key) => delete uiState.reqBody[key])
+            if (uiState.reqBody.init_image && !IMAGE_REGEX.test(uiState.reqBody.init_image)) {
+                delete uiState.reqBody.init_image
+                delete uiState.reqBody.prompt_strength
+            }
             navigator.clipboard.writeText(JSON.stringify(uiState, undefined, 4))
         })
         resetSettings.parentNode.insertBefore(copyIcon, resetSettings)
