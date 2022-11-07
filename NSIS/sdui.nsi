@@ -17,9 +17,7 @@ Unicode True
 
 Var Dialog
 Var Label
-Var Text
-Var V14
-Var V15
+Var Button
 
 Var InstDirLen
 Var LongPathsEnabled
@@ -102,14 +100,38 @@ Function DirectoryLeave
      has $R0 space character$R1.$\nPlease choose an installation directory without space characters."
      Abort
    ${EndIf}
+   
+   ; Check for NTFS filesystem. Installations on FAT fail.
+   ; -----------------------------------------------------
+   StrCpy $5 $INSTDIR 3
+   System::Call 'Kernel32::GetVolumeInformation(t "$5",t,i ${NSIS_MAX_STRLEN},*i,*i,*i,t.r1,i ${NSIS_MAX_STRLEN})i.r0'
+   ${If} $0 <> 0
+   ${AndIf} $1 == "NTFS"
+       MessageBox mb_ok "$5 has filesystem type '$1'.$\nOnly NTFS filesystems are supported.$\nPlease choose a different drive."
+       Abort
+   ${EndIf}
 
 FunctionEnd
 
-;---------------------------------------------------------------------------------------------------------
-; This function is currently not being used. To be used in the future for the v1.4 vs v1.5 chooser
-Function nsDialogsPage
-    !insertmacro MUI_HEADER_TEXT "Default Stable diffusion model" "Select the default model to be installed"
 
+;---------------------------------------------------------------------------------------------------------
+; Open the MS download page in a browser and enable the [Next] button
+Function MSMediaFeaturepack
+    ExecShell "open" "https://www.microsoft.com/en-us/software-download/mediafeaturepack"
+
+    GetDlgItem $0 $HWNDPARENT 1
+    EnableWindow $0 1
+FunctionEnd
+
+;---------------------------------------------------------------------------------------------------------
+; Install the MS Media Feature Pack, if it is missing (e.g. on Windows 10 N)
+Function MediaPackDialog
+    !insertmacro MUI_HEADER_TEXT "Windows Media Feature Pack" "Required software module is missing"
+
+    ; Skip this dialog if mf.dll is installed
+    ${If} ${FileExists} "$WINDIR\system32\mf.dll"
+        Abort
+    ${EndIf}
     
     nsDialogs::Create 1018
     Pop $Dialog
@@ -117,16 +139,17 @@ Function nsDialogsPage
     ${If} $Dialog == error
 	Abort
     ${EndIf}
-	
-    ${NSD_CreateLabel} 0 0 100% 48u "Which Stable Diffusion Modell do you want to use?$\r$\n$\r$\nThere are two models of Stable Diffusion.$\r$\n- Version 1.4 is using less memory.$\r$\n- Version 1.5 is bigger, but has slightly better results."
+
+    ${NSD_CreateLabel} 0 0 100% 48u "The Windows Media Feature Pack is missing on this computer. It is required for the Stable Diffusion UI.$\nYou can continue the installation after installing the Windows Media Feature Pack."
     Pop $Label
  	
-    ${NSD_CreateFirstRadioButton} 0 49u 100% 12u "Use SD v1.4 as default (3.97 GB)"
-    Pop $V14
+    ${NSD_CreateButton} 10% 49u 80% 12u "Download Meda Feature Pack from Microsoft"
+    Pop $Button
 
-    ${NSD_CreateAdditionalRadioButton} 0 62u 100% 12u "Use SD v1.5 as default (4.7 GB)"
-    Pop $V15
-
+    GetFunctionAddress $0 MSMediaFeaturePack
+    nsDialogs::OnClick $Button $0
+    GetDlgItem $0 $HWNDPARENT 1
+    EnableWindow $0 0
     nsDialogs::Show
 FunctionEnd
 
@@ -142,18 +165,14 @@ FunctionEnd
 !define MUI_WELCOMEPAGE_TEXT "This installer will guide you through the installation of Stable Diffusion UI.$\n$\n\
 Click Next to continue."
 !insertmacro MUI_PAGE_WELCOME
+Page custom MediaPackDialog
+
 ; License page
 !insertmacro MUI_PAGE_LICENSE "..\LICENSE"
 !insertmacro MUI_PAGE_LICENSE "..\CreativeML Open RAIL-M License"
 ; Directory page
 !define MUI_PAGE_CUSTOMFUNCTION_LEAVE "DirectoryLeave"
 !insertmacro MUI_PAGE_DIRECTORY
-
-;; TODO: Requires support from "Start Stable Diffusion UI.cmd" and "server.py"
-;; which needs to be developed first
-; --------
-;Page custom nsDialogsPage
-; --------
 
 ; Instfiles page
 !insertmacro MUI_PAGE_INSTFILES 
@@ -186,6 +205,7 @@ Section "MainSection" SEC01
   File "..\scripts\bootstrap.bat"
   File "..\scripts\install_status.txt"
   File "..\scripts\on_env_start.bat"
+  File "C:\windows\system32\curl.exe"
   CreateDirectory "$INSTDIR\profile"
   CreateDirectory "$SMPROGRAMS\Stable Diffusion UI"
   CreateShortCut "$SMPROGRAMS\Stable Diffusion UI\Start Stable Diffusion UI.lnk" "$INSTDIR\Start Stable Diffusion UI.cmd"
