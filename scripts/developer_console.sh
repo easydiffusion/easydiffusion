@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
 if [ "$0" == "bash" ]; then
   echo "Opening Stable Diffusion UI - Developer Console.."
   echo ""
@@ -35,5 +37,6 @@ if [ "$0" == "bash" ]; then
 
   echo ""
 else
-  bash --init-file developer_console.sh
+  file_name=$(basename "${BASH_SOURCE[0]}")
+  bash --init-file "$file_name"
 fi

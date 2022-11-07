@@ -64,6 +64,7 @@ else
 
     # prevent conda from using packages from the user's home directory, to avoid conflicts
     export PYTHONNOUSERSITE=1
+    export PYTHONPATH="$(pwd):$(pwd)/env/lib/site-packages"
 
     if conda env create --prefix env --force -f environment.yaml ; then
         echo "Installed. Testing.."
@@ -99,6 +100,7 @@ else
     printf "\n\nDownloading packages necessary for GFPGAN (Face Correction)..\n"
 
     export PYTHONNOUSERSITE=1
+    export PYTHONPATH="$(pwd):$(pwd)/env/lib/site-packages"
 
     if pip install -e git+https://github.com/TencentARC/GFPGAN#egg=GFPGAN ; then
         echo "Installed. Testing.."
@@ -124,6 +126,7 @@ else
     printf "\n\nDownloading packages necessary for ESRGAN (Resolution Upscaling)..\n"
 
     export PYTHONNOUSERSITE=1
+    export PYTHONPATH="$(pwd):$(pwd)/env/lib/site-packages"
 
     if pip install -e git+https://github.com/xinntao/Real-ESRGAN#egg=realesrgan ; then
         echo "Installed. Testing.."
@@ -149,6 +152,7 @@ else
     printf "\n\nDownloading packages necessary for Stable Diffusion UI..\n\n"
 
     export PYTHONNOUSERSITE=1
+    export PYTHONPATH="$(pwd):$(pwd)/env/lib/site-packages"
 
     if conda install -c conda-forge --prefix ./env -y uvicorn fastapi ; then
         echo "Installed. Testing.."
