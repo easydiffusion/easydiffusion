@@ -285,7 +285,12 @@ def load_model_ckpt():
         thread_data.model_is_half = False
         thread_data.model_fs_is_half = False
 
-    print('loaded', thread_data.ckpt_file, 'as', model.device, '->', modelCS.cond_stage_model.device, '->', thread_data.modelFS.device, 'using precision', thread_data.precision)
+    print(f'''loaded model
+ model file: {thread_data.ckpt_file}.ckpt
+ model.device: {model.device}
+ modelCS.device: {modelCS.cond_stage_model.device}
+ modelFS.device: {thread_data.modelFS.device}
+ using precision: {thread_data.precision}''')
 
 def unload_filters():
     if thread_data.model_gfpgan is not None:

@@ -440,5 +440,7 @@ if is_using_a_gpu and task_manager.is_alive(0) <= 0:
     print('Add the line "@set CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.bat')
     print('Add the line "CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.sh')
 
+print('active devices', task_manager.get_devices())
+
 # start the browser ui
 import webbrowser; webbrowser.open('http://localhost:9000')
