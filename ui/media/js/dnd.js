@@ -136,7 +136,9 @@ const TASK_MAPPING = {
             upscaleModelField.value = use_upscale
             if (upscaleModelField.value) { // Is a valid value for the field.
                 useUpscalingField.checked = true
+                upscaleModelField.disabled = false
             } else { // Not a valid value, restore the old value and disable the filter.
+                upscaleModelField.disabled = true
                 upscaleModelField.value = oldVal
                 useUpscalingField.checked = false
             }
