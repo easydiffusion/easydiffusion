@@ -706,7 +706,7 @@ input::file-selector-button {
 }
 
 .popup {
-    position: fixed;
+    position: absolute;
     background: rgba(32, 33, 36, 50%);
     top: 0px;
     left: 0px;
@@ -715,6 +715,12 @@ input::file-selector-button {
     z-index: 1000;
     opacity: 1;
     transition: 0s visibility, 0.3s opacity;
+}
+
+@media only screen and (min-height: 1050px) {
+    .popup {
+        position: fixed;
+    }
 }
 
 .popup > div {
