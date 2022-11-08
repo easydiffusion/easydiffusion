@@ -570,13 +570,13 @@ input::file-selector-button {
         padding: 0px !important;
         margin: 24px !important;
     }
-    #reset-image-settings .simple-tooltip.right {
+    .simple-tooltip.right {
         right: initial;
         left: 0px;
         top: 50%;
         transform: translate(calc(-100% + 15%), -50%);
     }
-    :hover > #reset-image-settings .simple-tooltip.right {
+    :hover > .simple-tooltip.right {
         transform: translate(100%, -50%);
     }
 }
@@ -589,11 +589,12 @@ input::file-selector-button {
     position: relative;
     transform: translateY(-13%);
 }
- #copy-image-settings {
+#copy-image-settings {
+    position: relative;
     cursor: pointer;
     padding: 8px;
     opacity: 1;
-    transition: opacity 0.5;
+    transition: opacity 0.2;
 }
 .collapsible:not(.active) #copy-image-settings {
     display: none;
@@ -606,7 +607,7 @@ input::file-selector-button {
 .simple-tooltip {
 	border-radius: 3px;
 	font-weight: bold;
-	font-size: 16px;
+	font-size: 12px;
     background-color: var(--background-color3);
 
 	visibility: hidden;
