@@ -170,7 +170,9 @@ fi
 
 
 mkdir -p "../models/stable-diffusion"
+mkdir -p "../models/vae"
 echo "" > "../models/stable-diffusion/Put your custom ckpt files here.txt"
+echo "" > "../models/vae/Put your VAE files here.txt"
 
 if [ -f "sd-v1-4.ckpt" ]; then
     model_size=`find "sd-v1-4.ckpt" -printf "%s"`
@@ -300,24 +302,24 @@ if [ ! -f "RealESRGAN_x4plus_anime_6B.pth" ]; then
 fi
 
 
-if [ -f "../models/stable-diffusion/vae-ft-mse-840000-ema-pruned.vae.pt" ]; then
-    model_size=`find ../models/stable-diffusion/vae-ft-mse-840000-ema-pruned.vae.pt -printf "%s"`
+if [ -f "../models/vae/vae-ft-mse-840000-ema-pruned.ckpt" ]; then
+    model_size=`find ../models/vae/vae-ft-mse-840000-ema-pruned.ckpt -printf "%s"`
 
     if [ "$model_size" -eq "334695179" ]; then
         echo "Data files (weights) necessary for the default VAE (sd-vae-ft-mse-original) were already downloaded"
     else
-        printf "\n\nThe model file present at models/stable-diffusion/vae-ft-mse-840000-ema-pruned.vae.pt is invalid. It is only $model_size bytes in size. Re-downloading.."
-        rm ../models/stable-diffusion/vae-ft-mse-840000-ema-pruned.vae.pt
+        printf "\n\nThe model file present at models/vae/vae-ft-mse-840000-ema-pruned.ckpt is invalid. It is only $model_size bytes in size. Re-downloading.."
+        rm ../models/vae/vae-ft-mse-840000-ema-pruned.ckpt
     fi
 fi
 
-if [ ! -f "../models/stable-diffusion/vae-ft-mse-840000-ema-pruned.vae.pt" ]; then
+if [ ! -f "../models/vae/vae-ft-mse-840000-ema-pruned.ckpt" ]; then
     echo "Downloading data files (weights) for the default VAE (sd-vae-ft-mse-original).."
 
-    curl -L -k https://huggingface.co/stabilityai/sd-vae-ft-mse-original/resolve/main/vae-ft-mse-840000-ema-pruned.ckpt > ../models/stable-diffusion/vae-ft-mse-840000-ema-pruned.vae.pt
+    curl -L -k https://huggingface.co/stabilityai/sd-vae-ft-mse-original/resolve/main/vae-ft-mse-840000-ema-pruned.ckpt > ../models/vae/vae-ft-mse-840000-ema-pruned.ckpt
 
-    if [ -f "../models/stable-diffusion/vae-ft-mse-840000-ema-pruned.vae.pt" ]; then
-        model_size=`find ../models/stable-diffusion/vae-ft-mse-840000-ema-pruned.vae.pt -printf "%s"`
+    if [ -f "../models/vae/vae-ft-mse-840000-ema-pruned.ckpt" ]; then
+        model_size=`find ../models/vae/vae-ft-mse-840000-ema-pruned.ckpt -printf "%s"`
         if [ ! "$model_size" -eq "334695179" ]; then
             printf "\n\nError: The downloaded default VAE (sd-vae-ft-mse-original) file was invalid! Bytes downloaded: $model_size\n\n"
             printf "\n\nError downloading the data files (weights) for the default VAE (sd-vae-ft-mse-original). Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"

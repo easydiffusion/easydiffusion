@@ -13,6 +13,7 @@ const SETTINGS_IDS_LIST = [
     "num_outputs_total",
     "num_outputs_parallel",
     "stable_diffusion_model",
+    "vae_model",
     "sampler",
     "width",
     "height",

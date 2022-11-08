@@ -18,7 +18,7 @@
 <div id="container">
     <div id="top-nav">
         <div id="logo">
-            <h1>Stable Diffusion UI <small>v2.3.9 <span id="updateBranchLabel"></span></small></h1>
+            <h1>Stable Diffusion UI <small>v2.3.10 <span id="updateBranchLabel"></span></small></h1>
         </div>
         <ul id="top-nav-items">
             <li class="dropdown">
@@ -98,6 +98,11 @@
                     <tr class="pl-5"><td><label for="stable_diffusion_model">Model:</label></td><td>
                         <select id="stable_diffusion_model" name="stable_diffusion_model">
                             <!-- <option value="sd-v1-4" selected>sd-v1-4</option> -->
+                        </select>
+                    </td></tr>
+                    <tr class="pl-5"><td><label for="vae_model">Custom VAE:</label></td><td>
+                        <select id="vae_model" name="vae_model">
+                            <!-- <option value="" selected>None</option> -->
                         </select>
                     </td></tr>
                     <tr id="samplerSelection" class="pl-5"><td><label for="sampler">Sampler:</label></td><td>
@@ -255,13 +260,13 @@
 </div>
 </body>
 
-<script src="media/js/parameters.js?v=1"></script>
+<script src="media/js/parameters.js?v=2"></script>
 <script src="media/js/plugins.js?v=1"></script>
 <script src="media/js/utils.js?v=5"></script>
 <script src="media/js/inpainting-editor.js?v=1"></script>
 <script src="media/js/image-modifiers.js?v=4"></script>
-<script src="media/js/auto-save.js?v=3"></script>
-<script src="media/js/main.js?v=7"></script>
+<script src="media/js/auto-save.js?v=4"></script>
+<script src="media/js/main.js?v=8"></script>
 <script src="media/js/themes.js?v=3"></script>
 <script src="media/js/dnd.js?v=3"></script>
 <script>
