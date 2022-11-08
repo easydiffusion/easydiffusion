@@ -359,18 +359,21 @@ async function readFile(file, i) {
 
 function dropHandler(ev) {
     console.log('Content dropped...')
-    // Prevent default behavior (Prevent file/content from being opened)
-    ev.preventDefault()
+    let items = []
 
     if (ev?.dataTransfer?.items) { // Use DataTransferItemList interface
-        Array.from(ev.dataTransfer.items).forEach(function(item, i) {
-            if (item.kind === 'file') {
-                const file = item.getAsFile()
-                readFile(file, i)
-            }
-        })
+        items = Array.from(ev.dataTransfer.items)
+        items = items.filter(item => item.kind === 'file')
+        items = items.map(item => item.getAsFile())
     } else if (ev?.dataTransfer?.files) { // Use DataTransfer interface
-        Array.from(ev.dataTransfer.files).forEach(readFile)
+        items = Array.from(ev.dataTransfer.files)
+    }
+
+    items = items.filter(item => item.name.toLowerCase().endsWith('.txt') || item.name.toLowerCase().endsWith('.json'))
+
+    if (items.length > 0) {
+        ev.preventDefault() // Prevent default behavior (Prevent file/content from being opened)
+        items.forEach(readFile)
     }
 }
 function dragOverHandler(ev) {
