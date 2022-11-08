@@ -580,7 +580,9 @@ input::file-selector-button {
         transform: translate(100%, -50%);
     }
 }
-
+.help-btn {
+    position: relative;
+}
 #promptsFromFileBtn {
     font-size: 9pt;
 }
