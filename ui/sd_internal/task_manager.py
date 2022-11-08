@@ -273,11 +273,11 @@ def thread_render(device):
             return
         task = thread_get_next_task()
         if task is None:
-            if runtime.thread_data.device == 'cpu' and is_alive() > 1 and hasattr(runtime.thread_data, 'lastActive') and time.time() - runtime.thread_data.lastActive > CPU_UNLOAD_TIMEOUT:
-                # GPUs present and CPU is idle. Unload resources.
-                runtime.unload_models()
-                runtime.unload_filters()
-                del runtime.thread_data.lastActive
+            # if runtime.thread_data.device == 'cpu' and is_alive() > 1 and hasattr(runtime.thread_data, 'lastActive') and time.time() - runtime.thread_data.lastActive > CPU_UNLOAD_TIMEOUT:
+            #     # GPUs present and CPU is idle. Unload resources.
+            #     runtime.unload_models()
+            #     runtime.unload_filters()
+            #     del runtime.thread_data.lastActive
             time.sleep(1)
             continue
         if task.error is not None:
