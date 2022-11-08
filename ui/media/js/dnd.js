@@ -280,7 +280,6 @@ const TASK_TEXT_MAPPING = {
     use_stable_diffusion_model: 'Stable Diffusion model'
 }
 const afterPromptRe = /^\s*Width\s*:\s*\d+\s*(?:\r\n|\r|\n)+\s*Height\s*:\s*\d+\s*(\r\n|\r|\n)+Seed\s*:\s*\d+\s*$/igm
-const lineEndRe = /(?:\r\n|\r|\n)+/igm
 function parseTaskFromText(str) {
     const taskReqBody = {}
 
@@ -296,27 +295,15 @@ function parseTaskFromText(str) {
     for (const key in TASK_TEXT_MAPPING) {
         const name = TASK_TEXT_MAPPING[key];
         let val = undefined
-        if (str.startsWith(name + ':')) {
-            // Backend format, faster
-            lineEndRe.lastIndex = 0
-            const endMatch = lineEndRe.exec(str)
-            if (endMatch) {
-                val = str.slice(name.length + 1, endMatch.index)
-                str = str.slice(endMatch.index + endMatch[0].length)
-            } else {
-                val = str.slice(name.length + 1)
-                str = ""
-            }
-        } else {
-            // User formatted, use regex to get all cases, but slower.
-            const reName = new RegExp(`${name}\\s*:\\s*(.*)(?:\\r\\n|\\r|\\n)*`, 'igm')
-            const match = reName.exec(str);
-            if (match) {
-                str = str.slice(0, match.index) + str.slice(match.index + match[0].length)
-                val = match[1]
-            }
+
+        const reName = new RegExp(`${name}\\ *:\\ *(.*)(?:\\r\\n|\\r|\\n)*`, 'igm')
+        const match = reName.exec(str);
+        if (match) {
+            console.log(match)
+            str = str.slice(0, match.index) + str.slice(match.index + match[0].length)
+            val = match[1]
         }
-        if (val) {
+        if (val !== undefined) {
             taskReqBody[key] = TASK_MAPPING[key].parse(val.trim())
             console.log(TASK_MAPPING[key].name + ':', taskReqBody[key])
             if (!str) {
