@@ -35,7 +35,7 @@ if "%PACKAGES_TO_INSTALL%" NEQ "" (
         echo "Downloading micromamba from %MICROMAMBA_DOWNLOAD_URL% to %MAMBA_ROOT_PREFIX%\micromamba.exe"
 
         mkdir "%MAMBA_ROOT_PREFIX%"
-        call curl -L "%MICROMAMBA_DOWNLOAD_URL%" > "%MAMBA_ROOT_PREFIX%\micromamba.exe"
+        call curl -Lk "%MICROMAMBA_DOWNLOAD_URL%" > "%MAMBA_ROOT_PREFIX%\micromamba.exe"
 
         @rem test the mamba binary
         echo Micromamba version:
