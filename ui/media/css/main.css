@@ -720,6 +720,12 @@ input::file-selector-button {
     transition: 0s visibility, 0.3s opacity;
 }
 
+@media only screen and (min-height: 1050px) {
+    .popup {
+        position: fixed;
+    }
+}
+
 .popup > div {
     position: relative;
     background: var(--background-color2);
