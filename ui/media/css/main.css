@@ -341,6 +341,32 @@ img {
     color: var(--text-color);
     text-decoration: none;
 }
+#help-links {
+    display: inline-block;
+    list-style-type: none;
+    text-align: left;
+    margin: auto;
+    padding: 0px;
+}
+#help-links li {
+    padding-bottom: 12pt;
+    display: block;
+    font-size: 10pt;
+}
+#help-links li .fa-fw {
+    padding-right: 2pt;
+}
+#help-links li a {
+    color: var(--text-color);
+    text-decoration: none;
+}
+#help-links li ul {
+    padding-inline-start: 10px;
+    margin-top: 8px;
+}
+.help-section {
+    font-size: 130%;
+}
 .dropdown {
     overflow: hidden;
 }
@@ -619,6 +645,14 @@ input::file-selector-button {
 @media (min-width: 700px) {
     #editor {
         max-width: 480px;
+    }
+    .float-container {
+        padding: 20px;
+    }
+    .float-child {
+        width: 50%;
+        float: left;
+        padding: 20px;
     }
 }
 
