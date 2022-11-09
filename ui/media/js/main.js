@@ -1331,4 +1331,28 @@ document.querySelectorAll('.popup').forEach(popup => {
     }
 })
 
+var tabElements = [];
+document.querySelectorAll(".tab").forEach(tab => {
+    var name = tab.id.replace("tab-", "");
+    var content = document.getElementById(`tab-content-${name}`)
+    tabElements.push({
+        name: name,
+        tab: tab,
+        content: content
+    })
+
+    tab.addEventListener("click", event => {
+        if (!tab.classList.contains("active")) {
+            tabElements.forEach(tabInfo => {
+                if (tabInfo.tab.classList.contains("active")) {
+                    tabInfo.tab.classList.toggle("active")
+                    tabInfo.content.classList.toggle("active")
+                }
+            })
+            tab.classList.toggle("active")
+            content.classList.toggle("active")
+        }
+    })
+})
+
 createCollapsibles()

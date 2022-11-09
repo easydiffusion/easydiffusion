@@ -132,6 +132,3 @@ function initParameters() {
 
 initParameters();
 
-document.getElementById("settings-button").addEventListener('click', event => {
-    document.getElementById("system-settings").classList.add("active")
-})

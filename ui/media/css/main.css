@@ -316,10 +316,6 @@ img {
 }
 #community-links {
     list-style-type: none;
-    margin: 0;
-    padding: 12pt;
-    padding-bottom: 0pt;
-    transform: translateX(-15%);
 }
 #community-links li {
     padding-bottom: 12pt;
@@ -571,6 +567,9 @@ input::file-selector-button {
     #editor {
         padding: 16px 8px;
     }
+    .tab-content-inner {
+        margin: 0px;
+    }
 }
 @media (min-width: 700px) {
     #editor {
@@ -750,7 +749,7 @@ input::file-selector-button {
     align-items: flex-end;
 }
 
-#tab-container > span {
+.tab {
     padding: 8px 16px;
     border-radius: 4px 4px 0px 0px;
     margin-left: 8px;
@@ -760,16 +759,27 @@ input::file-selector-button {
     transition: opacity 0.25s;
 }
 
-#tab-container > span:hover {
+.tab:hover {
     opacity: 75%;
 }
 
-#tab-container > span.active {
+.tab.active {
     opacity: 100%;
 }
 
-#tab-content {
+.tab-content:not(.active) {
+    display: none;
+}
+
+#tab-content-wrapper {
     border-top: 8px solid var(--background-color2);
+}
+
+.tab-content-inner {
+    margin: auto;
+    max-width: 600px;
+    text-align: center;
+    padding: 20px 10px;
 }
 
 
