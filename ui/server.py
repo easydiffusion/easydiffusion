@@ -30,9 +30,6 @@ APP_CONFIG_DEFAULT_MODELS = [
     'custom-model', # Check if user has a custom model, use it first.
     'sd-v1-4', # Default fallback.
 ]
-APP_CONFIG_DEFAULT_VAE = [
-    'vae-ft-mse-840000-ema-pruned', # Default fallback.
-]
 
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
@@ -107,11 +104,24 @@ def setConfig(config):
         config_bat = [
             f"@set update_branch={config['update_branch']}"
         ]
-        if len(gpu_devices) > 0 and not has_first_cuda_device:
-            config_bat.append('::Set the devices visible inside SD-UI here')
-            config_bat.append(f"::@set CUDA_VISIBLE_DEVICES={','.join(gpu_devices)}") # Needs better detection for edge cases, add as a comment for now.
-            print('Add the line "@set CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.bat')
+
+        if os.getenv('CUDA_VISIBLE_DEVICES') is None:
+            if len(gpu_devices) > 0 and not has_first_cuda_device:
+                config_bat.append('::Set the devices visible inside SD-UI here')
+                config_bat.append(f"::@set CUDA_VISIBLE_DEVICES={','.join(gpu_devices)}") # Needs better detection for edge cases, add as a comment for now.
+                print('Add the line "@set CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.bat')
+        else:
+            config_bat.append(f"@set CUDA_VISIBLE_DEVICES={os.getenv('CUDA_VISIBLE_DEVICES')}")
+            if len(gpu_devices) > 0 and not has_first_cuda_device:
+                print('GPU:0 seems to be missing! Validate that CUDA_VISIBLE_DEVICES is set properly.')
         config_bat_path = os.path.join(CONFIG_DIR, 'config.bat')
+
+        if os.getenv('SD_UI_BIND_PORT') is not None:
+            config_bat.append(f"@set SD_UI_BIND_PORT={os.getenv('SD_UI_BIND_PORT')}")
+        if os.getenv('SD_UI_BIND_IP') is not None:
+            config_bat.append(f"@set SD_UI_BIND_IP={os.getenv('SD_UI_BIND_IP')}")
+
+
         with open(config_bat_path, 'w', encoding='utf-8') as f:
             f.write('\r\n'.join(config_bat))
     except Exception as e:
@@ -122,17 +132,28 @@ def setConfig(config):
             '#!/bin/bash',
             f"export update_branch={config['update_branch']}"
         ]
-        if len(gpu_devices) > 0 and not has_first_cuda_device:
-            config_sh.append('#Set the devices visible inside SD-UI here')
-            config_sh.append(f"#CUDA_VISIBLE_DEVICES={','.join(gpu_devices)}") # Needs better detection for edge cases, add as a comment for now.
-            print('Add the line "CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.sh')
+        if os.getenv('CUDA_VISIBLE_DEVICES') is None:
+            if len(gpu_devices) > 0 and not has_first_cuda_device:
+                config_sh.append('#Set the devices visible inside SD-UI here')
+                config_sh.append(f"#CUDA_VISIBLE_DEVICES={','.join(gpu_devices)}") # Needs better detection for edge cases, add as a comment for now.
+                print('Add the line "CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.sh')
+        else:
+            config_sh.append(f"export CUDA_VISIBLE_DEVICES=\"{os.getenv('CUDA_VISIBLE_DEVICES')}\"")
+            if len(gpu_devices) > 0 and not has_first_cuda_device:
+                print('GPU:0 seems to be missing! Validate that CUDA_VISIBLE_DEVICES is set properly.')
+
+        if os.getenv('SD_UI_BIND_PORT') is not None:
+            config_sh.append(f"export SD_UI_BIND_PORT={os.getenv('SD_UI_BIND_PORT')}")
+        if os.getenv('SD_UI_BIND_IP') is not None:
+            config_sh.append(f"export SD_UI_BIND_IP={os.getenv('SD_UI_BIND_IP')}")
+
         config_sh_path = os.path.join(CONFIG_DIR, 'config.sh')
         with open(config_sh_path, 'w', encoding='utf-8') as f:
             f.write('\n'.join(config_sh))
     except Exception as e:
         print(traceback.format_exc())
 
-def resolve_model_to_use(model_name:str, model_type:str, model_dir:str, model_extension:str, default_models=[]):
+def resolve_model_to_use(model_name:str, model_type:str, model_dir:str, model_extensions:list, default_models=[]):
     model_dirs = [os.path.join(MODELS_DIR, model_dir), SD_DIR]
     if not model_name: # When None try user configured model.
         config = getConfig()
@@ -141,43 +162,38 @@ def resolve_model_to_use(model_name:str, model_type:str, model_dir:str, model_ex
     if model_name:
         # Check models directory
         models_dir_path = os.path.join(MODELS_DIR, model_dir, model_name)
-        if os.path.exists(models_dir_path + model_extension):
-            return models_dir_path
-        if os.path.exists(model_name + model_extension):
-            # Direct Path to file
-            model_name = os.path.abspath(model_name)
-            return model_name
+        for model_extension in model_extensions:
+            if os.path.exists(models_dir_path + model_extension):
+                return models_dir_path
+            if os.path.exists(model_name + model_extension):
+                # Direct Path to file
+                model_name = os.path.abspath(model_name)
+                return model_name
     # Default locations
     if model_name in default_models:
         default_model_path = os.path.join(SD_DIR, model_name)
-        if os.path.exists(default_model_path + model_extension):
-            return default_model_path
+        for model_extension in model_extensions:
+            if os.path.exists(default_model_path + model_extension):
+                return default_model_path
     # Can't find requested model, check the default paths.
     for default_model in default_models:
         for model_dir in model_dirs:
             default_model_path = os.path.join(model_dir, default_model)
-            if os.path.exists(default_model_path + model_extension):
-                if model_name is not None:
-                    print(f'Could not find the configured custom model {model_name}{model_extension}. Using the default one: {default_model_path}{model_extension}')
-                return default_model_path
+            for model_extension in model_extensions:
+                if os.path.exists(default_model_path + model_extension):
+                    if model_name is not None:
+                        print(f'Could not find the configured custom model {model_name}{model_extension}. Using the default one: {default_model_path}{model_extension}')
+                    return default_model_path
     raise Exception('No valid models found.')
 
 def resolve_ckpt_to_use(model_name:str=None):
-    return resolve_model_to_use(model_name, model_type='stable-diffusion', model_dir='stable-diffusion', model_extension='.ckpt', default_models=APP_CONFIG_DEFAULT_MODELS)
+    return resolve_model_to_use(model_name, model_type='stable-diffusion', model_dir='stable-diffusion', model_extensions=['.ckpt'], default_models=APP_CONFIG_DEFAULT_MODELS)
 
-def resolve_vae_to_use(ckpt_model_path:str=None):
-    if ckpt_model_path is not None:
-        if os.path.exists(ckpt_model_path + '.vae.pt'):
-            return ckpt_model_path
-
-        ckpt_model_name = os.path.basename(ckpt_model_path)
-        model_dirs = [os.path.join(MODELS_DIR, 'stable-diffusion'), SD_DIR]
-        for model_dir in model_dirs:
-            default_model_path = os.path.join(model_dir, ckpt_model_name)
-            if os.path.exists(default_model_path + '.vae.pt'):
-                return default_model_path
-
-    return resolve_model_to_use(model_name=None, model_type='vae', model_dir='stable-diffusion', model_extension='.vae.pt', default_models=APP_CONFIG_DEFAULT_VAE)
+def resolve_vae_to_use(model_name:str=None):
+    try:
+        return resolve_model_to_use(model_name, model_type='vae', model_dir='vae', model_extensions=['.vae.pt', '.ckpt'], default_models=[])
+    except:
+        return None
 
 class SetAppConfigRequest(BaseModel):
     update_branch: str = None
@@ -203,10 +219,6 @@ async def setAppConfig(req : SetAppConfigRequest):
             render_devices.append('GPU:' + req.render_devices)
         if len(render_devices) > 0:
             config['render_devices'] = render_devices
-    if req.model_vae:
-        if 'model' not in config:
-            config['model'] = {}
-        config['model']['vae'] = req.model_vae
     try:
         setConfig(config)
         return JSONResponse({'status': 'OK'}, headers=NOCACHE_HEADERS)
@@ -226,20 +238,24 @@ def getModels():
         },
     }
 
+    def listModels(models_dirname, model_type, model_extensions):
+        models_dir = os.path.join(MODELS_DIR, models_dirname)
+        for file in os.listdir(models_dir):
+            for model_extension in model_extensions:
+                if file.endswith(model_extension):
+                    model_name = file[:-len(model_extension)]
+                    models['options'][model_type].append(model_name)
+
+        models['options'][model_type] = [*set(models['options'][model_type])] # remove duplicates
+
     # custom models
-    sd_models_dir = os.path.join(MODELS_DIR, 'stable-diffusion')
-    for model_type, model_extension in [('stable-diffusion', '.ckpt'), ('vae', '.vae.pt')]:
-        for file in os.listdir(sd_models_dir):
-            if file.endswith(model_extension):
-                model_name = file[:-len(model_extension)]
-                models['options'][model_type].append(model_name)
+    listModels(models_dirname='stable-diffusion', model_type='stable-diffusion', model_extensions=['.ckpt'])
+    listModels(models_dirname='vae', model_type='vae', model_extensions=['.vae.pt', '.ckpt'])
 
     # legacy
     custom_weight_path = os.path.join(SD_DIR, 'custom-model.ckpt')
     if os.path.exists(custom_weight_path):
         models['options']['stable-diffusion'].append('custom-model')
-
-    models['active']['vae'] = os.path.basename(task_manager.default_vae_to_load)
 
     return models
 
@@ -261,6 +277,8 @@ def read_web_data(key:str=None):
         if config is None:
             raise HTTPException(status_code=500, detail="Config file is missing or unreadable")
         return JSONResponse(config, headers=NOCACHE_HEADERS)
+    elif key == 'devices':
+        return JSONResponse(task_manager.get_devices(), headers=NOCACHE_HEADERS)
     elif key == 'models':
         return JSONResponse(getModels(), headers=NOCACHE_HEADERS)
     elif key == 'modifiers': return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'), headers=NOCACHE_HEADERS)
@@ -295,23 +313,32 @@ def ping(session_id:str=None):
                 response['session'] = 'pending'
     return JSONResponse(response, headers=NOCACHE_HEADERS)
 
-def save_model_to_config(model_name):
+def save_model_to_config(ckpt_model_name, vae_model_name):
     config = getConfig()
     if 'model' not in config:
         config['model'] = {}
 
-    config['model']['stable-diffusion'] = model_name
+    config['model']['stable-diffusion'] = ckpt_model_name
+    config['model']['vae'] = vae_model_name
+
+    if vae_model_name is None or vae_model_name == "":
+        del config['model']['vae']
+
     setConfig(config)
 
 @app.post('/render')
 def render(req : task_manager.ImageRequest):
-    if req.use_cpu and task_manager.is_alive('cpu') <= 0: raise HTTPException(status_code=403, detail=f'CPU rendering is not enabled in config.json or the thread has died...') # HTTP403 Forbidden
+    if req.use_cpu:  # TODO Remove after transition.
+        print('WARNING Replace {use_cpu: true} by {render_device: "cpu"}')
+        req.render_device = 'cpu'
+        del req.use_cpu
+    if req.render_device and task_manager.is_alive(req.render_device) <= 0: raise HTTPException(status_code=403, detail=f'{req.render_device} rendering is not enabled in config.json or the thread has died...') # HTTP403 Forbidden
     if req.use_face_correction and task_manager.is_alive(0) <= 0: #TODO Remove when GFPGANer is fixed upstream.
         raise HTTPException(status_code=412, detail=f'GFPGANer only works GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.') # HTTP412 Precondition Failed
     try:
-        save_model_to_config(req.use_stable_diffusion_model)
+        save_model_to_config(req.use_stable_diffusion_model, req.use_vae_model)
         req.use_stable_diffusion_model = resolve_ckpt_to_use(req.use_stable_diffusion_model)
-        req.use_vae_model = resolve_vae_to_use(ckpt_model_path=req.use_stable_diffusion_model)
+        req.use_vae_model = resolve_vae_to_use(req.use_vae_model)
         new_task = task_manager.render(req)
         response = {
             'status': str(task_manager.current_state), 
@@ -390,44 +417,41 @@ config = getConfig()
 
 # Start the task_manager
 task_manager.default_model_to_load = resolve_ckpt_to_use()
-task_manager.default_vae_to_load = resolve_vae_to_use(ckpt_model_path=task_manager.default_model_to_load)
+task_manager.default_vae_to_load = resolve_vae_to_use()
 if 'render_devices' in config:  # Start a new thread for each device.
     if isinstance(config['render_devices'], str):
         config['render_devices'] = config['render_devices'].split(',')
     if not isinstance(config['render_devices'], list):
         raise Exception('Invalid render_devices value in config.')
     for device in config['render_devices']:
+        if task_manager.is_alive(device) >= 1:
+            print(device, 'already registered.')
+            continue
         if not task_manager.start_render_thread(device):
             print(device, 'failed to start.')
     if task_manager.is_alive() <= 0: # No running devices, probably invalid user config.
         print('WARNING: No active render devices after loading config. Validate "render_devices" in config.json')
         print('Loading default render devices to replace invalid render_devices field from config', config['render_devices'])
 
-display_warning = False
 if task_manager.is_alive() <= 0: # Either no defauls or no devices after loading config.
     # Select best GPU device using free memory, if more than one device.
     if task_manager.start_render_thread('auto'): # Detect best device for renders
-        if task_manager.is_alive(0) <= 0:  # has no cuda:0
-            if task_manager.is_alive('cpu') >= 1:  # auto used CPU.
-                pass # Maybe add warning here about CPU mode...
-            elif task_manager.start_render_thread('cuda'): # An other cuda device is better and cuda:0 is missing, try to start it...
-                display_warning = True # And warn user to update settings...
-            else:
-                print('Failed to start GPU:0...')
+        # if cuda:0 is missing, another cuda device is better. try to start it...
+        if task_manager.is_alive(0) <= 0 and task_manager.is_alive('cpu') <= 0 and not task_manager.start_render_thread('cuda'):
+            print('Failed to start GPU:0...')
     else:
         print('Failed to start gpu device.')
-    if task_manager.is_alive('cpu') <= 0:
-        # Allow CPU to be used for renders
-        if not task_manager.start_render_thread('cpu'):
-            print('Failed to start CPU render device...')
+    if task_manager.is_alive('cpu') <= 0 and not task_manager.start_render_thread('cpu'): # Allow CPU to be used for renders
+        print('Failed to start CPU render device...')
 
-if display_warning or task_manager.is_alive(0) <= 0:
+is_using_a_gpu = (task_manager.is_alive() > task_manager.is_alive('cpu'))
+if is_using_a_gpu and task_manager.is_alive(0) <= 0:
     print('WARNING: GFPGANer only works on GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.')
     print('Using CUDA_VISIBLE_DEVICES will remap the selected devices starting at GPU:0 fixing GFPGANer')
     print('Add the line "@set CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.bat')
     print('Add the line "CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.sh')
 
-del display_warning
+print('active devices', task_manager.get_devices())
 
 # start the browser ui
 import webbrowser; webbrowser.open('http://localhost:9000')

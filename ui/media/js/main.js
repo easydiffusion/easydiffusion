@@ -39,7 +39,7 @@ let useFaceCorrectionField = document.querySelector("#use_face_correction")
 let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
 let stableDiffusionModelField = document.querySelector('#stable_diffusion_model')
-let vaeModelField = document.querySelector('#default_vae_model')
+let vaeModelField = document.querySelector('#vae_model')
 let outputFormatField = document.querySelector('#output_format')
 let showOnlyFilteredImageField = document.querySelector("#show_only_filtered_image")
 let updateBranchLabel = document.querySelector("#updateBranchLabel")
@@ -340,10 +340,10 @@ function onDownloadImageClick(req, img) {
     imgDownload.click()
 }
 
-function modifyCurrentRequest(req, ...reqDiff) {
+function modifyCurrentRequest(...reqDiff) {
     const newTaskRequest = getCurrentUserRequest()
 
-    newTaskRequest.reqBody = Object.assign({}, req, ...reqDiff, {
+    newTaskRequest.reqBody = Object.assign(newTaskRequest.reqBody, ...reqDiff, {
         use_cpu: useCPUField.checked
     })
     newTaskRequest.seed = newTaskRequest.reqBody.seed
@@ -774,6 +774,7 @@ function getCurrentUserRequest() {
             use_cpu: useCPUField.checked,
             use_full_precision: useFullPrecisionField.checked,
             use_stable_diffusion_model: stableDiffusionModelField.value,
+            use_vae_model: vaeModelField.value,
             stream_progress_updates: true,
             stream_image_progress: (numOutputsTotal > 50 ? false : streamImageProgressField.checked),
             show_only_filtered_image: showOnlyFilteredImageField.checked,
@@ -823,7 +824,10 @@ function makeImage() {
 
 function createTask(task) {
     let taskConfig = `Seed: ${task.seed}, Sampler: ${task.reqBody.sampler}, Inference Steps: ${task.reqBody.num_inference_steps}, Guidance Scale: ${task.reqBody.guidance_scale}, Model: ${task.reqBody.use_stable_diffusion_model}`
-    if (negativePromptField.value.trim() !== '') {
+    if (task.reqBody.use_vae_model.trim() !== '') {
+        taskConfig += `, VAE: ${task.reqBody.use_vae_model}`
+    }
+    if (task.reqBody.negative_prompt.trim() !== '') {
         taskConfig += `, Negative Prompt: ${task.reqBody.negative_prompt}`
     }
     if (task.reqBody.init_image !== undefined) {
@@ -1141,12 +1145,6 @@ useBetaChannelField.addEventListener('click', async function(e) {
     })
 })
 
-vaeModelField.addEventListener('change', async function() {
-    await changeAppConfig({
-        'model_vae': this.value
-    })
-})
-
 async function getAppConfig() {
     try {
         let res = await fetch('/get/app_config')
@@ -1165,22 +1163,25 @@ async function getAppConfig() {
 
 async function getModels() {
     try {
-        var model_setting_key = "stable_diffusion_model"
-        var selectedModel = SETTINGS[model_setting_key].value
+        var sd_model_setting_key = "stable_diffusion_model"
+        var vae_model_setting_key = "vae_model"
+        var selectedSDModel = SETTINGS[sd_model_setting_key].value
+        var selectedVaeModel = SETTINGS[vae_model_setting_key].value
         let res = await fetch('/get/models')
         const models = await res.json()
 
-        let activeModels = models['active']
+        console.log('get models response', models)
+
         let modelOptions = models['options']
         let stableDiffusionOptions = modelOptions['stable-diffusion']
         let vaeOptions = modelOptions['vae']
-        let activeVae = activeModels['vae']
+        vaeOptions.unshift('') // add a None option
 
         function createModelOptions(modelField, selectedModel) {
             return function(modelName) {
                 let modelOption = document.createElement('option')
                 modelOption.value = modelName
-                modelOption.innerText = modelName
+                modelOption.innerText = modelName !== '' ? modelName : 'None'
 
                 if (modelName === selectedModel) {
                     modelOption.selected = true
@@ -1190,16 +1191,14 @@ async function getModels() {
             }
         }
 
-        stableDiffusionOptions.forEach(createModelOptions(stableDiffusionModelField, selectedModel))
-        vaeOptions.forEach(createModelOptions(vaeModelField, activeVae))
+        stableDiffusionOptions.forEach(createModelOptions(stableDiffusionModelField, selectedSDModel))
+        vaeOptions.forEach(createModelOptions(vaeModelField, selectedVaeModel))
 
         // TODO: set default for model here too
-        SETTINGS[model_setting_key].default = stableDiffusionOptions[0]
-        if (getSetting(model_setting_key) == '' || SETTINGS[model_setting_key].value == '') {
-            setSetting(model_setting_key, stableDiffusionOptions[0])
+        SETTINGS[sd_model_setting_key].default = stableDiffusionOptions[0]
+        if (getSetting(sd_model_setting_key) == '' || SETTINGS[sd_model_setting_key].value == '') {
+            setSetting(sd_model_setting_key, stableDiffusionOptions[0])
         }
-
-        console.log('get models response', models)
     } catch (e) {
         console.log('get models error', e)
     }

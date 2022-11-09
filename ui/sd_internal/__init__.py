@@ -18,7 +18,6 @@ class Request:
     precision: str = "autocast" # or "full"
     save_to_disk_path: str = None
     turbo: bool = True
-    use_cpu: bool = False
     use_full_precision: bool = False
     use_face_correction: str = None # or "GFPGANv1.3"
     use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
@@ -50,7 +49,7 @@ class Request:
             "output_format": self.output_format,
         }
 
-    def to_string(self):
+    def __str__(self):
         return f'''
     session_id: {self.session_id}
     prompt: {self.prompt}
@@ -64,7 +63,6 @@ class Request:
     precision: {self.precision}
     save_to_disk_path: {self.save_to_disk_path}
     turbo: {self.turbo}
-    use_cpu: {self.use_cpu}
     use_full_precision: {self.use_full_precision}
     use_face_correction: {self.use_face_correction}
     use_upscale: {self.use_upscale}

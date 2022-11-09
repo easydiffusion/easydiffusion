@@ -52,11 +52,6 @@ var PARAMETERS = [
 		}
 	},
 	{
-		id: "default_vae_model",
-		type: ParameterType.select, // Note: options generated dynamically
-		label: "Default VAE",
-	},
-	{
 		id: "sound_toggle",
 		type: ParameterType.checkbox,
 		label: "Enable Sound",

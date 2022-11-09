@@ -30,9 +30,15 @@ function toggleCollapsible(element) {
     collapsibleHeader.classList.toggle("active")
     let content = getNextSibling(collapsibleHeader, '.collapsible-content')
     if (!collapsibleHeader.classList.contains("active")) {
-        handle.innerHTML = '&#x2795;' // plus
+        content.style.display = "none"
+        if (handle != null) {  // render results don't have a handle
+            handle.innerHTML = '&#x2795;' // plus
+        }
     } else {
-        handle.innerHTML = '&#x2796;' // minus
+        content.style.display = "block"
+        if (handle != null) {  // render results don't have a handle
+            handle.innerHTML = '&#x2796;' // minus
+        }
     }
     
     if (COLLAPSIBLES_INITIALIZED && COLLAPSIBLE_PANELS.includes(element)) {
@@ -339,4 +345,16 @@ function asyncDelay(timeout) {
     return new Promise(function(resolve, reject) {
         setTimeout(resolve, timeout, true)
     })
+}
+
+function preventNonNumericalInput(e) {
+    e = e || window.event;
+    let charCode = (typeof e.which == "undefined") ? e.keyCode : e.which;
+    let charStr = String.fromCharCode(charCode);
+    let re = e.target.getAttribute('pattern') || '^[0-9]+$'
+    re = new RegExp(re)
+
+    if (!charStr.match(re)) {
+        e.preventDefault();
+    }
 }

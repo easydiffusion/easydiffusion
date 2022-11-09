@@ -593,11 +593,36 @@ input::file-selector-button {
     #server-status {
         top: 66%;
     }
+    .popup > div {
+        padding-left: 5px !important;
+        padding-right: 5px !important;
+    }
+    .popup > div input, .popup > div select {
+        max-width: 40vw;
+    }
+    .popup .close-button {
+        padding: 0px !important;
+        margin: 24px !important;
+    }
+    .simple-tooltip.right {
+        right: initial;
+        left: 0px;
+        top: 50%;
+        transform: translate(calc(-100% + 15%), -50%);
+    }
+    :hover > .simple-tooltip.right {
+        transform: translate(100%, -50%);
+    }
 }
+
 @media (min-width: 700px) {
     #editor {
         max-width: 500px;
     }
+}
+
+.help-btn {
+    position: relative;
 }
 
 #promptsFromFileBtn {
@@ -607,6 +632,20 @@ input::file-selector-button {
 .section-button {
     position: relative;
     transform: translateY(-13%);
+}
+#copy-image-settings {
+    position: relative;
+    cursor: pointer;
+    padding: 8px;
+    opacity: 1;
+    transition: opacity 0.2;
+}
+.collapsible:not(.active) #copy-image-settings {
+    display: none;
+}
+#copy-image-settings.hidden {
+    opacity: 0;
+    pointer-events: none;
 }
 
 .section-button {
@@ -633,7 +672,7 @@ input::file-selector-button {
 .simple-tooltip {
 	border-radius: 3px;
 	font-weight: bold;
-	font-size: 16px;
+	font-size: 12px;
     background-color: var(--background-color3);
 
 	visibility: hidden;
@@ -744,6 +783,12 @@ input::file-selector-button {
     transition: 0s visibility, 0.3s opacity;
 }
 
+@media only screen and (min-height: 1050px) {
+    .popup {
+        position: fixed;
+    }
+}
+
 .popup > div {
     position: relative;
     background: var(--background-color2);
@@ -806,33 +851,3 @@ input::file-selector-button {
 }
 
 
-/* FLOATING FIXED STUFF */
-/*
-@media (min-width: 700px) {
-    #editor {
-        max-width: 500px;
-    }
-
-    #tab-content {
-        flex-direction: column;
-    }
-
-    #editor {
-        flex-direction: row;
-        max-width: none;
-        max-height: 500px;
-    }
-
-    #editor .line-separator {
-        height: inherit;
-        flex-basis: 8px;
-        flex-grow: 0;
-        flex-shrink: 0;
-        margin: 0px 16px;
-    }
-
-    #editor-settings-entries {
-        flex-direction: row;
-    } 
-}
-*/

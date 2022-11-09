@@ -45,6 +45,25 @@ from io import BytesIO
 from threading import local as LocalThreadVars
 thread_data = LocalThreadVars()
 
+def get_processor_name():
+    try:
+        import platform, subprocess
+        if platform.system() == "Windows":
+            return platform.processor()
+        elif platform.system() == "Darwin":
+            os.environ['PATH'] = os.environ['PATH'] + os.pathsep + '/usr/sbin'
+            command ="sysctl -n machdep.cpu.brand_string"
+            return subprocess.check_output(command).strip()
+        elif platform.system() == "Linux":
+            command = "cat /proc/cpuinfo"
+            all_info = subprocess.check_output(command, shell=True).decode().strip()
+            for line in all_info.split("\n"):
+                if "model name" in line:
+                    return re.sub( ".*model name.*:", "", line,1).strip()
+    except:
+        print(traceback.format_exc())
+        return "cpu"
+
 def device_would_fail(device):
     if device == 'cpu': return None
     # Returns None when no issues found, otherwise returns the detected error str.
@@ -68,17 +87,17 @@ def device_select(device):
         print(failure_msg)
         return False
 
-    device_name = torch.cuda.get_device_name(device)
+    thread_data.device_name = torch.cuda.get_device_name(device)
+    thread_data.device = device
 
-    # otherwise these NVIDIA cards create green images
-    thread_data.force_full_precision = ('nvidia' in device_name.lower() or 'geforce' in device_name.lower()) and (' 1660' in device_name or ' 1650' in device_name)
+    # Force full precision on 1660 and 1650 NVIDIA cards to avoid creating green images
+    device_name = thread_data.device_name.lower()
+    thread_data.force_full_precision = ('nvidia' in device_name or 'geforce' in device_name) and (' 1660' in device_name or ' 1650' in device_name)
     if thread_data.force_full_precision:
-        print('forcing full precision on NVIDIA 16xx cards, to avoid green images. GPU detected: ', device_name)
+        print('forcing full precision on NVIDIA 16xx cards, to avoid green images. GPU detected: ', thread_data.device_name)
         # Apply force_full_precision now before models are loaded.
         thread_data.precision = 'full'
 
-    thread_data.device = device
-    thread_data.has_valid_gpu = True
     return True
 
 def device_init(device_selection=None):
@@ -100,27 +119,31 @@ def device_init(device_selection=None):
     thread_data.model_is_half = False
     thread_data.model_fs_is_half = False
     thread_data.device = None
+    thread_data.device_name = None
     thread_data.unet_bs = 1
     thread_data.precision = 'autocast'
     thread_data.sampler_plms = None
     thread_data.sampler_ddim = None
 
     thread_data.turbo = False
-    thread_data.has_valid_gpu = False
     thread_data.force_full_precision = False
     thread_data.reduced_memory = True
 
-    if device_selection.lower() == 'cpu':
-        print('CPU requested, skipping gpu init.')
+    device_selection = device_selection.lower()
+
+    if device_selection == 'cpu':
         thread_data.device = 'cpu'
+        thread_data.device_name = get_processor_name()
+        print('Render device CPU available as', thread_data.device_name)
         return
     if not torch.cuda.is_available():
         if device_selection == 'auto' or device_selection == 'current':
-            print('WARNING: torch.cuda is not available. Using the CPU, but this will be very slow!')
+            print('WARNING: Could not find a compatible GPU. Using the CPU, but this will be very slow!')
             thread_data.device = 'cpu'
+            thread_data.device_name = get_processor_name()
             return
         else:
-            raise EnvironmentError('torch.cuda is not available.')
+            raise EnvironmentError(f'Could not find a compatible GPU for the requested device_selection: {device_selection}!')
     device_count = torch.cuda.device_count()
     if device_count <= 1 and device_selection == 'auto':
         device_selection = 'current' # Use 'auto' only when there is more than one compatible device found.
@@ -141,10 +164,10 @@ def device_init(device_selection=None):
             print(f'Setting GPU:{device} as active')
             torch.cuda.device(device)
             return
-    if isinstance(device_selection, str):
-        device_selection = device_selection.lower()
-        if device_selection.startswith('gpu:'):
-            device_selection = int(device_selection[4:])
+
+    if device_selection.startswith('gpu:'):
+        device_selection = int(device_selection[4:])
+
     if device_selection != 'cuda' and device_selection != 'current' and device_selection != 'gpu':
         if device_select(device_selection):
             if isinstance(device_selection, int):
@@ -162,6 +185,7 @@ def device_init(device_selection=None):
         return
     print('WARNING: No compatible GPU found. Using the CPU, but this will be very slow!')
     thread_data.device = 'cpu'
+    thread_data.device_name = get_processor_name()
 
 def is_first_cuda_device(device):
     if device is None: return False
@@ -234,13 +258,15 @@ def load_model_ckpt():
     _, _ = modelFS.load_state_dict(sd, strict=False)
 
     if thread_data.vae_file is not None:
-        if os.path.exists(thread_data.vae_file + '.vae.pt'):
-            print(f"Loading VAE weights from: {thread_data.vae_file}.vae.pt")
-            vae_ckpt = torch.load(thread_data.vae_file + '.vae.pt', map_location="cpu")
-            vae_dict = {k: v for k, v in vae_ckpt["state_dict"].items() if k[0:4] != "loss"}
-            modelFS.first_stage_model.load_state_dict(vae_dict, strict=False)
-        else:
-            print(f'Cannot find VAE file: {thread_data.vae_file}.vae.pt')
+        for model_extension in ['.ckpt', '.vae.pt']:
+            if os.path.exists(thread_data.vae_file + model_extension):
+                print(f"Loading VAE weights from: {thread_data.vae_file}{model_extension}")
+                vae_ckpt = torch.load(thread_data.vae_file + model_extension, map_location="cpu")
+                vae_dict = {k: v for k, v in vae_ckpt["state_dict"].items() if k[0:4] != "loss"}
+                modelFS.first_stage_model.load_state_dict(vae_dict, strict=False)
+                break
+            else:
+                print(f'Cannot find VAE file: {thread_data.vae_file}{model_extension}')
 
     modelFS.eval()
     if thread_data.device != 'cpu':
@@ -261,7 +287,12 @@ def load_model_ckpt():
         thread_data.model_is_half = False
         thread_data.model_fs_is_half = False
 
-    print('loaded', thread_data.ckpt_file, 'as', model.device, '->', modelCS.cond_stage_model.device, '->', thread_data.modelFS.device, 'using precision', thread_data.precision)
+    print(f'''loaded model
+ model file: {thread_data.ckpt_file}.ckpt
+ model.device: {model.device}
+ modelCS.device: {modelCS.cond_stage_model.device}
+ modelFS.device: {thread_data.modelFS.device}
+ using precision: {thread_data.precision}''')
 
 def unload_filters():
     if thread_data.model_gfpgan is not None:
@@ -341,13 +372,21 @@ def load_model_real_esrgan():
     thread_data.model_real_esrgan.model.name = thread_data.real_esrgan_file
     print('loaded ', thread_data.real_esrgan_file, 'to', thread_data.model_real_esrgan.device, 'precision', thread_data.precision)
 
+
+def get_session_out_path(disk_path, session_id):
+    if disk_path is None: return None
+    if session_id is None: return None
+
+    session_out_path = os.path.join(disk_path, filename_regex.sub('_',session_id))
+    os.makedirs(session_out_path, exist_ok=True)
+    return session_out_path
+
 def get_base_path(disk_path, session_id, prompt, img_id, ext, suffix=None):
     if disk_path is None: return None
     if session_id is None: return None
     if ext is None: raise Exception('Missing ext')
 
-    session_out_path = os.path.join(disk_path, session_id)
-    os.makedirs(session_out_path, exist_ok=True)
+    session_out_path = get_session_out_path(disk_path, session_id)
 
     prompt_flattened = filename_regex.sub('_', prompt)[:50]
 
@@ -475,7 +514,7 @@ def do_mk_img(req: Request):
         thread_data.vae_file = req.use_vae_model
         needs_model_reload = True
 
-    if thread_data.has_valid_gpu:
+    if thread_data.device != 'cpu':
         if (thread_data.precision == 'autocast' and (req.use_full_precision or not thread_data.model_is_half)) or \
             (thread_data.precision == 'full' and not req.use_full_precision and not thread_data.force_full_precision):
             thread_data.precision = 'full' if req.use_full_precision else 'autocast'
@@ -500,7 +539,7 @@ def do_mk_img(req: Request):
     opt_f = 8
     opt_ddim_eta = 0.0
 
-    print(req.to_string(), '\n    device', thread_data.device)
+    print(req, '\n    device', torch.device(thread_data.device), "as", thread_data.device_name)
     print('\n\n    Using precision:', thread_data.precision)
 
     seed_everything(opt_seed)
@@ -552,8 +591,7 @@ def do_mk_img(req: Request):
         print(f"target t_enc is {t_enc} steps")
 
     if req.save_to_disk_path is not None:
-        session_out_path = os.path.join(req.save_to_disk_path, req.session_id)
-        os.makedirs(session_out_path, exist_ok=True)
+        session_out_path = get_session_out_path(req.save_to_disk_path, req.session_id)
     else:
         session_out_path = None
 
