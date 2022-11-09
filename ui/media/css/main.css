@@ -342,7 +342,7 @@ img {
     text-decoration: none;
 }
 .float-child h1 {
-    border-bottom: solid 1px silver;
+    border-bottom: var(--button-border);
 }
 #help-links {
     display: inline-block;
