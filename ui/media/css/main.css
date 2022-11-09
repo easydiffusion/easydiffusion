@@ -284,7 +284,7 @@ img {
     background: var(--background-color4);
     display: flex;
 }
-#top-nav .icon {
+.tab .icon {
     padding-right: 4pt;
     font-size: 14pt;
     transform: translateY(1pt);
@@ -292,6 +292,7 @@ img {
 #logo {
     display: inline;
     padding: 12px;
+    white-space: nowrap;
 }
 #logo h1 {
     display: inline;
@@ -579,6 +580,15 @@ input::file-selector-button {
     }
     .tab-content-inner {
         margin: 0px;
+    }
+    .tab {
+        font-size: 0;
+    }
+    .tab .icon {
+        padding-right: 0px;
+    }
+    #server-status {
+        top: 66%;
     }
 }
 @media (min-width: 700px) {
