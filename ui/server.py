@@ -104,6 +104,7 @@ def setConfig(config):
         config_bat = [
             f"@set update_branch={config['update_branch']}"
         ]
+
         if os.getenv('CUDA_VISIBLE_DEVICES') is None:
             if len(gpu_devices) > 0 and not has_first_cuda_device:
                 config_bat.append('::Set the devices visible inside SD-UI here')
@@ -114,6 +115,13 @@ def setConfig(config):
             if len(gpu_devices) > 0 and not has_first_cuda_device:
                 print('GPU:0 seems to be missing! Validate that CUDA_VISIBLE_DEVICES is set properly.')
         config_bat_path = os.path.join(CONFIG_DIR, 'config.bat')
+
+        if os.getenv('SD_UI_BIND_PORT') is not None:
+            config_bat.append(f"@set SD_UI_BIND_PORT={os.getenv('SD_UI_BIND_PORT')}")
+        if os.getenv('SD_UI_BIND_IP') is not None:
+            config_bat.append(f"@set SD_UI_BIND_IP={os.getenv('SD_UI_BIND_IP')}")
+
+
         with open(config_bat_path, 'w', encoding='utf-8') as f:
             f.write('\r\n'.join(config_bat))
     except Exception as e:
@@ -133,6 +141,12 @@ def setConfig(config):
             config_sh.append(f"export CUDA_VISIBLE_DEVICES=\"{os.getenv('CUDA_VISIBLE_DEVICES')}\"")
             if len(gpu_devices) > 0 and not has_first_cuda_device:
                 print('GPU:0 seems to be missing! Validate that CUDA_VISIBLE_DEVICES is set properly.')
+
+        if os.getenv('SD_UI_BIND_PORT') is not None:
+            config_sh.append(f"export SD_UI_BIND_PORT={os.getenv('SD_UI_BIND_PORT')}")
+        if os.getenv('SD_UI_BIND_IP') is not None:
+            config_sh.append(f"export SD_UI_BIND_IP={os.getenv('SD_UI_BIND_IP')}")
+
         config_sh_path = os.path.join(CONFIG_DIR, 'config.sh')
         with open(config_sh_path, 'w', encoding='utf-8') as f:
             f.write('\n'.join(config_sh))
