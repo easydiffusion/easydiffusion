@@ -240,6 +240,9 @@ def getModels():
 
     def listModels(models_dirname, model_type, model_extensions):
         models_dir = os.path.join(MODELS_DIR, models_dirname)
+        if not os.path.exists(models_dir):
+            os.makedirs(models_dir)
+
         for file in os.listdir(models_dir):
             for model_extension in model_extensions:
                 if file.endswith(model_extension):
