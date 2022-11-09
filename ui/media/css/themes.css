@@ -28,7 +28,7 @@
 
 .theme-light {
     --background-color1: white; 
-    --background-color2: #dddddd;
+    --background-color2: #ececec;
     --background-color3: #e7e9eb;
     --background-color4: #cccccc;
 
@@ -61,7 +61,7 @@
 .theme-cool-blue {
     --main-hue: 222;
 	--main-saturation: 18%;
-	--value-base: 19%;
+	--value-base: 18%;
 	--value-step: 3%;
 	--background-color1: hsl(var(--main-hue), var(--main-saturation), var(--value-base));
 	--background-color2: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (1 * var(--value-step))));
@@ -110,7 +110,7 @@
 	--background-color1: hsl(var(--main-hue), var(--main-saturation), var(--value-base));
 	--background-color2: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (1 * var(--value-step))));
 	--background-color3: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (2 * var(--value-step))));
-	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (3 * var(--value-step))));
+	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (1.4 * var(--value-step))));
     
     --make-image-border: none;
 

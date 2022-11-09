@@ -10,7 +10,7 @@ html {
 body {
     margin: 0;
     font-size: 11pt;
-    background-color: var(--background-color2);
+    background-color: var(--background-color1);
     color: var(--text-color);
 }
 a {
@@ -27,6 +27,7 @@ label {
     height: 65pt;
     font-size: 13px;
     margin-bottom: 6px;
+    margin-top: 5px;
 }
 .image_preview_container {
     margin-top: 10pt;
@@ -73,7 +74,7 @@ label {
     font-size: 8pt;
 }
 #footer-spacer {
-    flex: 1
+    flex: 0.7
 }
 .imgSeedLabel {
     font-size: 0.8em;
@@ -117,7 +118,7 @@ label {
     font-size: 11pt;
 }
 #editor {
-    background: var(--background-color2);
+    background: var(--background-color1);
     padding: 16px;
     display: flex;
     flex-direction: column;
@@ -220,7 +221,7 @@ img {
 }
 .line-separator {
     background: var(--background-color3);
-    height: 8px;
+    height: 1pt;
     margin: 16px 0px;
 }
 #editor-inputs-tags-container {
@@ -360,7 +361,7 @@ img {
 }
 
 .imageTaskContainer {
-    border: 1px solid var(--background-color2);
+    border: 1px solid var(--background-color1);
     margin-bottom: 10pt;
     padding: 5pt;
     border-radius: 5pt;
@@ -617,7 +618,7 @@ input::file-selector-button {
 
 @media (min-width: 700px) {
     #editor {
-        max-width: 500px;
+        max-width: 480px;
     }
 }
 
@@ -633,19 +634,8 @@ input::file-selector-button {
     position: relative;
     transform: translateY(-13%);
 }
-#copy-image-settings {
-    position: relative;
-    cursor: pointer;
-    padding: 8px;
-    opacity: 1;
-    transition: opacity 0.2;
-}
 .collapsible:not(.active) #copy-image-settings {
     display: none;
-}
-#copy-image-settings.hidden {
-    opacity: 0;
-    pointer-events: none;
 }
 
 .section-button {
@@ -772,7 +762,7 @@ input::file-selector-button {
 }
 
 .popup {
-    position: fixed;
+    position: absolute;
     background: rgba(32, 33, 36, 50%);
     top: 0px;
     left: 0px;
@@ -822,7 +812,7 @@ input::file-selector-button {
     border-radius: 4px 4px 0px 0px;
     margin-left: 8px;
     cursor: pointer;
-    background: var(--background-color2);
+    background: var(--background-color1);
     opacity: 50%;
     transition: opacity 0.25s;
 }
@@ -840,7 +830,7 @@ input::file-selector-button {
 }
 
 #tab-content-wrapper {
-    border-top: 8px solid var(--background-color2);
+    border-top: 8px solid var(--background-color1);
 }
 
 .tab-content-inner {
@@ -850,4 +840,11 @@ input::file-selector-button {
     padding: 20px 10px;
 }
 
-
+.panel-box {
+    background: var(--background-color2);
+    border: 1px solid var(--background-color3);
+    border-radius: 7px;
+    padding: 7px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
+}

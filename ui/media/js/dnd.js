@@ -393,8 +393,8 @@ function checkWriteToClipboardPermission (result) {
     if (result.state == "granted" || result.state == "prompt") {
         const resetSettings = document.getElementById('reset-image-settings')
         const copyIcon = document.createElement('i')
-        copyIcon.id = 'copy-image-settings'
-        copyIcon.className = 'fa-solid fa-clipboard'
+        // copyIcon.id = 'copy-image-settings'
+        copyIcon.className = 'fa-solid fa-clipboard section-button'
         copyIcon.innerHTML = `<span class="simple-tooltip right">Copy Image Settings</span>`
         copyIcon.addEventListener('click', (event) => {
             event.stopPropagation()
