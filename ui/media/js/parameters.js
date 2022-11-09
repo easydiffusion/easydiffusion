@@ -48,7 +48,7 @@ var PARAMETERS = [
 		type: ParameterType.custom,
 		label: "Save Location",
 		render: (parameter) => {
-			return `<input id="${parameter.id}" name="${parameter.id}" size="40" disabled>`
+			return `<input id="${parameter.id}" name="${parameter.id}" size="30" disabled>`
 		}
 	},
 	{
@@ -68,7 +68,7 @@ var PARAMETERS = [
 	{
 		id: "use_cpu",
 		type: ParameterType.checkbox,
-		label: "Use CPU instead of GPU",
+		label: "Use CPU (not GPU)",
 		note: "warning: this will be *very* slow",
 		default: false,
 	},
@@ -127,6 +127,3 @@ function initParameters() {
 
 initParameters();
 
-document.getElementById("settings-button").addEventListener('click', event => {
-    document.getElementById("system-settings").classList.add("active")
-})
