@@ -1,6 +1,7 @@
 "use strict" // Opt in to a restricted variant of JavaScript
 const HEALTH_PING_INTERVAL = 5 // seconds
 const MAX_INIT_IMAGE_DIMENSION = 768
+const MIN_GPUS_TO_SHOW_SELECTION = 1
 
 const IMAGE_REGEX = new RegExp('data:image/[A-Za-z]+;base64')
 
@@ -26,6 +27,7 @@ let maskImageSelector = document.querySelector("#mask")
 let maskImagePreview = document.querySelector("#mask_preview")
 let turboField = document.querySelector('#turbo')
 let useCPUField = document.querySelector('#use_cpu')
+let useGPUsField = document.querySelector('#use_gpus')
 let useFullPrecisionField = document.querySelector('#use_full_precision')
 let saveToDiskField = document.querySelector('#save_to_disk')
 let diskPathField = document.querySelector('#diskPath')
@@ -771,7 +773,7 @@ function getCurrentUserRequest() {
             height: heightField.value,
             // allow_nsfw: allowNSFWField.checked,
             turbo: turboField.checked,
-            use_cpu: useCPUField.checked,
+            render_device: getCurrentRenderDeviceSelection(),
             use_full_precision: useFullPrecisionField.checked,
             use_stable_diffusion_model: stableDiffusionModelField.value,
             use_vae_model: vaeModelField.value,
@@ -805,6 +807,14 @@ function getCurrentUserRequest() {
         newTask.reqBody.use_upscale = upscaleModelField.value
     }
     return newTask
+}
+
+function getCurrentRenderDeviceSelection() {
+    if (useCPUField.checked) {
+        return 'cpu'
+    }
+
+    return $(useGPUsField).val().join(',')
 }
 
 function makeImage() {
@@ -1113,6 +1123,15 @@ promptStrengthSlider.addEventListener('input', updatePromptStrength)
 promptStrengthField.addEventListener('input', updatePromptStrengthSlider)
 updatePromptStrength()
 
+useCPUField.addEventListener('click', function() {
+    let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
+    if (this.checked) {
+        gpuSettingEntry.style.display = 'none'
+    } else if ($(useGPUsField).val().length >= MIN_GPUS_TO_SHOW_SELECTION) {
+        gpuSettingEntry.style.display = ''
+    }
+})
+
 async function changeAppConfig(configDelta) {
     // if (!isServerAvailable()) {
     //     // logError('The server is still starting up..')
@@ -1311,6 +1330,43 @@ async function getDiskPath() {
         }
     } catch (e) {
         console.log('error fetching output dir path', e)
+    }
+}
+
+async function getDevices() {
+    try {
+        let res = await fetch('/get/devices')
+        if (res.status === 200) {
+            res = await res.json()
+
+            let allDeviceIds = Object.keys(res['all']).filter(d => d !== 'cpu')
+            let activeDeviceIds = Object.keys(res['active']).filter(d => d !== 'cpu')
+
+            if (activeDeviceIds.length === 0) {
+                useCPUField.checked = true
+            }
+
+            if (allDeviceIds.length < MIN_GPUS_TO_SHOW_SELECTION) {
+                let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
+                gpuSettingEntry.style.display = 'none'
+
+                if (allDeviceIds.length === 0) {
+                    useCPUField.checked = true
+                    useCPUField.disabled = true // no compatible GPUs, so make the CPU mandatory
+                }
+            }
+
+            useGPUsField.innerHTML = ''
+
+            allDeviceIds.forEach(device => {
+                let deviceName = res['all'][device]
+                let selected = (activeDeviceIds.includes(device) ? 'selected' : '')
+                let deviceOption = `<option value="${device}" ${selected}>${deviceName}</option>`
+                useGPUsField.insertAdjacentHTML('beforeend', deviceOption)
+            })
+        }
+    } catch (e) {
+        console.log('error fetching devices', e)
     }
 }
 

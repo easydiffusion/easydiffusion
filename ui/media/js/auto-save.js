@@ -34,7 +34,6 @@ const SETTINGS_IDS_LIST = [
     "diskPath",
     "sound_toggle",
     "turbo",
-    "use_cpu",
     "use_full_precision",
     "auto_save_settings"
 ]

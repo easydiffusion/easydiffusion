@@ -8,6 +8,7 @@
  var ParameterType = {
     checkbox: "checkbox",
 	select: "select",
+	select_multiple: "select_multiple",
 	custom: "custom",
 };
 
@@ -73,6 +74,13 @@ var PARAMETERS = [
 		default: false,
 	},
 	{
+		id: "use_gpus",
+		type: ParameterType.select_multiple,
+		label: "GPUs to use",
+		note: "select multiple GPUs to process in parallel",
+		default: false,
+	},
+	{
 		id: "use_full_precision",
 		type: ParameterType.checkbox,
 		label: "Use Full Precision",
@@ -95,6 +103,13 @@ var PARAMETERS = [
 	},
 ];
 
+function getParameterSettingsEntry(id) {
+	let parameter = PARAMETERS.filter(p => p.id === id)
+	if (parameter.length === 0) {
+		return
+	}
+	return parameter[0].settingsEntry
+}
 
 function getParameterElement(parameter) {
 	switch (parameter.type) {
@@ -102,8 +117,10 @@ function getParameterElement(parameter) {
 			var is_checked = parameter.default ? " checked" : "";
 			return `<input id="${parameter.id}" name="${parameter.id}"${is_checked} type="checkbox">`
 		case ParameterType.select:
+		case ParameterType.select_multiple:
 			var options = (parameter.options || []).map(option => `<option value="${option.value}">${option.label}</option>`).join("")
-			return `<select id="${parameter.id}" name="${parameter.id}">${options}</select>`
+			var multiple = (parameter.type == ParameterType.select_multiple ? 'multiple' : '')
+			return `<select id="${parameter.id}" name="${parameter.id}" ${multiple}>${options}</select>`
 		case ParameterType.custom:
 			return parameter.render(parameter)
 		default:
@@ -118,10 +135,12 @@ function initParameters() {
 	PARAMETERS.forEach(parameter => {
 		var element = getParameterElement(parameter)
 		var note = parameter.note ? `<small>${parameter.note}</small>` : "";
-		var newrow = `<tr>
+		var newrow = document.createElement('tr')
+		newrow.innerHTML = `
 			<td><label for="${parameter.id}">${parameter.label}</label></td>
-			<td><div>${element}${note}<div></td></tr>`
-		parametersTable.insertAdjacentHTML("beforeend", newrow)
+			<td><div>${element}${note}<div></td>`
+		parametersTable.appendChild(newrow)
+		parameter.settingsEntry = newrow
 	})
 }
 

@@ -9,11 +9,12 @@ import traceback
 
 TASK_TTL = 15 * 60 # seconds, Discard last session's task timeout
 
+import torch
 import queue, threading, time, weakref
 from typing import Any, Generator, Hashable, Optional, Union
 
 from pydantic import BaseModel
-from sd_internal import Request, Response
+from sd_internal import Request, Response, runtime
 
 THREAD_NAME_PREFIX = 'Runtime-Render/'
 ERR_LOCK_FAILED = ' failed to acquire lock within timeout.'
@@ -356,19 +357,35 @@ def get_cached_task(session_id:str, update_ttl:bool=False):
     return task_cache.tryGet(session_id)
 
 def get_devices():
+    devices = {
+        'all': {},
+        'active': {},
+    }
+
+    # list the compatible devices
+    gpu_count = torch.cuda.device_count()
+    for device in range(gpu_count):
+        if runtime.device_would_fail(device):
+            continue
+
+        devices['all'].update({device: torch.cuda.get_device_name(device)})
+
+    devices['all'].update({'cpu': runtime.get_processor_name()})
+
+    # list the activated devices
     if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('get_devices' + ERR_LOCK_FAILED)
     try:
-        device_dict = {}
         for rthread in render_threads:
             if not rthread.is_alive():
                 continue
             weak_data = weak_thread_data.get(rthread)
             if not weak_data or not 'device' in weak_data or not 'device_name' in weak_data:
                 continue
-            device_dict.update({weak_data['device']:weak_data['device_name']})
-        return device_dict
+            devices['active'].update({weak_data['device']: weak_data['device_name']})
     finally:
         manager_lock.release()
+
+    return devices
 
 def is_first_cuda_device(device):
     from . import runtime # When calling runtime from outside thread_render DO NOT USE thread specific attributes or functions.
