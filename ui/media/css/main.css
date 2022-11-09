@@ -366,6 +366,9 @@ img {
     border-radius: 5pt;
     box-shadow: 0 20px 28px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
 }
+.imageTaskContainer > div > .collapsible-handle {
+    display: none;
+}
 .taskStatusLabel {
     float: left;
     font-size: 8pt;
