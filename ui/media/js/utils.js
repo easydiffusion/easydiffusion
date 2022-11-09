@@ -31,10 +31,14 @@ function toggleCollapsible(element) {
     let content = getNextSibling(collapsibleHeader, '.collapsible-content')
     if (content.style.display === "block") {
         content.style.display = "none"
-        handle.innerHTML = '&#x2795;' // plus
+        if (handle != null) {  // render results don't have a handle
+            handle.innerHTML = '&#x2795;' // plus
+        }
     } else {
         content.style.display = "block"
-        handle.innerHTML = '&#x2796;' // minus
+        if (handle != null) {  // render results don't have a handle
+            handle.innerHTML = '&#x2796;' // minus
+        }
     }
     
     if (COLLAPSIBLES_INITIALIZED && COLLAPSIBLE_PANELS.includes(element)) {
