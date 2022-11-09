@@ -66,11 +66,14 @@ label {
 }
 #footer {
     font-size: small;
-    padding-left: 10pt;
+    padding: 10pt;
     background: none;
 }
 #footer-legal {
     font-size: 8pt;
+}
+#footer-spacer {
+    flex: 1
 }
 .imgSeedLabel {
     font-size: 0.8em;
@@ -104,8 +107,11 @@ label {
     margin-bottom: 7px;
 }
 #container {
+    min-height: 100vh;
     width: 100%;
     margin: 0px;
+    display: flex;
+    flex-direction: column;
 }
 #logo small {
     font-size: 11pt;
@@ -315,7 +321,11 @@ img {
     padding-left: 5pt;
 }
 #community-links {
+    display: inline-block;
     list-style-type: none;
+    text-align: left;
+    margin: auto;
+    padding: 0px;
 }
 #community-links li {
     padding-bottom: 12pt;
