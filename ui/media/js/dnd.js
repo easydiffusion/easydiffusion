@@ -1,5 +1,9 @@
 "use strict" // Opt in to a restricted variant of JavaScript
 
+const EXT_REGEX = /(?:\.([^.]+))?$/
+const TEXT_EXTENSIONS = ['txt', 'json']
+const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif', 'tga']
+
 function parseBoolean(stringValue) {
     if (typeof stringValue === 'boolean') {
         return stringValue
@@ -301,7 +305,6 @@ function parseTaskFromText(str) {
         const reName = new RegExp(`${name}\\ *:\\ *(.*)(?:\\r\\n|\\r|\\n)*`, 'igm')
         const match = reName.exec(str);
         if (match) {
-            console.log(match)
             str = str.slice(0, match.index) + str.slice(match.index + match[0].length)
             val = match[1]
         }
@@ -358,12 +361,17 @@ function dropHandler(ev) {
         items = Array.from(ev.dataTransfer.files)
     }
 
-    items = items.filter(item => item.name.toLowerCase().endsWith('.txt') || item.name.toLowerCase().endsWith('.json'))
+    items.forEach(item => {item.file_ext = EXT_REGEX.exec(item.name.toLowerCase())[1]})
 
-    if (items.length > 0) {
-        ev.preventDefault() // Prevent default behavior (Prevent file/content from being opened)
-        items.forEach(readFile)
+    let text_items = items.filter(item => TEXT_EXTENSIONS.includes(item.file_ext))
+    let image_items = items.filter(item => IMAGE_EXTENSIONS.includes(item.file_ext))
+
+    if (image_items.length > 0 && ev.target == initImageSelector) {
+        return // let the event bubble up, so that the Init Image filepicker can receive this
     }
+
+    ev.preventDefault() // Prevent default behavior (Prevent file/content from being opened)
+    text_items.forEach(readFile)
 }
 function dragOverHandler(ev) {
     console.log('Content in drop zone')
