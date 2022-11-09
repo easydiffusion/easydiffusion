@@ -250,6 +250,7 @@ def getModels():
                     models['options'][model_type].append(model_name)
 
         models['options'][model_type] = [*set(models['options'][model_type])] # remove duplicates
+        models['options'][model_type].sort()
 
     # custom models
     listModels(models_dirname='stable-diffusion', model_type='stable-diffusion', model_extensions=['.ckpt'])
