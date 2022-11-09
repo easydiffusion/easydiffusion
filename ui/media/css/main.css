@@ -341,6 +341,9 @@ img {
     color: var(--text-color);
     text-decoration: none;
 }
+.float-child h1 {
+    border-bottom: solid 1px silver;
+}
 #help-links {
     display: inline-block;
     list-style-type: none;
