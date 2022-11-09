@@ -838,13 +838,15 @@ function createTask(task) {
 
     let taskEntry = document.createElement('div')
     taskEntry.className = 'imageTaskContainer'
-    taskEntry.innerHTML = ` <div class="taskStatusLabel">Enqueued</div>
-                            <button class="secondaryButton stopTask"><i class="fa-solid fa-trash-can"></i> Remove</button>
-                            <div class="preview-prompt collapsible active"></div>
-                            <div class="taskConfig">${taskConfig}</div>
-                            <div class="collapsible-content" style="display: block">
+    taskEntry.innerHTML = ` <div class="header-content panel collapsible active">
+                                <div class="taskStatusLabel">Enqueued</div>
+                                <button class="secondaryButton stopTask"><i class="fa-solid fa-trash-can"></i> Remove</button>
+                                <div class="preview-prompt collapsible active"></div>
+                                <div class="taskConfig">${taskConfig}</div>
                                 <div class="outputMsg"></div>
                                 <div class="progress-bar active"><div></div></div>
+                            </div>
+                            <div class="collapsible-content">
                                 <div class="img-preview">
                             </div>`
 
