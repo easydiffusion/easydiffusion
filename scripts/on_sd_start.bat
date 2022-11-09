@@ -353,7 +353,7 @@ call python --version
 
 @if "%SD_UI_BIND_PORT%" == "" set SD_UI_BIND_PORT=9000
 @if "%SD_UI_BIND_IP%" == "" set SD_UI_BIND_PORT=0.0.0.0
-@uvicorn server:app --app-dir "%SD_UI_PATH%" --port %SD_UI_BIND_PORT% --host %SD_UI_BIND_IP%
+@uvicorn server:app --app-dir "%SD_UI_PATH%" --port 9000 --host 0.0.0.0
 
 
 @pause
