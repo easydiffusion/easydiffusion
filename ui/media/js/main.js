@@ -1082,6 +1082,12 @@ useUpscalingField.addEventListener('change', function(e) {
 
 makeImageBtn.addEventListener('click', makeImage)
 
+document.onkeydown = function(e) {
+    if (e.ctrlKey && e.code === 'Enter') {
+        makeImage()
+        e.preventDefault()
+    }
+}
 
 function updateGuidanceScale() {
     guidanceScaleField.value = guidanceScaleSlider.value / 10
