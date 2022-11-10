@@ -1,7 +1,7 @@
 "use strict" // Opt in to a restricted variant of JavaScript
 const HEALTH_PING_INTERVAL = 5 // seconds
 const MAX_INIT_IMAGE_DIMENSION = 768
-const MIN_GPUS_TO_SHOW_SELECTION = 1
+const MIN_GPUS_TO_SHOW_SELECTION = 2
 
 const IMAGE_REGEX = new RegExp('data:image/[A-Za-z]+;base64')
 
