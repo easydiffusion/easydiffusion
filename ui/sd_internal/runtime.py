@@ -52,19 +52,22 @@ def get_processor_name():
             return platform.processor()
         elif platform.system() == "Darwin":
             os.environ['PATH'] = os.environ['PATH'] + os.pathsep + '/usr/sbin'
-            command ="sysctl -n machdep.cpu.brand_string"
+            command = "sysctl -n machdep.cpu.brand_string"
             return subprocess.check_output(command).strip()
         elif platform.system() == "Linux":
             command = "cat /proc/cpuinfo"
             all_info = subprocess.check_output(command, shell=True).decode().strip()
             for line in all_info.split("\n"):
                 if "model name" in line:
-                    return re.sub( ".*model name.*:", "", line,1).strip()
+                    return re.sub(".*model name.*:", "", line, 1).strip()
     except:
         print(traceback.format_exc())
         return "cpu"
 
 def device_would_fail(device):
+    if device != 'cpu' and not isinstance(device, int):
+        raise EnvironmentError(f"device_would_fail() only accepts 'cpu', or an integer index for the GPU. Got: {device}")
+
     if device == 'cpu': return None
     # Returns None when no issues found, otherwise returns the detected error str.
     # Memory check
@@ -78,12 +81,15 @@ def device_would_fail(device):
     return None
 
 def device_select(device):
+    if device != 'cpu' and not isinstance(device, int):
+        raise EnvironmentError(f"device_select() only accepts 'cpu', or an integer index for the GPU. Got: {device}")
+
     if device == 'cpu': return True
     if not torch.cuda.is_available(): return False
     failure_msg = device_would_fail(device)
     if failure_msg:
         if 'invalid device' in failure_msg:
-            raise NameError(f'GPU "{device}" could not be found. Remove this device from config.render_devices or use one of "auto" or "cuda".')
+            raise NameError(f'GPU "{device}" could not be found. Remove this device from config.render_devices or use "auto".')
         print(failure_msg)
         return False
 
@@ -100,7 +106,10 @@ def device_select(device):
 
     return True
 
-def device_init(device_selection=None):
+def device_init(device_selection):
+    if device_selection not in ['cpu', 'auto'] and not isinstance(device_selection, int):
+        raise EnvironmentError(f"device_init() only accepts 'cpu', 'auto', or an integer index for the GPU. Got: {device_selection}")
+
     # Thread bound properties
     thread_data.stop_processing = False
     thread_data.temp_images = {}
@@ -129,25 +138,27 @@ def device_init(device_selection=None):
     thread_data.force_full_precision = False
     thread_data.reduced_memory = True
 
-    device_selection = device_selection.lower()
-
     if device_selection == 'cpu':
         thread_data.device = 'cpu'
         thread_data.device_name = get_processor_name()
         print('Render device CPU available as', thread_data.device_name)
         return
     if not torch.cuda.is_available():
-        if device_selection == 'auto' or device_selection == 'current':
+        if device_selection == 'auto':
             print('WARNING: Could not find a compatible GPU. Using the CPU, but this will be very slow!')
             thread_data.device = 'cpu'
             thread_data.device_name = get_processor_name()
             return
         else:
             raise EnvironmentError(f'Could not find a compatible GPU for the requested device_selection: {device_selection}!')
-    device_count = torch.cuda.device_count()
-    if device_count <= 1 and device_selection == 'auto':
-        device_selection = 'current' # Use 'auto' only when there is more than one compatible device found.
+
     if device_selection == 'auto':
+        device_count = torch.cuda.device_count()
+        if device_count == 1:
+            device_select(0)
+            torch.cuda.device(0)
+            return
+
         print('Autoselecting GPU. Using most free memory.')
         max_mem_free = 0
         best_device = None
@@ -156,45 +167,30 @@ def device_init(device_selection=None):
             mem_free /= float(10**9)
             mem_total /= float(10**9)
             device_name = torch.cuda.get_device_name(device)
-            print(f'GPU:{device} detected: {device_name} - Memory: {round(mem_total - mem_free, 2)}Go / {round(mem_total, 2)}Go')
+            print(f'GPU {device} detected: {device_name} - Memory: {round(mem_total - mem_free, 2)}Gb / {round(mem_total, 2)}Gb')
             if max_mem_free < mem_free:
                 max_mem_free = mem_free
                 best_device = device
-        if best_device and device_select(device):
-            print(f'Setting GPU:{device} as active')
+        if best_device and device_select(best_device):
+            print(f'Setting GPU {device} as active')
             torch.cuda.device(device)
             return
 
-    if device_selection.startswith('gpu:'):
-        device_selection = int(device_selection[4:])
+    if device_select(device_selection):
+        print(f'Setting GPU {device_selection} as active')
+        torch.cuda.device(device_selection)
+        return
 
-    if device_selection != 'cuda' and device_selection != 'current' and device_selection != 'gpu':
-        if device_select(device_selection):
-            if isinstance(device_selection, int):
-                print(f'Setting GPU:{device_selection} as active')
-            else:
-                print(f'Setting {device_selection} as active')
-            torch.cuda.device(device_selection)
-            return
     # By default use current device.
     print('Checking current GPU...')
     device = torch.cuda.current_device()
     device_name = torch.cuda.get_device_name(device)
-    print(f'GPU:{device} detected: {device_name}')
+    print(f'GPU {device} detected: {device_name}')
     if device_select(device):
         return
     print('WARNING: No compatible GPU found. Using the CPU, but this will be very slow!')
     thread_data.device = 'cpu'
     thread_data.device_name = get_processor_name()
-
-def is_first_cuda_device(device):
-    if device is None: return False
-    if device == 0 or device == '0': return True
-    if device == 'cuda' or device == 'cuda:0': return True
-    if device == 'gpu' or device == 'gpu:0': return True
-    if device == 'current': return True
-    if device == torch.device(0): return True
-    return False
 
 def load_model_ckpt():
     if not thread_data.ckpt_file: raise ValueError(f'Thread ckpt_file is undefined.')
@@ -209,7 +205,7 @@ def load_model_ckpt():
     if thread_data.device == 'cpu':
         thread_data.precision = 'full'
 
-    print('loading', thread_data.ckpt_file + '.ckpt', 'to', thread_data.device, 'using precision', thread_data.precision)
+    print('loading', thread_data.ckpt_file + '.ckpt', 'to device', thread_data.device, 'using precision', thread_data.precision)
     sd = load_model_from_config(thread_data.ckpt_file + '.ckpt')
     li, lo = [], []
     for key, value in sd.items():
@@ -296,16 +292,26 @@ def load_model_ckpt():
 
 def unload_filters():
     if thread_data.model_gfpgan is not None:
+        if thread_data.device != 'cpu': thread_data.model_gfpgan.gfpgan.to('cpu')
+
         del thread_data.model_gfpgan
     thread_data.model_gfpgan = None
 
     if thread_data.model_real_esrgan is not None:
+        if thread_data.device != 'cpu': thread_data.model_real_esrgan.model.to('cpu')
+
         del thread_data.model_real_esrgan
     thread_data.model_real_esrgan = None
 
 def unload_models():
     if thread_data.model is not None:
         print('Unloading models...')
+        if thread_data.device != 'cpu':
+            thread_data.modelFS.to('cpu')
+            thread_data.modelCS.to('cpu')
+            thread_data.model.model1.to("cpu")
+            thread_data.model.model2.to("cpu")
+
         del thread_data.model
         del thread_data.modelCS
         del thread_data.modelFS
@@ -319,7 +325,7 @@ def wait_model_move_to(model, target_device): # Send to target_device and wait u
     start_mem = torch.cuda.memory_allocated(thread_data.device) / 1e6
     if start_mem <= 0: return
     model_name = model.__class__.__name__
-    print(f'Device:{thread_data.device} - Sending model {model_name} to {target_device} | Memory transfer starting. Memory Used: {round(start_mem)}Mo')
+    print(f'Device:{thread_data.device} - Sending model {model_name} to {target_device} | Memory transfer starting. Memory Used: {round(start_mem)}Mb')
     start_time = time.time()
     model.to(target_device)
     time_step = start_time
@@ -334,15 +340,15 @@ def wait_model_move_to(model, target_device): # Send to target_device and wait u
         if not is_transfering:
             break;
         if time.time() - time_step > WARNING_TIMEOUT: # Long delay, print to console to show activity.
-            print(f'Device:{thread_data.device} - Waiting for Memory transfer. Memory Used: {round(mem)}Mo, Transfered: {round(start_mem - mem)}Mo')
+            print(f'Device:{thread_data.device} - Waiting for Memory transfer. Memory Used: {round(mem)}Mb, Transfered: {round(start_mem - mem)}Mb')
             time_step = time.time()
-    print(f'Device:{thread_data.device} - {model_name} Moved: {round(start_mem - last_mem)}Mo in {round(time.time() - start_time, 3)} seconds to {target_device}')
+    print(f'Device:{thread_data.device} - {model_name} Moved: {round(start_mem - last_mem)}Mb in {round(time.time() - start_time, 3)} seconds to {target_device}')
 
 def load_model_gfpgan():
     if thread_data.gfpgan_file is None: raise ValueError(f'Thread gfpgan_file is undefined.')
         #print('load_model_gfpgan called without setting gfpgan_file')
         #return
-    if not is_first_cuda_device(thread_data.device):
+    if thread_data.device != 0:
         #TODO Remove when fixed - A bug with GFPGANer and facexlib needs to be fixed before use on other devices.
         raise Exception(f'Current device {torch.device(thread_data.device)} is not {torch.device(0)}. Cannot run GFPGANer.')
     model_path = thread_data.gfpgan_file + ".pth"
@@ -431,15 +437,11 @@ def mk_img(req: Request):
     except Exception as e:
         print(traceback.format_exc())
 
-        if thread_data.reduced_memory:
+        if thread_data.device != 'cpu':
             thread_data.modelFS.to('cpu')
             thread_data.modelCS.to('cpu')
             thread_data.model.model1.to("cpu")
             thread_data.model.model2.to("cpu")
-        else:
-            # Model crashed, release all resources in unknown state.
-            unload_models()
-            unload_filters()
 
         gc() # Release from memory.
         yield json.dumps({
@@ -523,6 +525,7 @@ def do_mk_img(req: Request):
     if needs_model_reload:
         unload_models()
         unload_filters()
+        gc()
         load_model_ckpt()
 
     if thread_data.turbo != req.turbo:
@@ -715,12 +718,12 @@ def do_mk_img(req: Request):
                         # Filter Applied, move to next seed
                         opt_seed += 1
 
-                    if thread_data.reduced_memory:
-                        unload_filters()
+                    # if thread_data.reduced_memory:
+                    #     unload_filters()
                     del img_data
                     gc()
                     if thread_data.device != 'cpu':
-                        print(f'memory_final = {round(torch.cuda.memory_allocated(thread_data.device) / 1e6, 2)}Mo')
+                        print(f'memory_final = {round(torch.cuda.memory_allocated(thread_data.device) / 1e6, 2)}Mb')
 
     print('Task completed')
     yield json.dumps(res.json())

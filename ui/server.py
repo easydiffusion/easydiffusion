@@ -56,23 +56,13 @@ NOCACHE_HEADERS={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma
 app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'media')), name="media")
 app.mount('/plugins', StaticFiles(directory=UI_PLUGINS_DIR), name="plugins")
 
-config_cached = None
-config_last_mod_time = 0
 def getConfig(default_val=APP_CONFIG_DEFAULTS):
-    global config_cached, config_last_mod_time
     try:
         config_json_path = os.path.join(CONFIG_DIR, 'config.json')
         if not os.path.exists(config_json_path):
             return default_val
-        if config_last_mod_time > 0 and config_cached is not None:
-            # Don't read if file was not modified
-            mtime = os.path.getmtime(config_json_path)
-            if mtime <= config_last_mod_time:
-                return config_cached
         with open(config_json_path, 'r', encoding='utf-8') as f:
-            config_cached = json.load(f)
-        config_last_mod_time = os.path.getmtime(config_json_path)
-        return config_cached
+            return json.load(f)
     except Exception as e:
         print(str(e))
         print(traceback.format_exc())
@@ -86,41 +76,16 @@ def setConfig(config):
     except:
         print(traceback.format_exc())
 
-    if 'render_devices' in config:
-        gpu_devices = list(filter(lambda dev: dev.lower().startswith('gpu') or dev.lower().startswith('cuda'), config['render_devices']))
-    else:
-        gpu_devices = []
-
-    has_first_cuda_device = False
-    for device in gpu_devices:
-        if not task_manager.is_first_cuda_device(device.lower()): continue
-        has_first_cuda_device = True
-        break
-    if len(gpu_devices) > 0 and not has_first_cuda_device:
-        print('WARNING: GFPGANer only works on GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.')
-        print('Using CUDA_VISIBLE_DEVICES will remap the selected devices starting at GPU:0 fixing GFPGANer')
-
     try: # config.bat
         config_bat = [
             f"@set update_branch={config['update_branch']}"
         ]
-
-        if os.getenv('CUDA_VISIBLE_DEVICES') is None:
-            if len(gpu_devices) > 0 and not has_first_cuda_device:
-                config_bat.append('::Set the devices visible inside SD-UI here')
-                config_bat.append(f"::@set CUDA_VISIBLE_DEVICES={','.join(gpu_devices)}") # Needs better detection for edge cases, add as a comment for now.
-                print('Add the line "@set CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.bat')
-        else:
-            config_bat.append(f"@set CUDA_VISIBLE_DEVICES={os.getenv('CUDA_VISIBLE_DEVICES')}")
-            if len(gpu_devices) > 0 and not has_first_cuda_device:
-                print('GPU:0 seems to be missing! Validate that CUDA_VISIBLE_DEVICES is set properly.')
         config_bat_path = os.path.join(CONFIG_DIR, 'config.bat')
 
         if os.getenv('SD_UI_BIND_PORT') is not None:
             config_bat.append(f"@set SD_UI_BIND_PORT={os.getenv('SD_UI_BIND_PORT')}")
         if os.getenv('SD_UI_BIND_IP') is not None:
             config_bat.append(f"@set SD_UI_BIND_IP={os.getenv('SD_UI_BIND_IP')}")
-
 
         with open(config_bat_path, 'w', encoding='utf-8') as f:
             f.write('\r\n'.join(config_bat))
@@ -132,22 +97,13 @@ def setConfig(config):
             '#!/bin/bash',
             f"export update_branch={config['update_branch']}"
         ]
-        if os.getenv('CUDA_VISIBLE_DEVICES') is None:
-            if len(gpu_devices) > 0 and not has_first_cuda_device:
-                config_sh.append('#Set the devices visible inside SD-UI here')
-                config_sh.append(f"#CUDA_VISIBLE_DEVICES={','.join(gpu_devices)}") # Needs better detection for edge cases, add as a comment for now.
-                print('Add the line "CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.sh')
-        else:
-            config_sh.append(f"export CUDA_VISIBLE_DEVICES=\"{os.getenv('CUDA_VISIBLE_DEVICES')}\"")
-            if len(gpu_devices) > 0 and not has_first_cuda_device:
-                print('GPU:0 seems to be missing! Validate that CUDA_VISIBLE_DEVICES is set properly.')
+        config_sh_path = os.path.join(CONFIG_DIR, 'config.sh')
 
         if os.getenv('SD_UI_BIND_PORT') is not None:
             config_sh.append(f"export SD_UI_BIND_PORT={os.getenv('SD_UI_BIND_PORT')}")
         if os.getenv('SD_UI_BIND_IP') is not None:
             config_sh.append(f"export SD_UI_BIND_IP={os.getenv('SD_UI_BIND_IP')}")
 
-        config_sh_path = os.path.join(CONFIG_DIR, 'config.sh')
         with open(config_sh_path, 'w', encoding='utf-8') as f:
             f.write('\n'.join(config_sh))
     except Exception as e:
@@ -205,20 +161,6 @@ async def setAppConfig(req : SetAppConfigRequest):
     config = getConfig()
     if req.update_branch:
         config['update_branch'] = req.update_branch
-    if req.render_devices and hasattr(req.render_devices, "__len__"): # strings, array of strings or numbers.
-        render_devices = []
-        if isinstance(req.render_devices, str):
-            req.render_devices = req.render_devices.split(',')
-        if isinstance(req.render_devices, list):
-            for gpu in req.render_devices:
-                if isinstance(req.render_devices, int):
-                    render_devices.append('GPU:' + gpu)
-                else:
-                    render_devices.append(gpu)
-        if isinstance(req.render_devices, int):
-            render_devices.append('GPU:' + req.render_devices)
-        if len(render_devices) > 0:
-            config['render_devices'] = render_devices
     try:
         setConfig(config)
         return JSONResponse({'status': 'OK'}, headers=NOCACHE_HEADERS)
@@ -425,10 +367,8 @@ config = getConfig()
 task_manager.default_model_to_load = resolve_ckpt_to_use()
 task_manager.default_vae_to_load = resolve_vae_to_use()
 if 'render_devices' in config:  # Start a new thread for each device.
-    if isinstance(config['render_devices'], str):
-        config['render_devices'] = config['render_devices'].split(',')
     if not isinstance(config['render_devices'], list):
-        raise Exception('Invalid render_devices value in config.')
+        raise Exception('Invalid render_devices value in config. Should be a list')
     for device in config['render_devices']:
         if task_manager.is_alive(device) >= 1:
             print(device, 'already registered.')
@@ -443,7 +383,7 @@ if task_manager.is_alive() <= 0: # Either no defaults or no devices after loadin
     # Select best GPU device using free memory, if more than one device.
     if task_manager.start_render_thread('auto'): # Detect best device for renders
         # if cuda:0 is missing, another cuda device is better. try to start it...
-        if task_manager.is_alive(0) <= 0 and task_manager.is_alive('cpu') <= 0 and not task_manager.start_render_thread('cuda'):
+        if task_manager.is_alive(0) <= 0 and task_manager.is_alive('cpu') <= 0 and not task_manager.start_render_thread(0):
             print('Failed to start GPU:0...')
     else:
         print('Failed to start gpu device.')
@@ -457,7 +397,7 @@ if is_using_a_gpu and task_manager.is_alive(0) <= 0:
     print('Add the line "@set CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.bat')
     print('Add the line "CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.sh')
 
-# print('active devices', task_manager.get_devices())
+print('active devices', task_manager.get_devices()['active'])
 
 # start the browser ui
 import webbrowser; webbrowser.open('http://localhost:9000')

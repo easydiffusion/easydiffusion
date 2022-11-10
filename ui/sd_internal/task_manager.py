@@ -227,7 +227,7 @@ def thread_get_next_task():
                     queued_task.error = Exception('Cpu cannot be used to run this task. Remove GFPGANer filter to run task.')
                     task = queued_task
                     break
-                if not runtime.is_first_cuda_device(runtime.thread_data.device):
+                if runtime.thread_data.device != 0:
                     continue  # Wait for cuda:0
             if queued_task.render_device and runtime.thread_data.device != queued_task.render_device:
                 # Is asking for a specific render device.
@@ -387,24 +387,17 @@ def get_devices():
 
     return devices
 
-def is_first_cuda_device(device):
-    from . import runtime # When calling runtime from outside thread_render DO NOT USE thread specific attributes or functions.
-    return runtime.is_first_cuda_device(device)
-
-def is_alive(name=None):
+def is_alive(device=None):
     if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('is_alive' + ERR_LOCK_FAILED)
     nbr_alive = 0
     try:
         for rthread in render_threads:
-            if name is not None:
+            if device is not None:
                 weak_data = weak_thread_data.get(rthread)
                 if weak_data is None or not 'device' in weak_data or weak_data['device'] is None:
                     continue
-                thread_name = str(weak_data['device']).lower()
-                if is_first_cuda_device(name):
-                    if not is_first_cuda_device(thread_name):
-                        continue
-                elif thread_name != name:
+                thread_device = weak_data['device']
+                if thread_device != device:
                     continue
             if rthread.is_alive():
                 nbr_alive += 1
@@ -418,7 +411,7 @@ def start_render_thread(device='auto'):
     try:
         rthread = threading.Thread(target=thread_render, kwargs={'device': device})
         rthread.daemon = True
-        rthread.name = THREAD_NAME_PREFIX + device
+        rthread.name = THREAD_NAME_PREFIX + str(device)
         rthread.start()
         render_threads.append(rthread)
     finally:
