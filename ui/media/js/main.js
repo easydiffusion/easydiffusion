@@ -814,7 +814,11 @@ function getCurrentRenderDeviceSelection() {
         return 'cpu'
     }
 
-    return $(useGPUsField).val().join(',')
+    let selectedGPUs = $(useGPUsField).val()
+    if (selectedGPUs.length == 0) {
+        selectedGPUs = ['auto']
+    }
+    return selectedGPUs.join(',')
 }
 
 function makeImage() {
@@ -1134,7 +1138,7 @@ useCPUField.addEventListener('click', function() {
     let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
     if (this.checked) {
         gpuSettingEntry.style.display = 'none'
-    } else if ($(useGPUsField).val().length >= MIN_GPUS_TO_SHOW_SELECTION) {
+    } else if (useGPUsField.options.length >= MIN_GPUS_TO_SHOW_SELECTION) {
         gpuSettingEntry.style.display = ''
     }
 })
