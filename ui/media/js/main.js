@@ -873,7 +873,8 @@ function createTask(task) {
     task['progressBar'] = taskEntry.querySelector('.progress-bar')
     task['stopTask'] = taskEntry.querySelector('.stopTask')
 
-    task['stopTask'].addEventListener('click', async function() {
+    task['stopTask'].addEventListener('click', async function(e) {
+        e.stopPropagation()
         if (task['isProcessing']) {
             task.isProcessing = false
             task.progressBar.classList.remove("active")
