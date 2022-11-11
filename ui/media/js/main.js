@@ -1260,6 +1260,7 @@ function showInitImagePreview() {
         inpaintingEditorContainer.style.display = 'none'
         promptStrengthContainer.style.display = 'table-row'
         samplerSelectionContainer.style.display = 'none'
+
         // maskSetting.checked = false
     })
 
@@ -1274,6 +1275,7 @@ initImagePreview.addEventListener('load', function() {
     inpaintingEditorCanvasBackground.style.backgroundImage = "url('" + this.src + "')"
     // maskSetting.style.display = 'block'
     // inpaintingEditorContainer.style.display = 'block'
+    setImageEditorImage(initImagePreview.src, initImagePreview.naturalWidth, initImagePreview.naturalHeight)
     initImageSizeBox.textContent = initImagePreview.naturalWidth + " x " + initImagePreview.naturalHeight
     initImageSizeBox.style.display = 'block'
 })

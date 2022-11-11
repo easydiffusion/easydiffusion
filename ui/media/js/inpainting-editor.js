@@ -8,7 +8,7 @@ let inpaintingEditor = new DrawingBoard.Board('inpaintingEditor', {
     webStorage: false,
     controls: [{'DrawingMode': {'filler': false}}, 'Size', 'Navigation']
 })
-let inpaintingEditorCanvasBackground = document.querySelector('.drawing-board-canvas-wrapper')
+let inpaintingEditorCanvasBackground = inpaintingEditorContainer.querySelector('.drawing-board-canvas-wrapper')
 
 function resizeInpaintingEditor(widthValue, heightValue) {
     if (widthValue === heightValue) {

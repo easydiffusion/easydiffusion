@@ -866,8 +866,8 @@ input::file-selector-button {
     display: none;
 }
 
-#tab-content-wrapper {
-    border-top: 8px solid var(--background-color1);
+#tab-content-wrapper > * {
+    padding-top: 8px;
 }
 
 .tab-content-inner {

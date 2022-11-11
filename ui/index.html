@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="/media/css/main.css?v=8">
     <link rel="stylesheet" href="/media/css/auto-save.css?v=5">
     <link rel="stylesheet" href="/media/css/modifier-thumbnails.css?v=4">
+    <link rel="stylesheet" href="/media/css/image-editor.css?v=1">
     <link rel="stylesheet" href="/media/css/fontawesome-all.min.css?v=1">
     <link rel="stylesheet" href="/media/css/drawingboard.min.css">
     <script src="/media/js/jquery-3.6.1.min.js"></script>
@@ -26,8 +27,11 @@
             <span id="server-status-msg">Stable Diffusion is starting..</span>
         </div>
         <div id="tab-container">
-            <span id="tab-main" class="tab active">
+            <span id="tab-main" class="tab">
                 <span><i class="fa fa-image icon"></i> Generate</span>
+            </span>
+            <span id="tab-editor" class="tab active">
+                <span><i class="fa fa-pen icon"></i> Editor</span>
             </span>
             <span id="tab-settings" class="tab">
                 <span><i class="fa fa-gear icon"></i> Settings</span>
@@ -39,7 +43,7 @@
     </div>
 
     <div id="tab-content-wrapper">
-        <div id="tab-content-main" class="tab-content active flex-container">
+        <div id="tab-content-main" class="tab-content flex-container">
         <div id="editor">
             <div id="editor-inputs">
                 <div id="editor-inputs-prompt" class="row">
@@ -235,6 +239,15 @@
         </div>
         </div>
 
+        <div id="tab-content-editor" class="tab-content active flex-container">
+            <div id="image-editor-controls"></div>
+            <div id="image-editor-canvas-container">
+                <div id="image-editor-canvas">
+
+                </div>
+            </div>
+        </div>
+
         <div id="tab-content-settings" class="tab-content">
             <div id="system-settings" class="tab-content-inner">
                 <h1>System Settings</h1>
@@ -326,6 +339,7 @@
 <script src="media/js/main.js?v=11"></script>
 <script src="media/js/themes.js?v=4"></script>
 <script src="media/js/dnd.js?v=8"></script>
+<script src="media/js/image-editor.js?v=1"></script>
 <script>
 async function init() {
     await initSettings()

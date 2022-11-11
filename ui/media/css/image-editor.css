@@ -1,0 +1,81 @@
+#image-editor-controls {
+	padding-left: 32px;
+}
+
+.editor-options-container {
+	display: flex;
+	row-gap: 10px;
+	max-width: 210px;
+}
+
+.editor-options-container > * {
+	flex: 1;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.editor-options-container > * > * {
+	position: inherit;
+	width: 32px;
+	height: 32px;
+	border-radius: 16px;
+	background: var(--background-color3);
+	cursor: pointer;
+	transition: opacity 0.25s;
+}
+.editor-options-container > * > *:hover {
+	opacity: 0.75;
+}
+
+.editor-options-container > * > *.active {
+	border: 2px solid #3584e4;
+}
+
+#image_editor_opacity .editor-options-container > * > *:not(.active) {
+	border: 1px solid var(--background-color3);
+}
+
+#image_editor_color .editor-options-container {
+	flex-wrap: wrap;
+}
+#image_editor_color .editor-options-container > * {
+	flex: 20%;
+}
+#image_editor_color .editor-options-container > * > * {
+	position: relative;
+	border: none;
+}
+
+#image_editor_color .editor-options-container > * > *.active::before {
+	content: "\f00c";
+	display: var(--fa-display,inline-block);
+	font-style: normal;
+	font-variant: normal;
+	line-height: 1;
+	text-rendering: auto;
+	font-family: var(--fa-style-family, "Font Awesome 6 Free");
+	font-weight: var(--fa-style, 900);
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%) scale(125%);
+	color: black;
+}
+
+
+#image-editor-canvas-container {
+	/* background: var(--background-color2); */
+	flex: 1;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+#image-editor-canvas .drawing-board-controls {
+	display: none;
+}
+
+#image-editor-canvas .drawing-board-canvas-wrapper {
+	border: 1px solid var(--background-color3);
+}
