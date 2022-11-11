@@ -28,6 +28,7 @@ label {
     font-size: 13px;
     margin-bottom: 6px;
     margin-top: 5px;
+    resize: vertical;
 }
 .image_preview_container {
     margin-top: 10pt;
