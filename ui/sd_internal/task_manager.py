@@ -366,7 +366,7 @@ def get_devices():
     gpu_count = torch.cuda.device_count()
     for device in range(gpu_count):
         device = f'cuda:{device}'
-        if runtime.device_would_fail(device):
+        if not runtime.is_device_compatible(device):
             continue
 
         devices['all'].update({device: torch.cuda.get_device_name(device)})
