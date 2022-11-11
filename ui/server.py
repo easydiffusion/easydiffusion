@@ -22,7 +22,7 @@ OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder
 TASK_TTL = 15 * 60 # Discard last session's task timeout
 APP_CONFIG_DEFAULTS = {
     # auto: selects the cuda device with the most free memory, cuda: use the currently active cuda device.
-    'render_devices': ['auto'], # ['cuda'] or ['CPU', 'GPU:0', 'GPU:1', ...] or ['cpu']
+    'render_devices': ['auto'], # valid entries: 'auto', 'cpu' or 'cuda:N' (where N is a GPU index)
     'update_branch': 'main',
 }
 APP_CONFIG_DEFAULT_MODELS = [
@@ -281,7 +281,7 @@ def render(req : task_manager.ImageRequest):
     # if req.render_device != 'cpu':
     #     req.render_device = int(req.render_device)
     if req.render_device and task_manager.is_alive(req.render_device) <= 0: raise HTTPException(status_code=403, detail=f'{req.render_device} rendering is not enabled in config.json or the thread has died...') # HTTP403 Forbidden
-    if req.use_face_correction and task_manager.is_alive(0) <= 0: #TODO Remove when GFPGANer is fixed upstream.
+    if req.use_face_correction and task_manager.is_alive('cuda:0') <= 0: #TODO Remove when GFPGANer is fixed upstream.
         raise HTTPException(status_code=412, detail=f'GFPGANer only works GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.') # HTTP412 Precondition Failed
     try:
         save_model_to_config(req.use_stable_diffusion_model, req.use_vae_model)
@@ -369,6 +369,7 @@ task_manager.default_vae_to_load = resolve_vae_to_use()
 if 'render_devices' in config:  # Start a new thread for each device.
     if not isinstance(config['render_devices'], list):
         raise Exception('Invalid render_devices value in config. Should be a list')
+    config['render_devices'] = set(config['render_devices']) # de-duplicate
     for device in config['render_devices']:
         if task_manager.is_alive(device) >= 1:
             print(device, 'already registered.')
@@ -383,7 +384,7 @@ if task_manager.is_alive() <= 0: # Either no defaults or no devices after loadin
     # Select best GPU device using free memory, if more than one device.
     if task_manager.start_render_thread('auto'): # Detect best device for renders
         # if cuda:0 is missing, another cuda device is better. try to start it...
-        if task_manager.is_alive(0) <= 0 and task_manager.is_alive('cpu') <= 0 and not task_manager.start_render_thread(0):
+        if task_manager.is_alive('cuda:0') <= 0 and task_manager.is_alive('cpu') <= 0 and not task_manager.start_render_thread('cuda:0'):
             print('Failed to start GPU:0...')
     else:
         print('Failed to start gpu device.')
@@ -391,7 +392,7 @@ if task_manager.is_alive() <= 0: # Either no defaults or no devices after loadin
         print('Failed to start CPU render device...')
 
 is_using_a_gpu = (task_manager.is_alive() > task_manager.is_alive('cpu'))
-if is_using_a_gpu and task_manager.is_alive(0) <= 0:
+if is_using_a_gpu and task_manager.is_alive('cuda:0') <= 0:
     print('WARNING: GFPGANer only works on GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.')
     print('Using CUDA_VISIBLE_DEVICES will remap the selected devices starting at GPU:0 fixing GFPGANer')
     print('Add the line "@set CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.bat')

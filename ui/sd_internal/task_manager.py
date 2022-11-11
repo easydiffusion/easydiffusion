@@ -219,7 +219,7 @@ def thread_get_next_task():
     try:  # Select a render task.
         for queued_task in tasks_queue:
             if queued_task.request.use_face_correction:  # TODO Remove when fixed - A bug with GFPGANer and facexlib needs to be fixed before use on other devices.
-                if is_alive(0) <= 0:  # Allows GFPGANer only on cuda:0.
+                if is_alive('cuda:0') <= 0:  # Allows GFPGANer only on cuda:0.
                     queued_task.error = Exception('cuda:0 is not available with the current config. Remove GFPGANer filter to run task.')
                     task = queued_task
                     break
@@ -227,7 +227,7 @@ def thread_get_next_task():
                     queued_task.error = Exception('Cpu cannot be used to run this task. Remove GFPGANer filter to run task.')
                     task = queued_task
                     break
-                if runtime.thread_data.device != 0:
+                if runtime.thread_data.device != 'cuda:0':
                     continue  # Wait for cuda:0
             if queued_task.render_device and runtime.thread_data.device != queued_task.render_device:
                 # Is asking for a specific render device.
@@ -235,7 +235,7 @@ def thread_get_next_task():
                     continue  # requested device alive, skip current one.
                 else:
                     # Requested device is not active, return error to UI.
-                    queued_task.error = Exception(str(queued_task.render_device) + ' is not currently active.')
+                    queued_task.error = Exception(queued_task.render_device + ' is not currently active.')
                     task = queued_task
                     break
             if not queued_task.render_device and runtime.thread_data.device == 'cpu' and is_alive() > 1:
@@ -365,6 +365,7 @@ def get_devices():
     # list the compatible devices
     gpu_count = torch.cuda.device_count()
     for device in range(gpu_count):
+        device = f'cuda:{device}'
         if runtime.device_would_fail(device):
             continue
 
