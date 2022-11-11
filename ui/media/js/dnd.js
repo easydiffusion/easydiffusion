@@ -182,6 +182,26 @@ const TASK_MAPPING = {
         readUI: () => stableDiffusionModelField.value,
         parse: (val) => val
     },
+    use_vae_model: { name: 'VAE model',
+        setUI: (use_vae_model) => {
+            const oldVal = vaeModelField.value
+
+            let pathIdx = use_vae_model.lastIndexOf('/') // Linux, Mac paths
+            if (pathIdx < 0) {
+                pathIdx = use_vae_model.lastIndexOf('\\') // Windows paths.
+            }
+            if (pathIdx >= 0) {
+                use_vae_model = use_vae_model.slice(pathIdx + 1)
+            }
+            const modelExt = '.ckpt'
+            if (use_vae_model.endsWith(modelExt)) {
+                use_vae_model = use_vae_model.slice(0, use_vae_model.length - modelExt.length)
+            }
+            vaeModelField.value = use_vae_model
+        },
+        readUI: () => vaeModelField.value,
+        parse: (val) => val
+    },
 
     numOutputsParallel: { name: 'Parallel Images',
         setUI: (numOutputsParallel) => {
