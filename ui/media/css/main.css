@@ -428,6 +428,16 @@ img {
 .secondaryButton:hover {
     background: rgb(177, 27, 0);
 }
+.useSettings {
+    background: var(--accent-color);
+    border: var(--make-image-border);
+    color: rgb(255, 221, 255);
+    margin-right: 6pt;
+    float: right;
+}
+.useSettings:hover {
+    background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
+}
 .stopTask {
     float: right;
 }
