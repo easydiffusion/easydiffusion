@@ -51,6 +51,14 @@ const TASK_MAPPING = {
         readUI: () => negativePromptField.value,
         parse: (val) => val
     },
+    active_tags: { name: "Image Modifiers",
+        setUI: (active_tags) => {
+            refreshModifiersState(active_tags)
+        },
+        readUI: () => activeTags.map(x => x.name),
+        parse: (val) => val
+    },
+    
     width: { name: 'Width',
         setUI: (width) => {
             const oldVal = widthField.value
