@@ -253,7 +253,11 @@ def thread_render(device):
     global current_state, current_state_error, current_model_path, current_vae_path
     from . import runtime
     try:
-        runtime.device_init(device)
+        if not runtime.device_init(device):
+            weak_thread_data[threading.current_thread()] = {
+                'error': f'Could not start on the selected device: {device}'
+            }
+            return
     except Exception as e:
         print(traceback.format_exc())
         weak_thread_data[threading.current_thread()] = {
