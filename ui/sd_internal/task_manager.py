@@ -183,7 +183,7 @@ default_vae_to_load = None
 weak_thread_data = weakref.WeakKeyDictionary()
 
 def preload_model(ckpt_file_path=None, vae_file_path=None):
-    global current_state, current_state_error, current_model_path
+    global current_state, current_state_error, current_model_path, current_vae_path
     if ckpt_file_path == None:
         ckpt_file_path = default_model_to_load
     if vae_file_path == None:
