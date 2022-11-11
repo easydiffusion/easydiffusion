@@ -28,6 +28,7 @@ label {
     font-size: 13px;
     margin-bottom: 6px;
     margin-top: 5px;
+    display: block;
 }
 .image_preview_container {
     margin-top: 10pt;
@@ -646,9 +647,9 @@ input::file-selector-button {
 }
 
 @media (min-width: 700px) {
-    #editor {
+    /* #editor {
         max-width: 480px;
-    }
+    } */
     .float-container {
         padding: 20px;
     }
