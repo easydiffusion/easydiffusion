@@ -1417,4 +1417,17 @@ document.querySelectorAll(".tab").forEach(tab => {
     })
 })
 
+window.addEventListener("beforeunload", function(e) {
+    const msg = "Unsaved pictures will be lost!";
+
+    let elementList = document.getElementsByClassName("imageTaskContainer");
+    if (elementList.length != 0) {
+        e.preventDefault();
+        (e || window.event).returnValue = msg;
+        return msg;
+    } else {
+        return true;
+    }
+});
+
 createCollapsibles()
