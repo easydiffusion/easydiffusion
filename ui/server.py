@@ -278,8 +278,8 @@ def render(req : task_manager.ImageRequest):
         print('WARNING Replace {use_cpu: true} by {render_device: "cpu"}')
         req.render_device = 'cpu'
         del req.use_cpu
-    if req.render_device != 'cpu':
-        req.render_device = int(req.render_device)
+    # if req.render_device != 'cpu':
+    #     req.render_device = int(req.render_device)
     if req.render_device and task_manager.is_alive(req.render_device) <= 0: raise HTTPException(status_code=403, detail=f'{req.render_device} rendering is not enabled in config.json or the thread has died...') # HTTP403 Forbidden
     if req.use_face_correction and task_manager.is_alive(0) <= 0: #TODO Remove when GFPGANer is fixed upstream.
         raise HTTPException(status_code=412, detail=f'GFPGANer only works GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.') # HTTP412 Precondition Failed
