@@ -186,16 +186,19 @@ const TASK_MAPPING = {
         setUI: (use_vae_model) => {
             const oldVal = vaeModelField.value
 
-            let pathIdx = use_vae_model.lastIndexOf('/') // Linux, Mac paths
-            if (pathIdx < 0) {
-                pathIdx = use_vae_model.lastIndexOf('\\') // Windows paths.
-            }
-            if (pathIdx >= 0) {
-                use_vae_model = use_vae_model.slice(pathIdx + 1)
-            }
-            const modelExt = '.ckpt'
-            if (use_vae_model.endsWith(modelExt)) {
-                use_vae_model = use_vae_model.slice(0, use_vae_model.length - modelExt.length)
+            if (Boolean(use_vae_model)) {
+                let pathIdx = use_vae_model.lastIndexOf('/') // Linux, Mac paths
+                if (pathIdx < 0) {
+                    pathIdx = use_vae_model.lastIndexOf('\\') // Windows paths.
+                }
+                if (pathIdx >= 0) {
+                    use_vae_model = use_vae_model.slice(pathIdx + 1)
+                }
+                const modelExt = '.ckpt'
+                if (use_vae_model.endsWith(modelExt)) {
+                    use_vae_model = use_vae_model.slice(0, use_vae_model.length - modelExt.length)
+                }
+                use_vae_model = Boolean(use_vae_model) ? use_vae_model : oldVal
             }
             vaeModelField.value = use_vae_model
         },
