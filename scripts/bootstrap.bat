@@ -39,11 +39,11 @@ if "%PACKAGES_TO_INSTALL%" NEQ "" (
         mkdir "%MAMBA_ROOT_PREFIX%"
         call curl -Lk "%MICROMAMBA_DOWNLOAD_URL%" > "%MAMBA_ROOT_PREFIX%\micromamba.exe"
 
-        if "%ERRORLEVEL%" NEQ "0" (
-            echo "There was a problem downloading micromamba. Cannot continue."
-            pause
-            exit /b
-        )
+        @REM if "%ERRORLEVEL%" NEQ "0" (
+        @REM     echo "There was a problem downloading micromamba. Cannot continue."
+        @REM     pause
+        @REM     exit /b
+        @REM )
 
         mkdir "%APPDATA%"
 
