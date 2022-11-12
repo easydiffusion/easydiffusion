@@ -128,6 +128,9 @@ function loadSettings() {
         CURRENTLY_LOADING_SETTINGS = true
         saved_settings.map(saved_setting => {
             var setting = SETTINGS[saved_setting.key]
+            if (setting === undefined) {
+                continue
+            }
             setting.ignore = saved_setting.ignore
             if (!setting.ignore) {
                 setting.value = saved_setting.value
