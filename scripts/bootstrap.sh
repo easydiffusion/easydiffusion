@@ -52,13 +52,14 @@ if [ "$PACKAGES_TO_INSTALL" != "" ]; then
 
         mkdir -p "$MAMBA_ROOT_PREFIX"
         curl -L "$MICROMAMBA_DOWNLOAD_URL" | tar -xvj bin/micromamba -O > "$MAMBA_ROOT_PREFIX/micromamba"
-	if [ "$?" != "0" ]; then
-	    echo
-	    echo "EE micromamba download failed"
-	    echo "EE If the lines above contain 'bzip2: Cannot exec', your system doesn't have bzip2 installed"
-	    echo "EE If there are network errors, please check your internet setup"
-	    fail "micromamba download failed"
-	fi
+
+        if [ "$?" != "0" ]; then
+            echo
+            echo "EE micromamba download failed"
+            echo "EE If the lines above contain 'bzip2: Cannot exec', your system doesn't have bzip2 installed"
+            echo "EE If there are network errors, please check your internet setup"
+            fail "micromamba download failed"
+        fi
 
         chmod u+x "$MAMBA_ROOT_PREFIX/micromamba"
 
