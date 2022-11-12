@@ -334,7 +334,8 @@ def thread_render(device):
                             img_id = out_obj['path'][out_obj['path'].rindex('/') + 1:]
                             task.temp_images[int(img_id)] = runtime.thread_data.temp_images[out_obj['path'][11:]]
                         elif 'data' in out_obj:
-                            task.temp_images[result['output'].index(out_obj)] = out_obj['data']
+                            buf = runtime.base64_str_to_buffer(out_obj['data'])
+                            task.temp_images[result['output'].index(out_obj)] = buf
                 # Before looping back to the generator, mark cache as still alive.
                 task_cache.keep(task.request.session_id, TASK_TTL)
         except Exception as e:
