@@ -129,7 +129,7 @@ function loadSettings() {
         saved_settings.map(saved_setting => {
             var setting = SETTINGS[saved_setting.key]
             if (setting === undefined) {
-                continue
+                return
             }
             setting.ignore = saved_setting.ignore
             if (!setting.ignore) {
