@@ -12,6 +12,8 @@ set INSTALL_ENV_DIR=%cd%\installer_files\env
 set LEGACY_INSTALL_ENV_DIR=%cd%\installer
 set MICROMAMBA_DOWNLOAD_URL=https://github.com/cmdr2/stable-diffusion-ui/releases/download/v1.1/micromamba.exe
 set umamba_exists=F
+set OLD_APPDATA=%APPDATA%
+set APPDATA=%cd%\installer_files\appdata
 
 @rem figure out whether git and conda needs to be installed
 if exist "%INSTALL_ENV_DIR%" set PATH=%INSTALL_ENV_DIR%;%INSTALL_ENV_DIR%\Library\bin;%INSTALL_ENV_DIR%\Scripts;%INSTALL_ENV_DIR%\Library\usr\bin;%PATH%
@@ -43,6 +45,8 @@ if "%PACKAGES_TO_INSTALL%" NEQ "" (
             exit /b
         )
 
+        mkdir "%APPDATA%"
+
         @rem test the mamba binary
         echo Micromamba version:
         call "%MAMBA_ROOT_PREFIX%\micromamba.exe" --version
@@ -63,3 +67,6 @@ if "%PACKAGES_TO_INSTALL%" NEQ "" (
         exit /b
     )
 )
+
+@rem revert to the old APPDATA. only needed it for bypassing a bug in micromamba (with special characters)
+set APPDATA=%OLD_APPDATA%
