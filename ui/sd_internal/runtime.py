@@ -740,6 +740,7 @@ Use Upscaling: {req.use_upscale}
 Sampler: {req.sampler}
 Negative Prompt: {req.negative_prompt}
 Stable Diffusion model: {req.use_stable_diffusion_model + '.ckpt'}
+VAE model: {req.vae_model}
 '''
     try:
         with open(meta_out_path, 'w', encoding='utf-8') as f:
