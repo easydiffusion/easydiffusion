@@ -647,7 +647,7 @@
             } else {
                 concurrent_generators.set(promiseGenerator, Promise.resolve(args))
             }
-            await waitUntil(() => !concurrent_generators.has(promiseGenerator), 250)
+            await waitUntil(() => !concurrent_generators.has(promiseGenerator), CONCURRENT_TASK_INTERVAL)
             return weak_results.get(promiseGenerator)
         }
         static enqueueNew(task, classCtor, progressCallback) {
@@ -957,7 +957,6 @@
                     continue
                 }
                 yield progressCallback?.call(this, { update: value })
-                //yield progressCallback?.call(this, { value, done })
             } while(!done)
             return value
         }
