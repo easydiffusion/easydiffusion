@@ -62,7 +62,7 @@ var PARAMETERS = [
 	{
 		id: "process_order_toggle",
 		type: ParameterType.checkbox,
-		label: "Reverse Processing",
+		label: "Process newest jobs first",
 		note: "reverse the normal processing order",
 		default: false,
 	},
