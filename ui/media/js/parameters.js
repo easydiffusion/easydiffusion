@@ -60,6 +60,13 @@ var PARAMETERS = [
 		default: true,
 	},
 	{
+		id: "process_order_toggle",
+		type: ParameterType.checkbox,
+		label: "Reverse Processing",
+		note: "reverse the normal processing order",
+		default: false,
+	},
+	{
 		id: "turbo",
 		type: ParameterType.checkbox,
 		label: "Turbo Mode",

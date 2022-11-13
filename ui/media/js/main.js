@@ -62,6 +62,8 @@ let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
 // let maskImageClearBtn = document.querySelector('#mask_clear')
 let maskSetting = document.querySelector('#enable_mask')
 
+const processOrder = document.querySelector('#process_order_toggle')
+
 let imagePreview = document.querySelector("#preview")
 imagePreview.addEventListener('drop', function(ev) {
     const data = ev.dataTransfer?.getData("text/plain");
@@ -390,7 +392,7 @@ function getUncompletedTaskEntries() {
             }
             return imageTaskContainer
         })
-    if (true) { //TODO UI Setting to reverse processing ordering.
+    if (!processOrder.checked) {
         taskEntries.reverse()
     }
     return taskEntries
