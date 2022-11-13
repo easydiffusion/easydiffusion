@@ -364,13 +364,9 @@
         constructor(options={}) {
             this._reqBody = Object.assign({}, options)
             if (typeof this._reqBody.session_id === 'undefined') {
-                this._reqBody.session_id = sessionId
-            }
-            if (typeof this._reqBody.session_id === 'number') {
-                this._reqBody.session_id = String(this._reqBody.session_id)
-            }
-            if (typeof this._reqBody.session_id !== 'string') {
-                throw new Error('session_id needs to be a number or a string.')
+                this._reqBody.session_id = String(sessionId)
+            } else if (this._reqBody.session_id !== String(SD.sessionId)) {
+                throw new Error('Use SD.sessionId to set the request session_id.')
             }
         }
 
