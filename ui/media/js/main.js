@@ -736,7 +736,6 @@ function getCurrentUserRequest() {
         seed,
 
         reqBody: {
-            session_id: SD.sessionId,
             seed,
             negative_prompt: negativePromptField.value.trim(),
             num_outputs: numOutputsParallel,
