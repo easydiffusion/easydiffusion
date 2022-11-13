@@ -579,7 +579,7 @@
                         || callback?.call(task)
                         || signal?.aborted)
                         , TASK_STATE_SERVER_UPDATE_DELAY
-                        , SERVER_STATE_VALIDITY_DURATION
+                        , timeout
                     )
                     if (this.#id && serverState.task === this.#id) {
                         this._setStatus(TaskStatus.waiting)
