@@ -486,7 +486,7 @@ function getTaskUpdater(task, reqBody, outputContainer) {
             }
             // task.instances can be a mix of different tasks with uneven number of steps (Render Vs Filter Tasks)
             const overallStepCount = task.instances.reduce(
-                (sum, instance) => sum + (instance.isPending ? (instance.step || stepUpdate.step) / (instance.total_steps || stepUpdate.total_steps) : 1)
+                (sum, instance) => sum + (instance.isPending ? Math.max(0, instance.step || stepUpdate.step) / (instance.total_steps || stepUpdate.total_steps) : 1)
                 , 0 // Initial value
             ) * stepUpdate.total_steps // Scale to current number of steps.
             const totalSteps = task.instances.reduce(
@@ -574,7 +574,7 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
         task.progressBar.style.height = "0px"
         task.progressBar.style.border = "0px solid var(--background-color3)"
         task.progressBar.classList.remove("active")
-        // setStatus('request', 'done', 'success')
+        setStatus('request', 'done', 'success')
     } else {
         task.outputMsg.innerText += `Task ended after ${time} seconds`
     }
