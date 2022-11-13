@@ -586,6 +586,10 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
     if (SD.activeTasks.size > 0) {
         return
     }
+    const uncompletedTasks = getUncompletedTaskEntries()
+    if (uncompletedTasks && uncompletedTasks.length > 0) {
+        return
+    }
 
     stopImageBtn.style.display = 'none'
     renameMakeImageButton()
