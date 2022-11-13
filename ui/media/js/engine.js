@@ -575,13 +575,13 @@
                 case TaskStatus.pending:
                 case TaskStatus.waiting:
                     // Wait for server status to include this task.
-                    await waitUntil(() => ((task.#id && SD.serverState.task === task.#id)
+                    await waitUntil(() => ((task.#id && serverState.task === task.#id)
                         || callback?.call(task)
                         || signal?.aborted)
                         , TASK_STATE_SERVER_UPDATE_DELAY
                         , SERVER_STATE_VALIDITY_DURATION
                     )
-                    if (this.#id && SD.serverState.task === this.#id) {
+                    if (this.#id && serverState.task === this.#id) {
                         this._setStatus(TaskStatus.waiting)
                     }
                     if (callback?.call(this) || signal?.aborted) {
@@ -591,13 +591,19 @@
                         return true
                     }
                     // Wait for task to start on server.
-                    await waitUntil(() => (SD.serverState.task !== task.#id || SD.serverState.session !== 'pending'
+                    await waitUntil(() => (serverState.task !== task.#id || serverState.session !== 'pending'
                         || callback?.call(task)
                         || signal?.aborted)
                         , TASK_STATE_SERVER_UPDATE_DELAY
                         , timeout
                     )
-                    if (SD.serverState.task === this.#id && SD.serverState.session === 'running') {
+                    if (serverState.task === this.#id
+                        && (
+                            serverState.session === 'running'
+                            || serverState.session === 'buffer'
+                            || serverState.session === 'completed'
+                        )
+                    ) {
                         this._setStatus(TaskStatus.processing)
                     }
                     if (callback?.call(task) || signal?.aborted) {
@@ -607,7 +613,7 @@
                         return true
                     }
                 case TaskStatus.processing:
-                    await waitUntil(() => (SD.serverState.task !== task.#id || SD.serverState.session !== 'running'
+                    await waitUntil(() => (serverState.task !== task.#id || serverState.session !== 'running'
                         || callback?.call(task)
                         || signal?.aborted)
                         , TASK_STATE_SERVER_UPDATE_DELAY
