@@ -15,6 +15,9 @@ set umamba_exists=F
 set OLD_APPDATA=%APPDATA%
 set APPDATA=%cd%\installer_files\appdata
 
+@mkdir %cd%\profile
+set USERPROFILE=%cd%\profile
+
 @rem figure out whether git and conda needs to be installed
 if exist "%INSTALL_ENV_DIR%" set PATH=%INSTALL_ENV_DIR%;%INSTALL_ENV_DIR%\Library\bin;%INSTALL_ENV_DIR%\Scripts;%INSTALL_ENV_DIR%\Library\usr\bin;%PATH%
 
