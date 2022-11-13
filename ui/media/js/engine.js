@@ -461,28 +461,31 @@
             }
             this._setStatus(TaskStatus.pending)
             Object.freeze(this._reqBody)
+
+            const abortSignal = (timeout >= 0 ? AbortSignal.timeout(timeout) : undefined)
+            let res = undefined
             try {
                 this.checkReqBody()
+                do {
+                    abortSignal?.throwIfAborted()
+                    res = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(this._reqBody),
+                        signal: abortSignal
+                    })
+                    // status_code 503, already a task running.
+                } while (res.status === 503 && await asyncDelay(RETRY_DELAY_IF_SERVER_IS_BUSY))
             } catch (err) {
                 this.abort(err)
                 throw err
             }
-            const abortSignal = (timeout >= 0 ? AbortSignal.timeout(timeout) : undefined)
-            let res = undefined
-            do {
-                abortSignal?.throwIfAborted()
-                res = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(this._reqBody),
-                    signal: abortSignal
-                })
-                // status_code 503, already a task running.
-            } while (res.status === 503 && await asyncDelay(RETRY_DELAY_IF_SERVER_IS_BUSY))
             if (!res.ok) {
-                throw new Error(`Unexpected response HTTP${res.status}. Details: ${res.statusText}`)
+                const err = new Error(`Unexpected response HTTP${res.status}. Details: ${res.statusText}`)
+                this.abort(err)
+                throw err
             }
             return await res.json()
         }
