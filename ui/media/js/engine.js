@@ -531,8 +531,8 @@
                         task._setStatus(TaskStatus.processing)
                     }
                     if ('step' in value && 'total_steps' in value) {
-                        this.step = value.step
-                        this.total_steps = value.total_steps
+                        task.step = value.step
+                        task.total_steps = value.total_steps
                     }
                 }
                 return onNext.call(this, {done, value})
