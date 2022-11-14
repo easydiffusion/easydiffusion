@@ -203,12 +203,11 @@ function setSystemInfo(devices) {
     activeGPUs = activeGPUs.map(ID_TO_TEXT)
 
     let systemInfo = `
-    <h1>System Info</h1>
     <table>
         <tr><td><label>Processor:</label></td><td class="value">${cpu}</td></tr>
         <tr><td><label>Compatible Graphics Cards (all):</label></td><td class="value">${allGPUs.join('</br>')}</td></tr>
         <tr><td></td><td>&nbsp;</td></tr>
-        <tr><td><label>What's being used for rendering 🔥:</label></td><td class="value">${activeGPUs.join('</br>')}</td></tr>
+        <tr><td><label>Used for rendering 🔥:</label></td><td class="value">${activeGPUs.join('</br>')}</td></tr>
     </table>`
 
     let systemInfoEl = document.querySelector('#system-info')

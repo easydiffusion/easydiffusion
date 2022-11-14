@@ -893,6 +893,7 @@ i.active {
 }
 #system-info {
     max-width: 800px;
+    font-size: 10pt;
 }
 #system-info .value {
     text-align: left;
