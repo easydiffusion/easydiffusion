@@ -190,10 +190,15 @@ function playSound() {
     }
 }
 function setSystemInfo(devices) {
-    let cpu = devices.all.cpu
+    let cpu = devices.all.cpu.name
     let allGPUs = Object.keys(devices.all).filter(d => d != 'cpu')
     let activeGPUs = Object.keys(devices.active)
-    const ID_TO_TEXT = d => `${devices.all[d]} (${d})`
+
+    function ID_TO_TEXT(d) {
+        let info = devices.all[d]
+        return `${info.name} (${d}) (${info.mem_free.toFixed(1)}Gb free / ${info.mem_total.toFixed(1)} Gb total)`
+    }
+
     allGPUs = allGPUs.map(ID_TO_TEXT)
     activeGPUs = activeGPUs.map(ID_TO_TEXT)
 
@@ -1422,7 +1427,7 @@ async function getDevices() {
 
             useGPUsField.innerHTML = ''
             allDeviceIds.forEach(device => {
-                let deviceName = res['all'][device]
+                let deviceName = res['all'][device]['name']
                 let deviceOption = `<option value="${device}">${deviceName} (${device})</option>`
                 useGPUsField.insertAdjacentHTML('beforeend', deviceOption)
             })
