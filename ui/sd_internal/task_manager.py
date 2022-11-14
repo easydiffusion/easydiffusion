@@ -14,7 +14,7 @@ import queue, threading, time, weakref
 from typing import Any, Generator, Hashable, Optional, Union
 
 from pydantic import BaseModel
-from sd_internal import Request, Response, runtime
+from sd_internal import Request, Response, runtime, device_manager
 
 THREAD_NAME_PREFIX = 'Runtime-Render/'
 ERR_LOCK_FAILED = ' failed to acquire lock within timeout.'
@@ -72,7 +72,7 @@ class ImageRequest(BaseModel):
     save_to_disk_path: str = None
     turbo: bool = True
     use_cpu: bool = False ##TODO Remove after UI and plugins transition.
-    render_device: str = None
+    render_device: str = 'auto'
     use_full_precision: bool = False
     use_face_correction: str = None # or "GFPGANv1.3"
     use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
@@ -183,7 +183,7 @@ default_vae_to_load = None
 weak_thread_data = weakref.WeakKeyDictionary()
 
 def preload_model(ckpt_file_path=None, vae_file_path=None):
-    global current_state, current_state_error, current_model_path
+    global current_state, current_state_error, current_model_path, current_vae_path
     if ckpt_file_path == None:
         ckpt_file_path = default_model_to_load
     if vae_file_path == None:
@@ -218,24 +218,17 @@ def thread_get_next_task():
     task = None
     try:  # Select a render task.
         for queued_task in tasks_queue:
-            if queued_task.request.use_face_correction:  # TODO Remove when fixed - A bug with GFPGANer and facexlib needs to be fixed before use on other devices.
-                if is_alive(0) <= 0:  # Allows GFPGANer only on cuda:0.
-                    queued_task.error = Exception('cuda:0 is not available with the current config. Remove GFPGANer filter to run task.')
-                    task = queued_task
-                    break
-                if queued_task.render_device == 'cpu':
-                    queued_task.error = Exception('Cpu cannot be used to run this task. Remove GFPGANer filter to run task.')
-                    task = queued_task
-                    break
-                if not runtime.is_first_cuda_device(runtime.thread_data.device):
-                    continue  # Wait for cuda:0
+            if queued_task.request.use_face_correction and runtime.thread_data.device == 'cpu' and is_alive() == 1:
+                queued_task.error = Exception('The CPU cannot be used to run this task currently. Please remove "Fix incorrect faces" from Image Settings and try again.')
+                task = queued_task
+                break
             if queued_task.render_device and runtime.thread_data.device != queued_task.render_device:
                 # Is asking for a specific render device.
                 if is_alive(queued_task.render_device) > 0:
                     continue  # requested device alive, skip current one.
                 else:
                     # Requested device is not active, return error to UI.
-                    queued_task.error = Exception(str(queued_task.render_device) + ' is not currently active.')
+                    queued_task.error = Exception(queued_task.render_device + ' is not currently active.')
                     task = queued_task
                     break
             if not queued_task.render_device and runtime.thread_data.device == 'cpu' and is_alive() > 1:
@@ -253,7 +246,7 @@ def thread_render(device):
     global current_state, current_state_error, current_model_path, current_vae_path
     from . import runtime
     try:
-        runtime.device_init(device)
+        runtime.thread_init(device)
     except Exception as e:
         print(traceback.format_exc())
         weak_thread_data[threading.current_thread()] = {
@@ -262,24 +255,24 @@ def thread_render(device):
         return
     weak_thread_data[threading.current_thread()] = {
         'device': runtime.thread_data.device,
-        'device_name': runtime.thread_data.device_name
+        'device_name': runtime.thread_data.device_name,
+        'alive': True
     }
     if runtime.thread_data.device != 'cpu' or is_alive() == 1:
         preload_model()
         current_state = ServerStates.Online
     while True:
         task_cache.clean()
+        if not weak_thread_data[threading.current_thread()]['alive']:
+            print(f'Shutting down thread for device {runtime.thread_data.device}')
+            runtime.unload_models()
+            runtime.unload_filters()
+            return
         if isinstance(current_state_error, SystemExit):
             current_state = ServerStates.Unavailable
             return
         task = thread_get_next_task()
         if task is None:
-            if runtime.thread_data.device == 'cpu' and is_alive() > 1 and hasattr(runtime.thread_data, 'lastActive') and time.time() - runtime.thread_data.lastActive > CPU_UNLOAD_TIMEOUT:
-                # GPUs present and CPU is idle. Unload resources.
-                runtime.unload_models()
-                runtime.unload_filters()
-                del runtime.thread_data.lastActive
-                print('unloaded models from CPU because it was idle for too long')
             time.sleep(1)
             continue
         if task.error is not None:
@@ -330,7 +323,8 @@ def thread_render(device):
                             img_id = out_obj['path'][out_obj['path'].rindex('/') + 1:]
                             task.temp_images[int(img_id)] = runtime.thread_data.temp_images[out_obj['path'][11:]]
                         elif 'data' in out_obj:
-                            task.temp_images[result['output'].index(out_obj)] = out_obj['data']
+                            buf = runtime.base64_str_to_buffer(out_obj['data'])
+                            task.temp_images[result['output'].index(out_obj)] = buf
                 # Before looping back to the generator, mark cache as still alive.
                 task_cache.keep(task.request.session_id, TASK_TTL)
         except Exception as e:
@@ -362,15 +356,30 @@ def get_devices():
         'active': {},
     }
 
+    def get_device_info(device):
+        if device == 'cpu':
+            return {'name': device_manager.get_processor_name()}
+            
+        mem_free, mem_total = torch.cuda.mem_get_info(device)
+        mem_free /= float(10**9)
+        mem_total /= float(10**9)
+
+        return {
+            'name': torch.cuda.get_device_name(device),
+            'mem_free': mem_free,
+            'mem_total': mem_total,
+        }
+
     # list the compatible devices
     gpu_count = torch.cuda.device_count()
     for device in range(gpu_count):
-        if runtime.device_would_fail(device):
+        device = f'cuda:{device}'
+        if not device_manager.is_device_compatible(device):
             continue
 
-        devices['all'].update({device: torch.cuda.get_device_name(device)})
+        devices['all'].update({device: get_device_info(device)})
 
-    devices['all'].update({'cpu': runtime.get_processor_name()})
+    devices['all'].update({'cpu': get_device_info('cpu')})
 
     # list the activated devices
     if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('get_devices' + ERR_LOCK_FAILED)
@@ -381,30 +390,24 @@ def get_devices():
             weak_data = weak_thread_data.get(rthread)
             if not weak_data or not 'device' in weak_data or not 'device_name' in weak_data:
                 continue
-            devices['active'].update({weak_data['device']: weak_data['device_name']})
+            device = weak_data['device']
+            devices['active'].update({device: get_device_info(device)})
     finally:
         manager_lock.release()
 
     return devices
 
-def is_first_cuda_device(device):
-    from . import runtime # When calling runtime from outside thread_render DO NOT USE thread specific attributes or functions.
-    return runtime.is_first_cuda_device(device)
-
-def is_alive(name=None):
+def is_alive(device=None):
     if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('is_alive' + ERR_LOCK_FAILED)
     nbr_alive = 0
     try:
         for rthread in render_threads:
-            if name is not None:
+            if device is not None:
                 weak_data = weak_thread_data.get(rthread)
                 if weak_data is None or not 'device' in weak_data or weak_data['device'] is None:
                     continue
-                thread_name = str(weak_data['device']).lower()
-                if is_first_cuda_device(name):
-                    if not is_first_cuda_device(thread_name):
-                        continue
-                elif thread_name != name:
+                thread_device = weak_data['device']
+                if thread_device != device:
                     continue
             if rthread.is_alive():
                 nbr_alive += 1
@@ -412,8 +415,8 @@ def is_alive(name=None):
     finally:
         manager_lock.release()
 
-def start_render_thread(device='auto'):
-    if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('start_render_threads' + ERR_LOCK_FAILED)
+def start_render_thread(device):
+    if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('start_render_thread' + ERR_LOCK_FAILED)
     print('Start new Rendering Thread on device', device)
     try:
         rthread = threading.Thread(target=thread_render, kwargs={'device': device})
@@ -426,12 +429,66 @@ def start_render_thread(device='auto'):
     timeout = DEVICE_START_TIMEOUT
     while not rthread.is_alive() or not rthread in weak_thread_data or not 'device' in weak_thread_data[rthread]:
         if rthread in weak_thread_data and 'error' in weak_thread_data[rthread]:
+            print(rthread, device, 'error:', weak_thread_data[rthread]['error'])
             return False
         if timeout <= 0:
             return False
         timeout -= 1
         time.sleep(1)
     return True
+
+def stop_render_thread(device):
+    try:
+        device_manager.validate_device_id(device, log_prefix='stop_render_thread')
+    except:
+        print(traceback.format_exec())
+        return False
+
+    if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('stop_render_thread' + ERR_LOCK_FAILED)
+    print('Stopping Rendering Thread on device', device)
+
+    try:
+        thread_to_remove = None
+        for rthread in render_threads:
+            weak_data = weak_thread_data.get(rthread)
+            if weak_data is None or not 'device' in weak_data or weak_data['device'] is None:
+                continue
+            thread_device = weak_data['device']
+            if thread_device == device:
+                weak_data['alive'] = False
+                thread_to_remove = rthread
+                break
+        if thread_to_remove is not None:
+            render_threads.remove(rthread)
+            return True
+    finally:
+        manager_lock.release()
+
+    return False
+
+def update_render_threads(render_devices, active_devices):
+    devices_to_start, devices_to_stop = device_manager.get_device_delta(render_devices, active_devices)
+    print('devices_to_start', devices_to_start)
+    print('devices_to_stop', devices_to_stop)
+
+    for device in devices_to_stop:
+        if is_alive(device) <= 0:
+            print(device, 'is not alive')
+            continue
+        if not stop_render_thread(device):
+            print(device, 'could not stop render thread')
+
+    for device in devices_to_start:
+        if is_alive(device) >= 1:
+            print(device, 'already registered.')
+            continue
+        if not start_render_thread(device):
+            print(device, 'failed to start.')
+
+    if is_alive() <= 0: # No running devices, probably invalid user config.
+        raise EnvironmentError('ERROR: No active render devices! Please verify the "render_devices" value in config.json')
+
+    print('active devices', get_devices()['active'])
 
 def shutdown_event(): # Signal render thread to close on shutdown
     global current_state_error
@@ -479,7 +536,6 @@ def render(req : ImageRequest):
         r.stream_image_progress = False
 
     new_task = RenderTask(r)
-    new_task.render_device = req.render_device
 
     if task_cache.put(r.session_id, new_task, TASK_TTL):
         # Use twice the normal timeout for adding user requests.

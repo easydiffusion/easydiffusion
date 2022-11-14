@@ -27,6 +27,7 @@ let maskImageSelector = document.querySelector("#mask")
 let maskImagePreview = document.querySelector("#mask_preview")
 let turboField = document.querySelector('#turbo')
 let useCPUField = document.querySelector('#use_cpu')
+let autoPickGPUsField = document.querySelector('#auto_pick_gpus')
 let useGPUsField = document.querySelector('#use_gpus')
 let useFullPrecisionField = document.querySelector('#use_full_precision')
 let saveToDiskField = document.querySelector('#save_to_disk')
@@ -87,7 +88,6 @@ maskResetButton.style.fontWeight = 'normal'
 maskResetButton.style.fontSize = '10pt'
 
 let serverState = {'status': 'Offline', 'time': Date.now()}
-let lastPromptUsed = ''
 let bellPending = false
 
 let taskQueue = []
@@ -189,6 +189,34 @@ function playSound() {
         })
     }
 }
+function setSystemInfo(devices) {
+    let cpu = devices.all.cpu.name
+    let allGPUs = Object.keys(devices.all).filter(d => d != 'cpu')
+    let activeGPUs = Object.keys(devices.active)
+
+    function ID_TO_TEXT(d) {
+        let info = devices.all[d]
+        if ("mem_free" in info && "mem_total" in info) {
+            return `${info.name} <small>(${d}) (${info.mem_free.toFixed(1)}Gb free / ${info.mem_total.toFixed(1)} Gb total)</small>`
+        } else {
+            return `${info.name} <small>(${d}) (no memory info)</small>`
+        }
+    }
+
+    allGPUs = allGPUs.map(ID_TO_TEXT)
+    activeGPUs = activeGPUs.map(ID_TO_TEXT)
+
+    let systemInfo = `
+    <table>
+        <tr><td><label>Processor:</label></td><td class="value">${cpu}</td></tr>
+        <tr><td><label>Compatible Graphics Cards (all):</label></td><td class="value">${allGPUs.join('</br>')}</td></tr>
+        <tr><td></td><td>&nbsp;</td></tr>
+        <tr><td><label>Used for rendering 🔥:</label></td><td class="value">${activeGPUs.join('</br>')}</td></tr>
+    </table>`
+
+    let systemInfoEl = document.querySelector('#system-info')
+    systemInfoEl.innerHTML = systemInfo
+}
 
 async function healthCheck() {
     try {
@@ -222,8 +250,12 @@ async function healthCheck() {
                 setServerStatus('error', serverState.status.toLowerCase())
                 break
         }
+        if (serverState.devices) {
+            setSystemInfo(serverState.devices)
+        }
         serverState.time = Date.now()
     } catch (e) {
+        console.log(e)
         serverState = {'status': 'Offline', 'time': Date.now()}
         setServerStatus('error', 'offline')
     }
@@ -428,7 +460,6 @@ async function doMakeImage(task) {
 
     let res = undefined
     try {
-        const lastTask = serverState.task
         let renderRequest = undefined
         do {
             res = await fetch('/render', {
@@ -633,7 +664,6 @@ async function doMakeImage(task) {
             return false
         }
 
-        lastPromptUsed = reqBody['prompt']
         showImages(reqBody, stepUpdate, outputContainer, false)
     } catch (e) {
         console.log('request error', e)
@@ -810,11 +840,16 @@ function getCurrentUserRequest() {
 }
 
 function getCurrentRenderDeviceSelection() {
-    if (useCPUField.checked) {
+    let selectedGPUs = $('#use_gpus').val()
+
+    if (useCPUField.checked && !autoPickGPUsField.checked) {
         return 'cpu'
     }
+    if (autoPickGPUsField.checked || selectedGPUs.length == 0) {
+        return 'auto'
+    }
 
-    return $(useGPUsField).val().join(',')
+    return selectedGPUs.join(',')
 }
 
 function makeImage() {
@@ -1132,11 +1167,37 @@ updatePromptStrength()
 
 useCPUField.addEventListener('click', function() {
     let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
+    let autoPickGPUSettingEntry = getParameterSettingsEntry('auto_pick_gpus')
     if (this.checked) {
         gpuSettingEntry.style.display = 'none'
-    } else if ($(useGPUsField).val().length >= MIN_GPUS_TO_SHOW_SELECTION) {
+        autoPickGPUSettingEntry.style.display = 'none'
+        autoPickGPUsField.setAttribute('data-old-value', autoPickGPUsField.checked)
+        autoPickGPUsField.checked = false
+    } else if (useGPUsField.options.length >= MIN_GPUS_TO_SHOW_SELECTION) {
         gpuSettingEntry.style.display = ''
+        autoPickGPUSettingEntry.style.display = ''
+        let oldVal = autoPickGPUsField.getAttribute('data-old-value')
+        if (oldVal === null || oldVal === undefined) { // the UI started with CPU selected by default
+            autoPickGPUsField.checked = true
+        } else {
+            autoPickGPUsField.checked = (oldVal === 'true')
+        }
+        gpuSettingEntry.style.display = (autoPickGPUsField.checked ? 'none' : '')
     }
+})
+
+useGPUsField.addEventListener('click', function() {
+    let selectedGPUs = $('#use_gpus').val()
+    autoPickGPUsField.checked = (selectedGPUs.length === 0)
+})
+
+autoPickGPUsField.addEventListener('click', function() {
+    if (this.checked) {
+        $('#use_gpus').val([])
+    }
+
+    let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
+    gpuSettingEntry.style.display = (this.checked ? 'none' : '')
 })
 
 async function changeAppConfig(configDelta) {
@@ -1355,24 +1416,33 @@ async function getDevices() {
                 useCPUField.checked = true
             }
 
-            if (allDeviceIds.length < MIN_GPUS_TO_SHOW_SELECTION) {
+            if (allDeviceIds.length < MIN_GPUS_TO_SHOW_SELECTION || useCPUField.checked) {
                 let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
                 gpuSettingEntry.style.display = 'none'
-
-                if (allDeviceIds.length === 0) {
-                    useCPUField.checked = true
-                    useCPUField.disabled = true // no compatible GPUs, so make the CPU mandatory
-                }
+                let autoPickGPUSettingEntry = getParameterSettingsEntry('auto_pick_gpus')
+                autoPickGPUSettingEntry.style.display = 'none'
             }
 
-            useGPUsField.innerHTML = ''
+            if (allDeviceIds.length === 0) {
+                useCPUField.checked = true
+                useCPUField.disabled = true // no compatible GPUs, so make the CPU mandatory
+            }
 
+            autoPickGPUsField.checked = (res['config'] === 'auto')
+
+            useGPUsField.innerHTML = ''
             allDeviceIds.forEach(device => {
-                let deviceName = res['all'][device]
-                let selected = (activeDeviceIds.includes(device) ? 'selected' : '')
-                let deviceOption = `<option value="${device}" ${selected}>${deviceName}</option>`
+                let deviceName = res['all'][device]['name']
+                let deviceOption = `<option value="${device}">${deviceName} (${device})</option>`
                 useGPUsField.insertAdjacentHTML('beforeend', deviceOption)
             })
+
+            if (autoPickGPUsField.checked) {
+                let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
+                gpuSettingEntry.style.display = 'none'
+            } else {
+                $('#use_gpus').val(activeDeviceIds)
+            }
         }
     } catch (e) {
         console.log('error fetching devices', e)
@@ -1418,5 +1488,18 @@ document.querySelectorAll(".tab").forEach(tab => {
         }
     })
 })
+
+window.addEventListener("beforeunload", function(e) {
+    const msg = "Unsaved pictures will be lost!";
+
+    let elementList = document.getElementsByClassName("imageTaskContainer");
+    if (elementList.length != 0) {
+        e.preventDefault();
+        (e || window.event).returnValue = msg;
+        return msg;
+    } else {
+        return true;
+    }
+});
 
 createCollapsibles()

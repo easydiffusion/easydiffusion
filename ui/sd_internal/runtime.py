@@ -35,8 +35,10 @@ logging.set_verbosity_error()
 # consts
 config_yaml = "optimizedSD/v1-inference.yaml"
 filename_regex = re.compile('[^a-zA-Z0-9]')
+force_gfpgan_to_cuda0 = True # workaround: gfpgan currently works only on cuda:0
 
 # api stuff
+from sd_internal import device_manager
 from . import Request, Response, Image as ResponseImage
 import base64
 from io import BytesIO
@@ -45,62 +47,7 @@ from io import BytesIO
 from threading import local as LocalThreadVars
 thread_data = LocalThreadVars()
 
-def get_processor_name():
-    try:
-        import platform, subprocess
-        if platform.system() == "Windows":
-            return platform.processor()
-        elif platform.system() == "Darwin":
-            os.environ['PATH'] = os.environ['PATH'] + os.pathsep + '/usr/sbin'
-            command ="sysctl -n machdep.cpu.brand_string"
-            return subprocess.check_output(command).strip()
-        elif platform.system() == "Linux":
-            command = "cat /proc/cpuinfo"
-            all_info = subprocess.check_output(command, shell=True).decode().strip()
-            for line in all_info.split("\n"):
-                if "model name" in line:
-                    return re.sub( ".*model name.*:", "", line,1).strip()
-    except:
-        print(traceback.format_exc())
-        return "cpu"
-
-def device_would_fail(device):
-    if device == 'cpu': return None
-    # Returns None when no issues found, otherwise returns the detected error str.
-    # Memory check
-    try:
-        mem_free, mem_total = torch.cuda.mem_get_info(device)
-        mem_total /= float(10**9)
-        if mem_total < 3.0:
-            return 'GPUs with less than 3 GB of VRAM are not compatible with Stable Diffusion'
-    except RuntimeError as e:
-        return str(e) # Return cuda errors from mem_get_info as strings
-    return None
-
-def device_select(device):
-    if device == 'cpu': return True
-    if not torch.cuda.is_available(): return False
-    failure_msg = device_would_fail(device)
-    if failure_msg:
-        if 'invalid device' in failure_msg:
-            raise NameError(f'GPU "{device}" could not be found. Remove this device from config.render_devices or use one of "auto" or "cuda".')
-        print(failure_msg)
-        return False
-
-    thread_data.device_name = torch.cuda.get_device_name(device)
-    thread_data.device = device
-
-    # Force full precision on 1660 and 1650 NVIDIA cards to avoid creating green images
-    device_name = thread_data.device_name.lower()
-    thread_data.force_full_precision = ('nvidia' in device_name or 'geforce' in device_name) and (' 1660' in device_name or ' 1650' in device_name)
-    if thread_data.force_full_precision:
-        print('forcing full precision on NVIDIA 16xx cards, to avoid green images. GPU detected: ', thread_data.device_name)
-        # Apply force_full_precision now before models are loaded.
-        thread_data.precision = 'full'
-
-    return True
-
-def device_init(device_selection=None):
+def thread_init(device):
     # Thread bound properties
     thread_data.stop_processing = False
     thread_data.temp_images = {}
@@ -129,72 +76,7 @@ def device_init(device_selection=None):
     thread_data.force_full_precision = False
     thread_data.reduced_memory = True
 
-    device_selection = device_selection.lower()
-
-    if device_selection == 'cpu':
-        thread_data.device = 'cpu'
-        thread_data.device_name = get_processor_name()
-        print('Render device CPU available as', thread_data.device_name)
-        return
-    if not torch.cuda.is_available():
-        if device_selection == 'auto' or device_selection == 'current':
-            print('WARNING: Could not find a compatible GPU. Using the CPU, but this will be very slow!')
-            thread_data.device = 'cpu'
-            thread_data.device_name = get_processor_name()
-            return
-        else:
-            raise EnvironmentError(f'Could not find a compatible GPU for the requested device_selection: {device_selection}!')
-    device_count = torch.cuda.device_count()
-    if device_count <= 1 and device_selection == 'auto':
-        device_selection = 'current' # Use 'auto' only when there is more than one compatible device found.
-    if device_selection == 'auto':
-        print('Autoselecting GPU. Using most free memory.')
-        max_mem_free = 0
-        best_device = None
-        for device in range(device_count):
-            mem_free, mem_total = torch.cuda.mem_get_info(device)
-            mem_free /= float(10**9)
-            mem_total /= float(10**9)
-            device_name = torch.cuda.get_device_name(device)
-            print(f'GPU:{device} detected: {device_name} - Memory: {round(mem_total - mem_free, 2)}Go / {round(mem_total, 2)}Go')
-            if max_mem_free < mem_free:
-                max_mem_free = mem_free
-                best_device = device
-        if best_device and device_select(device):
-            print(f'Setting GPU:{device} as active')
-            torch.cuda.device(device)
-            return
-
-    if device_selection.startswith('gpu:'):
-        device_selection = int(device_selection[4:])
-
-    if device_selection != 'cuda' and device_selection != 'current' and device_selection != 'gpu':
-        if device_select(device_selection):
-            if isinstance(device_selection, int):
-                print(f'Setting GPU:{device_selection} as active')
-            else:
-                print(f'Setting {device_selection} as active')
-            torch.cuda.device(device_selection)
-            return
-    # By default use current device.
-    print('Checking current GPU...')
-    device = torch.cuda.current_device()
-    device_name = torch.cuda.get_device_name(device)
-    print(f'GPU:{device} detected: {device_name}')
-    if device_select(device):
-        return
-    print('WARNING: No compatible GPU found. Using the CPU, but this will be very slow!')
-    thread_data.device = 'cpu'
-    thread_data.device_name = get_processor_name()
-
-def is_first_cuda_device(device):
-    if device is None: return False
-    if device == 0 or device == '0': return True
-    if device == 'cuda' or device == 'cuda:0': return True
-    if device == 'gpu' or device == 'gpu:0': return True
-    if device == 'current': return True
-    if device == torch.device(0): return True
-    return False
+    device_manager.device_init(thread_data, device)
 
 def load_model_ckpt():
     if not thread_data.ckpt_file: raise ValueError(f'Thread ckpt_file is undefined.')
@@ -209,7 +91,7 @@ def load_model_ckpt():
     if thread_data.device == 'cpu':
         thread_data.precision = 'full'
 
-    print('loading', thread_data.ckpt_file + '.ckpt', 'to', thread_data.device, 'using precision', thread_data.precision)
+    print('loading', thread_data.ckpt_file + '.ckpt', 'to device', thread_data.device, 'using precision', thread_data.precision)
     sd = load_model_from_config(thread_data.ckpt_file + '.ckpt')
     li, lo = [], []
     for key, value in sd.items():
@@ -296,16 +178,28 @@ def load_model_ckpt():
 
 def unload_filters():
     if thread_data.model_gfpgan is not None:
+        if thread_data.device != 'cpu': thread_data.model_gfpgan.gfpgan.to('cpu')
+
         del thread_data.model_gfpgan
     thread_data.model_gfpgan = None
 
     if thread_data.model_real_esrgan is not None:
+        if thread_data.device != 'cpu': thread_data.model_real_esrgan.model.to('cpu')
+
         del thread_data.model_real_esrgan
     thread_data.model_real_esrgan = None
+
+    gc()
 
 def unload_models():
     if thread_data.model is not None:
         print('Unloading models...')
+        if thread_data.device != 'cpu':
+            thread_data.modelFS.to('cpu')
+            thread_data.modelCS.to('cpu')
+            thread_data.model.model1.to("cpu")
+            thread_data.model.model2.to("cpu")
+
         del thread_data.model
         del thread_data.modelCS
         del thread_data.modelFS
@@ -314,12 +208,14 @@ def unload_models():
     thread_data.modelCS = None
     thread_data.modelFS = None
 
+    gc()
+
 def wait_model_move_to(model, target_device): # Send to target_device and wait until complete.
     if thread_data.device == target_device: return
     start_mem = torch.cuda.memory_allocated(thread_data.device) / 1e6
     if start_mem <= 0: return
     model_name = model.__class__.__name__
-    print(f'Device:{thread_data.device} - Sending model {model_name} to {target_device} | Memory transfer starting. Memory Used: {round(start_mem)}Mo')
+    print(f'Device {thread_data.device} - Sending model {model_name} to {target_device} | Memory transfer starting. Memory Used: {round(start_mem)}Mb')
     start_time = time.time()
     model.to(target_device)
     time_step = start_time
@@ -334,25 +230,19 @@ def wait_model_move_to(model, target_device): # Send to target_device and wait u
         if not is_transfering:
             break;
         if time.time() - time_step > WARNING_TIMEOUT: # Long delay, print to console to show activity.
-            print(f'Device:{thread_data.device} - Waiting for Memory transfer. Memory Used: {round(mem)}Mo, Transfered: {round(start_mem - mem)}Mo')
+            print(f'Device {thread_data.device} - Waiting for Memory transfer. Memory Used: {round(mem)}Mb, Transfered: {round(start_mem - mem)}Mb')
             time_step = time.time()
-    print(f'Device:{thread_data.device} - {model_name} Moved: {round(start_mem - last_mem)}Mo in {round(time.time() - start_time, 3)} seconds to {target_device}')
+    print(f'Device {thread_data.device} - {model_name} Moved: {round(start_mem - last_mem)}Mb in {round(time.time() - start_time, 3)} seconds to {target_device}')
 
 def load_model_gfpgan():
     if thread_data.gfpgan_file is None: raise ValueError(f'Thread gfpgan_file is undefined.')
-        #print('load_model_gfpgan called without setting gfpgan_file')
-        #return
-    if not is_first_cuda_device(thread_data.device):
-        #TODO Remove when fixed - A bug with GFPGANer and facexlib needs to be fixed before use on other devices.
-        raise Exception(f'Current device {torch.device(thread_data.device)} is not {torch.device(0)}. Cannot run GFPGANer.')
     model_path = thread_data.gfpgan_file + ".pth"
-    thread_data.model_gfpgan = GFPGANer(device=torch.device(thread_data.device), model_path=model_path, upscale=1, arch='clean', channel_multiplier=2, bg_upsampler=None)
+    device = 'cuda:0' if force_gfpgan_to_cuda0 else thread_data.device
+    thread_data.model_gfpgan = GFPGANer(device=torch.device(device), model_path=model_path, upscale=1, arch='clean', channel_multiplier=2, bg_upsampler=None)
     print('loaded', thread_data.gfpgan_file, 'to', thread_data.model_gfpgan.device, 'precision', thread_data.precision)
 
 def load_model_real_esrgan():
     if thread_data.real_esrgan_file is None: raise ValueError(f'Thread real_esrgan_file is undefined.')
-        #print('load_model_real_esrgan called without setting real_esrgan_file')
-        #return
     model_path = thread_data.real_esrgan_file + ".pth"
 
     RealESRGAN_models = {
@@ -397,11 +287,11 @@ def get_base_path(disk_path, session_id, prompt, img_id, ext, suffix=None):
 def apply_filters(filter_name, image_data, model_path=None):
     print(f'Applying filter {filter_name}...')
     gc() # Free space before loading new data.
-    if isinstance(image_data, torch.Tensor):
-        print(image_data)
-        image_data.to(thread_data.device)
 
     if filter_name == 'gfpgan':
+        if isinstance(image_data, torch.Tensor):
+            image_data.to('cuda:0' if force_gfpgan_to_cuda0 else thread_data.device)
+
         if model_path is not None and model_path != thread_data.gfpgan_file:
             thread_data.gfpgan_file = model_path
             load_model_gfpgan()
@@ -413,6 +303,9 @@ def apply_filters(filter_name, image_data, model_path=None):
         image_data = output[:,:,::-1]
 
     if filter_name == 'real_esrgan':
+        if isinstance(image_data, torch.Tensor):
+            image_data.to(thread_data.device)
+
         if model_path is not None and model_path != thread_data.real_esrgan_file:
             thread_data.real_esrgan_file = model_path
             load_model_real_esrgan()
@@ -431,15 +324,11 @@ def mk_img(req: Request):
     except Exception as e:
         print(traceback.format_exc())
 
-        if thread_data.reduced_memory:
+        if thread_data.device != 'cpu':
             thread_data.modelFS.to('cpu')
             thread_data.modelCS.to('cpu')
             thread_data.model.model1.to("cpu")
             thread_data.model.model2.to("cpu")
-        else:
-            # Model crashed, release all resources in unknown state.
-            unload_models()
-            unload_filters()
 
         gc() # Release from memory.
         yield json.dumps({
@@ -715,12 +604,12 @@ def do_mk_img(req: Request):
                         # Filter Applied, move to next seed
                         opt_seed += 1
 
-                    if thread_data.reduced_memory:
-                        unload_filters()
+                    # if thread_data.reduced_memory:
+                    #     unload_filters()
                     del img_data
                     gc()
                     if thread_data.device != 'cpu':
-                        print(f'memory_final = {round(torch.cuda.memory_allocated(thread_data.device) / 1e6, 2)}Mo')
+                        print(f'memory_final = {round(torch.cuda.memory_allocated(thread_data.device) / 1e6, 2)}Mb')
 
     print('Task completed')
     yield json.dumps(res.json())
@@ -744,6 +633,7 @@ Use Upscaling: {req.use_upscale}
 Sampler: {req.sampler}
 Negative Prompt: {req.negative_prompt}
 Stable Diffusion model: {req.use_stable_diffusion_model + '.ckpt'}
+VAE model: {req.use_vae_model}
 '''
     try:
         with open(meta_out_path, 'w', encoding='utf-8') as f:
@@ -874,9 +764,13 @@ def img_to_base64_str(img, output_format="PNG"):
     img_str = "data:image/png;base64," + base64.b64encode(img_byte).decode()
     return img_str
 
-def base64_str_to_img(img_str):
+def base64_str_to_buffer(img_str):
     img_str = img_str[len("data:image/png;base64,"):]
     data = base64.b64decode(img_str)
     buffered = BytesIO(data)
+    return buffered
+
+def base64_str_to_img(img_str):
+    buffered = base64_str_to_buffer(img_str)
     img = Image.open(buffered)
     return img

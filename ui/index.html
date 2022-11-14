@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" href="/media/images/favicon-32x32.png" sizes="32x32">
     <link rel="stylesheet" href="/media/css/fonts.css?v=1">
     <link rel="stylesheet" href="/media/css/themes.css?v=2">
-    <link rel="stylesheet" href="/media/css/main.css?v=8">
+    <link rel="stylesheet" href="/media/css/main.css?v=15">
     <link rel="stylesheet" href="/media/css/auto-save.css?v=5">
     <link rel="stylesheet" href="/media/css/modifier-thumbnails.css?v=4">
     <link rel="stylesheet" href="/media/css/image-editor.css?v=1">
@@ -20,7 +20,7 @@
 <div id="container">
     <div id="top-nav">
         <div id="logo">
-            <h1>Stable Diffusion UI <small>v2.3.13 <span id="updateBranchLabel"></span></small></h1>
+            <h1>Stable Diffusion UI <small>v2.4.2 <span id="updateBranchLabel"></span></small></h1>
         </div>
         <div id="server-status">
             <div id="server-status-color">●</div>
@@ -252,13 +252,18 @@
             <div id="system-settings" class="tab-content-inner">
                 <h1>System Settings</h1>
                 <table class="form-table"></table>
+                <br/>
+                <div>
+                    <h3><i class="fa fa-microchip icon"></i> System Info</h3>
+                    <div id="system-info"></div>
+                </div>
             </div>
         </div>
         <div id="tab-content-about" class="tab-content">
             <div class="tab-content-inner">
                 <div class="float-container">
                     <div class="float-child">
-			<h1>Help</h1>
+                        <h1>Help</h1>
                         <ul id="help-links">
                             <li><span class="help-section">Using the software</span>
                             <ul>
@@ -283,7 +288,7 @@
                     </div>
   
                     <div class="float-child">
-			<h1>Community</h1>
+                        <h1>Community</h1>
                         <ul id="community-links">
                             <li><a href="https://discord.com/invite/u9yhsFmEkB" target="_blank"><i class="fa-brands fa-discord fa-fw"></i> Discord user community</a></li>
                             <li><a href="https://www.reddit.com/r/StableDiffusionUI/" target="_blank"><i class="fa-brands fa-reddit fa-fw"></i> Reddit community</a></li>
@@ -330,15 +335,15 @@
 </div>
 </body>
 
-<script src="media/js/parameters.js?v=4"></script>
+<script src="media/js/parameters.js?v=7"></script>
 <script src="media/js/plugins.js?v=1"></script>
 <script src="media/js/utils.js?v=6"></script>
 <script src="media/js/inpainting-editor.js?v=1"></script>
 <script src="media/js/image-modifiers.js?v=6"></script>
-<script src="media/js/auto-save.js?v=7"></script>
-<script src="media/js/main.js?v=11"></script>
+<script src="media/js/auto-save.js?v=8"></script>
+<script src="media/js/main.js?v=20"></script>
 <script src="media/js/themes.js?v=4"></script>
-<script src="media/js/dnd.js?v=8"></script>
+<script src="media/js/dnd.js?v=9"></script>
 <script src="media/js/image-editor.js?v=1"></script>
 <script>
 async function init() {

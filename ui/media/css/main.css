@@ -28,6 +28,7 @@ label {
     font-size: 13px;
     margin-bottom: 6px;
     margin-top: 5px;
+    display: block;
 }
 .image_preview_container {
     margin-top: 10pt;
@@ -122,6 +123,7 @@ label {
     padding: 16px;
     display: flex;
     flex-direction: column;
+    flex: 0 0 370pt;
 }
 #editor label {
     font-weight: normal;
@@ -390,7 +392,7 @@ img {
 }
 
 .imageTaskContainer {
-    border: 1px solid var(--background-color1);
+    border: 1px solid var(--background-color2);
     margin-bottom: 10pt;
     padding: 5pt;
     border-radius: 5pt;
@@ -646,9 +648,9 @@ input::file-selector-button {
 }
 
 @media (min-width: 700px) {
-    #editor {
+    /* #editor {
         max-width: 480px;
-    }
+    } */
     .float-container {
         padding: 20px;
     }
@@ -884,4 +886,20 @@ input::file-selector-button {
     padding: 7px;
     margin-bottom: 15px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
+}
+
+i.active {
+    background: var(--accent-color);
+}
+#system-info {
+    max-width: 800px;
+    font-size: 10pt;
+}
+#system-info .value {
+    text-align: left;
+    padding-left: 10pt;
+}
+#system-info label {
+    float: right;
+    font-weight: bold;
 }
