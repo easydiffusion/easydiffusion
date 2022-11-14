@@ -1153,7 +1153,7 @@ useCPUField.addEventListener('click', function() {
         } else {
             autoPickGPUsField.checked = (oldVal === 'true')
         }
-        useGPUsField.disabled = autoPickGPUsField.checked
+        gpuSettingEntry.style.display = (autoPickGPUsField.checked ? 'none' : '')
     }
 })
 
@@ -1167,7 +1167,8 @@ autoPickGPUsField.addEventListener('click', function() {
         $('#use_gpus').val([])
     }
 
-    useGPUsField.disabled = this.checked
+    let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
+    gpuSettingEntry.style.display = (this.checked ? 'none' : '')
 })
 
 async function changeAppConfig(configDelta) {
@@ -1406,7 +1407,8 @@ async function getDevices() {
             })
 
             if (autoPickGPUsField.checked) {
-                useGPUsField.disabled = true
+                let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
+                gpuSettingEntry.style.display = 'none'
             } else {
                 $('#use_gpus').val(activeDeviceIds)
             }
