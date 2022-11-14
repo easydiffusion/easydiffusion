@@ -283,6 +283,9 @@ function tryLoadOldSettings() {
         var localStorageValue = localStorage.getItem(localStorageKey);
         if (localStorageValue !== null) {
             var setting = SETTINGS[individual_settings_map[localStorageKey]]
+            if (setting == null || setting == undefined) {
+                return
+            }
             if (setting.element.type == "checkbox" && (typeof localStorageValue === "string" || localStorageValue instanceof String)) {
                 localStorageValue = localStorageValue == "true"
             }

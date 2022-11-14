@@ -74,10 +74,16 @@ var PARAMETERS = [
 		default: false,
 	},
 	{
+		id: "auto_pick_gpus",
+		type: ParameterType.checkbox,
+		label: "Automatically pick the GPUs",
+		default: false,
+	},
+	{
 		id: "use_gpus",
 		type: ParameterType.select_multiple,
 		label: "GPUs to use",
-		note: "select multiple GPUs to process in parallel",
+		note: "to process in parallel",
 		default: false,
 	},
 	{
