@@ -196,7 +196,11 @@ function setSystemInfo(devices) {
 
     function ID_TO_TEXT(d) {
         let info = devices.all[d]
-        return `${info.name} <small>(${d}) (${info.mem_free.toFixed(1)}Gb free / ${info.mem_total.toFixed(1)} Gb total)</small>`
+        if ("mem_free" in info && "mem_total" in info) {
+            return `${info.name} <small>(${d}) (${info.mem_free.toFixed(1)}Gb free / ${info.mem_total.toFixed(1)} Gb total)</small>`
+        } else {
+            return `${info.name} <small>(${d}) (no memory info)</small>`
+        }
     }
 
     allGPUs = allGPUs.map(ID_TO_TEXT)
