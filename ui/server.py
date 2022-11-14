@@ -399,4 +399,10 @@ def update_render_threads():
 update_render_threads()
 
 # start the browser ui
-import webbrowser; webbrowser.open('http://localhost:9000')
+def open_browser():
+    config = getConfig()
+    ui = config.get('ui', {})
+    if ui.get('open_browser_on_start', True):
+        import webbrowser; webbrowser.open('http://localhost:9000')
+
+open_browser()
