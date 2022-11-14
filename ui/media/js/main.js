@@ -502,13 +502,7 @@ function getTaskUpdater(task, reqBody, outputContainer) {
             const timeRemaining = (timeTaken < 0 ? '' : millisecondsToStr(stepsRemaining * timeTaken * 1000))
             outputMsg.innerHTML = `Batch ${task.batchesDone} of ${batchCount}. Generating image(s): ${percent}%. Time remaining (approx): ${timeRemaining}`
             outputMsg.style.display = 'block'
-
             progressBarInner.style.width = `${percent}%`
-            if (percent == 100) {
-                task.progressBar.style.height = "0px"
-                task.progressBar.style.border = "0px solid var(--background-color3)"
-                task.progressBar.classList.remove("active")
-            }
 
             if (stepUpdate.output) {
                 showImages(reqBody, stepUpdate, outputContainer, true)
