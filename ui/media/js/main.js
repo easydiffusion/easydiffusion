@@ -189,6 +189,25 @@ function playSound() {
         })
     }
 }
+function setSystemInfo(devices) {
+    let cpu = devices.all.cpu
+    let allGPUs = Object.keys(devices.all).filter(d => d != 'cpu')
+    let activeGPUs = Object.keys(devices.active)
+    allGPUs = allGPUs.map(d => devices.all[d])
+    activeGPUs = activeGPUs.map(d => devices.all[d]).map(d => `${d}<br/>`)
+
+    let systemInfo = `
+    <h1>System Info</h1>
+    <table>
+        <tr><td><label>Processor:</label></td><td class="value">${cpu}</td></tr>
+        <tr><td><label>Compatible Graphics Cards (all):</label></td><td class="value">${allGPUs.join('</br>')}</td></tr>
+        <tr><td></td><td>&nbsp;</td></tr>
+        <tr><td><label>What's being used for rendering 🔥:</label></td><td class="value">${activeGPUs.join('</br>')}</td></tr>
+    </table>`
+
+    let systemInfoEl = document.querySelector('#system-info')
+    systemInfoEl.innerHTML = systemInfo
+}
 
 async function healthCheck() {
     try {
@@ -222,8 +241,12 @@ async function healthCheck() {
                 setServerStatus('error', serverState.status.toLowerCase())
                 break
         }
+        if (serverState.devices) {
+            setSystemInfo(serverState.devices)
+        }
         serverState.time = Date.now()
     } catch (e) {
+        console.log(e)
         serverState = {'status': 'Offline', 'time': Date.now()}
         setServerStatus('error', 'offline')
     }

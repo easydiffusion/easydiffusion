@@ -891,9 +891,14 @@ input::file-selector-button {
 i.active {
     background: var(--accent-color);
 }
+#system-info {
+    max-width: 800px;
+}
 #system-info .value {
     text-align: left;
+    padding-left: 10pt;
 }
 #system-info label {
     float: right;
+    font-weight: bold;
 }

@@ -260,6 +260,7 @@ def ping(session_id:str=None):
                 response['session'] = 'completed'
             else:
                 response['session'] = 'pending'
+    response['devices'] = task_manager.get_devices()
     return JSONResponse(response, headers=NOCACHE_HEADERS)
 
 def save_model_to_config(ckpt_model_name, vae_model_name):
