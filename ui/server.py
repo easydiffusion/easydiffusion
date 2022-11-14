@@ -224,7 +224,10 @@ def read_web_data(key:str=None):
             raise HTTPException(status_code=500, detail="Config file is missing or unreadable")
         return JSONResponse(config, headers=NOCACHE_HEADERS)
     elif key == 'devices':
-        return JSONResponse(task_manager.get_devices(), headers=NOCACHE_HEADERS)
+        config = getConfig()
+        devices = task_manager.get_devices()
+        devices['config'] = config.get('render_devices', "auto")
+        return JSONResponse(devices, headers=NOCACHE_HEADERS)
     elif key == 'models':
         return JSONResponse(getModels(), headers=NOCACHE_HEADERS)
     elif key == 'modifiers': return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'), headers=NOCACHE_HEADERS)
@@ -272,17 +275,41 @@ def save_model_to_config(ckpt_model_name, vae_model_name):
 
     setConfig(config)
 
-@app.post('/render')
-def render(req : task_manager.ImageRequest):
+def save_render_devices_to_config(render_devices):
+    config = getConfig()
+    if 'render_devices' not in config:
+        config['render_devices'] = {}
+
+    config['render_devices'] = render_devices
+    if render_devices is None or len(render_devices) == 0:
+        del config['render_devices']
+
+    setConfig(config)
+
+def update_render_threads_on_request(req : task_manager.ImageRequest):
     if req.use_cpu:  # TODO Remove after transition.
         print('WARNING Replace {use_cpu: true} by {render_device: "cpu"}')
         req.render_device = 'cpu'
         del req.use_cpu
-    if req.render_device != 'cpu':
-        req.render_device = 'cuda:0' # temp hack to get beta working
-    if req.render_device and task_manager.is_alive(req.render_device) <= 0: raise HTTPException(status_code=403, detail=f'{req.render_device} rendering is not enabled in config.json or the thread has died...') # HTTP403 Forbidden
+
+    if req.render_device not in ('cpu', 'auto') and not req.render_device.startswith('cuda:'):
+        raise HTTPException(status_code=400, detail=f'Invalid render device requested: {req.render_device}')
+
+    if req.render_device.startswith('cuda:'):
+        req.render_device = req.render_device.split(',')
+
+    save_render_devices_to_config(req.render_device)
+    del req.render_device
+
+    update_render_threads()
+
+@app.post('/render')
+def render(req : task_manager.ImageRequest):
+    update_render_threads_on_request(req)
+
     if req.use_face_correction and task_manager.is_alive('cuda:0') <= 0: #TODO Remove when GFPGANer is fixed upstream.
-        raise HTTPException(status_code=412, detail=f'GFPGANer only works GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.') # HTTP412 Precondition Failed
+        raise HTTPException(status_code=412, detail=f'The "Fix incorrect faces" feature works only on cuda:0. Disable "Fix incorrect faces" (in Image Settings), or use the CUDA_VISIBLE_DEVICES environment variable.')
+
     try:
         save_model_to_config(req.use_stable_diffusion_model, req.use_vae_model)
         req.use_stable_diffusion_model = resolve_ckpt_to_use(req.use_stable_diffusion_model)
@@ -359,44 +386,19 @@ class LogSuppressFilter(logging.Filter):
         return True
 logging.getLogger('uvicorn.access').addFilter(LogSuppressFilter())
 
-config = getConfig()
-
 # Start the task_manager
 task_manager.default_model_to_load = resolve_ckpt_to_use()
 task_manager.default_vae_to_load = resolve_vae_to_use()
-if 'render_devices' in config:  # Start a new thread for each device.
-    if not isinstance(config['render_devices'], list):
-        raise Exception('Invalid render_devices value in config. Should be a list')
-    config['render_devices'] = set(config['render_devices']) # de-duplicate
-    for device in config['render_devices']:
-        if task_manager.is_alive(device) >= 1:
-            print(device, 'already registered.')
-            continue
-        if not task_manager.start_render_thread(device):
-            print(device, 'failed to start.')
-    if task_manager.is_alive() <= 0: # No running devices, probably invalid user config.
-        print('WARNING: No active render devices after loading config. Validate "render_devices" in config.json')
-        print('Loading default render devices to replace invalid render_devices field from config', config['render_devices'])
 
-if task_manager.is_alive() <= 0: # Either no defaults or no devices after loading config.
-    # Select best GPU device using free memory, if more than one device.
-    if task_manager.start_render_thread('auto'): # Detect best device for renders
-        # if cuda:0 is missing, another cuda device is better. try to start it...
-        if task_manager.is_alive('cuda:0') <= 0 and task_manager.is_alive('cpu') <= 0 and not task_manager.start_render_thread('cuda:0'):
-            print('Failed to start GPU:0...')
-    else:
-        print('Failed to start gpu device.')
-    if task_manager.is_alive('cpu') <= 0 and not task_manager.start_render_thread('cpu'): # Allow CPU to be used for renders
-        print('Failed to start CPU render device...')
+def update_render_threads():
+    config = getConfig()
+    render_devices = config.get('render_devices', "auto")
+    active_devices = task_manager.get_devices()['active'].keys()
 
-is_using_a_gpu = (task_manager.is_alive() > task_manager.is_alive('cpu'))
-if is_using_a_gpu and task_manager.is_alive('cuda:0') <= 0:
-    print('WARNING: GFPGANer only works on GPU:0, use CUDA_VISIBLE_DEVICES if GFPGANer is needed on a specific GPU.')
-    print('Using CUDA_VISIBLE_DEVICES will remap the selected devices starting at GPU:0 fixing GFPGANer')
-    print('Add the line "@set CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.bat')
-    print('Add the line "CUDA_VISIBLE_DEVICES=N" where N is the GPUs to use to config.sh')
+    print('requesting for render_devices', render_devices)
+    task_manager.update_render_threads(render_devices, active_devices)
 
-print('active devices', task_manager.get_devices()['active'])
+update_render_threads()
 
 # start the browser ui
 import webbrowser; webbrowser.open('http://localhost:9000')

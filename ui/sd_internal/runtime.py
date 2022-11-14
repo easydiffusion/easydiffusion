@@ -37,6 +37,7 @@ config_yaml = "optimizedSD/v1-inference.yaml"
 filename_regex = re.compile('[^a-zA-Z0-9]')
 
 # api stuff
+from sd_internal import device_manager
 from . import Request, Response, Image as ResponseImage
 import base64
 from io import BytesIO
@@ -45,73 +46,7 @@ from io import BytesIO
 from threading import local as LocalThreadVars
 thread_data = LocalThreadVars()
 
-def get_processor_name():
-    try:
-        import platform, subprocess
-        if platform.system() == "Windows":
-            return platform.processor()
-        elif platform.system() == "Darwin":
-            os.environ['PATH'] = os.environ['PATH'] + os.pathsep + '/usr/sbin'
-            command = "sysctl -n machdep.cpu.brand_string"
-            return subprocess.check_output(command).strip()
-        elif platform.system() == "Linux":
-            command = "cat /proc/cpuinfo"
-            all_info = subprocess.check_output(command, shell=True).decode().strip()
-            for line in all_info.split("\n"):
-                if "model name" in line:
-                    return re.sub(".*model name.*:", "", line, 1).strip()
-    except:
-        print(traceback.format_exc())
-        return "cpu"
-
-def validate_device_id(device, allow_auto=False, log_prefix=''):
-    device_names = ['cpu', 'auto'] if allow_auto else ['cpu']
-    if not isinstance(device, str) or (device not in device_names and (len(device) <= len('cuda:') or device[:5] != 'cuda:' or not device[5:].isnumeric())):
-        raise EnvironmentError(f"{log_prefix}: device id should be {', '.join(device_names)}, or 'cuda:N' (where N is an integer index for the GPU). Got: {device}")
-
-'''
-Returns True/False, and prints any compatibility errors
-'''
-def is_device_compatible(device):
-    validate_device_id(device, allow_auto=False, log_prefix='is_device_compatible')
-
-    if device == 'cpu': return True
-    # Memory check
-    try:
-        mem_free, mem_total = torch.cuda.mem_get_info(device)
-        mem_total /= float(10**9)
-        if mem_total < 3.0:
-            print('GPUs with less than 3 GB of VRAM are not compatible with Stable Diffusion')
-            return False
-    except RuntimeError as e:
-        print(str(e))
-        return False
-    return True
-
-def device_select(device):
-    validate_device_id(device, allow_auto=False, log_prefix='device_select')
-
-    if device == 'cpu': return True
-    if not torch.cuda.is_available(): return False
-    if not is_device_compatible(device):
-        return False
-
-    thread_data.device_name = torch.cuda.get_device_name(device)
-    thread_data.device = device
-
-    # Force full precision on 1660 and 1650 NVIDIA cards to avoid creating green images
-    device_name = thread_data.device_name.lower()
-    thread_data.force_full_precision = ('nvidia' in device_name or 'geforce' in device_name) and (' 1660' in device_name or ' 1650' in device_name)
-    if thread_data.force_full_precision:
-        print('forcing full precision on NVIDIA 16xx cards, to avoid green images. GPU detected: ', thread_data.device_name)
-        # Apply force_full_precision now before models are loaded.
-        thread_data.precision = 'full'
-
-    return True
-
-def device_init(device_selection):
-    validate_device_id(device_selection, allow_auto=True, log_prefix='device_init')
-
+def thread_init(device):
     # Thread bound properties
     thread_data.stop_processing = False
     thread_data.temp_images = {}
@@ -140,50 +75,7 @@ def device_init(device_selection):
     thread_data.force_full_precision = False
     thread_data.reduced_memory = True
 
-    if device_selection == 'cpu':
-        thread_data.device = 'cpu'
-        thread_data.device_name = get_processor_name()
-        print('Render device CPU available as', thread_data.device_name)
-        return True
-    if not torch.cuda.is_available():
-        if device_selection == 'auto':
-            print('WARNING: Could not find a compatible GPU. Using the CPU, but this will be very slow!')
-            thread_data.device = 'cpu'
-            thread_data.device_name = get_processor_name()
-            return True
-        else:
-            raise EnvironmentError(f'Could not find a compatible GPU for the requested device_selection: {device_selection}!')
-
-    if device_selection == 'auto':
-        device_count = torch.cuda.device_count()
-        if device_count == 1 and device_select('cuda:0'):
-            torch.cuda.device('cuda:0')
-            return True
-
-        print('Autoselecting GPU. Using most free memory.')
-        max_mem_free = 0
-        best_device = None
-        for device in range(device_count):
-            device = f'cuda:{device}'
-            mem_free, mem_total = torch.cuda.mem_get_info(device)
-            mem_free /= float(10**9)
-            mem_total /= float(10**9)
-            device_name = torch.cuda.get_device_name(device)
-            print(f'{device} detected: {device_name} - Memory: {round(mem_total - mem_free, 2)}Gb / {round(mem_total, 2)}Gb')
-            if max_mem_free < mem_free:
-                max_mem_free = mem_free
-                best_device = device
-        if best_device and device_select(best_device):
-            print(f'Setting {device} as active')
-            torch.cuda.device(device)
-            return True
-
-    if device_selection != 'auto' and device_select(device_selection):
-        print(f'Setting {device_selection} as active')
-        torch.cuda.device(device_selection)
-        return True
-
-    return False
+    device_manager.device_init(thread_data, device)
 
 def load_model_ckpt():
     if not thread_data.ckpt_file: raise ValueError(f'Thread ckpt_file is undefined.')
@@ -296,6 +188,8 @@ def unload_filters():
         del thread_data.model_real_esrgan
     thread_data.model_real_esrgan = None
 
+    gc()
+
 def unload_models():
     if thread_data.model is not None:
         print('Unloading models...')
@@ -312,6 +206,8 @@ def unload_models():
     thread_data.model = None
     thread_data.modelCS = None
     thread_data.modelFS = None
+
+    gc()
 
 def wait_model_move_to(model, target_device): # Send to target_device and wait until complete.
     if thread_data.device == target_device: return
@@ -518,7 +414,6 @@ def do_mk_img(req: Request):
     if needs_model_reload:
         unload_models()
         unload_filters()
-        gc()
         load_model_ckpt()
 
     if thread_data.turbo != req.turbo:

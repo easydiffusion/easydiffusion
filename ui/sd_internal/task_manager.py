@@ -14,7 +14,7 @@ import queue, threading, time, weakref
 from typing import Any, Generator, Hashable, Optional, Union
 
 from pydantic import BaseModel
-from sd_internal import Request, Response, runtime
+from sd_internal import Request, Response, runtime, device_manager
 
 THREAD_NAME_PREFIX = 'Runtime-Render/'
 ERR_LOCK_FAILED = ' failed to acquire lock within timeout.'
@@ -253,11 +253,7 @@ def thread_render(device):
     global current_state, current_state_error, current_model_path, current_vae_path
     from . import runtime
     try:
-        if not runtime.device_init(device):
-            weak_thread_data[threading.current_thread()] = {
-                'error': f'Could not start on the selected device: {device}'
-            }
-            return
+        runtime.thread_init(device)
     except Exception as e:
         print(traceback.format_exc())
         weak_thread_data[threading.current_thread()] = {
@@ -266,13 +262,19 @@ def thread_render(device):
         return
     weak_thread_data[threading.current_thread()] = {
         'device': runtime.thread_data.device,
-        'device_name': runtime.thread_data.device_name
+        'device_name': runtime.thread_data.device_name,
+        'alive': True
     }
     if runtime.thread_data.device != 'cpu' or is_alive() == 1:
         preload_model()
         current_state = ServerStates.Online
     while True:
         task_cache.clean()
+        if not weak_thread_data[threading.current_thread()]['alive']:
+            print(f'Shutting down thread for device {runtime.thread_data.device}')
+            runtime.unload_models()
+            runtime.unload_filters()
+            return
         if isinstance(current_state_error, SystemExit):
             current_state = ServerStates.Unavailable
             return
@@ -371,12 +373,12 @@ def get_devices():
     gpu_count = torch.cuda.device_count()
     for device in range(gpu_count):
         device = f'cuda:{device}'
-        if not runtime.is_device_compatible(device):
+        if not device_manager.is_device_compatible(device):
             continue
 
         devices['all'].update({device: torch.cuda.get_device_name(device)})
 
-    devices['all'].update({'cpu': runtime.get_processor_name()})
+    devices['all'].update({'cpu': device_manager.get_processor_name()})
 
     # list the activated devices
     if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('get_devices' + ERR_LOCK_FAILED)
@@ -411,13 +413,13 @@ def is_alive(device=None):
     finally:
         manager_lock.release()
 
-def start_render_thread(device='auto'):
-    if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('start_render_threads' + ERR_LOCK_FAILED)
+def start_render_thread(device):
+    if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('start_render_thread' + ERR_LOCK_FAILED)
     print('Start new Rendering Thread on device', device)
     try:
         rthread = threading.Thread(target=thread_render, kwargs={'device': device})
         rthread.daemon = True
-        rthread.name = THREAD_NAME_PREFIX + str(device)
+        rthread.name = THREAD_NAME_PREFIX + device
         rthread.start()
         render_threads.append(rthread)
     finally:
@@ -425,12 +427,66 @@ def start_render_thread(device='auto'):
     timeout = DEVICE_START_TIMEOUT
     while not rthread.is_alive() or not rthread in weak_thread_data or not 'device' in weak_thread_data[rthread]:
         if rthread in weak_thread_data and 'error' in weak_thread_data[rthread]:
+            print(rthread, device, 'error:', weak_thread_data[rthread]['error'])
             return False
         if timeout <= 0:
             return False
         timeout -= 1
         time.sleep(1)
     return True
+
+def stop_render_thread(device):
+    try:
+        device_manager.validate_device_id(device, log_prefix='stop_render_thread')
+    except:
+        print(traceback.format_exec())
+        return False
+
+    if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('stop_render_thread' + ERR_LOCK_FAILED)
+    print('Stopping Rendering Thread on device', device)
+
+    try:
+        thread_to_remove = None
+        for rthread in render_threads:
+            weak_data = weak_thread_data.get(rthread)
+            if weak_data is None or not 'device' in weak_data or weak_data['device'] is None:
+                continue
+            thread_device = weak_data['device']
+            if thread_device == device:
+                weak_data['alive'] = False
+                thread_to_remove = rthread
+                break
+        if thread_to_remove is not None:
+            render_threads.remove(rthread)
+            return True
+    finally:
+        manager_lock.release()
+
+    return False
+
+def update_render_threads(render_devices, active_devices):
+    devices_to_start, devices_to_stop = device_manager.get_device_delta(render_devices, active_devices)
+    print('devices_to_start', devices_to_start)
+    print('devices_to_stop', devices_to_stop)
+
+    for device in devices_to_stop:
+        if is_alive(device) <= 0:
+            print(device, 'is not alive')
+            continue
+        if not stop_render_thread(device):
+            print(device, 'could not stop render thread')
+
+    for device in devices_to_start:
+        if is_alive(device) >= 1:
+            print(device, 'already registered.')
+            continue
+        if not start_render_thread(device):
+            print(device, 'failed to start.')
+
+    if is_alive() <= 0: # No running devices, probably invalid user config.
+        raise EnvironmentError('ERROR: No active render devices! Please verify the "render_devices" value in config.json')
+
+    print('active devices', get_devices()['active'])
 
 def shutdown_event(): # Signal render thread to close on shutdown
     global current_state_error
@@ -478,7 +534,6 @@ def render(req : ImageRequest):
         r.stream_image_progress = False
 
     new_task = RenderTask(r)
-    new_task.render_device = req.render_device
 
     if task_cache.put(r.session_id, new_task, TASK_TTL):
         # Use twice the normal timeout for adding user requests.
