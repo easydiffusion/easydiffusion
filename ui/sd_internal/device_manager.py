@@ -58,7 +58,7 @@ def auto_pick_devices(currently_active_devices):
         mem_free /= float(10**9)
         mem_total /= float(10**9)
         device_name = torch.cuda.get_device_name(device)
-        print(f'{device} detected: {device_name} - Memory: {round(mem_total - mem_free, 2)}Gb / {round(mem_total, 2)}Gb')
+        print(f'{device} detected: {device_name} - Memory (free/total): {round(mem_free, 2)}Gb / {round(mem_total, 2)}Gb')
         devices.append({'device': device, 'device_name': device_name, 'mem_free': mem_free})
 
     devices.sort(key=lambda x:x['mem_free'], reverse=True)
@@ -72,6 +72,7 @@ def auto_pick_devices(currently_active_devices):
     #    These already-running devices probably aren't terrible, since they were picked in the past.
     #    Worst case, the user can restart the program and that'll get rid of them.
     devices = list(filter((lambda x: x['mem_free'] > free_mem_threshold or x['device'] in currently_active_devices), devices))
+    devices = list(map(lambda x: x['device'], devices))
     return devices
 
 def device_init(thread_data, device):
