@@ -88,7 +88,6 @@ maskResetButton.style.fontWeight = 'normal'
 maskResetButton.style.fontSize = '10pt'
 
 let serverState = {'status': 'Offline', 'time': Date.now()}
-let lastPromptUsed = ''
 let bellPending = false
 
 let taskQueue = []
@@ -429,7 +428,6 @@ async function doMakeImage(task) {
 
     let res = undefined
     try {
-        const lastTask = serverState.task
         let renderRequest = undefined
         do {
             res = await fetch('/render', {
@@ -634,7 +632,6 @@ async function doMakeImage(task) {
             return false
         }
 
-        lastPromptUsed = reqBody['prompt']
         showImages(reqBody, stepUpdate, outputContainer, false)
     } catch (e) {
         console.log('request error', e)
