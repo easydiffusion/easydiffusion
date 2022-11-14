@@ -517,12 +517,12 @@ function getTaskUpdater(task, reqBody, outputContainer) {
             }
             // task.instances can be a mix of different tasks with uneven number of steps (Render Vs Filter Tasks)
             const overallStepCount = task.instances.reduce(
-                (sum, instance) => sum + (instance.isPending ? Math.max(0, instance.step || stepUpdate.step) / (instance.total_steps || stepUpdate.total_steps) : 1)
-                , 0 // Initial value
+                (sum, instance) => sum + (instance.isPending ? Math.max(0, instance.step || stepUpdate.step) / (instance.total_steps || stepUpdate.total_steps) : 1),
+                0 // Initial value
             ) * stepUpdate.total_steps // Scale to current number of steps.
             const totalSteps = task.instances.reduce(
-                (sum, instance) => sum + (instance.total_steps || stepUpdate.total_steps)
-                , stepUpdate.total_steps * (batchCount - task.batchesDone) // Initial value at (unstarted task count * Nbr of steps)
+                (sum, instance) => sum + (instance.total_steps || stepUpdate.total_steps),
+                stepUpdate.total_steps * (batchCount - task.batchesDone) // Initial value at (unstarted task count * Nbr of steps)
             )
             const percent = Math.min(100, 100 * (overallStepCount / totalSteps)).toFixed(0)
 
@@ -663,8 +663,8 @@ function onTaskStart(task) {
     instance.enqueue(getTaskUpdater(task, newTaskReqBody, outputContainer)).then(
         (renderResult) => {
             onTaskCompleted(task, newTaskReqBody, instance, outputContainer, renderResult)
-        }
-        , (reason) => {
+        },
+        (reason) => {
             onTaskErrorHandler(task, newTaskReqBody, instance, reason)
         }
     )

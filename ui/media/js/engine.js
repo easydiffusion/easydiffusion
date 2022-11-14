@@ -182,16 +182,16 @@
     const EVENT_TASK_ERROR = 'task_error'
     const EVENT_UNEXPECTED_RESPONSE = 'unexpectedResponse'
     const EVENTS_TYPES = [
-        EVENT_IDLE
-        , EVENT_STATUS_CHANGED
-        , EVENT_UNHANDLED_REJECTION
+        EVENT_IDLE,
+        EVENT_STATUS_CHANGED,
+        EVENT_UNHANDLED_REJECTION,
 
-        , EVENT_TASK_QUEUED
-        , EVENT_TASK_START
-        , EVENT_TASK_END
-        , EVENT_TASK_ERROR
+        EVENT_TASK_QUEUED,
+        EVENT_TASK_START,
+        EVENT_TASK_END,
+        EVENT_TASK_ERROR,
 
-        , EVENT_UNEXPECTED_RESPONSE
+        EVENT_UNEXPECTED_RESPONSE,
     ]
     Object.freeze(EVENTS_TYPES)
 
@@ -240,11 +240,11 @@
     }
 
     const ServerStates = {
-        init: 'Init'
-        , loadingModel: 'LoadingModel'
-        , online: 'Online'
-        , rendering: 'Rendering'
-        , unavailable: 'Unavailable'
+        init: 'Init',
+        loadingModel: 'LoadingModel',
+        online: 'Online',
+        rendering: 'Rendering',
+        unavailable: 'Unavailable',
     }
     Object.freeze(ServerStates)
 
@@ -331,21 +331,21 @@
     }
 
     const TaskStatus = {
-        init: 'init'
-        , pending: 'pending' // Queued locally, not yet posted to server
-        , waiting: 'waiting' // Waiting to run on server
-        , processing: 'processing'
-        , stopped: 'stopped'
-        , completed: 'completed'
-        , failed: 'failed'
+        init: 'init',
+        pending: 'pending', // Queued locally, not yet posted to server
+        waiting: 'waiting', // Waiting to run on server
+        processing: 'processing',
+        stopped: 'stopped',
+        completed: 'completed',
+        failed: 'failed',
     }
     Object.freeze(TaskStatus)
 
     const TASK_STATUS_ORDER = [
-        TaskStatus.init
-        , TaskStatus.pending
-        , TaskStatus.waiting
-        , TaskStatus.processing
+        TaskStatus.init,
+        TaskStatus.pending,
+        TaskStatus.waiting,
+        TaskStatus.processing,
         //Don't add status that are final.
     ]
 
@@ -574,9 +574,9 @@
                     // Wait for server status to include this task.
                     await waitUntil(async () => ((task.#id && serverState.task === task.#id)
                         || await Promise.resolve(callback?.call(task))
-                        || signal?.aborted)
-                        , TASK_STATE_SERVER_UPDATE_DELAY
-                        , timeout
+                        || signal?.aborted),
+                        TASK_STATE_SERVER_UPDATE_DELAY,
+                        timeout,
                     )
                     if (this.#id && serverState.task === this.#id) {
                         this._setStatus(TaskStatus.waiting)
@@ -590,9 +590,9 @@
                     // Wait for task to start on server.
                     await waitUntil(async () => (serverState.task !== task.#id || serverState.session !== 'pending'
                         || await Promise.resolve(callback?.call(task))
-                        || signal?.aborted)
-                        , TASK_STATE_SERVER_UPDATE_DELAY
-                        , timeout
+                        || signal?.aborted),
+                        TASK_STATE_SERVER_UPDATE_DELAY,
+                        timeout,
                     )
                     if (serverState.task === this.#id
                         && (
@@ -612,9 +612,9 @@
                 case TaskStatus.processing:
                     await waitUntil(async () => (serverState.task !== task.#id || serverState.session !== 'running'
                         || await Promise.resolve(callback?.call(task))
-                        || signal?.aborted)
-                        , TASK_STATE_SERVER_UPDATE_DELAY
-                        , timeout
+                        || signal?.aborted),
+                        TASK_STATE_SERVER_UPDATE_DELAY,
+                        timeout,
                     )
                     await Promise.resolve(callback?.call(this))
                 default:
@@ -714,49 +714,49 @@
     }
 
     const TASK_REQUIRED = {
-        "session_id": 'string'
-        , "prompt": 'string'
-        , "negative_prompt": 'string'
-        , "width": 'number'
-        , "height": 'number'
-        , "seed": 'number'
+        "session_id": 'string',
+        "prompt": 'string',
+        "negative_prompt": 'string',
+        "width": 'number',
+        "height": 'number',
+        "seed": 'number',
 
-        , "sampler": 'string'
-        , "use_stable_diffusion_model": 'string'
-        , "num_inference_steps": 'number'
-        , "guidance_scale": 'number'
+        "sampler": 'string',
+        "use_stable_diffusion_model": 'string',
+        "num_inference_steps": 'number',
+        "guidance_scale": 'number',
 
-        , "num_outputs": 'number'
-        , "stream_progress_updates": 'boolean'
-        , "stream_image_progress": 'boolean'
-        , "show_only_filtered_image": 'boolean'
-        , "turbo": 'boolean'
-        , "use_full_precision": 'boolean'
-        , "output_format": 'string'
+        "num_outputs": 'number',
+        "stream_progress_updates": 'boolean',
+        "stream_image_progress": 'boolean',
+        "show_only_filtered_image": 'boolean',
+        "turbo": 'boolean',
+        "use_full_precision": 'boolean',
+        "output_format": 'string',
     }
     const TASK_DEFAULTS = {
-        "sampler": "euler_a"
-        , "use_stable_diffusion_model": "sd-v1-4"
-        , "num_inference_steps": 50
-        , "guidance_scale": 7.5
-        , "negative_prompt": ""
+        "sampler": "euler_a",
+        "use_stable_diffusion_model": "sd-v1-4",
+        "num_inference_steps": 50,
+        "guidance_scale": 7.5,
+        "negative_prompt": "",
 
-        , "num_outputs": 1
-        , "stream_progress_updates": true
-        , "stream_image_progress": true
-        , "show_only_filtered_image": true
-        , "turbo": false
-        , "use_full_precision": false
-        , "output_format": "png"
+        "num_outputs": 1,
+        "stream_progress_updates": true,
+        "stream_image_progress": true,
+        "show_only_filtered_image": true,
+        "turbo": false,
+        "use_full_precision": false,
+        "output_format": "png",
     }
     const TASK_OPTIONAL = {
-        "device": 'string'
-        , "init_image": 'string'
-        , "mask": 'string'
-        , "save_to_disk_path": 'string'
-        , "use_face_correction": 'string'
-        , "use_upscale": 'string'
-        , "use_vae_model": 'string'
+        "device": 'string',
+        "init_image": 'string',
+        "mask": 'string',
+        "save_to_disk_path": 'string',
+        "use_face_correction": 'string',
+        "use_upscale": 'string',
+        "use_vae_model": 'string',
     }
 
     // Higer values will result in...
@@ -881,8 +881,8 @@
             }
             try { // Wait for task to start on server.
                 yield this.waitUntil({
-                    callback: function() { return progressCallback?.call(this, {}) }
-                    , status: TaskStatus.processing
+                    callback: function() { return progressCallback?.call(this, {}) },
+                    status: TaskStatus.processing,
                 })
             } catch (e) {
                 this.abort(err)
@@ -1026,8 +1026,8 @@
 
     async function getDevices() {
         let devices = {
-            all: {}
-            , active: {}
+            all: {},
+            active: {},
         }
         try {
             const res = await fetch('/get/devices')
@@ -1043,8 +1043,8 @@
     }
     async function getModels() {
         let models = {
-            'stable-diffusion': []
-            , 'vae': []
+            'stable-diffusion': [],
+            'vae': [],
         }
         try {
             const res = await fetch('/get/models')
@@ -1183,15 +1183,15 @@
     }
 
     const SD = {
-        ChunkedStreamReader
-        , ServerStates
-        , TaskStatus
-        , Task
-        , RenderTask
-        , FilterTask
+        ChunkedStreamReader,
+        ServerStates,
+        TaskStatus,
+        Task,
+        RenderTask,
+        FilterTask,
 
-        , Events: EVENTS_TYPES
-        , init: async function(options={}) {
+        Events: EVENTS_TYPES,
+        init: async function(options={}) {
             if ('events' in options) {
                 for (const key in options.events) {
                     addEventListener(key, options.events[key])
@@ -1200,61 +1200,61 @@
             await healthCheck()
             setInterval(healthCheck, HEALTH_PING_INTERVAL)
             setInterval(startCheck, CONCURRENT_TASK_INTERVAL)
-        }
+        },
 
         /** Add a new event listener
          */
-        , addEventListener
+        addEventListener,
         /** Remove the event listener
          */
-        , removeEventListener
+        removeEventListener,
 
-        , isServerAvailable
+        isServerAvailable,
 
-        , getDevices: debounce(getDevices, 250, true)
-        , getModels: debounce(getModels, 250, true)
-        , render: (...args) => RenderTask.run(...args)
-        , filter: (...args) => FilterTask.run(...args)
-        , waitUntil
+        getDevices: debounce(getDevices, 250, true),
+        getModels: debounce(getModels, 250, true),
+        render: (...args) => RenderTask.run(...args),
+        filter: (...args) => FilterTask.run(...args),
+        waitUntil,
     };
 
     Object.defineProperties(SD, {
         serverState: {
-            configurable: false
-            , get: () => serverState
-        }
-        , sessionId: {
-            configurable: false
-            , get: () => sessionId
-            , set: (val) => {
+            configurable: false,
+            get: () => serverState,
+        },
+        sessionId: {
+            configurable: false,
+            get: () => sessionId,
+            set: (val) => {
                 if (typeof val === 'undefined') {
                     throw new Error("Can't set sessionId to undefined.")
                 }
                 sessionId = val
-            }
-        }
-        , MAX_SEED_VALUE: {
-            configurable: false
-            , get: () => MAX_SEED_VALUE
-        }
-        , activeTasks: {
-            configurable: false
-            , get: () => task_queue
-        }
+            },
+        },
+        MAX_SEED_VALUE: {
+            configurable: false,
+            get: () => MAX_SEED_VALUE,
+        },
+        activeTasks: {
+            configurable: false,
+            get: () => task_queue,
+        },
     })
     Object.defineProperties(getGlobal(), {
         SD: {
-            configurable: false
-            , get: () => SD
-        }
-        , sessionId: { //TODO Remove in the future in favor of SD.sessionId
-            configurable: false
-            , get: () => {
+            configurable: false,
+            get: () => SD,
+        },
+        sessionId: { //TODO Remove in the future in favor of SD.sessionId
+            configurable: false,
+            get: () => {
                 console.warn('Deprecated window.sessionId has been replaced with SD.sessionId.')
                 console.trace()
                 return SD.sessionId
-            }
-            , set: (val) => {
+            },
+            set: (val) => {
                 console.warn('Deprecated window.sessionId has been replaced with SD.sessionId.')
                 console.trace()
                 SD.sessionId = val
