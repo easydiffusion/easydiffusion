@@ -196,7 +196,7 @@ function setSystemInfo(devices) {
 
     function ID_TO_TEXT(d) {
         let info = devices.all[d]
-        return `${info.name} (${d}) (${info.mem_free.toFixed(1)}Gb free / ${info.mem_total.toFixed(1)} Gb total)`
+        return `${info.name} <small>(${d}) (${info.mem_free.toFixed(1)}Gb free / ${info.mem_total.toFixed(1)} Gb total)</small>`
     }
 
     allGPUs = allGPUs.map(ID_TO_TEXT)
