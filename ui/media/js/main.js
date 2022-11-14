@@ -193,8 +193,9 @@ function setSystemInfo(devices) {
     let cpu = devices.all.cpu
     let allGPUs = Object.keys(devices.all).filter(d => d != 'cpu')
     let activeGPUs = Object.keys(devices.active)
-    allGPUs = allGPUs.map(d => devices.all[d])
-    activeGPUs = activeGPUs.map(d => devices.all[d]).map(d => `${d}<br/>`)
+    const ID_TO_TEXT = d => `${devices.all[d]} (${d})`
+    allGPUs = allGPUs.map(ID_TO_TEXT)
+    activeGPUs = activeGPUs.map(ID_TO_TEXT)
 
     let systemInfo = `
     <h1>System Info</h1>
@@ -1422,7 +1423,7 @@ async function getDevices() {
             useGPUsField.innerHTML = ''
             allDeviceIds.forEach(device => {
                 let deviceName = res['all'][device]
-                let deviceOption = `<option value="${device}">${deviceName}</option>`
+                let deviceOption = `<option value="${device}">${deviceName} (${device})</option>`
                 useGPUsField.insertAdjacentHTML('beforeend', deviceOption)
             })
 
