@@ -906,7 +906,10 @@
                     this._setStatus(TaskStatus.processing)
                     break
                 case 'completed':
-                    this._setStatus(TaskStatus.completed)
+                    if (this.isPending) {
+                        // Set state to processing until we read the reply
+                        this._setStatus(TaskStatus.processing)
+                    }
                     console.warn('Server %o render request %o completed unexpectedly', serverState, renderRequest)
                     break // Continue anyway to try to read cached result.
                 case 'error':
