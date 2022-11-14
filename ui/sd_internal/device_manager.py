@@ -72,6 +72,7 @@ def auto_pick_devices(currently_active_devices):
     #    These already-running devices probably aren't terrible, since they were picked in the past.
     #    Worst case, the user can restart the program and that'll get rid of them.
     devices = list(filter((lambda x: x['mem_free'] > free_mem_threshold or x['device'] in currently_active_devices), devices))
+    devices = list(map(lambda x: x['device'], devices))
     return devices
 
 def device_init(thread_data, device):
