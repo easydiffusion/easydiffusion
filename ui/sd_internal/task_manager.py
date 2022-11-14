@@ -72,7 +72,7 @@ class ImageRequest(BaseModel):
     save_to_disk_path: str = None
     turbo: bool = True
     use_cpu: bool = False ##TODO Remove after UI and plugins transition.
-    render_device: str = None
+    render_device: str = 'auto'
     use_full_precision: bool = False
     use_face_correction: str = None # or "GFPGANv1.3"
     use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
