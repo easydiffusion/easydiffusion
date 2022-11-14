@@ -90,7 +90,7 @@ var PARAMETERS = [
 		id: "use_gpus",
 		type: ParameterType.select_multiple,
 		label: "GPUs to use",
-		note: "select multiple GPUs to process in parallel",
+		note: "to process in parallel",
 		default: false,
 	},
 	{

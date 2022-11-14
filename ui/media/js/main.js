@@ -1037,7 +1037,13 @@ useCPUField.addEventListener('click', function() {
     } else if (useGPUsField.options.length >= MIN_GPUS_TO_SHOW_SELECTION) {
         gpuSettingEntry.style.display = ''
         autoPickGPUSettingEntry.style.display = ''
-        autoPickGPUsField.checked = (autoPickGPUsField.getAttribute('data-old-value') === 'true')
+        let oldVal = autoPickGPUsField.getAttribute('data-old-value')
+        if (oldVal === null || oldVal === undefined) { // the UI started with CPU selected by default
+            autoPickGPUsField.checked = true
+        } else {
+            autoPickGPUsField.checked = (oldVal === 'true')
+        }
+        gpuSettingEntry.style.display = (autoPickGPUsField.checked ? 'none' : '')
     }
 })
 
@@ -1050,6 +1056,9 @@ autoPickGPUsField.addEventListener('click', function() {
     if (this.checked) {
         $('#use_gpus').val([])
     }
+
+    let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
+    gpuSettingEntry.style.display = (this.checked ? 'none' : '')
 })
 
 async function changeAppConfig(configDelta) {
@@ -1259,16 +1268,16 @@ async function getDevices() {
             useCPUField.checked = true
         }
 
-        if (allDeviceIds.length < MIN_GPUS_TO_SHOW_SELECTION) {
+        if (allDeviceIds.length < MIN_GPUS_TO_SHOW_SELECTION || useCPUField.checked) {
             let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
             gpuSettingEntry.style.display = 'none'
             let autoPickGPUSettingEntry = getParameterSettingsEntry('auto_pick_gpus')
             autoPickGPUSettingEntry.style.display = 'none'
+        }
 
-            if (allDeviceIds.length === 0) {
-                useCPUField.checked = true
-                useCPUField.disabled = true // no compatible GPUs, so make the CPU mandatory
-            }
+        if (allDeviceIds.length === 0) {
+            useCPUField.checked = true
+            useCPUField.disabled = true // no compatible GPUs, so make the CPU mandatory
         }
 
         autoPickGPUsField.checked = (res['config'] === 'auto')
@@ -1280,7 +1289,10 @@ async function getDevices() {
             useGPUsField.insertAdjacentHTML('beforeend', deviceOption)
         })
 
-        if (!autoPickGPUsField.checked) {
+        if (autoPickGPUsField.checked) {
+            let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
+            gpuSettingEntry.style.display = 'none'
+        } else {
             $('#use_gpus').val(activeDeviceIds)
         }
     } catch (e) {
