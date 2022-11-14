@@ -174,6 +174,9 @@ function setServerStatus(msgType, msg) {
             serverStatusMsg.innerText = 'Stable Diffusion has stopped'
             break
     }
+    if (SD.serverState.devices) {
+        setSystemInfo(SD.serverState.devices)
+    }
 }
 
 function logMsg(msg, level, outputMsg) {
@@ -206,6 +209,31 @@ function playSound() {
             console.warn("browser blocked autoplay")
         })
     }
+}
+
+function setSystemInfo(devices) {
+    let cpu = devices.all.cpu.name
+    let allGPUs = Object.keys(devices.all).filter(d => d != 'cpu')
+    let activeGPUs = Object.keys(devices.active)
+
+    function ID_TO_TEXT(d) {
+        let info = devices.all[d]
+        return `${info.name} <small>(${d}) (${info.mem_free.toFixed(1)}Gb free / ${info.mem_total.toFixed(1)} Gb total)</small>`
+    }
+
+    allGPUs = allGPUs.map(ID_TO_TEXT)
+    activeGPUs = activeGPUs.map(ID_TO_TEXT)
+
+    let systemInfo = `
+    <table>
+        <tr><td><label>Processor:</label></td><td class="value">${cpu}</td></tr>
+        <tr><td><label>Compatible Graphics Cards (all):</label></td><td class="value">${allGPUs.join('</br>')}</td></tr>
+        <tr><td></td><td>&nbsp;</td></tr>
+        <tr><td><label>Used for rendering 🔥:</label></td><td class="value">${activeGPUs.join('</br>')}</td></tr>
+    </table>`
+
+    let systemInfoEl = document.querySelector('#system-info')
+    systemInfoEl.innerHTML = systemInfo
 }
 
 function showImages(reqBody, res, outputContainer, livePreview) {
@@ -1284,8 +1312,8 @@ async function getDevices() {
 
         useGPUsField.innerHTML = ''
         allDeviceIds.forEach(device => {
-            let deviceName = res['all'][device]
-            let deviceOption = `<option value="${device}">${deviceName}</option>`
+            let deviceName = res['all'][device]['name']
+            let deviceOption = `<option value="${device}">${deviceName} (${device})</option>`
             useGPUsField.insertAdjacentHTML('beforeend', deviceOption)
         })
 

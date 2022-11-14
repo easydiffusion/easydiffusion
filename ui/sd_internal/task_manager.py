@@ -356,6 +356,20 @@ def get_devices():
         'active': {},
     }
 
+    def get_device_info(device):
+        if device == 'cpu':
+            return {'name': device_manager.get_processor_name()}
+            
+        mem_free, mem_total = torch.cuda.mem_get_info(device)
+        mem_free /= float(10**9)
+        mem_total /= float(10**9)
+
+        return {
+            'name': torch.cuda.get_device_name(device),
+            'mem_free': mem_free,
+            'mem_total': mem_total,
+        }
+
     # list the compatible devices
     gpu_count = torch.cuda.device_count()
     for device in range(gpu_count):
@@ -363,9 +377,9 @@ def get_devices():
         if not device_manager.is_device_compatible(device):
             continue
 
-        devices['all'].update({device: torch.cuda.get_device_name(device)})
+        devices['all'].update({device: get_device_info(device)})
 
-    devices['all'].update({'cpu': device_manager.get_processor_name()})
+    devices['all'].update({'cpu': get_device_info('cpu')})
 
     # list the activated devices
     if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('get_devices' + ERR_LOCK_FAILED)
@@ -376,7 +390,8 @@ def get_devices():
             weak_data = weak_thread_data.get(rthread)
             if not weak_data or not 'device' in weak_data or not 'device_name' in weak_data:
                 continue
-            devices['active'].update({weak_data['device']: weak_data['device_name']})
+            device = weak_data['device']
+            devices['active'].update({device: get_device_info(device)})
     finally:
         manager_lock.release()
 

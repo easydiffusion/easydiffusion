@@ -260,6 +260,7 @@ def ping(session_id:str=None):
                 response['session'] = 'completed'
             else:
                 response['session'] = 'pending'
+    response['devices'] = task_manager.get_devices()
     return JSONResponse(response, headers=NOCACHE_HEADERS)
 
 def save_model_to_config(ckpt_model_name, vae_model_name):
@@ -398,4 +399,10 @@ def update_render_threads():
 update_render_threads()
 
 # start the browser ui
-import webbrowser; webbrowser.open('http://localhost:9000')
+def open_browser():
+    config = getConfig()
+    ui = config.get('ui', {})
+    if ui.get('open_browser_on_start', True):
+        import webbrowser; webbrowser.open('http://localhost:9000')
+
+open_browser()
