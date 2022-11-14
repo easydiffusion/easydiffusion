@@ -123,7 +123,7 @@ label {
     padding: 16px;
     display: flex;
     flex-direction: column;
-    flex: 0 0 350pt;
+    flex: 0 0 370pt;
 }
 #editor label {
     font-weight: normal;
@@ -886,4 +886,10 @@ input::file-selector-button {
     padding: 7px;
     margin-bottom: 15px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
+}
+#system-info .value {
+    text-align: left;
+}
+#system-info label {
+    float: right;
 }

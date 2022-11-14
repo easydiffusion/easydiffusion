@@ -25,6 +25,7 @@ let maskImageSelector = document.querySelector("#mask")
 let maskImagePreview = document.querySelector("#mask_preview")
 let turboField = document.querySelector('#turbo')
 let useCPUField = document.querySelector('#use_cpu')
+let autoPickGPUsField = document.querySelector('#auto_pick_gpus')
 let useGPUsField = document.querySelector('#use_gpus')
 let useFullPrecisionField = document.querySelector('#use_full_precision')
 let saveToDiskField = document.querySelector('#save_to_disk')
@@ -782,14 +783,15 @@ function getCurrentUserRequest() {
 }
 
 function getCurrentRenderDeviceSelection() {
-    if (useCPUField.checked) {
+    let selectedGPUs = $('#use_gpus').val()
+
+    if (useCPUField.checked && !autoPickGPUsField.checked) {
         return 'cpu'
     }
-
-    let selectedGPUs = $(useGPUsField).val()
-    if (selectedGPUs.length == 0) {
-        selectedGPUs = ['auto']
+    if (autoPickGPUsField.checked || selectedGPUs.length == 0) {
+        return 'auto'
     }
+
     return selectedGPUs.join(',')
 }
 
@@ -1026,10 +1028,27 @@ updatePromptStrength()
 
 useCPUField.addEventListener('click', function() {
     let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
+    let autoPickGPUSettingEntry = getParameterSettingsEntry('auto_pick_gpus')
     if (this.checked) {
         gpuSettingEntry.style.display = 'none'
+        autoPickGPUSettingEntry.style.display = 'none'
+        autoPickGPUsField.setAttribute('data-old-value', autoPickGPUsField.checked)
+        autoPickGPUsField.checked = false
     } else if (useGPUsField.options.length >= MIN_GPUS_TO_SHOW_SELECTION) {
         gpuSettingEntry.style.display = ''
+        autoPickGPUSettingEntry.style.display = ''
+        autoPickGPUsField.checked = (autoPickGPUsField.getAttribute('data-old-value') === 'true')
+    }
+})
+
+useGPUsField.addEventListener('click', function() {
+    let selectedGPUs = $('#use_gpus').val()
+    autoPickGPUsField.checked = (selectedGPUs.length === 0)
+})
+
+autoPickGPUsField.addEventListener('click', function() {
+    if (this.checked) {
+        $('#use_gpus').val([])
     }
 })
 
@@ -1243,6 +1262,8 @@ async function getDevices() {
         if (allDeviceIds.length < MIN_GPUS_TO_SHOW_SELECTION) {
             let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
             gpuSettingEntry.style.display = 'none'
+            let autoPickGPUSettingEntry = getParameterSettingsEntry('auto_pick_gpus')
+            autoPickGPUSettingEntry.style.display = 'none'
 
             if (allDeviceIds.length === 0) {
                 useCPUField.checked = true
@@ -1250,14 +1271,18 @@ async function getDevices() {
             }
         }
 
-        useGPUsField.innerHTML = ''
+        autoPickGPUsField.checked = (res['config'] === 'auto')
 
+        useGPUsField.innerHTML = ''
         allDeviceIds.forEach(device => {
             let deviceName = res['all'][device]
-            let selected = (activeDeviceIds.includes(device) ? 'selected' : '')
-            let deviceOption = `<option value="${device}" ${selected}>${deviceName}</option>`
+            let deviceOption = `<option value="${device}">${deviceName}</option>`
             useGPUsField.insertAdjacentHTML('beforeend', deviceOption)
         })
+
+        if (!autoPickGPUsField.checked) {
+            $('#use_gpus').val(activeDeviceIds)
+        }
     } catch (e) {
         console.log('error fetching devices', e)
     }
