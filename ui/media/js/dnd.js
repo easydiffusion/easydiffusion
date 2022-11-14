@@ -430,6 +430,10 @@ function checkWriteToClipboardPermission (result) {
         copyIcon.innerHTML = `<span class="simple-tooltip right">Copy Image Settings</span>`
         copyIcon.addEventListener('click', (event) => {
             event.stopPropagation()
+	    // Add css class 'active'
+	    copyIcon.classList.add('active')
+	    // In 1000 ms remove the 'active' class
+	    asyncDelay(1000).then(() => copyIcon.classList.remove('active'))
             const uiState = readUI()
             TASK_REQ_NO_EXPORT.forEach((key) => delete uiState.reqBody[key])
             if (uiState.reqBody.init_image && !IMAGE_REGEX.test(uiState.reqBody.init_image)) {
@@ -446,6 +450,10 @@ function checkWriteToClipboardPermission (result) {
         pasteIcon.innerHTML = `<span class="simple-tooltip right">Paste Image Settings</span>`
         pasteIcon.addEventListener('click', (event) => {
             event.stopPropagation()
+	    // Add css class 'active'
+	    pasteIcon.classList.add('active')
+	    // In 1000 ms remove the 'active' class
+	    asyncDelay(1000).then(() => pasteIcon.classList.remove('active'))
             pasteFromClipboard()
         })
         resetSettings.parentNode.insertBefore(pasteIcon, resetSettings)
