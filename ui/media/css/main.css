@@ -392,7 +392,7 @@ img {
 }
 
 .imageTaskContainer {
-    border: 1px solid var(--background-color1);
+    border: 1px solid var(--background-color2);
     margin-bottom: 10pt;
     padding: 5pt;
     border-radius: 5pt;
