@@ -307,9 +307,6 @@ def update_render_threads_on_request(req : task_manager.ImageRequest):
 def render(req : task_manager.ImageRequest):
     update_render_threads_on_request(req)
 
-    if req.use_face_correction and task_manager.is_alive('cuda:0') <= 0: #TODO Remove when GFPGANer is fixed upstream.
-        raise HTTPException(status_code=412, detail=f'The "Fix incorrect faces" feature works only on cuda:0. Disable "Fix incorrect faces" (in Image Settings), or use the CUDA_VISIBLE_DEVICES environment variable.')
-
     try:
         save_model_to_config(req.use_stable_diffusion_model, req.use_vae_model)
         req.use_stable_diffusion_model = resolve_ckpt_to_use(req.use_stable_diffusion_model)

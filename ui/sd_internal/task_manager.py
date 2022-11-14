@@ -218,17 +218,10 @@ def thread_get_next_task():
     task = None
     try:  # Select a render task.
         for queued_task in tasks_queue:
-            if queued_task.request.use_face_correction:  # TODO Remove when fixed - A bug with GFPGANer and facexlib needs to be fixed before use on other devices.
-                if is_alive('cuda:0') <= 0:  # Allows GFPGANer only on cuda:0.
-                    queued_task.error = Exception('cuda:0 is not available with the current config. Remove GFPGANer filter to run task.')
-                    task = queued_task
-                    break
-                if queued_task.render_device == 'cpu':
-                    queued_task.error = Exception('Cpu cannot be used to run this task. Remove GFPGANer filter to run task.')
-                    task = queued_task
-                    break
-                if runtime.thread_data.device != 'cuda:0':
-                    continue  # Wait for cuda:0
+            if queued_task.request.use_face_correction and runtime.thread_data.device == 'cpu' and is_alive() == 1:
+                queued_task.error = Exception('The CPU cannot be used to run this task currently. Please remove "Correct incorrect faces" from Image Settings and try again.')
+                task = queued_task
+                break
             if queued_task.render_device and runtime.thread_data.device != queued_task.render_device:
                 # Is asking for a specific render device.
                 if is_alive(queued_task.render_device) > 0:

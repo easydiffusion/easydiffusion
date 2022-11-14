@@ -35,6 +35,7 @@ logging.set_verbosity_error()
 # consts
 config_yaml = "optimizedSD/v1-inference.yaml"
 filename_regex = re.compile('[^a-zA-Z0-9]')
+force_gfpgan_to_cuda0 = True # workaround: gfpgan currently works only on cuda:0
 
 # api stuff
 from sd_internal import device_manager
@@ -235,19 +236,13 @@ def wait_model_move_to(model, target_device): # Send to target_device and wait u
 
 def load_model_gfpgan():
     if thread_data.gfpgan_file is None: raise ValueError(f'Thread gfpgan_file is undefined.')
-        #print('load_model_gfpgan called without setting gfpgan_file')
-        #return
-    if thread_data.device != 'cuda:0':
-        #TODO Remove when fixed - A bug with GFPGANer and facexlib needs to be fixed before use on other devices.
-        raise Exception(f'Current device {torch.device(thread_data.device)} is not {torch.device("cuda:0")}. Cannot run GFPGANer.')
     model_path = thread_data.gfpgan_file + ".pth"
-    thread_data.model_gfpgan = GFPGANer(device=torch.device(thread_data.device), model_path=model_path, upscale=1, arch='clean', channel_multiplier=2, bg_upsampler=None)
+    device = 'cuda:0' if force_gfpgan_to_cuda0 else thread_data.device
+    thread_data.model_gfpgan = GFPGANer(device=torch.device(device), model_path=model_path, upscale=1, arch='clean', channel_multiplier=2, bg_upsampler=None)
     print('loaded', thread_data.gfpgan_file, 'to', thread_data.model_gfpgan.device, 'precision', thread_data.precision)
 
 def load_model_real_esrgan():
     if thread_data.real_esrgan_file is None: raise ValueError(f'Thread real_esrgan_file is undefined.')
-        #print('load_model_real_esrgan called without setting real_esrgan_file')
-        #return
     model_path = thread_data.real_esrgan_file + ".pth"
 
     RealESRGAN_models = {
@@ -292,11 +287,11 @@ def get_base_path(disk_path, session_id, prompt, img_id, ext, suffix=None):
 def apply_filters(filter_name, image_data, model_path=None):
     print(f'Applying filter {filter_name}...')
     gc() # Free space before loading new data.
-    if isinstance(image_data, torch.Tensor):
-        print(image_data)
-        image_data.to(thread_data.device)
 
     if filter_name == 'gfpgan':
+        if isinstance(image_data, torch.Tensor):
+            image_data.to('cuda:0' if force_gfpgan_to_cuda0 else thread_data.device)
+
         if model_path is not None and model_path != thread_data.gfpgan_file:
             thread_data.gfpgan_file = model_path
             load_model_gfpgan()
@@ -308,6 +303,9 @@ def apply_filters(filter_name, image_data, model_path=None):
         image_data = output[:,:,::-1]
 
     if filter_name == 'real_esrgan':
+        if isinstance(image_data, torch.Tensor):
+            image_data.to(thread_data.device)
+
         if model_path is not None and model_path != thread_data.real_esrgan_file:
             thread_data.real_esrgan_file = model_path
             load_model_real_esrgan()
