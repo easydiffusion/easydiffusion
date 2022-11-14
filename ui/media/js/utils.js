@@ -3,7 +3,7 @@
 // https://gomakethings.com/finding-the-next-and-previous-sibling-elements-that-match-a-selector-with-vanilla-js/
 function getNextSibling(elem, selector) {
     // Get the next sibling element
-    const sibling = elem.nextElementSibling
+    let sibling = elem.nextElementSibling
 
     // If there's no selector, return the first sibling
     if (!selector) {
