@@ -3,7 +3,7 @@ import torch
 import traceback
 import re
 
-COMPARABLE_GPU_PERCENTILE = 0.75 # if a GPU's free_mem is within this % of the GPU with the most free_mem, it will be picked
+COMPARABLE_GPU_PERCENTILE = 0.65 # if a GPU's free_mem is within this % of the GPU with the most free_mem, it will be picked
 
 def get_device_delta(render_devices, active_devices):
     '''
