@@ -321,7 +321,7 @@
         timeout = Date.now() + timeout
         while (timeout > Date.now()
             && Date.now() < (serverState.time + (timeout || SERVER_STATE_VALIDITY_DURATION))
-            && !isReadyFn()
+            && !Boolean(await Promise.resolve(isReadyFn()))
         ) {
             await delay()
             if (!isServerAvailable()) {
@@ -572,8 +572,8 @@
                 case TaskStatus.pending:
                 case TaskStatus.waiting:
                     // Wait for server status to include this task.
-                    await waitUntil(() => ((task.#id && serverState.task === task.#id)
-                        || callback?.call(task)
+                    await waitUntil(async () => ((task.#id && serverState.task === task.#id)
+                        || await Promise.resolve(callback?.call(task))
                         || signal?.aborted)
                         , TASK_STATE_SERVER_UPDATE_DELAY
                         , timeout
@@ -581,15 +581,15 @@
                     if (this.#id && serverState.task === this.#id) {
                         this._setStatus(TaskStatus.waiting)
                     }
-                    if (callback?.call(this) || signal?.aborted) {
+                    if (await Promise.resolve(callback?.call(this)) || signal?.aborted) {
                         return false
                     }
                     if (stIdx >= 0 && stIdx <= TASK_STATUS_ORDER.indexOf(TaskStatus.waiting)) {
                         return true
                     }
                     // Wait for task to start on server.
-                    await waitUntil(() => (serverState.task !== task.#id || serverState.session !== 'pending'
-                        || callback?.call(task)
+                    await waitUntil(async () => (serverState.task !== task.#id || serverState.session !== 'pending'
+                        || await Promise.resolve(callback?.call(task))
                         || signal?.aborted)
                         , TASK_STATE_SERVER_UPDATE_DELAY
                         , timeout
@@ -603,20 +603,20 @@
                     ) {
                         this._setStatus(TaskStatus.processing)
                     }
-                    if (callback?.call(task) || signal?.aborted) {
+                    if (await Promise.resolve(callback?.call(task)) || signal?.aborted) {
                         return false
                     }
                     if (stIdx >= 0 && stIdx <= TASK_STATUS_ORDER.indexOf(TaskStatus.processing)) {
                         return true
                     }
                 case TaskStatus.processing:
-                    await waitUntil(() => (serverState.task !== task.#id || serverState.session !== 'running'
-                        || callback?.call(task)
+                    await waitUntil(async () => (serverState.task !== task.#id || serverState.session !== 'running'
+                        || await Promise.resolve(callback?.call(task))
                         || signal?.aborted)
                         , TASK_STATE_SERVER_UPDATE_DELAY
                         , timeout
                     )
-                    callback?.call(this)
+                    await Promise.resolve(callback?.call(this))
                 default:
                     return this.#status === (status || TaskStatus.completed)
             }
