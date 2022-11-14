@@ -887,6 +887,10 @@ input::file-selector-button {
     margin-bottom: 15px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
 }
+
+i.active {
+    background: var(--accent-color);
+}
 #system-info .value {
     text-align: left;
 }
