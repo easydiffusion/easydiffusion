@@ -511,7 +511,7 @@ function getTaskUpdater(task, reqBody, outputContainer) {
     }
 }
 
-function getTaskErrorHandler(task, reqBody, instance, reason) {
+function onTaskErrorHandler(task, reqBody, instance, reason) {
     if (!task.isProcessing) {
         return
     }
@@ -636,7 +636,7 @@ function onTaskStart(task) {
             onTaskCompleted(task, newTaskReqBody, instance, outputContainer, renderResult)
         }
         , (reason) => {
-            getTaskErrorHandler(task, newTaskReqBody, instance, reason)
+            onTaskErrorHandler(task, newTaskReqBody, instance, reason)
         }
     )
 
