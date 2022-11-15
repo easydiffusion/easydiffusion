@@ -684,21 +684,21 @@ function onTaskStart(task) {
 }
 
 function createTask(task) {
-    let taskConfig = `Seed: ${task.seed}, Sampler: ${task.reqBody.sampler}, Inference Steps: ${task.reqBody.num_inference_steps}, Guidance Scale: ${task.reqBody.guidance_scale}, Model: ${task.reqBody.use_stable_diffusion_model}`
+    let taskConfig = `<b>Seed:</b> ${task.seed}, <b>Sampler:</b> ${task.reqBody.sampler}, <b>Inference Steps:</b> ${task.reqBody.num_inference_steps}, <b>Guidance Scale:</b> ${task.reqBody.guidance_scale}, <b>Model:</b> ${task.reqBody.use_stable_diffusion_model}`
     if (task.reqBody.use_vae_model.trim() !== '') {
-        taskConfig += `, VAE: ${task.reqBody.use_vae_model}`
+        taskConfig += `, <b>VAE:</b> ${task.reqBody.use_vae_model}`
     }
     if (task.reqBody.negative_prompt.trim() !== '') {
-        taskConfig += `, Negative Prompt: ${task.reqBody.negative_prompt}`
+        taskConfig += `, <b>Negative Prompt:</b> ${task.reqBody.negative_prompt}`
     }
     if (task.reqBody.init_image !== undefined) {
-        taskConfig += `, Prompt Strength: ${task.reqBody.prompt_strength}`
+        taskConfig += `, <b>Prompt Strength:</b> ${task.reqBody.prompt_strength}`
     }
     if (task.reqBody.use_face_correction) {
-        taskConfig += `, Fix Faces: ${task.reqBody.use_face_correction}`
+        taskConfig += `, <b>Fix Faces:</b> ${task.reqBody.use_face_correction}`
     }
     if (task.reqBody.use_upscale) {
-        taskConfig += `, Upscale: ${task.reqBody.use_upscale}`
+        taskConfig += `, <b>Upscale:</b> ${task.reqBody.use_upscale}`
     }
 
     let taskEntry = document.createElement('div')
