@@ -40,7 +40,7 @@ class RenderTask(): # Task with output queue and completion lock.
     def __init__(self, req: Request):
         self.request: Request = req # Initial Request
         self.response: Any = None # Copy of the last reponse
-        self.render_device = None # Select the task afinity. (Not used to change active devices).
+        self.render_device = None # Select the task affinity. (Not used to change active devices).
         self.temp_images:list = [None] * req.num_outputs * (1 if req.show_only_filtered_image else 2)
         self.error: Exception = None
         self.lock: threading.Lock = threading.Lock() # Locks at task start and unlocks when task is completed
@@ -72,7 +72,7 @@ class ImageRequest(BaseModel):
     save_to_disk_path: str = None
     turbo: bool = True
     use_cpu: bool = False ##TODO Remove after UI and plugins transition.
-    render_device: str = None
+    render_device: str = None # Select the task affinity. (Not used to change active devices).
     use_full_precision: bool = False
     use_face_correction: str = None # or "GFPGANv1.3"
     use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
