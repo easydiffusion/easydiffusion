@@ -5,7 +5,7 @@
     const RETRY_DELAY_IF_SERVER_IS_BUSY = 30 * 1000 // ms, status_code 503, already a task running
     const RETRY_DELAY_ON_ERROR = 4000 // ms
     const TASK_STATE_SERVER_UPDATE_DELAY = 1500 // ms
-    const SERVER_STATE_VALIDITY_DURATION = 10 * 1000 // ms
+    const SERVER_STATE_VALIDITY_DURATION = 90 * 1000 // ms - 90 seconds to allow ping to timeout more than once before killing tasks.
     const HEALTH_PING_INTERVAL = 5000 // ms
     const IDLE_COOLDOWN = 2500 // ms
     const CONCURRENT_TASK_INTERVAL = 500 // ms
@@ -320,7 +320,7 @@
         }
         timeout = Date.now() + timeout
         while (timeout > Date.now()
-            && Date.now() < (serverState.time + (timeout || SERVER_STATE_VALIDITY_DURATION))
+            && Date.now() < serverState.time + SERVER_STATE_VALIDITY_DURATION
             && !Boolean(await Promise.resolve(isReadyFn()))
         ) {
             await delay()
