@@ -660,7 +660,23 @@ function onTaskStart(task) {
     outputContainer.className = 'img-batch'
     task.outputContainer.insertBefore(outputContainer, task.outputContainer.firstChild)
 
-    const instance = new SD.RenderTask(newTaskReqBody)
+    const eventInfo = {reqBody:newTaskReqBody}
+    PLUGINS['TASK_CREATE'].forEach((hook) => {
+        if (typeof hook !== 'function') {
+            console.error('The provided TASK_CREATE hook is not a function. Hook: %o', hook)
+            return
+        }
+        try {
+            hook.call(task, eventInfo)
+        } catch (err) {
+            console.error(err)
+        }
+    })
+    let instance = eventInfo.instance
+    if (!instance) {
+        instance = new SD.RenderTask(newTaskReqBody)
+    }
+
     task['instances'].push(instance)
     task.batchesDone++
 
