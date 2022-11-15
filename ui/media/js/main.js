@@ -778,7 +778,7 @@ function getCurrentUserRequest() {
             height: parseInt(heightField.value),
             // allow_nsfw: allowNSFWField.checked,
             turbo: turboField.checked,
-            render_device: getCurrentRenderDeviceSelection(),
+            //render_device: undefined, // Set device affinity. Prefer this device, but wont activate.
             use_full_precision: useFullPrecisionField.checked,
             use_stable_diffusion_model: stableDiffusionModelField.value,
             use_vae_model: vaeModelField.value,
@@ -812,19 +812,6 @@ function getCurrentUserRequest() {
         newTask.reqBody.use_upscale = upscaleModelField.value
     }
     return newTask
-}
-
-function getCurrentRenderDeviceSelection() {
-    let selectedGPUs = $('#use_gpus').val()
-
-    if (useCPUField.checked && !autoPickGPUsField.checked) {
-        return 'cpu'
-    }
-    if (autoPickGPUsField.checked || selectedGPUs.length == 0) {
-        return 'auto'
-    }
-
-    return selectedGPUs.join(',')
 }
 
 function getPrompts() {
@@ -1058,6 +1045,19 @@ promptStrengthSlider.addEventListener('input', updatePromptStrength)
 promptStrengthField.addEventListener('input', updatePromptStrengthSlider)
 updatePromptStrength()
 
+function getCurrentRenderDeviceSelection() {
+    let selectedGPUs = $('#use_gpus').val()
+
+    if (useCPUField.checked && !autoPickGPUsField.checked) {
+        return 'cpu'
+    }
+    if (autoPickGPUsField.checked || selectedGPUs.length == 0) {
+        return 'auto'
+    }
+
+    return selectedGPUs.join(',')
+}
+
 useCPUField.addEventListener('click', function() {
     let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
     let autoPickGPUSettingEntry = getParameterSettingsEntry('auto_pick_gpus')
@@ -1077,11 +1077,19 @@ useCPUField.addEventListener('click', function() {
         }
         gpuSettingEntry.style.display = (autoPickGPUsField.checked ? 'none' : '')
     }
+
+    changeAppConfig({
+        'render_devices': getCurrentRenderDeviceSelection()
+    })
 })
 
 useGPUsField.addEventListener('click', function() {
     let selectedGPUs = $('#use_gpus').val()
     autoPickGPUsField.checked = (selectedGPUs.length === 0)
+
+    changeAppConfig({
+        'render_devices': getCurrentRenderDeviceSelection()
+    })
 })
 
 autoPickGPUsField.addEventListener('click', function() {
@@ -1091,6 +1099,10 @@ autoPickGPUsField.addEventListener('click', function() {
 
     let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
     gpuSettingEntry.style.display = (this.checked ? 'none' : '')
+
+    changeAppConfig({
+        'render_devices': getCurrentRenderDeviceSelection()
+    })
 })
 
 async function changeAppConfig(configDelta) {
