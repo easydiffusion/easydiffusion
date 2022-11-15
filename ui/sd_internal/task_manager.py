@@ -22,7 +22,6 @@ LOCK_TIMEOUT = 15 # Maximum locking time in seconds before failing a task.
 # It's better to get an exception than a deadlock... ALWAYS use timeout in critical paths.
 
 DEVICE_START_TIMEOUT = 60 # seconds - Maximum time to wait for a render device to init.
-CPU_UNLOAD_TIMEOUT = 4 * 60 # seconds - Idle time before CPU unload resource when GPUs are present.
 
 class SymbolClass(type): # Print nicely formatted Symbol names.
     def __repr__(self): return self.__qualname__
