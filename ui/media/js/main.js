@@ -444,7 +444,7 @@ async function doMakeImage(task) {
     const RETRY_DELAY_IF_BUFFER_IS_EMPTY = 1000 // ms
     const RETRY_DELAY_IF_SERVER_IS_BUSY = 30 * 1000 // ms, status_code 503, already a task running
     const TASK_START_DELAY_ON_SERVER = 1500 // ms
-    const SERVER_STATE_VALIDITY_DURATION = 10 * 1000 // ms
+    const SERVER_STATE_VALIDITY_DURATION = 90 * 1000 // ms
 
     const reqBody = task.reqBody
     const batchCount = task.batchCount
