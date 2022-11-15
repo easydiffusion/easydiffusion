@@ -25,15 +25,6 @@ let initImagePreview = document.querySelector("#init_image_preview")
 let initImageSizeBox = document.querySelector("#init_image_size_box")
 let maskImageSelector = document.querySelector("#mask")
 let maskImagePreview = document.querySelector("#mask_preview")
-let turboField = document.querySelector('#turbo')
-let useCPUField = document.querySelector('#use_cpu')
-let autoPickGPUsField = document.querySelector('#auto_pick_gpus')
-let useGPUsField = document.querySelector('#use_gpus')
-let useFullPrecisionField = document.querySelector('#use_full_precision')
-let saveToDiskField = document.querySelector('#save_to_disk')
-let diskPathField = document.querySelector('#diskPath')
-// let allowNSFWField = document.querySelector("#allow_nsfw")
-let useBetaChannelField = document.querySelector("#use_beta_channel")
 let promptStrengthSlider = document.querySelector('#prompt_strength_slider')
 let promptStrengthField = document.querySelector('#prompt_strength')
 let samplerField = document.querySelector('#sampler')
@@ -60,20 +51,9 @@ let initialText = document.querySelector("#initial-text")
 let previewTools = document.querySelector("#preview-tools")
 let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
 
-// let maskSetting = document.querySelector('#editor-inputs-mask_setting')
-// let maskImagePreviewContainer = document.querySelector('#mask_preview_container')
-// let maskImageClearBtn = document.querySelector('#mask_clear')
 let maskSetting = document.querySelector('#enable_mask')
 
 let imagePreview = document.querySelector("#preview")
-
-// let previewPrompt = document.querySelector('#preview-prompt')
-
-let showConfigToggle = document.querySelector('#configToggleBtn')
-// let configBox = document.querySelector('#config')
-// let outputMsg = document.querySelector('#outputMsg')
-
-let soundToggle = document.querySelector('#sound_toggle')
 
 let serverStatusColor = document.querySelector('#server-status-color')
 let serverStatusMsg = document.querySelector('#server-status-msg')
@@ -1093,14 +1073,15 @@ function onDimensionChange() {
 }
 
 diskPathField.disabled = !saveToDiskField.checked
-saveToDiskField.addEventListener('change', function(e) {
-    diskPathField.disabled = !this.checked
-})
 
 upscaleModelField.disabled = !useUpscalingField.checked
 useUpscalingField.addEventListener('change', function(e) {
     upscaleModelField.disabled = !this.checked
 })
+
+if (useBetaChannelField.checked) {
+    updateBranchLabel.innerText = "(beta)"
+}
 
 makeImageBtn.addEventListener('click', makeImage)
 
@@ -1150,114 +1131,6 @@ function updatePromptStrengthSlider() {
 promptStrengthSlider.addEventListener('input', updatePromptStrength)
 promptStrengthField.addEventListener('input', updatePromptStrengthSlider)
 updatePromptStrength()
-
-function getCurrentRenderDeviceSelection() {
-    let selectedGPUs = $('#use_gpus').val()
-
-    if (useCPUField.checked && !autoPickGPUsField.checked) {
-        return 'cpu'
-    }
-    if (autoPickGPUsField.checked || selectedGPUs.length == 0) {
-        return 'auto'
-    }
-
-    return selectedGPUs.join(',')
-}
-
-useCPUField.addEventListener('click', function() {
-    let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
-    let autoPickGPUSettingEntry = getParameterSettingsEntry('auto_pick_gpus')
-    if (this.checked) {
-        gpuSettingEntry.style.display = 'none'
-        autoPickGPUSettingEntry.style.display = 'none'
-        autoPickGPUsField.setAttribute('data-old-value', autoPickGPUsField.checked)
-        autoPickGPUsField.checked = false
-    } else if (useGPUsField.options.length >= MIN_GPUS_TO_SHOW_SELECTION) {
-        gpuSettingEntry.style.display = ''
-        autoPickGPUSettingEntry.style.display = ''
-        let oldVal = autoPickGPUsField.getAttribute('data-old-value')
-        if (oldVal === null || oldVal === undefined) { // the UI started with CPU selected by default
-            autoPickGPUsField.checked = true
-        } else {
-            autoPickGPUsField.checked = (oldVal === 'true')
-        }
-        gpuSettingEntry.style.display = (autoPickGPUsField.checked ? 'none' : '')
-    }
-
-    changeAppConfig({
-        'render_devices': getCurrentRenderDeviceSelection()
-    })
-})
-
-useGPUsField.addEventListener('click', function() {
-    let selectedGPUs = $('#use_gpus').val()
-    autoPickGPUsField.checked = (selectedGPUs.length === 0)
-
-    changeAppConfig({
-        'render_devices': getCurrentRenderDeviceSelection()
-    })
-})
-
-autoPickGPUsField.addEventListener('click', function() {
-    if (this.checked) {
-        $('#use_gpus').val([])
-    }
-
-    let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
-    gpuSettingEntry.style.display = (this.checked ? 'none' : '')
-
-    changeAppConfig({
-        'render_devices': getCurrentRenderDeviceSelection()
-    })
-})
-
-async function changeAppConfig(configDelta) {
-    // if (!isServerAvailable()) {
-    //     // logError('The server is still starting up..')
-    //     alert('The server is still starting up..')
-    //     e.preventDefault()
-    //     return false
-    // }
-
-    try {
-        let res = await fetch('/app_config', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(configDelta)
-        })
-        res = await res.json()
-
-        console.log('set config status response', res)
-    } catch (e) {
-        console.log('set config status error', e)
-    }
-}
-
-useBetaChannelField.addEventListener('click', async function(e) {
-    let updateBranch = (this.checked ? 'beta' : 'main')
-
-    await changeAppConfig({
-        'update_branch': updateBranch
-    })
-})
-
-async function getAppConfig() {
-    try {
-        let res = await fetch('/get/app_config')
-        const config = await res.json()
-
-        if (config.update_branch === 'beta') {
-            useBetaChannelField.checked = true
-            updateBranchLabel.innerText = "(beta)"
-        }
-
-        console.log('get config status response', config)
-    } catch (e) {
-        console.log('get config status error', e)
-    }
-}
 
 async function getModels() {
     try {
@@ -1394,70 +1267,6 @@ promptsFromFileSelector.addEventListener('change', function() {
         reader.readAsText(file)
     }
 })
-
-async function getDiskPath() {
-    try {
-        var diskPath = getSetting("diskPath")
-        if (diskPath == '' || diskPath == undefined || diskPath == "undefined") {
-            let res = await fetch('/get/output_dir')
-            if (res.status === 200) {
-                res = await res.json()
-                res = res.output_dir
-
-                setSetting("diskPath", res)
-            }
-        }
-    } catch (e) {
-        console.log('error fetching output dir path', e)
-    }
-}
-
-async function getDevices() {
-    try {
-        let res = await fetch('/get/devices')
-        if (res.status === 200) {
-            res = await res.json()
-
-            let allDeviceIds = Object.keys(res['all']).filter(d => d !== 'cpu')
-            let activeDeviceIds = Object.keys(res['active']).filter(d => d !== 'cpu')
-
-            if (activeDeviceIds.length === 0) {
-                useCPUField.checked = true
-            }
-
-            if (allDeviceIds.length < MIN_GPUS_TO_SHOW_SELECTION || useCPUField.checked) {
-                let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
-                gpuSettingEntry.style.display = 'none'
-                let autoPickGPUSettingEntry = getParameterSettingsEntry('auto_pick_gpus')
-                autoPickGPUSettingEntry.style.display = 'none'
-            }
-
-            if (allDeviceIds.length === 0) {
-                useCPUField.checked = true
-                useCPUField.disabled = true // no compatible GPUs, so make the CPU mandatory
-            }
-
-            autoPickGPUsField.checked = (res['config'] === 'auto')
-
-            useGPUsField.innerHTML = ''
-            allDeviceIds.forEach(device => {
-                let deviceName = res['all'][device]['name']
-                let deviceOption = `<option value="${device}">${deviceName} (${device})</option>`
-                useGPUsField.insertAdjacentHTML('beforeend', deviceOption)
-            })
-
-            if (autoPickGPUsField.checked) {
-                let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
-                gpuSettingEntry.style.display = 'none'
-            } else {
-                $('#use_gpus').val(activeDeviceIds)
-            }
-        }
-    } catch (e) {
-        console.log('error fetching devices', e)
-    }
-}
-
 
 /* setup popup handlers */
 document.querySelectorAll('.popup').forEach(popup => {

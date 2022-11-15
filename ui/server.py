@@ -162,9 +162,13 @@ async def setAppConfig(req : SetAppConfigRequest):
     if req.update_branch:
         config['update_branch'] = req.update_branch
     if req.render_devices:
-        update_render_threads_from_request(req.render_devices)
+        update_render_devices_in_config(config, req.render_devices)
     try:
         setConfig(config)
+
+        if req.render_devices:
+            update_render_threads()
+
         return JSONResponse({'status': 'OK'}, headers=NOCACHE_HEADERS)
     except Exception as e:
         print(traceback.format_exc())
@@ -278,26 +282,14 @@ def save_model_to_config(ckpt_model_name, vae_model_name):
 
     setConfig(config)
 
-def save_render_devices_to_config(render_devices):
-    config = getConfig()
-    if 'render_devices' not in config:
-        config['render_devices'] = {}
+def update_render_devices_in_config(config, render_devices):
+    if render_devices not in ('cpu', 'auto') and not render_devices.startswith('cuda:'):
+        raise HTTPException(status_code=400, detail=f'Invalid render device requested: {render_devices}')
+
+    if render_devices.startswith('cuda:'):
+        render_devices = render_devices.split(',')
 
     config['render_devices'] = render_devices
-    if render_devices is None or len(render_devices) == 0:
-        del config['render_devices']
-
-    setConfig(config)
-
-def update_render_threads_from_request(render_device):
-    if render_device not in ('cpu', 'auto') and not render_device.startswith('cuda:'):
-        raise HTTPException(status_code=400, detail=f'Invalid render device requested: {render_device}')
-
-    if render_device.startswith('cuda:'):
-        render_device = render_device.split(',')
-
-    save_render_devices_to_config(render_device)
-    update_render_threads()
 
 @app.post('/render')
 def render(req : task_manager.ImageRequest):
