@@ -162,7 +162,6 @@ async def setAppConfig(req : SetAppConfigRequest):
     if req.update_branch:
         config['update_branch'] = req.update_branch
     if req.render_devices:
-        config['render_devices'] = req.render_devices
         update_render_threads_from_request(req.render_devices)
     try:
         setConfig(config)
