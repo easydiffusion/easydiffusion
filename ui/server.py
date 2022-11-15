@@ -161,6 +161,9 @@ async def setAppConfig(req : SetAppConfigRequest):
     config = getConfig()
     if req.update_branch:
         config['update_branch'] = req.update_branch
+    if req.render_devices:
+        config['render_devices'] = req.render_devices
+        update_render_threads_from_request(req.render_devices)
     try:
         setConfig(config)
         return JSONResponse({'status': 'OK'}, headers=NOCACHE_HEADERS)
@@ -287,27 +290,18 @@ def save_render_devices_to_config(render_devices):
 
     setConfig(config)
 
-def update_render_threads_on_request(req : task_manager.ImageRequest):
-    if req.use_cpu:  # TODO Remove after transition.
-        print('WARNING Replace {use_cpu: true} by {render_device: "cpu"}')
-        req.render_device = 'cpu'
-        del req.use_cpu
+def update_render_threads_from_request(render_device):
+    if render_device not in ('cpu', 'auto') and not render_device.startswith('cuda:'):
+        raise HTTPException(status_code=400, detail=f'Invalid render device requested: {render_device}')
 
-    if req.render_device not in ('cpu', 'auto') and not req.render_device.startswith('cuda:'):
-        raise HTTPException(status_code=400, detail=f'Invalid render device requested: {req.render_device}')
+    if render_device.startswith('cuda:'):
+        render_device = render_device.split(',')
 
-    if req.render_device.startswith('cuda:'):
-        req.render_device = req.render_device.split(',')
-
-    save_render_devices_to_config(req.render_device)
-    del req.render_device
-
+    save_render_devices_to_config(render_device)
     update_render_threads()
 
 @app.post('/render')
 def render(req : task_manager.ImageRequest):
-    update_render_threads_on_request(req)
-
     try:
         save_model_to_config(req.use_stable_diffusion_model, req.use_vae_model)
         req.use_stable_diffusion_model = resolve_ckpt_to_use(req.use_stable_diffusion_model)
