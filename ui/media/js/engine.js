@@ -252,6 +252,9 @@
     let serverState = {'status': ServerStates.unavailable, 'time': Date.now()}
 
     async function healthCheck() {
+        if (Date.now() >= serverState.time + SERVER_STATE_VALIDITY_DURATION) {
+            console.warn('WARNING! SERVER_STATE_VALIDITY_DURATION has elapsed since the last Ping completed.')
+        }
         try {
             let res = undefined
             if (typeof sessionId !== 'undefined') {
@@ -327,6 +330,9 @@
             if (!isServerAvailable()) {
                 throw new Error('Connexion with server lost.')
             }
+        }
+        if (Date.now() >= serverState.time + SERVER_STATE_VALIDITY_DURATION) {
+            console.warn('SERVER_STATE_VALIDITY_DURATION elapsed. Released waitUntil on stale server state.')
         }
     }
 
