@@ -58,6 +58,13 @@ var PARAMETERS = [
 		default: true,
 	},
 	{
+		id: "ui_open_browser_on_start",
+		type: ParameterType.checkbox,
+		label: "Open browser on startup",
+		note: "starts the default browser on startup",
+		default: true,
+	},
+	{
 		id: "turbo",
 		type: ParameterType.checkbox,
 		label: "Turbo Mode",
@@ -158,6 +165,7 @@ let useFullPrecisionField = document.querySelector('#use_full_precision')
 let saveToDiskField = document.querySelector('#save_to_disk')
 let diskPathField = document.querySelector('#diskPath')
 let useBetaChannelField = document.querySelector("#use_beta_channel")
+let uiOpenBrowserOnStartField = document.querySelector("#ui_open_browser_on_start")
 
 let saveSettingsBtn = document.querySelector('#save-system-settings-btn')
 
@@ -185,6 +193,9 @@ async function getAppConfig() {
 
         if (config.update_branch === 'beta') {
             useBetaChannelField.checked = true
+        }
+        if (config.ui && config.ui.open_browser_on_start === false) {
+            uiOpenBrowserOnStartField.checked = false
         }
 
         console.log('get config status response', config)
@@ -313,6 +324,7 @@ saveSettingsBtn.addEventListener('click', function() {
 
 	changeAppConfig({
         'render_devices': getCurrentRenderDeviceSelection(),
-		'update_branch': updateBranch
+		'update_branch': updateBranch,
+		'ui_open_browser_on_start': uiOpenBrowserOnStartField.checked
     })
 })

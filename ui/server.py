@@ -24,6 +24,9 @@ APP_CONFIG_DEFAULTS = {
     # auto: selects the cuda device with the most free memory, cuda: use the currently active cuda device.
     'render_devices': 'auto', # valid entries: 'auto', 'cpu' or 'cuda:N' (where N is a GPU index)
     'update_branch': 'main',
+    'ui': {
+        'open_browser_on_start': True,
+    },
 }
 APP_CONFIG_DEFAULT_MODELS = [
     # needed to support the legacy installations
@@ -156,14 +159,19 @@ class SetAppConfigRequest(BaseModel):
     update_branch: str = None
     render_devices: Union[List[str], List[int], str, int] = None
     model_vae: str = None
+    ui_open_browser_on_start: bool = None
 
 @app.post('/app_config')
 async def setAppConfig(req : SetAppConfigRequest):
     config = getConfig()
-    if req.update_branch:
+    if req.update_branch is not None:
         config['update_branch'] = req.update_branch
-    if req.render_devices:
+    if req.render_devices is not None:
         update_render_devices_in_config(config, req.render_devices)
+    if req.ui_open_browser_on_start is not None:
+        if 'ui' not in config:
+            config['ui'] = {}
+        config['ui']['open_browser_on_start'] = req.ui_open_browser_on_start
     try:
         setConfig(config)
 
