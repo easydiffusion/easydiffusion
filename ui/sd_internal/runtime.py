@@ -24,7 +24,27 @@ from ldm.util import instantiate_from_config
 from optimizedSD.optimUtils import split_weighted_subprompts
 from transformers import logging
 
-from gfpgan import GFPGANer
+try:
+    from gfpgan import GFPGANer
+except Exception as e:
+    import rich
+    rich.print(traceback.format_exc())
+    rich.print(str(e))
+    rich.print()
+    rich.print("[bold red]ModuleNotFoundError: No module named 'gfpgan'[/bold red]")
+    rich.print()
+    rich.print("[bold yellow]This is a fatal error.[/bold yellow]")
+    rich.print()
+    rich.print("[bold yellow]If you've moved the Stable Diffusion UI installation to a different location, please follow[/bold yellow]")
+    rich.print("[bold yellow]the instructions in the troubleshooting guide at:[/bold yellow]")
+    print("https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting#modulenotfounderror-no-module-named-gfpgan")
+    rich.print()
+    rich.print("[bold white on blue]  Press Enter to open the troubleshooting guide...  [/bold white on blue]")
+    input('')
+    import webbrowser; webbrowser.open('https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting#modulenotfounderror-no-module-named-gfpgan')
+    raise(e)
+
+    
 from basicsr.archs.rrdbnet_arch import RRDBNet
 from realesrgan import RealESRGANer
 
