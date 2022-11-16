@@ -6,6 +6,9 @@
 
 # This enables a user to install this project without manually installing conda and git.
 
+source ./scripts/functions.sh
+
+set -o pipefail
 
 OS_NAME=$(uname -s)
 case "${OS_NAME}" in
@@ -29,6 +32,7 @@ export MAMBA_ROOT_PREFIX="$(pwd)/installer_files/mamba"
 INSTALL_ENV_DIR="$(pwd)/installer_files/env"
 LEGACY_INSTALL_ENV_DIR="$(pwd)/installer"
 MICROMAMBA_DOWNLOAD_URL="https://micro.mamba.pm/api/micromamba/${OS_NAME}-${OS_ARCH}/latest"
+umamba_exists="F"
 
 # figure out whether git and conda needs to be installed
 if [ -e "$INSTALL_ENV_DIR" ]; then export PATH="$INSTALL_ENV_DIR/bin:$PATH"; fi
@@ -38,14 +42,24 @@ PACKAGES_TO_INSTALL=""
 if [ ! -e "$LEGACY_INSTALL_ENV_DIR/etc/profile.d/conda.sh" ] && [ ! -e "$INSTALL_ENV_DIR/etc/profile.d/conda.sh" ]; then PACKAGES_TO_INSTALL="$PACKAGES_TO_INSTALL conda"; fi
 if ! hash "git" &>/dev/null; then PACKAGES_TO_INSTALL="$PACKAGES_TO_INSTALL git"; fi
 
+if "$MAMBA_ROOT_PREFIX/micromamba" --version &>/dev/null; then umamba_exists="T"; fi
+
 # (if necessary) install git and conda into a contained environment
 if [ "$PACKAGES_TO_INSTALL" != "" ]; then
     # download micromamba
-    if [ ! -e "$MAMBA_ROOT_PREFIX/micromamba" ]; then
+    if [ "$umamba_exists" == "F" ]; then
         echo "Downloading micromamba from $MICROMAMBA_DOWNLOAD_URL to $MAMBA_ROOT_PREFIX/micromamba"
 
         mkdir -p "$MAMBA_ROOT_PREFIX"
         curl -L "$MICROMAMBA_DOWNLOAD_URL" | tar -xvj bin/micromamba -O > "$MAMBA_ROOT_PREFIX/micromamba"
+
+        if [ "$?" != "0" ]; then
+            echo
+            echo "EE micromamba download failed"
+            echo "EE If the lines above contain 'bzip2: Cannot exec', your system doesn't have bzip2 installed"
+            echo "EE If there are network errors, please check your internet setup"
+            fail "micromamba download failed"
+        fi
 
         chmod u+x "$MAMBA_ROOT_PREFIX/micromamba"
 
@@ -56,15 +70,17 @@ if [ "$PACKAGES_TO_INSTALL" != "" ]; then
 
     # create the installer env
     if [ ! -e "$INSTALL_ENV_DIR" ]; then
-        "$MAMBA_ROOT_PREFIX/micromamba" create -y --prefix "$INSTALL_ENV_DIR"
+        "$MAMBA_ROOT_PREFIX/micromamba" create -y --prefix "$INSTALL_ENV_DIR" || fail "unable to create the install environment"
+    fi
+   
+    if [ ! -e "$INSTALL_ENV_DIR" ]; then
+        fail "There was a problem while installing$PACKAGES_TO_INSTALL using micromamba. Cannot continue."
     fi
 
     echo "Packages to install:$PACKAGES_TO_INSTALL"
 
     "$MAMBA_ROOT_PREFIX/micromamba" install -y --prefix "$INSTALL_ENV_DIR" -c conda-forge $PACKAGES_TO_INSTALL
-
-    if [ ! -e "$INSTALL_ENV_DIR" ]; then
-        echo "There was a problem while installing$PACKAGES_TO_INSTALL using micromamba. Cannot continue."
-        exit
+    if [ "$?" != "0" ]; then
+        fail "Installation of the packages '$PACKAGES_TO_INSTALL' failed."
     fi
 fi

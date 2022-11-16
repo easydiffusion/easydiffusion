@@ -13,6 +13,11 @@ set LEGACY_INSTALL_ENV_DIR=%cd%\installer
 set MICROMAMBA_DOWNLOAD_URL=https://github.com/cmdr2/stable-diffusion-ui/releases/download/v1.1/micromamba.exe
 set umamba_exists=F
 
+set OLD_APPDATA=%APPDATA%
+set OLD_USERPROFILE=%USERPROFILE%
+set APPDATA=%cd%\installer_files\appdata
+set USERPROFILE=%cd%\profile
+
 @rem figure out whether git and conda needs to be installed
 if exist "%INSTALL_ENV_DIR%" set PATH=%INSTALL_ENV_DIR%;%INSTALL_ENV_DIR%\Library\bin;%INSTALL_ENV_DIR%\Scripts;%INSTALL_ENV_DIR%\Library\usr\bin;%PATH%
 
@@ -35,7 +40,16 @@ if "%PACKAGES_TO_INSTALL%" NEQ "" (
         echo "Downloading micromamba from %MICROMAMBA_DOWNLOAD_URL% to %MAMBA_ROOT_PREFIX%\micromamba.exe"
 
         mkdir "%MAMBA_ROOT_PREFIX%"
-        call curl -L "%MICROMAMBA_DOWNLOAD_URL%" > "%MAMBA_ROOT_PREFIX%\micromamba.exe"
+        call curl -Lk "%MICROMAMBA_DOWNLOAD_URL%" > "%MAMBA_ROOT_PREFIX%\micromamba.exe"
+
+        @REM if "%ERRORLEVEL%" NEQ "0" (
+        @REM     echo "There was a problem downloading micromamba. Cannot continue."
+        @REM     pause
+        @REM     exit /b
+        @REM )
+
+        mkdir "%APPDATA%"
+        mkdir "%USERPROFILE%"
 
         @rem test the mamba binary
         echo Micromamba version:
@@ -57,3 +71,7 @@ if "%PACKAGES_TO_INSTALL%" NEQ "" (
         exit /b
     )
 )
+
+@rem revert to the old APPDATA. only needed it for bypassing a bug in micromamba (with special characters)
+set APPDATA=%OLD_APPDATA%
+set USERPROFILE=%OLD_USERPROFILE%
