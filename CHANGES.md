@@ -2,6 +2,7 @@
 
 ### 2.4.6
 * 16 Nov 2022 - Fix a regression in VRAM usage during startup, which caused 'Out of Memory' errors when starting on GPUs with 4gb (or less) VRAM
+* 16 Nov 2022 - Add Picklescan - a scanner for malicious model files. If it finds a malicious file, it will halt the web application and alert the user
 
 ### 2.4.5
 * 16 Nov 2022 - Add checkbox for "Open browser on startup".
