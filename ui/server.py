@@ -77,36 +77,37 @@ def setConfig(config):
         print(traceback.format_exc())
 
     try: # config.bat
-        config_bat = [
-            f"@set update_branch={config['update_branch']}" if 'update_branch' in config else ""
-        ]
         config_bat_path = os.path.join(CONFIG_DIR, 'config.bat')
+        config_bat = []
 
+        if 'update_branch' in config:
+            config_bat.append(f"@set update_branch={config['update_branch']}")
         if os.getenv('SD_UI_BIND_PORT') is not None:
             config_bat.append(f"@set SD_UI_BIND_PORT={os.getenv('SD_UI_BIND_PORT')}")
         if os.getenv('SD_UI_BIND_IP') is not None:
             config_bat.append(f"@set SD_UI_BIND_IP={os.getenv('SD_UI_BIND_IP')}")
 
-        with open(config_bat_path, 'w', encoding='utf-8') as f:
-            f.write('\r\n'.join(config_bat))
-    except Exception as e:
+        if len(config_bat) > 0:
+            with open(config_bat_path, 'w', encoding='utf-8') as f:
+                f.write('\r\n'.join(config_bat))
+    except:
         print(traceback.format_exc())
 
     try: # config.sh
-        config_sh = [
-            '#!/bin/bash',
-            f"export update_branch={config['update_branch']}" if 'update_branch' in config else ""
-        ]
         config_sh_path = os.path.join(CONFIG_DIR, 'config.sh')
+        config_sh = ['#!/bin/bash']
 
+        if 'update_branch' in config:
+            config_sh.append(f"export update_branch={config['update_branch']}")
         if os.getenv('SD_UI_BIND_PORT') is not None:
             config_sh.append(f"export SD_UI_BIND_PORT={os.getenv('SD_UI_BIND_PORT')}")
         if os.getenv('SD_UI_BIND_IP') is not None:
             config_sh.append(f"export SD_UI_BIND_IP={os.getenv('SD_UI_BIND_IP')}")
 
-        with open(config_sh_path, 'w', encoding='utf-8') as f:
-            f.write('\n'.join(config_sh))
-    except Exception as e:
+        if len(config_sh) > 1:
+            with open(config_sh_path, 'w', encoding='utf-8') as f:
+                f.write('\n'.join(config_sh))
+    except:
         print(traceback.format_exc())
 
 def resolve_model_to_use(model_name:str, model_type:str, model_dir:str, model_extensions:list, default_models=[]):
