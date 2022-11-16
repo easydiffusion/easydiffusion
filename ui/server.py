@@ -54,16 +54,12 @@ ACCESS_LOG_SUPPRESS_PATH_PREFIXES = ['/ping', '/image', '/modifier-thumbnails']
 NOCACHE_HEADERS={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
 
 class NoCacheStaticFiles(StaticFiles):
-    use_cache = None
     def is_not_modified(self, response_headers, request_headers) -> bool:
-        if self.use_cache is None:
-            config = getConfig()
-            self.use_cache = bool(config['update_branch'] == 'main')
-            print('Static files', 'will use cache' if self.use_cache else 'will always be fresh')
-        if self.use_cache:
-            return super().is_not_modified(response_headers, request_headers)
-        else:
+        # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-Fetch-Dest
+        fetch_destination = request_headers['sec-fetch-dest']
+        if fetch_destination in ('document', 'embed', 'frame', 'iframe', 'manifest', 'object', 'script', 'style'):
             return False
+        return super().is_not_modified(response_headers, request_headers)
 
 app.mount('/media', NoCacheStaticFiles(directory=os.path.join(SD_UI_DIR, 'media')), name="media")
 app.mount('/plugins', NoCacheStaticFiles(directory=UI_PLUGINS_DIR), name="plugins")
