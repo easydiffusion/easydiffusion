@@ -30,6 +30,14 @@ label {
     margin-top: 5px;
     display: block;
 }
+#negative_prompt {
+    width: 100%;
+    height: 50pt;
+    font-size: 9px;
+    margin-bottom: 5px;
+    margin-top: 5px;
+    display: block;
+}
 .image_preview_container {
     margin-top: 10pt;
 }
