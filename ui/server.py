@@ -376,7 +376,10 @@ task_manager.default_vae_to_load = resolve_vae_to_use()
 
 def update_render_threads():
     config = getConfig()
-    render_devices = config.get('render_devices', "auto")
+    if 'render_devices' in config:
+        render_devices = config['render_devices']
+    else:
+        render_devices = 'auto'
     active_devices = task_manager.get_devices()['active'].keys()
 
     print('requesting for render_devices', render_devices)
