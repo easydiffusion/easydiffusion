@@ -1141,8 +1141,16 @@ async function getModels() {
         let res = await fetch('/get/models')
         const models = await res.json()
 
-        console.log('get models response', models)
+        console.log('got models response', models)
 
+        if ( "scan-error" in models ) {
+            // let previewPane = document.getElementById('tab-content-wrapper')
+            let previewPane = document.getElementById('preview')
+            previewPane.style.background="red"
+            previewPane.style.textAlign="center"
+            previewPane.innerHTML = '<H1>🔥Malware alert!🔥</H1><h2>The file <i>' + models['scan-error'] + '</i> in your <tt>models/stable-diffusion</tt> folder is probably malware infected.</h2><h2>Please delete this file from the folder before proceeding!</h2>After deleting the file, reload this page.<br><br><button onClick="window.location.reload();">Reload Page</button>'
+            makeImageBtn.disabled = true
+	}
         let modelOptions = models['options']
         let stableDiffusionOptions = modelOptions['stable-diffusion']
         let vaeOptions = modelOptions['vae']

@@ -7,6 +7,8 @@ import traceback
 
 import sys
 import os
+import picklescan.scanner
+import rich
 
 SD_DIR = os.getcwd()
 print('started in ', SD_DIR)
@@ -206,6 +208,13 @@ def getModels():
             os.makedirs(models_dir)
 
         for file in os.listdir(models_dir):
+            scan_result = picklescan.scanner.scan_file_path( os.path.join(models_dir, file))
+            if ( scan_result.issues_count >0 or scan_result.infected_files >0):
+                rich.print(":warning: [bold red]Scan %s: %d scanned, %d issue, %d infected.[/bold red]" % ( file,  scan_result.scanned_files, scan_result.issues_count, scan_result.infected_files) )
+                models['scan-error'] = file
+                return models
+            else:
+                rich.print("Scan %s: [green]%d scanned, %d issue, %d infected.[/green]" % ( file, scan_result.scanned_files, scan_result.issues_count, scan_result.infected_files ) )
             for model_extension in model_extensions:
                 if file.endswith(model_extension):
                     model_name = file[:-len(model_extension)]
