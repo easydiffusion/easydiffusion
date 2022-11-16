@@ -22,8 +22,11 @@ OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder
 TASK_TTL = 15 * 60 # Discard last session's task timeout
 APP_CONFIG_DEFAULTS = {
     # auto: selects the cuda device with the most free memory, cuda: use the currently active cuda device.
-    'render_devices': ['auto'], # valid entries: 'auto', 'cpu' or 'cuda:N' (where N is a GPU index)
+    'render_devices': 'auto', # valid entries: 'auto', 'cpu' or 'cuda:N' (where N is a GPU index)
     'update_branch': 'main',
+    'ui': {
+        'open_browser_on_start': True,
+    },
 }
 APP_CONFIG_DEFAULT_MODELS = [
     # needed to support the legacy installations
@@ -77,36 +80,37 @@ def setConfig(config):
         print(traceback.format_exc())
 
     try: # config.bat
-        config_bat = [
-            f"@set update_branch={config['update_branch']}"
-        ]
         config_bat_path = os.path.join(CONFIG_DIR, 'config.bat')
+        config_bat = []
 
+        if 'update_branch' in config:
+            config_bat.append(f"@set update_branch={config['update_branch']}")
         if os.getenv('SD_UI_BIND_PORT') is not None:
             config_bat.append(f"@set SD_UI_BIND_PORT={os.getenv('SD_UI_BIND_PORT')}")
         if os.getenv('SD_UI_BIND_IP') is not None:
             config_bat.append(f"@set SD_UI_BIND_IP={os.getenv('SD_UI_BIND_IP')}")
 
-        with open(config_bat_path, 'w', encoding='utf-8') as f:
-            f.write('\r\n'.join(config_bat))
-    except Exception as e:
+        if len(config_bat) > 0:
+            with open(config_bat_path, 'w', encoding='utf-8') as f:
+                f.write('\r\n'.join(config_bat))
+    except:
         print(traceback.format_exc())
 
     try: # config.sh
-        config_sh = [
-            '#!/bin/bash',
-            f"export update_branch={config['update_branch']}"
-        ]
         config_sh_path = os.path.join(CONFIG_DIR, 'config.sh')
+        config_sh = ['#!/bin/bash']
 
+        if 'update_branch' in config:
+            config_sh.append(f"export update_branch={config['update_branch']}")
         if os.getenv('SD_UI_BIND_PORT') is not None:
             config_sh.append(f"export SD_UI_BIND_PORT={os.getenv('SD_UI_BIND_PORT')}")
         if os.getenv('SD_UI_BIND_IP') is not None:
             config_sh.append(f"export SD_UI_BIND_IP={os.getenv('SD_UI_BIND_IP')}")
 
-        with open(config_sh_path, 'w', encoding='utf-8') as f:
-            f.write('\n'.join(config_sh))
-    except Exception as e:
+        if len(config_sh) > 1:
+            with open(config_sh_path, 'w', encoding='utf-8') as f:
+                f.write('\n'.join(config_sh))
+    except:
         print(traceback.format_exc())
 
 def resolve_model_to_use(model_name:str, model_type:str, model_dir:str, model_extensions:list, default_models=[]):
@@ -155,14 +159,19 @@ class SetAppConfigRequest(BaseModel):
     update_branch: str = None
     render_devices: Union[List[str], List[int], str, int] = None
     model_vae: str = None
+    ui_open_browser_on_start: bool = None
 
 @app.post('/app_config')
 async def setAppConfig(req : SetAppConfigRequest):
     config = getConfig()
-    if req.update_branch:
+    if req.update_branch is not None:
         config['update_branch'] = req.update_branch
-    if req.render_devices:
+    if req.render_devices is not None:
         update_render_devices_in_config(config, req.render_devices)
+    if req.ui_open_browser_on_start is not None:
+        if 'ui' not in config:
+            config['ui'] = {}
+        config['ui']['open_browser_on_start'] = req.ui_open_browser_on_start
     try:
         setConfig(config)
 
@@ -227,7 +236,7 @@ def read_web_data(key:str=None):
     elif key == 'app_config':
         config = getConfig(default_val=None)
         if config is None:
-            raise HTTPException(status_code=500, detail="Config file is missing or unreadable")
+            config = APP_CONFIG_DEFAULTS
         return JSONResponse(config, headers=NOCACHE_HEADERS)
     elif key == 'devices':
         config = getConfig()
@@ -375,7 +384,7 @@ task_manager.default_vae_to_load = resolve_vae_to_use()
 
 def update_render_threads():
     config = getConfig()
-    render_devices = config.get('render_devices', "auto")
+    render_devices = config.get('render_devices', 'auto')
     active_devices = task_manager.get_devices()['active'].keys()
 
     print('requesting for render_devices', render_devices)
