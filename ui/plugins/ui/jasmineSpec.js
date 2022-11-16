@@ -334,12 +334,5 @@ describe('stable-diffusion-ui', function() {
                 SD.sessionId = undefined
             }).toThrowError("Can't set sessionId to undefined.")
         })
-        it('should throw an exception on render after more than the active number of gpu is already in progress', function() {
-            //expect(function() {
-            //    player.resume()
-            //}).toThrowError('song is already playing')
-            //spyOn(song, 'persistFavoriteStatus')
-            //expect(song.persistFavoriteStatus).toHaveBeenCalledWith(true)
-        })
     })
 })
