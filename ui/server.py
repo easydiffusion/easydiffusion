@@ -78,7 +78,7 @@ def setConfig(config):
 
     try: # config.bat
         config_bat = [
-            f"@set update_branch={config['update_branch']}"
+            f"@set update_branch={config['update_branch']}" if 'update_branch' in config else ""
         ]
         config_bat_path = os.path.join(CONFIG_DIR, 'config.bat')
 
@@ -95,7 +95,7 @@ def setConfig(config):
     try: # config.sh
         config_sh = [
             '#!/bin/bash',
-            f"export update_branch={config['update_branch']}"
+            f"export update_branch={config['update_branch']}" if 'update_branch' in config else ""
         ]
         config_sh_path = os.path.join(CONFIG_DIR, 'config.sh')
 
