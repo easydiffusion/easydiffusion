@@ -228,7 +228,7 @@ def read_web_data(key:str=None):
     elif key == 'app_config':
         config = getConfig(default_val=None)
         if config is None:
-            raise HTTPException(status_code=500, detail="Config file is missing or unreadable")
+            config = APP_CONFIG_DEFAULTS
         return JSONResponse(config, headers=NOCACHE_HEADERS)
     elif key == 'devices':
         config = getConfig()
@@ -376,10 +376,7 @@ task_manager.default_vae_to_load = resolve_vae_to_use()
 
 def update_render_threads():
     config = getConfig()
-    if 'render_devices' in config:
-        render_devices = config['render_devices']
-    else:
-        render_devices = 'auto'
+    render_devices = config.get('render_devices', 'auto')
     active_devices = task_manager.get_devices()['active'].keys()
 
     print('requesting for render_devices', render_devices)
