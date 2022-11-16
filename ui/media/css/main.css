@@ -122,6 +122,7 @@ label {
     padding: 16px;
     display: flex;
     flex-direction: column;
+    flex: 0 0 370pt;
 }
 #editor label {
     font-weight: normal;
@@ -160,7 +161,7 @@ label {
 #makeImage {
     flex: 0 0 70px;
     background: var(--accent-color);
-    border: var(--make-image-border);
+    border: var(--primary-button-border);
     color: rgb(255, 221, 255);
     width: 100%;
     height: 30pt;
@@ -177,6 +178,7 @@ label {
     height: 30pt;
     border-radius: 6px;
     display: none;
+    margin-top: 2pt;
 }
 #stopImage:hover {
     background: rgb(177, 27, 0);
@@ -390,7 +392,7 @@ img {
 }
 
 .imageTaskContainer {
-    border: 1px solid var(--background-color1);
+    border: 1px solid var(--background-color2);
     margin-bottom: 10pt;
     padding: 5pt;
     border-radius: 5pt;
@@ -417,6 +419,12 @@ img {
     background:rgb(128, 89, 0);
     border: 1px solid rgb(107, 75, 0);
     color:rgb(255, 242, 211)
+}
+.primaryButton {
+    flex: 0 0 70px;
+    background: var(--accent-color);
+    border: var(--primary-button-border);
+    color: rgb(255, 221, 255);
 }
 .secondaryButton {
     background: rgb(132, 8, 0);
@@ -894,4 +902,23 @@ input::file-selector-button {
     padding: 7px;
     margin-bottom: 15px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
+}
+
+i.active {
+    background: var(--accent-color);
+}
+#system-info {
+    max-width: 800px;
+    font-size: 10pt;
+}
+#system-info .value {
+    text-align: left;
+    padding-left: 10pt;
+}
+#system-info label {
+    float: right;
+    font-weight: bold;
+}
+#save-system-settings-btn {
+    padding: 4pt 8pt;
 }

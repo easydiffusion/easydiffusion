@@ -282,7 +282,12 @@ function tryLoadOldSettings() {
     Object.keys(individual_settings_map).forEach(localStorageKey => {
         var localStorageValue = localStorage.getItem(localStorageKey);
         if (localStorageValue !== null) {
-            var setting = SETTINGS[individual_settings_map[localStorageKey]]
+            let key = individual_settings_map[localStorageKey]
+            var setting = SETTINGS[key]
+            if (!setting) {
+                console.warn(`Attempted to map old setting ${key}, but no setting found`);
+                return null;
+            }
             if (setting.element.type == "checkbox" && (typeof localStorageValue === "string" || localStorageValue instanceof String)) {
                 localStorageValue = localStorageValue == "true"
             }

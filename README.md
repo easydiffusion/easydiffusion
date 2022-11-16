@@ -66,7 +66,7 @@ Useful for judging (and stopping) an image quickly, without waiting for it to fi
 # System Requirements
 1. Windows 10/11, or Linux. Experimental support for Mac is coming soon.
 2. An NVIDIA graphics card, preferably with 4GB or more of VRAM. If you don't have a compatible graphics card, it'll automatically run in the slower "CPU Mode".
-3. Minimum 8 GB of RAM.
+3. Minimum 8 GB of RAM and 25GB of disk space.
 
 You don't need to install or struggle with Python, Anaconda, Docker etc. The installer will take care of whatever is needed.
 
