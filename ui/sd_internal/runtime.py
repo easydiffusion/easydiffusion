@@ -118,8 +118,8 @@ def load_model_ckpt():
     model.cdevice = torch.device(thread_data.device)
     model.unet_bs = thread_data.unet_bs
     model.turbo = thread_data.turbo
-    if thread_data.device != 'cpu':
-        model.to(thread_data.device)
+    # if thread_data.device != 'cpu':
+    #     model.to(thread_data.device)
     #if thread_data.reduced_memory:
         #model.model1.to("cpu")
         #model.model2.to("cpu")
@@ -129,11 +129,11 @@ def load_model_ckpt():
     _, _ = modelCS.load_state_dict(sd, strict=False)
     modelCS.eval()
     modelCS.cond_stage_model.device = torch.device(thread_data.device)
-    if thread_data.device != 'cpu':
-        if thread_data.reduced_memory:
-            modelCS.to('cpu')
-        else:
-            modelCS.to(thread_data.device) # Preload on device if not already there.
+    # if thread_data.device != 'cpu':
+    #     if thread_data.reduced_memory:
+    #         modelCS.to('cpu')
+    #     else:
+    #         modelCS.to(thread_data.device) # Preload on device if not already there.
     thread_data.modelCS = modelCS
 
     modelFS = instantiate_from_config(config.modelFirstStage)
@@ -151,11 +151,11 @@ def load_model_ckpt():
                 print(f'Cannot find VAE file: {thread_data.vae_file}{model_extension}')
 
     modelFS.eval()
-    if thread_data.device != 'cpu':
-        if thread_data.reduced_memory:
-            modelFS.to('cpu')
-        else:
-            modelFS.to(thread_data.device) # Preload on device if not already there.
+    # if thread_data.device != 'cpu':
+    #     if thread_data.reduced_memory:
+    #         modelFS.to('cpu')
+    #     else:
+    #         modelFS.to(thread_data.device) # Preload on device if not already there.
     thread_data.modelFS = modelFS
     del sd
 
