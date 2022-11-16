@@ -22,7 +22,7 @@ OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder
 TASK_TTL = 15 * 60 # Discard last session's task timeout
 APP_CONFIG_DEFAULTS = {
     # auto: selects the cuda device with the most free memory, cuda: use the currently active cuda device.
-    'render_devices': ['auto'], # valid entries: 'auto', 'cpu' or 'cuda:N' (where N is a GPU index)
+    'render_devices': 'auto', # valid entries: 'auto', 'cpu' or 'cuda:N' (where N is a GPU index)
     'update_branch': 'main',
 }
 APP_CONFIG_DEFAULT_MODELS = [
@@ -228,7 +228,7 @@ def read_web_data(key:str=None):
     elif key == 'app_config':
         config = getConfig(default_val=None)
         if config is None:
-            raise HTTPException(status_code=500, detail="Config file is missing or unreadable")
+            config = APP_CONFIG_DEFAULTS
         return JSONResponse(config, headers=NOCACHE_HEADERS)
     elif key == 'devices':
         config = getConfig()
@@ -376,7 +376,7 @@ task_manager.default_vae_to_load = resolve_vae_to_use()
 
 def update_render_threads():
     config = getConfig()
-    render_devices = config.get('render_devices', "auto")
+    render_devices = config.get('render_devices', 'auto')
     active_devices = task_manager.get_devices()['active'].keys()
 
     print('requesting for render_devices', render_devices)
