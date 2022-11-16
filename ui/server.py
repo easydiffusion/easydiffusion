@@ -53,8 +53,14 @@ ACCESS_LOG_SUPPRESS_PATH_PREFIXES = ['/ping', '/image', '/modifier-thumbnails']
 
 NOCACHE_HEADERS={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
 
-app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'media')), name="media")
-app.mount('/plugins', StaticFiles(directory=UI_PLUGINS_DIR), name="plugins")
+
+class NoCacheStaticFiles(StaticFiles):
+    def is_not_modified(self, response_headers, request_headers) -> bool:
+        # Always return false, never use cache.
+        return False
+
+app.mount('/media', NoCacheStaticFiles(directory=os.path.join(SD_UI_DIR, 'media')), name="media")
+app.mount('/plugins', NoCacheStaticFiles(directory=UI_PLUGINS_DIR), name="plugins")
 
 def getConfig(default_val=APP_CONFIG_DEFAULTS):
     try:
