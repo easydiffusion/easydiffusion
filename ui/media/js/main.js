@@ -1,6 +1,7 @@
 "use strict" // Opt in to a restricted variant of JavaScript
 const HEALTH_PING_INTERVAL = 5 // seconds
 const MAX_INIT_IMAGE_DIMENSION = 768
+const MIN_GPUS_TO_SHOW_SELECTION = 2
 
 const IMAGE_REGEX = new RegExp('data:image/[A-Za-z]+;base64')
 
@@ -24,13 +25,6 @@ let initImagePreview = document.querySelector("#init_image_preview")
 let initImageSizeBox = document.querySelector("#init_image_size_box")
 let maskImageSelector = document.querySelector("#mask")
 let maskImagePreview = document.querySelector("#mask_preview")
-let turboField = document.querySelector('#turbo')
-let useCPUField = document.querySelector('#use_cpu')
-let useFullPrecisionField = document.querySelector('#use_full_precision')
-let saveToDiskField = document.querySelector('#save_to_disk')
-let diskPathField = document.querySelector('#diskPath')
-// let allowNSFWField = document.querySelector("#allow_nsfw")
-let useBetaChannelField = document.querySelector("#use_beta_channel")
 let promptStrengthSlider = document.querySelector('#prompt_strength_slider')
 let promptStrengthField = document.querySelector('#prompt_strength')
 let samplerField = document.querySelector('#sampler')
@@ -39,6 +33,7 @@ let useFaceCorrectionField = document.querySelector("#use_face_correction")
 let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
 let stableDiffusionModelField = document.querySelector('#stable_diffusion_model')
+let vaeModelField = document.querySelector('#vae_model')
 let outputFormatField = document.querySelector('#output_format')
 let showOnlyFilteredImageField = document.querySelector("#show_only_filtered_image")
 let updateBranchLabel = document.querySelector("#updateBranchLabel")
@@ -56,21 +51,9 @@ let initialText = document.querySelector("#initial-text")
 let previewTools = document.querySelector("#preview-tools")
 let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
 
-// let maskSetting = document.querySelector('#editor-inputs-mask_setting')
-// let maskImagePreviewContainer = document.querySelector('#mask_preview_container')
-// let maskImageClearBtn = document.querySelector('#mask_clear')
 let maskSetting = document.querySelector('#enable_mask')
 
 let imagePreview = document.querySelector("#preview")
-
-// let previewPrompt = document.querySelector('#preview-prompt')
-
-let showConfigToggle = document.querySelector('#configToggleBtn')
-// let configBox = document.querySelector('#config')
-// let outputMsg = document.querySelector('#outputMsg')
-// let progressBar = document.querySelector("#progressBar")
-
-let soundToggle = document.querySelector('#sound_toggle')
 
 let serverStatusColor = document.querySelector('#server-status-color')
 let serverStatusMsg = document.querySelector('#server-status-msg')
@@ -85,7 +68,6 @@ maskResetButton.style.fontWeight = 'normal'
 maskResetButton.style.fontSize = '10pt'
 
 let serverState = {'status': 'Offline', 'time': Date.now()}
-let lastPromptUsed = ''
 let bellPending = false
 
 let taskQueue = []
@@ -187,6 +169,34 @@ function playSound() {
         })
     }
 }
+function setSystemInfo(devices) {
+    let cpu = devices.all.cpu.name
+    let allGPUs = Object.keys(devices.all).filter(d => d != 'cpu')
+    let activeGPUs = Object.keys(devices.active)
+
+    function ID_TO_TEXT(d) {
+        let info = devices.all[d]
+        if ("mem_free" in info && "mem_total" in info) {
+            return `${info.name} <small>(${d}) (${info.mem_free.toFixed(1)}Gb free / ${info.mem_total.toFixed(1)} Gb total)</small>`
+        } else {
+            return `${info.name} <small>(${d}) (no memory info)</small>`
+        }
+    }
+
+    allGPUs = allGPUs.map(ID_TO_TEXT)
+    activeGPUs = activeGPUs.map(ID_TO_TEXT)
+
+    let systemInfo = `
+    <table>
+        <tr><td><label>Processor:</label></td><td class="value">${cpu}</td></tr>
+        <tr><td><label>Compatible Graphics Cards (all):</label></td><td class="value">${allGPUs.join('</br>')}</td></tr>
+        <tr><td></td><td>&nbsp;</td></tr>
+        <tr><td><label>Used for rendering 🔥:</label></td><td class="value">${activeGPUs.join('</br>')}</td></tr>
+    </table>`
+
+    let systemInfoEl = document.querySelector('#system-info')
+    systemInfoEl.innerHTML = systemInfo
+}
 
 async function healthCheck() {
     try {
@@ -220,8 +230,12 @@ async function healthCheck() {
                 setServerStatus('error', serverState.status.toLowerCase())
                 break
         }
+        if (serverState.devices) {
+            setSystemInfo(serverState.devices)
+        }
         serverState.time = Date.now()
     } catch (e) {
+        console.log(e)
         serverState = {'status': 'Offline', 'time': Date.now()}
         setServerStatus('error', 'offline')
     }
@@ -340,10 +354,10 @@ function onDownloadImageClick(req, img) {
     imgDownload.click()
 }
 
-function modifyCurrentRequest(req, ...reqDiff) {
+function modifyCurrentRequest(...reqDiff) {
     const newTaskRequest = getCurrentUserRequest()
 
-    newTaskRequest.reqBody = Object.assign({}, req, ...reqDiff, {
+    newTaskRequest.reqBody = Object.assign(newTaskRequest.reqBody, ...reqDiff, {
         use_cpu: useCPUField.checked
     })
     newTaskRequest.seed = newTaskRequest.reqBody.seed
@@ -410,7 +424,7 @@ async function doMakeImage(task) {
     const RETRY_DELAY_IF_BUFFER_IS_EMPTY = 1000 // ms
     const RETRY_DELAY_IF_SERVER_IS_BUSY = 30 * 1000 // ms, status_code 503, already a task running
     const TASK_START_DELAY_ON_SERVER = 1500 // ms
-    const SERVER_STATE_VALIDITY_DURATION = 10 * 1000 // ms
+    const SERVER_STATE_VALIDITY_DURATION = 90 * 1000 // ms
 
     const reqBody = task.reqBody
     const batchCount = task.batchCount
@@ -422,10 +436,10 @@ async function doMakeImage(task) {
     const outputMsg = task['outputMsg']
     const previewPrompt = task['previewPrompt']
     const progressBar = task['progressBar']
+    const progressBarInner = progressBar.querySelector("div")
 
     let res = undefined
     try {
-        const lastTask = serverState.task
         let renderRequest = undefined
         do {
             res = await fetch('/render', {
@@ -561,6 +575,13 @@ async function doMakeImage(task) {
                 outputMsg.innerHTML += `. Time remaining (approx): ${timeRemaining}`
                 outputMsg.style.display = 'block'
 
+                progressBarInner.style.width = `${percent}%`
+                if (percent == 100) {
+                    task.progressBar.style.height = "0px"
+                    task.progressBar.style.border = "0px solid var(--background-color3)"
+                    task.progressBar.classList.remove("active")
+                }
+
                 if (stepUpdate.output !== undefined) {
                     showImages(reqBody, stepUpdate, outputContainer, true)
                 }
@@ -620,17 +641,14 @@ async function doMakeImage(task) {
                 let msg = `Unexpected Read Error:<br/><pre>Response: ${res}<br/>StepUpdate: ${typeof stepUpdate === 'object' ? JSON.stringify(stepUpdate, undefined, 4) : stepUpdate}</pre>`
                 logError(msg, res, outputMsg)
             }
-            progressBar.style.display = 'none'
             return false
         }
 
-        lastPromptUsed = reqBody['prompt']
         showImages(reqBody, stepUpdate, outputContainer, false)
     } catch (e) {
         console.log('request error', e)
         logError('Stable Diffusion had an error. Please check the logs in the command-line window. <br/><br/>' + e + '<br/><pre>' + e.stack + '</pre>', res, outputMsg)
         setStatus('request', 'error', 'error')
-        progressBar.style.display = 'none'
         return false
     }
     return true
@@ -713,6 +731,9 @@ async function checkTasks() {
 
     if (successCount === task.batchCount) {
         task.outputMsg.innerText = 'Processed ' + task.numOutputsTotal + ' images in ' + time + ' seconds'
+        task.progressBar.style.height = "0px"
+        task.progressBar.style.border = "0px solid var(--background-color3)"
+        task.progressBar.classList.remove("active")
         // setStatus('request', 'done', 'success')
     } else {
         if (task.outputMsg.innerText.toLowerCase().indexOf('error') === -1) {
@@ -762,9 +783,9 @@ function getCurrentUserRequest() {
             height: heightField.value,
             // allow_nsfw: allowNSFWField.checked,
             turbo: turboField.checked,
-            use_cpu: useCPUField.checked,
             use_full_precision: useFullPrecisionField.checked,
             use_stable_diffusion_model: stableDiffusionModelField.value,
+            use_vae_model: vaeModelField.value,
             stream_progress_updates: true,
             stream_image_progress: (numOutputsTotal > 50 ? false : streamImageProgressField.checked),
             show_only_filtered_image: showOnlyFilteredImageField.checked,
@@ -813,29 +834,34 @@ function makeImage() {
 }
 
 function createTask(task) {
-    let taskConfig = `Seed: ${task.seed}, Sampler: ${task.reqBody.sampler}, Inference Steps: ${task.reqBody.num_inference_steps}, Guidance Scale: ${task.reqBody.guidance_scale}, Model: ${task.reqBody.use_stable_diffusion_model}`
-    if (negativePromptField.value.trim() !== '') {
-        taskConfig += `, Negative Prompt: ${task.reqBody.negative_prompt}`
+    let taskConfig = `<b>Seed:</b> ${task.seed}, <b>Sampler:</b> ${task.reqBody.sampler}, <b>Inference Steps:</b> ${task.reqBody.num_inference_steps}, <b>Guidance Scale:</b> ${task.reqBody.guidance_scale}, <b>Model:</b> ${task.reqBody.use_stable_diffusion_model}`
+    if (task.reqBody.use_vae_model.trim() !== '') {
+        taskConfig += `, <b>VAE:</b> ${task.reqBody.use_vae_model}`
+    }
+    if (task.reqBody.negative_prompt.trim() !== '') {
+        taskConfig += `, <b>Negative Prompt:</b> ${task.reqBody.negative_prompt}`
     }
     if (task.reqBody.init_image !== undefined) {
-        taskConfig += `, Prompt Strength: ${task.reqBody.prompt_strength}`
+        taskConfig += `, <b>Prompt Strength:</b> ${task.reqBody.prompt_strength}`
     }
     if (task.reqBody.use_face_correction) {
-        taskConfig += `, Fix Faces: ${task.reqBody.use_face_correction}`
+        taskConfig += `, <b>Fix Faces:</b> ${task.reqBody.use_face_correction}`
     }
     if (task.reqBody.use_upscale) {
-        taskConfig += `, Upscale: ${task.reqBody.use_upscale}`
+        taskConfig += `, <b>Upscale:</b> ${task.reqBody.use_upscale}`
     }
 
     let taskEntry = document.createElement('div')
     taskEntry.className = 'imageTaskContainer'
-    taskEntry.innerHTML = ` <div class="taskStatusLabel">Enqueued</div>
-                            <button class="secondaryButton stopTask"><i class="fa-solid fa-trash-can"></i> Remove</button>
-                            <div class="preview-prompt collapsible active"></div>
-                            <div class="taskConfig">${taskConfig}</div>
-                            <div class="collapsible-content" style="display: block">
+    taskEntry.innerHTML = ` <div class="header-content panel collapsible active">
+                                <div class="taskStatusLabel">Enqueued</div>
+                                <button class="secondaryButton stopTask"><i class="fa-solid fa-trash-can"></i> Remove</button>
+                                <div class="preview-prompt collapsible active"></div>
+                                <div class="taskConfig">${taskConfig}</div>
                                 <div class="outputMsg"></div>
-                                <div class="progressBar"></div>
+                                <div class="progress-bar active"><div></div></div>
+                            </div>
+                            <div class="collapsible-content">
                                 <div class="img-preview">
                             </div>`
 
@@ -845,12 +871,14 @@ function createTask(task) {
     task['outputContainer'] = taskEntry.querySelector('.img-preview')
     task['outputMsg'] = taskEntry.querySelector('.outputMsg')
     task['previewPrompt'] = taskEntry.querySelector('.preview-prompt')
-    task['progressBar'] = taskEntry.querySelector('.progressBar')
+    task['progressBar'] = taskEntry.querySelector('.progress-bar')
     task['stopTask'] = taskEntry.querySelector('.stopTask')
 
-    task['stopTask'].addEventListener('click', async function() {
+    task['stopTask'].addEventListener('click', async function(e) {
+        e.stopPropagation()
         if (task['isProcessing']) {
             task.isProcessing = false
+            task.progressBar.classList.remove("active")
             try {
                 let res = await fetch('/image/stop?session_id=' + sessionId)
             } catch (e) {
@@ -1044,16 +1072,25 @@ function onDimensionChange() {
     resizeInpaintingEditor(widthValue, heightValue)
 }
 
-saveToDiskField.addEventListener('click', function(e) {
-    diskPathField.disabled = !this.checked
-})
+diskPathField.disabled = !saveToDiskField.checked
 
-useUpscalingField.addEventListener('click', function(e) {
+upscaleModelField.disabled = !useUpscalingField.checked
+useUpscalingField.addEventListener('change', function(e) {
     upscaleModelField.disabled = !this.checked
 })
 
+if (useBetaChannelField.checked) {
+    updateBranchLabel.innerText = "(beta)"
+}
+
 makeImageBtn.addEventListener('click', makeImage)
 
+document.onkeydown = function(e) {
+    if (e.ctrlKey && e.code === 'Enter') {
+        makeImage()
+        e.preventDefault()
+    }
+}
 
 function updateGuidanceScale() {
     guidanceScaleField.value = guidanceScaleSlider.value / 10
@@ -1095,80 +1132,44 @@ promptStrengthSlider.addEventListener('input', updatePromptStrength)
 promptStrengthField.addEventListener('input', updatePromptStrengthSlider)
 updatePromptStrength()
 
-useBetaChannelField.addEventListener('click', async function(e) {
-    if (!isServerAvailable()) {
-        // logError('The server is still starting up..')
-        alert('The server is still starting up..')
-        e.preventDefault()
-        return false
-    }
-
-    let updateBranch = (this.checked ? 'beta' : 'main')
-
-    try {
-        let res = await fetch('/app_config', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                'update_branch': updateBranch
-            })
-        })
-        res = await res.json()
-
-        console.log('set config status response', res)
-    } catch (e) {
-        console.log('set config status error', e)
-    }
-})
-
-async function getAppConfig() {
-    try {
-        let res = await fetch('/get/app_config')
-        const config = await res.json()
-
-        if (config.update_branch === 'beta') {
-            useBetaChannelField.checked = true
-            updateBranchLabel.innerText = "(beta)"
-        }
-
-        console.log('get config status response', config)
-    } catch (e) {
-        console.log('get config status error', e)
-    }
-}
-
 async function getModels() {
     try {
-        var model_setting_key = "stable_diffusion_model"
-        var selectedModel = SETTINGS[model_setting_key].value
+        var sd_model_setting_key = "stable_diffusion_model"
+        var vae_model_setting_key = "vae_model"
+        var selectedSDModel = SETTINGS[sd_model_setting_key].value
+        var selectedVaeModel = SETTINGS[vae_model_setting_key].value
         let res = await fetch('/get/models')
         const models = await res.json()
 
-        // let activeModel = models['active']
+        console.log('get models response', models)
+
         let modelOptions = models['options']
         let stableDiffusionOptions = modelOptions['stable-diffusion']
+        let vaeOptions = modelOptions['vae']
+        vaeOptions.unshift('') // add a None option
 
-        stableDiffusionOptions.forEach(modelName => {
-            let modelOption = document.createElement('option')
-            modelOption.value = modelName
-            modelOption.innerText = modelName
+        function createModelOptions(modelField, selectedModel) {
+            return function(modelName) {
+                let modelOption = document.createElement('option')
+                modelOption.value = modelName
+                modelOption.innerText = modelName !== '' ? modelName : 'None'
 
-            if (modelName === selectedModel) {
-                modelOption.selected = true
+                if (modelName === selectedModel) {
+                    modelOption.selected = true
+                }
+
+                modelField.appendChild(modelOption)
             }
-
-            stableDiffusionModelField.appendChild(modelOption)
-        })
-
-        // TODO: set default for model here too
-        SETTINGS[model_setting_key].default = stableDiffusionOptions[0]
-        if (getSetting(model_setting_key) == '' || SETTINGS[model_setting_key].value == '') {
-            setSetting(model_setting_key, stableDiffusionOptions[0])
         }
 
-        console.log('get models response', models)
+        stableDiffusionOptions.forEach(createModelOptions(stableDiffusionModelField, selectedSDModel))
+        vaeOptions.forEach(createModelOptions(vaeModelField, selectedVaeModel))
+
+        // TODO: set default for model here too
+        SETTINGS[sd_model_setting_key].default = stableDiffusionOptions[0]
+        if (getSetting(sd_model_setting_key) == '' || SETTINGS[sd_model_setting_key].value == '') {
+            setSetting(sd_model_setting_key, stableDiffusionOptions[0])
+        }
     } catch (e) {
         console.log('get models error', e)
     }
@@ -1267,21 +1268,56 @@ promptsFromFileSelector.addEventListener('change', function() {
     }
 })
 
-async function getDiskPath() {
-    try {
-        var diskPath = getSetting("diskPath")
-        if (diskPath == '' || diskPath == undefined || diskPath == "undefined") {
-            let res = await fetch('/get/output_dir')
-            if (res.status === 200) {
-                res = await res.json()
-                res = res.output_dir
-
-                setSetting("diskPath", res)
-            }
+/* setup popup handlers */
+document.querySelectorAll('.popup').forEach(popup => {
+    popup.addEventListener('click', event => {
+        if (event.target == popup) {
+            popup.classList.remove("active")
         }
-    } catch (e) {
-        console.log('error fetching output dir path', e)
+    })
+    var closeButton = popup.querySelector(".close-button")
+    if (closeButton) {
+        closeButton.addEventListener('click', () => {
+            popup.classList.remove("active")
+        })
     }
-}
+})
+
+var tabElements = [];
+document.querySelectorAll(".tab").forEach(tab => {
+    var name = tab.id.replace("tab-", "");
+    var content = document.getElementById(`tab-content-${name}`)
+    tabElements.push({
+        name: name,
+        tab: tab,
+        content: content
+    })
+
+    tab.addEventListener("click", event => {
+        if (!tab.classList.contains("active")) {
+            tabElements.forEach(tabInfo => {
+                if (tabInfo.tab.classList.contains("active")) {
+                    tabInfo.tab.classList.toggle("active")
+                    tabInfo.content.classList.toggle("active")
+                }
+            })
+            tab.classList.toggle("active")
+            content.classList.toggle("active")
+        }
+    })
+})
+
+window.addEventListener("beforeunload", function(e) {
+    const msg = "Unsaved pictures will be lost!";
+
+    let elementList = document.getElementsByClassName("imageTaskContainer");
+    if (elementList.length != 0) {
+        e.preventDefault();
+        (e || window.event).returnValue = msg;
+        return msg;
+    } else {
+        return true;
+    }
+});
 
 createCollapsibles()

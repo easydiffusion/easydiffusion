@@ -29,12 +29,16 @@ function toggleCollapsible(element) {
     var handle = element.querySelector(".collapsible-handle");
     collapsibleHeader.classList.toggle("active")
     let content = getNextSibling(collapsibleHeader, '.collapsible-content')
-    if (content.style.display === "block") {
+    if (!collapsibleHeader.classList.contains("active")) {
         content.style.display = "none"
-        handle.innerHTML = '&#x2795;' // plus
+        if (handle != null) {  // render results don't have a handle
+            handle.innerHTML = '&#x2795;' // plus
+        }
     } else {
         content.style.display = "block"
-        handle.innerHTML = '&#x2796;' // minus
+        if (handle != null) {  // render results don't have a handle
+            handle.innerHTML = '&#x2796;' // minus
+        }
     }
     
     if (COLLAPSIBLES_INITIALIZED && COLLAPSIBLE_PANELS.includes(element)) {
@@ -65,7 +69,7 @@ function createCollapsibles(node) {
         let handle = document.createElement('span')
         handle.className = 'collapsible-handle'
 
-        if (c.className.indexOf('active') !== -1) {
+        if (c.classList.contains("active")) {
             handle.innerHTML = '&#x2796;' // minus
         } else {
             handle.innerHTML = '&#x2795;' // plus

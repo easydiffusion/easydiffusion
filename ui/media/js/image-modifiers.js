@@ -75,7 +75,6 @@ function createModifierGroup(modifierGroup, initiallyExpanded) {
 
     if (initiallyExpanded === true) {
         titleEl.className += ' active'
-        modifiersEl.style.display = 'block'
     }
 
     modifiers.forEach(modObj => {
@@ -245,16 +244,9 @@ function resizeModifierCards(val) {
 modifierCardSizeSlider.onchange = () => resizeModifierCards(modifierCardSizeSlider.value)
 previewImageField.onchange = () => changePreviewImages(previewImageField.value)
 
-modifierSettingsBtn.addEventListener('click', function() {
-    modifierSettingsOverlay.style.display = 'block'
-})
-document.getElementById("modifier-settings-config-close-btn").addEventListener('click', () => {
-    modifierSettingsOverlay.style.display = 'none'
-})
-modifierSettingsOverlay.addEventListener('click', (event) => {
-    if (event.target.id == modifierSettingsOverlay.id) {
-        modifierSettingsOverlay.style.display = 'none'
-    }
+modifierSettingsBtn.addEventListener('click', function(e) {
+    modifierSettingsOverlay.classList.add("active")
+    e.stopPropagation()
 })
 
 function saveCustomModifiers() {
