@@ -179,6 +179,7 @@ label {
     height: 30pt;
     border-radius: 6px;
     display: none;
+    margin-top: 2pt;
 }
 #stopImage:hover {
     background: rgb(177, 27, 0);
