@@ -58,6 +58,7 @@ class NoCacheStaticFiles(StaticFiles):
         # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-Fetch-Dest
         fetch_destination = request_headers['sec-fetch-dest']
         if fetch_destination in ('document', 'embed', 'frame', 'iframe', 'manifest', 'object', 'script', 'style'):
+            # Disable cache on text content and scripts.
             return False
         return super().is_not_modified(response_headers, request_headers)
 
