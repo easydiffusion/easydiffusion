@@ -25,14 +25,6 @@ let initImagePreview = document.querySelector("#init_image_preview")
 let initImageSizeBox = document.querySelector("#init_image_size_box")
 let maskImageSelector = document.querySelector("#mask")
 let maskImagePreview = document.querySelector("#mask_preview")
-let turboField = document.querySelector('#turbo')
-let useCPUField = document.querySelector('#use_cpu')
-let useGPUsField = document.querySelector('#use_gpus')
-let useFullPrecisionField = document.querySelector('#use_full_precision')
-let saveToDiskField = document.querySelector('#save_to_disk')
-let diskPathField = document.querySelector('#diskPath')
-// let allowNSFWField = document.querySelector("#allow_nsfw")
-let useBetaChannelField = document.querySelector("#use_beta_channel")
 let promptStrengthSlider = document.querySelector('#prompt_strength_slider')
 let promptStrengthField = document.querySelector('#prompt_strength')
 let samplerField = document.querySelector('#sampler')
@@ -59,20 +51,9 @@ let initialText = document.querySelector("#initial-text")
 let previewTools = document.querySelector("#preview-tools")
 let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
 
-// let maskSetting = document.querySelector('#editor-inputs-mask_setting')
-// let maskImagePreviewContainer = document.querySelector('#mask_preview_container')
-// let maskImageClearBtn = document.querySelector('#mask_clear')
 let maskSetting = document.querySelector('#enable_mask')
 
 let imagePreview = document.querySelector("#preview")
-
-// let previewPrompt = document.querySelector('#preview-prompt')
-
-let showConfigToggle = document.querySelector('#configToggleBtn')
-// let configBox = document.querySelector('#config')
-// let outputMsg = document.querySelector('#outputMsg')
-
-let soundToggle = document.querySelector('#sound_toggle')
 
 let serverStatusColor = document.querySelector('#server-status-color')
 let serverStatusMsg = document.querySelector('#server-status-msg')
@@ -87,7 +68,6 @@ maskResetButton.style.fontWeight = 'normal'
 maskResetButton.style.fontSize = '10pt'
 
 let serverState = {'status': 'Offline', 'time': Date.now()}
-let lastPromptUsed = ''
 let bellPending = false
 
 let taskQueue = []
@@ -189,6 +169,34 @@ function playSound() {
         })
     }
 }
+function setSystemInfo(devices) {
+    let cpu = devices.all.cpu.name
+    let allGPUs = Object.keys(devices.all).filter(d => d != 'cpu')
+    let activeGPUs = Object.keys(devices.active)
+
+    function ID_TO_TEXT(d) {
+        let info = devices.all[d]
+        if ("mem_free" in info && "mem_total" in info) {
+            return `${info.name} <small>(${d}) (${info.mem_free.toFixed(1)}Gb free / ${info.mem_total.toFixed(1)} Gb total)</small>`
+        } else {
+            return `${info.name} <small>(${d}) (no memory info)</small>`
+        }
+    }
+
+    allGPUs = allGPUs.map(ID_TO_TEXT)
+    activeGPUs = activeGPUs.map(ID_TO_TEXT)
+
+    let systemInfo = `
+    <table>
+        <tr><td><label>Processor:</label></td><td class="value">${cpu}</td></tr>
+        <tr><td><label>Compatible Graphics Cards (all):</label></td><td class="value">${allGPUs.join('</br>')}</td></tr>
+        <tr><td></td><td>&nbsp;</td></tr>
+        <tr><td><label>Used for rendering 🔥:</label></td><td class="value">${activeGPUs.join('</br>')}</td></tr>
+    </table>`
+
+    let systemInfoEl = document.querySelector('#system-info')
+    systemInfoEl.innerHTML = systemInfo
+}
 
 async function healthCheck() {
     try {
@@ -222,8 +230,12 @@ async function healthCheck() {
                 setServerStatus('error', serverState.status.toLowerCase())
                 break
         }
+        if (serverState.devices) {
+            setSystemInfo(serverState.devices)
+        }
         serverState.time = Date.now()
     } catch (e) {
+        console.log(e)
         serverState = {'status': 'Offline', 'time': Date.now()}
         setServerStatus('error', 'offline')
     }
@@ -412,7 +424,7 @@ async function doMakeImage(task) {
     const RETRY_DELAY_IF_BUFFER_IS_EMPTY = 1000 // ms
     const RETRY_DELAY_IF_SERVER_IS_BUSY = 30 * 1000 // ms, status_code 503, already a task running
     const TASK_START_DELAY_ON_SERVER = 1500 // ms
-    const SERVER_STATE_VALIDITY_DURATION = 10 * 1000 // ms
+    const SERVER_STATE_VALIDITY_DURATION = 90 * 1000 // ms
 
     const reqBody = task.reqBody
     const batchCount = task.batchCount
@@ -428,7 +440,6 @@ async function doMakeImage(task) {
 
     let res = undefined
     try {
-        const lastTask = serverState.task
         let renderRequest = undefined
         do {
             res = await fetch('/render', {
@@ -633,7 +644,6 @@ async function doMakeImage(task) {
             return false
         }
 
-        lastPromptUsed = reqBody['prompt']
         showImages(reqBody, stepUpdate, outputContainer, false)
     } catch (e) {
         console.log('request error', e)
@@ -773,7 +783,6 @@ function getCurrentUserRequest() {
             height: heightField.value,
             // allow_nsfw: allowNSFWField.checked,
             turbo: turboField.checked,
-            render_device: getCurrentRenderDeviceSelection(),
             use_full_precision: useFullPrecisionField.checked,
             use_stable_diffusion_model: stableDiffusionModelField.value,
             use_vae_model: vaeModelField.value,
@@ -811,14 +820,6 @@ function getCurrentUserRequest() {
     return newTask
 }
 
-function getCurrentRenderDeviceSelection() {
-    if (useCPUField.checked) {
-        return 'cpu'
-    }
-
-    return $(useGPUsField).val().join(',')
-}
-
 function makeImage() {
     if (!isServerAvailable()) {
         alert('The server is not available.')
@@ -835,21 +836,21 @@ function makeImage() {
 }
 
 function createTask(task) {
-    let taskConfig = `Seed: ${task.seed}, Sampler: ${task.reqBody.sampler}, Inference Steps: ${task.reqBody.num_inference_steps}, Guidance Scale: ${task.reqBody.guidance_scale}, Model: ${task.reqBody.use_stable_diffusion_model}`
+    let taskConfig = `<b>Seed:</b> ${task.seed}, <b>Sampler:</b> ${task.reqBody.sampler}, <b>Inference Steps:</b> ${task.reqBody.num_inference_steps}, <b>Guidance Scale:</b> ${task.reqBody.guidance_scale}, <b>Model:</b> ${task.reqBody.use_stable_diffusion_model}`
     if (task.reqBody.use_vae_model.trim() !== '') {
-        taskConfig += `, VAE: ${task.reqBody.use_vae_model}`
+        taskConfig += `, <b>VAE:</b> ${task.reqBody.use_vae_model}`
     }
     if (task.reqBody.negative_prompt.trim() !== '') {
-        taskConfig += `, Negative Prompt: ${task.reqBody.negative_prompt}`
+        taskConfig += `, <b>Negative Prompt:</b> ${task.reqBody.negative_prompt}`
     }
     if (task.reqBody.init_image !== undefined) {
-        taskConfig += `, Prompt Strength: ${task.reqBody.prompt_strength}`
+        taskConfig += `, <b>Prompt Strength:</b> ${task.reqBody.prompt_strength}`
     }
     if (task.reqBody.use_face_correction) {
-        taskConfig += `, Fix Faces: ${task.reqBody.use_face_correction}`
+        taskConfig += `, <b>Fix Faces:</b> ${task.reqBody.use_face_correction}`
     }
     if (task.reqBody.use_upscale) {
-        taskConfig += `, Upscale: ${task.reqBody.use_upscale}`
+        taskConfig += `, <b>Upscale:</b> ${task.reqBody.use_upscale}`
     }
 
     let taskEntry = document.createElement('div')
@@ -958,9 +959,10 @@ function getPrompts() {
     prompts = prompts.filter(prompt => prompt !== '')
 
     if (activeTags.length > 0) {
-        const promptTags = activeTags.map(x => x.name).join(", ")
-        prompts = prompts.map((prompt) => `${prompt}, ${promptTags}`)
+	const promptTags = activeTags.map(x => x.name).join(", ")
+	prompts = prompts.map((prompt) => `${prompt}, ${promptTags}`)
     }
+	
     let promptsToMake = applySetOperator(prompts)
     promptsToMake = applyPermuteOperator(promptsToMake)
 
@@ -1115,14 +1117,15 @@ function onDimensionChange() {
 }
 
 diskPathField.disabled = !saveToDiskField.checked
-saveToDiskField.addEventListener('change', function(e) {
-    diskPathField.disabled = !this.checked
-})
 
 upscaleModelField.disabled = !useUpscalingField.checked
 useUpscalingField.addEventListener('change', function(e) {
     upscaleModelField.disabled = !this.checked
 })
+
+if (useBetaChannelField.checked) {
+    updateBranchLabel.innerText = "(beta)"
+}
 
 makeImageBtn.addEventListener('click', makeImage)
 
@@ -1172,63 +1175,6 @@ function updatePromptStrengthSlider() {
 promptStrengthSlider.addEventListener('input', updatePromptStrength)
 promptStrengthField.addEventListener('input', updatePromptStrengthSlider)
 updatePromptStrength()
-
-useCPUField.addEventListener('click', function() {
-    let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
-    if (this.checked) {
-        gpuSettingEntry.style.display = 'none'
-    } else if ($(useGPUsField).val().length >= MIN_GPUS_TO_SHOW_SELECTION) {
-        gpuSettingEntry.style.display = ''
-    }
-})
-
-async function changeAppConfig(configDelta) {
-    // if (!isServerAvailable()) {
-    //     // logError('The server is still starting up..')
-    //     alert('The server is still starting up..')
-    //     e.preventDefault()
-    //     return false
-    // }
-
-    try {
-        let res = await fetch('/app_config', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(configDelta)
-        })
-        res = await res.json()
-
-        console.log('set config status response', res)
-    } catch (e) {
-        console.log('set config status error', e)
-    }
-}
-
-useBetaChannelField.addEventListener('click', async function(e) {
-    let updateBranch = (this.checked ? 'beta' : 'main')
-
-    await changeAppConfig({
-        'update_branch': updateBranch
-    })
-})
-
-async function getAppConfig() {
-    try {
-        let res = await fetch('/get/app_config')
-        const config = await res.json()
-
-        if (config.update_branch === 'beta') {
-            useBetaChannelField.checked = true
-            updateBranchLabel.innerText = "(beta)"
-        }
-
-        console.log('get config status response', config)
-    } catch (e) {
-        console.log('get config status error', e)
-    }
-}
 
 async function getModels() {
     try {
@@ -1365,61 +1311,6 @@ promptsFromFileSelector.addEventListener('change', function() {
         reader.readAsText(file)
     }
 })
-
-async function getDiskPath() {
-    try {
-        var diskPath = getSetting("diskPath")
-        if (diskPath == '' || diskPath == undefined || diskPath == "undefined") {
-            let res = await fetch('/get/output_dir')
-            if (res.status === 200) {
-                res = await res.json()
-                res = res.output_dir
-
-                setSetting("diskPath", res)
-            }
-        }
-    } catch (e) {
-        console.log('error fetching output dir path', e)
-    }
-}
-
-async function getDevices() {
-    try {
-        let res = await fetch('/get/devices')
-        if (res.status === 200) {
-            res = await res.json()
-
-            let allDeviceIds = Object.keys(res['all']).filter(d => d !== 'cpu')
-            let activeDeviceIds = Object.keys(res['active']).filter(d => d !== 'cpu')
-
-            if (activeDeviceIds.length === 0) {
-                useCPUField.checked = true
-            }
-
-            if (allDeviceIds.length < MIN_GPUS_TO_SHOW_SELECTION) {
-                let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
-                gpuSettingEntry.style.display = 'none'
-
-                if (allDeviceIds.length === 0) {
-                    useCPUField.checked = true
-                    useCPUField.disabled = true // no compatible GPUs, so make the CPU mandatory
-                }
-            }
-
-            useGPUsField.innerHTML = ''
-
-            allDeviceIds.forEach(device => {
-                let deviceName = res['all'][device]
-                let selected = (activeDeviceIds.includes(device) ? 'selected' : '')
-                let deviceOption = `<option value="${device}" ${selected}>${deviceName}</option>`
-                useGPUsField.insertAdjacentHTML('beforeend', deviceOption)
-            })
-        }
-    } catch (e) {
-        console.log('error fetching devices', e)
-    }
-}
-
 
 /* setup popup handlers */
 document.querySelectorAll('.popup').forEach(popup => {
