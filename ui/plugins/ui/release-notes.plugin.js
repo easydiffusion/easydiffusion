@@ -30,7 +30,7 @@
 
     markedScript.onload = async function() {
         let appConfig = await fetch('/get/app_config')
-        appConfig = await res.json()
+        appConfig = await appConfig.json()
 
         let updateBranch = appConfig.update_branch || 'main'
 
