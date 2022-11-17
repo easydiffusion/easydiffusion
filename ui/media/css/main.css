@@ -898,6 +898,9 @@ input::file-selector-button {
 i.active {
     background: var(--accent-color);
 }
+.primaryButton.active {
+    background: hsl(var(--accent-hue), 100%, 50%);
+}
 #system-info {
     max-width: 800px;
     font-size: 10pt;
