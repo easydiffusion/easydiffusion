@@ -427,15 +427,22 @@ function checkReadTextClipboardPermission (result) {
 navigator.permissions.query({ name: "clipboard-read" }).then(checkReadTextClipboardPermission, (reason) => console.log('clipboard-read is not available. %o', reason))
 
 document.addEventListener('paste', async (event) => {
+    if (event.target) {
+        const targetTag = event.target.tagName.toLowerCase()
+        // Disable when targeting input elements.
+        if (targetTag === 'input' || targetTag === 'textarea') {
+            return
+        }
+    }
     const paste = (event.clipboardData || window.clipboardData).getData('text')
     const selection = window.getSelection()
     console.log(selection)
     console.log(selection.toString())
     if (selection.toString().trim().length <= 0 && await parseContent(paste)) {
-        event.preventDefault();
-        return;
+        event.preventDefault()
+        return
     }
-});
+})
 
 // Adds a copy and a paste icon if the browser grants permission to write to clipboard.
 function checkWriteToClipboardPermission (result) {
