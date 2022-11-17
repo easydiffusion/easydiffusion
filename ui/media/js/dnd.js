@@ -426,12 +426,12 @@ function checkReadTextClipboardPermission (result) {
 }
 navigator.permissions.query({ name: "clipboard-read" }).then(checkReadTextClipboardPermission, (reason) => console.log('clipboard-read is not available. %o', reason))
 
-document.addEventListener('paste', (event) => {
+document.addEventListener('paste', async (event) => {
     const paste = (event.clipboardData || window.clipboardData).getData('text')
     const selection = window.getSelection()
     console.log(selection)
     console.log(selection.toString())
-    if (selection.toString().trim().length <= 0 && parseContent(paste)) {
+    if (selection.toString().trim().length <= 0 && await parseContent(paste)) {
         event.preventDefault();
         return;
     }
