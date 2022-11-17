@@ -436,8 +436,6 @@ document.addEventListener('paste', async (event) => {
     }
     const paste = (event.clipboardData || window.clipboardData).getData('text')
     const selection = window.getSelection()
-    console.log(selection)
-    console.log(selection.toString())
     if (selection.toString().trim().length <= 0 && await parseContent(paste)) {
         event.preventDefault()
         return
