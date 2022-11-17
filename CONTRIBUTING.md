@@ -40,6 +40,7 @@ or for Windows
 `mklink /J \projects\stable-diffusion-ui-archive\ui \projects\stable-diffusion-ui-repo\ui` (link name first, source repo dir second)
 9) Run the project again (like in step 2) and ensure you can still use the UI.
 10) Congrats, now any changes you make in your repo `ui` folder are linked to this running archive of the app and can be previewed in the browser.
+11) Please update CHANGES.md in your pull requests.
 
 Check the `ui/frontend/build/README.md` for instructions on running and building the React code.
 

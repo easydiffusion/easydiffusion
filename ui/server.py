@@ -16,7 +16,10 @@ sys.path.append(os.path.dirname(SD_UI_DIR))
 
 CONFIG_DIR = os.path.abspath(os.path.join(SD_UI_DIR, '..', 'scripts'))
 MODELS_DIR = os.path.abspath(os.path.join(SD_DIR, '..', 'models'))
-UI_PLUGINS_DIR = os.path.abspath(os.path.join(SD_DIR, '..', 'plugins', 'ui'))
+
+USER_UI_PLUGINS_DIR = os.path.abspath(os.path.join(SD_DIR, '..', 'plugins', 'ui'))
+CORE_UI_PLUGINS_DIR = os.path.abspath(os.path.join(SD_UI_DIR, 'plugins', 'ui'))
+UI_PLUGINS_SOURCES = ((CORE_UI_PLUGINS_DIR, 'core'), (USER_UI_PLUGINS_DIR, 'user'))
 
 OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder
 TASK_TTL = 15 * 60 # Discard last session's task timeout
@@ -49,7 +52,7 @@ app = FastAPI()
 modifiers_cache = None
 outpath = os.path.join(os.path.expanduser("~"), OUTPUT_DIRNAME)
 
-os.makedirs(UI_PLUGINS_DIR, exist_ok=True)
+os.makedirs(USER_UI_PLUGINS_DIR, exist_ok=True)
 
 # don't show access log entries for URLs that start with the given prefix
 ACCESS_LOG_SUPPRESS_PATH_PREFIXES = ['/ping', '/image', '/modifier-thumbnails']
@@ -57,7 +60,9 @@ ACCESS_LOG_SUPPRESS_PATH_PREFIXES = ['/ping', '/image', '/modifier-thumbnails']
 NOCACHE_HEADERS={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
 
 app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'media')), name="media")
-app.mount('/plugins', StaticFiles(directory=UI_PLUGINS_DIR), name="plugins")
+
+for plugins_dir, dir_prefix in UI_PLUGINS_SOURCES:
+    app.mount(f'/plugins/{dir_prefix}', StaticFiles(directory=plugins_dir), name=f"plugins-{dir_prefix}")
 
 def getConfig(default_val=APP_CONFIG_DEFAULTS):
     try:
@@ -223,9 +228,10 @@ def getModels():
 def getUIPlugins():
     plugins = []
 
-    for file in os.listdir(UI_PLUGINS_DIR):
-        if file.endswith('.plugin.js'):
-            plugins.append(f'/plugins/{file}')
+    for plugins_dir, dir_prefix in UI_PLUGINS_SOURCES:
+        for file in os.listdir(plugins_dir):
+            if file.endswith('.plugin.js'):
+                plugins.append(f'/plugins/{dir_prefix}/{file}')
 
     return plugins
 

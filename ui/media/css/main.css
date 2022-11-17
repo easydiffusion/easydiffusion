@@ -22,6 +22,11 @@ a:visited {
 label {
     font-size: 10pt;
 }
+code {
+    background: var(--background-color4);
+    padding: 2px 4px;
+    border-radius: 4px;
+}
 #prompt {
     width: 100%;
     height: 65pt;
@@ -897,6 +902,9 @@ input::file-selector-button {
 
 i.active {
     background: var(--accent-color);
+}
+.primaryButton.active {
+    background: hsl(var(--accent-hue), 100%, 50%);
 }
 #system-info {
     max-width: 800px;
