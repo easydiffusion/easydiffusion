@@ -17,6 +17,7 @@
 - Keyboard shortcut: Ctrl+Enter to start a task
 - Configuration to prevent the browser from opening on startup
 - Lots of minor bug fixes
+- A `What's New?` tab in the UI
 
 ### Detailed changelog
 * 2.4.7 - 17 Nov 2022 - Fix a bug where Face Correction (GFPGAN) would fail on cuda:N (i.e. GPUs other than cuda:0), as well as fail on CPU if the system had an incompatible GPU.
