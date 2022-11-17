@@ -532,12 +532,32 @@ function getTaskUpdater(task, reqBody, outputContainer) {
     }
 }
 
+function abortTask(task) {
+    if (!task.isProcessing) {
+        return false
+    }
+    task.isProcessing = false
+    task.progressBar.classList.remove("active")
+    task['taskStatusLabel'].style.display = 'none'
+    task['stopTask'].innerHTML = '<i class="fa-solid fa-trash-can"></i> Remove'
+    if (!task.instances?.some((r) => r.isPending)) {
+        return
+    }
+    task.instances.forEach((instance) => {
+        try {
+            instance.abort()
+        } catch (e) {
+            console.error(e)
+        }
+    })
+}
+
 function onTaskErrorHandler(task, reqBody, instance, reason) {
     if (!task.isProcessing) {
         return
     }
-    task.isProcessing = false
     console.log('Render request %o, Instance: %o, Error: %s', reqBody, instance, reason)
+    abortTask(task)
     const outputMsg = task['outputMsg']
     logError('Stable Diffusion had an error. Please check the logs in the command-line window. <br/><br/>' + reason + '<br/><pre>' + reason.stack + '</pre>', task, outputMsg)
     setStatus('request', 'error', 'error')
@@ -730,21 +750,7 @@ function createTask(task) {
         if (task.batchesDone <= 0 || !task.isProcessing) {
             taskEntry.remove()
         }
-        if (task.isProcessing) {
-            task.isProcessing = false
-            task.progressBar.classList.remove("active")
-            task['stopTask'].innerHTML = '<i class="fa-solid fa-trash-can"></i> Remove'
-            if (!task.instances?.some((r) => r.isPending)) {
-                return
-            }
-            task.instances.forEach((instance) => {
-                try {
-                    instance.abort()
-                } catch (e) {
-                    console.error(e)
-                }
-            })
-        }
+        abortTask(task)
     })
 
     task.isProcessing = true
@@ -928,21 +934,14 @@ function createFileName(prompt, seed, steps, guidance, outputFormat) {
 async function stopAllTasks() {
     getUncompletedTaskEntries().forEach((taskEntry) => {
         const taskStatusLabel = taskEntry.querySelector('.taskStatusLabel')
-        taskStatusLabel.style.display = 'none'
-
+        if (taskStatusLabel) {
+            taskStatusLabel.style.display = 'none'
+        }
         const task = htmlTaskMap.get(taskEntry)
         if (!task) {
             return
         }
-
-        task.isProcessing = false
-        task.instances.forEach((instance) => {
-            try {
-                instance.abort()
-            } catch (e) {
-                console.error(e)
-            }
-        })
+        abortTask(task)
     })
 }
 
