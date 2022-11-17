@@ -332,17 +332,20 @@ async function parseContent(text) {
         try {
             const task = JSON.parse(text)
             restoreTaskToUI(task)
+            return true
         } catch (e) {
             console.warn(`JSON text content couldn't be parsed.`, e)
         }
-        return
+        return false
     }
     // Normal txt file.
     const task = parseTaskFromText(text)
     if (task) {
         restoreTaskToUI(task)
+        return true
     } else {
         console.warn(`Raw text content couldn't be parsed.`)
+        return false
     }
 }
 
@@ -422,6 +425,17 @@ function checkReadTextClipboardPermission (result) {
     resetSettings.parentNode.insertBefore(pasteIcon, resetSettings)
 }
 navigator.permissions.query({ name: "clipboard-read" }).then(checkReadTextClipboardPermission, (reason) => console.log('clipboard-read is not available. %o', reason))
+
+document.addEventListener('paste', (event) => {
+    const paste = (event.clipboardData || window.clipboardData).getData('text')
+    const selection = window.getSelection()
+    console.log(selection)
+    console.log(selection.toString())
+    if (selection.toString().trim().length <= 0 && parseContent(paste)) {
+        event.preventDefault();
+        return;
+    }
+});
 
 // Adds a copy and a paste icon if the browser grants permission to write to clipboard.
 function checkWriteToClipboardPermission (result) {
