@@ -1,22 +1,26 @@
 :root {
-    --background-color1: rgb(32, 33, 36); /* main parts of the page */
-    --background-color2: rgb(44, 45, 48); /* main panels */
-    --background-color3: rgb(47, 49, 53);
-    --background-color4: rgb(18, 18, 19); /* settings dropdowns */
+    --main-hue: 222;
+	--main-saturation: 4%;
+	--value-base: 13%;
+	--value-step: 5%;
+	--background-color1: hsl(var(--main-hue), var(--main-saturation), var(--value-base));
+	--background-color2: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (1 * var(--value-step))));
+	--background-color3: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (0.5 * var(--value-step))));
+	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (1.5 * var(--value-step))));
 
-    --accent-hue: 266;
+    --accent-hue: 263;
     --accent-lightness: 36%;
     --accent-lightness-hover: 40%;
 
     --text-color: #eee;
 
-    --input-text-color: black;
-    --input-background-color: #e9e9ed; 
-    --input-border-color: #8f8f9d; 
+	--input-text-color: #ccc;
+    --input-background-color: var(--background-color3);
+	--input-border-color: var(--background-color4);
 
     --button-text-color: var(--input-text-color);
-    --button-color: #e9e9ed;
-    --button-border: 1px solid #8f8f9d;
+    --button-color: var(--accent-color);
+    --button-border: none;
 
     /* other */
     --input-border-radius: 4px;
@@ -28,16 +32,6 @@
     --input-height: 24px; 
 }
 
-.theme-default-modified {
-    --button-text-color: black;
-
-    --input-switch-padding: 2px;
-    --input-text-color: #ccc;
-    --input-border-size: 0px; 
-    --input-background-color: #16191c; 
-    --input-border-color: var(--input-background-color); 
-}
-
 .theme-light {
     --background-color1: white; 
     --background-color2: #ececec;
@@ -45,6 +39,7 @@
     --background-color4: #cccccc;
 
     --text-color: black;
+    --button-text-color: white;
 
     --input-text-color: black;
     --input-background-color: #f8f9fa; 
@@ -59,12 +54,7 @@
     
     --accent-hue: 235;
     --accent-lightness: 65%;
-    --primary-button-border: none;
-    
-    --button-color: var(--accent-color);
-    --button-border: none;
 
-    --input-text-color: #ccc;
     --input-border-size: 2px; 
     --input-background-color: #202225; 
     --input-border-color: var(--input-background-color); 
@@ -81,15 +71,6 @@
 	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (3 * var(--value-step))));
     
     --accent-hue: 212;
-    --primary-button-border: none;
-
-    --button-color: var(--accent-color);
-    --button-border: none;
-    
-    --input-border-size: 1px; 
-    --input-background-color: var(--background-color3);
-	--input-text-color: #ccc;
-	--input-border-color: var(--background-color4);
 }
 
 
@@ -102,16 +83,6 @@
 	--background-color2: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (1 * var(--value-step))));
 	--background-color3: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (2 * var(--value-step))));
 	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (3 * var(--value-step))));
-    
-    --primary-button-border: none;
-
-    --button-color: var(--accent-color);
-    --button-border: none;
-    
-    --input-border-size: 1px; 
-    --input-background-color: var(--background-color3);
-	--input-text-color: #ccc;
-	--input-border-color: var(--background-color4);
 }
 
 .theme-super-dark {
@@ -124,15 +95,7 @@
 	--background-color3: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (2 * var(--value-step))));
 	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (1.4 * var(--value-step))));
     
-    --primary-button-border: none;
-
-    --button-color: var(--accent-color);
-    --button-border: none;
-    
-    --input-border-size: 0px; 
-    --input-background-color: var(--background-color3);
-	--input-text-color: #ccc;
-	--input-border-color: var(--background-color4);
+    --input-border-size: 0px;
 }
 
 .theme-wild {
@@ -146,10 +109,6 @@
 	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (3 * var(--value-step))));
     
     --accent-hue: 212;
-    --primary-button-border: none;
-
-    --button-color: var(--accent-color);
-    --button-border: none;
     
     --input-border-size: 1px; 
     --input-background-color: hsl(222, var(--main-saturation), calc(var(--value-base) - (2 * var(--value-step))));
@@ -166,10 +125,6 @@
     --accent-hue: 213;
     --accent-lightness: 76.8%;
     --accent-color: #3584e4;
-    --make-image-border: none;
-    
-    --button-color: var(--accent-color);
-    --button-border: none;
 
     --input-border-radius: 6px;
     --input-text-color: #ffffff;

@@ -36,6 +36,7 @@
 .parameters-table > div {
     background: var(--background-color2);
     display: flex;
+    padding: 0px 4px;
 }
 
 .parameters-table > div > div {
