@@ -7,6 +7,8 @@ import traceback
 
 import sys
 import os
+import picklescan.scanner
+import rich
 
 SD_DIR = os.getcwd()
 print('started in ', SD_DIR)
@@ -59,10 +61,18 @@ ACCESS_LOG_SUPPRESS_PATH_PREFIXES = ['/ping', '/image', '/modifier-thumbnails']
 
 NOCACHE_HEADERS={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
 
-app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'media')), name="media")
+class NoCacheStaticFiles(StaticFiles):
+    def is_not_modified(self, response_headers, request_headers) -> bool:
+        if 'content-type' in response_headers and ('javascript' in response_headers['content-type'] or 'css' in response_headers['content-type']):
+            response_headers.update(NOCACHE_HEADERS)
+            return False
+
+        return super().is_not_modified(response_headers, request_headers)
+
+app.mount('/media', NoCacheStaticFiles(directory=os.path.join(SD_UI_DIR, 'media')), name="media")
 
 for plugins_dir, dir_prefix in UI_PLUGINS_SOURCES:
-    app.mount(f'/plugins/{dir_prefix}', StaticFiles(directory=plugins_dir), name=f"plugins-{dir_prefix}")
+    app.mount(f'/plugins/{dir_prefix}', NoCacheStaticFiles(directory=plugins_dir), name=f"plugins-{dir_prefix}")
 
 def getConfig(default_val=APP_CONFIG_DEFAULTS):
     try:
@@ -206,6 +216,17 @@ def getModels():
             os.makedirs(models_dir)
 
         for file in os.listdir(models_dir):
+            try:
+                scan_result = picklescan.scanner.scan_file_path( os.path.join(models_dir, file))
+                if ( scan_result.issues_count >0 or scan_result.infected_files >0):
+                    rich.print(":warning: [bold red]Scan %s: %d scanned, %d issue, %d infected.[/bold red]" % ( file,  scan_result.scanned_files, scan_result.issues_count, scan_result.infected_files) )
+                    models['scan-error'] = file
+                    return models
+                else:
+                    rich.print("Scan %s: [green]%d scanned, %d issue, %d infected.[/green]" % ( file, scan_result.scanned_files, scan_result.issues_count, scan_result.infected_files ) )
+            except Exception as e:
+                print('error while scanning', os.path.join(models_dir, file), 'error:', e)
+
             for model_extension in model_extensions:
                 if file.endswith(model_extension):
                     model_name = file[:-len(model_extension)]

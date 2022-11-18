@@ -156,6 +156,13 @@ else
     echo conda_sd_ui_deps_installed >> ../scripts/install_status.txt
 fi
 
+if python -m picklescan --help >/dev/null 2>&1; then
+    echo "Picklescan is already installed."
+else
+    echo "Picklescan not found, installing."
+    pip install picklescan || fail "Picklescan installation failed."
+fi
+
 
 
 mkdir -p "../models/stable-diffusion"

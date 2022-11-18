@@ -28,18 +28,21 @@ var PARAMETERS = [
 		type: ParameterType.select,
 		label: "Theme",
 		default: "theme-default",
+		note: "customize the look and feel of the ui",
 		options: [ // Note: options expanded dynamically
 			{
 				value: "theme-default",
 				label: "Default"
 			}
-		]
+		],
+		icon: "fa-palette"
 	},
 	{
 		id: "save_to_disk",
 		type: ParameterType.checkbox,
 		label: "Auto-Save Images",
 		note: "automatically saves images to the specified location",
+		icon: "fa-download",
 		default: false,
 	},
 	{
@@ -55,6 +58,7 @@ var PARAMETERS = [
 		type: ParameterType.checkbox,
 		label: "Enable Sound",
 		note: "plays a sound on task completion",
+		icon: "fa-volume-low",
 		default: true,
 	},
 	{
@@ -69,20 +73,23 @@ var PARAMETERS = [
 		type: ParameterType.checkbox,
 		label: "Open browser on startup",
 		note: "starts the default browser on startup",
+		icon: "fa-window-restore",
 		default: true,
 	},
 	{
 		id: "turbo",
 		type: ParameterType.checkbox,
 		label: "Turbo Mode",
-		default: true,
 		note: "generates images faster, but uses an additional 1 GB of GPU memory",
+		icon: "fa-forward",
+		default: true,
 	},
 	{
 		id: "use_cpu",
 		type: ParameterType.checkbox,
 		label: "Use CPU (not GPU)",
 		note: "warning: this will be *very* slow",
+		icon: "fa-microchip",
 		default: false,
 	},
 	{
@@ -103,6 +110,7 @@ var PARAMETERS = [
 		type: ParameterType.checkbox,
 		label: "Use Full Precision",
 		note: "for GPU-only. warning: this will consume more VRAM",
+		icon: "fa-crosshairs",
 		default: false,
 	},
 	{
@@ -110,13 +118,15 @@ var PARAMETERS = [
 		type: ParameterType.checkbox,
 		label: "Auto-Save Settings",
 		note: "restores settings on browser load",
+		icon: "fa-gear",
 		default: true,
 	},
 	{
 		id: "use_beta_channel",
 		type: ParameterType.checkbox,
-		label: "🔥Beta channel",
+		label: "Beta channel",
 		note: "Get the latest features immediately (but could be less stable). Please restart the program after changing this.",
+		icon: "fa-fire",
 		default: false,
 	},
 ];
@@ -147,16 +157,18 @@ function getParameterElement(parameter) {
 	}
 }
 
-let parametersTable = document.querySelector("#system-settings table")
+let parametersTable = document.querySelector("#system-settings .parameters-table")
 /* fill in the system settings popup table */
 function initParameters() {
 	PARAMETERS.forEach(parameter => {
 		var element = getParameterElement(parameter)
 		var note = parameter.note ? `<small>${parameter.note}</small>` : "";
-		var newrow = document.createElement('tr')
+		var icon = parameter.icon ? `<i class="fa ${parameter.icon}"></i>` : "";
+		var newrow = document.createElement('div')
 		newrow.innerHTML = `
-			<td><label for="${parameter.id}">${parameter.label}</label></td>
-			<td><div>${element}${note}<div></td>`
+			<div>${icon}</div>
+			<div><label for="${parameter.id}">${parameter.label}</label>${note}</div>
+			<div>${element}</div>`
 		parametersTable.appendChild(newrow)
 		parameter.settingsEntry = newrow
 	})
@@ -200,6 +212,7 @@ async function getAppConfig() {
 
         if (config.update_branch === 'beta') {
             useBetaChannelField.checked = true
+			document.querySelector("#updateBranchLabel").innerText = "(beta)"
         }
         if (config.ui && config.ui.open_browser_on_start === false) {
             uiOpenBrowserOnStartField.checked = false
@@ -231,6 +244,7 @@ function getCurrentRenderDeviceSelection() {
 useCPUField.addEventListener('click', function() {
     let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
     let autoPickGPUSettingEntry = getParameterSettingsEntry('auto_pick_gpus')
+	console.log("hello", this.checked);
     if (this.checked) {
         gpuSettingEntry.style.display = 'none'
         autoPickGPUSettingEntry.style.display = 'none'

@@ -2,6 +2,7 @@
 
 ## v2.4
 ### Major Changes
+- **Automatic scanning for malicious model files** - using `picklescan`. Thanks @JeLuf
 - **Support for custom VAE models**. You can place your VAE files in the `models/vae` folder, and refresh the browser page to use them. More info: https://github.com/cmdr2/stable-diffusion-ui/wiki/VAE-Variational-Auto-Encoder
 - **Experimental support for multiple GPUs!** It should work automatically. Just open one browser tab per GPU, and spread your tasks across your GPUs. For e.g. open our UI in two browser tabs if you have two GPUs. You can customize which GPUs it should use in the "Settings" tab, otherwise let it automatically pick the best GPUs. Thanks @madrang . More info: https://github.com/cmdr2/stable-diffusion-ui/wiki/Run-on-Multiple-GPUs
 - **Cleaner UI design** - Show settings and help in new tabs, instead of dropdown popups (which were buggy). Thanks @mdiller
@@ -20,6 +21,11 @@
 - A `What's New?` tab in the UI
 
 ### Detailed changelog
+* 2.4.10 - 18 Nov 2022 - Textarea for negative prompts. Thanks @JeLuf
+* 2.4.10 - 18 Nov 2022 - Improved design for Settings, and rounded toggle buttons instead of checkboxes for a more modern look. Thanks @mdiller
+* 2.4.9 - 18 Nov 2022 - Add Picklescan - a scanner for malicious model files. If it finds a malicious file, it will halt the web application and alert the user. Thanks @JeLuf
+* 2.4.8 - 18 Nov 2022 - A `Use these settings` button to use the settings from a previously generated image task. Thanks @patriceac
+* 2.4.7 - 18 Nov 2022 - Don't crash if a VAE file fails to load
 * 2.4.7 - 17 Nov 2022 - Fix a bug where Face Correction (GFPGAN) would fail on cuda:N (i.e. GPUs other than cuda:0), as well as fail on CPU if the system had an incompatible GPU.
 * 2.4.6 - 16 Nov 2022 - Fix a regression in VRAM usage during startup, which caused 'Out of Memory' errors when starting on GPUs with 4gb (or less) VRAM
 * 2.4.5 - 16 Nov 2022 - Add checkbox for "Open browser on startup".

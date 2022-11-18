@@ -191,6 +191,16 @@ call WHERE uvicorn > .tmp
     exit /b
 )
 
+@>nul 2>nul call python -m picklescan --help
+@if "%ERRORLEVEL%" NEQ "0" (
+    @echo. & echo Picklescan not found. Installing
+    @call pip install picklescan || (
+        echo "Error installing the picklescan package necessary for Stable Diffusion UI. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
+        pause
+        exit /b
+    )
+)
+
 @>nul findstr /m "conda_sd_ui_deps_installed" ..\scripts\install_status.txt
 @if "%ERRORLEVEL%" NEQ "0" (
     @echo conda_sd_ui_deps_installed >> ..\scripts\install_status.txt
@@ -275,7 +285,7 @@ echo. > "..\models\vae\Put your VAE files here.txt"
     for %%I in ("RealESRGAN_x4plus.pth") do if "%%~zI" EQU "67040989" (
         echo "Data files (weights) necessary for ESRGAN (Resolution Upscaling) x4plus were already downloaded"
     ) else (
-        echo. & echo "The GFPGAN model file present at %cd%\RealESRGAN_x4plus.pth is invalid. It is only %%~zI bytes in size. Re-downloading.." & echo.
+        echo. & echo "The RealESRGAN model file present at %cd%\RealESRGAN_x4plus.pth is invalid. It is only %%~zI bytes in size. Re-downloading.." & echo.
         del "RealESRGAN_x4plus.pth"
     )
 )
@@ -305,7 +315,7 @@ echo. > "..\models\vae\Put your VAE files here.txt"
     for %%I in ("RealESRGAN_x4plus_anime_6B.pth") do if "%%~zI" EQU "17938799" (
         echo "Data files (weights) necessary for ESRGAN (Resolution Upscaling) x4plus_anime were already downloaded"
     ) else (
-        echo. & echo "The GFPGAN model file present at %cd%\RealESRGAN_x4plus_anime_6B.pth is invalid. It is only %%~zI bytes in size. Re-downloading.." & echo.
+        echo. & echo "The RealESRGAN model file present at %cd%\RealESRGAN_x4plus_anime_6B.pth is invalid. It is only %%~zI bytes in size. Re-downloading.." & echo.
         del "RealESRGAN_x4plus_anime_6B.pth"
     )
 )
