@@ -14,7 +14,7 @@ function initTheme() {
         .flatMap(sheet => Array.from(sheet.cssRules))
         .forEach(rule => {
             var selector = rule.selectorText; // TODO: also do selector == ":root", re-run un-set props
-            if (selector && selector.startsWith(".theme-")) {
+            if (selector && selector.startsWith(".theme-") && !selector.includes(" ")) {
                 var theme_key = selector.substring(1);
                 THEMES.push({
                     key: theme_key,
