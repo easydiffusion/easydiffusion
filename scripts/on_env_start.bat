@@ -50,7 +50,7 @@ if "%update_branch%"=="" (
     )
 )
 
-@xcopy sd-ui-files\ui ui /s /i /Y
+@xcopy sd-ui-files\ui ui /s /i /Y /q
 @copy sd-ui-files\scripts\on_sd_start.bat scripts\ /Y
 @copy sd-ui-files\scripts\bootstrap.bat scripts\ /Y
 @copy "sd-ui-files\scripts\Start Stable Diffusion UI.cmd" . /Y

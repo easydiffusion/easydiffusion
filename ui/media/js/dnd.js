@@ -419,16 +419,44 @@ const TASK_REQ_NO_EXPORT = [
     "save_to_disk_path"
 ]
 
-// Adds a copy icon if the browser grants permission to write to clipboard.
+// Retrieve clipboard content and try to parse it 
+async function pasteFromClipboard() {
+    //const text = await navigator.clipboard.readText()
+    let text = await navigator.clipboard.readText();
+    text=text.trim();
+    if (text.startsWith('{') && text.endsWith('}')) {
+        try {
+            const task = JSON.parse(text)
+            restoreTaskToUI(task)
+        } catch (e) {
+            console.warn(`Clipboard JSON couldn't be parsed.`, e)
+        }
+        return
+    }
+    // Normal txt file.
+    const task = parseTaskFromText(text)
+    if (task) {
+        restoreTaskToUI(task)
+    } else {
+        console.warn(`Clipboard content - File couldn't be parsed.`)
+    }
+}
+
+// Adds a copy and a paste icon if the browser grants permission to write to clipboard.
 function checkWriteToClipboardPermission (result) {
     if (result.state == "granted" || result.state == "prompt") {
         const resetSettings = document.getElementById('reset-image-settings')
+
+        // COPY ICON
         const copyIcon = document.createElement('i')
-        // copyIcon.id = 'copy-image-settings'
         copyIcon.className = 'fa-solid fa-clipboard section-button'
         copyIcon.innerHTML = `<span class="simple-tooltip right">Copy Image Settings</span>`
         copyIcon.addEventListener('click', (event) => {
             event.stopPropagation()
+            // Add css class 'active'
+            copyIcon.classList.add('active')
+            // In 350 ms remove the 'active' class
+            asyncDelay(350).then(() => copyIcon.classList.remove('active'))
             const uiState = readUI()
             TASK_REQ_NO_EXPORT.forEach((key) => delete uiState.reqBody[key])
             if (uiState.reqBody.init_image && !IMAGE_REGEX.test(uiState.reqBody.init_image)) {
@@ -438,8 +466,24 @@ function checkWriteToClipboardPermission (result) {
             navigator.clipboard.writeText(JSON.stringify(uiState, undefined, 4))
         })
         resetSettings.parentNode.insertBefore(copyIcon, resetSettings)
+
+        // PASTE ICON
+        const pasteIcon = document.createElement('i')
+        pasteIcon.className = 'fa-solid fa-paste section-button'
+        pasteIcon.innerHTML = `<span class="simple-tooltip right">Paste Image Settings</span>`
+        pasteIcon.addEventListener('click', (event) => {
+            event.stopPropagation()
+            // Add css class 'active'
+            pasteIcon.classList.add('active')
+            // In 350 ms remove the 'active' class
+            asyncDelay(350).then(() => pasteIcon.classList.remove('active'))
+            pasteFromClipboard()
+        })
+        resetSettings.parentNode.insertBefore(pasteIcon, resetSettings)
     }
 }
+
+// Determine which access we have to the clipboard. Clipboard access is only available  on localhost or via TLS.
 navigator.permissions.query({ name: "clipboard-write" }).then(checkWriteToClipboardPermission, (e) => {
     if (e instanceof TypeError && typeof navigator?.clipboard?.writeText === 'function') {
         // Fix for firefox https://bugzilla.mozilla.org/show_bug.cgi?id=1560373
