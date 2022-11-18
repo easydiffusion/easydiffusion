@@ -191,6 +191,16 @@ call WHERE uvicorn > .tmp
     exit /b
 )
 
+@>nul 2>nul call python -m picklescan --help
+@if "%ERRORLEVEL%" NEQ "0" (
+    @echo. & echo Picklescan not found. Installing
+    @call pip install picklescan || (
+        echo "Error installing the picklescan package necessary for Stable Diffusion UI. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
+        pause
+        exit /b
+    )
+)
+
 @>nul findstr /m "conda_sd_ui_deps_installed" ..\scripts\install_status.txt
 @if "%ERRORLEVEL%" NEQ "0" (
     @echo conda_sd_ui_deps_installed >> ..\scripts\install_status.txt

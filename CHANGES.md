@@ -20,6 +20,7 @@
 - A `What's New?` tab in the UI
 
 ### Detailed changelog
+* 2.4.9 - 18 Nov 2022 - Add Picklescan - a scanner for malicious model files. If it finds a malicious file, it will halt the web application and alert the user. Thanks @JeLuf
 * 2.4.8 - 18 Nov 2022 - A `Use as Input` button to use the settings from a previously generated image task. Thanks @patriceac
 * 2.4.7 - 18 Nov 2022 - Don't crash if a VAE file fails to load
 * 2.4.7 - 17 Nov 2022 - Fix a bug where Face Correction (GFPGAN) would fail on cuda:N (i.e. GPUs other than cuda:0), as well as fail on CPU if the system had an incompatible GPU.
