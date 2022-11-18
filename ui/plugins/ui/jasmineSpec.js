@@ -328,11 +328,45 @@ describe('stable-diffusion-ui', function() {
             expect(renderTask.result.output).toHaveSize(2)
         })
     })
-    describe('#special cases', function() {
+    describe('# Special cases', function() {
         it('should throw an exception on set for invalid sessionId', function() {
             expect(function() {
                 SD.sessionId = undefined
             }).toThrowError("Can't set sessionId to undefined.")
         })
     })
+})
+
+const loadCompleted = window.onload
+let loadEvent = undefined
+window.onload = function(evt) {
+    loadEvent = evt
+}
+if (!PLUGINS.SELFTEST) {
+    PLUGINS.SELFTEST = {}
+}
+loadUIPlugins().then(function() {
+    console.log('loadCompleted', loadEvent)
+    describe('@Plugins', function() {
+        it('exposes hooks to overide', function() {
+            expect(typeof PLUGINS.IMAGE_INFO_BUTTONS).toBe('object')
+            expect(typeof PLUGINS.TASK_CREATE).toBe('object')
+        })
+        describe('supports selftests', function() { // Hook to allow plugins to define tests.
+            const pluginsTests = Object.keys(PLUGINS.SELFTEST).filter((key) => PLUGINS.SELFTEST.hasOwnProperty(key))
+            if (!pluginsTests || pluginsTests.length <= 0) {
+                it('but nothing loaded...', function() {
+                    expect(true).toBeTruthy()
+                })
+                return
+            }
+            for (const pTest of pluginsTests) {
+                describe(pTest, function() {
+                    const testFn = PLUGINS.SELFTEST[pTest]
+                    return Promise.resolve(testFn.call(jasmine, pTest))
+                })
+            }
+        })
+    })
+    loadCompleted.call(window, loadEvent)
 })

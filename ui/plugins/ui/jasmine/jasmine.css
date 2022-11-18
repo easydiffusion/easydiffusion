@@ -215,7 +215,7 @@ body {
   color: #ba9d37;
 }
 .jasmine_html-reporter .jasmine-summary li.jasmine-excluded a {
-  color: #340077;
+  color: #5600c7;
 }
 .jasmine_html-reporter .jasmine-specs li.jasmine-passed a:before {
   content: "• ";

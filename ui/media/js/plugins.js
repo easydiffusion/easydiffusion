@@ -30,18 +30,25 @@ const PLUGINS = {
 
 async function loadUIPlugins() {
     try {
-        let res = await fetch('/get/ui_plugins')
-        if (res.status === 200) {
-            res = await res.json()
-            res.forEach(pluginPath => {
-                let script = document.createElement('script')
-                script.src = pluginPath + '?t=' + Date.now()
-
-                console.log('loading plugin', pluginPath)
-
-                document.head.appendChild(script)
-            })
+        const res = await fetch('/get/ui_plugins')
+        if (!res.ok) {
+            console.error(`Error HTTP${res.status} while loading plugins list. - ${res.statusText}`)
+            return
         }
+        const plugins = await res.json()
+        const loadingPromises = plugins.map((pluginPath) => {
+            const script = document.createElement('script')
+            const promiseSrc = new PromiseSource()
+            script.addEventListener('error', () => promiseSrc.reject(new Error(`Plugin "${pluginPath}" couldn't be loaded.`)))
+            script.addEventListener('load', () => promiseSrc.resolve(pluginPath))
+            script.src = pluginPath + '?t=' + Date.now()
+
+            console.log('loading plugin', pluginPath)
+            document.head.appendChild(script)
+
+            return promiseSrc.promise
+        })
+        return await Promise.allSettled(loadingPromises)
     } catch (e) {
         console.log('error fetching plugin paths', e)
     }
