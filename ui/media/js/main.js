@@ -1340,3 +1340,4 @@ window.addEventListener("beforeunload", function(e) {
 });
 
 createCollapsibles()
+prettifyInputs(document);

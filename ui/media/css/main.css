@@ -216,7 +216,6 @@ code {
     display: none !important;
 }
 #editor-modifiers {
-    max-width: 600px;
     overflow-y: auto;
     overflow-x: hidden;
 }
@@ -506,6 +505,10 @@ img {
     border-radius: 6px 0px;
 }
 
+#editor-settings {
+    min-width: 500px;
+}
+
 #editor-settings-entries {
     display: flex;
     flex-direction: column;
@@ -595,6 +598,57 @@ input::file-selector-button {
     height: 19px;
 }
 
+
+.input-toggle {
+    display: inline-block;
+    position: relative;
+    vertical-align: middle;
+    width: calc(var(--input-height) * 2);
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    margin-right: 4px;
+}
+.input-toggle > input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+.input-toggle > label {
+    display: block;
+    overflow: hidden;
+    cursor: pointer;
+    height: var(--input-height);
+    padding: 0;
+    line-height: var(--input-height);
+    border: var(--input-border-size) solid var(--input-border-color);
+    border-radius: var(--input-height);
+    background: var(--input-background-color);
+    transition: background 0.2s ease-in;
+}
+.input-toggle > label:before {
+    content: "";
+    display: block;
+    width: calc(var(--input-height) - ((var(--input-border-size) + var(--input-switch-padding)) * 2));
+    margin: 0px;
+    background: var(--input-text-color);
+    position: absolute;
+    top: calc(var(--input-border-size) + var(--input-switch-padding));
+    bottom: calc(var(--input-border-size) + var(--input-switch-padding));
+    right: calc(var(--input-border-size) + var(--input-switch-padding) + var(--input-height));
+    border-radius: calc(var(--input-height) - ((var(--input-border-size) + var(--input-switch-padding)) * 2));
+    transition: all 0.2s ease-in 0s; 
+    opacity: 0.8;
+}
+.input-toggle > input:checked + label {
+    background: var(--accent-color);
+}
+.input-toggle > input:checked + label:before {
+    right: calc(var(--input-border-size) + var(--input-switch-padding));
+    opacity: 1;
+}
+
 /* MOBILE SUPPORT */
 @media screen and (max-width: 700px) {
     #top-nav {
@@ -636,6 +690,9 @@ input::file-selector-button {
     #editor {
         padding: 16px 8px;
     }
+    #editor-settings {
+        min-width: 0px;
+    }
     .tab-content-inner {
         margin: 0px;
     }
@@ -659,14 +716,8 @@ input::file-selector-button {
         padding: 0px !important;
         margin: 24px !important;
     }
-    .simple-tooltip.right {
-        right: initial;
-        left: 0px;
-        top: 50%;
-        transform: translate(calc(-100% + 15%), -50%);
-    }
-    :hover > .simple-tooltip.right {
-        transform: translate(100%, -50%);
+    .simple-tooltip {
+        display: none;
     }
 }
 

@@ -47,7 +47,6 @@
                     <label for="prompt"><b>Enter Prompt</b></label> <small>or</small> <button id="promptsFromFileBtn">Load from a file</button>
                     <textarea id="prompt" class="col-free">a photograph of an astronaut riding a horse</textarea>
                     <input id="prompt_from_file" name="prompt_from_file" type="file" /> <!-- hidden -->
-
                     <label for="negative_prompt" class="collapsible" id="negative_prompt_handle">
                         Negative Prompt
                         <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Writing-prompts#negative-prompts" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">Click to learn more about Negative Prompts</span></i></a>
@@ -94,7 +93,7 @@
                 <h4 class="collapsible">
                     Image Settings
                     <i id="reset-image-settings" class="fa-solid fa-arrow-rotate-left section-button">
-                        <span class="simple-tooltip left">
+                        <span class="simple-tooltip right">
                             Reset Image Settings
                         </span>
                     </i>
@@ -242,7 +241,7 @@
         <div id="tab-content-settings" class="tab-content">
             <div id="system-settings" class="tab-content-inner">
                 <h1>System Settings</h1>
-                <table class="form-table"></table>
+                <div class="parameters-table"></div>
                 <br/>
                 <button id="save-system-settings-btn" class="primaryButton">Save</button>
                 <br/><br/>
