@@ -285,7 +285,7 @@ echo. > "..\models\vae\Put your VAE files here.txt"
     for %%I in ("RealESRGAN_x4plus.pth") do if "%%~zI" EQU "67040989" (
         echo "Data files (weights) necessary for ESRGAN (Resolution Upscaling) x4plus were already downloaded"
     ) else (
-        echo. & echo "The GFPGAN model file present at %cd%\RealESRGAN_x4plus.pth is invalid. It is only %%~zI bytes in size. Re-downloading.." & echo.
+        echo. & echo "The RealESRGAN model file present at %cd%\RealESRGAN_x4plus.pth is invalid. It is only %%~zI bytes in size. Re-downloading.." & echo.
         del "RealESRGAN_x4plus.pth"
     )
 )
@@ -315,7 +315,7 @@ echo. > "..\models\vae\Put your VAE files here.txt"
     for %%I in ("RealESRGAN_x4plus_anime_6B.pth") do if "%%~zI" EQU "17938799" (
         echo "Data files (weights) necessary for ESRGAN (Resolution Upscaling) x4plus_anime were already downloaded"
     ) else (
-        echo. & echo "The GFPGAN model file present at %cd%\RealESRGAN_x4plus_anime_6B.pth is invalid. It is only %%~zI bytes in size. Re-downloading.." & echo.
+        echo. & echo "The RealESRGAN model file present at %cd%\RealESRGAN_x4plus_anime_6B.pth is invalid. It is only %%~zI bytes in size. Re-downloading.." & echo.
         del "RealESRGAN_x4plus_anime_6B.pth"
     )
 )
