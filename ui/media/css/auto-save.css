@@ -26,23 +26,55 @@
     float: left;
 }
 
-.form-table small {
+
+.parameters-table {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.parameters-table > div {
+    background: var(--background-color2);
+    display: flex;
+}
+
+.parameters-table > div > div {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.parameters-table small {
     color: rgb(153, 153, 153);
 }
 
-#system-settings .form-table td {
-    height: 24px;
+.parameters-table > div > div:nth-child(1) {
+    font-size: 20px;
+    width: 45px;
 }
 
-#system-settings .form-table td:last-child div {
-    display: flex;
-    align-items: center;
-}
-#system-settings .form-table td:last-child div > :not([type="checkbox"]):first-child {
-    margin-left: 3px;
-}
-
-#system-settings .form-table td:last-child div small {
-    padding-left: 5px;
+.parameters-table > div > div:nth-child(2) {
+    flex: 1;
+    flex-direction: column;
     text-align: left;
+    justify-content: center;
+    align-items: start;
+    gap: 4px;
+}
+
+.parameters-table > div > div:nth-child(3) {
+    text-align: right;
+}
+
+.parameters-table > div:first-child {
+    border-radius: 12px 12px 0px 0px;
+}
+
+.parameters-table > div:last-child {
+    border-radius: 0px 0px 12px 12px;
+}
+
+.parameters-table .fa-fire {
+    color: #F7630C;
 }

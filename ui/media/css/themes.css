@@ -24,6 +24,18 @@
     --accent-color: hsl(var(--accent-hue), 100%, var(--accent-lightness));
     --accent-color-hover: hsl(var(--accent-hue), 100%, var(--accent-lightness-hover));
     --primary-button-border: none;
+    --input-switch-padding: 1px;
+    --input-height: 24px; 
+}
+
+.theme-default-modified {
+    --button-text-color: black;
+
+    --input-switch-padding: 2px;
+    --input-text-color: #ccc;
+    --input-border-size: 0px; 
+    --input-background-color: #16191c; 
+    --input-border-color: var(--input-background-color); 
 }
 
 .theme-light {
