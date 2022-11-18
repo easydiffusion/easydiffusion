@@ -789,7 +789,9 @@ function getCurrentUserRequest() {
             stream_progress_updates: true,
             stream_image_progress: (numOutputsTotal > 50 ? false : streamImageProgressField.checked),
             show_only_filtered_image: showOnlyFilteredImageField.checked,
-            output_format: outputFormatField.value
+            output_format: outputFormatField.value,
+            original_prompt: promptField.value,
+            active_tags: (activeTags.map(x => x.name))
         }
     }
     if (IMAGE_REGEX.test(initImagePreview.src)) {
@@ -856,6 +858,7 @@ function createTask(task) {
     taskEntry.innerHTML = ` <div class="header-content panel collapsible active">
                                 <div class="taskStatusLabel">Enqueued</div>
                                 <button class="secondaryButton stopTask"><i class="fa-solid fa-trash-can"></i> Remove</button>
+                            <button class="secondaryButton useSettings"><i class="fa-solid fa-redo"></i> Use Settings</button>
                                 <div class="preview-prompt collapsible active"></div>
                                 <div class="taskConfig">${taskConfig}</div>
                                 <div class="outputMsg"></div>
@@ -891,6 +894,47 @@ function createTask(task) {
             }
 
             taskEntry.remove()
+        }
+    })
+
+    task['useSettings'] = taskEntry.querySelector('.useSettings')
+    task['useSettings'].addEventListener('click', async function(e) {
+        TASK_REQ_NO_EXPORT.forEach((key) => delete task.reqBody[key]) // don't restore system settings when restoring tasks
+        restoreTaskToUI(task)
+        e.stopPropagation();
+
+        // restore the original tag
+        promptField.value = task.reqBody.original_prompt
+
+        // Restore modifiers
+        refreshModifiersState(task.reqBody.active_tags)
+
+        // properly reset checkboxes
+        if (!('use_face_correction' in task.reqBody)) {
+            useFaceCorrectionField.checked = false
+        }
+        if (!('use_upscale' in task.reqBody)) {
+            useUpscalingField.checked = false
+        }
+        if (!('mask' in task.reqBody)) {
+            maskSetting.checked = false
+        }
+
+        // Show the source picture if present
+        initImagePreview.src = (task.reqBody.init_image == undefined ? '' : task.reqBody.init_image)
+        if (IMAGE_REGEX.test(initImagePreview.src)) {
+            Boolean(task.reqBody.mask) ? inpaintingEditor.setImg(task.reqBody.mask) : inpaintingEditor.resetBackground()
+            initImagePreviewContainer.style.display = 'block'
+            inpaintingEditorContainer.style.display = 'none'
+            promptStrengthContainer.style.display = 'table-row'
+            //samplerSelectionContainer.style.display = 'none'
+            // maskSetting.checked = false
+            inpaintingEditorContainer.style.display = maskSetting.checked ? 'block' : 'none'
+        } else {
+            initImagePreviewContainer.style.display = 'none'
+            // inpaintingEditorContainer.style.display = 'none'
+            promptStrengthContainer.style.display = 'none'
+            // maskSetting.style.display = 'none'
         }
     })
 
