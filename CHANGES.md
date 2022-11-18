@@ -20,6 +20,7 @@
 - A `What's New?` tab in the UI
 
 ### Detailed changelog
+* 2.4.10 - 18 Nov 2022 - Improved design for Settings, and rounded toggle buttons instead of checkboxes for a more modern look.
 * 2.4.9 - 18 Nov 2022 - Add Picklescan - a scanner for malicious model files. If it finds a malicious file, it will halt the web application and alert the user. Thanks @JeLuf
 * 2.4.8 - 18 Nov 2022 - A `Use as Input` button to use the settings from a previously generated image task. Thanks @patriceac
 * 2.4.7 - 18 Nov 2022 - Don't crash if a VAE file fails to load
