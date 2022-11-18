@@ -898,44 +898,9 @@ function createTask(task) {
     })
 
     task['useSettings'] = taskEntry.querySelector('.useSettings')
-    task['useSettings'].addEventListener('click', async function(e) {
-        TASK_REQ_NO_EXPORT.forEach((key) => delete task.reqBody[key]) // don't restore system settings when restoring tasks
-        restoreTaskToUI(task)
-        e.stopPropagation();
-
-        // restore the original tag
-        promptField.value = task.reqBody.original_prompt
-
-        // Restore modifiers
-        refreshModifiersState(task.reqBody.active_tags)
-
-        // properly reset checkboxes
-        if (!('use_face_correction' in task.reqBody)) {
-            useFaceCorrectionField.checked = false
-        }
-        if (!('use_upscale' in task.reqBody)) {
-            useUpscalingField.checked = false
-        }
-        if (!('mask' in task.reqBody)) {
-            maskSetting.checked = false
-        }
-
-        // Show the source picture if present
-        initImagePreview.src = (task.reqBody.init_image == undefined ? '' : task.reqBody.init_image)
-        if (IMAGE_REGEX.test(initImagePreview.src)) {
-            Boolean(task.reqBody.mask) ? inpaintingEditor.setImg(task.reqBody.mask) : inpaintingEditor.resetBackground()
-            initImagePreviewContainer.style.display = 'block'
-            inpaintingEditorContainer.style.display = 'none'
-            promptStrengthContainer.style.display = 'table-row'
-            //samplerSelectionContainer.style.display = 'none'
-            // maskSetting.checked = false
-            inpaintingEditorContainer.style.display = maskSetting.checked ? 'block' : 'none'
-        } else {
-            initImagePreviewContainer.style.display = 'none'
-            // inpaintingEditorContainer.style.display = 'none'
-            promptStrengthContainer.style.display = 'none'
-            // maskSetting.style.display = 'none'
-        }
+    task['useSettings'].addEventListener('click', function(e) {
+        e.stopPropagation()
+        restoreTaskToUI(task, TASK_REQ_NO_EXPORT)
     })
 
     imagePreview.insertBefore(taskEntry, previewTools.nextSibling)
