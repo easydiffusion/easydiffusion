@@ -1159,7 +1159,7 @@ async function getModels() {
             previewPane.style.textAlign="center"
             previewPane.innerHTML = '<H1>🔥Malware alert!🔥</H1><h2>The file <i>' + models['scan-error'] + '</i> in your <tt>models/stable-diffusion</tt> folder is probably malware infected.</h2><h2>Please delete this file from the folder before proceeding!</h2>After deleting the file, reload this page.<br><br><button onClick="window.location.reload();">Reload Page</button>'
             makeImageBtn.disabled = true
-	}
+        }
         let modelOptions = models['options']
         let stableDiffusionOptions = modelOptions['stable-diffusion']
         let vaeOptions = modelOptions['vae']
