@@ -140,15 +140,24 @@ def load_model_ckpt():
     _, _ = modelFS.load_state_dict(sd, strict=False)
 
     if thread_data.vae_file is not None:
-        for model_extension in ['.ckpt', '.vae.pt']:
-            if os.path.exists(thread_data.vae_file + model_extension):
-                print(f"Loading VAE weights from: {thread_data.vae_file}{model_extension}")
-                vae_ckpt = torch.load(thread_data.vae_file + model_extension, map_location="cpu")
-                vae_dict = {k: v for k, v in vae_ckpt["state_dict"].items() if k[0:4] != "loss"}
-                modelFS.first_stage_model.load_state_dict(vae_dict, strict=False)
-                break
-            else:
-                print(f'Cannot find VAE file: {thread_data.vae_file}{model_extension}')
+        try:
+            loaded = False
+            for model_extension in ['.ckpt', '.vae.pt']:
+                if os.path.exists(thread_data.vae_file + model_extension):
+                    print(f"Loading VAE weights from: {thread_data.vae_file}{model_extension}")
+                    vae_ckpt = torch.load(thread_data.vae_file + model_extension, map_location="cpu")
+                    vae_dict = {k: v for k, v in vae_ckpt["state_dict"].items() if k[0:4] != "loss"}
+                    modelFS.first_stage_model.load_state_dict(vae_dict, strict=False)
+                    loaded = True
+                    break
+
+            if not loaded:
+                print(f'Cannot find VAE: {thread_data.vae_file}')
+                thread_data.vae_file = None
+        except:
+            print(traceback.format_exc())
+            print(f'Could not load VAE: {thread_data.vae_file}')
+            thread_data.vae_file = None
 
     modelFS.eval()
     # if thread_data.device != 'cpu':
