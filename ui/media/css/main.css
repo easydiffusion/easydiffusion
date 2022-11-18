@@ -989,14 +989,14 @@ i.active {
     float: right;
     font-weight: bold;
 }
-button#save-system-settings-btn:hover {
+button:hover {
   transition-duration: 0.1s;
   background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
 }
 
-button#save-system-settings-btn:active {
+button:active {
   transition-duration: 0.1s;
-  background-color: white;
+  background-color: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 24%));
 }
 
 button#save-system-settings-btn {
