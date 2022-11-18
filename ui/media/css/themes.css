@@ -29,7 +29,7 @@
     --accent-color-hover: hsl(var(--accent-hue), 100%, var(--accent-lightness-hover));
     --primary-button-border: none;
     --input-switch-padding: 1px;
-    --input-height: 24px; 
+    --input-height: 18px;
 }
 
 .theme-light {
