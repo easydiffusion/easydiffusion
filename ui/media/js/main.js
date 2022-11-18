@@ -765,6 +765,12 @@ function createTask(task) {
     if (task.previewPrompt.innerText.trim() === '') {
         task.previewPrompt.innerHTML = '&nbsp;' // allows the results to be collapsed
     }
+    task.previewPrompt.addEventListener("mouseover", function() {
+        taskEntry.setAttribute("draggable", "false");
+    });
+    task.previewPrompt.addEventListener("mouseout", function() {
+        taskEntry.setAttribute("draggable", "true");
+    });
 }
 
 function getCurrentUserRequest() {
