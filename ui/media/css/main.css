@@ -444,8 +444,9 @@ img {
 }
 .useSettings {
     background: var(--accent-color);
-    border: var(--make-image-border);
+    border: 1px solid var(--accent-color);
     color: rgb(255, 221, 255);
+    padding: 3pt 6pt;
     margin-right: 6pt;
     float: right;
 }
