@@ -789,7 +789,9 @@ function getCurrentUserRequest() {
             stream_progress_updates: true,
             stream_image_progress: (numOutputsTotal > 50 ? false : streamImageProgressField.checked),
             show_only_filtered_image: showOnlyFilteredImageField.checked,
-            output_format: outputFormatField.value
+            output_format: outputFormatField.value,
+            original_prompt: promptField.value,
+            active_tags: (activeTags.map(x => x.name))
         }
     }
     if (IMAGE_REGEX.test(initImagePreview.src)) {
@@ -856,6 +858,7 @@ function createTask(task) {
     taskEntry.innerHTML = ` <div class="header-content panel collapsible active">
                                 <div class="taskStatusLabel">Enqueued</div>
                                 <button class="secondaryButton stopTask"><i class="fa-solid fa-trash-can"></i> Remove</button>
+                                <button class="secondaryButton useSettings"><i class="fa-solid fa-redo"></i> Use as Input</button>
                                 <div class="preview-prompt collapsible active"></div>
                                 <div class="taskConfig">${taskConfig}</div>
                                 <div class="outputMsg"></div>
@@ -892,6 +895,12 @@ function createTask(task) {
 
             taskEntry.remove()
         }
+    })
+
+    task['useSettings'] = taskEntry.querySelector('.useSettings')
+    task['useSettings'].addEventListener('click', function(e) {
+        e.stopPropagation()
+        restoreTaskToUI(task, TASK_REQ_NO_EXPORT)
     })
 
     imagePreview.insertBefore(taskEntry, previewTools.nextSibling)

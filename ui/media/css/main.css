@@ -22,6 +22,11 @@ a:visited {
 label {
     font-size: 10pt;
 }
+code {
+    background: var(--background-color4);
+    padding: 2px 4px;
+    border-radius: 4px;
+}
 #prompt {
     width: 100%;
     height: 65pt;
@@ -437,6 +442,17 @@ img {
 .secondaryButton:hover {
     background: rgb(177, 27, 0);
 }
+.useSettings {
+    background: var(--accent-color);
+    border: 1px solid var(--accent-color);
+    color: rgb(255, 221, 255);
+    padding: 3pt 6pt;
+    margin-right: 6pt;
+    float: right;
+}
+.useSettings:hover {
+    background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
+}
 .stopTask {
     float: right;
 }
@@ -657,7 +673,7 @@ input::file-selector-button {
 @media (min-width: 700px) {
     /* #editor {
         max-width: 480px;
-    } */
+    }*/
     .float-container {
         padding: 20px;
     }
@@ -897,6 +913,9 @@ input::file-selector-button {
 
 i.active {
     background: var(--accent-color);
+}
+.primaryButton.active {
+    background: hsl(var(--accent-hue), 100%, 50%);
 }
 #system-info {
     max-width: 800px;

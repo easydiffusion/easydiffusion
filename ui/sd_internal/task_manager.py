@@ -217,10 +217,6 @@ def thread_get_next_task():
     task = None
     try:  # Select a render task.
         for queued_task in tasks_queue:
-            if queued_task.request.use_face_correction and runtime.thread_data.device == 'cpu' and is_alive() == 1:
-                queued_task.error = Exception('The CPU cannot be used to run this task currently. Please remove "Fix incorrect faces" from Image Settings and try again.')
-                task = queued_task
-                break
             if queued_task.render_device and runtime.thread_data.device != queued_task.render_device:
                 # Is asking for a specific render device.
                 if is_alive(queued_task.render_device) > 0:
@@ -440,7 +436,7 @@ def stop_render_thread(device):
     try:
         device_manager.validate_device_id(device, log_prefix='stop_render_thread')
     except:
-        print(traceback.format_exec())
+        print(traceback.format_exc())
         return False
 
     if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('stop_render_thread' + ERR_LOCK_FAILED)

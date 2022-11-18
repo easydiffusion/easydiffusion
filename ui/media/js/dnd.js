@@ -243,7 +243,9 @@ const TASK_MAPPING = {
         parse: (val) => val
     }
 }
-function restoreTaskToUI(task) {
+function restoreTaskToUI(task, fieldsToSkip) {
+    fieldsToSkip = fieldsToSkip || []
+
     if ('numOutputsTotal' in task) {
         numOutputsTotalField.value = task.numOutputsTotal
     }
@@ -255,9 +257,46 @@ function restoreTaskToUI(task) {
         return
     }
     for (const key in TASK_MAPPING) {
-        if (key in task.reqBody) {
+        if (key in task.reqBody && !fieldsToSkip.includes(key)) {
             TASK_MAPPING[key].setUI(task.reqBody[key])
         }
+    }
+
+    // restore the original tag
+    promptField.value = task.reqBody.original_prompt || task.reqBody.prompt
+
+    // Restore modifiers
+    if (task.reqBody.active_tags) {
+        refreshModifiersState(task.reqBody.active_tags)
+    }
+
+    // properly reset checkboxes
+    if (!('use_face_correction' in task.reqBody)) {
+        useFaceCorrectionField.checked = false
+    }
+    if (!('use_upscale' in task.reqBody)) {
+        useUpscalingField.checked = false
+    }
+    if (!('mask' in task.reqBody)) {
+        maskSetting.checked = false
+    }
+    upscaleModelField.disabled = !useUpscalingField.checked
+
+    // Show the source picture if present
+    initImagePreview.src = (task.reqBody.init_image == undefined ? '' : task.reqBody.init_image)
+    if (IMAGE_REGEX.test(initImagePreview.src)) {
+        Boolean(task.reqBody.mask) ? inpaintingEditor.setImg(task.reqBody.mask) : inpaintingEditor.resetBackground()
+        initImagePreviewContainer.style.display = 'block'
+        inpaintingEditorContainer.style.display = 'none'
+        promptStrengthContainer.style.display = 'table-row'
+        //samplerSelectionContainer.style.display = 'none'
+        // maskSetting.checked = false
+        inpaintingEditorContainer.style.display = maskSetting.checked ? 'block' : 'none'
+    } else {
+        initImagePreviewContainer.style.display = 'none'
+        // inpaintingEditorContainer.style.display = 'none'
+        promptStrengthContainer.style.display = 'none'
+        // maskSetting.style.display = 'none'
     }
 }
 function readUI() {
@@ -430,10 +469,10 @@ function checkWriteToClipboardPermission (result) {
         copyIcon.innerHTML = `<span class="simple-tooltip right">Copy Image Settings</span>`
         copyIcon.addEventListener('click', (event) => {
             event.stopPropagation()
-	    // Add css class 'active'
-	    copyIcon.classList.add('active')
-	    // In 1000 ms remove the 'active' class
-	    asyncDelay(1000).then(() => copyIcon.classList.remove('active'))
+            // Add css class 'active'
+            copyIcon.classList.add('active')
+            // In 350 ms remove the 'active' class
+            asyncDelay(350).then(() => copyIcon.classList.remove('active'))
             const uiState = readUI()
             TASK_REQ_NO_EXPORT.forEach((key) => delete uiState.reqBody[key])
             if (uiState.reqBody.init_image && !IMAGE_REGEX.test(uiState.reqBody.init_image)) {
@@ -450,10 +489,10 @@ function checkWriteToClipboardPermission (result) {
         pasteIcon.innerHTML = `<span class="simple-tooltip right">Paste Image Settings</span>`
         pasteIcon.addEventListener('click', (event) => {
             event.stopPropagation()
-	    // Add css class 'active'
-	    pasteIcon.classList.add('active')
-	    // In 1000 ms remove the 'active' class
-	    asyncDelay(1000).then(() => pasteIcon.classList.remove('active'))
+            // Add css class 'active'
+            pasteIcon.classList.add('active')
+            // In 350 ms remove the 'active' class
+            asyncDelay(350).then(() => pasteIcon.classList.remove('active'))
             pasteFromClipboard()
         })
         resetSettings.parentNode.insertBefore(pasteIcon, resetSettings)

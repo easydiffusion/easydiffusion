@@ -140,15 +140,24 @@ def load_model_ckpt():
     _, _ = modelFS.load_state_dict(sd, strict=False)
 
     if thread_data.vae_file is not None:
-        for model_extension in ['.ckpt', '.vae.pt']:
-            if os.path.exists(thread_data.vae_file + model_extension):
-                print(f"Loading VAE weights from: {thread_data.vae_file}{model_extension}")
-                vae_ckpt = torch.load(thread_data.vae_file + model_extension, map_location="cpu")
-                vae_dict = {k: v for k, v in vae_ckpt["state_dict"].items() if k[0:4] != "loss"}
-                modelFS.first_stage_model.load_state_dict(vae_dict, strict=False)
-                break
-            else:
-                print(f'Cannot find VAE file: {thread_data.vae_file}{model_extension}')
+        try:
+            loaded = False
+            for model_extension in ['.ckpt', '.vae.pt']:
+                if os.path.exists(thread_data.vae_file + model_extension):
+                    print(f"Loading VAE weights from: {thread_data.vae_file}{model_extension}")
+                    vae_ckpt = torch.load(thread_data.vae_file + model_extension, map_location="cpu")
+                    vae_dict = {k: v for k, v in vae_ckpt["state_dict"].items() if k[0:4] != "loss"}
+                    modelFS.first_stage_model.load_state_dict(vae_dict, strict=False)
+                    loaded = True
+                    break
+
+            if not loaded:
+                print(f'Cannot find VAE: {thread_data.vae_file}')
+                thread_data.vae_file = None
+        except:
+            print(traceback.format_exc())
+            print(f'Could not load VAE: {thread_data.vae_file}')
+            thread_data.vae_file = None
 
     modelFS.eval()
     # if thread_data.device != 'cpu':
@@ -236,9 +245,14 @@ def wait_model_move_to(model, target_device): # Send to target_device and wait u
 
 def load_model_gfpgan():
     if thread_data.gfpgan_file is None: raise ValueError(f'Thread gfpgan_file is undefined.')
+
+    # hack for a bug in facexlib: https://github.com/xinntao/facexlib/pull/19/files
+    from facexlib.detection import retinaface
+    retinaface.device = torch.device(thread_data.device)
+    print('forced retinaface.device to', thread_data.device)
+
     model_path = thread_data.gfpgan_file + ".pth"
-    device = 'cuda:0' if force_gfpgan_to_cuda0 else thread_data.device
-    thread_data.model_gfpgan = GFPGANer(device=torch.device(device), model_path=model_path, upscale=1, arch='clean', channel_multiplier=2, bg_upsampler=None)
+    thread_data.model_gfpgan = GFPGANer(device=torch.device(thread_data.device), model_path=model_path, upscale=1, arch='clean', channel_multiplier=2, bg_upsampler=None)
     print('loaded', thread_data.gfpgan_file, 'to', thread_data.model_gfpgan.device, 'precision', thread_data.precision)
 
 def load_model_real_esrgan():
@@ -288,10 +302,10 @@ def apply_filters(filter_name, image_data, model_path=None):
     print(f'Applying filter {filter_name}...')
     gc() # Free space before loading new data.
 
-    if filter_name == 'gfpgan':
-        if isinstance(image_data, torch.Tensor):
-            image_data.to('cuda:0' if force_gfpgan_to_cuda0 else thread_data.device)
+    if isinstance(image_data, torch.Tensor):
+        image_data.to(thread_data.device)
 
+    if filter_name == 'gfpgan':
         if model_path is not None and model_path != thread_data.gfpgan_file:
             thread_data.gfpgan_file = model_path
             load_model_gfpgan()
@@ -303,9 +317,6 @@ def apply_filters(filter_name, image_data, model_path=None):
         image_data = output[:,:,::-1]
 
     if filter_name == 'real_esrgan':
-        if isinstance(image_data, torch.Tensor):
-            image_data.to(thread_data.device)
-
         if model_path is not None and model_path != thread_data.real_esrgan_file:
             thread_data.real_esrgan_file = model_path
             load_model_real_esrgan()

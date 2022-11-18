@@ -148,6 +148,58 @@ async function loadModifiers() {
     loadCustomModifiers()
 }
 
+function refreshModifiersState(newTags) {
+    // clear existing modifiers
+    document.querySelector('#editor-modifiers').querySelectorAll('.modifier-card').forEach(modifierCard => {
+        const modifierName = modifierCard.querySelector('.modifier-card-label').innerText
+        if (activeTags.map(x => x.name).includes(modifierName)) {
+            modifierCard.classList.remove(activeCardClass)
+            modifierCard.querySelector('.modifier-card-image-overlay').innerText = '+'
+        }
+    })
+    activeTags = []
+
+    // set new modifiers
+    newTags.forEach(tag => {
+        let found = false
+        document.querySelector('#editor-modifiers').querySelectorAll('.modifier-card').forEach(modifierCard => {
+            const modifierName = modifierCard.querySelector('.modifier-card-label').innerText
+            if (tag == modifierName) {
+                // add modifier to active array
+                activeTags.push({
+                    'name': modifierName,
+                    'element': modifierCard.cloneNode(true),
+                    'originElement': modifierCard
+                })
+                modifierCard.classList.add(activeCardClass)
+                modifierCard.querySelector('.modifier-card-image-overlay').innerText = '-'
+                found = true
+            }
+        })
+        if (found == false) { // custom tag went missing, create one here
+            let modifierCard = createModifierCard(tag, undefined) // create a modifier card for the missing tag, no image
+            
+            modifierCard.addEventListener('click', () => {
+                if (activeTags.map(x => x.name).includes(tag)) {
+                    // remove modifier from active array
+                    activeTags = activeTags.filter(x => x.name != tag)
+                    modifierCard.classList.remove(activeCardClass)
+
+                    modifierCard.querySelector('.modifier-card-image-overlay').innerText = '+'
+                }
+                refreshTagsList()
+            })
+
+            activeTags.push({
+                'name': tag,
+                'element': modifierCard,
+                'originElement': undefined  // no origin element for missing tags
+            })
+        }
+    })
+    refreshTagsList()
+}
+
 function refreshTagsList() {
     editorModifierTagsList.innerHTML = ''
 
@@ -167,7 +219,7 @@ function refreshTagsList() {
         tag.element.addEventListener('click', () => {
             let idx = activeTags.indexOf(tag)
 
-            if (idx !== -1) {
+            if (idx !== -1 && activeTags[idx].originElement !== undefined) {
                 activeTags[idx].originElement.classList.remove(activeCardClass)
                 activeTags[idx].originElement.querySelector('.modifier-card-image-overlay').innerText = '+'
 

@@ -327,4 +327,7 @@ saveSettingsBtn.addEventListener('click', function() {
 		'update_branch': updateBranch,
 		'ui_open_browser_on_start': uiOpenBrowserOnStartField.checked
     })
+
+	saveSettingsBtn.classList.add('active')
+	asyncDelay(300).then(() => saveSettingsBtn.classList.remove('active'))
 })
