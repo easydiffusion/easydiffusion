@@ -1088,10 +1088,6 @@ useUpscalingField.addEventListener('change', function(e) {
     upscaleModelField.disabled = !this.checked
 })
 
-if (useBetaChannelField.checked) {
-    updateBranchLabel.innerText = "(beta)"
-}
-
 makeImageBtn.addEventListener('click', makeImage)
 
 document.onkeydown = function(e) {

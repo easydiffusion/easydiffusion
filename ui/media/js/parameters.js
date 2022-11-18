@@ -205,6 +205,7 @@ async function getAppConfig() {
 
         if (config.update_branch === 'beta') {
             useBetaChannelField.checked = true
+			document.querySelector("#updateBranchLabel").innerText = "(beta)"
         }
         if (config.ui && config.ui.open_browser_on_start === false) {
             uiOpenBrowserOnStartField.checked = false
