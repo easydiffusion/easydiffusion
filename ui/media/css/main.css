@@ -989,6 +989,16 @@ i.active {
     float: right;
     font-weight: bold;
 }
-#save-system-settings-btn {
+button#save-system-settings-btn:hover {
+  transition-duration: 0.1s;
+  background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
+}
+
+button#save-system-settings-btn:active {
+  transition-duration: 0.1s;
+  background-color: white;
+}
+
+button#save-system-settings-btn {
     padding: 4pt 8pt;
 }
