@@ -252,6 +252,10 @@
     let serverState = {'status': ServerStates.unavailable, 'time': Date.now()}
 
     async function healthCheck() {
+        if (Date.now() < serverState.time + (HEALTH_PING_INTERVAL / 2) && isServerAvailable()) {
+            // Ping confirmed online less than half of HEALTH_PING_INTERVAL ago.
+            return true
+        }
         if (Date.now() >= serverState.time + SERVER_STATE_VALIDITY_DURATION) {
             console.warn('WARNING! SERVER_STATE_VALIDITY_DURATION has elapsed since the last Ping completed.')
         }
@@ -264,9 +268,10 @@
             }
             serverState = await res.json()
             if (typeof serverState !== 'object' || typeof serverState.status !== 'string') {
+                console.error(`Server reply didn't contain a state value.`)
                 serverState = {'status': ServerStates.unavailable, 'time': Date.now()}
                 setServerStatus('error', 'offline')
-                return
+                return false
             }
             // Set status
             switch(serverState.status) {
@@ -283,18 +288,27 @@
                     setServerStatus('busy', 'rendering..')
                     break
                 default: // Unavailable
+                    console.error('Ping received an unexpedted server status. Status: %s', serverState.status)
                     setServerStatus('error', serverState.status.toLowerCase())
                     break
             }
             serverState.time = Date.now()
+            return true
         } catch (e) {
+            console.error(e)
             serverState = {'status': ServerStates.unavailable, 'time': Date.now()}
             setServerStatus('error', 'offline')
         }
+        return false
     }
 
     function isServerAvailable() {
         if (typeof serverState !== 'object') {
+            console.error('serverState not set to a value. Connexion to server could be lost...')
+            return false
+        }
+        if (Date.now() >= serverState.time + SERVER_STATE_VALIDITY_DURATION) {
+            console.warn('SERVER_STATE_VALIDITY_DURATION elapsed. Connexion to server could be lost...')
             return false
         }
         switch (serverState.status) {
@@ -303,6 +317,7 @@
             case ServerStates.online:
                 return true
             default:
+                console.warn('Unexpedted server status. Server could be unavailable... Status: %s', serverState.status)
                 return false
         }
     }
@@ -327,7 +342,10 @@
             && !Boolean(await Promise.resolve(isReadyFn()))
         ) {
             await delay()
-            if (!isServerAvailable()) {
+            if (!isServerAvailable()) { // Can fail if ping got frozen/suspended...
+                if (await healthCheck() && isServerAvailable()) { // Force a recheck of server status before failure...
+                    continue // Continue waiting if last healthCheck comfirmed the server is still alive.
+                }
                 throw new Error('Connexion with server lost.')
             }
         }
