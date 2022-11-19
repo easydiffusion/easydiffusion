@@ -245,9 +245,10 @@ def unload_models():
 
 def move_to_cpu(model):
     if thread_data.device != "cpu":
-        mem = torch.cuda.memory_allocated() / 1e6
+        d = torch.device(thread_data.device)
+        mem = torch.cuda.memory_allocated(d) / 1e6
         model.to("cpu")
-        while torch.cuda.memory_allocated() / 1e6 >= mem:
+        while torch.cuda.memory_allocated(d) / 1e6 >= mem:
             time.sleep(1)
 
 def load_model_gfpgan():
