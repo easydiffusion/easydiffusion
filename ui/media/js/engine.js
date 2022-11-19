@@ -235,8 +235,8 @@
         }
     }
 
-    function setServerStatus(msgType, msg){
-        fireEvent(EVENT_STATUS_CHANGED, msgType, msg)
+    function setServerStatus(msgType, msg) {
+        fireEvent(EVENT_STATUS_CHANGED, {type: msgType, message: msg})
     }
 
     const ServerStates = {

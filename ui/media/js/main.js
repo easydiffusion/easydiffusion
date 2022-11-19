@@ -144,17 +144,17 @@ function getSavedDiskPath() {
 function setStatus(statusType, msg, msgType) {
 }
 
-function setServerStatus(msgType, msg) {
-    switch(msgType) {
+function setServerStatus(event) {
+    switch(event.type) {
         case 'online':
             serverStatusColor.style.color = 'green'
             serverStatusMsg.style.color = 'green'
-            serverStatusMsg.innerText = 'Stable Diffusion is ' + msg
+            serverStatusMsg.innerText = 'Stable Diffusion is ' + event.message
             break
         case 'busy':
             serverStatusColor.style.color = 'rgb(200, 139, 0)'
             serverStatusMsg.style.color = 'rgb(200, 139, 0)'
-            serverStatusMsg.innerText = 'Stable Diffusion is ' + msg
+            serverStatusMsg.innerText = 'Stable Diffusion is ' + event.message
             break
         case 'error':
             serverStatusColor.style.color = 'red'
