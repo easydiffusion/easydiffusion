@@ -344,7 +344,7 @@
             await delay()
             if (!isServerAvailable()) { // Can fail if ping got frozen/suspended...
                 if (await healthCheck() && isServerAvailable()) { // Force a recheck of server status before failure...
-                    continue // Continue waiting if last healthCheck comfirmed the server is still alive.
+                    continue // Continue waiting if last healthCheck confirmed the server is still alive.
                 }
                 throw new Error('Connexion with server lost.')
             }
