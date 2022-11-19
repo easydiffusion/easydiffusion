@@ -140,15 +140,24 @@ def load_model_ckpt():
     _, _ = modelFS.load_state_dict(sd, strict=False)
 
     if thread_data.vae_file is not None:
-        for model_extension in ['.ckpt', '.vae.pt']:
-            if os.path.exists(thread_data.vae_file + model_extension):
-                print(f"Loading VAE weights from: {thread_data.vae_file}{model_extension}")
-                vae_ckpt = torch.load(thread_data.vae_file + model_extension, map_location="cpu")
-                vae_dict = {k: v for k, v in vae_ckpt["state_dict"].items() if k[0:4] != "loss"}
-                modelFS.first_stage_model.load_state_dict(vae_dict, strict=False)
-                break
-            else:
-                print(f'Cannot find VAE file: {thread_data.vae_file}{model_extension}')
+        try:
+            loaded = False
+            for model_extension in ['.ckpt', '.vae.pt']:
+                if os.path.exists(thread_data.vae_file + model_extension):
+                    print(f"Loading VAE weights from: {thread_data.vae_file}{model_extension}")
+                    vae_ckpt = torch.load(thread_data.vae_file + model_extension, map_location="cpu")
+                    vae_dict = {k: v for k, v in vae_ckpt["state_dict"].items() if k[0:4] != "loss"}
+                    modelFS.first_stage_model.load_state_dict(vae_dict, strict=False)
+                    loaded = True
+                    break
+
+            if not loaded:
+                print(f'Cannot find VAE: {thread_data.vae_file}')
+                thread_data.vae_file = None
+        except:
+            print(traceback.format_exc())
+            print(f'Could not load VAE: {thread_data.vae_file}')
+            thread_data.vae_file = None
 
     modelFS.eval()
     # if thread_data.device != 'cpu':
@@ -210,29 +219,36 @@ def unload_models():
 
     gc()
 
-def wait_model_move_to(model, target_device): # Send to target_device and wait until complete.
-    if thread_data.device == target_device: return
-    start_mem = torch.cuda.memory_allocated(thread_data.device) / 1e6
-    if start_mem <= 0: return
-    model_name = model.__class__.__name__
-    print(f'Device {thread_data.device} - Sending model {model_name} to {target_device} | Memory transfer starting. Memory Used: {round(start_mem)}Mb')
-    start_time = time.time()
-    model.to(target_device)
-    time_step = start_time
-    WARNING_TIMEOUT = 1.5 # seconds - Show activity in console after timeout.
-    last_mem = start_mem
-    is_transfering = True
-    while is_transfering:
-        time.sleep(0.5) # 500ms
-        mem = torch.cuda.memory_allocated(thread_data.device) / 1e6
-        is_transfering = bool(mem > 0 and mem < last_mem) # still stuff loaded, but less than last time.
-        last_mem = mem
-        if not is_transfering:
-            break;
-        if time.time() - time_step > WARNING_TIMEOUT: # Long delay, print to console to show activity.
-            print(f'Device {thread_data.device} - Waiting for Memory transfer. Memory Used: {round(mem)}Mb, Transfered: {round(start_mem - mem)}Mb')
-            time_step = time.time()
-    print(f'Device {thread_data.device} - {model_name} Moved: {round(start_mem - last_mem)}Mb in {round(time.time() - start_time, 3)} seconds to {target_device}')
+# def wait_model_move_to(model, target_device): # Send to target_device and wait until complete.
+#     if thread_data.device == target_device: return
+#     start_mem = torch.cuda.memory_allocated(thread_data.device) / 1e6
+#     if start_mem <= 0: return
+#     model_name = model.__class__.__name__
+#     print(f'Device {thread_data.device} - Sending model {model_name} to {target_device} | Memory transfer starting. Memory Used: {round(start_mem)}Mb')
+#     start_time = time.time()
+#     model.to(target_device)
+#     time_step = start_time
+#     WARNING_TIMEOUT = 1.5 # seconds - Show activity in console after timeout.
+#     last_mem = start_mem
+#     is_transfering = True
+#     while is_transfering:
+#         time.sleep(0.5) # 500ms
+#         mem = torch.cuda.memory_allocated(thread_data.device) / 1e6
+#         is_transfering = bool(mem > 0 and mem < last_mem) # still stuff loaded, but less than last time.
+#         last_mem = mem
+#         if not is_transfering:
+#             break;
+#         if time.time() - time_step > WARNING_TIMEOUT: # Long delay, print to console to show activity.
+#             print(f'Device {thread_data.device} - Waiting for Memory transfer. Memory Used: {round(mem)}Mb, Transfered: {round(start_mem - mem)}Mb')
+#             time_step = time.time()
+#     print(f'Device {thread_data.device} - {model_name} Moved: {round(start_mem - last_mem)}Mb in {round(time.time() - start_time, 3)} seconds to {target_device}')
+
+def move_to_cpu(model):
+    if thread_data.device != "cpu":
+        mem = torch.cuda.memory_allocated() / 1e6
+        model.to("cpu")
+        while torch.cuda.memory_allocated() / 1e6 >= mem:
+            time.sleep(1)
 
 def load_model_gfpgan():
     if thread_data.gfpgan_file is None: raise ValueError(f'Thread gfpgan_file is undefined.')
@@ -475,7 +491,8 @@ def do_mk_img(req: Request):
                 mask = mask.half()
 
         # Send to CPU and wait until complete.
-        wait_model_move_to(thread_data.modelFS, 'cpu')
+        # wait_model_move_to(thread_data.modelFS, 'cpu')
+        move_to_cpu(thread_data.modelFS)
 
         assert 0. <= req.prompt_strength <= 1., 'can only work with strength in [0.0, 1.0]'
         t_enc = int(req.prompt_strength * req.num_inference_steps)
@@ -551,10 +568,6 @@ def do_mk_img(req: Request):
                         img_data[i] = x_sample
                     del x_samples, x_samples_ddim, x_sample
 
-                    if thread_data.reduced_memory:
-                        # Send to CPU and wait until complete.
-                        wait_model_move_to(thread_data.modelFS, 'cpu')
-
                     print("saving images")
                     for i in range(batch_size):
                         img = Image.fromarray(img_data[i])
@@ -608,6 +621,7 @@ def do_mk_img(req: Request):
 
                     # if thread_data.reduced_memory:
                     #     unload_filters()
+                    move_to_cpu(thread_data.modelFS)
                     del img_data
                     gc()
                     if thread_data.device != 'cpu':
@@ -647,7 +661,9 @@ def _txt2img(opt_W, opt_H, opt_n_samples, opt_ddim_steps, opt_scale, start_code,
     shape = [opt_n_samples, opt_C, opt_H // opt_f, opt_W // opt_f]
 
     # Send to CPU and wait until complete.
-    wait_model_move_to(thread_data.modelCS, 'cpu')
+    # wait_model_move_to(thread_data.modelCS, 'cpu')
+
+    move_to_cpu(thread_data.modelCS)
 
     if sampler_name == 'ddim':
         thread_data.model.make_schedule(ddim_num_steps=opt_ddim_steps, ddim_eta=opt_ddim_eta, verbose=False)

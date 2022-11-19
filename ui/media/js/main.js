@@ -789,7 +789,9 @@ function getCurrentUserRequest() {
             stream_progress_updates: true,
             stream_image_progress: (numOutputsTotal > 50 ? false : streamImageProgressField.checked),
             show_only_filtered_image: showOnlyFilteredImageField.checked,
-            output_format: outputFormatField.value
+            output_format: outputFormatField.value,
+            original_prompt: promptField.value,
+            active_tags: (activeTags.map(x => x.name))
         }
     }
     if (IMAGE_REGEX.test(initImagePreview.src)) {
@@ -856,6 +858,7 @@ function createTask(task) {
     taskEntry.innerHTML = ` <div class="header-content panel collapsible active">
                                 <div class="taskStatusLabel">Enqueued</div>
                                 <button class="secondaryButton stopTask"><i class="fa-solid fa-trash-can"></i> Remove</button>
+                                <button class="secondaryButton useSettings"><i class="fa-solid fa-redo"></i> Use these settings</button>
                                 <div class="preview-prompt collapsible active"></div>
                                 <div class="taskConfig">${taskConfig}</div>
                                 <div class="outputMsg"></div>
@@ -892,6 +895,12 @@ function createTask(task) {
 
             taskEntry.remove()
         }
+    })
+
+    task['useSettings'] = taskEntry.querySelector('.useSettings')
+    task['useSettings'].addEventListener('click', function(e) {
+        e.stopPropagation()
+        restoreTaskToUI(task, TASK_REQ_NO_EXPORT)
     })
 
     imagePreview.insertBefore(taskEntry, previewTools.nextSibling)
@@ -1079,10 +1088,6 @@ useUpscalingField.addEventListener('change', function(e) {
     upscaleModelField.disabled = !this.checked
 })
 
-if (useBetaChannelField.checked) {
-    updateBranchLabel.innerText = "(beta)"
-}
-
 makeImageBtn.addEventListener('click', makeImage)
 
 document.onkeydown = function(e) {
@@ -1141,8 +1146,16 @@ async function getModels() {
         let res = await fetch('/get/models')
         const models = await res.json()
 
-        console.log('get models response', models)
+        console.log('got models response', models)
 
+        if ( "scan-error" in models ) {
+            // let previewPane = document.getElementById('tab-content-wrapper')
+            let previewPane = document.getElementById('preview')
+            previewPane.style.background="red"
+            previewPane.style.textAlign="center"
+            previewPane.innerHTML = '<H1>🔥Malware alert!🔥</H1><h2>The file <i>' + models['scan-error'] + '</i> in your <tt>models/stable-diffusion</tt> folder is probably malware infected.</h2><h2>Please delete this file from the folder before proceeding!</h2>After deleting the file, reload this page.<br><br><button onClick="window.location.reload();">Reload Page</button>'
+            makeImageBtn.disabled = true
+        }
         let modelOptions = models['options']
         let stableDiffusionOptions = modelOptions['stable-diffusion']
         let vaeOptions = modelOptions['vae']
@@ -1323,3 +1336,4 @@ window.addEventListener("beforeunload", function(e) {
 });
 
 createCollapsibles()
+prettifyInputs(document);

@@ -30,8 +30,17 @@ code {
 #prompt {
     width: 100%;
     height: 65pt;
-    font-size: 13px;
+    font-size: 14px;
     margin-bottom: 6px;
+    margin-top: 5px;
+    display: block;
+    border: 2px solid var(--background-color2);
+}
+#negative_prompt {
+    width: 100%;
+    height: 50pt;
+    font-size: 13px;
+    margin-bottom: 5px;
     margin-top: 5px;
     display: block;
 }
@@ -216,7 +225,6 @@ code {
     display: none !important;
 }
 #editor-modifiers {
-    max-width: 600px;
     overflow-y: auto;
     overflow-x: hidden;
 }
@@ -442,6 +450,17 @@ img {
 .secondaryButton:hover {
     background: rgb(177, 27, 0);
 }
+.useSettings {
+    background: var(--accent-color);
+    border: 1px solid var(--accent-color);
+    color: rgb(255, 221, 255);
+    padding: 3pt 6pt;
+    margin-right: 6pt;
+    float: right;
+}
+.useSettings:hover {
+    background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
+}
 .stopTask {
     float: right;
 }
@@ -493,6 +512,10 @@ img {
     opacity: 60%;
     font-size: 12px;
     border-radius: 6px 0px;
+}
+
+#editor-settings {
+    min-width: 500px;
 }
 
 #editor-settings-entries {
@@ -584,6 +607,57 @@ input::file-selector-button {
     height: 19px;
 }
 
+
+.input-toggle {
+    display: inline-block;
+    position: relative;
+    vertical-align: middle;
+    width: calc(var(--input-height) * 2);
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    margin-right: 4px;
+}
+.input-toggle > input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+.input-toggle > label {
+    display: block;
+    overflow: hidden;
+    cursor: pointer;
+    height: var(--input-height);
+    padding: 0;
+    line-height: var(--input-height);
+    border: var(--input-border-size) solid var(--input-border-color);
+    border-radius: var(--input-height);
+    background: var(--input-background-color);
+    transition: background 0.2s ease-in;
+}
+.input-toggle > label:before {
+    content: "";
+    display: block;
+    width: calc(var(--input-height) - ((var(--input-border-size) + var(--input-switch-padding)) * 2));
+    margin: 0px;
+    background: var(--input-text-color);
+    position: absolute;
+    top: calc(var(--input-border-size) + var(--input-switch-padding));
+    bottom: calc(var(--input-border-size) + var(--input-switch-padding));
+    right: calc(var(--input-border-size) + var(--input-switch-padding) + var(--input-height));
+    border-radius: calc(var(--input-height) - ((var(--input-border-size) + var(--input-switch-padding)) * 2));
+    transition: all 0.2s ease-in 0s; 
+    opacity: 0.8;
+}
+.input-toggle > input:checked + label {
+    background: var(--accent-color);
+}
+.input-toggle > input:checked + label:before {
+    right: calc(var(--input-border-size) + var(--input-switch-padding));
+    opacity: 1;
+}
+
 /* MOBILE SUPPORT */
 @media screen and (max-width: 700px) {
     #top-nav {
@@ -625,6 +699,9 @@ input::file-selector-button {
     #editor {
         padding: 16px 8px;
     }
+    #editor-settings {
+        min-width: 0px;
+    }
     .tab-content-inner {
         margin: 0px;
     }
@@ -648,21 +725,15 @@ input::file-selector-button {
         padding: 0px !important;
         margin: 24px !important;
     }
-    .simple-tooltip.right {
-        right: initial;
-        left: 0px;
-        top: 50%;
-        transform: translate(calc(-100% + 15%), -50%);
-    }
-    :hover > .simple-tooltip.right {
-        transform: translate(100%, -50%);
+    .simple-tooltip {
+        display: none;
     }
 }
 
 @media (min-width: 700px) {
     /* #editor {
         max-width: 480px;
-    } */
+    }*/
     .float-container {
         padding: 20px;
     }
@@ -918,6 +989,16 @@ i.active {
     float: right;
     font-weight: bold;
 }
-#save-system-settings-btn {
+button:hover {
+  transition-duration: 0.1s;
+  background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
+}
+
+button:active {
+  transition-duration: 0.1s;
+  background-color: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 24%));
+}
+
+button#save-system-settings-btn {
     padding: 4pt 8pt;
 }
