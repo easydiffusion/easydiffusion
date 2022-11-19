@@ -1328,7 +1328,7 @@ document.querySelectorAll('.popup').forEach(popup => {
 })
 
 var tabElements = [];
-document.querySelectorAll(".tab").forEach(tab => {
+function linkTabContents(tab) {
     var name = tab.id.replace("tab-", "");
     var content = document.getElementById(`tab-content-${name}`)
     tabElements.push({
@@ -1349,7 +1349,9 @@ document.querySelectorAll(".tab").forEach(tab => {
             content.classList.toggle("active")
         }
     })
-})
+}
+
+document.querySelectorAll(".tab").forEach(linkTabContents)
 
 window.addEventListener("beforeunload", function(e) {
     const msg = "Unsaved pictures will be lost!";

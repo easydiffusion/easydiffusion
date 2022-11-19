@@ -1,0 +1,3 @@
+Custom plugins in this folder will be shipped to all the users by default.
+
+This allows UI features to be built as plugins (testing our Plugins API, and keeping our core lean and modular).

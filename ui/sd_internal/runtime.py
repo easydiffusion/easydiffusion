@@ -118,8 +118,8 @@ def load_model_ckpt():
     model.cdevice = torch.device(thread_data.device)
     model.unet_bs = thread_data.unet_bs
     model.turbo = thread_data.turbo
-    if thread_data.device != 'cpu':
-        model.to(thread_data.device)
+    # if thread_data.device != 'cpu':
+    #     model.to(thread_data.device)
     #if thread_data.reduced_memory:
         #model.model1.to("cpu")
         #model.model2.to("cpu")
@@ -129,11 +129,11 @@ def load_model_ckpt():
     _, _ = modelCS.load_state_dict(sd, strict=False)
     modelCS.eval()
     modelCS.cond_stage_model.device = torch.device(thread_data.device)
-    if thread_data.device != 'cpu':
-        if thread_data.reduced_memory:
-            modelCS.to('cpu')
-        else:
-            modelCS.to(thread_data.device) # Preload on device if not already there.
+    # if thread_data.device != 'cpu':
+    #     if thread_data.reduced_memory:
+    #         modelCS.to('cpu')
+    #     else:
+    #         modelCS.to(thread_data.device) # Preload on device if not already there.
     thread_data.modelCS = modelCS
 
     modelFS = instantiate_from_config(config.modelFirstStage)
@@ -151,11 +151,11 @@ def load_model_ckpt():
                 print(f'Cannot find VAE file: {thread_data.vae_file}{model_extension}')
 
     modelFS.eval()
-    if thread_data.device != 'cpu':
-        if thread_data.reduced_memory:
-            modelFS.to('cpu')
-        else:
-            modelFS.to(thread_data.device) # Preload on device if not already there.
+    # if thread_data.device != 'cpu':
+    #     if thread_data.reduced_memory:
+    #         modelFS.to('cpu')
+    #     else:
+    #         modelFS.to(thread_data.device) # Preload on device if not already there.
     thread_data.modelFS = modelFS
     del sd
 
@@ -236,9 +236,14 @@ def wait_model_move_to(model, target_device): # Send to target_device and wait u
 
 def load_model_gfpgan():
     if thread_data.gfpgan_file is None: raise ValueError(f'Thread gfpgan_file is undefined.')
+
+    # hack for a bug in facexlib: https://github.com/xinntao/facexlib/pull/19/files
+    from facexlib.detection import retinaface
+    retinaface.device = torch.device(thread_data.device)
+    print('forced retinaface.device to', thread_data.device)
+
     model_path = thread_data.gfpgan_file + ".pth"
-    device = 'cuda:0' if force_gfpgan_to_cuda0 else thread_data.device
-    thread_data.model_gfpgan = GFPGANer(device=torch.device(device), model_path=model_path, upscale=1, arch='clean', channel_multiplier=2, bg_upsampler=None)
+    thread_data.model_gfpgan = GFPGANer(device=torch.device(thread_data.device), model_path=model_path, upscale=1, arch='clean', channel_multiplier=2, bg_upsampler=None)
     print('loaded', thread_data.gfpgan_file, 'to', thread_data.model_gfpgan.device, 'precision', thread_data.precision)
 
 def load_model_real_esrgan():
@@ -288,10 +293,10 @@ def apply_filters(filter_name, image_data, model_path=None):
     print(f'Applying filter {filter_name}...')
     gc() # Free space before loading new data.
 
-    if filter_name == 'gfpgan':
-        if isinstance(image_data, torch.Tensor):
-            image_data.to('cuda:0' if force_gfpgan_to_cuda0 else thread_data.device)
+    if isinstance(image_data, torch.Tensor):
+        image_data.to(thread_data.device)
 
+    if filter_name == 'gfpgan':
         if model_path is not None and model_path != thread_data.gfpgan_file:
             thread_data.gfpgan_file = model_path
             load_model_gfpgan()
@@ -303,9 +308,6 @@ def apply_filters(filter_name, image_data, model_path=None):
         image_data = output[:,:,::-1]
 
     if filter_name == 'real_esrgan':
-        if isinstance(image_data, torch.Tensor):
-            image_data.to(thread_data.device)
-
         if model_path is not None and model_path != thread_data.real_esrgan_file:
             thread_data.real_esrgan_file = model_path
             load_model_real_esrgan()

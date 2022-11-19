@@ -7,19 +7,20 @@
     <link rel="icon" type="image/png" href="/media/images/favicon-32x32.png" sizes="32x32">
     <link rel="stylesheet" href="/media/css/fonts.css?v=1">
     <link rel="stylesheet" href="/media/css/themes.css?v=3">
-    <link rel="stylesheet" href="/media/css/main.css?v=17">
+    <link rel="stylesheet" href="/media/css/main.css?v=19">
     <link rel="stylesheet" href="/media/css/auto-save.css?v=5">
     <link rel="stylesheet" href="/media/css/modifier-thumbnails.css?v=4">
     <link rel="stylesheet" href="/media/css/fontawesome-all.min.css?v=1">
     <link rel="stylesheet" href="/media/css/drawingboard.min.css">
     <script src="/media/js/jquery-3.6.1.min.js"></script>
     <script src="/media/js/drawingboard.min.js"></script>
+    <script src="/media/js/marked.min.js"></script>
 </head>
 <body>
 <div id="container">
     <div id="top-nav">
         <div id="logo">
-            <h1>Stable Diffusion UI <small>v2.4.5 <span id="updateBranchLabel"></span></small></h1>
+            <h1>Stable Diffusion UI <small>v2.4.7 <span id="updateBranchLabel"></span></small></h1>
         </div>
         <div id="server-status">
             <div id="server-status-color">●</div>
@@ -263,6 +264,7 @@
                                 <li> <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/UI-Overview" target="_blank"><i class="fa-solid fa-list fa-fw"></i> UI Overview</a>
                                 <li> <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Writing-Prompts" target="_blank"><i class="fa-solid fa-pen-to-square fa-fw"></i> Writing prompts</a>
                                 <li> <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Inpainting" target="_blank"><i class="fa-solid fa-paintbrush fa-fw"></i> Inpainting</a>
+                                <li> <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Run-on-Multiple-GPUs" target="_blank"><i class="fa-solid fa-paintbrush fa-fw"></i> Run on Multiple GPUs</a>
                             </ul>
   
                             <li><span class="help-section">Installation</span>
@@ -327,15 +329,15 @@
 </div>
 </body>
 
-<script src="media/js/parameters.js?v=9"></script>
-<script src="media/js/plugins.js?v=1"></script>
 <script src="media/js/utils.js?v=6"></script>
+<script src="media/js/parameters.js?v=10"></script>
+<script src="media/js/plugins.js?v=1"></script>
 <script src="media/js/inpainting-editor.js?v=1"></script>
 <script src="media/js/image-modifiers.js?v=6"></script>
 <script src="media/js/auto-save.js?v=8"></script>
-<script src="media/js/main.js?v=22.1"></script>
+<script src="media/js/main.js?v=23"></script>
 <script src="media/js/themes.js?v=4"></script>
-<script src="media/js/dnd.js?v=9"></script>
+<script src="media/js/dnd.js?v=10"></script>
 <script>
 async function init() {
     await initSettings()
