@@ -83,13 +83,21 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
         if not os.path.exists(config_json_path):
             return default_val
         with open(config_json_path, 'r', encoding='utf-8') as f:
-            return json.load(f)
+            config = json.load(f)
+            if 'net' not in config:
+                config['net'] = {}
+            if os.getenv('SD_UI_BIND_PORT') is not None:
+                config['net']['listen_port'] = int(os.getenv('SD_UI_BIND_PORT'))
+            if os.getenv('SD_UI_BIND_IP') is not None:
+                config['net']['listen_to_network'] = ( os.getenv('SD_UI_BIND_IP') == '0.0.0.0' )
+            return config
     except Exception as e:
         print(str(e))
         print(traceback.format_exc())
         return default_val
 
 def setConfig(config):
+    print( json.dumps(config) )
     try: # config.json
         config_json_path = os.path.join(CONFIG_DIR, 'config.json')
         with open(config_json_path, 'w', encoding='utf-8') as f:
@@ -103,10 +111,10 @@ def setConfig(config):
 
         if 'update_branch' in config:
             config_bat.append(f"@set update_branch={config['update_branch']}")
-        if os.getenv('SD_UI_BIND_PORT') is not None:
-            config_bat.append(f"@set SD_UI_BIND_PORT={os.getenv('SD_UI_BIND_PORT')}")
-        if os.getenv('SD_UI_BIND_IP') is not None:
-            config_bat.append(f"@set SD_UI_BIND_IP={os.getenv('SD_UI_BIND_IP')}")
+
+        config_bat.append(f"@set SD_UI_BIND_PORT={config['net']['listen_port']}")
+        bind_ip = '0.0.0.0' if config['net']['listen_to_network'] else '127.0.0.1'
+        config_bat.append(f"@set SD_UI_BIND_IP={bind_ip}")
 
         if len(config_bat) > 0:
             with open(config_bat_path, 'w', encoding='utf-8') as f:
@@ -120,10 +128,10 @@ def setConfig(config):
 
         if 'update_branch' in config:
             config_sh.append(f"export update_branch={config['update_branch']}")
-        if os.getenv('SD_UI_BIND_PORT') is not None:
-            config_sh.append(f"export SD_UI_BIND_PORT={os.getenv('SD_UI_BIND_PORT')}")
-        if os.getenv('SD_UI_BIND_IP') is not None:
-            config_sh.append(f"export SD_UI_BIND_IP={os.getenv('SD_UI_BIND_IP')}")
+
+        config_sh.append(f"export SD_UI_BIND_PORT={config['net']['listen_port']}")
+        bind_ip = '0.0.0.0' if config['net']['listen_to_network'] else '127.0.0.1'
+        config_sh.append(f"export SD_UI_BIND_IP={bind_ip}")
 
         if len(config_sh) > 1:
             with open(config_sh_path, 'w', encoding='utf-8') as f:
@@ -178,6 +186,8 @@ class SetAppConfigRequest(BaseModel):
     render_devices: Union[List[str], List[int], str, int] = None
     model_vae: str = None
     ui_open_browser_on_start: bool = None
+    listen_to_network: bool = None
+    listen_port: int = None
 
 @app.post('/app_config')
 async def setAppConfig(req : SetAppConfigRequest):
@@ -190,6 +200,14 @@ async def setAppConfig(req : SetAppConfigRequest):
         if 'ui' not in config:
             config['ui'] = {}
         config['ui']['open_browser_on_start'] = req.ui_open_browser_on_start
+    if req.listen_to_network is not None:
+       if 'net' not in config:
+           config['net'] = {}
+       config['net']['listen_to_network'] = bool(req.listen_to_network)
+    if req.listen_port is not None:
+       if 'net' not in config:
+           config['net'] = {}
+       config['net']['listen_port'] = int(req.listen_port)
     try:
         setConfig(config)
 
@@ -435,7 +453,9 @@ update_render_threads()
 def open_browser():
     config = getConfig()
     ui = config.get('ui', {})
+    net = config.get('net', {'listen_port':9000})
+    port = net.get('listen_port', 9000)
     if ui.get('open_browser_on_start', True):
-        import webbrowser; webbrowser.open('http://localhost:9000')
+        import webbrowser; webbrowser.open(f"http://localhost:{port}")
 
 open_browser()

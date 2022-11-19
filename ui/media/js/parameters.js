@@ -115,6 +115,24 @@ var PARAMETERS = [
 		default: true,
 	},
 	{
+		id: "listen_to_network",
+		type: ParameterType.checkbox,
+		label: "Make Stable Diffusion available on your network",
+		note: "Other devices on your network can access this web page",
+		icon: "fa-network-wired",
+		default: true,
+	},
+	{
+		id: "listen_port",
+		type: ParameterType.custom,
+		label: "Network port",
+		note: "Port that this server listens to. The '9000' part in 'http://localhost:9000'",
+		icon: "fa-anchor",
+		render: (parameter) => {
+			return `<input id="${parameter.id}" name="${parameter.id}" size="6" value="9000" onkeypress="preventNonNumericalInput(event)">`
+		}
+	},
+	{
 		id: "use_beta_channel",
 		type: ParameterType.checkbox,
 		label: "Beta channel",
@@ -176,6 +194,8 @@ let useGPUsField = document.querySelector('#use_gpus')
 let useFullPrecisionField = document.querySelector('#use_full_precision')
 let saveToDiskField = document.querySelector('#save_to_disk')
 let diskPathField = document.querySelector('#diskPath')
+let listenToNetworkField = document.querySelector("#listen_to_network")
+let listenPortField = document.querySelector("#listen_port")
 let useBetaChannelField = document.querySelector("#use_beta_channel")
 let uiOpenBrowserOnStartField = document.querySelector("#ui_open_browser_on_start")
 
@@ -205,11 +225,17 @@ async function getAppConfig() {
 
         if (config.update_branch === 'beta') {
             useBetaChannelField.checked = true
-			document.querySelector("#updateBranchLabel").innerText = "(beta)"
+            document.querySelector("#updateBranchLabel").innerText = "(beta)"
         }
         if (config.ui && config.ui.open_browser_on_start === false) {
             uiOpenBrowserOnStartField.checked = false
         }
+	if (config.net && config.net.listen_to_network === false) {
+	    listenToNetworkField.checked = false
+	}
+	if (config.net && config.net.listen_port !== undefined) {
+	    listenPortField.value = config.net.listen_port
+	}
 
         console.log('get config status response', config)
     } catch (e) {
@@ -336,12 +362,20 @@ async function getDevices() {
 saveSettingsBtn.addEventListener('click', function() {
 	let updateBranch = (useBetaChannelField.checked ? 'beta' : 'main')
 
-	changeAppConfig({
-        'render_devices': getCurrentRenderDeviceSelection(),
-		'update_branch': updateBranch,
-		'ui_open_browser_on_start': uiOpenBrowserOnStartField.checked
-    })
+        if (listenPortField.value == '') {
+            alert('The network port field must not be empty.')
+        } else if (listenPortField.value<1 || listenPortField.value>65535) {
+            alert('The network port must be a number from 1 to 65535')
+        } else {
+	    changeAppConfig({
+              'render_devices': getCurrentRenderDeviceSelection(),
+              'update_branch': updateBranch,
+              'ui_open_browser_on_start': uiOpenBrowserOnStartField.checked,
+              'listen_to_network': listenToNetworkField.checked,
+              'listen_port': listenPortField.value
+            })
+        }
 
-	saveSettingsBtn.classList.add('active')
-	asyncDelay(300).then(() => saveSettingsBtn.classList.remove('active'))
+        saveSettingsBtn.classList.add('active')
+        asyncDelay(300).then(() => saveSettingsBtn.classList.remove('active'))
 })
