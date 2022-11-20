@@ -90,9 +90,7 @@ function createModifierGroup(modifierGroup, initiallyExpanded) {
                 if (activeTags.map(x => x.name).includes(modifierName)) {
                     // remove modifier from active array
                     activeTags = activeTags.filter(x => x.name != modifierName)
-                    modifierCard.classList.remove(activeCardClass)
-
-                    modifierCard.querySelector('.modifier-card-image-overlay').innerText = '+'
+                    toggleCardState(modifierName, false)
                 } else {
                     // add modifier to active array
                     activeTags.push({
@@ -101,10 +99,7 @@ function createModifierGroup(modifierGroup, initiallyExpanded) {
                         'originElement': modifierCard,
                         'previews': modifierPreviews
                     })
-
-                    modifierCard.classList.add(activeCardClass)
-
-                    modifierCard.querySelector('.modifier-card-image-overlay').innerText = '-'
+                    toggleCardState(modifierName, true)
                 }
 
                 refreshTagsList()
@@ -220,8 +215,7 @@ function refreshTagsList() {
             let idx = activeTags.indexOf(tag)
 
             if (idx !== -1 && activeTags[idx].originElement !== undefined) {
-                activeTags[idx].originElement.classList.remove(activeCardClass)
-                activeTags[idx].originElement.querySelector('.modifier-card-image-overlay').innerText = '+'
+                toggleCardState(activeTags[idx].name, false)
 
                 activeTags.splice(idx, 1)
                 refreshTagsList()
@@ -232,6 +226,22 @@ function refreshTagsList() {
     let brk = document.createElement('br')
     brk.style.clear = 'both'
     editorModifierTagsList.appendChild(brk)
+}
+
+function toggleCardState(modifierName, makeActive) {
+    document.querySelector('#editor-modifiers').querySelectorAll('.modifier-card').forEach(card => {
+        const name = card.querySelector('.modifier-card-label').innerText
+        if (modifierName == name) {
+            if(makeActive) {
+                card.classList.add(activeCardClass)
+                card.querySelector('.modifier-card-image-overlay').innerText = '-'
+            }
+            else{
+                card.classList.remove(activeCardClass)
+                card.querySelector('.modifier-card-image-overlay').innerText = '+'
+            }
+        }
+    })
 }
 
 function changePreviewImages(val) {
