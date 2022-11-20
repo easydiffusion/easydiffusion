@@ -1070,7 +1070,8 @@ async function getModels() {
         const selectedVaeModel = SETTINGS[vae_model_setting_key].value
 
         const models = await SD.getModels()
-        if ( "scan-error" in models ) {
+        const modelsOptions = models['options']
+        if ( "scan-error" in models) {
             // let previewPane = document.getElementById('tab-content-wrapper')
             let previewPane = document.getElementById('preview')
             previewPane.style.background="red"
@@ -1079,8 +1080,8 @@ async function getModels() {
             makeImageBtn.disabled = true
         }
 
-        const stableDiffusionOptions = models['stable-diffusion']
-        const vaeOptions = models['vae']
+        const stableDiffusionOptions = modelsOptions['stable-diffusion']
+        const vaeOptions = modelsOptions['vae']
         vaeOptions.unshift('') // add a None option
 
         function createModelOptions(modelField, selectedModel) {
