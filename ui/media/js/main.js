@@ -823,16 +823,26 @@ function getCurrentUserRequest() {
 function makeImage() {
     if (!isServerAvailable()) {
         alert('The server is not available.')
-        return
-    }
-    const taskTemplate = getCurrentUserRequest()
-    const newTaskRequests = []
-    getPrompts().forEach((prompt) => newTaskRequests.push(Object.assign({}, taskTemplate, {
-        reqBody: Object.assign({ prompt: prompt }, taskTemplate.reqBody)
-    })))
-    newTaskRequests.forEach(createTask)
+    } else if (!randomSeedField.checked && seedField.value == '') {
+        alert('The "Seed" field must not be empty.')
+    } else if (numOutputsTotalField.value == '') {
+        alert('The "Number of Images" field must not be empty.')
+    } else if (numOutputsParallelField.value == '') {
+        alert('The "Number of parallel Images" field must not be empty.')
+    } else if (numInferenceStepsField.value == '') {
+        alert('The "Inference Steps" field must not be empty.')
+    } else if (guidanceScaleField.value == '') {
+        alert('The Guidance Scale field must not be empty.')
+    } else {
+        const taskTemplate = getCurrentUserRequest()
+        const newTaskRequests = []
+        getPrompts().forEach((prompt) => newTaskRequests.push(Object.assign({}, taskTemplate, {
+            reqBody: Object.assign({ prompt: prompt }, taskTemplate.reqBody)
+        })))
+        newTaskRequests.forEach(createTask)
 
-    initialText.style.display = 'none'
+        initialText.style.display = 'none'
+    }
 }
 
 function createTask(task) {
