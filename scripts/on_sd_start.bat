@@ -393,6 +393,14 @@ call python --version
 @set SD_UI_PATH=%cd%\ui
 @cd stable-diffusion
 
+@rem
+@rem Rewrite easy-install.pth. This fixes the installation if the user has relocated the SDUI installation
+@rem
+>env\Lib\site-packages\easy-install.pth echo %cd%\src\taming-transformers
+>>env\Lib\site-packages\easy-install.pth echo %cd%\src\clip
+>>env\Lib\site-packages\easy-install.pth echo %cd%\src\gfpgan
+>>env\Lib\site-packages\easy-install.pth echo %cd%\src\realesrgan
+
 @if NOT DEFINED SD_UI_BIND_PORT set SD_UI_BIND_PORT=9000
 @if NOT DEFINED SD_UI_BIND_IP set SD_UI_BIND_IP=0.0.0.0
 @uvicorn server:app --app-dir "%SD_UI_PATH%" --port %SD_UI_BIND_PORT% --host %SD_UI_BIND_IP%
