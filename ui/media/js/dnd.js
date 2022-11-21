@@ -382,27 +382,33 @@ function parseTaskFromText(str) {
     return task
 }
 
-async function readFile(file, i) {
-    const fileContent = (await file.text()).trim()
-
-    // JSON File.
-    if (fileContent.startsWith('{') && fileContent.endsWith('}')) {
+async function parseContent(text) {
+    text = text.trim();
+    if (text.startsWith('{') && text.endsWith('}')) {
         try {
-            const task = JSON.parse(fileContent)
+            const task = JSON.parse(text)
             restoreTaskToUI(task)
+            return true
         } catch (e) {
-            console.warn(`file[${i}]:${file.name} - File couldn't be parsed.`, e)
+            console.warn(`JSON text content couldn't be parsed.`, e)
         }
-        return
+        return false
     }
-
     // Normal txt file.
-    const task = parseTaskFromText(fileContent)
+    const task = parseTaskFromText(text)
     if (task) {
         restoreTaskToUI(task)
+        return true
     } else {
-        console.warn(`file[${i}]:${file.name} - File couldn't be parsed.`)
+        console.warn(`Raw text content couldn't be parsed.`)
+        return false
     }
+}
+
+async function readFile(file, i) {
+    console.log(`Event %o reading file[${i}]:${file.name}...`, e)
+    const fileContent = (await file.text()).trim()
+    return await parseContent(fileContent)
 }
 
 function dropHandler(ev) {
@@ -451,72 +457,73 @@ const TASK_REQ_NO_EXPORT = [
     "use_full_precision",
     "save_to_disk_path"
 ]
+const resetSettings = document.getElementById('reset-image-settings')
 
-// Retrieve clipboard content and try to parse it 
-async function pasteFromClipboard() {
-    //const text = await navigator.clipboard.readText()
-    let text = await navigator.clipboard.readText();
-    text=text.trim();
-    if (text.startsWith('{') && text.endsWith('}')) {
-        try {
-            const task = JSON.parse(text)
-            restoreTaskToUI(task)
-        } catch (e) {
-            console.warn(`Clipboard JSON couldn't be parsed.`, e)
-        }
+function checkReadTextClipboardPermission (result) {
+    if (result.state != "granted" && result.state != "prompt") {
         return
     }
-    // Normal txt file.
-    const task = parseTaskFromText(text)
-    if (task) {
-        restoreTaskToUI(task)
-    } else {
-        console.warn(`Clipboard content - File couldn't be parsed.`)
-    }
+    // PASTE ICON
+    const pasteIcon = document.createElement('i')
+    pasteIcon.className = 'fa-solid fa-paste section-button'
+    pasteIcon.innerHTML = `<span class="simple-tooltip right">Paste Image Settings</span>`
+    pasteIcon.addEventListener('click', async (event) => {
+        event.stopPropagation()
+        // Add css class 'active'
+        pasteIcon.classList.add('active')
+        // In 350 ms remove the 'active' class
+        asyncDelay(350).then(() => pasteIcon.classList.remove('active'))
+
+        // Retrieve clipboard content and try to parse it
+        const text = await navigator.clipboard.readText();
+        await parseContent(text)
+    })
+    resetSettings.parentNode.insertBefore(pasteIcon, resetSettings)
 }
+navigator.permissions.query({ name: "clipboard-read" }).then(checkReadTextClipboardPermission, (reason) => console.log('clipboard-read is not available. %o', reason))
+
+document.addEventListener('paste', async (event) => {
+    if (event.target) {
+        const targetTag = event.target.tagName.toLowerCase()
+        // Disable when targeting input elements.
+        if (targetTag === 'input' || targetTag === 'textarea') {
+            return
+        }
+    }
+    const paste = (event.clipboardData || window.clipboardData).getData('text')
+    const selection = window.getSelection()
+    if (selection.toString().trim().length <= 0 && await parseContent(paste)) {
+        event.preventDefault()
+        return
+    }
+})
 
 // Adds a copy and a paste icon if the browser grants permission to write to clipboard.
 function checkWriteToClipboardPermission (result) {
-    if (result.state == "granted" || result.state == "prompt") {
-        const resetSettings = document.getElementById('reset-image-settings')
-
-        // COPY ICON
-        const copyIcon = document.createElement('i')
-        copyIcon.className = 'fa-solid fa-clipboard section-button'
-        copyIcon.innerHTML = `<span class="simple-tooltip right">Copy Image Settings</span>`
-        copyIcon.addEventListener('click', (event) => {
-            event.stopPropagation()
-            // Add css class 'active'
-            copyIcon.classList.add('active')
-            // In 350 ms remove the 'active' class
-            asyncDelay(350).then(() => copyIcon.classList.remove('active'))
-            const uiState = readUI()
-            TASK_REQ_NO_EXPORT.forEach((key) => delete uiState.reqBody[key])
-            if (uiState.reqBody.init_image && !IMAGE_REGEX.test(uiState.reqBody.init_image)) {
-                delete uiState.reqBody.init_image
-                delete uiState.reqBody.prompt_strength
-            }
-            navigator.clipboard.writeText(JSON.stringify(uiState, undefined, 4))
-        })
-        resetSettings.parentNode.insertBefore(copyIcon, resetSettings)
-
-        // PASTE ICON
-        const pasteIcon = document.createElement('i')
-        pasteIcon.className = 'fa-solid fa-paste section-button'
-        pasteIcon.innerHTML = `<span class="simple-tooltip right">Paste Image Settings</span>`
-        pasteIcon.addEventListener('click', (event) => {
-            event.stopPropagation()
-            // Add css class 'active'
-            pasteIcon.classList.add('active')
-            // In 350 ms remove the 'active' class
-            asyncDelay(350).then(() => pasteIcon.classList.remove('active'))
-            pasteFromClipboard()
-        })
-        resetSettings.parentNode.insertBefore(pasteIcon, resetSettings)
+    if (result.state != "granted" && result.state != "prompt") {
+        return
     }
+    // COPY ICON
+    const copyIcon = document.createElement('i')
+    copyIcon.className = 'fa-solid fa-clipboard section-button'
+    copyIcon.innerHTML = `<span class="simple-tooltip right">Copy Image Settings</span>`
+    copyIcon.addEventListener('click', (event) => {
+        event.stopPropagation()
+        // Add css class 'active'
+        copyIcon.classList.add('active')
+        // In 350 ms remove the 'active' class
+        asyncDelay(350).then(() => copyIcon.classList.remove('active'))
+        const uiState = readUI()
+        TASK_REQ_NO_EXPORT.forEach((key) => delete uiState.reqBody[key])
+        if (uiState.reqBody.init_image && !IMAGE_REGEX.test(uiState.reqBody.init_image)) {
+            delete uiState.reqBody.init_image
+            delete uiState.reqBody.prompt_strength
+        }
+        navigator.clipboard.writeText(JSON.stringify(uiState, undefined, 4))
+    })
+    resetSettings.parentNode.insertBefore(copyIcon, resetSettings)
 }
-
-// Determine which access we have to the clipboard. Clipboard access is only available  on localhost or via TLS.
+// Determine which access we have to the clipboard. Clipboard access is only available on localhost or via TLS.
 navigator.permissions.query({ name: "clipboard-write" }).then(checkWriteToClipboardPermission, (e) => {
     if (e instanceof TypeError && typeof navigator?.clipboard?.writeText === 'function') {
         // Fix for firefox https://bugzilla.mozilla.org/show_bug.cgi?id=1560373
