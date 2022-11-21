@@ -21,6 +21,9 @@
 - A `What's New?` tab in the UI
 
 ### Detailed changelog
+* 2.4.11 - 21 Nov 2022 - Installer improvements: avoid crashing if the username contains a space or special characters, allow moving/renaming the folder after installation on Windows, whitespace fix on git apply
+* 2.4.11 - 21 Nov 2022 - Validate inputs before submitting the Image request
+* 2.4.11 - 19 Nov 2022 - New system settings to manage the network config (port number and whether to only listen on localhost)
 * 2.4.11 - 19 Nov 2022 - Address a regression in how long images take to generate. Use the previous code for moving a model to CPU. This improves things by a second or two per image, but we still have a regression (investigating).
 * 2.4.10 - 18 Nov 2022 - Textarea for negative prompts. Thanks @JeLuf
 * 2.4.10 - 18 Nov 2022 - Improved design for Settings, and rounded toggle buttons instead of checkboxes for a more modern look. Thanks @mdiller
