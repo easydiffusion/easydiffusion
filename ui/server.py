@@ -42,9 +42,12 @@ APP_CONFIG_DEFAULT_MODELS = [
     'sd-v1-4', # Default fallback.
 ]
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse, JSONResponse, StreamingResponse
+import aiohttp
+from asyncio import sleep
+from time import time
 from pydantic import BaseModel
 import logging
 #import queue, threading, time
@@ -218,6 +221,43 @@ async def setAppConfig(req : SetAppConfigRequest):
     except Exception as e:
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
+
+
+class ModelDownloadRequest(BaseModel):
+    url: str = None
+    offset: int = 0
+
+async def modelDownloadTask(req: ModelDownloadRequest):
+    total_size = 0
+    start = time()
+    last_msg = start
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(req.url, timeout=None, headers={"Range": f"bytes={str(req.offset)}-"}) as resp:
+                while True:
+                    chunk = await resp.content.read(1024*1024)
+                    if not chunk:
+                        rich.print("[orange]not chunk[/orange]")
+                        break
+                    total_size += len(chunk)
+                    if time() - last_msg > 2:
+                        rich.print(f'[cyan]{time() - start:0.2f}s, downloaded: {total_size / (1024 * 1024):0.0f}MB of {int(resp.headers["content-length"])/1024/1024:0.0f}MB[/cyan]')
+                        last_msg = time()
+    except Exception as e:
+        rich.print(f"[yellow]{traceback.format_exc()}[/yellow]")
+        rich.print(f"[yellow]Exception: {e}[/yellow]")
+    if total_size != 0 and total_size != int(resp.headers["content-length"]):
+        # Resume the request
+        await sleep(2)
+        req.offset = total_size
+        await modelDownloadTask(req)
+
+@app.post('/model/download')
+async def modelDownload(req: ModelDownloadRequest, background_tasks: BackgroundTasks):
+    rich.print("[cyan]Download %s[/cyan]" % (req.url))
+    background_tasks.add_task(modelDownloadTask, req)
+    return JSONResponse({'status': 'OK'}, headers=NOCACHE_HEADERS)
+
 
 def is_malicious_model(file_path):
     try:
