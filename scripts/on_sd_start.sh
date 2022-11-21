@@ -46,8 +46,8 @@ else
     cd stable-diffusion
     git -c advice.detachedHead=false checkout f6cfebffa752ee11a7b07497b8529d5971de916c
 
-    git apply --whitespace=fix ../ui/sd_internal/ddim_callback.patch || fail "ddim patch failed"
-    git apply --whitespace=fix ../ui/sd_internal/env_yaml.patch || fail "yaml patch failed"
+    git apply --whitespace=nowarn ../ui/sd_internal/ddim_callback.patch || fail "ddim patch failed"
+    git apply --whitespace=nowarn ../ui/sd_internal/env_yaml.patch || fail "yaml patch failed"
 
     cd ..
 fi
