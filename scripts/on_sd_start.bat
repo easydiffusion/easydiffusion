@@ -16,11 +16,11 @@ if exist "%cd%\profile" (
 
 @rem activate the installer env
 call conda activate
-@rem @if "%ERRORLEVEL%" NEQ "0" (
-@rem        @echo. & echo "Error activating conda for Stable Diffusion. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
-@rem        pause
-@rem        exit /b
-@rem)
+@if "%ERRORLEVEL%" NEQ "0" (
+       @echo. & echo "Error activating conda for Stable Diffusion. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
+       pause
+       exit /b
+)
 
 @REM remove the old version of the dev console script, if it's still present
 if exist "Open Developer Console.cmd" del "Open Developer Console.cmd"
@@ -37,8 +37,8 @@ if exist "Open Developer Console.cmd" del "Open Developer Console.cmd"
     @call git pull
     @call git -c advice.detachedHead=false checkout f6cfebffa752ee11a7b07497b8529d5971de916c
 
-    @call git apply --whitespace=fix ..\ui\sd_internal\ddim_callback.patch
-    @call git apply --whitespace=fix ..\ui\sd_internal\env_yaml.patch
+    @call git apply --whitespace=nowarn ..\ui\sd_internal\ddim_callback.patch
+    @call git apply --whitespace=nowarn ..\ui\sd_internal\env_yaml.patch
 
     @cd ..
 ) else (
@@ -55,8 +55,8 @@ if exist "Open Developer Console.cmd" del "Open Developer Console.cmd"
     @cd stable-diffusion
     @call git -c advice.detachedHead=false checkout f6cfebffa752ee11a7b07497b8529d5971de916c
 
-    @call git apply --whitespace=fix ..\ui\sd_internal\ddim_callback.patch
-    @call git apply --whitespace=fix ..\ui\sd_internal\env_yaml.patch
+    @call git apply --whitespace=nowarn ..\ui\sd_internal\ddim_callback.patch
+    @call git apply --whitespace=nowarn ..\ui\sd_internal\env_yaml.patch
 
     @cd ..
 )
