@@ -131,7 +131,6 @@ code {
 }
 #logo small {
     font-size: 11pt;
-    margin-left: 7pt;
 }
 #editor {
     background: var(--background-color1);
