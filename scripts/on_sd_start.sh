@@ -30,7 +30,7 @@ if [ -e "scripts/install_status.txt" ] && [ `grep -c sd_git_cloned scripts/insta
 
     git reset --hard
     git pull
-    git -c advice.detachedHead=false checkout 8b337661cbfc13cded9f47c828a277d97ae50505
+    git -c advice.detachedHead=false checkout 7f32368ed1030a6e710537047bacd908adea183a
 
     git apply --whitespace=nowarn ../ui/sd_internal/ddim_callback.patch || fail "ddim patch failed"
 
@@ -45,7 +45,7 @@ else
     fi
 
     cd stable-diffusion
-    git -c advice.detachedHead=false checkout 8b337661cbfc13cded9f47c828a277d97ae50505
+    git -c advice.detachedHead=false checkout 7f32368ed1030a6e710537047bacd908adea183a
 
     git apply --whitespace=nowarn ../ui/sd_internal/ddim_callback.patch || fail "ddim patch failed"
 
