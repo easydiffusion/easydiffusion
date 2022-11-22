@@ -26,28 +26,28 @@ if [ -e "scripts/install_status.txt" ] && [ `grep -c sd_git_cloned scripts/insta
 
     cd stable-diffusion
 
+    git remote set-url origin https://github.com/easydiffusion/diffusion-kit.git
+
     git reset --hard
     git pull
-    git -c advice.detachedHead=false checkout f6cfebffa752ee11a7b07497b8529d5971de916c
+    git -c advice.detachedHead=false checkout 675fdf5c5694b3590f86583112f70794fa17052f
 
     git apply --whitespace=nowarn ../ui/sd_internal/ddim_callback.patch || fail "ddim patch failed"
-    git apply --whitespace=nowarn ../ui/sd_internal/env_yaml.patch || fail "yaml patch failed"
 
     cd ..
 else
     printf "\n\nDownloading Stable Diffusion..\n\n"
 
-    if git clone https://github.com/basujindal/stable-diffusion.git ; then
+    if git clone https://github.com/easydiffusion/diffusion-kit.git stable-diffusion ; then
         echo sd_git_cloned >> scripts/install_status.txt
     else
         fail "git clone of basujindal/stable-diffusion.git failed"
     fi
 
     cd stable-diffusion
-    git -c advice.detachedHead=false checkout f6cfebffa752ee11a7b07497b8529d5971de916c
+    git -c advice.detachedHead=false checkout 675fdf5c5694b3590f86583112f70794fa17052f
 
     git apply --whitespace=nowarn ../ui/sd_internal/ddim_callback.patch || fail "ddim patch failed"
-    git apply --whitespace=nowarn ../ui/sd_internal/env_yaml.patch || fail "yaml patch failed"
 
     cd ..
 fi
