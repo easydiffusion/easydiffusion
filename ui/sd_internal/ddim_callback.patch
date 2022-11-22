@@ -39,7 +39,7 @@ index 79058bc..a473411 100644
 -            if img_callback: img_callback(x_dec, i)
 +            if callback: yield from callback(i)
 +            if img_callback: yield from img_callback(x_dec, i)
-         
+
          if mask is not None:
 -            return x0 * mask + (1. - mask) * x_dec
 +            x_dec = x0 * mask + (1. - mask) * x_dec
@@ -111,7 +111,7 @@ index 79058bc..a473411 100644
 -            if img_callback: img_callback(x, i)
 +            if callback: yield from callback(i)
 +            if img_callback: yield from img_callback(x, i)
-             
+
              d = to_d(x, sigma_hat, denoised)
              # Midpoint method, where the midpoint is chosen according to a rho=3 Karras schedule
 @@ -966,7 +966,7 @@ class UNet(DDPM):
