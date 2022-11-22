@@ -408,7 +408,7 @@ async function parseContent(text) {
 }
 
 async function readFile(file, i) {
-    console.log(`Event %o reading file[${i}]:${file.name}...`, e)
+    console.log(`Event %o reading file[${i}]:${file.name}...`)
     const fileContent = (await file.text()).trim()
     return await parseContent(fileContent)
 }
