@@ -19,8 +19,10 @@
 - Configuration to prevent the browser from opening on startup
 - Lots of minor bug fixes
 - A `What's New?` tab in the UI
+- Ask for a confimation before clearing the results pane or stopping a render task. The dialog can be skipped by holding down the shift key while clicking on the button.
 
 ### Detailed changelog
+* 2.4.13 - 22 Nov 2022 - shiftOrConfirm for red buttons
 * 2.4.13 - 21 Nov 2022 - Change the modifier weight via mouse wheel, drag to reorder selected modifiers, and some more modifier-related fixes. Thanks @patriceac
 * 2.4.12 - 21 Nov 2022 - Another fix for improving how long images take to generate. Reduces the time taken for an enqueued task to start processing.
 * 2.4.11 - 21 Nov 2022 - Installer improvements: avoid crashing if the username contains a space or special characters, allow moving/renaming the folder after installation on Windows, whitespace fix on git apply
