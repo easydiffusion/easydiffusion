@@ -17,7 +17,7 @@ index b967b55..35ef520 100644
          # sampling
 +        if sampler in ('ddim', 'dpm2', 'heun', 'dpm2_a', 'lms') and not hasattr(self, 'ddim_timesteps'):
 +            self.make_schedule(ddim_num_steps=S, ddim_eta=eta, verbose=False)
-
+         
          if sampler == "plms":
              self.make_schedule(ddim_num_steps=S, ddim_eta=eta, verbose=False)
 @@ -528,39 +530,46 @@ class UNet(DDPM):
@@ -103,7 +103,7 @@ index b967b55..35ef520 100644
 @@ -730,10 +740,13 @@ class UNet(DDPM):
                                            unconditional_guidance_scale=unconditional_guidance_scale,
                                            unconditional_conditioning=unconditional_conditioning)
-
+         
 +            if callback: yield from callback(i)
 +            if img_callback: yield from img_callback(x_dec, i)
 +
@@ -239,7 +239,7 @@ index b967b55..35ef520 100644
  
 -
 +            if img_callback: yield from img_callback(x, i)
-
+             
              d = to_d(x, sigma_hat, denoised)
              # Midpoint method, where the midpoint is chosen according to a rho=3 Karras schedule
 @@ -945,11 +982,13 @@ class UNet(DDPM):
