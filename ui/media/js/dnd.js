@@ -51,6 +51,13 @@ const TASK_MAPPING = {
         readUI: () => negativePromptField.value,
         parse: (val) => val
     },
+    active_tags: { name: "Image Modifiers",
+        setUI: (active_tags) => {
+            refreshModifiersState(active_tags)
+        },
+        readUI: () => activeTags.map(x => x.name),
+        parse: (val) => val
+    },
     width: { name: 'Width',
         setUI: (width) => {
             const oldVal = widthField.value
@@ -267,11 +274,6 @@ function restoreTaskToUI(task, fieldsToSkip) {
     // restore the original tag
     promptField.value = task.reqBody.original_prompt || task.reqBody.prompt
 
-    // Restore modifiers
-    if (task.reqBody.active_tags) {
-        refreshModifiersState(task.reqBody.active_tags)
-    }
-
     // properly reset checkboxes
     if (!('use_face_correction' in task.reqBody)) {
         useFaceCorrectionField.checked = false
@@ -406,7 +408,7 @@ async function parseContent(text) {
 }
 
 async function readFile(file, i) {
-    console.log(`Event %o reading file[${i}]:${file.name}...`, e)
+    console.log(`Event %o reading file[${i}]:${file.name}...`)
     const fileContent = (await file.text()).trim()
     return await parseContent(fileContent)
 }
