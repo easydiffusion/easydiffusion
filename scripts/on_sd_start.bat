@@ -37,8 +37,8 @@ if exist "Open Developer Console.cmd" del "Open Developer Console.cmd"
     @call git pull
     @call git -c advice.detachedHead=false checkout f6cfebffa752ee11a7b07497b8529d5971de916c
 
-    @call git apply --whitespace=fix ..\ui\sd_internal\ddim_callback.patch
-    @call git apply --whitespace=fix ..\ui\sd_internal\env_yaml.patch
+    @call git apply --whitespace=warn ..\ui\sd_internal\ddim_callback.patch
+    @call git apply --whitespace=warn ..\ui\sd_internal\env_yaml.patch
 
     @cd ..
 ) else (
@@ -55,8 +55,8 @@ if exist "Open Developer Console.cmd" del "Open Developer Console.cmd"
     @cd stable-diffusion
     @call git -c advice.detachedHead=false checkout f6cfebffa752ee11a7b07497b8529d5971de916c
 
-    @call git apply --whitespace=fix ..\ui\sd_internal\ddim_callback.patch
-    @call git apply --whitespace=fix ..\ui\sd_internal\env_yaml.patch
+    @call git apply --whitespace=warn ..\ui\sd_internal\ddim_callback.patch
+    @call git apply --whitespace=warn ..\ui\sd_internal\env_yaml.patch
 
     @cd ..
 )
