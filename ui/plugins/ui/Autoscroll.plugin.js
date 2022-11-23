@@ -10,7 +10,7 @@
     document.head.appendChild(styleSheet);
     
     const autoScrollControl = document.createElement('div');
-    autoScrollControl.innerHTML = `<input id="auto_scroll" name="auto_scroll" type="checkbox" checked>
+    autoScrollControl.innerHTML = `<input id="auto_scroll" name="auto_scroll" type="checkbox">
                             <label for="auto_scroll">Auto-scroll</label>`
     autoScrollControl.className = "auto-scroll"
     previewTools.appendChild(autoScrollControl)
@@ -20,7 +20,7 @@
     SETTINGS_IDS_LIST.push("auto_scroll")
     initSettings()
 
-    // observe for changes in tag list
+    // observe for changes in the preview pane
     var observer = new MutationObserver(function (mutations) {
         mutations.forEach(function (mutation) {
             console.log(mutation.target.class)
