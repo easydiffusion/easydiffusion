@@ -26,28 +26,28 @@ if [ -e "scripts/install_status.txt" ] && [ `grep -c sd_git_cloned scripts/insta
 
     cd stable-diffusion
 
+    git remote set-url origin https://github.com/easydiffusion/diffusion-kit.git
+
     git reset --hard
     git pull
-    git -c advice.detachedHead=false checkout f6cfebffa752ee11a7b07497b8529d5971de916c
+    git -c advice.detachedHead=false checkout 7f32368ed1030a6e710537047bacd908adea183a
 
     git apply --whitespace=warn ../ui/sd_internal/ddim_callback.patch || fail "ddim patch failed"
-    git apply --whitespace=warn ../ui/sd_internal/env_yaml.patch || fail "yaml patch failed"
 
     cd ..
 else
     printf "\n\nDownloading Stable Diffusion..\n\n"
 
-    if git clone https://github.com/basujindal/stable-diffusion.git ; then
+    if git clone https://github.com/easydiffusion/diffusion-kit.git stable-diffusion ; then
         echo sd_git_cloned >> scripts/install_status.txt
     else
         fail "git clone of basujindal/stable-diffusion.git failed"
     fi
 
     cd stable-diffusion
-    git -c advice.detachedHead=false checkout f6cfebffa752ee11a7b07497b8529d5971de916c
+    git -c advice.detachedHead=false checkout 7f32368ed1030a6e710537047bacd908adea183a
 
     git apply --whitespace=warn ../ui/sd_internal/ddim_callback.patch || fail "ddim patch failed"
-    git apply --whitespace=warn ../ui/sd_internal/env_yaml.patch || fail "yaml patch failed"
 
     cd ..
 fi
@@ -74,12 +74,6 @@ else
 
     conda activate ./env || fail "conda activate failed"
 
-    if conda install -c conda-forge --prefix ./env -y antlr4-python3-runtime=4.8 ; then
-        echo "Installed. Testing.."
-    else
-        fail "Error installing antlr4-python3-runtime"
-    fi
-
     out_test=`python -c "import torch; import ldm; import transformers; import numpy; import antlr4; print(42)"`
     if [ "$out_test" != "42" ]; then
         fail "Dependency test failed"
@@ -95,12 +89,6 @@ else
 
     export PYTHONNOUSERSITE=1
     export PYTHONPATH="$(pwd):$(pwd)/env/lib/site-packages"
-
-    if pip install -e git+https://github.com/TencentARC/GFPGAN#egg=GFPGAN ; then
-        echo "Installed. Testing.."
-    else
-        fail "Error installing the packages necessary for GFPGAN (Face Correction)."
-    fi
 
     out_test=`python -c "from gfpgan import GFPGANer; print(42)"`
     if [ "$out_test" != "42" ]; then
@@ -120,12 +108,6 @@ else
 
     export PYTHONNOUSERSITE=1
     export PYTHONPATH="$(pwd):$(pwd)/env/lib/site-packages"
-
-    if pip install -e git+https://github.com/xinntao/Real-ESRGAN#egg=realesrgan ; then
-        echo "Installed. Testing.."
-    else
-        fail "Error installing the packages necessary for ESRGAN"
-    fi
 
     out_test=`python -c "from basicsr.archs.rrdbnet_arch import RRDBNet; from realesrgan import RealESRGANer; print(42)"`
     if [ "$out_test" != "42" ]; then
