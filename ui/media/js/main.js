@@ -144,16 +144,18 @@ function isServerAvailable() {
 //   fn     : function to be called if the user confirms the dialog or has the shift key pressed
 //
 // If the user had the shift key pressed while clicking, the function fn will be executed.
+// If the setting "confirm_dangerous_actions" in the system settings is disabled, the function 
+// fn will be executed.
 // Otherwise, a confirmation dialog is shown. If the user confirms, the function fn will also
 // be executed.
 function shiftOrConfirm(e, prompt, fn) {
     e.stopPropagation()
-    if (e.shiftKey) {
+    if (e.shiftKey || !confirmDangerousActionsField.checked) {
          fn(e)
     } else {
         $.confirm({ theme: 'supervan',
             title: prompt,
-            content: 'Tip: Use shift-click to skip this dialog.',
+            content: 'Tip: To skip this dialog, use shift-click or disable the setting "Confirm dangerous actions" in the systems setting.',
             buttons: {
                 yes: () => { fn(e) },
                 cancel: () => {}
