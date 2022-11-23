@@ -166,11 +166,13 @@ function refreshModifiersState(newTags) {
             const modifierName = modifierCard.querySelector('.modifier-card-label').innerText
             if (tag == modifierName) {
                 // add modifier to active array
-                activeTags.push({
-                    'name': modifierName,
-                    'element': modifierCard.cloneNode(true),
-                    'originElement': modifierCard
-                })
+                if (!activeTags.map(x => x.name).includes(tag)) { // only add each tag once even if several custom modifier cards share the same tag
+                    activeTags.push({
+                        'name': modifierName,
+                        'element': modifierCard.cloneNode(true),
+                        'originElement': modifierCard
+                    })
+                }
                 modifierCard.classList.add(activeCardClass)
                 modifierCard.querySelector('.modifier-card-image-overlay').innerText = '-'
                 found = true

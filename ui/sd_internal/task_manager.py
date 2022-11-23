@@ -268,7 +268,7 @@ def thread_render(device):
             return
         task = thread_get_next_task()
         if task is None:
-            time.sleep(1)
+            time.sleep(0.05)
             continue
         if task.error is not None:
             print(task.error)

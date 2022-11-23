@@ -51,6 +51,13 @@ const TASK_MAPPING = {
         readUI: () => negativePromptField.value,
         parse: (val) => val
     },
+    active_tags: { name: "Image Modifiers",
+        setUI: (active_tags) => {
+            refreshModifiersState(active_tags)
+        },
+        readUI: () => activeTags.map(x => x.name),
+        parse: (val) => val
+    },
     width: { name: 'Width',
         setUI: (width) => {
             const oldVal = widthField.value
@@ -161,18 +168,7 @@ const TASK_MAPPING = {
         setUI: (use_stable_diffusion_model) => {
             const oldVal = stableDiffusionModelField.value
 
-            let pathIdx = use_stable_diffusion_model.lastIndexOf('/') // Linux, Mac paths
-            if (pathIdx < 0) {
-                pathIdx = use_stable_diffusion_model.lastIndexOf('\\') // Windows paths.
-            }
-            if (pathIdx >= 0) {
-                use_stable_diffusion_model = use_stable_diffusion_model.slice(pathIdx + 1)
-            }
-            const modelExt = '.ckpt'
-            if (use_stable_diffusion_model.endsWith(modelExt)) {
-                use_stable_diffusion_model = use_stable_diffusion_model.slice(0, use_stable_diffusion_model.length - modelExt.length)
-            }
-
+            use_stable_diffusion_model = getModelPath(use_stable_diffusion_model, ['.ckpt'])
             stableDiffusionModelField.value = use_stable_diffusion_model
 
             if (!stableDiffusionModelField.value) {
@@ -180,6 +176,19 @@ const TASK_MAPPING = {
             }
         },
         readUI: () => stableDiffusionModelField.value,
+        parse: (val) => val
+    },
+    use_vae_model: { name: 'VAE model',
+        setUI: (use_vae_model) => {
+            const oldVal = vaeModelField.value
+
+            if (use_vae_model !== '') {
+                use_vae_model = getModelPath(use_vae_model, ['.vae.pt', '.ckpt'])
+                use_vae_model = use_vae_model !== '' ? use_vae_model : oldVal
+            }
+            vaeModelField.value = use_vae_model
+        },
+        readUI: () => vaeModelField.value,
         parse: (val) => val
     },
 
@@ -265,11 +274,6 @@ function restoreTaskToUI(task, fieldsToSkip) {
     // restore the original tag
     promptField.value = task.reqBody.original_prompt || task.reqBody.prompt
 
-    // Restore modifiers
-    if (task.reqBody.active_tags) {
-        refreshModifiersState(task.reqBody.active_tags)
-    }
-
     // properly reset checkboxes
     if (!('use_face_correction' in task.reqBody)) {
         useFaceCorrectionField.checked = false
@@ -309,6 +313,21 @@ function readUI() {
         'seed': TASK_MAPPING['seed'].readUI(),
         'reqBody': reqBody
     }
+}
+function getModelPath(filename, extensions)
+{
+    let pathIdx = filename.lastIndexOf('/') // Linux, Mac paths
+    if (pathIdx < 0) {
+        pathIdx = filename.lastIndexOf('\\') // Windows paths.
+    }
+    if (pathIdx >= 0) {
+        filename = filename.slice(pathIdx + 1)
+    }
+    extensions.forEach(ext => {
+        if (filename.endsWith(ext)) {
+            filename = filename.slice(0, filename.length - ext.length)
+        }
+    })
 }
 
 const TASK_TEXT_MAPPING = {
@@ -365,27 +384,33 @@ function parseTaskFromText(str) {
     return task
 }
 
-async function readFile(file, i) {
-    const fileContent = (await file.text()).trim()
-
-    // JSON File.
-    if (fileContent.startsWith('{') && fileContent.endsWith('}')) {
+async function parseContent(text) {
+    text = text.trim();
+    if (text.startsWith('{') && text.endsWith('}')) {
         try {
-            const task = JSON.parse(fileContent)
+            const task = JSON.parse(text)
             restoreTaskToUI(task)
+            return true
         } catch (e) {
-            console.warn(`file[${i}]:${file.name} - File couldn't be parsed.`, e)
+            console.warn(`JSON text content couldn't be parsed.`, e)
         }
-        return
+        return false
     }
-
     // Normal txt file.
-    const task = parseTaskFromText(fileContent)
+    const task = parseTaskFromText(text)
     if (task) {
         restoreTaskToUI(task)
+        return true
     } else {
-        console.warn(`file[${i}]:${file.name} - File couldn't be parsed.`)
+        console.warn(`Raw text content couldn't be parsed.`)
+        return false
     }
+}
+
+async function readFile(file, i) {
+    console.log(`Event %o reading file[${i}]:${file.name}...`)
+    const fileContent = (await file.text()).trim()
+    return await parseContent(fileContent)
 }
 
 function dropHandler(ev) {
@@ -434,72 +459,73 @@ const TASK_REQ_NO_EXPORT = [
     "use_full_precision",
     "save_to_disk_path"
 ]
+const resetSettings = document.getElementById('reset-image-settings')
 
-// Retrieve clipboard content and try to parse it 
-async function pasteFromClipboard() {
-    //const text = await navigator.clipboard.readText()
-    let text = await navigator.clipboard.readText();
-    text=text.trim();
-    if (text.startsWith('{') && text.endsWith('}')) {
-        try {
-            const task = JSON.parse(text)
-            restoreTaskToUI(task)
-        } catch (e) {
-            console.warn(`Clipboard JSON couldn't be parsed.`, e)
-        }
+function checkReadTextClipboardPermission (result) {
+    if (result.state != "granted" && result.state != "prompt") {
         return
     }
-    // Normal txt file.
-    const task = parseTaskFromText(text)
-    if (task) {
-        restoreTaskToUI(task)
-    } else {
-        console.warn(`Clipboard content - File couldn't be parsed.`)
-    }
+    // PASTE ICON
+    const pasteIcon = document.createElement('i')
+    pasteIcon.className = 'fa-solid fa-paste section-button'
+    pasteIcon.innerHTML = `<span class="simple-tooltip right">Paste Image Settings</span>`
+    pasteIcon.addEventListener('click', async (event) => {
+        event.stopPropagation()
+        // Add css class 'active'
+        pasteIcon.classList.add('active')
+        // In 350 ms remove the 'active' class
+        asyncDelay(350).then(() => pasteIcon.classList.remove('active'))
+
+        // Retrieve clipboard content and try to parse it
+        const text = await navigator.clipboard.readText();
+        await parseContent(text)
+    })
+    resetSettings.parentNode.insertBefore(pasteIcon, resetSettings)
 }
+navigator.permissions.query({ name: "clipboard-read" }).then(checkReadTextClipboardPermission, (reason) => console.log('clipboard-read is not available. %o', reason))
+
+document.addEventListener('paste', async (event) => {
+    if (event.target) {
+        const targetTag = event.target.tagName.toLowerCase()
+        // Disable when targeting input elements.
+        if (targetTag === 'input' || targetTag === 'textarea') {
+            return
+        }
+    }
+    const paste = (event.clipboardData || window.clipboardData).getData('text')
+    const selection = window.getSelection()
+    if (selection.toString().trim().length <= 0 && await parseContent(paste)) {
+        event.preventDefault()
+        return
+    }
+})
 
 // Adds a copy and a paste icon if the browser grants permission to write to clipboard.
 function checkWriteToClipboardPermission (result) {
-    if (result.state == "granted" || result.state == "prompt") {
-        const resetSettings = document.getElementById('reset-image-settings')
-
-        // COPY ICON
-        const copyIcon = document.createElement('i')
-        copyIcon.className = 'fa-solid fa-clipboard section-button'
-        copyIcon.innerHTML = `<span class="simple-tooltip right">Copy Image Settings</span>`
-        copyIcon.addEventListener('click', (event) => {
-            event.stopPropagation()
-            // Add css class 'active'
-            copyIcon.classList.add('active')
-            // In 350 ms remove the 'active' class
-            asyncDelay(350).then(() => copyIcon.classList.remove('active'))
-            const uiState = readUI()
-            TASK_REQ_NO_EXPORT.forEach((key) => delete uiState.reqBody[key])
-            if (uiState.reqBody.init_image && !IMAGE_REGEX.test(uiState.reqBody.init_image)) {
-                delete uiState.reqBody.init_image
-                delete uiState.reqBody.prompt_strength
-            }
-            navigator.clipboard.writeText(JSON.stringify(uiState, undefined, 4))
-        })
-        resetSettings.parentNode.insertBefore(copyIcon, resetSettings)
-
-        // PASTE ICON
-        const pasteIcon = document.createElement('i')
-        pasteIcon.className = 'fa-solid fa-paste section-button'
-        pasteIcon.innerHTML = `<span class="simple-tooltip right">Paste Image Settings</span>`
-        pasteIcon.addEventListener('click', (event) => {
-            event.stopPropagation()
-            // Add css class 'active'
-            pasteIcon.classList.add('active')
-            // In 350 ms remove the 'active' class
-            asyncDelay(350).then(() => pasteIcon.classList.remove('active'))
-            pasteFromClipboard()
-        })
-        resetSettings.parentNode.insertBefore(pasteIcon, resetSettings)
+    if (result.state != "granted" && result.state != "prompt") {
+        return
     }
+    // COPY ICON
+    const copyIcon = document.createElement('i')
+    copyIcon.className = 'fa-solid fa-clipboard section-button'
+    copyIcon.innerHTML = `<span class="simple-tooltip right">Copy Image Settings</span>`
+    copyIcon.addEventListener('click', (event) => {
+        event.stopPropagation()
+        // Add css class 'active'
+        copyIcon.classList.add('active')
+        // In 350 ms remove the 'active' class
+        asyncDelay(350).then(() => copyIcon.classList.remove('active'))
+        const uiState = readUI()
+        TASK_REQ_NO_EXPORT.forEach((key) => delete uiState.reqBody[key])
+        if (uiState.reqBody.init_image && !IMAGE_REGEX.test(uiState.reqBody.init_image)) {
+            delete uiState.reqBody.init_image
+            delete uiState.reqBody.prompt_strength
+        }
+        navigator.clipboard.writeText(JSON.stringify(uiState, undefined, 4))
+    })
+    resetSettings.parentNode.insertBefore(copyIcon, resetSettings)
 }
-
-// Determine which access we have to the clipboard. Clipboard access is only available  on localhost or via TLS.
+// Determine which access we have to the clipboard. Clipboard access is only available on localhost or via TLS.
 navigator.permissions.query({ name: "clipboard-write" }).then(checkWriteToClipboardPermission, (e) => {
     if (e instanceof TypeError && typeof navigator?.clipboard?.writeText === 'function') {
         // Fix for firefox https://bugzilla.mozilla.org/show_bug.cgi?id=1560373
