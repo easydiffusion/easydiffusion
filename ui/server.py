@@ -7,6 +7,7 @@ import traceback
 
 import sys
 import os
+import re
 import picklescan.scanner
 import rich
 
@@ -46,7 +47,8 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse, JSONResponse, StreamingResponse
 import aiohttp
-from asyncio import sleep
+import asyncio
+from aiofile import async_open
 from time import time
 from pydantic import BaseModel
 import logging
@@ -225,20 +227,32 @@ async def setAppConfig(req : SetAppConfigRequest):
 
 class ModelDownloadRequest(BaseModel):
     url: str = None
-    offset: int = 0
+    type: str = 'stable-diffusion'
 
-async def modelDownloadTask(req: ModelDownloadRequest):
+async def downloadFile(url, folder, filename="", offset=0):
+    afp = None
     total_size = 0
     start = time()
     last_msg = start
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(req.url, timeout=None, headers={"Range": f"bytes={str(req.offset)}-"}) as resp:
+            async with session.get(url, timeout=None, headers={"Range": f"bytes={str(offset)}-"}) as resp:
+	        # First chunk, so there's no output file opened yet. First determine the filename, than open the file
+                if afp == None:
+                    if filename == "" and "Content-Disposition" in resp.headers:
+                        m = re.match('filename="([^"]*)"', resp.headers["Content-Disposition"])
+                        if m:
+                            filename = m.group(1)
+                    if filename == "":
+                        filename = url.split("/")[-1]
+                    mode = "wb" if offset == 0 else "ab"
+                    afp = await async_open(os.path.join( folder, filename), mode)
                 while True:
                     chunk = await resp.content.read(1024*1024)
                     if not chunk:
                         rich.print("[orange]not chunk[/orange]")
                         break
+                    await afp.write(chunk)
                     total_size += len(chunk)
                     if time() - last_msg > 2:
                         rich.print(f'[cyan]{time() - start:0.2f}s, downloaded: {total_size / (1024 * 1024):0.0f}MB of {int(resp.headers["content-length"])/1024/1024:0.0f}MB[/cyan]')
@@ -246,18 +260,25 @@ async def modelDownloadTask(req: ModelDownloadRequest):
     except Exception as e:
         rich.print(f"[yellow]{traceback.format_exc()}[/yellow]")
         rich.print(f"[yellow]Exception: {e}[/yellow]")
+    if afp != None:
+        await afp.close()
     if total_size != 0 and total_size != int(resp.headers["content-length"]):
         # Resume the request
-        await sleep(2)
-        req.offset = total_size
-        await modelDownloadTask(req)
+        await asyncio.sleep(2)
+        await downloadFile(url, folder, filename, total_size)
+
+
+async def modelDownloadTask(req: ModelDownloadRequest):
+    models_dir = os.path.join(MODELS_DIR, req.type)
+    await downloadFile(req.url, models_dir)
 
 @app.post('/model/download')
 async def modelDownload(req: ModelDownloadRequest, background_tasks: BackgroundTasks):
-    rich.print("[cyan]Download %s[/cyan]" % (req.url))
+    rich.print("[cyan]Download Model %s[/cyan]" % (req.url))
+    if req.type not in ['stable-diffusion', 'vae']:
+        return JSONResponse({'status': 'Error', 'message': 'Invalid type'}, headers=NOCACHE_HEADERS)
     background_tasks.add_task(modelDownloadTask, req)
     return JSONResponse({'status': 'OK'}, headers=NOCACHE_HEADERS)
-
 
 def is_malicious_model(file_path):
     try:
