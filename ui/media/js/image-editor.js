@@ -69,12 +69,16 @@ function selectOption(section_name, option_index) {
 	section.optionElements[option_index].classList.add("active")
 
 	// change the editor
-	if (["color", "brush_size"].includes(section_name)) {
+	if (["color", "brush_size", "sharpness", "opacity"].includes(section_name)) {
 		setBrush()
 	}
 }
 
 function initImageEditor() {
+	editorCanvas.addEventListener("mousedown", canvasMouseHandler);
+	editorCanvas.addEventListener("mouseup", canvasMouseHandler);
+	editorCanvas.addEventListener("mousemove", canvasMouseHandler);
+	editorCanvas.addEventListener("mouseout", canvasMouseHandler);
 	IMAGE_EDITOR_SECTIONS.forEach(section => {
 		section.id = `image_editor_${section.name}`
 		var sectionElement = document.createElement("div")
@@ -103,22 +107,25 @@ function initImageEditor() {
 
 		editorControls.appendChild(sectionElement)
 	});
+	setBrush();
 }
 
+// var drawingBoardElement = document.getElementById("image-editor-canvas canvas")
 var drawingBoardElement = document.getElementById("image-editor-canvas")
+var editorCanvas = drawingBoardElement.querySelector("canvas")
+var editorContext = editorCanvas.getContext("2d")
 drawingBoardElement.style.width = IMAGE_EDITOR_MAX_SIZE + "px"
 drawingBoardElement.style.height = IMAGE_EDITOR_MAX_SIZE + "px"
-var editorDrawingBoard = new DrawingBoard.Board(drawingBoardElement.id, {
-    color: "#ffffff",
-    background: false,
-    size: 30,
-    webStorage: false,
-    controls: [{"DrawingMode": {"filler": false}}, "Size", "Navigation"]
-})
+// var editorDrawingBoard = new DrawingBoard.Board(drawingBoardElement.id, {
+//     color: "#ffffff",
+//     background: false,
+//     size: 30,
+//     webStorage: false,
+//     controls: [{"DrawingMode": {"filler": false}}, "Size", "Navigation"]
+// })
 
 function setImageEditorImage(url, width, height) {
-	var canvas = drawingBoardElement.querySelector(".drawing-board-canvas-wrapper");
-	canvas.style.backgroundImage = `url('${url}')`
+	drawingBoardElement.style.backgroundImage = `url('${url}')`
 
 	var max_size = Math.min(window.innerWidth, IMAGE_EDITOR_MAX_SIZE)
 
@@ -133,22 +140,52 @@ function setImageEditorImage(url, width, height) {
 		height = (multiplier * height).toFixed();
 	}
 
-	editorDrawingBoard.opts.aspectRatio = (width / height).toFixed(3)
+	// editorDrawingBoard.opts.aspectRatio = (width / height).toFixed(3)
 
 	drawingBoardElement.style.width = width + "px"
 	drawingBoardElement.style.height = height + "px"
-	editorDrawingBoard.opts.enlargeYourContainer = true
-    editorDrawingBoard.opts.size = inpaintingEditor.ctx.lineWidth
-	editorDrawingBoard.resize()
+	
+	editorCanvas.width = width
+	editorCanvas.height = height
+	// editorDrawingBoard.opts.enlargeYourContainer = true
+    // editorDrawingBoard.opts.size = inpaintingEditor.ctx.lineWidth
+	// editorDrawingBoard.resize()
 	
 	setBrush()
 }
 
 function setBrush() {
-	editorDrawingBoard.ctx.lineCap = "round"
-	editorDrawingBoard.ctx.lineJoin = "round"
-	editorDrawingBoard.ctx.lineWidth = getOptionValue("brush_size")
-	editorDrawingBoard.setColor(getOptionValue("color"))
+	editorContext.lineCap = "round"
+	editorContext.lineJoin = "round"
+	editorContext.lineWidth = getOptionValue("brush_size");
+	editorContext.fillStyle = getOptionValue("color");
+	editorContext.strokeStyle = getOptionValue("color");
+	var sharpness = getOptionValue("sharpness");
+	editorContext.filter = sharpness == 1 ? `none` : `blur(${10}px)`;
+	editorContext.globalAlpha = (1 - getOptionValue("opacity"));
+}
+
+var DRAWING = false;
+function canvasMouseHandler(event) {
+	var bbox = editorCanvas.getBoundingClientRect();
+	var x = event.clientX - bbox.left;
+	var y = event.clientY - bbox.top;
+
+	if (event.type == "mousedown") {
+		DRAWING = true;
+		editorContext.beginPath();
+		editorContext.moveTo(x, y);
+	}
+	if (event.type == "mouseup" || event.type == "mousemove") {
+		if (DRAWING) {
+			editorContext.lineTo(x, y);
+			editorContext.clearRect(0, 0, editorCanvas.width, editorCanvas.height);
+			editorContext.stroke();
+		}
+	}
+	if (event.type == "mouseup" || event.type == "mouseout") {
+		DRAWING = false;
+	}
 }
 
 initImageEditor()
