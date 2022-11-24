@@ -520,3 +520,97 @@ function prettifyInputs(root_element) {
         }
     })
 }
+
+class ServiceContainer {
+    #services = new Map()
+    #singletons = new Map()
+    constructor(...servicesParams) {
+        servicesParams.forEach(this.register.bind(this))
+    }
+    get services () {
+        return this.#services
+    }
+    get singletons() {
+        return this.#singletons
+    }
+    register(params) {
+        if (ServiceContainer.isConstructor(params)) {
+            if (typeof params.name !== 'string') {
+                throw new Error('params.name is not a string.')
+            }
+            params = {name:params.name, definition:params}
+        }
+        if (typeof params !== 'object') {
+            throw new Error('params is not an object.')
+        }
+        [   'name',
+            'definition',
+        ].forEach((key) => {
+            if (!(key in params)) {
+                console.error('Invalid service %o registration.', params)
+                throw new Error(`params.${key} is not defined.`)
+            }
+        })
+        const opts = {definition: params.definition}
+        if ('dependencies' in params) {
+            if (Array.isArray(params.dependencies)) {
+                params.dependencies.forEach((dep) => {
+                    if (typeof dep !== 'string') {
+                        throw new Error('dependency name is not a string.')
+                    }
+                })
+                opts.dependencies = params.dependencies
+            } else {
+                throw new Error('params.dependencies is not an array.')
+            }
+        }
+        if (params.singleton) {
+            opts.singleton = true
+        }
+        this.#services.set(params.name, opts)
+        return Object.assign({name: params.name}, opts)
+    }
+    get(name) {
+        const ctorInfos = this.#services.get(name)
+        if (!ctorInfos) {
+            return
+        }
+        if(!ServiceContainer.isConstructor(ctorInfos.definition)) {
+            return ctorInfos.definition
+        }
+        if(!ctorInfos.singleton) {
+            return this._createInstance(ctorInfos)
+        }
+        const singletonInstance = this.#singletons.get(name)
+        if(singletonInstance) {
+            return singletonInstance
+        }
+        const newSingletonInstance = this._createInstance(ctorInfos)
+        this.#singletons.set(name, newSingletonInstance)
+        return newSingletonInstance
+    }
+
+    _getResolvedDependencies(service) {
+        let classDependencies = []
+        if(service.dependencies) {
+            classDependencies = service.dependencies.map(this.get.bind(this))
+        }
+        return classDependencies
+    }
+
+    _createInstance(service) {
+        if (!ServiceContainer.isClass(service.definition)) {
+            // Call as normal function.
+            return service.definition(...this._getResolvedDependencies(service))
+        }
+        // Use new
+        return new service.definition(...this._getResolvedDependencies(service))
+    }
+
+    static isClass(definition) {
+        return typeof definition === 'function' && Boolean(definition.prototype) && definition.prototype.constructor === definition
+    }
+    static isConstructor(definition) {
+        return typeof definition === 'function'
+    }
+}

@@ -700,7 +700,14 @@ function onTaskStart(task) {
     })
     let instance = eventInfo.instance
     if (!instance) {
-        instance = new SD.RenderTask(newTaskReqBody)
+        const factory = PLUGINS.OUTPUTS_FORMATS.get(newTaskReqBody.output_format)
+        if (factory) {
+            instance = factory(newTaskReqBody)
+        }
+        if (!instance) {
+            console.error(`${factory ? "Factory " + String(factory) : 'No factory defined'} for ouput format ${newTaskReqBody.output_format}. Instance is ${instance || 'undefined'}. Using default renderer.`)
+            instance = new SD.RenderTask(newTaskReqBody)
+        }
     }
 
     task['instances'].push(instance)

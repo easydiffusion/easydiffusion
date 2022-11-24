@@ -26,6 +26,33 @@ const PLUGINS = {
      */
     IMAGE_INFO_BUTTONS: [],
     TASK_CREATE: [],
+    OUTPUTS_FORMATS: new ServiceContainer(
+        function png() { return (reqBody) => new SD.RenderTask(reqBody) }
+        , function jpeg() { return (reqBody) => new SD.RenderTask(reqBody) }
+    ),
+}
+PLUGINS.OUTPUTS_FORMATS.register = function(...args) {
+    const service = ServiceContainer.prototype.register.apply(this, args)
+    if (typeof outputFormatField !== 'undefined') {
+        const newOption = document.createElement("option")
+        newOption.setAttribute("value", service.name)
+        newOption.innerText = service.name
+        outputFormatField.appendChild(newOption)
+    }
+    return service
+}
+
+function loadScript(url) {
+    const script = document.createElement('script')
+    const promiseSrc = new PromiseSource()
+    script.addEventListener('error', () => promiseSrc.reject(new Error(`Script "${url}" couldn't be loaded.`)))
+    script.addEventListener('load', () => promiseSrc.resolve(url))
+    script.src = url + '?t=' + Date.now()
+
+    console.log('loading script', url)
+    document.head.appendChild(script)
+
+    return promiseSrc.promise
 }
 
 async function loadUIPlugins() {
@@ -36,18 +63,7 @@ async function loadUIPlugins() {
             return
         }
         const plugins = await res.json()
-        const loadingPromises = plugins.map((pluginPath) => {
-            const script = document.createElement('script')
-            const promiseSrc = new PromiseSource()
-            script.addEventListener('error', () => promiseSrc.reject(new Error(`Plugin "${pluginPath}" couldn't be loaded.`)))
-            script.addEventListener('load', () => promiseSrc.resolve(pluginPath))
-            script.src = pluginPath + '?t=' + Date.now()
-
-            console.log('loading plugin', pluginPath)
-            document.head.appendChild(script)
-
-            return promiseSrc.promise
-        })
+        const loadingPromises = plugins.map(loadScript)
         return await Promise.allSettled(loadingPromises)
     } catch (e) {
         console.log('error fetching plugin paths', e)

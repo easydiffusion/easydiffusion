@@ -126,6 +126,45 @@ describe('stable-diffusion-ui', function() {
         }})
         expect(await SD.Task.enqueue(gen2)).toEqual({test:32, foo: 'bar'})
     })
+    describe('ServiceContainer', function() {
+        it('should be able to register providers', function() {
+            const cont = new ServiceContainer(
+                function foo() {
+                    this.bar = ''
+                },
+                function bar() {
+                    return () => 0
+                },
+                { name: 'zero', definition: 0 },
+                { name: 'ctx', definition: () => Object.create(null), singleton: true },
+                { name: 'test',
+                    definition: (ctx, one, foo) => {
+                        expect(ctx).toEqual({ran: true})
+                        expect(one).toBe(1)
+                        expect(typeof foo).toBe('object')
+                        expect(foo.bar).toBeDefined()
+                        return {foo: 'bar'}
+                    }, dependencies: ['ctx', 'one', 'foo']
+                }
+            )
+            const fooObj = cont.get('foo')
+            expect(typeof fooObj).toBe('object')
+            fooObj.ran = true
+
+            const ctx = cont.get('ctx')
+            expect(ctx).toEqual({})
+            ctx.ran = true
+
+            const bar = cont.get('bar')
+            expect(typeof bar).toBe('function')
+            expect(bar()).toBe(0)
+
+            cont.register({name: 'one', definition: 1})
+            const test = cont.get('test')
+            expect(typeof test).toBe('object')
+            expect(test.foo).toBe('bar')
+        })
+    })
     it('should be able to stream data in chunks', async function() {
         expect(SD.isServerAvailable()).toBeTrue()
         const nbr_steps = 15
