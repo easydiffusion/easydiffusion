@@ -22,7 +22,6 @@ LOCK_TIMEOUT = 15 # Maximum locking time in seconds before failing a task.
 # It's better to get an exception than a deadlock... ALWAYS use timeout in critical paths.
 
 DEVICE_START_TIMEOUT = 60 # seconds - Maximum time to wait for a render device to init.
-CPU_UNLOAD_TIMEOUT = 4 * 60 # seconds - Idle time before CPU unload resource when GPUs are present.
 
 class SymbolClass(type): # Print nicely formatted Symbol names.
     def __repr__(self): return self.__qualname__
@@ -40,7 +39,7 @@ class RenderTask(): # Task with output queue and completion lock.
     def __init__(self, req: Request):
         self.request: Request = req # Initial Request
         self.response: Any = None # Copy of the last reponse
-        self.render_device = None
+        self.render_device = None # Select the task affinity. (Not used to change active devices).
         self.temp_images:list = [None] * req.num_outputs * (1 if req.show_only_filtered_image else 2)
         self.error: Exception = None
         self.lock: threading.Lock = threading.Lock() # Locks at task start and unlocks when task is completed
@@ -72,7 +71,7 @@ class ImageRequest(BaseModel):
     save_to_disk_path: str = None
     turbo: bool = True
     use_cpu: bool = False ##TODO Remove after UI and plugins transition.
-    render_device: str = 'auto'
+    render_device: str = None # Select the task affinity. (Not used to change active devices).
     use_full_precision: bool = False
     use_face_correction: str = None # or "GFPGANv1.3"
     use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
@@ -218,10 +217,6 @@ def thread_get_next_task():
     task = None
     try:  # Select a render task.
         for queued_task in tasks_queue:
-            if queued_task.request.use_face_correction and runtime.thread_data.device == 'cpu' and is_alive() == 1:
-                queued_task.error = Exception('The CPU cannot be used to run this task currently. Please remove "Fix incorrect faces" from Image Settings and try again.')
-                task = queued_task
-                break
             if queued_task.render_device and runtime.thread_data.device != queued_task.render_device:
                 # Is asking for a specific render device.
                 if is_alive(queued_task.render_device) > 0:
@@ -273,7 +268,7 @@ def thread_render(device):
             return
         task = thread_get_next_task()
         if task is None:
-            time.sleep(1)
+            time.sleep(0.05)
             continue
         if task.error is not None:
             print(task.error)
@@ -441,7 +436,7 @@ def stop_render_thread(device):
     try:
         device_manager.validate_device_id(device, log_prefix='stop_render_thread')
     except:
-        print(traceback.format_exec())
+        print(traceback.format_exc())
         return False
 
     if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('stop_render_thread' + ERR_LOCK_FAILED)

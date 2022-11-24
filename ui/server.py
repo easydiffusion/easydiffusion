@@ -7,6 +7,8 @@ import traceback
 
 import sys
 import os
+import picklescan.scanner
+import rich
 
 SD_DIR = os.getcwd()
 print('started in ', SD_DIR)
@@ -16,14 +18,23 @@ sys.path.append(os.path.dirname(SD_UI_DIR))
 
 CONFIG_DIR = os.path.abspath(os.path.join(SD_UI_DIR, '..', 'scripts'))
 MODELS_DIR = os.path.abspath(os.path.join(SD_DIR, '..', 'models'))
-UI_PLUGINS_DIR = os.path.abspath(os.path.join(SD_DIR, '..', 'plugins', 'ui'))
+
+USER_UI_PLUGINS_DIR = os.path.abspath(os.path.join(SD_DIR, '..', 'plugins', 'ui'))
+CORE_UI_PLUGINS_DIR = os.path.abspath(os.path.join(SD_UI_DIR, 'plugins', 'ui'))
+UI_PLUGINS_SOURCES = ((CORE_UI_PLUGINS_DIR, 'core'), (USER_UI_PLUGINS_DIR, 'user'))
+
+STABLE_DIFFUSION_MODEL_EXTENSIONS = ['.ckpt']
+VAE_MODEL_EXTENSIONS = ['.vae.pt', '.ckpt']
 
 OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder
 TASK_TTL = 15 * 60 # Discard last session's task timeout
 APP_CONFIG_DEFAULTS = {
     # auto: selects the cuda device with the most free memory, cuda: use the currently active cuda device.
-    'render_devices': ['auto'], # valid entries: 'auto', 'cpu' or 'cuda:N' (where N is a GPU index)
+    'render_devices': 'auto', # valid entries: 'auto', 'cpu' or 'cuda:N' (where N is a GPU index)
     'update_branch': 'main',
+    'ui': {
+        'open_browser_on_start': True,
+    },
 }
 APP_CONFIG_DEFAULT_MODELS = [
     # needed to support the legacy installations
@@ -46,15 +57,25 @@ app = FastAPI()
 modifiers_cache = None
 outpath = os.path.join(os.path.expanduser("~"), OUTPUT_DIRNAME)
 
-os.makedirs(UI_PLUGINS_DIR, exist_ok=True)
+os.makedirs(USER_UI_PLUGINS_DIR, exist_ok=True)
 
 # don't show access log entries for URLs that start with the given prefix
 ACCESS_LOG_SUPPRESS_PATH_PREFIXES = ['/ping', '/image', '/modifier-thumbnails']
 
 NOCACHE_HEADERS={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
 
-app.mount('/media', StaticFiles(directory=os.path.join(SD_UI_DIR, 'media')), name="media")
-app.mount('/plugins', StaticFiles(directory=UI_PLUGINS_DIR), name="plugins")
+class NoCacheStaticFiles(StaticFiles):
+    def is_not_modified(self, response_headers, request_headers) -> bool:
+        if 'content-type' in response_headers and ('javascript' in response_headers['content-type'] or 'css' in response_headers['content-type']):
+            response_headers.update(NOCACHE_HEADERS)
+            return False
+
+        return super().is_not_modified(response_headers, request_headers)
+
+app.mount('/media', NoCacheStaticFiles(directory=os.path.join(SD_UI_DIR, 'media')), name="media")
+
+for plugins_dir, dir_prefix in UI_PLUGINS_SOURCES:
+    app.mount(f'/plugins/{dir_prefix}', NoCacheStaticFiles(directory=plugins_dir), name=f"plugins-{dir_prefix}")
 
 def getConfig(default_val=APP_CONFIG_DEFAULTS):
     try:
@@ -62,13 +83,21 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
         if not os.path.exists(config_json_path):
             return default_val
         with open(config_json_path, 'r', encoding='utf-8') as f:
-            return json.load(f)
+            config = json.load(f)
+            if 'net' not in config:
+                config['net'] = {}
+            if os.getenv('SD_UI_BIND_PORT') is not None:
+                config['net']['listen_port'] = int(os.getenv('SD_UI_BIND_PORT'))
+            if os.getenv('SD_UI_BIND_IP') is not None:
+                config['net']['listen_to_network'] = ( os.getenv('SD_UI_BIND_IP') == '0.0.0.0' )
+            return config
     except Exception as e:
         print(str(e))
         print(traceback.format_exc())
         return default_val
 
 def setConfig(config):
+    print( json.dumps(config) )
     try: # config.json
         config_json_path = os.path.join(CONFIG_DIR, 'config.json')
         with open(config_json_path, 'w', encoding='utf-8') as f:
@@ -77,36 +106,37 @@ def setConfig(config):
         print(traceback.format_exc())
 
     try: # config.bat
-        config_bat = [
-            f"@set update_branch={config['update_branch']}"
-        ]
         config_bat_path = os.path.join(CONFIG_DIR, 'config.bat')
+        config_bat = []
 
-        if os.getenv('SD_UI_BIND_PORT') is not None:
-            config_bat.append(f"@set SD_UI_BIND_PORT={os.getenv('SD_UI_BIND_PORT')}")
-        if os.getenv('SD_UI_BIND_IP') is not None:
-            config_bat.append(f"@set SD_UI_BIND_IP={os.getenv('SD_UI_BIND_IP')}")
+        if 'update_branch' in config:
+            config_bat.append(f"@set update_branch={config['update_branch']}")
 
-        with open(config_bat_path, 'w', encoding='utf-8') as f:
-            f.write('\r\n'.join(config_bat))
-    except Exception as e:
+        config_bat.append(f"@set SD_UI_BIND_PORT={config['net']['listen_port']}")
+        bind_ip = '0.0.0.0' if config['net']['listen_to_network'] else '127.0.0.1'
+        config_bat.append(f"@set SD_UI_BIND_IP={bind_ip}")
+
+        if len(config_bat) > 0:
+            with open(config_bat_path, 'w', encoding='utf-8') as f:
+                f.write('\r\n'.join(config_bat))
+    except:
         print(traceback.format_exc())
 
     try: # config.sh
-        config_sh = [
-            '#!/bin/bash',
-            f"export update_branch={config['update_branch']}"
-        ]
         config_sh_path = os.path.join(CONFIG_DIR, 'config.sh')
+        config_sh = ['#!/bin/bash']
 
-        if os.getenv('SD_UI_BIND_PORT') is not None:
-            config_sh.append(f"export SD_UI_BIND_PORT={os.getenv('SD_UI_BIND_PORT')}")
-        if os.getenv('SD_UI_BIND_IP') is not None:
-            config_sh.append(f"export SD_UI_BIND_IP={os.getenv('SD_UI_BIND_IP')}")
+        if 'update_branch' in config:
+            config_sh.append(f"export update_branch={config['update_branch']}")
 
-        with open(config_sh_path, 'w', encoding='utf-8') as f:
-            f.write('\n'.join(config_sh))
-    except Exception as e:
+        config_sh.append(f"export SD_UI_BIND_PORT={config['net']['listen_port']}")
+        bind_ip = '0.0.0.0' if config['net']['listen_to_network'] else '127.0.0.1'
+        config_sh.append(f"export SD_UI_BIND_IP={bind_ip}")
+
+        if len(config_sh) > 1:
+            with open(config_sh_path, 'w', encoding='utf-8') as f:
+                f.write('\n'.join(config_sh))
+    except:
         print(traceback.format_exc())
 
 def resolve_model_to_use(model_name:str, model_type:str, model_dir:str, model_extensions:list, default_models=[]):
@@ -143,11 +173,11 @@ def resolve_model_to_use(model_name:str, model_type:str, model_dir:str, model_ex
     raise Exception('No valid models found.')
 
 def resolve_ckpt_to_use(model_name:str=None):
-    return resolve_model_to_use(model_name, model_type='stable-diffusion', model_dir='stable-diffusion', model_extensions=['.ckpt'], default_models=APP_CONFIG_DEFAULT_MODELS)
+    return resolve_model_to_use(model_name, model_type='stable-diffusion', model_dir='stable-diffusion', model_extensions=STABLE_DIFFUSION_MODEL_EXTENSIONS, default_models=APP_CONFIG_DEFAULT_MODELS)
 
 def resolve_vae_to_use(model_name:str=None):
     try:
-        return resolve_model_to_use(model_name, model_type='vae', model_dir='vae', model_extensions=['.vae.pt', '.ckpt'], default_models=[])
+        return resolve_model_to_use(model_name, model_type='vae', model_dir='vae', model_extensions=VAE_MODEL_EXTENSIONS, default_models=[])
     except:
         return None
 
@@ -155,18 +185,53 @@ class SetAppConfigRequest(BaseModel):
     update_branch: str = None
     render_devices: Union[List[str], List[int], str, int] = None
     model_vae: str = None
+    ui_open_browser_on_start: bool = None
+    listen_to_network: bool = None
+    listen_port: int = None
 
 @app.post('/app_config')
 async def setAppConfig(req : SetAppConfigRequest):
     config = getConfig()
-    if req.update_branch:
+    if req.update_branch is not None:
         config['update_branch'] = req.update_branch
+    if req.render_devices is not None:
+        update_render_devices_in_config(config, req.render_devices)
+    if req.ui_open_browser_on_start is not None:
+        if 'ui' not in config:
+            config['ui'] = {}
+        config['ui']['open_browser_on_start'] = req.ui_open_browser_on_start
+    if req.listen_to_network is not None:
+       if 'net' not in config:
+           config['net'] = {}
+       config['net']['listen_to_network'] = bool(req.listen_to_network)
+    if req.listen_port is not None:
+       if 'net' not in config:
+           config['net'] = {}
+       config['net']['listen_port'] = int(req.listen_port)
     try:
         setConfig(config)
+
+        if req.render_devices:
+            update_render_threads()
+
         return JSONResponse({'status': 'OK'}, headers=NOCACHE_HEADERS)
     except Exception as e:
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
+
+def is_malicious_model(file_path):
+    try:
+        scan_result = picklescan.scanner.scan_file_path(file_path)
+        if scan_result.issues_count > 0 or scan_result.infected_files > 0:
+            rich.print(":warning: [bold red]Scan %s: %d scanned, %d issue, %d infected.[/bold red]" % (file_path, scan_result.scanned_files, scan_result.issues_count, scan_result.infected_files))
+            return True
+        else:
+            rich.print("Scan %s: [green]%d scanned, %d issue, %d infected.[/green]" % (file_path, scan_result.scanned_files, scan_result.issues_count, scan_result.infected_files))
+            return False
+    except Exception as e:
+        print('error while scanning', file_path, 'error:', e)
+
+    return False
 
 def getModels():
     models = {
@@ -187,16 +252,22 @@ def getModels():
 
         for file in os.listdir(models_dir):
             for model_extension in model_extensions:
-                if file.endswith(model_extension):
-                    model_name = file[:-len(model_extension)]
-                    models['options'][model_type].append(model_name)
+                if not file.endswith(model_extension):
+                    continue
+
+                if is_malicious_model(os.path.join(models_dir, file)):
+                    models['scan-error'] = file
+                    return
+
+                model_name = file[:-len(model_extension)]
+                models['options'][model_type].append(model_name)
 
         models['options'][model_type] = [*set(models['options'][model_type])] # remove duplicates
         models['options'][model_type].sort()
 
     # custom models
-    listModels(models_dirname='stable-diffusion', model_type='stable-diffusion', model_extensions=['.ckpt'])
-    listModels(models_dirname='vae', model_type='vae', model_extensions=['.vae.pt', '.ckpt'])
+    listModels(models_dirname='stable-diffusion', model_type='stable-diffusion', model_extensions=STABLE_DIFFUSION_MODEL_EXTENSIONS)
+    listModels(models_dirname='vae', model_type='vae', model_extensions=VAE_MODEL_EXTENSIONS)
 
     # legacy
     custom_weight_path = os.path.join(SD_DIR, 'custom-model.ckpt')
@@ -208,9 +279,10 @@ def getModels():
 def getUIPlugins():
     plugins = []
 
-    for file in os.listdir(UI_PLUGINS_DIR):
-        if file.endswith('.plugin.js'):
-            plugins.append(f'/plugins/{file}')
+    for plugins_dir, dir_prefix in UI_PLUGINS_SOURCES:
+        for file in os.listdir(plugins_dir):
+            if file.endswith('.plugin.js'):
+                plugins.append(f'/plugins/{dir_prefix}/{file}')
 
     return plugins
 
@@ -221,7 +293,7 @@ def read_web_data(key:str=None):
     elif key == 'app_config':
         config = getConfig(default_val=None)
         if config is None:
-            raise HTTPException(status_code=500, detail="Config file is missing or unreadable")
+            config = APP_CONFIG_DEFAULTS
         return JSONResponse(config, headers=NOCACHE_HEADERS)
     elif key == 'devices':
         config = getConfig()
@@ -276,38 +348,17 @@ def save_model_to_config(ckpt_model_name, vae_model_name):
 
     setConfig(config)
 
-def save_render_devices_to_config(render_devices):
-    config = getConfig()
-    if 'render_devices' not in config:
-        config['render_devices'] = {}
+def update_render_devices_in_config(config, render_devices):
+    if render_devices not in ('cpu', 'auto') and not render_devices.startswith('cuda:'):
+        raise HTTPException(status_code=400, detail=f'Invalid render device requested: {render_devices}')
+
+    if render_devices.startswith('cuda:'):
+        render_devices = render_devices.split(',')
 
     config['render_devices'] = render_devices
-    if render_devices is None or len(render_devices) == 0:
-        del config['render_devices']
-
-    setConfig(config)
-
-def update_render_threads_on_request(req : task_manager.ImageRequest):
-    if req.use_cpu:  # TODO Remove after transition.
-        print('WARNING Replace {use_cpu: true} by {render_device: "cpu"}')
-        req.render_device = 'cpu'
-        del req.use_cpu
-
-    if req.render_device not in ('cpu', 'auto') and not req.render_device.startswith('cuda:'):
-        raise HTTPException(status_code=400, detail=f'Invalid render device requested: {req.render_device}')
-
-    if req.render_device.startswith('cuda:'):
-        req.render_device = req.render_device.split(',')
-
-    save_render_devices_to_config(req.render_device)
-    del req.render_device
-
-    update_render_threads()
 
 @app.post('/render')
 def render(req : task_manager.ImageRequest):
-    update_render_threads_on_request(req)
-
     try:
         save_model_to_config(req.use_stable_diffusion_model, req.use_vae_model)
         req.use_stable_diffusion_model = resolve_ckpt_to_use(req.use_stable_diffusion_model)
@@ -390,7 +441,7 @@ task_manager.default_vae_to_load = resolve_vae_to_use()
 
 def update_render_threads():
     config = getConfig()
-    render_devices = config.get('render_devices', "auto")
+    render_devices = config.get('render_devices', 'auto')
     active_devices = task_manager.get_devices()['active'].keys()
 
     print('requesting for render_devices', render_devices)
@@ -402,7 +453,9 @@ update_render_threads()
 def open_browser():
     config = getConfig()
     ui = config.get('ui', {})
+    net = config.get('net', {'listen_port':9000})
+    port = net.get('listen_port', 9000)
     if ui.get('open_browser_on_start', True):
-        import webbrowser; webbrowser.open('http://localhost:9000')
+        import webbrowser; webbrowser.open(f"http://localhost:{port}")
 
 open_browser()

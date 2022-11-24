@@ -25,15 +25,6 @@ let initImagePreview = document.querySelector("#init_image_preview")
 let initImageSizeBox = document.querySelector("#init_image_size_box")
 let maskImageSelector = document.querySelector("#mask")
 let maskImagePreview = document.querySelector("#mask_preview")
-let turboField = document.querySelector('#turbo')
-let useCPUField = document.querySelector('#use_cpu')
-let autoPickGPUsField = document.querySelector('#auto_pick_gpus')
-let useGPUsField = document.querySelector('#use_gpus')
-let useFullPrecisionField = document.querySelector('#use_full_precision')
-let saveToDiskField = document.querySelector('#save_to_disk')
-let diskPathField = document.querySelector('#diskPath')
-// let allowNSFWField = document.querySelector("#allow_nsfw")
-let useBetaChannelField = document.querySelector("#use_beta_channel")
 let promptStrengthSlider = document.querySelector('#prompt_strength_slider')
 let promptStrengthField = document.querySelector('#prompt_strength')
 let samplerField = document.querySelector('#sampler')
@@ -60,20 +51,9 @@ let initialText = document.querySelector("#initial-text")
 let previewTools = document.querySelector("#preview-tools")
 let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
 
-// let maskSetting = document.querySelector('#editor-inputs-mask_setting')
-// let maskImagePreviewContainer = document.querySelector('#mask_preview_container')
-// let maskImageClearBtn = document.querySelector('#mask_clear')
 let maskSetting = document.querySelector('#enable_mask')
 
 let imagePreview = document.querySelector("#preview")
-
-// let previewPrompt = document.querySelector('#preview-prompt')
-
-let showConfigToggle = document.querySelector('#configToggleBtn')
-// let configBox = document.querySelector('#config')
-// let outputMsg = document.querySelector('#outputMsg')
-
-let soundToggle = document.querySelector('#sound_toggle')
 
 let serverStatusColor = document.querySelector('#server-status-color')
 let serverStatusMsg = document.querySelector('#server-status-msg')
@@ -444,7 +424,7 @@ async function doMakeImage(task) {
     const RETRY_DELAY_IF_BUFFER_IS_EMPTY = 1000 // ms
     const RETRY_DELAY_IF_SERVER_IS_BUSY = 30 * 1000 // ms, status_code 503, already a task running
     const TASK_START_DELAY_ON_SERVER = 1500 // ms
-    const SERVER_STATE_VALIDITY_DURATION = 10 * 1000 // ms
+    const SERVER_STATE_VALIDITY_DURATION = 90 * 1000 // ms
 
     const reqBody = task.reqBody
     const batchCount = task.batchCount
@@ -803,14 +783,15 @@ function getCurrentUserRequest() {
             height: heightField.value,
             // allow_nsfw: allowNSFWField.checked,
             turbo: turboField.checked,
-            render_device: getCurrentRenderDeviceSelection(),
             use_full_precision: useFullPrecisionField.checked,
             use_stable_diffusion_model: stableDiffusionModelField.value,
             use_vae_model: vaeModelField.value,
             stream_progress_updates: true,
             stream_image_progress: (numOutputsTotal > 50 ? false : streamImageProgressField.checked),
             show_only_filtered_image: showOnlyFilteredImageField.checked,
-            output_format: outputFormatField.value
+            output_format: outputFormatField.value,
+            original_prompt: promptField.value,
+            active_tags: (activeTags.map(x => x.name))
         }
     }
     if (IMAGE_REGEX.test(initImagePreview.src)) {
@@ -839,50 +820,47 @@ function getCurrentUserRequest() {
     return newTask
 }
 
-function getCurrentRenderDeviceSelection() {
-    let selectedGPUs = $('#use_gpus').val()
-
-    if (useCPUField.checked && !autoPickGPUsField.checked) {
-        return 'cpu'
-    }
-    if (autoPickGPUsField.checked || selectedGPUs.length == 0) {
-        return 'auto'
-    }
-
-    return selectedGPUs.join(',')
-}
-
 function makeImage() {
     if (!isServerAvailable()) {
         alert('The server is not available.')
-        return
-    }
-    const taskTemplate = getCurrentUserRequest()
-    const newTaskRequests = []
-    getPrompts().forEach((prompt) => newTaskRequests.push(Object.assign({}, taskTemplate, {
-        reqBody: Object.assign({ prompt: prompt }, taskTemplate.reqBody)
-    })))
-    newTaskRequests.forEach(createTask)
+    } else if (!randomSeedField.checked && seedField.value == '') {
+        alert('The "Seed" field must not be empty.')
+    } else if (numOutputsTotalField.value == '') {
+        alert('The "Number of Images" field must not be empty.')
+    } else if (numOutputsParallelField.value == '') {
+        alert('The "Number of parallel Images" field must not be empty.')
+    } else if (numInferenceStepsField.value == '') {
+        alert('The "Inference Steps" field must not be empty.')
+    } else if (guidanceScaleField.value == '') {
+        alert('The Guidance Scale field must not be empty.')
+    } else {
+        const taskTemplate = getCurrentUserRequest()
+        const newTaskRequests = []
+        getPrompts().forEach((prompt) => newTaskRequests.push(Object.assign({}, taskTemplate, {
+            reqBody: Object.assign({ prompt: prompt }, taskTemplate.reqBody)
+        })))
+        newTaskRequests.forEach(createTask)
 
-    initialText.style.display = 'none'
+        initialText.style.display = 'none'
+    }
 }
 
 function createTask(task) {
-    let taskConfig = `Seed: ${task.seed}, Sampler: ${task.reqBody.sampler}, Inference Steps: ${task.reqBody.num_inference_steps}, Guidance Scale: ${task.reqBody.guidance_scale}, Model: ${task.reqBody.use_stable_diffusion_model}`
+    let taskConfig = `<b>Seed:</b> ${task.seed}, <b>Sampler:</b> ${task.reqBody.sampler}, <b>Inference Steps:</b> ${task.reqBody.num_inference_steps}, <b>Guidance Scale:</b> ${task.reqBody.guidance_scale}, <b>Model:</b> ${task.reqBody.use_stable_diffusion_model}`
     if (task.reqBody.use_vae_model.trim() !== '') {
-        taskConfig += `, VAE: ${task.reqBody.use_vae_model}`
+        taskConfig += `, <b>VAE:</b> ${task.reqBody.use_vae_model}`
     }
     if (task.reqBody.negative_prompt.trim() !== '') {
-        taskConfig += `, Negative Prompt: ${task.reqBody.negative_prompt}`
+        taskConfig += `, <b>Negative Prompt:</b> ${task.reqBody.negative_prompt}`
     }
     if (task.reqBody.init_image !== undefined) {
-        taskConfig += `, Prompt Strength: ${task.reqBody.prompt_strength}`
+        taskConfig += `, <b>Prompt Strength:</b> ${task.reqBody.prompt_strength}`
     }
     if (task.reqBody.use_face_correction) {
-        taskConfig += `, Fix Faces: ${task.reqBody.use_face_correction}`
+        taskConfig += `, <b>Fix Faces:</b> ${task.reqBody.use_face_correction}`
     }
     if (task.reqBody.use_upscale) {
-        taskConfig += `, Upscale: ${task.reqBody.use_upscale}`
+        taskConfig += `, <b>Upscale:</b> ${task.reqBody.use_upscale}`
     }
 
     let taskEntry = document.createElement('div')
@@ -890,6 +868,7 @@ function createTask(task) {
     taskEntry.innerHTML = ` <div class="header-content panel collapsible active">
                                 <div class="taskStatusLabel">Enqueued</div>
                                 <button class="secondaryButton stopTask"><i class="fa-solid fa-trash-can"></i> Remove</button>
+                                <button class="secondaryButton useSettings"><i class="fa-solid fa-redo"></i> Use these settings</button>
                                 <div class="preview-prompt collapsible active"></div>
                                 <div class="taskConfig">${taskConfig}</div>
                                 <div class="outputMsg"></div>
@@ -928,6 +907,12 @@ function createTask(task) {
         }
     })
 
+    task['useSettings'] = taskEntry.querySelector('.useSettings')
+    task['useSettings'].addEventListener('click', function(e) {
+        e.stopPropagation()
+        restoreTaskToUI(task, TASK_REQ_NO_EXPORT)
+    })
+
     imagePreview.insertBefore(taskEntry, previewTools.nextSibling)
 
     task.previewPrompt.innerText = task.reqBody.prompt
@@ -948,15 +933,15 @@ function getPrompts() {
     prompts = prompts.map(prompt => prompt.trim())
     prompts = prompts.filter(prompt => prompt !== '')
 
+    if (activeTags.length > 0) {
+	const promptTags = activeTags.map(x => x.name).join(", ")
+	prompts = prompts.map((prompt) => `${prompt}, ${promptTags}`)
+    }
+	
     let promptsToMake = applySetOperator(prompts)
     promptsToMake = applyPermuteOperator(promptsToMake)
 
-    if (activeTags.length <= 0) {
-        return promptsToMake
-    }
-
-    const promptTags = activeTags.map(x => x.name).join(", ")
-    return promptsToMake.map((prompt) => `${prompt}, ${promptTags}`)
+    return promptsToMake
 }
 
 function applySetOperator(prompts) {
@@ -1107,9 +1092,6 @@ function onDimensionChange() {
 }
 
 diskPathField.disabled = !saveToDiskField.checked
-saveToDiskField.addEventListener('change', function(e) {
-    diskPathField.disabled = !this.checked
-})
 
 upscaleModelField.disabled = !useUpscalingField.checked
 useUpscalingField.addEventListener('change', function(e) {
@@ -1165,89 +1147,6 @@ promptStrengthSlider.addEventListener('input', updatePromptStrength)
 promptStrengthField.addEventListener('input', updatePromptStrengthSlider)
 updatePromptStrength()
 
-useCPUField.addEventListener('click', function() {
-    let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
-    let autoPickGPUSettingEntry = getParameterSettingsEntry('auto_pick_gpus')
-    if (this.checked) {
-        gpuSettingEntry.style.display = 'none'
-        autoPickGPUSettingEntry.style.display = 'none'
-        autoPickGPUsField.setAttribute('data-old-value', autoPickGPUsField.checked)
-        autoPickGPUsField.checked = false
-    } else if (useGPUsField.options.length >= MIN_GPUS_TO_SHOW_SELECTION) {
-        gpuSettingEntry.style.display = ''
-        autoPickGPUSettingEntry.style.display = ''
-        let oldVal = autoPickGPUsField.getAttribute('data-old-value')
-        if (oldVal === null || oldVal === undefined) { // the UI started with CPU selected by default
-            autoPickGPUsField.checked = true
-        } else {
-            autoPickGPUsField.checked = (oldVal === 'true')
-        }
-        gpuSettingEntry.style.display = (autoPickGPUsField.checked ? 'none' : '')
-    }
-})
-
-useGPUsField.addEventListener('click', function() {
-    let selectedGPUs = $('#use_gpus').val()
-    autoPickGPUsField.checked = (selectedGPUs.length === 0)
-})
-
-autoPickGPUsField.addEventListener('click', function() {
-    if (this.checked) {
-        $('#use_gpus').val([])
-    }
-
-    let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
-    gpuSettingEntry.style.display = (this.checked ? 'none' : '')
-})
-
-async function changeAppConfig(configDelta) {
-    // if (!isServerAvailable()) {
-    //     // logError('The server is still starting up..')
-    //     alert('The server is still starting up..')
-    //     e.preventDefault()
-    //     return false
-    // }
-
-    try {
-        let res = await fetch('/app_config', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(configDelta)
-        })
-        res = await res.json()
-
-        console.log('set config status response', res)
-    } catch (e) {
-        console.log('set config status error', e)
-    }
-}
-
-useBetaChannelField.addEventListener('click', async function(e) {
-    let updateBranch = (this.checked ? 'beta' : 'main')
-
-    await changeAppConfig({
-        'update_branch': updateBranch
-    })
-})
-
-async function getAppConfig() {
-    try {
-        let res = await fetch('/get/app_config')
-        const config = await res.json()
-
-        if (config.update_branch === 'beta') {
-            useBetaChannelField.checked = true
-            updateBranchLabel.innerText = "(beta)"
-        }
-
-        console.log('get config status response', config)
-    } catch (e) {
-        console.log('get config status error', e)
-    }
-}
-
 async function getModels() {
     try {
         var sd_model_setting_key = "stable_diffusion_model"
@@ -1257,8 +1156,16 @@ async function getModels() {
         let res = await fetch('/get/models')
         const models = await res.json()
 
-        console.log('get models response', models)
+        console.log('got models response', models)
 
+        if ( "scan-error" in models ) {
+            // let previewPane = document.getElementById('tab-content-wrapper')
+            let previewPane = document.getElementById('preview')
+            previewPane.style.background="red"
+            previewPane.style.textAlign="center"
+            previewPane.innerHTML = '<H1>🔥Malware alert!🔥</H1><h2>The file <i>' + models['scan-error'] + '</i> in your <tt>models/stable-diffusion</tt> folder is probably malware infected.</h2><h2>Please delete this file from the folder before proceeding!</h2>After deleting the file, reload this page.<br><br><button onClick="window.location.reload();">Reload Page</button>'
+            makeImageBtn.disabled = true
+        }
         let modelOptions = models['options']
         let stableDiffusionOptions = modelOptions['stable-diffusion']
         let vaeOptions = modelOptions['vae']
@@ -1386,70 +1293,6 @@ promptsFromFileSelector.addEventListener('change', function() {
     }
 })
 
-async function getDiskPath() {
-    try {
-        var diskPath = getSetting("diskPath")
-        if (diskPath == '' || diskPath == undefined || diskPath == "undefined") {
-            let res = await fetch('/get/output_dir')
-            if (res.status === 200) {
-                res = await res.json()
-                res = res.output_dir
-
-                setSetting("diskPath", res)
-            }
-        }
-    } catch (e) {
-        console.log('error fetching output dir path', e)
-    }
-}
-
-async function getDevices() {
-    try {
-        let res = await fetch('/get/devices')
-        if (res.status === 200) {
-            res = await res.json()
-
-            let allDeviceIds = Object.keys(res['all']).filter(d => d !== 'cpu')
-            let activeDeviceIds = Object.keys(res['active']).filter(d => d !== 'cpu')
-
-            if (activeDeviceIds.length === 0) {
-                useCPUField.checked = true
-            }
-
-            if (allDeviceIds.length < MIN_GPUS_TO_SHOW_SELECTION || useCPUField.checked) {
-                let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
-                gpuSettingEntry.style.display = 'none'
-                let autoPickGPUSettingEntry = getParameterSettingsEntry('auto_pick_gpus')
-                autoPickGPUSettingEntry.style.display = 'none'
-            }
-
-            if (allDeviceIds.length === 0) {
-                useCPUField.checked = true
-                useCPUField.disabled = true // no compatible GPUs, so make the CPU mandatory
-            }
-
-            autoPickGPUsField.checked = (res['config'] === 'auto')
-
-            useGPUsField.innerHTML = ''
-            allDeviceIds.forEach(device => {
-                let deviceName = res['all'][device]['name']
-                let deviceOption = `<option value="${device}">${deviceName} (${device})</option>`
-                useGPUsField.insertAdjacentHTML('beforeend', deviceOption)
-            })
-
-            if (autoPickGPUsField.checked) {
-                let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
-                gpuSettingEntry.style.display = 'none'
-            } else {
-                $('#use_gpus').val(activeDeviceIds)
-            }
-        }
-    } catch (e) {
-        console.log('error fetching devices', e)
-    }
-}
-
-
 /* setup popup handlers */
 document.querySelectorAll('.popup').forEach(popup => {
     popup.addEventListener('click', event => {
@@ -1466,7 +1309,7 @@ document.querySelectorAll('.popup').forEach(popup => {
 })
 
 var tabElements = [];
-document.querySelectorAll(".tab").forEach(tab => {
+function linkTabContents(tab) {
     var name = tab.id.replace("tab-", "");
     var content = document.getElementById(`tab-content-${name}`)
     tabElements.push({
@@ -1487,7 +1330,9 @@ document.querySelectorAll(".tab").forEach(tab => {
             content.classList.toggle("active")
         }
     })
-})
+}
+
+document.querySelectorAll(".tab").forEach(linkTabContents)
 
 window.addEventListener("beforeunload", function(e) {
     const msg = "Unsaved pictures will be lost!";
@@ -1503,3 +1348,4 @@ window.addEventListener("beforeunload", function(e) {
 });
 
 createCollapsibles()
+prettifyInputs(document);

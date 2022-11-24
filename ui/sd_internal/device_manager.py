@@ -13,10 +13,12 @@ def get_device_delta(render_devices, active_devices):
     active_devices: ['cpu', 'cuda:N'...]
     '''
 
-    if render_devices is not None:
-        if render_devices in ('cpu', 'auto'):
+    if render_devices in ('cpu', 'auto'):
+        render_devices = [render_devices]
+    elif render_devices is not None:
+        if isinstance(render_devices, str):
             render_devices = [render_devices]
-        elif isinstance(render_devices, list) and len(render_devices) > 0:
+        if isinstance(render_devices, list) and len(render_devices) > 0:
             render_devices = list(filter(lambda x: x.startswith('cuda:'), render_devices))
             if len(render_devices) == 0:
                 raise Exception('Invalid render_devices value in config.json. Valid: {"render_devices": ["cuda:0", "cuda:1"...]}, or {"render_devices": "cpu"} or {"render_devices": "auto"}')
@@ -127,7 +129,11 @@ def is_device_compatible(device):
     '''
     Returns True/False, and prints any compatibility errors
     '''
-    validate_device_id(device, log_prefix='is_device_compatible')
+    try:
+        validate_device_id(device, log_prefix='is_device_compatible')
+    except:
+        print(str(e))
+        return False
 
     if device == 'cpu': return True
     # Memory check

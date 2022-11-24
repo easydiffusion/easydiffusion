@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
 if [ "$0" == "bash" ]; then
   echo "Opening Stable Diffusion UI - Developer Console.."
   echo ""
@@ -33,7 +35,17 @@ if [ "$0" == "bash" ]; then
   which python
   python --version
 
+  # set the PYTHONPATH
+  cd stable-diffusion
+  SD_PATH=`pwd`
+  export PYTHONPATH="$SD_PATH:$SD_PATH/env/lib/python3.8/site-packages"
+  echo "PYTHONPATH=$PYTHONPATH"
+  cd ..
+
+  # done
+
   echo ""
 else
-  bash --init-file developer_console.sh
+  file_name=$(basename "${BASH_SOURCE[0]}")
+  bash --init-file "$file_name"
 fi

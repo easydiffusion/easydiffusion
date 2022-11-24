@@ -118,8 +118,8 @@ def load_model_ckpt():
     model.cdevice = torch.device(thread_data.device)
     model.unet_bs = thread_data.unet_bs
     model.turbo = thread_data.turbo
-    if thread_data.device != 'cpu':
-        model.to(thread_data.device)
+    # if thread_data.device != 'cpu':
+    #     model.to(thread_data.device)
     #if thread_data.reduced_memory:
         #model.model1.to("cpu")
         #model.model2.to("cpu")
@@ -129,33 +129,42 @@ def load_model_ckpt():
     _, _ = modelCS.load_state_dict(sd, strict=False)
     modelCS.eval()
     modelCS.cond_stage_model.device = torch.device(thread_data.device)
-    if thread_data.device != 'cpu':
-        if thread_data.reduced_memory:
-            modelCS.to('cpu')
-        else:
-            modelCS.to(thread_data.device) # Preload on device if not already there.
+    # if thread_data.device != 'cpu':
+    #     if thread_data.reduced_memory:
+    #         modelCS.to('cpu')
+    #     else:
+    #         modelCS.to(thread_data.device) # Preload on device if not already there.
     thread_data.modelCS = modelCS
 
     modelFS = instantiate_from_config(config.modelFirstStage)
     _, _ = modelFS.load_state_dict(sd, strict=False)
 
     if thread_data.vae_file is not None:
-        for model_extension in ['.ckpt', '.vae.pt']:
-            if os.path.exists(thread_data.vae_file + model_extension):
-                print(f"Loading VAE weights from: {thread_data.vae_file}{model_extension}")
-                vae_ckpt = torch.load(thread_data.vae_file + model_extension, map_location="cpu")
-                vae_dict = {k: v for k, v in vae_ckpt["state_dict"].items() if k[0:4] != "loss"}
-                modelFS.first_stage_model.load_state_dict(vae_dict, strict=False)
-                break
-            else:
-                print(f'Cannot find VAE file: {thread_data.vae_file}{model_extension}')
+        try:
+            loaded = False
+            for model_extension in ['.ckpt', '.vae.pt']:
+                if os.path.exists(thread_data.vae_file + model_extension):
+                    print(f"Loading VAE weights from: {thread_data.vae_file}{model_extension}")
+                    vae_ckpt = torch.load(thread_data.vae_file + model_extension, map_location="cpu")
+                    vae_dict = {k: v for k, v in vae_ckpt["state_dict"].items() if k[0:4] != "loss"}
+                    modelFS.first_stage_model.load_state_dict(vae_dict, strict=False)
+                    loaded = True
+                    break
+
+            if not loaded:
+                print(f'Cannot find VAE: {thread_data.vae_file}')
+                thread_data.vae_file = None
+        except:
+            print(traceback.format_exc())
+            print(f'Could not load VAE: {thread_data.vae_file}')
+            thread_data.vae_file = None
 
     modelFS.eval()
-    if thread_data.device != 'cpu':
-        if thread_data.reduced_memory:
-            modelFS.to('cpu')
-        else:
-            modelFS.to(thread_data.device) # Preload on device if not already there.
+    # if thread_data.device != 'cpu':
+    #     if thread_data.reduced_memory:
+    #         modelFS.to('cpu')
+    #     else:
+    #         modelFS.to(thread_data.device) # Preload on device if not already there.
     thread_data.modelFS = modelFS
     del sd
 
@@ -210,35 +219,48 @@ def unload_models():
 
     gc()
 
-def wait_model_move_to(model, target_device): # Send to target_device and wait until complete.
-    if thread_data.device == target_device: return
-    start_mem = torch.cuda.memory_allocated(thread_data.device) / 1e6
-    if start_mem <= 0: return
-    model_name = model.__class__.__name__
-    print(f'Device {thread_data.device} - Sending model {model_name} to {target_device} | Memory transfer starting. Memory Used: {round(start_mem)}Mb')
-    start_time = time.time()
-    model.to(target_device)
-    time_step = start_time
-    WARNING_TIMEOUT = 1.5 # seconds - Show activity in console after timeout.
-    last_mem = start_mem
-    is_transfering = True
-    while is_transfering:
-        time.sleep(0.5) # 500ms
-        mem = torch.cuda.memory_allocated(thread_data.device) / 1e6
-        is_transfering = bool(mem > 0 and mem < last_mem) # still stuff loaded, but less than last time.
-        last_mem = mem
-        if not is_transfering:
-            break;
-        if time.time() - time_step > WARNING_TIMEOUT: # Long delay, print to console to show activity.
-            print(f'Device {thread_data.device} - Waiting for Memory transfer. Memory Used: {round(mem)}Mb, Transfered: {round(start_mem - mem)}Mb')
-            time_step = time.time()
-    print(f'Device {thread_data.device} - {model_name} Moved: {round(start_mem - last_mem)}Mb in {round(time.time() - start_time, 3)} seconds to {target_device}')
+# def wait_model_move_to(model, target_device): # Send to target_device and wait until complete.
+#     if thread_data.device == target_device: return
+#     start_mem = torch.cuda.memory_allocated(thread_data.device) / 1e6
+#     if start_mem <= 0: return
+#     model_name = model.__class__.__name__
+#     print(f'Device {thread_data.device} - Sending model {model_name} to {target_device} | Memory transfer starting. Memory Used: {round(start_mem)}Mb')
+#     start_time = time.time()
+#     model.to(target_device)
+#     time_step = start_time
+#     WARNING_TIMEOUT = 1.5 # seconds - Show activity in console after timeout.
+#     last_mem = start_mem
+#     is_transfering = True
+#     while is_transfering:
+#         time.sleep(0.5) # 500ms
+#         mem = torch.cuda.memory_allocated(thread_data.device) / 1e6
+#         is_transfering = bool(mem > 0 and mem < last_mem) # still stuff loaded, but less than last time.
+#         last_mem = mem
+#         if not is_transfering:
+#             break;
+#         if time.time() - time_step > WARNING_TIMEOUT: # Long delay, print to console to show activity.
+#             print(f'Device {thread_data.device} - Waiting for Memory transfer. Memory Used: {round(mem)}Mb, Transfered: {round(start_mem - mem)}Mb')
+#             time_step = time.time()
+#     print(f'Device {thread_data.device} - {model_name} Moved: {round(start_mem - last_mem)}Mb in {round(time.time() - start_time, 3)} seconds to {target_device}')
+
+def move_to_cpu(model):
+    if thread_data.device != "cpu":
+        d = torch.device(thread_data.device)
+        mem = torch.cuda.memory_allocated(d) / 1e6
+        model.to("cpu")
+        while torch.cuda.memory_allocated(d) / 1e6 >= mem:
+            time.sleep(1)
 
 def load_model_gfpgan():
     if thread_data.gfpgan_file is None: raise ValueError(f'Thread gfpgan_file is undefined.')
+
+    # hack for a bug in facexlib: https://github.com/xinntao/facexlib/pull/19/files
+    from facexlib.detection import retinaface
+    retinaface.device = torch.device(thread_data.device)
+    print('forced retinaface.device to', thread_data.device)
+
     model_path = thread_data.gfpgan_file + ".pth"
-    device = 'cuda:0' if force_gfpgan_to_cuda0 else thread_data.device
-    thread_data.model_gfpgan = GFPGANer(device=torch.device(device), model_path=model_path, upscale=1, arch='clean', channel_multiplier=2, bg_upsampler=None)
+    thread_data.model_gfpgan = GFPGANer(device=torch.device(thread_data.device), model_path=model_path, upscale=1, arch='clean', channel_multiplier=2, bg_upsampler=None)
     print('loaded', thread_data.gfpgan_file, 'to', thread_data.model_gfpgan.device, 'precision', thread_data.precision)
 
 def load_model_real_esrgan():
@@ -288,10 +310,10 @@ def apply_filters(filter_name, image_data, model_path=None):
     print(f'Applying filter {filter_name}...')
     gc() # Free space before loading new data.
 
-    if filter_name == 'gfpgan':
-        if isinstance(image_data, torch.Tensor):
-            image_data.to('cuda:0' if force_gfpgan_to_cuda0 else thread_data.device)
+    if isinstance(image_data, torch.Tensor):
+        image_data.to(thread_data.device)
 
+    if filter_name == 'gfpgan':
         if model_path is not None and model_path != thread_data.gfpgan_file:
             thread_data.gfpgan_file = model_path
             load_model_gfpgan()
@@ -303,9 +325,6 @@ def apply_filters(filter_name, image_data, model_path=None):
         image_data = output[:,:,::-1]
 
     if filter_name == 'real_esrgan':
-        if isinstance(image_data, torch.Tensor):
-            image_data.to(thread_data.device)
-
         if model_path is not None and model_path != thread_data.real_esrgan_file:
             thread_data.real_esrgan_file = model_path
             load_model_real_esrgan()
@@ -473,7 +492,8 @@ def do_mk_img(req: Request):
                 mask = mask.half()
 
         # Send to CPU and wait until complete.
-        wait_model_move_to(thread_data.modelFS, 'cpu')
+        # wait_model_move_to(thread_data.modelFS, 'cpu')
+        move_to_cpu(thread_data.modelFS)
 
         assert 0. <= req.prompt_strength <= 1., 'can only work with strength in [0.0, 1.0]'
         t_enc = int(req.prompt_strength * req.num_inference_steps)
@@ -549,10 +569,6 @@ def do_mk_img(req: Request):
                         img_data[i] = x_sample
                     del x_samples, x_samples_ddim, x_sample
 
-                    if thread_data.reduced_memory:
-                        # Send to CPU and wait until complete.
-                        wait_model_move_to(thread_data.modelFS, 'cpu')
-
                     print("saving images")
                     for i in range(batch_size):
                         img = Image.fromarray(img_data[i])
@@ -606,6 +622,7 @@ def do_mk_img(req: Request):
 
                     # if thread_data.reduced_memory:
                     #     unload_filters()
+                    move_to_cpu(thread_data.modelFS)
                     del img_data
                     gc()
                     if thread_data.device != 'cpu':
@@ -645,7 +662,9 @@ def _txt2img(opt_W, opt_H, opt_n_samples, opt_ddim_steps, opt_scale, start_code,
     shape = [opt_n_samples, opt_C, opt_H // opt_f, opt_W // opt_f]
 
     # Send to CPU and wait until complete.
-    wait_model_move_to(thread_data.modelCS, 'cpu')
+    # wait_model_move_to(thread_data.modelCS, 'cpu')
+
+    move_to_cpu(thread_data.modelCS)
 
     if sampler_name == 'ddim':
         thread_data.model.make_schedule(ddim_num_steps=opt_ddim_steps, ddim_eta=opt_ddim_eta, verbose=False)
@@ -761,11 +780,13 @@ def img_to_base64_str(img, output_format="PNG"):
     img.save(buffered, format=output_format)
     buffered.seek(0)
     img_byte = buffered.getvalue()
-    img_str = "data:image/png;base64," + base64.b64encode(img_byte).decode()
+    mime_type = "image/png" if output_format.lower() == "png" else "image/jpeg"
+    img_str = f"data:{mime_type};base64," + base64.b64encode(img_byte).decode()
     return img_str
 
 def base64_str_to_buffer(img_str):
-    img_str = img_str[len("data:image/png;base64,"):]
+    mime_type = "image/png" if img_str.startswith("data:image/png;") else "image/jpeg"
+    img_str = img_str[len(f"data:{mime_type};base64,"):]
     data = base64.b64decode(img_str)
     buffered = BytesIO(data)
     return buffered

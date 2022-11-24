@@ -5,22 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="/media/images/favicon-16x16.png" sizes="16x16">
     <link rel="icon" type="image/png" href="/media/images/favicon-32x32.png" sizes="32x32">
-    <link rel="stylesheet" href="/media/css/fonts.css?v=1">
-    <link rel="stylesheet" href="/media/css/themes.css?v=2">
-    <link rel="stylesheet" href="/media/css/main.css?v=15">
-    <link rel="stylesheet" href="/media/css/auto-save.css?v=5">
-    <link rel="stylesheet" href="/media/css/modifier-thumbnails.css?v=4">
-    <link rel="stylesheet" href="/media/css/image-editor.css?v=1">
-    <link rel="stylesheet" href="/media/css/fontawesome-all.min.css?v=1">
+    <link rel="stylesheet" href="/media/css/fonts.css">
+    <link rel="stylesheet" href="/media/css/themes.css">
+    <link rel="stylesheet" href="/media/css/main.css">
+    <link rel="stylesheet" href="/media/css/auto-save.css">
+    <link rel="stylesheet" href="/media/css/modifier-thumbnails.css">
+    <link rel="stylesheet" href="/media/css/fontawesome-all.min.css">
+    <link rel="stylesheet" href="/media/css/image-editor.css">
     <link rel="stylesheet" href="/media/css/drawingboard.min.css">
     <script src="/media/js/jquery-3.6.1.min.js"></script>
     <script src="/media/js/drawingboard.min.js"></script>
+    <script src="/media/js/marked.min.js"></script>
 </head>
 <body>
 <div id="container">
     <div id="top-nav">
         <div id="logo">
-            <h1>Stable Diffusion UI <small>v2.4.2 <span id="updateBranchLabel"></span></small></h1>
+            <h1>
+                Stable Diffusion UI
+                <small>v2.4.14 <span id="updateBranchLabel"></span></small>
+            </h1>
         </div>
         <div id="server-status">
             <div id="server-status-color">●</div>
@@ -50,14 +54,13 @@
                     <label for="prompt"><b>Enter Prompt</b></label> <small>or</small> <button id="promptsFromFileBtn">Load from a file</button>
                     <textarea id="prompt" class="col-free">a photograph of an astronaut riding a horse</textarea>
                     <input id="prompt_from_file" name="prompt_from_file" type="file" /> <!-- hidden -->
-
                     <label for="negative_prompt" class="collapsible" id="negative_prompt_handle">
                         Negative Prompt
                         <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Writing-prompts#negative-prompts" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">Click to learn more about Negative Prompts</span></i></a>
                         <small>(optional)</small>
                     </label>
                     <div class="collapsible-content">
-                        <input id="negative_prompt" name="negative_prompt" placeholder="list the things to remove from the image (e.g. fog, green)">
+                        <textarea id="negative_prompt" name="negative_prompt" placeholder="list the things to remove from the image (e.g. fog, green)"></textarea>
                     </div>
                 </div>
 
@@ -87,7 +90,7 @@
                     <div id="editor-inputs-tags-list"></div>
                 </div>
 
-                <button id="makeImage">Make Image</button>
+                <button id="makeImage" class="primaryButton">Make Image</button>
                 <button id="stopImage" class="secondaryButton">Stop All</button>
             </div>
 
@@ -97,7 +100,7 @@
                 <h4 class="collapsible">
                     Image Settings
                     <i id="reset-image-settings" class="fa-solid fa-arrow-rotate-left section-button">
-                        <span class="simple-tooltip left">
+                        <span class="simple-tooltip right">
                             Reset Image Settings
                         </span>
                     </i>
@@ -231,7 +234,10 @@
 
         <div id="preview" class="col-free">
             <div id="initial-text">
-                Type a prompt and press the "Make Image" button.<br/><br/>You can set an "Initial Image" if you want to guide the AI.<br/><br/>You can also add modifiers like "Realistic", "Pencil Sketch", "ArtStation" etc by browsing through the "Image Modifiers" section and selecting the desired modifiers.<br/><br/>Click "Advanced Settings" for additional settings like seed, image size, number of images to generate etc.<br/><br/>Enjoy! :)
+                Type a prompt and press the "Make Image" button.<br/><br/>You can set an "Initial Image" if you want to guide the AI.<br/><br/>
+                You can also add modifiers like "Realistic", "Pencil Sketch", "ArtStation" etc by browsing through the "Image Modifiers" section 
+                and selecting the desired modifiers.<br/><br/>
+                Click "Image Settings" for additional settings like seed, image size, number of images to generate etc.<br/><br/>Enjoy! :)
             </div>
             <div id="preview-tools">
                 <button id="clear-all-previews" class="secondaryButton"><i class="fa-solid fa-trash-can"></i> Clear All</button>
@@ -251,8 +257,10 @@
         <div id="tab-content-settings" class="tab-content">
             <div id="system-settings" class="tab-content-inner">
                 <h1>System Settings</h1>
-                <table class="form-table"></table>
+                <div class="parameters-table"></div>
                 <br/>
+                <button id="save-system-settings-btn" class="primaryButton">Save</button>
+                <br/><br/>
                 <div>
                     <h3><i class="fa fa-microchip icon"></i> System Info</h3>
                     <div id="system-info"></div>
@@ -271,6 +279,7 @@
                                 <li> <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/UI-Overview" target="_blank"><i class="fa-solid fa-list fa-fw"></i> UI Overview</a>
                                 <li> <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Writing-Prompts" target="_blank"><i class="fa-solid fa-pen-to-square fa-fw"></i> Writing prompts</a>
                                 <li> <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Inpainting" target="_blank"><i class="fa-solid fa-paintbrush fa-fw"></i> Inpainting</a>
+                                <li> <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Run-on-Multiple-GPUs" target="_blank"><i class="fa-solid fa-paintbrush fa-fw"></i> Run on Multiple GPUs</a>
                             </ul>
   
                             <li><span class="help-section">Installation</span>
@@ -334,17 +343,16 @@
     </div>
 </div>
 </body>
-
-<script src="media/js/parameters.js?v=7"></script>
-<script src="media/js/plugins.js?v=1"></script>
-<script src="media/js/utils.js?v=6"></script>
-<script src="media/js/inpainting-editor.js?v=1"></script>
-<script src="media/js/image-modifiers.js?v=6"></script>
-<script src="media/js/auto-save.js?v=8"></script>
-<script src="media/js/main.js?v=20"></script>
-<script src="media/js/themes.js?v=4"></script>
-<script src="media/js/dnd.js?v=9"></script>
-<script src="media/js/image-editor.js?v=1"></script>
+<script src="media/js/utils.js"></script>
+<script src="media/js/parameters.js"></script>
+<script src="media/js/plugins.js"></script>
+<script src="media/js/inpainting-editor.js"></script>
+<script src="media/js/image-modifiers.js"></script>
+<script src="media/js/auto-save.js"></script>
+<script src="media/js/main.js"></script>
+<script src="media/js/themes.js"></script>
+<script src="media/js/dnd.js"></script>
+<script src="media/js/image-editor.js"></script>
 <script>
 async function init() {
     await initSettings()

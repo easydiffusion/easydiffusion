@@ -358,3 +358,19 @@ function preventNonNumericalInput(e) {
         e.preventDefault();
     }
 }
+
+/* inserts custom html to allow prettifying of inputs */
+function prettifyInputs(root_element) {
+    root_element.querySelectorAll(`input[type="checkbox"]`).forEach(element => {
+        var parent = element.parentNode;
+        if (!parent.classList.contains("input-toggle")) {
+            var wrapper = document.createElement("div");
+            wrapper.classList.add("input-toggle");
+            parent.replaceChild(wrapper, element);
+            wrapper.appendChild(element);
+            var label = document.createElement("label");
+            label.htmlFor = element.id;
+            wrapper.appendChild(label);
+        }
+    })
+}

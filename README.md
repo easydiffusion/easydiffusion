@@ -66,12 +66,12 @@ Useful for judging (and stopping) an image quickly, without waiting for it to fi
 # System Requirements
 1. Windows 10/11, or Linux. Experimental support for Mac is coming soon.
 2. An NVIDIA graphics card, preferably with 4GB or more of VRAM. If you don't have a compatible graphics card, it'll automatically run in the slower "CPU Mode".
-3. Minimum 8 GB of RAM.
+3. Minimum 8 GB of RAM and 25GB of disk space.
 
 You don't need to install or struggle with Python, Anaconda, Docker etc. The installer will take care of whatever is needed.
 
 # Installation
-1. **Download** [for Windows](https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.3.5/stable-diffusion-ui-windows.zip) or [for Linux](https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.3.5/stable-diffusion-ui-linux.zip).
+1. **Download** [for Windows](https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.4.13/stable-diffusion-ui-windows.zip) or [for Linux](https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.4.13/stable-diffusion-ui-linux.zip).
 
 2. **Extract**:
   - For Windows: After unzipping the file, please move the `stable-diffusion-ui` folder to your `C:` (or any drive like D:, at the top root level), e.g. `C:\stable-diffusion-ui`. This will avoid a common problem with Windows (file path length limits).

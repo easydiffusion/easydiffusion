@@ -1,5 +1,3 @@
-
-
 /**
  * Enum of parameter types
  * @readonly
@@ -30,18 +28,21 @@ var PARAMETERS = [
 		type: ParameterType.select,
 		label: "Theme",
 		default: "theme-default",
+		note: "customize the look and feel of the ui",
 		options: [ // Note: options expanded dynamically
 			{
 				value: "theme-default",
 				label: "Default"
 			}
-		]
+		],
+		icon: "fa-palette"
 	},
 	{
 		id: "save_to_disk",
 		type: ParameterType.checkbox,
 		label: "Auto-Save Images",
 		note: "automatically saves images to the specified location",
+		icon: "fa-download",
 		default: false,
 	},
 	{
@@ -57,20 +58,31 @@ var PARAMETERS = [
 		type: ParameterType.checkbox,
 		label: "Enable Sound",
 		note: "plays a sound on task completion",
+		icon: "fa-volume-low",
+		default: true,
+	},
+	{
+		id: "ui_open_browser_on_start",
+		type: ParameterType.checkbox,
+		label: "Open browser on startup",
+		note: "starts the default browser on startup",
+		icon: "fa-window-restore",
 		default: true,
 	},
 	{
 		id: "turbo",
 		type: ParameterType.checkbox,
 		label: "Turbo Mode",
-		default: true,
 		note: "generates images faster, but uses an additional 1 GB of GPU memory",
+		icon: "fa-forward",
+		default: true,
 	},
 	{
 		id: "use_cpu",
 		type: ParameterType.checkbox,
 		label: "Use CPU (not GPU)",
 		note: "warning: this will be *very* slow",
+		icon: "fa-microchip",
 		default: false,
 	},
 	{
@@ -91,6 +103,7 @@ var PARAMETERS = [
 		type: ParameterType.checkbox,
 		label: "Use Full Precision",
 		note: "for GPU-only. warning: this will consume more VRAM",
+		icon: "fa-crosshairs",
 		default: false,
 	},
 	{
@@ -98,13 +111,33 @@ var PARAMETERS = [
 		type: ParameterType.checkbox,
 		label: "Auto-Save Settings",
 		note: "restores settings on browser load",
+		icon: "fa-gear",
 		default: true,
+	},
+	{
+		id: "listen_to_network",
+		type: ParameterType.checkbox,
+		label: "Make Stable Diffusion available on your network",
+		note: "Other devices on your network can access this web page",
+		icon: "fa-network-wired",
+		default: true,
+	},
+	{
+		id: "listen_port",
+		type: ParameterType.custom,
+		label: "Network port",
+		note: "Port that this server listens to. The '9000' part in 'http://localhost:9000'",
+		icon: "fa-anchor",
+		render: (parameter) => {
+			return `<input id="${parameter.id}" name="${parameter.id}" size="6" value="9000" onkeypress="preventNonNumericalInput(event)">`
+		}
 	},
 	{
 		id: "use_beta_channel",
 		type: ParameterType.checkbox,
-		label: "🔥Beta channel",
+		label: "Beta channel",
 		note: "Get the latest features immediately (but could be less stable). Please restart the program after changing this.",
+		icon: "fa-fire",
 		default: false,
 	},
 ];
@@ -135,20 +168,214 @@ function getParameterElement(parameter) {
 	}
 }
 
-var parametersTable = document.querySelector("#system-settings table")
+let parametersTable = document.querySelector("#system-settings .parameters-table")
 /* fill in the system settings popup table */
 function initParameters() {
 	PARAMETERS.forEach(parameter => {
 		var element = getParameterElement(parameter)
 		var note = parameter.note ? `<small>${parameter.note}</small>` : "";
-		var newrow = document.createElement('tr')
+		var icon = parameter.icon ? `<i class="fa ${parameter.icon}"></i>` : "";
+		var newrow = document.createElement('div')
 		newrow.innerHTML = `
-			<td><label for="${parameter.id}">${parameter.label}</label></td>
-			<td><div>${element}${note}<div></td>`
+			<div>${icon}</div>
+			<div><label for="${parameter.id}">${parameter.label}</label>${note}</div>
+			<div>${element}</div>`
 		parametersTable.appendChild(newrow)
 		parameter.settingsEntry = newrow
 	})
 }
 
-initParameters();
+initParameters()
 
+let turboField = document.querySelector('#turbo')
+let useCPUField = document.querySelector('#use_cpu')
+let autoPickGPUsField = document.querySelector('#auto_pick_gpus')
+let useGPUsField = document.querySelector('#use_gpus')
+let useFullPrecisionField = document.querySelector('#use_full_precision')
+let saveToDiskField = document.querySelector('#save_to_disk')
+let diskPathField = document.querySelector('#diskPath')
+let listenToNetworkField = document.querySelector("#listen_to_network")
+let listenPortField = document.querySelector("#listen_port")
+let useBetaChannelField = document.querySelector("#use_beta_channel")
+let uiOpenBrowserOnStartField = document.querySelector("#ui_open_browser_on_start")
+
+let saveSettingsBtn = document.querySelector('#save-system-settings-btn')
+
+async function changeAppConfig(configDelta) {
+    try {
+        let res = await fetch('/app_config', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(configDelta)
+        })
+        res = await res.json()
+
+        console.log('set config status response', res)
+    } catch (e) {
+        console.log('set config status error', e)
+    }
+}
+
+async function getAppConfig() {
+    try {
+        let res = await fetch('/get/app_config')
+        const config = await res.json()
+
+        if (config.update_branch === 'beta') {
+            useBetaChannelField.checked = true
+            document.querySelector("#updateBranchLabel").innerText = "(beta)"
+        }
+        if (config.ui && config.ui.open_browser_on_start === false) {
+            uiOpenBrowserOnStartField.checked = false
+        }
+	if (config.net && config.net.listen_to_network === false) {
+	    listenToNetworkField.checked = false
+	}
+	if (config.net && config.net.listen_port !== undefined) {
+	    listenPortField.value = config.net.listen_port
+	}
+
+        console.log('get config status response', config)
+    } catch (e) {
+        console.log('get config status error', e)
+    }
+}
+
+saveToDiskField.addEventListener('change', function(e) {
+    diskPathField.disabled = !this.checked
+})
+
+function getCurrentRenderDeviceSelection() {
+    let selectedGPUs = $('#use_gpus').val()
+
+    if (useCPUField.checked && !autoPickGPUsField.checked) {
+        return 'cpu'
+    }
+    if (autoPickGPUsField.checked || selectedGPUs.length == 0) {
+        return 'auto'
+    }
+
+    return selectedGPUs.join(',')
+}
+
+useCPUField.addEventListener('click', function() {
+    let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
+    let autoPickGPUSettingEntry = getParameterSettingsEntry('auto_pick_gpus')
+	console.log("hello", this.checked);
+    if (this.checked) {
+        gpuSettingEntry.style.display = 'none'
+        autoPickGPUSettingEntry.style.display = 'none'
+        autoPickGPUsField.setAttribute('data-old-value', autoPickGPUsField.checked)
+        autoPickGPUsField.checked = false
+    } else if (useGPUsField.options.length >= MIN_GPUS_TO_SHOW_SELECTION) {
+        gpuSettingEntry.style.display = ''
+        autoPickGPUSettingEntry.style.display = ''
+        let oldVal = autoPickGPUsField.getAttribute('data-old-value')
+        if (oldVal === null || oldVal === undefined) { // the UI started with CPU selected by default
+            autoPickGPUsField.checked = true
+        } else {
+            autoPickGPUsField.checked = (oldVal === 'true')
+        }
+        gpuSettingEntry.style.display = (autoPickGPUsField.checked ? 'none' : '')
+    }
+})
+
+useGPUsField.addEventListener('click', function() {
+    let selectedGPUs = $('#use_gpus').val()
+    autoPickGPUsField.checked = (selectedGPUs.length === 0)
+})
+
+autoPickGPUsField.addEventListener('click', function() {
+    if (this.checked) {
+        $('#use_gpus').val([])
+    }
+
+    let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
+    gpuSettingEntry.style.display = (this.checked ? 'none' : '')
+})
+
+async function getDiskPath() {
+    try {
+        var diskPath = getSetting("diskPath")
+        if (diskPath == '' || diskPath == undefined || diskPath == "undefined") {
+            let res = await fetch('/get/output_dir')
+            if (res.status === 200) {
+                res = await res.json()
+                res = res.output_dir
+
+                setSetting("diskPath", res)
+            }
+        }
+    } catch (e) {
+        console.log('error fetching output dir path', e)
+    }
+}
+
+async function getDevices() {
+    try {
+        let res = await fetch('/get/devices')
+        if (res.status === 200) {
+            res = await res.json()
+
+            let allDeviceIds = Object.keys(res['all']).filter(d => d !== 'cpu')
+            let activeDeviceIds = Object.keys(res['active']).filter(d => d !== 'cpu')
+
+            if (activeDeviceIds.length === 0) {
+                useCPUField.checked = true
+            }
+
+            if (allDeviceIds.length < MIN_GPUS_TO_SHOW_SELECTION || useCPUField.checked) {
+                let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
+                gpuSettingEntry.style.display = 'none'
+                let autoPickGPUSettingEntry = getParameterSettingsEntry('auto_pick_gpus')
+                autoPickGPUSettingEntry.style.display = 'none'
+            }
+
+            if (allDeviceIds.length === 0) {
+                useCPUField.checked = true
+                useCPUField.disabled = true // no compatible GPUs, so make the CPU mandatory
+            }
+
+            autoPickGPUsField.checked = (res['config'] === 'auto')
+
+            useGPUsField.innerHTML = ''
+            allDeviceIds.forEach(device => {
+                let deviceName = res['all'][device]['name']
+                let deviceOption = `<option value="${device}">${deviceName} (${device})</option>`
+                useGPUsField.insertAdjacentHTML('beforeend', deviceOption)
+            })
+
+            if (autoPickGPUsField.checked) {
+                let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
+                gpuSettingEntry.style.display = 'none'
+            } else {
+                $('#use_gpus').val(activeDeviceIds)
+            }
+        }
+    } catch (e) {
+        console.log('error fetching devices', e)
+    }
+}
+
+saveSettingsBtn.addEventListener('click', function() {
+	let updateBranch = (useBetaChannelField.checked ? 'beta' : 'main')
+
+        if (listenPortField.value == '') {
+            alert('The network port field must not be empty.')
+        } else if (listenPortField.value<1 || listenPortField.value>65535) {
+            alert('The network port must be a number from 1 to 65535')
+        } else {
+	    changeAppConfig({
+              'render_devices': getCurrentRenderDeviceSelection(),
+              'update_branch': updateBranch,
+              'ui_open_browser_on_start': uiOpenBrowserOnStartField.checked,
+              'listen_to_network': listenToNetworkField.checked,
+              'listen_port': listenPortField.value
+            })
+        }
+
+        saveSettingsBtn.classList.add('active')
+        asyncDelay(300).then(() => saveSettingsBtn.classList.remove('active'))
+})
