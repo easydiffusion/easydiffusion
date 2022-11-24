@@ -55,138 +55,170 @@ var IMAGE_EDITOR_SECTIONS = [
 	}
 ]
 
-function getOptionValue(section_name) {
-	var section = IMAGE_EDITOR_SECTIONS.find(s => s.name == section_name);
-	return section.value === undefined ? section.default : section.value;
-}
-
-function selectOption(section_name, option_index) {
-	var section = IMAGE_EDITOR_SECTIONS.find(s => s.name == section_name)
-	var value = section.options[option_index]
-	section.value = value
-
-	section.optionElements.forEach(element => element.classList.remove("active"))
-	section.optionElements[option_index].classList.add("active")
-
-	// change the editor
-	if (["color", "brush_size", "sharpness", "opacity"].includes(section_name)) {
-		setBrush()
-	}
-}
-
-function initImageEditor() {
-	editorCanvas.addEventListener("mousedown", canvasMouseHandler);
-	editorCanvas.addEventListener("mouseup", canvasMouseHandler);
-	editorCanvas.addEventListener("mousemove", canvasMouseHandler);
-	editorCanvas.addEventListener("mouseout", canvasMouseHandler);
-	IMAGE_EDITOR_SECTIONS.forEach(section => {
-		section.id = `image_editor_${section.name}`
-		var sectionElement = document.createElement("div")
-		sectionElement.id = section.id
-
-		var title = document.createElement("h4");
-		title.innerText = section.title
-		sectionElement.appendChild(title)
-
-		var optionsContainer = document.createElement("div")
-		optionsContainer.classList.add("editor-options-container")
-
-		section.optionElements = []
-		section.options.forEach((option, index) => {
-			var optionHolder = document.createElement("div")
-			var optionElement = document.createElement("div")
-			optionHolder.appendChild(optionElement)
-			section.initElement(optionElement, option)
-			optionElement.addEventListener("click", target => selectOption(section.name, index));
-			optionsContainer.appendChild(optionHolder);
-			section.optionElements.push(optionElement);
+class ImageEditor {
+	constructor(container) {
+		this.drawing = false
+		this.container = container
+		this.layers = {};
+		var layer_names = [
+			"drawing",
+			"overlay"
+		];
+		layer_names.forEach(name => {
+			let canvas = document.createElement("canvas");
+			this.container.appendChild(canvas);
+			this.layers[name] = {
+				name: name,
+				canvas: canvas,
+				ctx: canvas.getContext("2d")
+			};
 		})
-		selectOption(section.name, section.options.indexOf(section.default))
 
-		sectionElement.appendChild(optionsContainer)
+		this.setSize(512, 512)
 
-		editorControls.appendChild(sectionElement)
-	});
-	setBrush();
-}
+		// add mouse handlers
+		this.container.addEventListener("mousedown", this.mouseHandler.bind(this));
+		this.container.addEventListener("mouseup", this.mouseHandler.bind(this));
+		this.container.addEventListener("mousemove", this.mouseHandler.bind(this));
+		this.container.addEventListener("mouseout", this.mouseHandler.bind(this));
+		this.container.addEventListener("mouseenter", this.mouseHandler.bind(this));
 
-// var drawingBoardElement = document.getElementById("image-editor-canvas canvas")
-var drawingBoardElement = document.getElementById("image-editor-canvas")
-var editorCanvas = drawingBoardElement.querySelector("canvas")
-var editorContext = editorCanvas.getContext("2d")
-drawingBoardElement.style.width = IMAGE_EDITOR_MAX_SIZE + "px"
-drawingBoardElement.style.height = IMAGE_EDITOR_MAX_SIZE + "px"
-// var editorDrawingBoard = new DrawingBoard.Board(drawingBoardElement.id, {
-//     color: "#ffffff",
-//     background: false,
-//     size: 30,
-//     webStorage: false,
-//     controls: [{"DrawingMode": {"filler": false}}, "Size", "Navigation"]
-// })
-
-function setImageEditorImage(url, width, height) {
-	drawingBoardElement.style.backgroundImage = `url('${url}')`
-
-	var max_size = Math.min(window.innerWidth, IMAGE_EDITOR_MAX_SIZE)
-
-	if (width > height) {
-		var multiplier = max_size / width;
-		width = (multiplier * width).toFixed();
-		height = (multiplier * height).toFixed();
-	}
-	else {
-		var multiplier = max_size / height;
-		width = (multiplier * width).toFixed();
-		height = (multiplier * height).toFixed();
-	}
-
-	// editorDrawingBoard.opts.aspectRatio = (width / height).toFixed(3)
-
-	drawingBoardElement.style.width = width + "px"
-	drawingBoardElement.style.height = height + "px"
+		// initialize editor controls
+		IMAGE_EDITOR_SECTIONS.forEach(section => {
+			section.id = `image_editor_${section.name}`
+			var sectionElement = document.createElement("div")
+			sectionElement.id = section.id
 	
-	editorCanvas.width = width
-	editorCanvas.height = height
-	// editorDrawingBoard.opts.enlargeYourContainer = true
-    // editorDrawingBoard.opts.size = inpaintingEditor.ctx.lineWidth
-	// editorDrawingBoard.resize()
+			var title = document.createElement("h4");
+			title.innerText = section.title
+			sectionElement.appendChild(title)
 	
-	setBrush()
-}
-
-function setBrush() {
-	editorContext.lineCap = "round"
-	editorContext.lineJoin = "round"
-	editorContext.lineWidth = getOptionValue("brush_size");
-	editorContext.fillStyle = getOptionValue("color");
-	editorContext.strokeStyle = getOptionValue("color");
-	var sharpness = getOptionValue("sharpness");
-	editorContext.filter = sharpness == 1 ? `none` : `blur(${10}px)`;
-	editorContext.globalAlpha = (1 - getOptionValue("opacity"));
-}
-
-var DRAWING = false;
-function canvasMouseHandler(event) {
-	var bbox = editorCanvas.getBoundingClientRect();
-	var x = event.clientX - bbox.left;
-	var y = event.clientY - bbox.top;
-
-	if (event.type == "mousedown") {
-		DRAWING = true;
-		editorContext.beginPath();
-		editorContext.moveTo(x, y);
+			var optionsContainer = document.createElement("div")
+			optionsContainer.classList.add("editor-options-container")
+	
+			section.optionElements = []
+			section.options.forEach((option, index) => {
+				var optionHolder = document.createElement("div")
+				var optionElement = document.createElement("div")
+				optionHolder.appendChild(optionElement)
+				section.initElement(optionElement, option)
+				optionElement.addEventListener("click", target => this.selectOption(section.name, index));
+				optionsContainer.appendChild(optionHolder);
+				section.optionElements.push(optionElement);
+			})
+			this.selectOption(section.name, section.options.indexOf(section.default))
+	
+			sectionElement.appendChild(optionsContainer)
+	
+			editorControls.appendChild(sectionElement)
+		});
 	}
-	if (event.type == "mouseup" || event.type == "mousemove") {
-		if (DRAWING) {
-			editorContext.lineTo(x, y);
-			editorContext.clearRect(0, 0, editorCanvas.width, editorCanvas.height);
-			editorContext.stroke();
+	setSize(width, height) {
+		var max_size = Math.min(window.innerWidth, IMAGE_EDITOR_MAX_SIZE)
+	
+		if (width > height) {
+			var multiplier = max_size / width;
+			width = (multiplier * width).toFixed();
+			height = (multiplier * height).toFixed();
+		}
+		else {
+			var multiplier = max_size / height;
+			width = (multiplier * width).toFixed();
+			height = (multiplier * height).toFixed();
+		}
+		this.width = width;
+		this.height = height;
+	
+		this.container.style.width = width + "px"
+		this.container.style.height = height + "px"
+		
+		Object.values(this.layers).forEach(layer => {
+			layer.canvas.width = width
+			layer.canvas.height = height
+		})
+
+		this.setBrush()
+	}
+	setImage(url, width, height) {
+		this.container.style.backgroundImage = `url('${url}')`
+		this.setSize(width, height)
+	}
+	get ctx() {
+		return this.layers.overlay.ctx;
+	}
+	setBrush() {
+		this.ctx.lineCap = "round"
+		this.ctx.lineJoin = "round"
+		this.ctx.lineWidth = this.getOptionValue("brush_size");
+		this.ctx.fillStyle = this.getOptionValue("color");
+		this.ctx.strokeStyle = this.getOptionValue("color");
+		var sharpness = this.getOptionValue("sharpness");
+		this.ctx.filter = sharpness == 1 ? `none` : `blur(${10}px)`;
+		this.ctx.globalAlpha = (1 - this.getOptionValue("opacity"));
+		
+		this.layers.drawing.ctx.lineCap = "round"
+		this.layers.drawing.ctx.lineJoin = "round"
+		this.layers.drawing.ctx.lineWidth = this.getOptionValue("brush_size");
+		this.layers.drawing.ctx.fillStyle = this.getOptionValue("color");
+		this.layers.drawing.ctx.strokeStyle = this.getOptionValue("color");
+		this.layers.drawing.ctx.filter = sharpness == 1 ? `none` : `blur(${10}px)`;
+		this.layers.drawing.ctx.globalAlpha = (1 - this.getOptionValue("opacity"));
+	}
+	mouseHandler(event) {
+		var bbox = this.layers.overlay.canvas.getBoundingClientRect();
+		var x = event.clientX - bbox.left;
+		var y = event.clientY - bbox.top;
+	
+		if (event.type == "mousedown" || (event.type == "mouseenter" && event.buttons == 1)) {
+			this.drawing = true;
+			this.ctx.beginPath();
+			this.ctx.moveTo(x, y);
+			this.layers.drawing.ctx.beginPath();
+			this.layers.drawing.ctx.moveTo(x, y);
+		}
+		if (event.type == "mouseup" || event.type == "mousemove") {
+			if (this.drawing) {
+				this.ctx.lineTo(x, y);
+				this.layers.drawing.ctx.lineTo(x, y);
+				this.ctx.clearRect(0, 0, this.width, this.height);
+				this.ctx.stroke();
+			}
+		}
+		if (event.type == "mouseup" || event.type == "mouseout") {
+			if (this.drawing) {
+				this.drawing = false;
+				this.layers.drawing.ctx.stroke();
+				this.ctx.clearRect(0, 0, this.width, this.height);
+			}
 		}
 	}
-	if (event.type == "mouseup" || event.type == "mouseout") {
-		DRAWING = false;
+	getOptionValue(section_name) {
+		var section = IMAGE_EDITOR_SECTIONS.find(s => s.name == section_name);
+		return section.value === undefined ? section.default : section.value;
+	}
+	selectOption(section_name, option_index) {
+		var section = IMAGE_EDITOR_SECTIONS.find(s => s.name == section_name)
+		var value = section.options[option_index]
+		section.value = value
+	
+		section.optionElements.forEach(element => element.classList.remove("active"))
+		section.optionElements[option_index].classList.add("active")
+	
+		// change the editor
+		if (["color", "brush_size", "sharpness", "opacity"].includes(section_name)) {
+			this.setBrush()
+		}
 	}
 }
 
-initImageEditor()
-setBrush()
+const imageEditor = new ImageEditor(document.getElementById("image-editor-canvas"));
+
+
+
+// var drawingBoardElement = document.getElementById("image-editor-canvas canvas")
+// var drawingBoardElement = document.getElementById("image-editor-canvas")
+// var editorCanvas = drawingBoardElement.querySelector("canvas")
+// var editorContext = editorCanvas.getContext("2d")
+// drawingBoardElement.style.width = IMAGE_EDITOR_MAX_SIZE + "px"
+// drawingBoardElement.style.height = IMAGE_EDITOR_MAX_SIZE + "px"
+

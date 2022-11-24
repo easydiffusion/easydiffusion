@@ -72,10 +72,12 @@
 	align-items: center;
 }
 
-#image-editor-canvas .drawing-board-controls {
-	display: none;
+#image-editor-canvas {
+	position: relative;
 }
 
-#image-editor-canvas .drawing-board-canvas-wrapper {
-	border: 1px solid var(--background-color3);
+#image-editor-canvas canvas {
+	position: absolute;
+	left: 0;
+	top: 0;
 }
