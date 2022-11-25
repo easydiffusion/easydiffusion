@@ -749,20 +749,57 @@ def _txt2img(opt_W, opt_H, opt_n_samples, opt_ddim_steps, opt_scale, start_code,
     if sampler_name == 'ddim':
         thread_data.model.make_schedule(ddim_num_steps=opt_ddim_steps, ddim_eta=opt_ddim_eta, verbose=False)
 
-    samples_ddim = thread_data.model.sample(
-        S=opt_ddim_steps,
-        conditioning=c,
-        seed=opt_seed,
-        shape=shape,
-        verbose=False,
-        unconditional_guidance_scale=opt_scale,
-        unconditional_conditioning=uc,
-        eta=opt_ddim_eta,
-        x_T=start_code,
-        img_callback=img_callback,
-        mask=mask,
-        sampler = sampler_name,
-    )
+    # samples, _ = sampler.sample(S=opt.steps,
+    #                                                  conditioning=c,
+    #                                                  batch_size=opt.n_samples,
+    #                                                  shape=shape,
+    #                                                  verbose=False,
+    #                                                  unconditional_guidance_scale=opt.scale,
+    #                                                  unconditional_conditioning=uc,
+    #                                                  eta=opt.ddim_eta,
+    #                                                  x_T=start_code)
+
+    if thread_data.test_sd2:
+        from ldm.models.diffusion.ddim import DDIMSampler
+        from ldm.models.diffusion.plms import PLMSSampler
+
+        shape = [opt_C, opt_H // opt_f, opt_W // opt_f]
+
+        if sampler_name == 'plms':
+            sampler = PLMSSampler(thread_data.model)
+        elif sampler_name == 'ddim':
+            sampler = DDIMSampler(thread_data.model)
+
+        samples_ddim = sampler.sample(
+            S=opt_ddim_steps,
+            conditioning=c,
+            batch_size=opt_n_samples,
+            seed=opt_seed,
+            shape=shape,
+            verbose=False,
+            unconditional_guidance_scale=opt_scale,
+            unconditional_conditioning=uc,
+            eta=opt_ddim_eta,
+            x_T=start_code,
+            img_callback=img_callback,
+            mask=mask,
+            sampler = sampler_name,
+        )
+    else:
+        samples_ddim = thread_data.model.sample(
+            S=opt_ddim_steps,
+            conditioning=c,
+            seed=opt_seed,
+            shape=shape,
+            verbose=False,
+            unconditional_guidance_scale=opt_scale,
+            unconditional_conditioning=uc,
+            eta=opt_ddim_eta,
+            x_T=start_code,
+            img_callback=img_callback,
+            mask=mask,
+            sampler = sampler_name,
+        )
     yield from samples_ddim
 
 def _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc, opt_ddim_steps, opt_ddim_eta, opt_seed, img_callback, mask):
