@@ -21,6 +21,10 @@ python -c "import os; import shutil; frm = 'sd-ui-files/ui/hotfix/9c24e6cd9f499d
 # Caution, this file will make your eyes and brain bleed. It's such an unholy mess.
 # Note to self: Please rewrite this in Python. For the sake of your own sanity.
 
+if [ "$test_sd2" == "" ]; then
+    export test_sd2="N"
+fi
+
 if [ -e "scripts/install_status.txt" ] && [ `grep -c sd_git_cloned scripts/install_status.txt` -gt "0" ]; then
     echo "Stable Diffusion's git repository was already installed. Updating.."
 
@@ -30,9 +34,16 @@ if [ -e "scripts/install_status.txt" ] && [ `grep -c sd_git_cloned scripts/insta
 
     git reset --hard
     git pull
-    git -c advice.detachedHead=false checkout 7f32368ed1030a6e710537047bacd908adea183a
 
-    git apply --whitespace=warn ../ui/sd_internal/ddim_callback.patch || fail "ddim patch failed"
+    if [ "$test_sd2" == "N" ]; then
+        git -c advice.detachedHead=false checkout 7f32368ed1030a6e710537047bacd908adea183a
+
+        git apply --whitespace=warn ../ui/sd_internal/ddim_callback.patch || fail "ddim patch failed"
+    elif [ "$test_sd2" == "Y" ]; then
+        git -c advice.detachedHead=false checkout 7da785cfa0d128368bc1357b54d380ba33dc1138
+
+        git apply --whitespace=warn ../ui/sd_internal/ddim_callback_sd2.patch || fail "sd2 ddim patch failed"
+    fi
 
     cd ..
 else
@@ -291,6 +302,9 @@ if [ ! -f "../models/vae/vae-ft-mse-840000-ema-pruned.ckpt" ]; then
     fi
 fi
 
+if [ "$test_sd2" == "Y" ]; then
+    pip install open_clip_torch==2.0.2
+fi
 
 if [ `grep -c sd_install_complete ../scripts/install_status.txt` -gt "0" ]; then
     echo sd_weights_downloaded >> ../scripts/install_status.txt

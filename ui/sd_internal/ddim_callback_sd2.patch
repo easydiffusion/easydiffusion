@@ -1,0 +1,20 @@
+diff --git a/optimizedSD/ddpm.py b/optimizedSD/ddpm.py
+index 1bbdd02..cd00cc3 100644
+--- a/optimizedSD/ddpm.py
++++ b/optimizedSD/ddpm.py
+@@ -348,6 +348,7 @@ class DDPM(pl.LightningModule):
+     def sample(self, batch_size=16, return_intermediates=False):
+         image_size = self.image_size
+         channels = self.channels
++        print('sampler 2')
+         return self.p_sample_loop((batch_size, channels, image_size, image_size),
+                                   return_intermediates=return_intermediates)
+ 
+@@ -1090,6 +1091,7 @@ class LatentDiffusion(DDPM):
+     def sample(self, cond, batch_size=16, return_intermediates=False, x_T=None,
+                verbose=True, timesteps=None, quantize_denoised=False,
+                mask=None, x0=None, shape=None, **kwargs):
++        print('sampler 1')
+         if shape is None:
+             shape = (batch_size, self.channels, self.image_size, self.image_size)
+         if cond is not None:
