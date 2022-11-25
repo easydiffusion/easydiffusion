@@ -614,7 +614,7 @@ def do_mk_img(req: Request):
                         if handler == _txt2img:
                             x_samples = _txt2img(req.width, req.height, req.num_outputs, req.num_inference_steps, req.guidance_scale, None, opt_C, opt_f, opt_ddim_eta, c, uc, opt_seed, img_callback, mask, req.sampler)
                         else:
-                            x_samples = _img2img(init_latent, t_enc, batch_size, req.guidance_scale, c, uc, req.num_inference_steps, opt_ddim_eta, opt_seed, img_callback, mask)
+                            x_samples = _img2img(init_latent, t_enc, batch_size, req.guidance_scale, c, uc, req.num_inference_steps, opt_ddim_eta, opt_seed, img_callback, mask, opt_C, req.height, req.width, opt_f)
 
                         if req.stream_progress_updates:
                             yield from x_samples
@@ -806,7 +806,7 @@ def _txt2img(opt_W, opt_H, opt_n_samples, opt_ddim_steps, opt_scale, start_code,
         )
     yield from samples_ddim
 
-def _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc, opt_ddim_steps, opt_ddim_eta, opt_seed, img_callback, mask):
+def _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc, opt_ddim_steps, opt_ddim_eta, opt_seed, img_callback, mask, opt_C=1, opt_H=1, opt_W=1, opt_f=1):
     # encode (scaled latent)
     x_T = None if mask is None else init_latent
 
@@ -821,8 +821,9 @@ def _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc, opt_ddim_steps, o
 
         #samples = sampler.decode(z_enc, c, t_enc, unconditional_guidance_scale=opt.scale,unconditional_conditioning=uc, )
         samples_ddim = sampler.sample(
-            S=t_enc,
-            batch_size=batch_size,
+            t_enc,
+            batch_size,
+            shape = [opt_C, opt_H // opt_f, opt_W // opt_f],
             conditioning=c,
             x0=z_enc,
             unconditional_guidance_scale=opt_scale,
