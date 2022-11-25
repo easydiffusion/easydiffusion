@@ -23,7 +23,6 @@
     // observe for changes in the preview pane
     var observer = new MutationObserver(function (mutations) {
         mutations.forEach(function (mutation) {
-            console.log(mutation.target.class)
             if (mutation.target.className == 'img-batch') {
                 Autoscroll(mutation.target)
             }
