@@ -813,18 +813,35 @@ def _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc, opt_ddim_steps, o
     )
     x_T = None if mask is None else init_latent
 
-    # decode it
-    samples_ddim = thread_data.model.sample(
-        t_enc,
-        c,
-        z_enc,
-        unconditional_guidance_scale=opt_scale,
-        unconditional_conditioning=uc,
-        img_callback=img_callback,
-        mask=mask,
-        x_T=x_T,
-        sampler = 'ddim'
-    )
+    if thread_data.test_sd2:
+        from ldm.models.diffusion.ddim import DDIMSampler
+
+        sampler = DDIMSampler(thread_data.model)
+
+        samples_ddim = thread_data.model.sample(
+            S=t_enc,
+            batch_size=opt_n_samples,
+            conditioning=c,
+            x0=z_enc,
+            unconditional_guidance_scale=opt_scale,
+            unconditional_conditioning=uc,
+            img_callback=img_callback,
+            mask=mask,
+            x_T=x_T
+        )
+    else:
+        # decode it
+        samples_ddim = thread_data.model.sample(
+            t_enc,
+            c,
+            z_enc,
+            unconditional_guidance_scale=opt_scale,
+            unconditional_conditioning=uc,
+            img_callback=img_callback,
+            mask=mask,
+            x_T=x_T,
+            sampler = 'ddim'
+        )
     yield from samples_ddim
 
 def gc():
