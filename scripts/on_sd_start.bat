@@ -46,7 +46,7 @@ if NOT DEFINED test_sd2 set test_sd2=N
         @call git apply --whitespace=warn ..\ui\sd_internal\ddim_callback.patch
     )
     if "%test_sd2%" == "Y" (
-        @call git -c advice.detachedHead=false checkout 7da785cfa0d128368bc1357b54d380ba33dc1138
+        @call git -c advice.detachedHead=false checkout 5a14697a8f4a43a56b575a0b1d02a48b37fb9b94
 
         @call git apply --whitespace=warn ..\ui\sd_internal\ddim_callback_sd2.patch
     )

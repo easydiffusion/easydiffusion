@@ -40,7 +40,7 @@ if [ -e "scripts/install_status.txt" ] && [ `grep -c sd_git_cloned scripts/insta
 
         git apply --whitespace=warn ../ui/sd_internal/ddim_callback.patch || fail "ddim patch failed"
     elif [ "$test_sd2" == "Y" ]; then
-        git -c advice.detachedHead=false checkout 7da785cfa0d128368bc1357b54d380ba33dc1138
+        git -c advice.detachedHead=false checkout 5a14697a8f4a43a56b575a0b1d02a48b37fb9b94
 
         git apply --whitespace=warn ../ui/sd_internal/ddim_callback_sd2.patch || fail "sd2 ddim patch failed"
     fi
