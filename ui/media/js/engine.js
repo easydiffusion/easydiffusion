@@ -172,7 +172,6 @@
         }
     }
 
-    const events = {};
     const EVENT_IDLE = 'idle'
     const EVENT_STATUS_CHANGED = 'statusChange'
     const EVENT_UNHANDLED_REJECTION = 'unhandledRejection'
