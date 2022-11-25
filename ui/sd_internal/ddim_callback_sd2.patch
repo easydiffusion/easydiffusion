@@ -1,5 +1,5 @@
 diff --git a/ldm/models/diffusion/ddim.py b/ldm/models/diffusion/ddim.py
-index 27ead0e..6215939 100644
+index 27ead0e..e0ff53f 100644
 --- a/ldm/models/diffusion/ddim.py
 +++ b/ldm/models/diffusion/ddim.py
 @@ -100,7 +100,7 @@ class DDIMSampler(object):
@@ -40,6 +40,26 @@ index 27ead0e..6215939 100644
  
      @torch.no_grad()
      def p_sample_ddim(self, x, c, t, index, repeat_noise=False, use_original_steps=False, quantize_denoised=False,
+@@ -315,7 +317,7 @@ class DDIMSampler(object):
+ 
+     @torch.no_grad()
+     def decode(self, x_latent, cond, t_start, unconditional_guidance_scale=1.0, unconditional_conditioning=None,
+-               use_original_steps=False, callback=None):
++               use_original_steps=False, callback=None, img_callback=None):
+ 
+         timesteps = np.arange(self.ddpm_num_timesteps) if use_original_steps else self.ddim_timesteps
+         timesteps = timesteps[:t_start]
+@@ -332,5 +334,6 @@ class DDIMSampler(object):
+             x_dec, _ = self.p_sample_ddim(x_dec, cond, ts, index=index, use_original_steps=use_original_steps,
+                                           unconditional_guidance_scale=unconditional_guidance_scale,
+                                           unconditional_conditioning=unconditional_conditioning)
+-            if callback: callback(i)
+-        return x_dec
+\ No newline at end of file
++            if callback: yield from callback(i)
++            if img_callback: yield from img_callback(x_dec, i)
++        yield from img_callback(x_dec, len(iterator)-1)
+\ No newline at end of file
 diff --git a/ldm/models/diffusion/plms.py b/ldm/models/diffusion/plms.py
 index 7002a36..0951f39 100644
 --- a/ldm/models/diffusion/plms.py
