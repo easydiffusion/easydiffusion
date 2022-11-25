@@ -194,49 +194,10 @@
         EVENT_UNEXPECTED_RESPONSE,
     ]
     Object.freeze(EVENTS_TYPES)
-
-    /** Add a new event listener
-     */
-    function addEventListener(name, handler) {
-        if (!EVENTS_TYPES.includes(name)) {
-            throw new Error('Invalid event name.')
-        }
-        if (events.hasOwnProperty(name)) {
-            events[name].push(handler)
-        } else {
-            events[name] = [handler]
-        }
-    }
-    /** Remove the event listener
-     */
-    function removeEventListener(name, handler) {
-        if (!events.hasOwnProperty(name)) {
-            return
-        }
-        const index = events[name].indexOf(handler)
-        if (index != -1) {
-            events[name].splice(index, 1)
-        }
-    }
-    function fireEvent(name, ...args) {
-        if (!EVENTS_TYPES.includes(name)) {
-            throw new Error(`Event ${String(name)} missing from EVENTS_TYPES.`)
-        }
-        if (!events.hasOwnProperty(name)) {
-            return
-        }
-        if (!args || !args.length) {
-            args = []
-        }
-        const evs = events[name]
-        const len = evs.length
-        for (let i = 0; i < len; ++i) {
-            evs[i].apply(SD, args)
-        }
-    }
+    const eventSource = new EventSource(EVENTS_TYPES)
 
     function setServerStatus(msgType, msg) {
-        fireEvent(EVENT_STATUS_CHANGED, {type: msgType, message: msg})
+        eventSource.fireEvent(EVENT_STATUS_CHANGED, {type: msgType, message: msg})
     }
 
     const ServerStates = {
@@ -652,7 +613,7 @@
             }
             this._setStatus(TaskStatus.pending)
             task_queue.set(this, promiseGenerator)
-            fireEvent(EVENT_TASK_QUEUED, {task:this})
+            eventSource.fireEvent(EVENT_TASK_QUEUED, {task:this})
             await Task.enqueue(promiseGenerator, ...args)
             await this.waitUntil({status: TaskStatus.completed})
             if (this.exception) {
@@ -861,7 +822,7 @@
             if (typeof jsonResponse?.task !== 'number') {
                 console.warn('Endpoint error response: ', jsonResponse)
                 const event = Object.assign({task:this}, jsonResponse)
-                fireEvent(EVENT_UNEXPECTED_RESPONSE, event)
+                eventSource.fireEvent(EVENT_UNEXPECTED_RESPONSE, event)
                 if ('continueWith' in event) {
                     jsonResponse = await Promise.resolve(event.continueWith)
                 }
@@ -1097,7 +1058,7 @@
             }
         }
         if (task_queue.size <= 0 && concurrent_generators.size <= 0) {
-            fireEvent(EVENT_IDLE, {})
+            eventSource.fireEvent(EVENT_IDLE, {})
             // Calling idle could result in task being added to queue.
             if (task_queue.size <= 0 && concurrent_generators.size <= 0) {
                 return asyncDelay(IDLE_COOLDOWN)
@@ -1112,7 +1073,7 @@
             if (promise.isRejected) {
                 console.error(promise.rejectReason)
                 const event = {generator, reason: promise.rejectReason}
-                fireEvent(EVENT_UNHANDLED_REJECTION, event)
+                eventSource.fireEvent(EVENT_UNHANDLED_REJECTION, event)
                 if ('continueWith' in event) {
                     value = Promise.resolve(event.continueWith)
                 } else {
@@ -1148,13 +1109,13 @@
                 if (task.isStopped) {
                     eventEndArgs.stopped = true
                 }
-                fireEvent(EVENT_TASK_END, eventEndArgs)
+                eventSource.fireEvent(EVENT_TASK_END, eventEndArgs)
                 task_queue.delete(task)
                 continue
             }
             const cTsk = completedTasks.find((item) => item.generator === generator)
             if (task.hasFailed || cTsk) {
-                fireEvent(EVENT_TASK_ERROR, {task, generator, reason: task.exception || cTsk.promise.rejectReason})
+                eventSource.fireEvent(EVENT_TASK_ERROR, {task, generator, reason: task.exception || cTsk.promise.rejectReason})
                 task_queue.delete(task)
                 continue
             }
@@ -1169,7 +1130,7 @@
                 continue
             }
             const event = {task, generator};
-            fireEvent(EVENT_TASK_START, event) // optional beforeStart promise to wait on before starting task.
+            eventSource.fireEvent(EVENT_TASK_START, event) // optional beforeStart promise to wait on before starting task.
             const promise = makeQuerablePromise(Promise.resolve(event.beforeStart))
             concurrent_generators.set(event.generator, promise)
             task_queue.set(task, event.generator)
@@ -1195,7 +1156,7 @@
             }
             const continuePromise = continueTasks().catch(async function(err) {
                 console.error(err)
-                fireEvent(EVENT_UNHANDLED_REJECTION, {reason: err})
+                eventSource.fireEvent(EVENT_UNHANDLED_REJECTION, {reason: err})
                 await asyncDelay(RETRY_DELAY_ON_ERROR)
             })
             taskPromise = makeQuerablePromise(continuePromise)
@@ -1214,7 +1175,7 @@
         init: async function(options={}) {
             if ('events' in options) {
                 for (const key in options.events) {
-                    addEventListener(key, options.events[key])
+                    eventSource.addEventListener(key, options.events[key])
                 }
             }
             await healthCheck()
@@ -1224,10 +1185,10 @@
 
         /** Add a new event listener
          */
-        addEventListener,
+        addEventListener: (...args) => eventSource.addEventListener(...args),
         /** Remove the event listener
          */
-        removeEventListener,
+        removeEventListener: (...args) => eventSource.removeEventListener(...args),
 
         isServerAvailable,
 

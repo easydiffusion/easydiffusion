@@ -521,6 +521,59 @@ function prettifyInputs(root_element) {
     })
 }
 
+class EventSource {
+    #events = {};
+    #types = []
+    constructor(...eventsTypes) {
+        if (Array.isArray(eventsTypes) && eventsTypes.length === 1 && Array.isArray(eventsTypes[0])) {
+            eventsTypes = eventsTypes[0]
+        }
+        this.#types.push(...eventsTypes)
+    }
+    get eventTypes() {
+        return this.#types
+    }
+    /** Add a new event listener
+     */
+    addEventListener(name, handler) {
+        if (!this.#types.includes(name)) {
+            throw new Error('Invalid event name.')
+        }
+        if (this.#events.hasOwnProperty(name)) {
+            this.#events[name].push(handler)
+        } else {
+            this.#events[name] = [handler]
+        }
+    }
+    /** Remove the event listener
+     */
+    removeEventListener(name, handler) {
+        if (!this.#events.hasOwnProperty(name)) {
+            return
+        }
+        const index = this.#events[name].indexOf(handler)
+        if (index != -1) {
+            this.#events[name].splice(index, 1)
+        }
+    }
+    fireEvent(name, ...args) {
+        if (!this.#types.includes(name)) {
+            throw new Error(`Event ${String(name)} missing from Events.types`)
+        }
+        if (!this.#events.hasOwnProperty(name)) {
+            return
+        }
+        if (!args || !args.length) {
+            args = []
+        }
+        const evs = this.#events[name]
+        const len = evs.length
+        for (let i = 0; i < len; ++i) {
+            evs[i].apply(SD, args)
+        }
+    }
+}
+
 class ServiceContainer {
     #services = new Map()
     #singletons = new Map()
