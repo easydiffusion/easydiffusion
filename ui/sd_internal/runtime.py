@@ -808,13 +808,6 @@ def _txt2img(opt_W, opt_H, opt_n_samples, opt_ddim_steps, opt_scale, start_code,
 
 def _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc, opt_ddim_steps, opt_ddim_eta, opt_seed, img_callback, mask):
     # encode (scaled latent)
-    z_enc = thread_data.model.stochastic_encode(
-        init_latent,
-        torch.tensor([t_enc] * batch_size).to(thread_data.device),
-        opt_seed,
-        opt_ddim_eta,
-        opt_ddim_steps,
-    )
     x_T = None if mask is None else init_latent
 
     if thread_data.test_sd2:
@@ -822,7 +815,13 @@ def _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc, opt_ddim_steps, o
 
         sampler = DDIMSampler(thread_data.model)
 
-        samples_ddim = thread_data.model.sample(
+        sampler.make_schedule(ddim_num_steps=opt_ddim_steps, ddim_eta=opt_ddim_eta, verbose=False)
+
+        z_enc = sampler.stochastic_encode(init_latent, torch.tensor([t_enc] * batch_size).to(thread_data.device))
+
+        #samples = sampler.decode(z_enc, c, t_enc, unconditional_guidance_scale=opt.scale,
+                                                 unconditional_conditioning=uc, )
+        samples_ddim = sampler.sample(
             S=t_enc,
             batch_size=opt_n_samples,
             conditioning=c,
@@ -834,6 +833,14 @@ def _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc, opt_ddim_steps, o
             x_T=x_T
         )
     else:
+        z_enc = thread_data.model.stochastic_encode(
+            init_latent,
+            torch.tensor([t_enc] * batch_size).to(thread_data.device),
+            opt_seed,
+            opt_ddim_eta,
+            opt_ddim_steps,
+        )
+
         # decode it
         samples_ddim = thread_data.model.sample(
             t_enc,
