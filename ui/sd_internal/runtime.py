@@ -819,19 +819,8 @@ def _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc, opt_ddim_steps, o
 
         z_enc = sampler.stochastic_encode(init_latent, torch.tensor([t_enc] * batch_size).to(thread_data.device))
 
-        #samples = sampler.decode(z_enc, c, t_enc, unconditional_guidance_scale=opt.scale,unconditional_conditioning=uc, )
-        samples_ddim = sampler.sample(
-            t_enc,
-            batch_size,
-            shape = [opt_C, opt_H // opt_f, opt_W // opt_f],
-            conditioning=c,
-            x0=z_enc,
-            unconditional_guidance_scale=opt_scale,
-            unconditional_conditioning=uc,
-            img_callback=img_callback,
-            mask=mask,
-            x_T=x_T
-        )
+        samples_ddim = sampler.decode(z_enc, c, t_enc, unconditional_guidance_scale=opt_scale,unconditional_conditioning=uc, img_callback=img_callback)
+
     else:
         z_enc = thread_data.model.stochastic_encode(
             init_latent,
