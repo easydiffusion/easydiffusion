@@ -822,7 +822,7 @@ def _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc, opt_ddim_steps, o
         #samples = sampler.decode(z_enc, c, t_enc, unconditional_guidance_scale=opt.scale,unconditional_conditioning=uc, )
         samples_ddim = sampler.sample(
             S=t_enc,
-            batch_size=opt_n_samples,
+            batch_size=batch_size,
             conditioning=c,
             x0=z_enc,
             unconditional_guidance_scale=opt_scale,
