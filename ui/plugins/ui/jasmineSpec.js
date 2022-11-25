@@ -138,13 +138,14 @@ describe('stable-diffusion-ui', function() {
                 { name: 'zero', definition: 0 },
                 { name: 'ctx', definition: () => Object.create(null), singleton: true },
                 { name: 'test',
-                    definition: (ctx, one, foo) => {
+                    definition: (ctx, missing, one, foo) => {
                         expect(ctx).toEqual({ran: true})
                         expect(one).toBe(1)
                         expect(typeof foo).toBe('object')
                         expect(foo.bar).toBeDefined()
+                        expect(typeof missing).toBe('undefined')
                         return {foo: 'bar'}
-                    }, dependencies: ['ctx', 'one', 'foo']
+                    }, dependencies: ['ctx', 'missing', 'one', 'foo']
                 }
             )
             const fooObj = cont.get('foo')
