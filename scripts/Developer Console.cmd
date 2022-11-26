@@ -29,18 +29,6 @@ call conda activate .\stable-diffusion\env
 call where python
 call python --version
 
-@rem set the PYTHONPATH
-cd stable-diffusion
-set SD_DIR=%cd%
-
-cd env\lib\site-packages
-set PYTHONPATH=%SD_DIR%;%cd%
-cd ..\..\..
-echo PYTHONPATH=%PYTHONPATH%
-
-cd ..
-
-@rem done
 echo.
 
 cmd /k

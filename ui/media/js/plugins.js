@@ -24,8 +24,7 @@ const PLUGINS = {
      *   }
      * })
      */
-    IMAGE_INFO_BUTTONS: [],
-    MODIFIERS_LOAD: []
+    IMAGE_INFO_BUTTONS: []
 }
 
 async function loadUIPlugins() {

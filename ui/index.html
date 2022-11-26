@@ -346,8 +346,8 @@ async function init() {
     await getModels()
     await getDiskPath()
     await getAppConfig()
-    await loadUIPlugins()
     await loadModifiers()
+    await loadUIPlugins()
     await getDevices()
 
     updatePreviewSize() // initialize Preview pane position once all UI elements are loaded
