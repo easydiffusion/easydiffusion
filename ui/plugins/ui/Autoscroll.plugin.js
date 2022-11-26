@@ -13,7 +13,7 @@
     autoScrollControl.innerHTML = `<input id="auto_scroll" name="auto_scroll" type="checkbox">
                             <label for="auto_scroll">Auto-scroll</label>`
     autoScrollControl.className = "auto-scroll"
-    previewTools.appendChild(autoScrollControl)
+    clearAllPreviewsBtn.parentNode.insertBefore(autoScrollControl, clearAllPreviewsBtn.nextSibling)
     prettifyInputs(document);
     let autoScroll = document.querySelector("#auto_scroll")
 
