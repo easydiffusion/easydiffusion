@@ -22,6 +22,10 @@
     --button-color: var(--accent-color);
     --button-border: none;
 
+    /* scrollbars */
+    --scrollbar-width: 14px;
+    --scrollbar-radius: 10px;
+		
     /* other */
     --input-border-radius: 4px;
     --input-border-size: 1px; 

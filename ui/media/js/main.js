@@ -1291,6 +1291,12 @@ promptsFromFileSelector.addEventListener('change', function() {
     }
 })
 
+function updatePreviewSize() {
+    $('#preview').css('top', Math.max(-window.pageYOffset, -$('#top-nav').outerHeight(true)) + 'px')
+    $('#preview').css('bottom', Math.max($(window).height() - ($("#footer .line-separator").offset().top - $(document).scrollTop()), 0) + 'px')
+};
+window.addEventListener("scroll", updatePreviewSize)
+
 /* setup popup handlers */
 document.querySelectorAll('.popup').forEach(popup => {
     popup.addEventListener('click', event => {

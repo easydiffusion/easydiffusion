@@ -78,6 +78,7 @@ function createCollapsibles(node) {
 
         c.addEventListener('click', function() {
             toggleCollapsible(c.parentElement)
+            updatePreviewSize()
         })
     })
     if (save) {

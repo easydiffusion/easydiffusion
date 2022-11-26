@@ -157,6 +157,19 @@ code {
     padding: 8px;
     background: var(--background-color1);
 }
+@media (min-width: 700px) {
+    #preview {
+        overflow-y: auto;
+        top: 0;
+        /*bottom: 0; // Can't set the height of the preview pane until all UI elements are loaded */
+        margin-left: 365pt;
+        margin-right: 10pt;
+        margin-top: 45pt;
+        left: 0;
+        right:0;
+        position: fixed;
+    }
+}
 #preview .collapsible-content {
     padding: 0px 15px;
 }
@@ -1001,4 +1014,32 @@ button:active {
 
 button#save-system-settings-btn {
     padding: 4pt 8pt;
+}
+
+/* SCROLLBARS */
+.scrollbar-preview::-webkit-scrollbar {
+    width: 5px;
+}
+
+.scrollbar-preview::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+
+.scrollbar-preview::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar {
+  width: var(--scrollbar-width);
+}
+
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px var(--input-border-color);
+  border-radius: var(--input-border-radius);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-color);
+  border-radius: var(--scrollbar-radius);
 }
