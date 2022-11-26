@@ -3,7 +3,7 @@
 
 [![Discord Server](https://img.shields.io/discord/1014774730907209781?label=Discord)](https://discord.com/invite/u9yhsFmEkB) (for support, and development discussion) | [Troubleshooting guide for common problems](Troubleshooting.md)
 
-New! Stable Diffusion 2.0 is available in beta!
+New! Experimental support for Stable Diffusion 2.0 is available in beta!
 
 ----
 
@@ -30,7 +30,7 @@ The installer will take care of whatever is needed. A friendly [Discord communit
 - **No Dependencies or Technical Knowledge Required**: 1-click install for Windows 10/11 and Linux. *No dependencies*, no need for WSL or Docker or Conda or technical setup. Just download and run!
 - **Clutter-free UI**: a friendly and simple UI, while providing a lot of powerful features
 - Supports "*Text to Image*" and "*Image to Image*"
-- **Stable Diffusion 2.0 support** - available in beta channel
+- **Stable Diffusion 2.0 support (experimental)** - available in beta channel
 - **Custom Models**: Use your own `.ckpt` file, by placing it inside the `models/stable-diffusion` folder!
 - **Auto scan for malicious models** - uses picklescan to prevent malicious models
 - **Live Preview**: See the image as the AI is drawing it
