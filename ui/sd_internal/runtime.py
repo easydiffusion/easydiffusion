@@ -227,6 +227,8 @@ def load_model_ckpt_sd2():
     thread_data.model.eval()
     del sd
 
+    thread_data.model.cond_stage_model.device = torch.device(thread_data.device)
+
     if thread_data.device != "cpu" and thread_data.precision == "autocast":
         thread_data.model.half()
         thread_data.model_is_half = True
