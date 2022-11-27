@@ -931,6 +931,7 @@ function getPrompts() {
     let promptsToMake = applySetOperator(prompts)
     promptsToMake = applyPermuteOperator(promptsToMake)
 
+    PLUGINS['GET_PROMPTS_HOOK'].forEach(fn => { promptsToMake = fn(promptsToMake) })
     return promptsToMake
 }
 
