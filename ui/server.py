@@ -52,7 +52,7 @@ import logging
 from typing import Any, Generator, Hashable, List, Optional, Union
 
 from sd_internal import Request, Response, task_manager, ModelDownloadRequest
-from sd_internal.downloader import modelDownloadTask
+from sd_internal.downloader import modelDownloadTask, getDownloadProgress
 
 app = FastAPI()
 
@@ -229,6 +229,10 @@ async def modelDownload(req: ModelDownloadRequest, background_tasks: BackgroundT
     req.path = os.path.join(MODELS_DIR, req.path)
     background_tasks.add_task(modelDownloadTask, req)
     return JSONResponse({'taskId': id(req)}, headers=NOCACHE_HEADERS)
+
+@app.get('/model/download/{id:int}')
+async def modelDownloadStatus(id:int):
+    return JSONResponse(getDownloadProgress(id), headers=NOCACHE_HEADERS)    
 
 def is_malicious_model(file_path):
     try:
