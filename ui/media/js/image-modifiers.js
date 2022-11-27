@@ -219,7 +219,7 @@ function refreshTagsList() {
         editorModifierTagsList.appendChild(tag.element)
 
         tag.element.addEventListener('click', () => {
-            let idx = activeTags.indexOf(tag)
+            let idx = activeTags.findIndex(o => { return o.name === tag.name })            
 
             if (idx !== -1 && activeTags[idx].originElement !== undefined) {
                 activeTags[idx].originElement.classList.remove(activeCardClass)
