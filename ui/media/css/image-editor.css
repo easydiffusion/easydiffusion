@@ -74,6 +74,7 @@
 
 #image-editor-canvas {
 	position: relative;
+	background-size: cover;
 }
 
 #image-editor-canvas canvas {

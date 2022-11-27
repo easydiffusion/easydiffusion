@@ -46,11 +46,17 @@ var IMAGE_EDITOR_SECTIONS = [
 	{
 		name: "sharpness",
 		title: "Sharpness",
-		default: 0.25,
-		options: [ 1, 0.25, 0 ],
+		default: 0,
+		options: [ 0, 2.5, 5, 7.5, 10 ],
 		initElement: (element, option) => {
-			var percent = (option * 100).toFixed()
-			element.style.background = `radial-gradient(var(--background-color3) 0%, var(--background-color3) ${percent}%, var(--background-color1) 100%)`
+			var sub_element = document.createElement("div");
+			sub_element.style.background = `var(--background-color3)`
+			sub_element.style.filter = `blur(${option}px)`
+			sub_element.style.width = "28px"
+			sub_element.style.height = "28px"
+			sub_element.style['border-radius'] = "32px"
+			element.style.background = "none"
+			element.appendChild(sub_element)
 		}
 	}
 ]
@@ -143,26 +149,23 @@ class ImageEditor {
 		this.container.style.backgroundImage = `url('${url}')`
 		this.setSize(width, height)
 	}
-	get ctx() {
+	setBrush() {
+		Object.values(this.layers).forEach(layer => {
+			layer.ctx.lineCap = "round"
+			layer.ctx.lineJoin = "round"
+			layer.ctx.lineWidth = this.getOptionValue("brush_size");
+			layer.ctx.fillStyle = this.getOptionValue("color");
+			layer.ctx.strokeStyle = this.getOptionValue("color");
+			var sharpness = this.getOptionValue("sharpness");
+			layer.ctx.filter = sharpness == 0 ? `none` : `blur(${sharpness}px)`;
+			layer.ctx.globalAlpha = (1 - this.getOptionValue("opacity"));
+		})
+	}
+	get ctx_overlay() {
 		return this.layers.overlay.ctx;
 	}
-	setBrush() {
-		this.ctx.lineCap = "round"
-		this.ctx.lineJoin = "round"
-		this.ctx.lineWidth = this.getOptionValue("brush_size");
-		this.ctx.fillStyle = this.getOptionValue("color");
-		this.ctx.strokeStyle = this.getOptionValue("color");
-		var sharpness = this.getOptionValue("sharpness");
-		this.ctx.filter = sharpness == 1 ? `none` : `blur(${10}px)`;
-		this.ctx.globalAlpha = (1 - this.getOptionValue("opacity"));
-		
-		this.layers.drawing.ctx.lineCap = "round"
-		this.layers.drawing.ctx.lineJoin = "round"
-		this.layers.drawing.ctx.lineWidth = this.getOptionValue("brush_size");
-		this.layers.drawing.ctx.fillStyle = this.getOptionValue("color");
-		this.layers.drawing.ctx.strokeStyle = this.getOptionValue("color");
-		this.layers.drawing.ctx.filter = sharpness == 1 ? `none` : `blur(${10}px)`;
-		this.layers.drawing.ctx.globalAlpha = (1 - this.getOptionValue("opacity"));
+	get ctx_current() {
+		return this.layers.drawing.ctx;
 	}
 	mouseHandler(event) {
 		var bbox = this.layers.overlay.canvas.getBoundingClientRect();
@@ -171,24 +174,24 @@ class ImageEditor {
 	
 		if (event.type == "mousedown" || (event.type == "mouseenter" && event.buttons == 1)) {
 			this.drawing = true;
-			this.ctx.beginPath();
-			this.ctx.moveTo(x, y);
-			this.layers.drawing.ctx.beginPath();
-			this.layers.drawing.ctx.moveTo(x, y);
+			this.ctx_overlay.beginPath();
+			this.ctx_overlay.moveTo(x, y);
+			this.ctx_current.beginPath();
+			this.ctx_current.moveTo(x, y);
 		}
 		if (event.type == "mouseup" || event.type == "mousemove") {
 			if (this.drawing) {
-				this.ctx.lineTo(x, y);
-				this.layers.drawing.ctx.lineTo(x, y);
-				this.ctx.clearRect(0, 0, this.width, this.height);
-				this.ctx.stroke();
+				this.ctx_overlay.lineTo(x, y);
+				this.ctx_current.lineTo(x, y);
+				this.ctx_overlay.clearRect(0, 0, this.width, this.height);
+				this.ctx_overlay.stroke();
 			}
 		}
 		if (event.type == "mouseup" || event.type == "mouseout") {
 			if (this.drawing) {
 				this.drawing = false;
-				this.layers.drawing.ctx.stroke();
-				this.ctx.clearRect(0, 0, this.width, this.height);
+				this.ctx_current.stroke();
+				this.ctx_overlay.clearRect(0, 0, this.width, this.height);
 			}
 		}
 	}
@@ -208,6 +211,16 @@ class ImageEditor {
 		if (["color", "brush_size", "sharpness", "opacity"].includes(section_name)) {
 			this.setBrush()
 		}
+	}
+	doThing() {
+		console.time("clearing");
+		for(var i = 0; i < 1000; i++) {
+			this.ctx_overlay.clearRect(0, 0, this.width, this.height);
+			this.ctx_overlay.stroke();
+			this.ctx_overlay.drawImage(this.layers.drawing.canvas, 0, 0); // CAN USE THIS FOR ERASING
+		}
+		console.timeEnd("clearing");
+
 	}
 }
 
