@@ -1,4 +1,6 @@
 (function() {
+    PLUGINS['MODIFIERS_LOAD'] = []
+    
     PLUGINS['MODIFIERS_LOAD'].push({
         loader: function() {
             let customModifiers = localStorage.getItem(CUSTOM_MODIFIERS_KEY, '')
