@@ -903,7 +903,7 @@ function createTask(task) {
                 taskQueue.splice(idx, 1)
             }
 
-            taskEntry.remove()
+            removeTask(taskEntry)
         }
     })
 
@@ -1047,16 +1047,22 @@ async function stopAllTasks() {
     }
 }
 
+function removeTask(taskToRemove) {
+    taskToRemove.remove()
+
+    if (document.querySelectorAll('.imageTaskContainer').length === 0) {
+        previewTools.style.display = 'none'
+        initialText.style.display = 'block'
+    }
+}
+
 clearAllPreviewsBtn.addEventListener('click', async function() {
     await stopAllTasks()
 
     let taskEntries = document.querySelectorAll('.imageTaskContainer')
     taskEntries.forEach(task => {
-        task.remove()
+        removeTask(task)
     })
-
-    previewTools.style.display = 'none'
-    initialText.style.display = 'block'
 })
 
 stopImageBtn.addEventListener('click', async function() {
