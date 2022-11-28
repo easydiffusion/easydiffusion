@@ -658,11 +658,15 @@ input::file-selector-button {
     opacity: 1;
 }
 
-/* MOBILE SUPPORT */
-@media screen and (max-width: 700px) {
+/* Small screens */
+@media screen and (max-width: 1265px) {
     #top-nav {
         flex-direction: column;
     }
+}
+
+/* MOBILE SUPPORT */
+@media screen and (max-width: 700px) {
     body {
         margin: 0px;
     }
@@ -712,7 +716,7 @@ input::file-selector-button {
         padding-right: 0px;
     }
     #server-status {
-        display: none;
+        top: 75%;
     }
     .popup > div {
         padding-left: 5px !important;
