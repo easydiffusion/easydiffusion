@@ -1050,7 +1050,7 @@ async function stopAllTasks() {
 function removeTask(taskToRemove) {
     taskToRemove.remove()
 
-    if (document.querySelectorAll('.imageTaskContainer').length === 0) {
+    if (document.querySelector('.imageTaskContainer') === null) {
         previewTools.style.display = 'none'
         initialText.style.display = 'block'
     }
