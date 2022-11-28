@@ -816,13 +816,7 @@ def _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc, opt_ddim_steps, o
         from ldm.models.diffusion.ddim import DDIMSampler
 
         sampler = DDIMSampler(thread_data.model)
-
         sampler.make_schedule(ddim_num_steps=opt_ddim_steps, ddim_eta=opt_ddim_eta, verbose=False)
-
-        # replace tensors with a copy on the right card.
-        sampler.sqrt_alphas_cumprod = sampler.sqrt_alphas_cumprod.to(thread_data.device)
-        sampler.ddim_alphas = sampler.ddim_alphas.to(thread_data.device)
-        sampler.ddim_sqrt_one_minus_alphas = sampler.ddim_sqrt_one_minus_alphas.to(thread_data.device)
 
         z_enc = sampler.stochastic_encode(init_latent, torch.tensor([t_enc] * batch_size).to(thread_data.device))
 
