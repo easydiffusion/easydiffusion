@@ -69,6 +69,102 @@ index 27ead0e..7af113a 100644
 \ No newline at end of file
 +            if callback: yield from callback(i)
 +            if img_callback: yield from img_callback(x_dec, i)
+diff --git a/ldm/models/diffusion/dpm_solver/dpm_solver.py b/ldm/models/diffusion/dpm_solver/dpm_solver.py
+index 095e5ba..6e9b2df 100644
+--- a/ldm/models/diffusion/dpm_solver/dpm_solver.py
++++ b/ldm/models/diffusion/dpm_solver/dpm_solver.py
+@@ -928,17 +928,18 @@ class DPM_Solver:
+             E = norm_fn((x_higher - x_lower) / delta).max()
+             if torch.all(E <= 1.):
+                 x = x_higher
++                yield x, nfe
+                 s = t
+                 x_prev = x_lower
+                 lambda_s = ns.marginal_lambda(s)
+             h = torch.min(theta * h * torch.float_power(E, -1. / order).float(), lambda_0 - lambda_s)
+             nfe += order
+         print('adaptive solver nfe', nfe)
+-        return x
+ 
+     def sample(self, x, steps=20, t_start=None, t_end=None, order=3, skip_type='time_uniform',
+                method='singlestep', lower_order_final=True, denoise_to_zero=False, solver_type='dpm_solver',
+                atol=0.0078, rtol=0.05,
++               callback=None, img_callback=None,
+                ):
+         """
+         Compute the sample at time `t_end` by DPM-Solver, given the initial `x` at time `t_start`.
+@@ -1039,8 +1040,12 @@ class DPM_Solver:
+         device = x.device
+         if method == 'adaptive':
+             with torch.no_grad():
+-                x = self.dpm_solver_adaptive(x, order=order, t_T=t_T, t_0=t_0, atol=atol, rtol=rtol,
+-                                             solver_type=solver_type)
++                xGen = self.dpm_solver_adaptive(x, order=order, t_T=t_T, t_0=t_0, atol=atol, rtol=rtol,
++                                             solver_type=solver_type, callback=callback, img_callback=img_callback)
++                for newX, step in xGen:
++                    x = newX
++                    if callback: yield from callback(step)
++                    if img_callback: yield from img_callback(x, step)
+         elif method == 'multistep':
+             assert steps >= order
+             timesteps = self.get_time_steps(skip_type=skip_type, t_T=t_T, t_0=t_0, N=steps, device=device)
+@@ -1054,6 +1059,8 @@ class DPM_Solver:
+                     vec_t = timesteps[init_order].expand(x.shape[0])
+                     x = self.multistep_dpm_solver_update(x, model_prev_list, t_prev_list, vec_t, init_order,
+                                                          solver_type=solver_type)
++                    if callback: yield from callback(init_order)
++                    if img_callback: yield from img_callback(x, init_order)
+                     model_prev_list.append(self.model_fn(x, vec_t))
+                     t_prev_list.append(vec_t)
+                 # Compute the remaining values by `order`-th order multistep DPM-Solver.
+@@ -1065,6 +1072,8 @@ class DPM_Solver:
+                         step_order = order
+                     x = self.multistep_dpm_solver_update(x, model_prev_list, t_prev_list, vec_t, step_order,
+                                                          solver_type=solver_type)
++                    if callback: yield from callback(step)
++                    if img_callback: yield from img_callback(x, step)
+                     for i in range(order - 1):
+                         t_prev_list[i] = t_prev_list[i + 1]
+                         model_prev_list[i] = model_prev_list[i + 1]
+@@ -1092,10 +1101,12 @@ class DPM_Solver:
+                 r1 = None if order <= 1 else (lambda_inner[1] - lambda_inner[0]) / h
+                 r2 = None if order <= 2 else (lambda_inner[2] - lambda_inner[0]) / h
+                 x = self.singlestep_dpm_solver_update(x, vec_s, vec_t, order, solver_type=solver_type, r1=r1, r2=r2)
++                if callback: yield from callback(i)
++                if img_callback: yield from img_callback(x, i)
+         if denoise_to_zero:
+             x = self.denoise_to_zero_fn(x, torch.ones((x.shape[0],)).to(device) * t_0)
+-        return x
+-
++            if callback: yield from callback(len(orders)-1)
++            if img_callback: yield from img_callback(x, len(orders)-1)
+ 
+ #############################################################
+ # other utility functions
+diff --git a/ldm/models/diffusion/dpm_solver/sampler.py b/ldm/models/diffusion/dpm_solver/sampler.py
+index 7d137b8..177c600 100644
+--- a/ldm/models/diffusion/dpm_solver/sampler.py
++++ b/ldm/models/diffusion/dpm_solver/sampler.py
+@@ -19,8 +19,8 @@ class DPMSolverSampler(object):
+ 
+     def register_buffer(self, name, attr):
+         if type(attr) == torch.Tensor:
+-            if attr.device != torch.device("cuda"):
+-                attr = attr.to(torch.device("cuda"))
++            if attr.device != torch.device(self.model.device):
++                attr = attr.to(torch.device(self.model.device))
+         setattr(self, name, attr)
+ 
+     @torch.no_grad()
+@@ -82,6 +82,4 @@ class DPMSolverSampler(object):
+         )
+ 
+         dpm_solver = DPM_Solver(model_fn, ns, predict_x0=True, thresholding=False)
+-        x = dpm_solver.sample(img, steps=S, skip_type="time_uniform", method="multistep", order=2, lower_order_final=True)
+-
+-        return x.to(device), None
+\ No newline at end of file
++        yield from dpm_solver.sample(img, steps=S, skip_type="time_uniform", method="multistep", order=2, lower_order_final=True, callback=callback, img_callback=img_callback)
 diff --git a/ldm/models/diffusion/plms.py b/ldm/models/diffusion/plms.py
 index 7002a36..a878ca9 100644
 --- a/ldm/models/diffusion/plms.py
