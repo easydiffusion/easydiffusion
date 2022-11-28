@@ -159,9 +159,7 @@ code {
 }
 @media (min-width: 700px) {
     #preview {
-        overflow-y: auto;
-        top: 0;
-        /*bottom: 0; // Can't set the height of the preview pane until all UI elements are loaded */
+        /*bottom: 0; // The height of this pane must be set at runtime, once all UI elements are loaded. */
         margin-left: 365pt;
         margin-right: 10pt;
         margin-top: 45pt;
@@ -169,6 +167,18 @@ code {
         right:0;
         position: fixed;
     }
+
+    #preview-pane {
+        display: none;
+        overflow-y: auto;
+        top: 0;
+        /*bottom: 0; // The height of this pane must be set at runtime, once all UI elements are loaded. */
+        margin-left: 365pt;
+        margin-right: 10pt;
+        margin-top: 80pt;
+        left: 0;
+        right:0;
+        position: fixed;
 }
 #preview .collapsible-content {
     padding: 0px 15px;
@@ -252,6 +262,11 @@ img {
     background: var(--background-color3);
     height: 1pt;
     margin: 16px 0px;
+}
+.line-separator-preview-pane {
+    background: var(--background-color3);
+    height: 1pt;
+    margin: 0px 0px;
 }
 #editor-inputs-tags-container {
     margin-top: 5pt;
@@ -479,7 +494,7 @@ img {
 }
 #preview-tools {
     display: none;
-    padding: 4pt;
+    padding: 2pt 4pt 4pt 4pt;
 }
 .taskConfig {
     font-size: 10pt;

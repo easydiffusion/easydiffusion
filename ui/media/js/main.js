@@ -54,6 +54,8 @@ let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
 let maskSetting = document.querySelector('#enable_mask')
 
 let imagePreview = document.querySelector("#preview")
+let previewPane = document.querySelector("#preview-pane")
+let previewPaneSeparator = document.querySelector("#preview-pane-separator")
 
 let serverStatusColor = document.querySelector('#server-status-color')
 let serverStatusMsg = document.querySelector('#server-status-msg')
@@ -680,6 +682,7 @@ async function checkTasks() {
     bellPending = true
 
     previewTools.style.display = 'block'
+    previewPane.style.display = 'block'
 
     let task = taskQueue.pop()
     currentTask = task
@@ -913,7 +916,7 @@ function createTask(task) {
         restoreTaskToUI(task, TASK_REQ_NO_EXPORT)
     })
 
-    imagePreview.insertBefore(taskEntry, previewTools.nextSibling)
+    previewPane.insertBefore(taskEntry, previewPaneSeparator.nextSibling)
 
     task.previewPrompt.innerText = task.reqBody.prompt
     if (task.previewPrompt.innerText.trim() === '') {
@@ -1056,6 +1059,7 @@ clearAllPreviewsBtn.addEventListener('click', async function() {
     })
 
     previewTools.style.display = 'none'
+    previewPane.style.display = 'none'
     initialText.style.display = 'block'
 })
 
@@ -1294,6 +1298,8 @@ promptsFromFileSelector.addEventListener('change', function() {
 function updatePreviewSize() {
     $('#preview').css('top', Math.max(-window.pageYOffset, -$('#top-nav').outerHeight(true)) + 'px')
     $('#preview').css('bottom', Math.max($(window).height() - ($("#footer .line-separator").offset().top - $(document).scrollTop()), 0) + 'px')
+    $('#preview-pane').css('top', (Math.max(-window.pageYOffset, -$('#top-nav').outerHeight(true))) + 'px')
+    $('#preview-pane').css('bottom', Math.max($(window).height() - ($("#footer .line-separator").offset().top - $(document).scrollTop()), 0) + 'px')
 };
 window.addEventListener("scroll", updatePreviewSize)
 
