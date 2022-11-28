@@ -266,7 +266,7 @@ img {
 .line-separator-preview-pane {
     background: var(--background-color3);
     height: 1pt;
-    margin: 0px 0px;
+    margin: 8px 0px;
 }
 #editor-inputs-tags-container {
     margin-top: 5pt;

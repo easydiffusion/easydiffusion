@@ -916,7 +916,14 @@ function createTask(task) {
         restoreTaskToUI(task, TASK_REQ_NO_EXPORT)
     })
 
-    previewPane.insertBefore(taskEntry, previewPaneSeparator.nextSibling)
+    const firstTask = document.querySelector('.imageTaskContainer')
+    if (firstTask === null) {
+        previewPane.appendChild(taskEntry)
+    }
+    else
+    {
+        previewPane.insertBefore(taskEntry, firstTask)
+    }
 
     task.previewPrompt.innerText = task.reqBody.prompt
     if (task.previewPrompt.innerText.trim() === '') {
