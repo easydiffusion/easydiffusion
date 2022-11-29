@@ -180,6 +180,7 @@ code {
         left: 0;
         right:0;
         position: fixed;
+    }
 }
 #preview .collapsible-content {
     padding: 0px 15px;
