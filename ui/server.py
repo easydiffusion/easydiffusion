@@ -144,12 +144,19 @@ def setConfig(config):
         print(traceback.format_exc())
 
 def resolve_model_to_use(model_name:str, model_type:str, model_dir:str, model_extensions:list, default_models=[]):
+    config = getConfig()
+
     model_dirs = [os.path.join(MODELS_DIR, model_dir), SD_DIR]
     if not model_name: # When None try user configured model.
-        config = getConfig()
+        # config = getConfig()
         if 'model' in config and model_type in config['model']:
             model_name = config['model'][model_type]
     if model_name:
+        is_sd2 = config.get('test_sd2', False)
+        if model_name.startswith('sd2_') and not is_sd2: # temp hack, until SD2 is unified with 1.4
+            print('ERROR: Cannot use SD 2.0 models with SD 1.0 code. Using the sd-v1-4 model instead!')
+            model_name = 'sd-v1-4'
+
         # Check models directory
         models_dir_path = os.path.join(MODELS_DIR, model_dir, model_name)
         for model_extension in model_extensions:
