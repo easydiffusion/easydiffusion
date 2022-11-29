@@ -210,7 +210,7 @@ code {
 }
 .collapsible-content {
     display: block;
-    padding-left: 15px;
+    padding-left: 10px;
 }
 .collapsible-content h5 {
     padding: 5pt 0pt;
