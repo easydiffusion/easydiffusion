@@ -734,6 +734,15 @@ input::file-selector-button {
     }
 }
 
+@media screen and (max-width: 500px) {
+    #server-status #server-status-msg {
+        display: none;
+    }
+    #server-status:hover #server-status-msg {
+        display: inline;
+    }
+}
+
 @media (min-width: 700px) {
     /* #editor {
         max-width: 480px;
