@@ -138,6 +138,7 @@ code {
     display: flex;
     flex-direction: column;
     flex: 0 0 370pt;
+    z-index: 1;
 }
 #editor label {
     font-weight: normal;
