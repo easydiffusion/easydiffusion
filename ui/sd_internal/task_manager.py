@@ -290,6 +290,8 @@ def thread_render(device):
                 current_vae_path = task.request.use_vae_model
 
             def step_callback():
+                global current_state_error
+
                 if isinstance(current_state_error, SystemExit) or isinstance(current_state_error, StopAsyncIteration) or isinstance(task.error, StopAsyncIteration):
                     runtime.thread_data.stop_processing = True
                     if isinstance(current_state_error, StopAsyncIteration):

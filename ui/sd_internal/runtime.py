@@ -796,7 +796,7 @@ def _txt2img(opt_W, opt_H, opt_n_samples, opt_ddim_steps, opt_scale, start_code,
         if sampler_name == 'ddim':
             thread_data.model.make_schedule(ddim_num_steps=opt_ddim_steps, ddim_eta=opt_ddim_eta, verbose=False)
 
-        samples_ddim, intermediates = thread_data.model.sample(
+        samples_ddim = thread_data.model.sample(
             S=opt_ddim_steps,
             conditioning=c,
             seed=opt_seed,
@@ -837,7 +837,7 @@ def _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc, opt_ddim_steps, o
         )
 
         # decode it
-        samples_ddim, intermediates = thread_data.model.sample(
+        samples_ddim = thread_data.model.sample(
             t_enc,
             c,
             z_enc,
