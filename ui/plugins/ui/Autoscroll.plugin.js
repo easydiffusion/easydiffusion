@@ -11,7 +11,7 @@
     
     const autoScrollControl = document.createElement('div');
     autoScrollControl.innerHTML = `<input id="auto_scroll" name="auto_scroll" type="checkbox">
-                            <label for="auto_scroll">Auto-scroll</label>`
+                            <label for="auto_scroll">Scroll to generated image</label>`
     autoScrollControl.className = "auto-scroll"
     clearAllPreviewsBtn.parentNode.insertBefore(autoScrollControl, clearAllPreviewsBtn.nextSibling)
     prettifyInputs(document);
