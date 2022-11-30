@@ -914,7 +914,7 @@ function createTask(task) {
     task['progressBar'] = taskEntry.querySelector('.progress-bar')
     task['stopTask'] = taskEntry.querySelector('.stopTask')
 
-    task['stopTask'].addEventListener('click', (e) => { shiftOrConfirm(e, "Shall this task be stopped?", async function(e) {
+    task['stopTask'].addEventListener('click', (e) => { shiftOrConfirm(e, "Are you sure? Should this task be stopped?", async function(e) {
         if (task['isProcessing']) {
             task.isProcessing = false
             task.progressBar.classList.remove("active")
@@ -1073,7 +1073,7 @@ async function stopAllTasks() {
     }
 }
 
-clearAllPreviewsBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Remove all results and tasks from the results pane?", async function() {
+clearAllPreviewsBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Are you sure? Remove all results and tasks from the results pane?", async function() {
     await stopAllTasks()
 
     let taskEntries = document.querySelectorAll('.imageTaskContainer')
@@ -1085,9 +1085,9 @@ clearAllPreviewsBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Remove
     initialText.style.display = 'block'
 })})
 
-stopImageBtn.addEventListener('click', async function() {
+stopImageBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Are you sure? Do you want to stop all the tasks?", async function(e) {
     await stopAllTasks()
-})
+})})
 
 widthField.addEventListener('change', onDimensionChange)
 heightField.addEventListener('change', onDimensionChange)
