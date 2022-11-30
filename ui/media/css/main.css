@@ -64,6 +64,11 @@ code {
     top: 0px;
     right: 0px;
 }
+.image_clear_btn:active {
+    position: absolute;
+    top: 0px;
+    left: auto;
+}
 .settings-box ul {
     font-size: 9pt;
     margin-bottom: 5px;
