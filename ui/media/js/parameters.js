@@ -133,6 +133,14 @@ var PARAMETERS = [
 		}
 	},
 	{
+		id: "test_sd2",
+		type: ParameterType.checkbox,
+		label: "Test SD 2.0",
+		note: "Experimental! High memory usage! GPU-only! Please restart the program after changing this.",
+		icon: "fa-fire",
+		default: false,
+	},
+	{
 		id: "use_beta_channel",
 		type: ParameterType.checkbox,
 		label: "Beta channel",
@@ -196,6 +204,7 @@ let saveToDiskField = document.querySelector('#save_to_disk')
 let diskPathField = document.querySelector('#diskPath')
 let listenToNetworkField = document.querySelector("#listen_to_network")
 let listenPortField = document.querySelector("#listen_port")
+let testSD2Field = document.querySelector("#test_sd2")
 let useBetaChannelField = document.querySelector("#use_beta_channel")
 let uiOpenBrowserOnStartField = document.querySelector("#ui_open_browser_on_start")
 
@@ -229,6 +238,9 @@ async function getAppConfig() {
         }
         if (config.ui && config.ui.open_browser_on_start === false) {
             uiOpenBrowserOnStartField.checked = false
+        }
+        if ('test_sd2' in config) {
+            testSD2Field.checked = config['test_sd2']
         }
 	if (config.net && config.net.listen_to_network === false) {
 	    listenToNetworkField.checked = false
@@ -372,7 +384,8 @@ saveSettingsBtn.addEventListener('click', function() {
               'update_branch': updateBranch,
               'ui_open_browser_on_start': uiOpenBrowserOnStartField.checked,
               'listen_to_network': listenToNetworkField.checked,
-              'listen_port': listenPortField.value
+              'listen_port': listenPortField.value,
+              'test_sd2': testSD2Field.checked
             })
         }
 
