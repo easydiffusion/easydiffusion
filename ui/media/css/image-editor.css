@@ -98,6 +98,7 @@
 
 .editor-controls-center > div {
 	position: relative;
+	background: black;
 }
 
 .editor-controls-center canvas {
@@ -113,6 +114,7 @@
 	pointer-events: none;
 	opacity: 0;
 	width: 0px;
+	text-shadow: 0 0 5px black;
 }
 
 .editor-controls-right {
@@ -143,6 +145,11 @@
 	left: 16px;
 }
 
+#init_image_button_inpaint .input-toggle input:not(:checked) ~ label {
+	pointer-events: none;
+}
+
+
 .image-editor-popup {
 	--popup-margin: 16px;
 	--popup-padding: 24px;
@@ -167,7 +174,10 @@
 	min-height: calc(100vh - (2 * var(--popup-margin)) - (2 * var(--popup-padding)));
 }
 
-
 .inpainter .image_editor_color {
 	display: none;
+}
+
+.inpainter .editor-canvas-background {
+	opacity: 0.75;
 }

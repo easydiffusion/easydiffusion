@@ -149,6 +149,7 @@ class ImageEditor {
 		];
 		layer_names.forEach(name => {
 			let canvas = document.createElement("canvas");
+			canvas.className = `editor-canvas-${name}`
 			this.container.appendChild(canvas);
 			this.layers[name] = {
 				name: name,
