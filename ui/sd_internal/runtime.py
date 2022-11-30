@@ -7,6 +7,7 @@ Notes:
 import json
 import os, re
 import traceback
+import queue
 import torch
 import numpy as np
 from gc import collect as gc_collect
@@ -21,12 +22,13 @@ from torch import autocast
 from contextlib import nullcontext
 from einops import rearrange, repeat
 from ldm.util import instantiate_from_config
-from optimizedSD.optimUtils import split_weighted_subprompts
 from transformers import logging
 
 from gfpgan import GFPGANer
 from basicsr.archs.rrdbnet_arch import RRDBNet
 from realesrgan import RealESRGANer
+
+from threading import Lock
 
 import uuid
 
@@ -35,7 +37,7 @@ logging.set_verbosity_error()
 # consts
 config_yaml = "optimizedSD/v1-inference.yaml"
 filename_regex = re.compile('[^a-zA-Z0-9]')
-force_gfpgan_to_cuda0 = True # workaround: gfpgan currently works only on cuda:0
+gfpgan_temp_device_lock = Lock() # workaround: gfpgan currently can only start on one device at a time.
 
 # api stuff
 from sd_internal import device_manager
@@ -76,7 +78,23 @@ def thread_init(device):
     thread_data.force_full_precision = False
     thread_data.reduced_memory = True
 
+    thread_data.test_sd2 = isSD2()
+
     device_manager.device_init(thread_data, device)
+
+# temp hack, will remove soon
+def isSD2():
+    try:
+        SD_UI_DIR = os.getenv('SD_UI_PATH', None)
+        CONFIG_DIR = os.path.abspath(os.path.join(SD_UI_DIR, '..', 'scripts'))
+        config_json_path = os.path.join(CONFIG_DIR, 'config.json')
+        if not os.path.exists(config_json_path):
+            return False
+        with open(config_json_path, 'r', encoding='utf-8') as f:
+            config = json.load(f)
+            return config.get('test_sd2', False)
+    except Exception as e:
+        return False
 
 def load_model_ckpt():
     if not thread_data.ckpt_file: raise ValueError(f'Thread ckpt_file is undefined.')
@@ -92,6 +110,13 @@ def load_model_ckpt():
         thread_data.precision = 'full'
 
     print('loading', thread_data.ckpt_file + '.ckpt', 'to device', thread_data.device, 'using precision', thread_data.precision)
+
+    if thread_data.test_sd2:
+        load_model_ckpt_sd2()
+    else:
+        load_model_ckpt_sd1()
+
+def load_model_ckpt_sd1():
     sd = load_model_from_config(thread_data.ckpt_file + '.ckpt')
     li, lo = [], []
     for key, value in sd.items():
@@ -185,6 +210,38 @@ def load_model_ckpt():
  modelFS.device: {thread_data.modelFS.device}
  using precision: {thread_data.precision}''')
 
+def load_model_ckpt_sd2():
+    config_file = 'configs/stable-diffusion/v2-inference-v.yaml' if 'sd2_' in thread_data.ckpt_file else "configs/stable-diffusion/v1-inference.yaml"
+    config = OmegaConf.load(config_file)
+    verbose = False
+
+    sd = load_model_from_config(thread_data.ckpt_file + '.ckpt')
+
+    thread_data.model = instantiate_from_config(config.model)
+    m, u = thread_data.model.load_state_dict(sd, strict=False)
+    if len(m) > 0 and verbose:
+        print("missing keys:")
+        print(m)
+    if len(u) > 0 and verbose:
+        print("unexpected keys:")
+        print(u)
+
+    thread_data.model.to(thread_data.device)
+    thread_data.model.eval()
+    del sd
+
+    if thread_data.device != "cpu" and thread_data.precision == "autocast":
+        thread_data.model.half()
+        thread_data.model_is_half = True
+        thread_data.model_fs_is_half = True
+    else:
+        thread_data.model_is_half = False
+        thread_data.model_fs_is_half = False
+
+    print(f'''loaded model
+ model file: {thread_data.ckpt_file}.ckpt
+ using precision: {thread_data.precision}''')
+
 def unload_filters():
     if thread_data.model_gfpgan is not None:
         if thread_data.device != 'cpu': thread_data.model_gfpgan.gfpgan.to('cpu')
@@ -204,10 +261,11 @@ def unload_models():
     if thread_data.model is not None:
         print('Unloading models...')
         if thread_data.device != 'cpu':
-            thread_data.modelFS.to('cpu')
-            thread_data.modelCS.to('cpu')
-            thread_data.model.model1.to("cpu")
-            thread_data.model.model2.to("cpu")
+            if not thread_data.test_sd2:
+                thread_data.modelFS.to('cpu')
+                thread_data.modelCS.to('cpu')
+                thread_data.model.model1.to("cpu")
+                thread_data.model.model2.to("cpu")
 
         del thread_data.model
         del thread_data.modelCS
@@ -253,12 +311,6 @@ def move_to_cpu(model):
 
 def load_model_gfpgan():
     if thread_data.gfpgan_file is None: raise ValueError(f'Thread gfpgan_file is undefined.')
-
-    # hack for a bug in facexlib: https://github.com/xinntao/facexlib/pull/19/files
-    from facexlib.detection import retinaface
-    retinaface.device = torch.device(thread_data.device)
-    print('forced retinaface.device to', thread_data.device)
-
     model_path = thread_data.gfpgan_file + ".pth"
     thread_data.model_gfpgan = GFPGANer(device=torch.device(thread_data.device), model_path=model_path, upscale=1, arch='clean', channel_multiplier=2, bg_upsampler=None)
     print('loaded', thread_data.gfpgan_file, 'to', thread_data.model_gfpgan.device, 'precision', thread_data.precision)
@@ -314,15 +366,23 @@ def apply_filters(filter_name, image_data, model_path=None):
         image_data.to(thread_data.device)
 
     if filter_name == 'gfpgan':
-        if model_path is not None and model_path != thread_data.gfpgan_file:
-            thread_data.gfpgan_file = model_path
-            load_model_gfpgan()
-        elif not thread_data.model_gfpgan:
-            load_model_gfpgan()
-        if thread_data.model_gfpgan is None: raise Exception('Model "gfpgan" not loaded.')
-        print('enhance with', thread_data.gfpgan_file, 'on', thread_data.model_gfpgan.device, 'precision', thread_data.precision)
-        _, _, output = thread_data.model_gfpgan.enhance(image_data[:,:,::-1], has_aligned=False, only_center_face=False, paste_back=True)
-        image_data = output[:,:,::-1]
+        # This lock is only ever used here. No need to use timeout for the request. Should never deadlock.
+        with gfpgan_temp_device_lock: # Wait for any other devices to complete before starting.
+            # hack for a bug in facexlib: https://github.com/xinntao/facexlib/pull/19/files
+            from facexlib.detection import retinaface
+            retinaface.device = torch.device(thread_data.device)
+            print('forced retinaface.device to', thread_data.device)
+
+            if model_path is not None and model_path != thread_data.gfpgan_file:
+                thread_data.gfpgan_file = model_path
+                load_model_gfpgan()
+            elif not thread_data.model_gfpgan:
+                load_model_gfpgan()
+            if thread_data.model_gfpgan is None: raise Exception('Model "gfpgan" not loaded.')
+
+            print('enhance with', thread_data.gfpgan_file, 'on', thread_data.model_gfpgan.device, 'precision', thread_data.precision)
+            _, _, output = thread_data.model_gfpgan.enhance(image_data[:,:,::-1], has_aligned=False, only_center_face=False, paste_back=True)
+            image_data = output[:,:,::-1]
 
     if filter_name == 'real_esrgan':
         if model_path is not None and model_path != thread_data.real_esrgan_file:
@@ -337,45 +397,73 @@ def apply_filters(filter_name, image_data, model_path=None):
 
     return image_data
 
-def mk_img(req: Request):
+def is_model_reload_necessary(req: Request):
+    # custom model support:
+    #  the req.use_stable_diffusion_model needs to be a valid path
+    #  to the ckpt file (without the extension).
+    if not os.path.exists(req.use_stable_diffusion_model + '.ckpt'): raise FileNotFoundError(f'Cannot find {req.use_stable_diffusion_model}.ckpt')
+
+    needs_model_reload = False
+    if not thread_data.model or thread_data.ckpt_file != req.use_stable_diffusion_model or thread_data.vae_file != req.use_vae_model:
+        thread_data.ckpt_file = req.use_stable_diffusion_model
+        thread_data.vae_file = req.use_vae_model
+        needs_model_reload = True
+
+    if thread_data.device != 'cpu':
+        if (thread_data.precision == 'autocast' and (req.use_full_precision or not thread_data.model_is_half)) or \
+            (thread_data.precision == 'full' and not req.use_full_precision and not thread_data.force_full_precision):
+            thread_data.precision = 'full' if req.use_full_precision else 'autocast'
+            needs_model_reload = True
+
+    return needs_model_reload
+
+def reload_model():
+    unload_models()
+    unload_filters()
+    load_model_ckpt()
+
+def mk_img(req: Request, data_queue: queue.Queue, task_temp_images: list, step_callback):
     try:
-        yield from do_mk_img(req)
+        return do_mk_img(req, data_queue, task_temp_images, step_callback)
     except Exception as e:
         print(traceback.format_exc())
 
-        if thread_data.device != 'cpu':
+        if thread_data.device != 'cpu' and not thread_data.test_sd2:
             thread_data.modelFS.to('cpu')
             thread_data.modelCS.to('cpu')
             thread_data.model.model1.to("cpu")
             thread_data.model.model2.to("cpu")
 
         gc() # Release from memory.
-        yield json.dumps({
+        data_queue.put(json.dumps({
             "status": 'failed',
             "detail": str(e)
-        })
+        }))
+        raise e
 
-def update_temp_img(req, x_samples):
+def update_temp_img(req, x_samples, task_temp_images: list):
     partial_images = []
     for i in range(req.num_outputs):
-        x_sample_ddim = thread_data.modelFS.decode_first_stage(x_samples[i].unsqueeze(0))
+        if thread_data.test_sd2:
+            x_sample_ddim = thread_data.model.decode_first_stage(x_samples[i].unsqueeze(0))
+        else:
+            x_sample_ddim = thread_data.modelFS.decode_first_stage(x_samples[i].unsqueeze(0))
         x_sample = torch.clamp((x_sample_ddim + 1.0) / 2.0, min=0.0, max=1.0)
         x_sample = 255.0 * rearrange(x_sample[0].cpu().numpy(), "c h w -> h w c")
         x_sample = x_sample.astype(np.uint8)
         img = Image.fromarray(x_sample)
-        buf = BytesIO()
-        img.save(buf, format='JPEG')
-        buf.seek(0)
+        buf = img_to_buffer(img, output_format='JPEG')
 
         del img, x_sample, x_sample_ddim
         # don't delete x_samples, it is used in the code that called this callback
 
         thread_data.temp_images[str(req.session_id) + '/' + str(i)] = buf
+        task_temp_images[i] = buf
         partial_images.append({'path': f'/image/tmp/{req.session_id}/{i}'})
     return partial_images
 
 # Build and return the apropriate generator for do_mk_img
-def get_image_progress_generator(req, extra_props=None):
+def get_image_progress_generator(req, data_queue: queue.Queue, task_temp_images: list, step_callback, extra_props=None):
     if not req.stream_progress_updates:
         def empty_callback(x_samples, i): return x_samples
         return empty_callback
@@ -394,15 +482,17 @@ def get_image_progress_generator(req, extra_props=None):
             progress.update(extra_props)
 
         if req.stream_image_progress and i % 5 == 0:
-            progress['output'] = update_temp_img(req, x_samples)
+            progress['output'] = update_temp_img(req, x_samples, task_temp_images)
 
-        yield json.dumps(progress)
+        data_queue.put(json.dumps(progress))
+
+        step_callback()
 
         if thread_data.stop_processing:
             raise UserInitiatedStop("User requested that we stop processing")
     return img_callback
 
-def do_mk_img(req: Request):
+def do_mk_img(req: Request, data_queue: queue.Queue, task_temp_images: list, step_callback):
     thread_data.stop_processing = False
 
     res = Response()
@@ -411,29 +501,7 @@ def do_mk_img(req: Request):
 
     thread_data.temp_images.clear()
 
-    # custom model support:
-    #  the req.use_stable_diffusion_model needs to be a valid path
-    #  to the ckpt file (without the extension).
-    if not os.path.exists(req.use_stable_diffusion_model + '.ckpt'): raise FileNotFoundError(f'Cannot find {req.use_stable_diffusion_model}.ckpt')
-
-    needs_model_reload = False
-    if not thread_data.model or thread_data.ckpt_file != req.use_stable_diffusion_model or thread_data.vae_file != req.use_vae_model:
-        thread_data.ckpt_file = req.use_stable_diffusion_model
-        thread_data.vae_file = req.use_vae_model
-        needs_model_reload = True
-
-    if thread_data.device != 'cpu':
-        if (thread_data.precision == 'autocast' and (req.use_full_precision or not thread_data.model_is_half)) or \
-            (thread_data.precision == 'full' and not req.use_full_precision and not thread_data.force_full_precision):
-            thread_data.precision = 'full' if req.use_full_precision else 'autocast'
-            needs_model_reload = True
-
-    if needs_model_reload:
-        unload_models()
-        unload_filters()
-        load_model_ckpt()
-
-    if thread_data.turbo != req.turbo:
+    if thread_data.turbo != req.turbo and not thread_data.test_sd2:
         thread_data.turbo = req.turbo
         thread_data.model.turbo = req.turbo
 
@@ -478,10 +546,14 @@ def do_mk_img(req: Request):
         if thread_data.device != "cpu" and thread_data.precision == "autocast":
             init_image = init_image.half()
 
-        thread_data.modelFS.to(thread_data.device)
+        if not thread_data.test_sd2:
+            thread_data.modelFS.to(thread_data.device)
 
         init_image = repeat(init_image, '1 ... -> b ...', b=batch_size)
-        init_latent = thread_data.modelFS.get_first_stage_encoding(thread_data.modelFS.encode_first_stage(init_image))  # move to latent space
+        if thread_data.test_sd2:
+            init_latent = thread_data.model.get_first_stage_encoding(thread_data.model.encode_first_stage(init_image))  # move to latent space
+        else:
+            init_latent = thread_data.modelFS.get_first_stage_encoding(thread_data.modelFS.encode_first_stage(init_image))  # move to latent space
 
         if req.mask is not None:
             mask = load_mask(req.mask, req.width, req.height, init_latent.shape[2], init_latent.shape[3], True).to(thread_data.device)
@@ -493,7 +565,8 @@ def do_mk_img(req: Request):
 
         # Send to CPU and wait until complete.
         # wait_model_move_to(thread_data.modelFS, 'cpu')
-        move_to_cpu(thread_data.modelFS)
+        if not thread_data.test_sd2:
+            move_to_cpu(thread_data.modelFS)
 
         assert 0. <= req.prompt_strength <= 1., 'can only work with strength in [0.0, 1.0]'
         t_enc = int(req.prompt_strength * req.num_inference_steps)
@@ -509,11 +582,14 @@ def do_mk_img(req: Request):
             for prompts in tqdm(data, desc="data"):
 
                 with precision_scope("cuda"):
-                    if thread_data.reduced_memory:
+                    if thread_data.reduced_memory and not thread_data.test_sd2:
                         thread_data.modelCS.to(thread_data.device)
                     uc = None
                     if req.guidance_scale != 1.0:
-                        uc = thread_data.modelCS.get_learned_conditioning(batch_size * [req.negative_prompt])
+                        if thread_data.test_sd2:
+                            uc = thread_data.model.get_learned_conditioning(batch_size * [req.negative_prompt])
+                        else:
+                            uc = thread_data.modelCS.get_learned_conditioning(batch_size * [req.negative_prompt])
                     if isinstance(prompts, tuple):
                         prompts = list(prompts)
 
@@ -526,15 +602,21 @@ def do_mk_img(req: Request):
                             weight = weights[i]
                             # if not skip_normalize:
                             weight = weight / totalWeight
-                            c = torch.add(c, thread_data.modelCS.get_learned_conditioning(subprompts[i]), alpha=weight)
+                            if thread_data.test_sd2:
+                                c = torch.add(c, thread_data.model.get_learned_conditioning(subprompts[i]), alpha=weight)
+                            else:
+                                c = torch.add(c, thread_data.modelCS.get_learned_conditioning(subprompts[i]), alpha=weight)
                     else:
-                        c = thread_data.modelCS.get_learned_conditioning(prompts)
+                        if thread_data.test_sd2:
+                            c = thread_data.model.get_learned_conditioning(prompts)
+                        else:
+                            c = thread_data.modelCS.get_learned_conditioning(prompts)
 
-                    if thread_data.reduced_memory:
+                    if thread_data.reduced_memory and not thread_data.test_sd2:
                         thread_data.modelFS.to(thread_data.device)
 
                     n_steps = req.num_inference_steps if req.init_image is None else t_enc
-                    img_callback = get_image_progress_generator(req, {"total_steps": n_steps})
+                    img_callback = get_image_progress_generator(req, data_queue, task_temp_images, step_callback, {"total_steps": n_steps})
 
                     # run the handler
                     try:
@@ -542,14 +624,7 @@ def do_mk_img(req: Request):
                         if handler == _txt2img:
                             x_samples = _txt2img(req.width, req.height, req.num_outputs, req.num_inference_steps, req.guidance_scale, None, opt_C, opt_f, opt_ddim_eta, c, uc, opt_seed, img_callback, mask, req.sampler)
                         else:
-                            x_samples = _img2img(init_latent, t_enc, batch_size, req.guidance_scale, c, uc, req.num_inference_steps, opt_ddim_eta, opt_seed, img_callback, mask)
-
-                        if req.stream_progress_updates:
-                            yield from x_samples
-                        if hasattr(thread_data, 'partial_x_samples'):
-                            if thread_data.partial_x_samples is not None:
-                                x_samples = thread_data.partial_x_samples
-                            del thread_data.partial_x_samples
+                            x_samples = _img2img(init_latent, t_enc, batch_size, req.guidance_scale, c, uc, req.num_inference_steps, opt_ddim_eta, opt_seed, img_callback, mask, opt_C, req.height, req.width, opt_f)
                     except UserInitiatedStop:
                         if not hasattr(thread_data, 'partial_x_samples'):
                             continue
@@ -562,7 +637,10 @@ def do_mk_img(req: Request):
                     print("decoding images")
                     img_data = [None] * batch_size
                     for i in range(batch_size):
-                        x_samples_ddim = thread_data.modelFS.decode_first_stage(x_samples[i].unsqueeze(0))
+                        if thread_data.test_sd2:
+                            x_samples_ddim = thread_data.model.decode_first_stage(x_samples[i].unsqueeze(0))
+                        else:
+                            x_samples_ddim = thread_data.modelFS.decode_first_stage(x_samples[i].unsqueeze(0))
                         x_sample = torch.clamp((x_samples_ddim + 1.0) / 2.0, min=0.0, max=1.0)
                         x_sample = 255.0 * rearrange(x_sample[0].cpu().numpy(), "c h w -> h w c")
                         x_sample = x_sample.astype(np.uint8)
@@ -591,9 +669,11 @@ def do_mk_img(req: Request):
                             save_metadata(meta_out_path, req, prompts[0], opt_seed)
 
                         if return_orig_img:
-                            img_str = img_to_base64_str(img, req.output_format)
+                            img_buffer = img_to_buffer(img, req.output_format)
+                            img_str = buffer_to_base64_str(img_buffer, req.output_format)
                             res_image_orig = ResponseImage(data=img_str, seed=opt_seed)
                             res.images.append(res_image_orig)
+                            task_temp_images[i] = img_buffer
 
                             if req.save_to_disk_path is not None:
                                 res_image_orig.path_abs = img_out_path
@@ -609,9 +689,11 @@ def do_mk_img(req: Request):
                                 filters_applied.append(req.use_upscale)
                             if (len(filters_applied) > 0):
                                 filtered_image = Image.fromarray(img_data[i])
-                                filtered_img_data = img_to_base64_str(filtered_image, req.output_format)
+                                filtered_buffer = img_to_buffer(filtered_image, req.output_format)
+                                filtered_img_data = buffer_to_base64_str(filtered_buffer, req.output_format)
                                 response_image = ResponseImage(data=filtered_img_data, seed=opt_seed)
                                 res.images.append(response_image)
+                                task_temp_images[i] = filtered_buffer
                                 if req.save_to_disk_path is not None:
                                     filtered_img_out_path = get_base_path(req.save_to_disk_path, req.session_id, prompts[0], img_id, req.output_format, "_".join(filters_applied))
                                     save_image(filtered_image, filtered_img_out_path)
@@ -622,14 +704,18 @@ def do_mk_img(req: Request):
 
                     # if thread_data.reduced_memory:
                     #     unload_filters()
-                    move_to_cpu(thread_data.modelFS)
+                    if not thread_data.test_sd2:
+                        move_to_cpu(thread_data.modelFS)
                     del img_data
                     gc()
                     if thread_data.device != 'cpu':
                         print(f'memory_final = {round(torch.cuda.memory_allocated(thread_data.device) / 1e6, 2)}Mb')
 
     print('Task completed')
-    yield json.dumps(res.json())
+    res = res.json()
+    data_queue.put(json.dumps(res))
+
+    return res
 
 def save_image(img, img_out_path):
     try:
@@ -664,51 +750,109 @@ def _txt2img(opt_W, opt_H, opt_n_samples, opt_ddim_steps, opt_scale, start_code,
     # Send to CPU and wait until complete.
     # wait_model_move_to(thread_data.modelCS, 'cpu')
 
-    move_to_cpu(thread_data.modelCS)
+    if not thread_data.test_sd2:
+        move_to_cpu(thread_data.modelCS)
 
-    if sampler_name == 'ddim':
-        thread_data.model.make_schedule(ddim_num_steps=opt_ddim_steps, ddim_eta=opt_ddim_eta, verbose=False)
+    if thread_data.test_sd2 and sampler_name not in ('plms', 'ddim'):
+        raise Exception('Only plms and ddim samplers are supported right now, in SD 2.0')
 
-    samples_ddim = thread_data.model.sample(
-        S=opt_ddim_steps,
-        conditioning=c,
-        seed=opt_seed,
-        shape=shape,
-        verbose=False,
-        unconditional_guidance_scale=opt_scale,
-        unconditional_conditioning=uc,
-        eta=opt_ddim_eta,
-        x_T=start_code,
-        img_callback=img_callback,
-        mask=mask,
-        sampler = sampler_name,
-    )
-    yield from samples_ddim
 
-def _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc, opt_ddim_steps, opt_ddim_eta, opt_seed, img_callback, mask):
+    # samples, _ = sampler.sample(S=opt.steps,
+    #                                                  conditioning=c,
+    #                                                  batch_size=opt.n_samples,
+    #                                                  shape=shape,
+    #                                                  verbose=False,
+    #                                                  unconditional_guidance_scale=opt.scale,
+    #                                                  unconditional_conditioning=uc,
+    #                                                  eta=opt.ddim_eta,
+    #                                                  x_T=start_code)
+
+    if thread_data.test_sd2:
+        from ldm.models.diffusion.ddim import DDIMSampler
+        from ldm.models.diffusion.plms import PLMSSampler
+
+        shape = [opt_C, opt_H // opt_f, opt_W // opt_f]
+
+        if sampler_name == 'plms':
+            sampler = PLMSSampler(thread_data.model)
+        elif sampler_name == 'ddim':
+            sampler = DDIMSampler(thread_data.model)
+
+            sampler.make_schedule(ddim_num_steps=opt_ddim_steps, ddim_eta=opt_ddim_eta, verbose=False)
+
+
+        samples_ddim, intermediates = sampler.sample(
+            S=opt_ddim_steps,
+            conditioning=c,
+            batch_size=opt_n_samples,
+            seed=opt_seed,
+            shape=shape,
+            verbose=False,
+            unconditional_guidance_scale=opt_scale,
+            unconditional_conditioning=uc,
+            eta=opt_ddim_eta,
+            x_T=start_code,
+            img_callback=img_callback,
+            mask=mask,
+            sampler = sampler_name,
+        )
+    else:
+        if sampler_name == 'ddim':
+            thread_data.model.make_schedule(ddim_num_steps=opt_ddim_steps, ddim_eta=opt_ddim_eta, verbose=False)
+
+        samples_ddim = thread_data.model.sample(
+            S=opt_ddim_steps,
+            conditioning=c,
+            seed=opt_seed,
+            shape=shape,
+            verbose=False,
+            unconditional_guidance_scale=opt_scale,
+            unconditional_conditioning=uc,
+            eta=opt_ddim_eta,
+            x_T=start_code,
+            img_callback=img_callback,
+            mask=mask,
+            sampler = sampler_name,
+        )
+    return samples_ddim
+
+def _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc, opt_ddim_steps, opt_ddim_eta, opt_seed, img_callback, mask, opt_C=1, opt_H=1, opt_W=1, opt_f=1):
     # encode (scaled latent)
-    z_enc = thread_data.model.stochastic_encode(
-        init_latent,
-        torch.tensor([t_enc] * batch_size).to(thread_data.device),
-        opt_seed,
-        opt_ddim_eta,
-        opt_ddim_steps,
-    )
     x_T = None if mask is None else init_latent
 
-    # decode it
-    samples_ddim = thread_data.model.sample(
-        t_enc,
-        c,
-        z_enc,
-        unconditional_guidance_scale=opt_scale,
-        unconditional_conditioning=uc,
-        img_callback=img_callback,
-        mask=mask,
-        x_T=x_T,
-        sampler = 'ddim'
-    )
-    yield from samples_ddim
+    if thread_data.test_sd2:
+        from ldm.models.diffusion.ddim import DDIMSampler
+
+        sampler = DDIMSampler(thread_data.model)
+
+        sampler.make_schedule(ddim_num_steps=opt_ddim_steps, ddim_eta=opt_ddim_eta, verbose=False)
+
+        z_enc = sampler.stochastic_encode(init_latent, torch.tensor([t_enc] * batch_size).to(thread_data.device))
+
+        samples_ddim = sampler.decode(z_enc, c, t_enc, unconditional_guidance_scale=opt_scale,unconditional_conditioning=uc, img_callback=img_callback)
+
+    else:
+        z_enc = thread_data.model.stochastic_encode(
+            init_latent,
+            torch.tensor([t_enc] * batch_size).to(thread_data.device),
+            opt_seed,
+            opt_ddim_eta,
+            opt_ddim_steps,
+        )
+
+        # decode it
+        samples_ddim = thread_data.model.sample(
+            t_enc,
+            c,
+            z_enc,
+            unconditional_guidance_scale=opt_scale,
+            unconditional_conditioning=uc,
+            img_callback=img_callback,
+            mask=mask,
+            x_T=x_T,
+            sampler = 'ddim'
+        )
+    return samples_ddim
 
 def gc():
     gc_collect()
@@ -776,8 +920,16 @@ def load_mask(mask_str, h0, w0, newH, newW, invert=False):
 
 # https://stackoverflow.com/a/61114178
 def img_to_base64_str(img, output_format="PNG"):
+    buffered = img_to_buffer(img, output_format)
+    return buffer_to_base64_str(buffered, output_format)
+
+def img_to_buffer(img, output_format="PNG"):
     buffered = BytesIO()
     img.save(buffered, format=output_format)
+    buffered.seek(0)
+    return buffered
+
+def buffer_to_base64_str(buffered, output_format="PNG"):
     buffered.seek(0)
     img_byte = buffered.getvalue()
     mime_type = "image/png" if output_format.lower() == "png" else "image/jpeg"
@@ -795,3 +947,48 @@ def base64_str_to_img(img_str):
     buffered = base64_str_to_buffer(img_str)
     img = Image.open(buffered)
     return img
+
+def split_weighted_subprompts(text):
+    """
+    grabs all text up to the first occurrence of ':' 
+    uses the grabbed text as a sub-prompt, and takes the value following ':' as weight
+    if ':' has no value defined, defaults to 1.0
+    repeats until no text remaining
+    """
+    remaining = len(text)
+    prompts = []
+    weights = []
+    while remaining > 0:
+        if ":" in text:
+            idx = text.index(":") # first occurrence from start
+            # grab up to index as sub-prompt
+            prompt = text[:idx]
+            remaining -= idx
+            # remove from main text
+            text = text[idx+1:]
+            # find value for weight 
+            if " " in text:
+                idx = text.index(" ") # first occurence
+            else: # no space, read to end
+                idx = len(text)
+            if idx != 0:
+                try:
+                    weight = float(text[:idx])
+                except: # couldn't treat as float
+                    print(f"Warning: '{text[:idx]}' is not a value, are you missing a space?")
+                    weight = 1.0
+            else: # no value found
+                weight = 1.0
+            # remove from main text
+            remaining -= idx
+            text = text[idx+1:]
+            # append the sub-prompt and its weight
+            prompts.append(prompt)
+            weights.append(weight)
+        else: # no : found
+            if len(text) > 0: # there is still text though
+                # take remainder as weight 1
+                prompts.append(text)
+                weights.append(1.0)
+            remaining = 0
+    return prompts, weights

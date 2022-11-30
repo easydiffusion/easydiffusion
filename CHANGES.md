@@ -22,7 +22,9 @@
 - Ask for a confimation before clearing the results pane or stopping a render task. The dialog can be skipped by holding down the shift key while clicking on the button.
 
 ### Detailed changelog
-* 2.4.14 - 22 Nov 2022 - shiftOrConfirm for red buttons
+* 2.4.17 - 30 Nov 2022 - Confirm before stopping or clearing all the tasks
+* 2.4.16 - 29 Nov 2022 - Bug fixes for SD 2.0 - remove the need for patching, default to SD 1.4 model if trying to load an SD2 model in SD1.4.
+* 2.4.15 - 25 Nov 2022 - Experimental support for SD 2.0. Uses lots of memory, not optimized, probably GPU-only.
 * 2.4.14 - 22 Nov 2022 - Change the backend to a custom fork of Stable Diffusion
 * 2.4.13 - 21 Nov 2022 - Change the modifier weight via mouse wheel, drag to reorder selected modifiers, and some more modifier-related fixes. Thanks @patriceac
 * 2.4.12 - 21 Nov 2022 - Another fix for improving how long images take to generate. Reduces the time taken for an enqueued task to start processing.
