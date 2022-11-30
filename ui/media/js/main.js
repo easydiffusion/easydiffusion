@@ -1290,9 +1290,9 @@ document.querySelectorAll('.popup').forEach(popup => {
     }
 })
 
-var tabElements = [];
+var tabElements = []
 function selectTab(tab_id) {
-    let tabInfo = tabElements.find(t => t.tab.id == tab_id);
+    let tabInfo = tabElements.find(t => t.tab.id == tab_id)
     if (!tabInfo.tab.classList.contains("active")) {
         tabElements.forEach(info => {
             if (info.tab.classList.contains("active")) {
@@ -1305,7 +1305,7 @@ function selectTab(tab_id) {
     }
 }
 function linkTabContents(tab) {
-    var name = tab.id.replace("tab-", "");
+    var name = tab.id.replace("tab-", "")
     var content = document.getElementById(`tab-content-${name}`)
     tabElements.push({
         name: name,
@@ -1313,7 +1313,7 @@ function linkTabContents(tab) {
         content: content
     })
 
-    tab.addEventListener("click", event => selectTab(tab.id));
+    tab.addEventListener("click", event => selectTab(tab.id))
 }
 
 document.querySelectorAll(".tab").forEach(linkTabContents)

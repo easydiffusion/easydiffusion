@@ -1,6 +1,6 @@
 var editorControlsLeft = document.getElementById("image-editor-controls-left")
 
-const IMAGE_EDITOR_MAX_SIZE = 800;
+const IMAGE_EDITOR_MAX_SIZE = 800
 
 const IMAGE_EDITOR_BUTTONS = [
 	{
@@ -37,7 +37,7 @@ const IMAGE_EDITOR_TOOLS = [
 		name: "Erase",
 		icon: "fa-solid fa-eraser"
 	}
-];
+]
 
 var IMAGE_EDITOR_SECTIONS = [
 	{
@@ -116,9 +116,9 @@ var IMAGE_EDITOR_SECTIONS = [
 		default: 0.05,
 		options: [ 0, 0.05, 0.1, 0.2, 0.3 ],
 		initElement: (element, option) => {
-			var size = 32;
-			var blur_amount = parseInt(option * size);
-			var sub_element = document.createElement("div");
+			var size = 32
+			var blur_amount = parseInt(option * size)
+			var sub_element = document.createElement("div")
 			sub_element.style.background = `var(--background-color3)`
 			sub_element.style.filter = `blur(${blur_amount}px)`
 			sub_element.style.width = `${size - 4}px`
@@ -128,7 +128,7 @@ var IMAGE_EDITOR_SECTIONS = [
 			element.appendChild(sub_element)
 		}
 	}
-];
+]
 
 class ImageEditor {
 	constructor(popup, inpainter = false) {
@@ -141,21 +141,21 @@ class ImageEditor {
 		this.dropper_active = false
 		this.container = popup.querySelector(".editor-controls-center > div")
 		this.cursor_icon = document.createElement("i")
-		this.layers = {};
+		this.layers = {}
 		var layer_names = [
 			"background",
 			"drawing",
 			"overlay"
-		];
+		]
 		layer_names.forEach(name => {
-			let canvas = document.createElement("canvas");
+			let canvas = document.createElement("canvas")
 			canvas.className = `editor-canvas-${name}`
-			this.container.appendChild(canvas);
+			this.container.appendChild(canvas)
 			this.layers[name] = {
 				name: name,
 				canvas: canvas,
 				ctx: canvas.getContext("2d")
-			};
+			}
 		})
 
 		this.setSize(512, 512)
@@ -164,21 +164,21 @@ class ImageEditor {
 		this.container.appendChild(this.cursor_icon)
 
 		// add mouse handlers
-		this.container.addEventListener("mousedown", this.mouseHandler.bind(this));
-		this.container.addEventListener("mouseup", this.mouseHandler.bind(this));
-		this.container.addEventListener("mousemove", this.mouseHandler.bind(this));
-		this.container.addEventListener("mouseout", this.mouseHandler.bind(this));
-		this.container.addEventListener("mouseenter", this.mouseHandler.bind(this));
+		this.container.addEventListener("mousedown", this.mouseHandler.bind(this))
+		this.container.addEventListener("mouseup", this.mouseHandler.bind(this))
+		this.container.addEventListener("mousemove", this.mouseHandler.bind(this))
+		this.container.addEventListener("mouseout", this.mouseHandler.bind(this))
+		this.container.addEventListener("mouseenter", this.mouseHandler.bind(this))
 		// setup forwarding for keypresses so the eyedropper works accordingly
-		var mouseHandlerHelper = this.mouseHandler.bind(this);
+		var mouseHandlerHelper = this.mouseHandler.bind(this)
 		this.container.addEventListener("mouseenter",function() {
-			document.addEventListener("keyup", mouseHandlerHelper);
-			document.addEventListener("keydown", mouseHandlerHelper);
-		});
+			document.addEventListener("keyup", mouseHandlerHelper)
+			document.addEventListener("keydown", mouseHandlerHelper)
+		})
 		this.container.addEventListener("mouseout",function() {
-			document.removeEventListener("keyup", mouseHandlerHelper);
-			document.removeEventListener("keydown", mouseHandlerHelper);
-		});
+			document.removeEventListener("keyup", mouseHandlerHelper)
+			document.removeEventListener("keydown", mouseHandlerHelper)
+		})
 
 		// initialize editor controls
 		this.options = {}
@@ -187,7 +187,7 @@ class ImageEditor {
 			var sectionElement = document.createElement("div")
 			sectionElement.className = section.id
 	
-			var title = document.createElement("h4");
+			var title = document.createElement("h4")
 			title.innerText = section.title
 			sectionElement.appendChild(title)
 	
@@ -200,22 +200,22 @@ class ImageEditor {
 				var optionElement = document.createElement("div")
 				optionHolder.appendChild(optionElement)
 				section.initElement(optionElement, option)
-				optionElement.addEventListener("click", target => this.selectOption(section.name, index));
-				optionsContainer.appendChild(optionHolder);
-				section.optionElements.push(optionElement);
+				optionElement.addEventListener("click", target => this.selectOption(section.name, index))
+				optionsContainer.appendChild(optionHolder)
+				section.optionElements.push(optionElement)
 			})
 			this.selectOption(section.name, section.options.indexOf(section.default))
 	
 			sectionElement.appendChild(optionsContainer)
 	
 			this.popup.querySelector(".editor-controls-left").appendChild(sectionElement)
-		});
+		})
 
 		this.custom_color_input = this.popup.querySelector(`input[type="color"]`)
 		this.custom_color_input.addEventListener("change", () => {
 			this.custom_color_input.parentElement.style.background = this.custom_color_input.value
 			this.selectOption("color", 0)
-		});
+		})
 
 		if (this.inpainter) {
 			this.selectOption("color", IMAGE_EDITOR_SECTIONS.find(s => s.name == "color").options.indexOf("#ffffff"))
@@ -237,22 +237,22 @@ class ImageEditor {
 	}
 	setSize(width, height) {
 		if (width == this.width && height == this.height) {
-			return;
+			return
 		}
 
 		var max_size = Math.min(window.innerWidth, width, 768)
 		if (width > height) {
-			var multiplier = max_size / width;
-			width = (multiplier * width).toFixed();
-			height = (multiplier * height).toFixed();
+			var multiplier = max_size / width
+			width = (multiplier * width).toFixed()
+			height = (multiplier * height).toFixed()
 		}
 		else {
-			var multiplier = max_size / height;
-			width = (multiplier * width).toFixed();
-			height = (multiplier * height).toFixed();
+			var multiplier = max_size / height
+			width = (multiplier * width).toFixed()
+			height = (multiplier * height).toFixed()
 		}
-		this.width = width;
-		this.height = height;
+		this.width = width
+		this.height = height
 	
 		this.container.style.width = width + "px"
 		this.container.style.height = height + "px"
@@ -276,26 +276,26 @@ class ImageEditor {
 	}
 	setImage(url, width, height) {
 		this.setSize(width, height)
-		this.layers.drawing.ctx.clearRect(0, 0, this.width, this.height);
-		this.layers.background.ctx.clearRect(0, 0, this.width, this.height);
+		this.layers.drawing.ctx.clearRect(0, 0, this.width, this.height)
+		this.layers.background.ctx.clearRect(0, 0, this.width, this.height)
 		if (url) {
-			var image = new Image();
+			var image = new Image()
 			image.onload = () => { 
-				this.layers.background.ctx.drawImage(image, 0, 0, this.width, this.height);
-			};
-			image.src = url;
+				this.layers.background.ctx.drawImage(image, 0, 0, this.width, this.height)
+			}
+			image.src = url
 		}
 		else {
 			this.layers.background.ctx.fillStyle = "#ffffff"
-			this.layers.background.ctx.beginPath();
-			this.layers.background.ctx.rect(0, 0, this.width, this.height);
-			this.layers.background.ctx.fill();
+			this.layers.background.ctx.beginPath()
+			this.layers.background.ctx.rect(0, 0, this.width, this.height)
+			this.layers.background.ctx.fill()
 		}
 	}
 	saveImage() {
 		if (!this.inpainter) {
 			// This is not an inpainter, so save the image as the new img2img input
-			this.layers.background.ctx.drawImage(this.layers.drawing.canvas, 0, 0, this.width, this.height);
+			this.layers.background.ctx.drawImage(this.layers.drawing.canvas, 0, 0, this.width, this.height)
 			var base64 = this.layers.background.canvas.toDataURL()
 			initImagePreview.src = base64 // this will trigger the rest of the app to use it
 		}
@@ -303,8 +303,8 @@ class ImageEditor {
 			// This is an inpainter, so make sure the toggle is set accordingly
 			var is_blank = !this.layers.drawing.ctx
 				.getImageData(0, 0, this.width, this.height).data
-				.some(channel => channel !== 0);
-			maskSetting.checked = !is_blank;
+				.some(channel => channel !== 0)
+			maskSetting.checked = !is_blank
 		}
 		this.close()
 	}
@@ -324,97 +324,97 @@ class ImageEditor {
 		if (layer) {
 			layer.ctx.lineCap = "round"
 			layer.ctx.lineJoin = "round"
-			layer.ctx.lineWidth = this.getOptionValue("brush_size");
-			layer.ctx.fillStyle = this.getOptionValue("color");
-			layer.ctx.strokeStyle = this.getOptionValue("color");
-			var sharpness = parseInt(this.getOptionValue("sharpness") * this.getOptionValue("brush_size"));
-			layer.ctx.filter = sharpness == 0 ? `none` : `blur(${sharpness}px)`;
-			layer.ctx.globalAlpha = (1 - this.getOptionValue("opacity"));
-			layer.ctx.globalCompositeOperation = this.eraser_active ? "destination-out" : "source-over";
+			layer.ctx.lineWidth = this.getOptionValue("brush_size")
+			layer.ctx.fillStyle = this.getOptionValue("color")
+			layer.ctx.strokeStyle = this.getOptionValue("color")
+			var sharpness = parseInt(this.getOptionValue("sharpness") * this.getOptionValue("brush_size"))
+			layer.ctx.filter = sharpness == 0 ? `none` : `blur(${sharpness}px)`
+			layer.ctx.globalAlpha = (1 - this.getOptionValue("opacity"))
+			layer.ctx.globalCompositeOperation = this.eraser_active ? "destination-out" : "source-over"
 		}
 		else {
 			Object.values([ "drawing", "overlay" ]).map(name => this.layers[name]).forEach(l => {
-				this.setBrush(l);
+				this.setBrush(l)
 			})
 		}
 	}
 	get ctx_overlay() {
-		return this.layers.overlay.ctx;
+		return this.layers.overlay.ctx
 	}
 	get ctx_current() { // the idea is this will help support having custom layers and editing each one
-		return this.layers.drawing.ctx;
+		return this.layers.drawing.ctx
 	}
 	get canvas_current() {
-		return this.layers.drawing.canvas;
+		return this.layers.drawing.canvas
 	}
 	mouseHandler(event) {
-		var bbox = this.layers.overlay.canvas.getBoundingClientRect();
-		var x = (event.clientX || 0) - bbox.left;
-		var y = (event.clientY || 0) - bbox.top;
+		var bbox = this.layers.overlay.canvas.getBoundingClientRect()
+		var x = (event.clientX || 0) - bbox.left
+		var y = (event.clientY || 0) - bbox.top
 	
 		// do drawing-related stuff
 		if (event.type == "mousedown" || (event.type == "mouseenter" && event.buttons == 1)) {
 			if (this.dropper_active) {
 				var img_rgb = this.layers.background.ctx.getImageData(x, y, 1, 1).data
 				var drw_rgb = this.ctx_current.getImageData(x, y, 1, 1).data
-				var drw_opacity = drw_rgb[3] / 255;
+				var drw_opacity = drw_rgb[3] / 255
 				var test = rgbToHex({ 
 					r: (drw_rgb[0] * drw_opacity) + (img_rgb[0] * (1 - drw_opacity)),
 					g: (drw_rgb[1] * drw_opacity) + (img_rgb[1] * (1 - drw_opacity)),
 					b: (drw_rgb[2] * drw_opacity) + (img_rgb[2] * (1 - drw_opacity)),
 				})
-				this.custom_color_input.value = test;
+				this.custom_color_input.value = test
 				this.custom_color_input.dispatchEvent(new Event("change"))
 			}
 			else {
-				this.drawing = true;
-				this.ctx_overlay.beginPath();
-				this.ctx_overlay.moveTo(x, y);
-				this.ctx_current.beginPath();
-				this.ctx_current.moveTo(x, y);
+				this.drawing = true
+				this.ctx_overlay.beginPath()
+				this.ctx_overlay.moveTo(x, y)
+				this.ctx_current.beginPath()
+				this.ctx_current.moveTo(x, y)
 			}
 		}
 		if (event.type == "mouseup" || event.type == "mousemove") {
 			if (this.drawing) {
-				this.ctx_current.lineTo(x, y);
-				this.ctx_overlay.lineTo(x, y);
+				this.ctx_current.lineTo(x, y)
+				this.ctx_overlay.lineTo(x, y)
 
 				// This isnt super efficient, but its the only way ive found to have clean updating for the drawing
-				this.ctx_overlay.clearRect(0, 0, this.width, this.height);
+				this.ctx_overlay.clearRect(0, 0, this.width, this.height)
 				if (this.eraser_active) {
-					this.ctx_overlay.globalCompositeOperation = "source-over";
-					this.ctx_overlay.globalAlpha = 1;
-					this.ctx_overlay.filter = "none";
-					this.ctx_overlay.drawImage(this.canvas_current, 0, 0);
+					this.ctx_overlay.globalCompositeOperation = "source-over"
+					this.ctx_overlay.globalAlpha = 1
+					this.ctx_overlay.filter = "none"
+					this.ctx_overlay.drawImage(this.canvas_current, 0, 0)
 					this.setBrush(this.layers.overlay)
-					this.canvas_current.style.opacity = 0;
+					this.canvas_current.style.opacity = 0
 				}
 
-				this.ctx_overlay.stroke();
+				this.ctx_overlay.stroke()
 			}
 		}
 		if (event.type == "mouseup" || event.type == "mouseout") {
 			if (this.drawing) {
-				this.drawing = false;
-				this.ctx_current.stroke();
-				this.ctx_overlay.clearRect(0, 0, this.width, this.height);
+				this.drawing = false
+				this.ctx_current.stroke()
+				this.ctx_overlay.clearRect(0, 0, this.width, this.height)
 
 				if (this.eraser_active) {
-					this.canvas_current.style.opacity = "";
+					this.canvas_current.style.opacity = ""
 				}
 			}
 		}
 
 		// cursor-icon stuff
 		if (event.type == "mousemove") {
-			this.cursor_icon.style.left = `${x + 10}px`;
-			this.cursor_icon.style.top = `${y + 20}px`;
+			this.cursor_icon.style.left = `${x + 10}px`
+			this.cursor_icon.style.top = `${y + 20}px`
 		}
 		if (event.type == "mouseenter") {
-			this.cursor_icon.style.opacity = 1;
+			this.cursor_icon.style.opacity = 1
 		}
 		if (event.type == "mouseout") {
-			this.cursor_icon.style.opacity = 0;
+			this.cursor_icon.style.opacity = 0
 		}
 		if ([ "mouseenter", "mousemove", "keydown", "keyup" ].includes(event.type)) {
 			if (this.dropper_active && !event.ctrlKey) {
@@ -428,13 +428,13 @@ class ImageEditor {
 		}
 	}
 	getOptionValue(section_name) {
-		var section = IMAGE_EDITOR_SECTIONS.find(s => s.name == section_name);
-		return this.options && section_name in this.options ? this.options[section_name] : section.default;
+		var section = IMAGE_EDITOR_SECTIONS.find(s => s.name == section_name)
+		return this.options && section_name in this.options ? this.options[section_name] : section.default
 	}
 	selectOption(section_name, option_index) {
 		var section = IMAGE_EDITOR_SECTIONS.find(s => s.name == section_name)
 		var value = section.options[option_index]
-		this.options[section_name] = value == "custom" ? section.getCustom(this) : value;
+		this.options[section_name] = value == "custom" ? section.getCustom(this) : value
 	
 		section.optionElements.forEach(element => element.classList.remove("active"))
 		section.optionElements[option_index].classList.add("active")
@@ -449,17 +449,17 @@ class ImageEditor {
 
 function rgbToHex(rgb) {
 	function componentToHex(c) {
-		var hex = parseInt(c).toString(16);
-		return hex.length == 1 ? "0" + hex : hex;
+		var hex = parseInt(c).toString(16)
+		return hex.length == 1 ? "0" + hex : hex
 	}
-	return "#" + componentToHex(rgb.r) + componentToHex(rgb.g) + componentToHex(rgb.b);
+	return "#" + componentToHex(rgb.r) + componentToHex(rgb.g) + componentToHex(rgb.b)
 }
 
-const imageEditor = new ImageEditor(document.getElementById("image-editor"));
-const imageInpainter = new ImageEditor(document.getElementById("image-inpainter"), true);
+const imageEditor = new ImageEditor(document.getElementById("image-editor"))
+const imageInpainter = new ImageEditor(document.getElementById("image-inpainter"), true)
 
-imageEditor.setImage(null, 512, 512);
-imageInpainter.setImage(null, 512, 512);
+imageEditor.setImage(null, 512, 512)
+imageInpainter.setImage(null, 512, 512)
 
 document.getElementById("init_image_button_draw").addEventListener("click", () => {
 	document.getElementById("image-editor").classList.toggle("active")
