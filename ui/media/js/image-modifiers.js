@@ -87,9 +87,9 @@ function createModifierGroup(modifierGroup, initiallyExpanded) {
             modifiersEl.appendChild(modifierCard)
 
             modifierCard.addEventListener('click', () => {
-                if (activeTags.map(x => x.name).includes(modifierName)) {
+                if (activeTags.map(x => trimModifiers(x.name)).includes(trimModifiers(modifierName))) {
                     // remove modifier from active array
-                    activeTags = activeTags.filter(x => x.name != modifierName)
+                    activeTags = activeTags.filter(x => trimModifiers(x.name) != trimModifiers(modifierName))
                     toggleCardState(modifierCard, false)
                 } else {
                     // add modifier to active array
@@ -118,6 +118,10 @@ function createModifierGroup(modifierGroup, initiallyExpanded) {
     editorModifierEntries.insertBefore(e, customModifierEntriesToolbar.nextSibling)
 
     return e
+}
+
+function trimModifiers(tag) {
+    return tag.replace(/^\(+|\)+$/g, '').replace(/^\[+|\]+$/g, '')
 }
 
 async function loadModifiers() {
