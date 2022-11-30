@@ -1,14 +1,67 @@
-var editorRoot = document.getElementById("image-editor")
-var editorControls = document.getElementById("image-editor-controls")
+var editorControlsLeft = document.getElementById("image-editor-controls-left")
 
 const IMAGE_EDITOR_MAX_SIZE = 800;
 
+const IMAGE_EDITOR_BUTTONS = [
+	{
+		name: "Clear",
+		icon: "fa-solid fa-xmark",
+		handler: editor => {
+			editor.ctx_current.clearRect(0, 0, editor.width, editor.height)
+		}
+	},
+	{
+		name: "Cancel",
+		icon: "fa-regular fa-circle-xmark",
+		handler: editor => {
+			editor.close()
+		}
+	},
+	{
+		name: "Save",
+		icon: "fa-solid fa-floppy-disk",
+		handler: editor => {
+			editor.saveImage()
+		}
+	}
+]
+
+const IMAGE_EDITOR_TOOLS = [
+	{
+		id: "draw",
+		name: "Draw",
+		icon: "fa-solid fa-pencil"
+	},
+	{
+		id: "erase",
+		name: "Erase",
+		icon: "fa-solid fa-eraser"
+	}
+];
+
 var IMAGE_EDITOR_SECTIONS = [
+	{
+		name: "tool",
+		title: "Tool",
+		default: "draw",
+		options: Array.from(IMAGE_EDITOR_TOOLS.map(t => t.id)),
+		initElement: (element, option) => {
+			var tool_info = IMAGE_EDITOR_TOOLS.find(t => t.id == option)
+			element.className = "image-editor-button button"
+			var sub_element = document.createElement("div")
+			var icon = document.createElement("i")
+			tool_info.icon.split(" ").forEach(c => icon.classList.add(c))
+			sub_element.appendChild(icon)
+			sub_element.append(tool_info.name)
+			element.appendChild(sub_element)
+		}
+	},
 	{
 		name: "color",
 		title: "Color",
 		default: "#f1c232",
 		options: [
+			"custom",
 			"#ea9999", "#e06666", "#cc0000", "#990000", "#660000",
 			"#f9cb9c", "#f6b26b", "#e69138", "#b45f06", "#783f04",
 			"#ffe599", "#ffd966", "#f1c232", "#bf9000", "#7f6000",
@@ -19,7 +72,21 @@ var IMAGE_EDITOR_SECTIONS = [
 			"#ffffff", "#c0c0c0", "#838383", "#525252", "#000000",
 		],
 		initElement: (element, option) => {
-			element.style.background = option
+			if (option == "custom") {
+				var input = document.createElement("input")
+				input.type = "color"
+				element.appendChild(input)
+				var span = document.createElement("span")
+				span.textContent = "Custom"
+				element.appendChild(span)
+			}
+			else {
+				element.style.background = option
+			}
+		},
+		getCustom: editor => {
+			var input = editor.popup.querySelector(".image_editor_color input")
+			return input.value
 		}
 	},
 	{
@@ -46,27 +113,33 @@ var IMAGE_EDITOR_SECTIONS = [
 	{
 		name: "sharpness",
 		title: "Sharpness",
-		default: 0,
-		options: [ 0, 2.5, 5, 7.5, 10 ],
+		default: 0.05,
+		options: [ 0, 0.05, 0.1, 0.2, 0.3 ],
 		initElement: (element, option) => {
+			var size = 32;
+			var blur_amount = parseInt(option * size);
 			var sub_element = document.createElement("div");
 			sub_element.style.background = `var(--background-color3)`
-			sub_element.style.filter = `blur(${option}px)`
-			sub_element.style.width = "28px"
-			sub_element.style.height = "28px"
-			sub_element.style['border-radius'] = "32px"
+			sub_element.style.filter = `blur(${blur_amount}px)`
+			sub_element.style.width = `${size - 4}px`
+			sub_element.style.height = `${size - 4}px`
+			sub_element.style['border-radius'] = `${size}px`
 			element.style.background = "none"
 			element.appendChild(sub_element)
 		}
 	}
-]
+];
 
 class ImageEditor {
-	constructor(container) {
+	constructor(popup) {
+		this.popup = popup
 		this.drawing = false
-		this.container = container
+		this.dropper_active = false
+		this.container = popup.querySelector(".editor-controls-center > div")
+		this.cursor_icon = document.createElement("i")
 		this.layers = {};
 		var layer_names = [
+			"background",
 			"drawing",
 			"overlay"
 		];
@@ -82,18 +155,31 @@ class ImageEditor {
 
 		this.setSize(512, 512)
 
+		this.cursor_icon.classList.add("cursor-icon")
+		this.container.appendChild(this.cursor_icon)
+
 		// add mouse handlers
 		this.container.addEventListener("mousedown", this.mouseHandler.bind(this));
 		this.container.addEventListener("mouseup", this.mouseHandler.bind(this));
 		this.container.addEventListener("mousemove", this.mouseHandler.bind(this));
 		this.container.addEventListener("mouseout", this.mouseHandler.bind(this));
 		this.container.addEventListener("mouseenter", this.mouseHandler.bind(this));
+		// setup forwarding for keypresses so the eyedropper works accordingly
+		var mouseHandlerHelper = this.mouseHandler.bind(this);
+		this.container.addEventListener("mouseenter",function() {
+			document.addEventListener("keyup", mouseHandlerHelper);
+			document.addEventListener("keydown", mouseHandlerHelper);
+		});
+		this.container.addEventListener("mouseout",function() {
+			document.removeEventListener("keyup", mouseHandlerHelper);
+			document.removeEventListener("keydown", mouseHandlerHelper);
+		});
 
 		// initialize editor controls
 		IMAGE_EDITOR_SECTIONS.forEach(section => {
 			section.id = `image_editor_${section.name}`
 			var sectionElement = document.createElement("div")
-			sectionElement.id = section.id
+			sectionElement.className = section.id
 	
 			var title = document.createElement("h4");
 			title.innerText = section.title
@@ -116,12 +202,31 @@ class ImageEditor {
 	
 			sectionElement.appendChild(optionsContainer)
 	
-			editorControls.appendChild(sectionElement)
+			this.popup.querySelector(".editor-controls-left").appendChild(sectionElement)
 		});
+
+		this.custom_color_input = this.popup.querySelector(`input[type="color"]`)
+		this.custom_color_input.addEventListener("change", () => {
+			this.custom_color_input.parentElement.style.background = this.custom_color_input.value
+			this.selectOption("color", 0)
+		});
+
+		// initialize the right-side controls
+		var buttonContainer = document.createElement("div")
+		IMAGE_EDITOR_BUTTONS.forEach(button => {
+			var element = document.createElement("div")
+			var icon = document.createElement("i")
+			element.className = "image-editor-button button"
+			icon.className = button.icon
+			element.appendChild(icon)
+			element.append(button.name)
+			buttonContainer.appendChild(element)
+			element.addEventListener("click", event => button.handler(this))
+		})
+		this.popup.querySelector(".editor-controls-right").appendChild(buttonContainer)
 	}
 	setSize(width, height) {
-		var max_size = Math.min(window.innerWidth, IMAGE_EDITOR_MAX_SIZE)
-	
+		var max_size = Math.min(window.innerWidth, width, 768)
 		if (width > height) {
 			var multiplier = max_size / width;
 			width = (multiplier * width).toFixed();
@@ -145,21 +250,61 @@ class ImageEditor {
 
 		this.setBrush()
 	}
-	setImage(url, width, height) {
-		this.container.style.backgroundImage = `url('${url}')`
-		this.setSize(width, height)
+	setCursorIcon(icon_class = null) {
+		if (icon_class == null) {
+			var tool = this.getOptionValue("tool")
+			icon_class = IMAGE_EDITOR_TOOLS.find(t => t.id == tool).icon
+		}
+		this.cursor_icon.className = `cursor-icon ${icon_class}`
 	}
-	setBrush() {
-		Object.values(this.layers).forEach(layer => {
+	setImage(url, width, height) {
+		this.setSize(width, height)
+		this.layers.drawing.ctx.clearRect(0, 0, this.width, this.height);
+		this.layers.background.ctx.clearRect(0, 0, this.width, this.height);
+		if (url) {
+			var image = new Image();
+			image.onload = () => { 
+				this.layers.background.ctx.drawImage(image, 0, 0, this.width, this.height);
+			};
+			image.src = url;
+		}
+		else {
+			this.layers.background.ctx.fillStyle = "#ffffff"
+			this.layers.background.ctx.beginPath();
+			this.layers.background.ctx.rect(0, 0, this.width, this.height);
+			this.layers.background.ctx.fill();
+			// TODO: draw some background color here
+		}
+	}
+	saveImage() {
+		this.layers.background.ctx.drawImage(this.layers.drawing.canvas, 0, 0, this.width, this.height);
+		var base64 = this.layers.background.canvas.toDataURL()
+		initImagePreview.src = base64 // this will trigger the rest of the app to use it
+		this.close()
+	}
+	close() {
+		this.popup.classList.remove("active")
+	}
+	get eraser_active() {
+		return this.getOptionValue("tool") == "erase"
+	}
+	setBrush(layer = null) {
+		if (layer) {
 			layer.ctx.lineCap = "round"
 			layer.ctx.lineJoin = "round"
 			layer.ctx.lineWidth = this.getOptionValue("brush_size");
 			layer.ctx.fillStyle = this.getOptionValue("color");
 			layer.ctx.strokeStyle = this.getOptionValue("color");
-			var sharpness = this.getOptionValue("sharpness");
+			var sharpness = parseInt(this.getOptionValue("sharpness") * this.getOptionValue("brush_size"));
 			layer.ctx.filter = sharpness == 0 ? `none` : `blur(${sharpness}px)`;
 			layer.ctx.globalAlpha = (1 - this.getOptionValue("opacity"));
-		})
+			layer.ctx.globalCompositeOperation = this.eraser_active ? "destination-out" : "source-over";
+		}
+		else {
+			Object.values([ "drawing", "overlay" ]).map(name => this.layers[name]).forEach(l => {
+				this.setBrush(l);
+			})
+		}
 	}
 	get ctx_overlay() {
 		return this.layers.overlay.ctx;
@@ -167,23 +312,52 @@ class ImageEditor {
 	get ctx_current() {
 		return this.layers.drawing.ctx;
 	}
+	get canvas_current() {
+		return this.layers.drawing.canvas;
+	}
 	mouseHandler(event) {
 		var bbox = this.layers.overlay.canvas.getBoundingClientRect();
-		var x = event.clientX - bbox.left;
-		var y = event.clientY - bbox.top;
+		var x = (event.clientX || 0) - bbox.left;
+		var y = (event.clientY || 0) - bbox.top;
 	
+		// do drawing-related stuff
 		if (event.type == "mousedown" || (event.type == "mouseenter" && event.buttons == 1)) {
-			this.drawing = true;
-			this.ctx_overlay.beginPath();
-			this.ctx_overlay.moveTo(x, y);
-			this.ctx_current.beginPath();
-			this.ctx_current.moveTo(x, y);
+			if (this.dropper_active) {
+				var img_rgb = this.layers.background.ctx.getImageData(x, y, 1, 1).data
+				var drw_rgb = this.ctx_current.getImageData(x, y, 1, 1).data
+				var drw_opacity = drw_rgb[3] / 255;
+				var test = rgbToHex({ 
+					r: (drw_rgb[0] * drw_opacity) + (img_rgb[0] * (1 - drw_opacity)),
+					g: (drw_rgb[1] * drw_opacity) + (img_rgb[1] * (1 - drw_opacity)),
+					b: (drw_rgb[2] * drw_opacity) + (img_rgb[2] * (1 - drw_opacity)),
+				})
+				this.custom_color_input.value = test;
+				this.custom_color_input.dispatchEvent(new Event("change"))
+			}
+			else {
+				this.drawing = true;
+				this.ctx_overlay.beginPath();
+				this.ctx_overlay.moveTo(x, y);
+				this.ctx_current.beginPath();
+				this.ctx_current.moveTo(x, y);
+			}
 		}
 		if (event.type == "mouseup" || event.type == "mousemove") {
 			if (this.drawing) {
-				this.ctx_overlay.lineTo(x, y);
 				this.ctx_current.lineTo(x, y);
+				this.ctx_overlay.lineTo(x, y);
+
+				// This isnt super efficient, but its the only way ive found to have clean updating for the drawing
 				this.ctx_overlay.clearRect(0, 0, this.width, this.height);
+				if (this.eraser_active) {
+					this.ctx_overlay.globalCompositeOperation = "source-over";
+					this.ctx_overlay.globalAlpha = 1;
+					this.ctx_overlay.filter = "none";
+					this.ctx_overlay.drawImage(this.canvas_current, 0, 0);
+					this.setBrush(this.layers.overlay)
+					this.canvas_current.style.opacity = 0;
+				}
+
 				this.ctx_overlay.stroke();
 			}
 		}
@@ -192,6 +366,32 @@ class ImageEditor {
 				this.drawing = false;
 				this.ctx_current.stroke();
 				this.ctx_overlay.clearRect(0, 0, this.width, this.height);
+
+				if (this.eraser_active) {
+					this.canvas_current.style.opacity = "";
+				}
+			}
+		}
+
+		// cursor-icon stuff
+		if (event.type == "mousemove") {
+			this.cursor_icon.style.left = `${x + 10}px`;
+			this.cursor_icon.style.top = `${y + 20}px`;
+		}
+		if (event.type == "mouseenter") {
+			this.cursor_icon.style.opacity = 1;
+		}
+		if (event.type == "mouseout") {
+			this.cursor_icon.style.opacity = 0;
+		}
+		if ([ "mouseenter", "mousemove", "keydown", "keyup" ].includes(event.type)) {
+			if (this.dropper_active && !event.ctrlKey) {
+				this.dropper_active = false
+				this.setCursorIcon()
+			}
+			else if (!this.dropper_active && event.ctrlKey) {
+				this.dropper_active = true
+				this.setCursorIcon("fa-solid fa-eye-dropper")
 			}
 		}
 	}
@@ -202,36 +402,29 @@ class ImageEditor {
 	selectOption(section_name, option_index) {
 		var section = IMAGE_EDITOR_SECTIONS.find(s => s.name == section_name)
 		var value = section.options[option_index]
-		section.value = value
+		section.value = value == "custom" ? section.getCustom(this) : value;
 	
 		section.optionElements.forEach(element => element.classList.remove("active"))
 		section.optionElements[option_index].classList.add("active")
 	
 		// change the editor
-		if (["color", "brush_size", "sharpness", "opacity"].includes(section_name)) {
-			this.setBrush()
+		this.setBrush()
+		if (section.name == "tool") {
+			this.setCursorIcon()
 		}
-	}
-	doThing() {
-		console.time("clearing");
-		for(var i = 0; i < 1000; i++) {
-			this.ctx_overlay.clearRect(0, 0, this.width, this.height);
-			this.ctx_overlay.stroke();
-			this.ctx_overlay.drawImage(this.layers.drawing.canvas, 0, 0); // CAN USE THIS FOR ERASING
-		}
-		console.timeEnd("clearing");
-
 	}
 }
 
-const imageEditor = new ImageEditor(document.getElementById("image-editor-canvas"));
+function rgbToHex(rgb) {
+	function componentToHex(c) {
+		var hex = parseInt(c).toString(16);
+		return hex.length == 1 ? "0" + hex : hex;
+	}
+	return "#" + componentToHex(rgb.r) + componentToHex(rgb.g) + componentToHex(rgb.b);
+}
 
+const imageEditor = new ImageEditor(document.getElementById("image-editor"));
 
-
-// var drawingBoardElement = document.getElementById("image-editor-canvas canvas")
-// var drawingBoardElement = document.getElementById("image-editor-canvas")
-// var editorCanvas = drawingBoardElement.querySelector("canvas")
-// var editorContext = editorCanvas.getContext("2d")
-// drawingBoardElement.style.width = IMAGE_EDITOR_MAX_SIZE + "px"
-// drawingBoardElement.style.height = IMAGE_EDITOR_MAX_SIZE + "px"
-
+document.getElementById("init_image_button_draw").addEventListener("click", () => {
+	document.getElementById("image-editor").classList.toggle("active")
+})
