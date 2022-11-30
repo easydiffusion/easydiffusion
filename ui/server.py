@@ -7,6 +7,7 @@ import traceback
 
 import sys
 import os
+import picklescan.scanner
 import rich
 
 SD_DIR = os.getcwd()
@@ -234,7 +235,6 @@ async def setAppConfig(req : SetAppConfigRequest):
 
 def is_malicious_model(file_path):
     try:
-        import picklescan.scanner
         scan_result = picklescan.scanner.scan_file_path(file_path)
         if scan_result.issues_count > 0 or scan_result.infected_files > 0:
             rich.print(":warning: [bold red]Scan %s: %d scanned, %d issue, %d infected.[/bold red]" % (file_path, scan_result.scanned_files, scan_result.issues_count, scan_result.infected_files))
