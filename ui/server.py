@@ -307,7 +307,7 @@ def getUIPlugins():
     return plugins
 
 def getIPConfig():
-    ips = socket.gethostbyname_ex(socket.getfqdn())
+    ips = socket.gethostbyname_ex(socket.gethostname())
     ips[2].append(ips[0])
     return ips[2]
 
