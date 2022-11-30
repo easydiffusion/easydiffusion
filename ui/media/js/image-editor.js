@@ -113,7 +113,7 @@ var IMAGE_EDITOR_SECTIONS = [
 	{
 		name: "sharpness",
 		title: "Sharpness",
-		default: 0.05,
+		default: 0,
 		options: [ 0, 0.05, 0.1, 0.2, 0.3 ],
 		initElement: (element, option) => {
 			var size = 32
@@ -187,6 +187,7 @@ class ImageEditor {
 
 		// initialize editor controls
 		this.options = {}
+		this.optionElements = {}
 		IMAGE_EDITOR_SECTIONS.forEach(section => {
 			section.id = `image_editor_${section.name}`
 			var sectionElement = document.createElement("div")
@@ -199,7 +200,7 @@ class ImageEditor {
 			var optionsContainer = document.createElement("div")
 			optionsContainer.classList.add("editor-options-container")
 	
-			section.optionElements = []
+			this.optionElements[section.name] = []
 			section.options.forEach((option, index) => {
 				var optionHolder = document.createElement("div")
 				var optionElement = document.createElement("div")
@@ -207,7 +208,7 @@ class ImageEditor {
 				section.initElement(optionElement, option)
 				optionElement.addEventListener("click", target => this.selectOption(section.name, index))
 				optionsContainer.appendChild(optionHolder)
-				section.optionElements.push(optionElement)
+				this.optionElements[section.name].push(optionElement)
 			})
 			this.selectOption(section.name, section.options.indexOf(section.default))
 	
@@ -357,7 +358,6 @@ class ImageEditor {
 		var x = (event.clientX || 0) - bbox.left
 		var y = (event.clientY || 0) - bbox.top
 		var type = event.type;
-		console.log(type);
 		var touchmap = {
 			touchstart: "mousedown",
 			touchmove: "mousemove",
@@ -458,9 +458,9 @@ class ImageEditor {
 		var section = IMAGE_EDITOR_SECTIONS.find(s => s.name == section_name)
 		var value = section.options[option_index]
 		this.options[section_name] = value == "custom" ? section.getCustom(this) : value
-	
-		section.optionElements.forEach(element => element.classList.remove("active"))
-		section.optionElements[option_index].classList.add("active")
+		
+		this.optionElements[section_name].forEach(element => element.classList.remove("active"))
+		this.optionElements[section_name][option_index].classList.add("active")
 	
 		// change the editor
 		this.setBrush()
