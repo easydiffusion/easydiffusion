@@ -79,14 +79,14 @@
                             <i class="fa-solid fa-pencil"></i>
                             Draw
                         </div>
-                        <div id="init_image_button_inpainting" class="button">
+                        <div id="init_image_button_inpaint" class="button">
                             <i class="fa-solid fa-paintbrush"></i>
                             Inpaint
+                            <input id="enable_mask" name="enable_mask" type="checkbox">
                         </div>
                     </div>
 
                     <div style="display: none">
-                        <input id="enable_mask" name="enable_mask" type="checkbox">
                         <label for="enable_mask">
                             In-Painting (beta)
                             <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Inpainting" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">Click to learn more about InPainting</span></i></a>
@@ -337,6 +337,22 @@
         <div>
             <i class="close-button fa-solid fa-xmark"></i>
             <h1>Image Editor</h1>
+            <div class="flex-container">
+                <div class="editor-controls-left"></div>
+                <div class="editor-controls-center">
+                    <div></div>
+                </div>
+                <div class="editor-controls-right">
+                    <div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="image-inpainter" class="popup image-editor-popup">
+        <div>
+            <i class="close-button fa-solid fa-xmark"></i>
+            <h1>Inpainter</h1>
             <div class="flex-container">
                 <div class="editor-controls-left"></div>
                 <div class="editor-controls-center">

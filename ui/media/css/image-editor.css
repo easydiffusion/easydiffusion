@@ -1,5 +1,6 @@
 .editor-controls-left {
 	padding-left: 32px;
+	text-align: left;
 }
 
 .editor-options-container {
@@ -130,9 +131,6 @@
 	justify-content: end;
 }
 
-/* .editor-controls-right > div:last-child > div {
-} */
-
 .image-editor-button {
 	width: 100%;
 	height: 32px;
@@ -140,8 +138,20 @@
 	background: var(--background-color3);
 }
 
+#init_image_button_inpaint .input-toggle {
+	position: absolute;
+	left: 16px;
+}
+
+.image-editor-popup {
+	--popup-margin: 16px;
+	--popup-padding: 24px;
+}
+
 .image-editor-popup > div {
-	margin: 16px;
+	margin: var(--popup-margin);
+	padding: var(--popup-padding);
+	min-height: calc(100vh - (2 * var(--popup-margin)));
 	max-width: none;
 }
 
@@ -150,4 +160,14 @@
 	top: 32px;
 	left: 50%;
 	transform: translateX(-50%);
+}
+
+
+.image-editor-popup > div > div {
+	min-height: calc(100vh - (2 * var(--popup-margin)) - (2 * var(--popup-padding)));
+}
+
+
+.inpainter .image_editor_color {
+	display: none;
 }

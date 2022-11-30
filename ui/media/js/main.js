@@ -1083,6 +1083,9 @@ function onDimensionChange() {
     if (!initImagePreviewContainer.classList.contains("has-image")) {
         imageEditor.setImage(null, widthValue, heightValue)
     }
+    else {
+        imageInpainter.setImage(initImagePreview.src, initImagePreview.naturalWidth, initImagePreview.naturalHeight)
+    }
     if (maskSetting.checked) {
         resizeInpaintingEditor(widthValue, heightValue)
     }
@@ -1233,6 +1236,7 @@ initImagePreview.addEventListener('load', function() {
 
     initImageSizeBox.textContent = initImagePreview.naturalWidth + " x " + initImagePreview.naturalHeight
     imageEditor.setImage(this.src, initImagePreview.naturalWidth, initImagePreview.naturalHeight)
+    imageInpainter.setImage(this.src, initImagePreview.naturalWidth, initImagePreview.naturalHeight)
 })
 
 initImageClearBtn.addEventListener('click', function() {

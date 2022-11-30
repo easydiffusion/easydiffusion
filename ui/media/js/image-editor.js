@@ -7,7 +7,7 @@ const IMAGE_EDITOR_BUTTONS = [
 		name: "Clear",
 		icon: "fa-solid fa-xmark",
 		handler: editor => {
-			editor.ctx_current.clearRect(0, 0, editor.width, editor.height)
+			editor.clear()
 		}
 	},
 	{
@@ -131,8 +131,12 @@ var IMAGE_EDITOR_SECTIONS = [
 ];
 
 class ImageEditor {
-	constructor(popup) {
+	constructor(popup, inpainter = false) {
+		this.inpainter = inpainter
 		this.popup = popup
+		if (inpainter) {
+			this.popup.classList.add("inpainter")
+		}
 		this.drawing = false
 		this.dropper_active = false
 		this.container = popup.querySelector(".editor-controls-center > div")
@@ -211,6 +215,10 @@ class ImageEditor {
 			this.selectOption("color", 0)
 		});
 
+		if (this.inpainter) {
+			this.selectOption("color", IMAGE_EDITOR_SECTIONS.find(s => s.name == "color").options.indexOf("#ffffff"))
+		}
+
 		// initialize the right-side controls
 		var buttonContainer = document.createElement("div")
 		IMAGE_EDITOR_BUTTONS.forEach(button => {
@@ -277,13 +285,29 @@ class ImageEditor {
 		}
 	}
 	saveImage() {
-		this.layers.background.ctx.drawImage(this.layers.drawing.canvas, 0, 0, this.width, this.height);
-		var base64 = this.layers.background.canvas.toDataURL()
-		initImagePreview.src = base64 // this will trigger the rest of the app to use it
+		if (!this.inpainter) {
+			// This is not an inpainter, so save the image as the new img2img input
+			this.layers.background.ctx.drawImage(this.layers.drawing.canvas, 0, 0, this.width, this.height);
+			var base64 = this.layers.background.canvas.toDataURL()
+			initImagePreview.src = base64 // this will trigger the rest of the app to use it
+		}
+		else {
+			// This is an inpainter, so make sure the toggle is set accordingly
+			var is_blank = !this.layers.drawing.ctx
+				.getImageData(0, 0, this.width, this.height).data
+				.some(channel => channel !== 0);
+			maskSetting.checked = !is_blank;
+		}
 		this.close()
+	}
+	getImg() { // a drop-in replacement of the drawingboard version
+		return this.layers.drawing.canvas.toDataURL()
 	}
 	close() {
 		this.popup.classList.remove("active")
+	}
+	clear() {
+		this.ctx_current.clearRect(0, 0, this.width, this.height)
 	}
 	get eraser_active() {
 		return this.getOptionValue("tool") == "erase"
@@ -309,7 +333,7 @@ class ImageEditor {
 	get ctx_overlay() {
 		return this.layers.overlay.ctx;
 	}
-	get ctx_current() {
+	get ctx_current() { // the idea is this will help support having custom layers and editing each one
 		return this.layers.drawing.ctx;
 	}
 	get canvas_current() {
@@ -424,7 +448,14 @@ function rgbToHex(rgb) {
 }
 
 const imageEditor = new ImageEditor(document.getElementById("image-editor"));
+const imageInpainter = new ImageEditor(document.getElementById("image-inpainter"), true);
+
+imageEditor.setImage(null, 512, 512);
+imageInpainter.setImage(null, 512, 512);
 
 document.getElementById("init_image_button_draw").addEventListener("click", () => {
 	document.getElementById("image-editor").classList.toggle("active")
+})
+document.getElementById("init_image_button_inpaint").addEventListener("click", () => {
+	document.getElementById("image-inpainter").classList.toggle("active")
 })
