@@ -469,10 +469,9 @@ function makeImage() {
         guidanceScaleField.value = guidanceScaleSlider.value / 10
     }
     const taskTemplate = getCurrentUserRequest()
-    const newTaskRequests = []
-    getPrompts().forEach((prompt) => newTaskRequests.push(Object.assign({}, taskTemplate, {
+    const newTaskRequests = getPrompts().map((prompt) => Object.assign({}, taskTemplate, {
         reqBody: Object.assign({ prompt: prompt }, taskTemplate.reqBody)
-    })))
+    }))
     newTaskRequests.forEach(createTask)
 
     initialText.style.display = 'none'
@@ -893,8 +892,10 @@ function getCurrentUserRequest() {
     return newTask
 }
 
-function getPrompts() {
-    let prompts = promptField.value
+function getPrompts(prompts) {
+    if (typeof prompts === 'undefined') {
+        prompts = promptField.value
+    }
     if (prompts.trim() === '') {
         return ['']
     }
