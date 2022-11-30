@@ -136,7 +136,7 @@ var PARAMETERS = [
 		id: "test_sd2",
 		type: ParameterType.checkbox,
 		label: "Test SD 2.0",
-		note: "Experimental! High memory usage! GPU-only! Please restart the program after changing this.",
+		note: "Experimental! High memory usage! GPU-only! Not the final version! Please restart the program after changing this.",
 		icon: "fa-fire",
 		default: false,
 	},
@@ -242,6 +242,9 @@ async function getAppConfig() {
         if ('test_sd2' in config) {
             testSD2Field.checked = config['test_sd2']
         }
+
+		let testSD2SettingEntry = getParameterSettingsEntry('test_sd2')
+		testSD2SettingEntry.style.display = (config.update_branch === 'beta' ? '' : 'none')
 	if (config.net && config.net.listen_to_network === false) {
 	    listenToNetworkField.checked = false
 	}
