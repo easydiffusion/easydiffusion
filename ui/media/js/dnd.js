@@ -328,6 +328,7 @@ function getModelPath(filename, extensions)
             filename = filename.slice(0, filename.length - ext.length)
         }
     })
+    return filename
 }
 
 const TASK_TEXT_MAPPING = {
