@@ -37,12 +37,8 @@ if [ -e "scripts/install_status.txt" ] && [ `grep -c sd_git_cloned scripts/insta
 
     if [ "$test_sd2" == "N" ]; then
         git -c advice.detachedHead=false checkout 7f32368ed1030a6e710537047bacd908adea183a
-
-        git apply --whitespace=warn ../ui/sd_internal/ddim_callback.patch || fail "ddim patch failed"
     elif [ "$test_sd2" == "Y" ]; then
-        git -c advice.detachedHead=false checkout 992f111312afa9ec1a01beaa9733cb9728f5acd3
-
-        git apply --whitespace=warn ../ui/sd_internal/ddim_callback_sd2.patch || fail "sd2 ddim patch failed"
+        git -c advice.detachedHead=false checkout 5d647c5459f4cd790672512222bc41903c01bb71
     fi
 
     cd ..
@@ -57,8 +53,6 @@ else
 
     cd stable-diffusion
     git -c advice.detachedHead=false checkout 7f32368ed1030a6e710537047bacd908adea183a
-
-    git apply --whitespace=warn ../ui/sd_internal/ddim_callback.patch || fail "ddim patch failed"
 
     cd ..
 fi

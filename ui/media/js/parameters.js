@@ -5,9 +5,9 @@
  */
  var ParameterType = {
     checkbox: "checkbox",
-	select: "select",
-	select_multiple: "select_multiple",
-	custom: "custom",
+    select: "select",
+    select_multiple: "select_multiple",
+    custom: "custom",
 };
 
 /**
@@ -23,174 +23,182 @@
 
 /** @type {Array.<Parameter>} */
 var PARAMETERS = [
-	{
-		id: "theme",
-		type: ParameterType.select,
-		label: "Theme",
-		default: "theme-default",
-		note: "customize the look and feel of the ui",
-		options: [ // Note: options expanded dynamically
-			{
-				value: "theme-default",
-				label: "Default"
-			}
-		],
-		icon: "fa-palette"
-	},
-	{
-		id: "save_to_disk",
-		type: ParameterType.checkbox,
-		label: "Auto-Save Images",
-		note: "automatically saves images to the specified location",
-		icon: "fa-download",
-		default: false,
-	},
-	{
-		id: "diskPath",
-		type: ParameterType.custom,
-		label: "Save Location",
-		render: (parameter) => {
-			return `<input id="${parameter.id}" name="${parameter.id}" size="30" disabled>`
-		}
-	},
-	{
-		id: "sound_toggle",
-		type: ParameterType.checkbox,
-		label: "Enable Sound",
-		note: "plays a sound on task completion",
-		icon: "fa-volume-low",
-		default: true,
-	},
-	{
-		id: "ui_open_browser_on_start",
-		type: ParameterType.checkbox,
-		label: "Open browser on startup",
-		note: "starts the default browser on startup",
-		icon: "fa-window-restore",
-		default: true,
-	},
-	{
-		id: "turbo",
-		type: ParameterType.checkbox,
-		label: "Turbo Mode",
-		note: "generates images faster, but uses an additional 1 GB of GPU memory",
-		icon: "fa-forward",
-		default: true,
-	},
-	{
-		id: "use_cpu",
-		type: ParameterType.checkbox,
-		label: "Use CPU (not GPU)",
-		note: "warning: this will be *very* slow",
-		icon: "fa-microchip",
-		default: false,
-	},
-	{
-		id: "auto_pick_gpus",
-		type: ParameterType.checkbox,
-		label: "Automatically pick the GPUs (experimental)",
-		default: false,
-	},
-	{
-		id: "use_gpus",
-		type: ParameterType.select_multiple,
-		label: "GPUs to use (experimental)",
-		note: "to process in parallel",
-		default: false,
-	},
-	{
-		id: "use_full_precision",
-		type: ParameterType.checkbox,
-		label: "Use Full Precision",
-		note: "for GPU-only. warning: this will consume more VRAM",
-		icon: "fa-crosshairs",
-		default: false,
-	},
-	{
-		id: "auto_save_settings",
-		type: ParameterType.checkbox,
-		label: "Auto-Save Settings",
-		note: "restores settings on browser load",
-		icon: "fa-gear",
-		default: true,
-	},
-	{
-		id: "listen_to_network",
-		type: ParameterType.checkbox,
-		label: "Make Stable Diffusion available on your network",
-		note: "Other devices on your network can access this web page",
-		icon: "fa-network-wired",
-		default: true,
-	},
-	{
-		id: "listen_port",
-		type: ParameterType.custom,
-		label: "Network port",
-		note: "Port that this server listens to. The '9000' part in 'http://localhost:9000'",
-		icon: "fa-anchor",
-		render: (parameter) => {
-			return `<input id="${parameter.id}" name="${parameter.id}" size="6" value="9000" onkeypress="preventNonNumericalInput(event)">`
-		}
-	},
-	{
-		id: "test_sd2",
-		type: ParameterType.checkbox,
-		label: "Test SD 2.0",
-		note: "Experimental! High memory usage! GPU-only! Please restart the program after changing this.",
-		icon: "fa-fire",
-		default: false,
-	},
-	{
-		id: "use_beta_channel",
-		type: ParameterType.checkbox,
-		label: "Beta channel",
-		note: "Get the latest features immediately (but could be less stable). Please restart the program after changing this.",
-		icon: "fa-fire",
-		default: false,
-	},
+    {
+        id: "theme",
+        type: ParameterType.select,
+        label: "Theme",
+        default: "theme-default",
+        note: "customize the look and feel of the ui",
+        options: [ // Note: options expanded dynamically
+            {
+                value: "theme-default",
+                label: "Default"
+            }
+        ],
+        icon: "fa-palette"
+    },
+    {
+        id: "save_to_disk",
+        type: ParameterType.checkbox,
+        label: "Auto-Save Images",
+        note: "automatically saves images to the specified location",
+        icon: "fa-download",
+        default: false,
+    },
+    {
+        id: "diskPath",
+        type: ParameterType.custom,
+        label: "Save Location",
+        render: (parameter) => {
+            return `<input id="${parameter.id}" name="${parameter.id}" size="30" disabled>`
+        }
+    },
+    {
+        id: "sound_toggle",
+        type: ParameterType.checkbox,
+        label: "Enable Sound",
+        note: "plays a sound on task completion",
+        icon: "fa-volume-low",
+        default: true,
+    },
+    {
+        id: "ui_open_browser_on_start",
+        type: ParameterType.checkbox,
+        label: "Open browser on startup",
+        note: "starts the default browser on startup",
+        icon: "fa-window-restore",
+        default: true,
+    },
+    {
+        id: "turbo",
+        type: ParameterType.checkbox,
+        label: "Turbo Mode",
+        note: "generates images faster, but uses an additional 1 GB of GPU memory",
+        icon: "fa-forward",
+        default: true,
+    },
+    {
+        id: "use_cpu",
+        type: ParameterType.checkbox,
+        label: "Use CPU (not GPU)",
+        note: "warning: this will be *very* slow",
+        icon: "fa-microchip",
+        default: false,
+    },
+    {
+        id: "auto_pick_gpus",
+        type: ParameterType.checkbox,
+        label: "Automatically pick the GPUs (experimental)",
+        default: false,
+    },
+    {
+        id: "use_gpus",
+        type: ParameterType.select_multiple,
+        label: "GPUs to use (experimental)",
+        note: "to process in parallel",
+        default: false,
+    },
+    {
+        id: "use_full_precision",
+        type: ParameterType.checkbox,
+        label: "Use Full Precision",
+        note: "for GPU-only. warning: this will consume more VRAM",
+        icon: "fa-crosshairs",
+        default: false,
+    },
+    {
+        id: "auto_save_settings",
+        type: ParameterType.checkbox,
+        label: "Auto-Save Settings",
+        note: "restores settings on browser load",
+        icon: "fa-gear",
+        default: true,
+    },
+    {
+        id: "confirm_dangerous_actions",
+        type: ParameterType.checkbox,
+        label: "Confirm dangerous actions",
+        note: "Actions that might lead to data loss must either be clicked with the shift key pressed, or confirmed in an 'Are you sure?' dialog",
+        icon: "fa-check-double",
+        default: true,
+    },
+    {
+        id: "listen_to_network",
+        type: ParameterType.checkbox,
+        label: "Make Stable Diffusion available on your network",
+        note: "Other devices on your network can access this web page",
+        icon: "fa-network-wired",
+        default: true,
+    },
+    {
+        id: "listen_port",
+        type: ParameterType.custom,
+        label: "Network port",
+        note: "Port that this server listens to. The '9000' part in 'http://localhost:9000'",
+        icon: "fa-anchor",
+        render: (parameter) => {
+            return `<input id="${parameter.id}" name="${parameter.id}" size="6" value="9000" onkeypress="preventNonNumericalInput(event)">`
+        }
+    },
+    {
+        id: "test_sd2",
+        type: ParameterType.checkbox,
+        label: "Test SD 2.0",
+        note: "Experimental! High memory usage! GPU-only! Not the final version! Please restart the program after changing this.",
+        icon: "fa-fire",
+        default: false,
+    },
+    {
+        id: "use_beta_channel",
+        type: ParameterType.checkbox,
+        label: "Beta channel",
+        note: "Get the latest features immediately (but could be less stable). Please restart the program after changing this.",
+        icon: "fa-fire",
+        default: false,
+    },
 ];
 
 function getParameterSettingsEntry(id) {
-	let parameter = PARAMETERS.filter(p => p.id === id)
-	if (parameter.length === 0) {
-		return
-	}
-	return parameter[0].settingsEntry
+    let parameter = PARAMETERS.filter(p => p.id === id)
+    if (parameter.length === 0) {
+        return
+    }
+    return parameter[0].settingsEntry
 }
 
 function getParameterElement(parameter) {
-	switch (parameter.type) {
-		case ParameterType.checkbox:
-			var is_checked = parameter.default ? " checked" : "";
-			return `<input id="${parameter.id}" name="${parameter.id}"${is_checked} type="checkbox">`
-		case ParameterType.select:
-		case ParameterType.select_multiple:
-			var options = (parameter.options || []).map(option => `<option value="${option.value}">${option.label}</option>`).join("")
-			var multiple = (parameter.type == ParameterType.select_multiple ? 'multiple' : '')
-			return `<select id="${parameter.id}" name="${parameter.id}" ${multiple}>${options}</select>`
-		case ParameterType.custom:
-			return parameter.render(parameter)
-		default:
-			console.error(`Invalid type for parameter ${parameter.id}`);
-			return "ERROR: Invalid Type"
-	}
+    switch (parameter.type) {
+        case ParameterType.checkbox:
+            var is_checked = parameter.default ? " checked" : "";
+            return `<input id="${parameter.id}" name="${parameter.id}"${is_checked} type="checkbox">`
+        case ParameterType.select:
+        case ParameterType.select_multiple:
+            var options = (parameter.options || []).map(option => `<option value="${option.value}">${option.label}</option>`).join("")
+            var multiple = (parameter.type == ParameterType.select_multiple ? 'multiple' : '')
+            return `<select id="${parameter.id}" name="${parameter.id}" ${multiple}>${options}</select>`
+        case ParameterType.custom:
+            return parameter.render(parameter)
+        default:
+            console.error(`Invalid type for parameter ${parameter.id}`);
+            return "ERROR: Invalid Type"
+    }
 }
 
 let parametersTable = document.querySelector("#system-settings .parameters-table")
 /* fill in the system settings popup table */
 function initParameters() {
-	PARAMETERS.forEach(parameter => {
-		var element = getParameterElement(parameter)
-		var note = parameter.note ? `<small>${parameter.note}</small>` : "";
-		var icon = parameter.icon ? `<i class="fa ${parameter.icon}"></i>` : "";
-		var newrow = document.createElement('div')
-		newrow.innerHTML = `
-			<div>${icon}</div>
-			<div><label for="${parameter.id}">${parameter.label}</label>${note}</div>
-			<div>${element}</div>`
-		parametersTable.appendChild(newrow)
-		parameter.settingsEntry = newrow
-	})
+    PARAMETERS.forEach(parameter => {
+        var element = getParameterElement(parameter)
+        var note = parameter.note ? `<small>${parameter.note}</small>` : "";
+        var icon = parameter.icon ? `<i class="fa ${parameter.icon}"></i>` : "";
+        var newrow = document.createElement('div')
+        newrow.innerHTML = `
+            <div>${icon}</div>
+            <div><label for="${parameter.id}">${parameter.label}</label>${note}</div>
+            <div>${element}</div>`
+        parametersTable.appendChild(newrow)
+        parameter.settingsEntry = newrow
+    })
 }
 
 initParameters()
@@ -207,8 +215,10 @@ let listenPortField = document.querySelector("#listen_port")
 let testSD2Field = document.querySelector("#test_sd2")
 let useBetaChannelField = document.querySelector("#use_beta_channel")
 let uiOpenBrowserOnStartField = document.querySelector("#ui_open_browser_on_start")
+let confirmDangerousActionsField = document.querySelector("#confirm_dangerous_actions")
 
 let saveSettingsBtn = document.querySelector('#save-system-settings-btn')
+
 
 async function changeAppConfig(configDelta) {
     try {
@@ -242,12 +252,15 @@ async function getAppConfig() {
         if ('test_sd2' in config) {
             testSD2Field.checked = config['test_sd2']
         }
-	if (config.net && config.net.listen_to_network === false) {
-	    listenToNetworkField.checked = false
-	}
-	if (config.net && config.net.listen_port !== undefined) {
-	    listenPortField.value = config.net.listen_port
-	}
+
+        let testSD2SettingEntry = getParameterSettingsEntry('test_sd2')
+        testSD2SettingEntry.style.display = (config.update_branch === 'beta' ? '' : 'none')
+        if (config.net && config.net.listen_to_network === false) {
+            listenToNetworkField.checked = false
+        }
+        if (config.net && config.net.listen_port !== undefined) {
+            listenPortField.value = config.net.listen_port
+        }
 
         console.log('get config status response', config)
     } catch (e) {
@@ -275,7 +288,6 @@ function getCurrentRenderDeviceSelection() {
 useCPUField.addEventListener('click', function() {
     let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
     let autoPickGPUSettingEntry = getParameterSettingsEntry('auto_pick_gpus')
-	console.log("hello", this.checked);
     if (this.checked) {
         gpuSettingEntry.style.display = 'none'
         autoPickGPUSettingEntry.style.display = 'none'
@@ -325,14 +337,45 @@ async function getDiskPath() {
     }
 }
 
-async function getDevices() {
+function setDeviceInfo(devices) {
+    let cpu = devices.all.cpu.name
+    let allGPUs = Object.keys(devices.all).filter(d => d != 'cpu')
+    let activeGPUs = Object.keys(devices.active)
+
+    function ID_TO_TEXT(d) {
+        let info = devices.all[d]
+        if ("mem_free" in info && "mem_total" in info) {
+            return `${info.name} <small>(${d}) (${info.mem_free.toFixed(1)}Gb free / ${info.mem_total.toFixed(1)} Gb total)</small>`
+        } else {
+            return `${info.name} <small>(${d}) (no memory info)</small>`
+        }
+    }
+
+    allGPUs = allGPUs.map(ID_TO_TEXT)
+    activeGPUs = activeGPUs.map(ID_TO_TEXT)
+
+    let systemInfoEl = document.querySelector('#system-info')
+    systemInfoEl.querySelector('#system-info-cpu').innerText = cpu
+    systemInfoEl.querySelector('#system-info-gpus-all').innerHTML = allGPUs.join('</br>')
+    systemInfoEl.querySelector('#system-info-rendering-devices').innerHTML = activeGPUs.join('</br>')
+}
+
+function setHostInfo(hosts) {
+    let port = listenPortField.value
+    hosts = hosts.map(addr => `http://${addr}:${port}/`).map(url => `<div><a href="${url}">${url}</a></div>`)
+    document.querySelector('#system-info-server-hosts').innerHTML = hosts.join('')
+}
+
+async function getSystemInfo() {
     try {
-        let res = await fetch('/get/devices')
+        let res = await fetch('/get/system_info')
         if (res.status === 200) {
             res = await res.json()
+            let devices = res['devices']
+            let hosts = res['hosts']
 
-            let allDeviceIds = Object.keys(res['all']).filter(d => d !== 'cpu')
-            let activeDeviceIds = Object.keys(res['active']).filter(d => d !== 'cpu')
+            let allDeviceIds = Object.keys(devices['all']).filter(d => d !== 'cpu')
+            let activeDeviceIds = Object.keys(devices['active']).filter(d => d !== 'cpu')
 
             if (activeDeviceIds.length === 0) {
                 useCPUField.checked = true
@@ -350,11 +393,11 @@ async function getDevices() {
                 useCPUField.disabled = true // no compatible GPUs, so make the CPU mandatory
             }
 
-            autoPickGPUsField.checked = (res['config'] === 'auto')
+            autoPickGPUsField.checked = (devices['config'] === 'auto')
 
             useGPUsField.innerHTML = ''
             allDeviceIds.forEach(device => {
-                let deviceName = res['all'][device]['name']
+                let deviceName = devices['all'][device]['name']
                 let deviceOption = `<option value="${device}">${deviceName} (${device})</option>`
                 useGPUsField.insertAdjacentHTML('beforeend', deviceOption)
             })
@@ -365,6 +408,9 @@ async function getDevices() {
             } else {
                 $('#use_gpus').val(activeDeviceIds)
             }
+
+            setDeviceInfo(devices)
+            setHostInfo(hosts)
         }
     } catch (e) {
         console.log('error fetching devices', e)
@@ -372,23 +418,23 @@ async function getDevices() {
 }
 
 saveSettingsBtn.addEventListener('click', function() {
-	let updateBranch = (useBetaChannelField.checked ? 'beta' : 'main')
+    let updateBranch = (useBetaChannelField.checked ? 'beta' : 'main')
 
-        if (listenPortField.value == '') {
-            alert('The network port field must not be empty.')
-        } else if (listenPortField.value<1 || listenPortField.value>65535) {
-            alert('The network port must be a number from 1 to 65535')
-        } else {
-	    changeAppConfig({
-              'render_devices': getCurrentRenderDeviceSelection(),
-              'update_branch': updateBranch,
-              'ui_open_browser_on_start': uiOpenBrowserOnStartField.checked,
-              'listen_to_network': listenToNetworkField.checked,
-              'listen_port': listenPortField.value,
-              'test_sd2': testSD2Field.checked
-            })
-        }
+    if (listenPortField.value == '') {
+        alert('The network port field must not be empty.')
+    } else if (listenPortField.value<1 || listenPortField.value>65535) {
+        alert('The network port must be a number from 1 to 65535')
+    } else {
+        changeAppConfig({
+            'render_devices': getCurrentRenderDeviceSelection(),
+            'update_branch': updateBranch,
+            'ui_open_browser_on_start': uiOpenBrowserOnStartField.checked,
+            'listen_to_network': listenToNetworkField.checked,
+            'listen_port': listenPortField.value,
+            'test_sd2': testSD2Field.checked
+        })
+    }
 
-        saveSettingsBtn.classList.add('active')
-        asyncDelay(300).then(() => saveSettingsBtn.classList.remove('active'))
+    saveSettingsBtn.classList.add('active')
+    asyncDelay(300).then(() => saveSettingsBtn.classList.remove('active'))
 })
