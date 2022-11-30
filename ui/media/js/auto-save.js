@@ -35,6 +35,7 @@ const SETTINGS_IDS_LIST = [
     "sound_toggle",
     "turbo",
     "use_full_precision",
+    "confirm_dangerous_actions",
     "auto_save_settings"
 ]
 

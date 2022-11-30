@@ -138,6 +138,33 @@ function isServerAvailable() {
     }
 }
 
+// shiftOrConfirm(e, prompt, fn)
+//   e      : MouseEvent
+//   prompt : Text to be shown as prompt. Should be a question to which "yes" is a good answer.
+//   fn     : function to be called if the user confirms the dialog or has the shift key pressed
+//
+// If the user had the shift key pressed while clicking, the function fn will be executed.
+// If the setting "confirm_dangerous_actions" in the system settings is disabled, the function 
+// fn will be executed.
+// Otherwise, a confirmation dialog is shown. If the user confirms, the function fn will also
+// be executed.
+function shiftOrConfirm(e, prompt, fn) {
+    e.stopPropagation()
+    if (e.shiftKey || !confirmDangerousActionsField.checked) {
+         fn(e)
+    } else {
+        $.confirm({ theme: 'supervan',
+            title: prompt,
+            content: 'Tip: To skip this dialog, use shift-click or disable the setting "Confirm dangerous actions" in the systems setting.',
+            buttons: {
+                yes: () => { fn(e) },
+                cancel: () => {}
+            }
+        }); 
+    }
+}
+
+
 function logMsg(msg, level, outputMsg) {
     if (outputMsg.hasChildNodes()) {
         outputMsg.appendChild(document.createElement('br'))
@@ -887,8 +914,7 @@ function createTask(task) {
     task['progressBar'] = taskEntry.querySelector('.progress-bar')
     task['stopTask'] = taskEntry.querySelector('.stopTask')
 
-    task['stopTask'].addEventListener('click', async function(e) {
-        e.stopPropagation()
+    task['stopTask'].addEventListener('click', (e) => { shiftOrConfirm(e, "Are you sure? Should this task be stopped?", async function(e) {
         if (task['isProcessing']) {
             task.isProcessing = false
             task.progressBar.classList.remove("active")
@@ -905,7 +931,7 @@ function createTask(task) {
 
             taskEntry.remove()
         }
-    })
+    })})
 
     task['useSettings'] = taskEntry.querySelector('.useSettings')
     task['useSettings'].addEventListener('click', function(e) {
@@ -934,10 +960,10 @@ function getPrompts() {
     prompts = prompts.filter(prompt => prompt !== '')
 
     if (activeTags.length > 0) {
-	const promptTags = activeTags.map(x => x.name).join(", ")
-	prompts = prompts.map((prompt) => `${prompt}, ${promptTags}`)
+        const promptTags = activeTags.map(x => x.name).join(", ")
+        prompts = prompts.map((prompt) => `${prompt}, ${promptTags}`)
     }
-	
+
     let promptsToMake = applySetOperator(prompts)
     promptsToMake = applyPermuteOperator(promptsToMake)
 
@@ -1047,7 +1073,7 @@ async function stopAllTasks() {
     }
 }
 
-clearAllPreviewsBtn.addEventListener('click', async function() {
+clearAllPreviewsBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Are you sure? Remove all results and tasks from the results pane?", async function() {
     await stopAllTasks()
 
     let taskEntries = document.querySelectorAll('.imageTaskContainer')
@@ -1057,11 +1083,11 @@ clearAllPreviewsBtn.addEventListener('click', async function() {
 
     previewTools.style.display = 'none'
     initialText.style.display = 'block'
-})
+})})
 
-stopImageBtn.addEventListener('click', async function() {
+stopImageBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Are you sure? Do you want to stop all the tasks?", async function(e) {
     await stopAllTasks()
-})
+})})
 
 widthField.addEventListener('change', onDimensionChange)
 heightField.addEventListener('change', onDimensionChange)
