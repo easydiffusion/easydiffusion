@@ -85,13 +85,14 @@ const TASK_MAPPING = {
             if (!seed) {
                 randomSeedField.checked = true
                 seedField.disabled = true
+                seedField.value = 0
                 return
             }
             randomSeedField.checked = false
             seedField.disabled = false
             seedField.value = seed
         },
-        readUI: () => (randomSeedField.checked ? Math.floor(Math.random() * 10000000) : parseInt(seedField.value)),
+        readUI: () => parseInt(seedField.value), // just return the value the user is seeing in the UI
         parse: (val) => parseInt(val)
     },
     num_inference_steps: { name: 'Steps',
