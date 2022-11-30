@@ -42,13 +42,9 @@ if NOT DEFINED test_sd2 set test_sd2=N
 
     if "%test_sd2%" == "N" (
         @call git -c advice.detachedHead=false checkout 7f32368ed1030a6e710537047bacd908adea183a
-
-        @call git apply --whitespace=warn ..\ui\sd_internal\ddim_callback.patch
     )
     if "%test_sd2%" == "Y" (
-        @call git -c advice.detachedHead=false checkout 6e2f82187f8ecc4ea59ac37dc239cfcc78038f6d
-
-        @call git apply ..\ui\sd_internal\ddim_callback_sd2.patch
+        @call git -c advice.detachedHead=false checkout 8878d67decd3deb3c98472c1e39d2a51dc5950f9
     )
 
     @cd ..
@@ -65,8 +61,6 @@ if NOT DEFINED test_sd2 set test_sd2=N
 
     @cd stable-diffusion
     @call git -c advice.detachedHead=false checkout 7f32368ed1030a6e710537047bacd908adea183a
-
-    @call git apply --whitespace=warn ..\ui\sd_internal\ddim_callback.patch
 
     @cd ..
 )
