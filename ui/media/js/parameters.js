@@ -115,6 +115,14 @@ var PARAMETERS = [
         default: true,
     },
     {
+        id: "confirm_dangerous_actions",
+        type: ParameterType.checkbox,
+        label: "Confirm dangerous actions",
+        note: "Actions that might lead to data loss must either be clicked with the shift key pressed, or confirmed in an 'Are you sure?' dialog",
+        icon: "fa-check-double",
+        default: true,
+    },
+    {
         id: "listen_to_network",
         type: ParameterType.checkbox,
         label: "Make Stable Diffusion available on your network",
@@ -207,6 +215,7 @@ let listenPortField = document.querySelector("#listen_port")
 let testSD2Field = document.querySelector("#test_sd2")
 let useBetaChannelField = document.querySelector("#use_beta_channel")
 let uiOpenBrowserOnStartField = document.querySelector("#ui_open_browser_on_start")
+let confirmDangerousActionsField = document.querySelector("#confirm_dangerous_actions")
 
 let saveSettingsBtn = document.querySelector('#save-system-settings-btn')
 

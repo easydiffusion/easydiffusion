@@ -19,8 +19,10 @@
 - Configuration to prevent the browser from opening on startup
 - Lots of minor bug fixes
 - A `What's New?` tab in the UI
+- Ask for a confimation before clearing the results pane or stopping a render task. The dialog can be skipped by holding down the shift key while clicking on the button.
 
 ### Detailed changelog
+* 2.4.17 - 30 Nov 2022 - Confirm before stopping or clearing all the tasks
 * 2.4.16 - 29 Nov 2022 - Bug fixes for SD 2.0 - remove the need for patching, default to SD 1.4 model if trying to load an SD2 model in SD1.4.
 * 2.4.15 - 25 Nov 2022 - Experimental support for SD 2.0. Uses lots of memory, not optimized, probably GPU-only.
 * 2.4.14 - 22 Nov 2022 - Change the backend to a custom fork of Stable Diffusion
