@@ -72,6 +72,7 @@ let bellPending = false
 
 let taskQueue = []
 let currentTask = null
+let imageID = 0
 
 function getLocalStorageBoolItem(key, fallback) {
     let item = localStorage.getItem(key)
@@ -275,13 +276,16 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             outputContainer.appendChild(imageItemElem)
         }
         const imageElem = imageItemElem.querySelector('img')
+        imageElem.id = ++imageID
         imageElem.src = imageData
         imageElem.width = parseInt(imageWidth)
         imageElem.height = parseInt(imageHeight)
         imageElem.setAttribute('data-prompt', imagePrompt)
         imageElem.setAttribute('data-steps', imageInferenceSteps)
         imageElem.setAttribute('data-guidance', imageGuidanceScale)
-
+        if(getSetting('jump_to_latest_generation')){
+            location.hash = imageElem.id
+        }
 
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
         imageInfo.style.visibility = (livePreview ? 'hidden' : 'visible')

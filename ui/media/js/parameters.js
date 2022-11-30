@@ -133,6 +133,14 @@ var PARAMETERS = [
         }
     },
     {
+        id: "jump_to_latest_generation",
+        type: ParameterType.checkbox,
+        label: "Jump to latest generation",
+        note: "Keep the latest generated image at the top of the page",
+        icon: "fa-arrow-up-to-line",
+        default: false,
+    },
+    {
         id: "test_sd2",
         type: ParameterType.checkbox,
         label: "Test SD 2.0",
