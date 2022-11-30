@@ -1010,6 +1010,9 @@ button:hover {
 button:active {
   transition-duration: 0.1s;
   background-color: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 24%));
+  position: relative;
+  top: 1px;
+  left: 1px;
 }
 
 button#save-system-settings-btn {
