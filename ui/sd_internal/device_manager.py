@@ -101,7 +101,7 @@ def device_init(thread_data, device):
 
     # Force full precision on 1660 and 1650 NVIDIA cards to avoid creating green images
     device_name = thread_data.device_name.lower()
-    thread_data.force_full_precision = ('nvidia' in device_name or 'geforce' in device_name) and (' 1660' in device_name or ' 1650' in device_name)
+    thread_data.force_full_precision = (('nvidia' in device_name or 'geforce' in device_name) and (' 1660' in device_name or ' 1650' in device_name)) or ('Quadro T2000' in device_name)
     if thread_data.force_full_precision:
         print('forcing full precision on NVIDIA 16xx cards, to avoid green images. GPU detected: ', thread_data.device_name)
         # Apply force_full_precision now before models are loaded.
