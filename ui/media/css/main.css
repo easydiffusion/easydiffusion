@@ -513,7 +513,7 @@ img {
 #init_image_size_box {
     position: absolute;
     right: 0px;
-    bottom: 3px;
+    bottom: 0px;
     padding: 3px;
     background: black;
     color: white;
