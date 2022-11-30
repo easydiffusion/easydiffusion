@@ -1,6 +1,7 @@
 .editor-controls-left {
 	padding-left: 32px;
 	text-align: left;
+	padding-bottom: 20px;
 }
 
 .editor-options-container {
@@ -170,6 +171,20 @@
 }
 
 
+@media screen and (max-width: 700px) {
+	.image-editor-popup > div {
+		margin: 0px;
+		padding: 0px;
+	}
+
+	.image-editor-popup h1 {
+		position: relative;
+		transform: none;
+		left: auto;
+	}
+}
+
+
 .image-editor-popup > div > div {
 	min-height: calc(100vh - (2 * var(--popup-margin)) - (2 * var(--popup-padding)));
 }
@@ -181,3 +196,4 @@
 .inpainter .editor-canvas-background {
 	opacity: 0.75;
 }
+

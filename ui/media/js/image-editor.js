@@ -169,6 +169,11 @@ class ImageEditor {
 		this.container.addEventListener("mousemove", this.mouseHandler.bind(this))
 		this.container.addEventListener("mouseout", this.mouseHandler.bind(this))
 		this.container.addEventListener("mouseenter", this.mouseHandler.bind(this))
+
+		this.container.addEventListener("touchstart", this.mouseHandler.bind(this))
+		this.container.addEventListener("touchmove", this.mouseHandler.bind(this))
+		this.container.addEventListener("touchcancel", this.mouseHandler.bind(this))
+		this.container.addEventListener("touchend", this.mouseHandler.bind(this))
 		// setup forwarding for keypresses so the eyedropper works accordingly
 		var mouseHandlerHelper = this.mouseHandler.bind(this)
 		this.container.addEventListener("mouseenter",function() {
@@ -240,7 +245,7 @@ class ImageEditor {
 			return
 		}
 
-		var max_size = Math.min(window.innerWidth, width, 768)
+		var max_size = Math.min(parseInt(window.innerWidth * 0.9), width, 768)
 		if (width > height) {
 			var multiplier = max_size / width
 			width = (multiplier * width).toFixed()
@@ -351,9 +356,25 @@ class ImageEditor {
 		var bbox = this.layers.overlay.canvas.getBoundingClientRect()
 		var x = (event.clientX || 0) - bbox.left
 		var y = (event.clientY || 0) - bbox.top
+		var type = event.type;
+		console.log(type);
+		var touchmap = {
+			touchstart: "mousedown",
+			touchmove: "mousemove",
+			touchend: "mouseup",
+			touchcancel: "mouseup"
+		}
+		if (type in touchmap) {
+			type = touchmap[type]
+			if (event.touches && event.touches[0]) {
+				var touch = event.touches[0]				
+				var x = (touch.clientX || 0) - bbox.left
+				var y = (touch.clientY || 0) - bbox.top
+			}
+		}
 	
 		// do drawing-related stuff
-		if (event.type == "mousedown" || (event.type == "mouseenter" && event.buttons == 1)) {
+		if (type == "mousedown" || (type == "mouseenter" && event.buttons == 1)) {
 			if (this.dropper_active) {
 				var img_rgb = this.layers.background.ctx.getImageData(x, y, 1, 1).data
 				var drw_rgb = this.ctx_current.getImageData(x, y, 1, 1).data
@@ -374,26 +395,28 @@ class ImageEditor {
 				this.ctx_current.moveTo(x, y)
 			}
 		}
-		if (event.type == "mouseup" || event.type == "mousemove") {
+		if (type == "mouseup" || type == "mousemove") {
 			if (this.drawing) {
-				this.ctx_current.lineTo(x, y)
-				this.ctx_overlay.lineTo(x, y)
+				if (x > 0 && y > 0) {
+					this.ctx_current.lineTo(x, y)
+					this.ctx_overlay.lineTo(x, y)
 
-				// This isnt super efficient, but its the only way ive found to have clean updating for the drawing
-				this.ctx_overlay.clearRect(0, 0, this.width, this.height)
-				if (this.eraser_active) {
-					this.ctx_overlay.globalCompositeOperation = "source-over"
-					this.ctx_overlay.globalAlpha = 1
-					this.ctx_overlay.filter = "none"
-					this.ctx_overlay.drawImage(this.canvas_current, 0, 0)
-					this.setBrush(this.layers.overlay)
-					this.canvas_current.style.opacity = 0
+					// This isnt super efficient, but its the only way ive found to have clean updating for the drawing
+					this.ctx_overlay.clearRect(0, 0, this.width, this.height)
+					if (this.eraser_active) {
+						this.ctx_overlay.globalCompositeOperation = "source-over"
+						this.ctx_overlay.globalAlpha = 1
+						this.ctx_overlay.filter = "none"
+						this.ctx_overlay.drawImage(this.canvas_current, 0, 0)
+						this.setBrush(this.layers.overlay)
+						this.canvas_current.style.opacity = 0
+					}
+
+					this.ctx_overlay.stroke()
 				}
-
-				this.ctx_overlay.stroke()
 			}
 		}
-		if (event.type == "mouseup" || event.type == "mouseout") {
+		if (type == "mouseup" || type == "mouseout") {
 			if (this.drawing) {
 				this.drawing = false
 				this.ctx_current.stroke()
@@ -406,17 +429,17 @@ class ImageEditor {
 		}
 
 		// cursor-icon stuff
-		if (event.type == "mousemove") {
+		if (type == "mousemove") {
 			this.cursor_icon.style.left = `${x + 10}px`
 			this.cursor_icon.style.top = `${y + 20}px`
 		}
-		if (event.type == "mouseenter") {
+		if (type == "mouseenter") {
 			this.cursor_icon.style.opacity = 1
 		}
-		if (event.type == "mouseout") {
+		if (type == "mouseout") {
 			this.cursor_icon.style.opacity = 0
 		}
-		if ([ "mouseenter", "mousemove", "keydown", "keyup" ].includes(event.type)) {
+		if ([ "mouseenter", "mousemove", "keydown", "keyup" ].includes(type)) {
 			if (this.dropper_active && !event.ctrlKey) {
 				this.dropper_active = false
 				this.setCursorIcon()
