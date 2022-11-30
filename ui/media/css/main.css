@@ -483,7 +483,7 @@ img {
 #init_image_preview_container:not(.has-image) #inpaintingEditor,
 #init_image_preview_container:not(.has-image) #samplerSelection,
 #init_image_preview_container:not(.has-image) #init_image_wrapper,
-#init_image_preview_container:not(.has-image) #init_image_button_inpainting  {
+#init_image_preview_container:not(.has-image) #init_image_button_inpaint  {
     display: none;
 }
 

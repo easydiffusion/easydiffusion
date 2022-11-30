@@ -798,7 +798,7 @@ function getCurrentUserRequest() {
         //     newTask.reqBody.mask = maskImagePreview.src
         // }
         if (maskSetting.checked) {
-            newTask.reqBody.mask = inpaintingEditor.getImg()
+            newTask.reqBody.mask = imageInpainter.getImg()
         }
         newTask.reqBody.sampler = 'ddim'
     } else {
@@ -1084,7 +1084,7 @@ function onDimensionChange() {
         imageEditor.setImage(null, widthValue, heightValue)
     }
     else {
-        imageInpainter.setImage(initImagePreview.src, initImagePreview.naturalWidth, initImagePreview.naturalHeight)
+        imageInpainter.setImage(initImagePreview.src, widthValue, heightValue)
     }
     if (maskSetting.checked) {
         resizeInpaintingEditor(widthValue, heightValue)
@@ -1236,7 +1236,7 @@ initImagePreview.addEventListener('load', function() {
 
     initImageSizeBox.textContent = initImagePreview.naturalWidth + " x " + initImagePreview.naturalHeight
     imageEditor.setImage(this.src, initImagePreview.naturalWidth, initImagePreview.naturalHeight)
-    imageInpainter.setImage(this.src, initImagePreview.naturalWidth, initImagePreview.naturalHeight)
+    imageInpainter.setImage(this.src, parseInt(widthField.value), parseInt(heightField.value))
 })
 
 initImageClearBtn.addEventListener('click', function() {

@@ -180,6 +180,7 @@ class ImageEditor {
 		});
 
 		// initialize editor controls
+		this.options = {}
 		IMAGE_EDITOR_SECTIONS.forEach(section => {
 			section.id = `image_editor_${section.name}`
 			var sectionElement = document.createElement("div")
@@ -234,6 +235,10 @@ class ImageEditor {
 		this.popup.querySelector(".editor-controls-right").appendChild(buttonContainer)
 	}
 	setSize(width, height) {
+		if (width == this.width && height == this.height) {
+			return;
+		}
+
 		var max_size = Math.min(window.innerWidth, width, 768)
 		if (width > height) {
 			var multiplier = max_size / width;
@@ -256,6 +261,9 @@ class ImageEditor {
 			layer.canvas.height = height
 		})
 
+		if (this.inpainter) {
+			this.saveImage() // We've reset the size of the image so inpainting is different
+		}
 		this.setBrush()
 	}
 	setCursorIcon(icon_class = null) {
@@ -281,7 +289,6 @@ class ImageEditor {
 			this.layers.background.ctx.beginPath();
 			this.layers.background.ctx.rect(0, 0, this.width, this.height);
 			this.layers.background.ctx.fill();
-			// TODO: draw some background color here
 		}
 	}
 	saveImage() {
@@ -421,12 +428,12 @@ class ImageEditor {
 	}
 	getOptionValue(section_name) {
 		var section = IMAGE_EDITOR_SECTIONS.find(s => s.name == section_name);
-		return section.value === undefined ? section.default : section.value;
+		return this.options && section_name in this.options ? this.options[section_name] : section.default;
 	}
 	selectOption(section_name, option_index) {
 		var section = IMAGE_EDITOR_SECTIONS.find(s => s.name == section_name)
 		var value = section.options[option_index]
-		section.value = value == "custom" ? section.getCustom(this) : value;
+		this.options[section_name] = value == "custom" ? section.getCustom(this) : value;
 	
 		section.optionElements.forEach(element => element.classList.remove("active"))
 		section.optionElements[option_index].classList.add("active")
