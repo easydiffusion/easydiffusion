@@ -252,14 +252,15 @@
                 <br/><br/>
                 <div>
                     <h3><i class="fa fa-microchip icon"></i> System Info</h3>
-                    <div id="system-info"></div>
-                </div>
-                <div>
-                    <h3><i class="fa fa-solid fa-network-wired icon"></i> Server Address</h3>
-                    <p>You can access Stable Diffusion UI from other devices in your network. To do this, enable network access in the settings
-                    above, and open Stable Diffusion UI in a browser using the server's IP. You can use this button to get your server's address.</p>
-                    <button id="get-server-ip" class="primaryButton">Get Server IP</button>
-                    <div id="ip-info"></div>
+                    <div id="system-info">
+                        <table>
+                            <tr><td><label>Processor:</label></td><td id="system-info-cpu" class="value"></td></tr>
+                            <tr><td><label>Compatible Graphics Cards (all):</label></td><td id="system-info-gpus-all" class="value"></td></tr>
+                            <tr><td></td><td>&nbsp;</td></tr>
+                            <tr><td><label>Used for rendering 🔥:</label></td><td id="system-info-rendering-devices" class="value"></td></tr>
+                            <tr><td><label>Server Addresses <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">You can access Stable Diffusion UI from other devices using these addresses</span></i> :</label></td><td id="system-info-server-hosts" class="value"></td></tr>
+                        </table>
+                    </div>
                 </div>
 
             </div>
@@ -358,7 +359,7 @@ async function init() {
     await getAppConfig()
     await loadModifiers()
     await loadUIPlugins()
-    await getDevices()
+    await getSystemInfo()
 
     setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
     healthCheck()
