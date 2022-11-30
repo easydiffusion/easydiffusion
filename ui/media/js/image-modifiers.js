@@ -85,11 +85,12 @@ function createModifierGroup(modifierGroup, initiallyExpanded) {
 
         if(typeof modifierCard == 'object') {
             modifiersEl.appendChild(modifierCard)
+            const trimmedName = trimModifiers(modifierName)
 
             modifierCard.addEventListener('click', () => {
-                if (activeTags.map(x => trimModifiers(x.name)).includes(trimModifiers(modifierName))) {
+                if (activeTags.map(x => trimModifiers(x.name)).includes(trimmedName)) {
                     // remove modifier from active array
-                    activeTags = activeTags.filter(x => trimModifiers(x.name) != trimModifiers(modifierName))
+                    activeTags = activeTags.filter(x => trimModifiers(x.name) != trimmedName)
                     toggleCardState(modifierCard, false)
                 } else {
                     // add modifier to active array
