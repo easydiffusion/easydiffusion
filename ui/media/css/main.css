@@ -1015,3 +1015,9 @@ button:active {
 button#save-system-settings-btn {
     padding: 4pt 8pt;
 }
+#ip-info a {
+    color:var(--text-color)
+}
+#ip-info div {
+    line-height: 200%;
+}

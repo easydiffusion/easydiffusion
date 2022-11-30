@@ -7,6 +7,7 @@ import traceback
 
 import sys
 import os
+import socket
 import picklescan.scanner
 import rich
 
@@ -305,6 +306,9 @@ def getUIPlugins():
 
     return plugins
 
+def getIPConfig():
+    return socket.gethostbyname_ex(socket.getfqdn()) 
+
 @app.get('/get/{key:path}')
 def read_web_data(key:str=None):
     if not key: # /get without parameters, stable-diffusion easter egg.
@@ -324,6 +328,7 @@ def read_web_data(key:str=None):
     elif key == 'modifiers': return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'), headers=NOCACHE_HEADERS)
     elif key == 'output_dir': return JSONResponse({ 'output_dir': outpath }, headers=NOCACHE_HEADERS)
     elif key == 'ui_plugins': return JSONResponse(getUIPlugins(), headers=NOCACHE_HEADERS)
+    elif key == 'ip_config': return JSONResponse(getIPConfig(), headers=NOCACHE_HEADERS)
     else:
         raise HTTPException(status_code=404, detail=f'Request for unknown {key}') # HTTP404 Not Found
 

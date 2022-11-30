@@ -219,6 +219,10 @@ let confirmDangerousActionsField = document.querySelector("#confirm_dangerous_ac
 
 let saveSettingsBtn = document.querySelector('#save-system-settings-btn')
 
+let getServerIPBtn = document.querySelector('#get-server-ip')
+let ipInfoContainer = document.querySelector('#ip-info')
+
+
 async function changeAppConfig(configDelta) {
     try {
         let res = await fetch('/app_config', {
@@ -403,3 +407,17 @@ saveSettingsBtn.addEventListener('click', function() {
     saveSettingsBtn.classList.add('active')
     asyncDelay(300).then(() => saveSettingsBtn.classList.remove('active'))
 })
+
+getServerIPBtn.addEventListener('click', async function() {
+    ipInfoContainer.innerHTML = "Retrieving server addresses..."
+    let list = "<h4>List of server addresses</h4><p>If there is more than one result, not all of them might be reachable from other devices.</p><div>"
+    let res = await fetch('/get/ip_config')
+    let data = await res.json()
+    let port = listenPortField.value
+    // Merge hostname (field 0) into list of IPs (field 2)
+    data[2].push(data[0])
+    data[2].forEach((addr) => { let url=`http://${addr}:${port}/`; list+=`<div><a href="${url}">${url}</a></div>`;})
+    list += "</div>"
+    ipInfoContainer.innerHTML = list
+})
+
