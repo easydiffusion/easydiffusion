@@ -270,32 +270,6 @@ img {
     transform: translateY(25%);
 }
 
-#inpaintingEditor {
-    width: 300pt;
-    height: 300pt;
-    margin-top: 5pt;
-}
-.drawing-board-canvas-wrapper {
-    background-size: 100% 100%;
-}
-.drawing-board-controls {
-    min-width: 273px;
-}
-.drawing-board-control > button {
-    background-color: #eee;
-    border-radius: 3pt;
-}
-.drawing-board-control-inner {
-    background-color: #eee;
-    border-radius: 3pt;
-}
-#inpaintingEditor canvas {
-    opacity: 0.6;
-}
-#enable_mask {
-    margin-top: 8pt;
-}
-
 #top-nav {
     position: relative;
     background: var(--background-color4);

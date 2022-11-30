@@ -59,14 +59,6 @@ let serverStatusColor = document.querySelector('#server-status-color')
 let serverStatusMsg = document.querySelector('#server-status-msg')
 
 
-document.querySelector('.drawing-board-control-navigation-back').innerHTML = '<i class="fa-solid fa-rotate-left"></i>'
-document.querySelector('.drawing-board-control-navigation-forward').innerHTML = '<i class="fa-solid fa-rotate-right"></i>'
-
-let maskResetButton = document.querySelector('.drawing-board-control-navigation-reset')
-maskResetButton.innerHTML = 'Clear'
-maskResetButton.style.fontWeight = 'normal'
-maskResetButton.style.fontSize = '10pt'
-
 let serverState = {'status': 'Offline', 'time': Date.now()}
 let bellPending = false
 
@@ -1086,9 +1078,6 @@ function onDimensionChange() {
     else {
         imageInpainter.setImage(initImagePreview.src, widthValue, heightValue)
     }
-    if (maskSetting.checked) {
-        resizeInpaintingEditor(widthValue, heightValue)
-    }
 }
 
 diskPathField.disabled = !saveToDiskField.checked
@@ -1229,8 +1218,6 @@ initImageSelector.addEventListener('change', showInitImagePreview)
 showInitImagePreview()
 
 initImagePreview.addEventListener('load', function() {
-    inpaintingEditorCanvasBackground.style.backgroundImage = "url('" + this.src + "')"
-
     promptStrengthContainer.style.display = 'table-row'
     initImagePreviewContainer.classList.add("has-image")
 
@@ -1250,7 +1237,6 @@ initImageClearBtn.addEventListener('click', function() {
 })
 
 maskSetting.addEventListener('click', function() {
-    inpaintingEditorContainer.style.display = (this.checked ? 'block' : 'none')
     onDimensionChange()
 })
 
