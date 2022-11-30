@@ -901,7 +901,7 @@ function createTask(task) {
                 taskQueue.splice(idx, 1)
             }
 
-            taskEntry.remove()
+            removeTask(taskEntry)
         }
     })})
 
@@ -1045,16 +1045,20 @@ async function stopAllTasks() {
     }
 }
 
+function removeTask(taskToRemove) {
+    taskToRemove.remove()
+
+    if (document.querySelector('.imageTaskContainer') === null) {
+        previewTools.style.display = 'none'
+        initialText.style.display = 'block'
+    }
+}
+
 clearAllPreviewsBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Are you sure? Remove all results and tasks from the results pane?", async function() {
     await stopAllTasks()
 
     let taskEntries = document.querySelectorAll('.imageTaskContainer')
-    taskEntries.forEach(task => {
-        task.remove()
-    })
-
-    previewTools.style.display = 'none'
-    initialText.style.display = 'block'
+    taskEntries.forEach(removeTask)
 })})
 
 stopImageBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Are you sure? Do you want to stop all the tasks?", async function(e) {
