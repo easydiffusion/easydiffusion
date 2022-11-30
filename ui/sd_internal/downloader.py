@@ -6,6 +6,7 @@ import asyncio
 import os
 from aiofile import async_open
 from . import ModelDownloadRequest
+import traceback
 
 downloadstatus = {}
 
@@ -23,11 +24,13 @@ async def downloadFile(url, id, folder, filename="", offset=0):
                     # If no filename was provided from the caller of this function, check for a filename in the HTTP
                     # response. If that one doesn't exist, take the last part from the URL.
                     if filename == "" and "Content-Disposition" in resp.headers:
-                        m = re.match('filename="([^"]*)"', resp.headers["Content-Disposition"])
+                        rich.print(f'[yellow]Content-Disposition: {resp.headers["Content-Disposition"]}[/yellow]')
+                        m = re.search(r'filename="([^"]*)"', resp.headers["Content-Disposition"])
                         if m:
                             filename = m.group(1)
                     if filename == "":
                         filename = url.split("/")[-1]
+                    rich.print(f'[yellow]Filename {filename}[/yellow]')
                     mode = "wb" if offset == 0 else "ab"
                     afp = await async_open(os.path.join( folder, filename), mode)
                     if offset == 0:
