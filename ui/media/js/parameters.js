@@ -222,7 +222,7 @@ let saveSettingsBtn = document.querySelector('#save-system-settings-btn')
 
 async function changeAppConfig(configDelta) {
     try {
-        let res = await fetch('/app_config', {
+        let res = await fetch('app_config', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -239,7 +239,7 @@ async function changeAppConfig(configDelta) {
 
 async function getAppConfig() {
     try {
-        let res = await fetch('/get/app_config')
+        let res = await fetch('get/app_config')
         const config = await res.json()
 
         if (config.update_branch === 'beta') {
@@ -324,7 +324,7 @@ async function getDiskPath() {
     try {
         var diskPath = getSetting("diskPath")
         if (diskPath == '' || diskPath == undefined || diskPath == "undefined") {
-            let res = await fetch('/get/output_dir')
+            let res = await fetch('get/output_dir')
             if (res.status === 200) {
                 res = await res.json()
                 res = res.output_dir
@@ -368,7 +368,7 @@ function setHostInfo(hosts) {
 
 async function getSystemInfo() {
     try {
-        let res = await fetch('/get/system_info')
+        let res = await fetch('get/system_info')
         if (res.status === 200) {
             res = await res.json()
             let devices = res['devices']

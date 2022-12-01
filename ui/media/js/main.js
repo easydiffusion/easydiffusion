@@ -181,7 +181,7 @@ function logError(msg, res, outputMsg) {
 }
 
 function playSound() {
-    const audio = new Audio('/media/ding.mp3')
+    const audio = new Audio('media/ding.mp3')
     audio.volume = 0.2
     var promise = audio.play()
     if (promise !== undefined) {
@@ -195,9 +195,9 @@ async function healthCheck() {
     try {
         let res = undefined
         if (sessionId) {
-            res = await fetch('/ping?session_id=' + sessionId)
+            res = await fetch('ping?session_id=' + sessionId)
         } else {
-            res = await fetch('/ping')
+            res = await fetch('ping')
         }
         serverState = await res.json()
         if (typeof serverState !== 'object' || typeof serverState.status !== 'string') {
@@ -431,7 +431,7 @@ async function doMakeImage(task) {
     try {
         let renderRequest = undefined
         do {
-            res = await fetch('/render', {
+            res = await fetch('render', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -885,7 +885,7 @@ function createTask(task) {
                 task.isProcessing = false
                 task.progressBar.classList.remove("active")
                 try {
-                    let res = await fetch('/image/stop?session_id=' + sessionId)
+                    let res = await fetch('image/stop?session_id=' + sessionId)
                 } catch (e) {
                     console.log(e)
                 }
@@ -1035,7 +1035,7 @@ async function stopAllTasks() {
     }
 
     try {
-        let res = await fetch('/image/stop?session_id=' + sessionId)
+        let res = await fetch('image/stop?session_id=' + sessionId)
     } catch (e) {
         console.log(e)
     }
@@ -1152,7 +1152,7 @@ async function getModels() {
         var vae_model_setting_key = "vae_model"
         var selectedSDModel = SETTINGS[sd_model_setting_key].value
         var selectedVaeModel = SETTINGS[vae_model_setting_key].value
-        let res = await fetch('/get/models')
+        let res = await fetch('get/models')
         const models = await res.json()
 
         console.log('got models response', models)

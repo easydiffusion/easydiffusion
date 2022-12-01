@@ -127,7 +127,7 @@ function trimModifiers(tag) {
 
 async function loadModifiers() {
     try {
-        let res = await fetch('/get/modifiers')
+        let res = await fetch('get/modifiers')
         if (res.status === 200) {
             res = await res.json()
 

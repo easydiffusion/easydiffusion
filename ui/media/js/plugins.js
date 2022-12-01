@@ -30,12 +30,12 @@ const PLUGINS = {
 
 async function loadUIPlugins() {
     try {
-        let res = await fetch('/get/ui_plugins')
+        let res = await fetch('get/ui_plugins')
         if (res.status === 200) {
             res = await res.json()
             res.forEach(pluginPath => {
                 let script = document.createElement('script')
-                script.src = pluginPath + '?t=' + Date.now()
+                script.src = (pluginPath + '?t=' + Date.now()).replace(/^\/+/g, '');
 
                 console.log('loading plugin', pluginPath)
 
