@@ -34,7 +34,7 @@ async function loadUIPlugins() {
             res = await res.json()
             res.forEach(pluginPath => {
                 let script = document.createElement('script')
-                script.src = pluginPath + '?t=' + Date.now()
+                script.src = (pluginPath + '?t=' + Date.now()).replace(/^\/+/g, '');
 
                 console.log('loading plugin', pluginPath)
 
