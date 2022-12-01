@@ -153,9 +153,12 @@ function shiftOrConfirm(e, prompt, fn) {
     if (e.shiftKey || !confirmDangerousActionsField.checked) {
          fn(e)
     } else {
-        $.confirm({ theme: 'supervan',
+        $.confirm({
+            theme: 'modern',
             title: prompt,
-            content: 'Tip: To skip this dialog, use shift-click or disable the setting "Confirm dangerous actions" in the systems setting.',
+            useBootstrap: false,
+            animateFromElement: false,
+            content: '<small>Tip: To skip this dialog, use shift-click or disable the "Confirm dangerous actions" setting in the Settings tab.</small>',
             buttons: {
                 yes: () => { fn(e) },
                 cancel: () => {}
@@ -163,7 +166,6 @@ function shiftOrConfirm(e, prompt, fn) {
         }); 
     }
 }
-
 
 function logMsg(msg, level, outputMsg) {
     if (outputMsg.hasChildNodes()) {
@@ -886,24 +888,27 @@ function createTask(task) {
     task['progressBar'] = taskEntry.querySelector('.progress-bar')
     task['stopTask'] = taskEntry.querySelector('.stopTask')
 
-    task['stopTask'].addEventListener('click', (e) => { shiftOrConfirm(e, "Are you sure? Should this task be stopped?", async function(e) {
-        if (task['isProcessing']) {
-            task.isProcessing = false
-            task.progressBar.classList.remove("active")
-            try {
-                let res = await fetch('/image/stop?session_id=' + sessionId)
-            } catch (e) {
-                console.log(e)
-            }
-        } else {
-            let idx = taskQueue.indexOf(task)
-            if (idx >= 0) {
-                taskQueue.splice(idx, 1)
-            }
+    task['stopTask'].addEventListener('click', (e) => {
+        let question = (task['isProcessing'] ? "Stop this task?" : "Remove this task?")
+        shiftOrConfirm(e, question, async function(e) {
+            if (task['isProcessing']) {
+                task.isProcessing = false
+                task.progressBar.classList.remove("active")
+                try {
+                    let res = await fetch('/image/stop?session_id=' + sessionId)
+                } catch (e) {
+                    console.log(e)
+                }
+            } else {
+                let idx = taskQueue.indexOf(task)
+                if (idx >= 0) {
+                    taskQueue.splice(idx, 1)
+                }
 
-            removeTask(taskEntry)
-        }
-    })})
+                removeTask(taskEntry)
+            }
+        })
+    })
 
     task['useSettings'] = taskEntry.querySelector('.useSettings')
     task['useSettings'].addEventListener('click', function(e) {
@@ -1054,14 +1059,14 @@ function removeTask(taskToRemove) {
     }
 }
 
-clearAllPreviewsBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Are you sure? Remove all results and tasks from the results pane?", async function() {
+clearAllPreviewsBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Clear all the results and tasks in this window?", async function() {
     await stopAllTasks()
 
     let taskEntries = document.querySelectorAll('.imageTaskContainer')
     taskEntries.forEach(removeTask)
 })})
 
-stopImageBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Are you sure? Do you want to stop all the tasks?", async function(e) {
+stopImageBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Stop all the tasks?", async function(e) {
     await stopAllTasks()
 })})
 
