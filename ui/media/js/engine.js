@@ -193,7 +193,7 @@
         EVENT_UNEXPECTED_RESPONSE,
     ]
     Object.freeze(EVENTS_TYPES)
-    const eventSource = new EventSource(EVENTS_TYPES)
+    const eventSource = new GenericEventSource(EVENTS_TYPES)
 
     function setServerStatus(msgType, msg) {
         eventSource.fireEvent(EVENT_STATUS_CHANGED, {type: msgType, message: msg})

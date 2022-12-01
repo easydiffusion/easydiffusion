@@ -521,7 +521,7 @@ function prettifyInputs(root_element) {
     })
 }
 
-class EventSource {
+class GenericEventSource {
     #events = {};
     #types = []
     constructor(...eventsTypes) {
