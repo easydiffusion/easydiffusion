@@ -60,6 +60,7 @@ function themeFieldChanged() {
 
     body.style = "";
     var theme = THEMES.find(t => t.key == theme_key);
+    let borderColor = undefined
     if (theme) {
         // refresh variables incase they are back referencing
         Array.from(DEFAULT_THEME.rule.style)
@@ -67,7 +68,14 @@ function themeFieldChanged() {
             .forEach(cssVariable => {
             body.style.setProperty(cssVariable, DEFAULT_THEME.rule.style.getPropertyValue(cssVariable));
         });
+        borderColor = theme.rule.style.getPropertyValue('--input-border-color').trim()
+        if (!borderColor.startsWith('#')) {
+            borderColor = theme.rule.style.getPropertyValue('--theme-color-fallback')
+        }
+    } else {
+        borderColor = DEFAULT_THEME.rule.style.getPropertyValue('--theme-color-fallback')
     }
+    document.querySelector('meta[name="theme-color"]').setAttribute("content", borderColor)
 }
 
 themeField.addEventListener('change', themeFieldChanged);

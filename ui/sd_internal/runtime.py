@@ -7,6 +7,7 @@ Notes:
 import json
 import os, re
 import traceback
+import queue
 import torch
 import numpy as np
 from gc import collect as gc_collect
@@ -27,6 +28,8 @@ from gfpgan import GFPGANer
 from basicsr.archs.rrdbnet_arch import RRDBNet
 from realesrgan import RealESRGANer
 
+from threading import Lock
+
 import uuid
 
 logging.set_verbosity_error()
@@ -34,7 +37,7 @@ logging.set_verbosity_error()
 # consts
 config_yaml = "optimizedSD/v1-inference.yaml"
 filename_regex = re.compile('[^a-zA-Z0-9]')
-force_gfpgan_to_cuda0 = True # workaround: gfpgan currently works only on cuda:0
+gfpgan_temp_device_lock = Lock() # workaround: gfpgan currently can only start on one device at a time.
 
 # api stuff
 from sd_internal import device_manager
@@ -308,12 +311,6 @@ def move_to_cpu(model):
 
 def load_model_gfpgan():
     if thread_data.gfpgan_file is None: raise ValueError(f'Thread gfpgan_file is undefined.')
-
-    # hack for a bug in facexlib: https://github.com/xinntao/facexlib/pull/19/files
-    from facexlib.detection import retinaface
-    retinaface.device = torch.device(thread_data.device)
-    print('forced retinaface.device to', thread_data.device)
-
     model_path = thread_data.gfpgan_file + ".pth"
     thread_data.model_gfpgan = GFPGANer(device=torch.device(thread_data.device), model_path=model_path, upscale=1, arch='clean', channel_multiplier=2, bg_upsampler=None)
     print('loaded', thread_data.gfpgan_file, 'to', thread_data.model_gfpgan.device, 'precision', thread_data.precision)
@@ -369,15 +366,23 @@ def apply_filters(filter_name, image_data, model_path=None):
         image_data.to(thread_data.device)
 
     if filter_name == 'gfpgan':
-        if model_path is not None and model_path != thread_data.gfpgan_file:
-            thread_data.gfpgan_file = model_path
-            load_model_gfpgan()
-        elif not thread_data.model_gfpgan:
-            load_model_gfpgan()
-        if thread_data.model_gfpgan is None: raise Exception('Model "gfpgan" not loaded.')
-        print('enhance with', thread_data.gfpgan_file, 'on', thread_data.model_gfpgan.device, 'precision', thread_data.precision)
-        _, _, output = thread_data.model_gfpgan.enhance(image_data[:,:,::-1], has_aligned=False, only_center_face=False, paste_back=True)
-        image_data = output[:,:,::-1]
+        # This lock is only ever used here. No need to use timeout for the request. Should never deadlock.
+        with gfpgan_temp_device_lock: # Wait for any other devices to complete before starting.
+            # hack for a bug in facexlib: https://github.com/xinntao/facexlib/pull/19/files
+            from facexlib.detection import retinaface
+            retinaface.device = torch.device(thread_data.device)
+            print('forced retinaface.device to', thread_data.device)
+
+            if model_path is not None and model_path != thread_data.gfpgan_file:
+                thread_data.gfpgan_file = model_path
+                load_model_gfpgan()
+            elif not thread_data.model_gfpgan:
+                load_model_gfpgan()
+            if thread_data.model_gfpgan is None: raise Exception('Model "gfpgan" not loaded.')
+
+            print('enhance with', thread_data.gfpgan_file, 'on', thread_data.model_gfpgan.device, 'precision', thread_data.precision)
+            _, _, output = thread_data.model_gfpgan.enhance(image_data[:,:,::-1], has_aligned=False, only_center_face=False, paste_back=True)
+            image_data = output[:,:,::-1]
 
     if filter_name == 'real_esrgan':
         if model_path is not None and model_path != thread_data.real_esrgan_file:
@@ -392,9 +397,34 @@ def apply_filters(filter_name, image_data, model_path=None):
 
     return image_data
 
-def mk_img(req: Request):
+def is_model_reload_necessary(req: Request):
+    # custom model support:
+    #  the req.use_stable_diffusion_model needs to be a valid path
+    #  to the ckpt file (without the extension).
+    if not os.path.exists(req.use_stable_diffusion_model + '.ckpt'): raise FileNotFoundError(f'Cannot find {req.use_stable_diffusion_model}.ckpt')
+
+    needs_model_reload = False
+    if not thread_data.model or thread_data.ckpt_file != req.use_stable_diffusion_model or thread_data.vae_file != req.use_vae_model:
+        thread_data.ckpt_file = req.use_stable_diffusion_model
+        thread_data.vae_file = req.use_vae_model
+        needs_model_reload = True
+
+    if thread_data.device != 'cpu':
+        if (thread_data.precision == 'autocast' and (req.use_full_precision or not thread_data.model_is_half)) or \
+            (thread_data.precision == 'full' and not req.use_full_precision and not thread_data.force_full_precision):
+            thread_data.precision = 'full' if req.use_full_precision else 'autocast'
+            needs_model_reload = True
+
+    return needs_model_reload
+
+def reload_model():
+    unload_models()
+    unload_filters()
+    load_model_ckpt()
+
+def mk_img(req: Request, data_queue: queue.Queue, task_temp_images: list, step_callback):
     try:
-        yield from do_mk_img(req)
+        return do_mk_img(req, data_queue, task_temp_images, step_callback)
     except Exception as e:
         print(traceback.format_exc())
 
@@ -405,12 +435,13 @@ def mk_img(req: Request):
             thread_data.model.model2.to("cpu")
 
         gc() # Release from memory.
-        yield json.dumps({
+        data_queue.put(json.dumps({
             "status": 'failed',
             "detail": str(e)
-        })
+        }))
+        raise e
 
-def update_temp_img(req, x_samples):
+def update_temp_img(req, x_samples, task_temp_images: list):
     partial_images = []
     for i in range(req.num_outputs):
         if thread_data.test_sd2:
@@ -421,19 +452,18 @@ def update_temp_img(req, x_samples):
         x_sample = 255.0 * rearrange(x_sample[0].cpu().numpy(), "c h w -> h w c")
         x_sample = x_sample.astype(np.uint8)
         img = Image.fromarray(x_sample)
-        buf = BytesIO()
-        img.save(buf, format='JPEG')
-        buf.seek(0)
+        buf = img_to_buffer(img, output_format='JPEG')
 
         del img, x_sample, x_sample_ddim
         # don't delete x_samples, it is used in the code that called this callback
 
         thread_data.temp_images[str(req.session_id) + '/' + str(i)] = buf
+        task_temp_images[i] = buf
         partial_images.append({'path': f'/image/tmp/{req.session_id}/{i}'})
     return partial_images
 
 # Build and return the apropriate generator for do_mk_img
-def get_image_progress_generator(req, extra_props=None):
+def get_image_progress_generator(req, data_queue: queue.Queue, task_temp_images: list, step_callback, extra_props=None):
     if not req.stream_progress_updates:
         def empty_callback(x_samples, i): return x_samples
         return empty_callback
@@ -452,15 +482,17 @@ def get_image_progress_generator(req, extra_props=None):
             progress.update(extra_props)
 
         if req.stream_image_progress and i % 5 == 0:
-            progress['output'] = update_temp_img(req, x_samples)
+            progress['output'] = update_temp_img(req, x_samples, task_temp_images)
 
-        yield json.dumps(progress)
+        data_queue.put(json.dumps(progress))
+
+        step_callback()
 
         if thread_data.stop_processing:
             raise UserInitiatedStop("User requested that we stop processing")
     return img_callback
 
-def do_mk_img(req: Request):
+def do_mk_img(req: Request, data_queue: queue.Queue, task_temp_images: list, step_callback):
     thread_data.stop_processing = False
 
     res = Response()
@@ -468,28 +500,6 @@ def do_mk_img(req: Request):
     res.images = []
 
     thread_data.temp_images.clear()
-
-    # custom model support:
-    #  the req.use_stable_diffusion_model needs to be a valid path
-    #  to the ckpt file (without the extension).
-    if not os.path.exists(req.use_stable_diffusion_model + '.ckpt'): raise FileNotFoundError(f'Cannot find {req.use_stable_diffusion_model}.ckpt')
-
-    needs_model_reload = False
-    if not thread_data.model or thread_data.ckpt_file != req.use_stable_diffusion_model or thread_data.vae_file != req.use_vae_model:
-        thread_data.ckpt_file = req.use_stable_diffusion_model
-        thread_data.vae_file = req.use_vae_model
-        needs_model_reload = True
-
-    if thread_data.device != 'cpu':
-        if (thread_data.precision == 'autocast' and (req.use_full_precision or not thread_data.model_is_half)) or \
-            (thread_data.precision == 'full' and not req.use_full_precision and not thread_data.force_full_precision):
-            thread_data.precision = 'full' if req.use_full_precision else 'autocast'
-            needs_model_reload = True
-
-    if needs_model_reload:
-        unload_models()
-        unload_filters()
-        load_model_ckpt()
 
     if thread_data.turbo != req.turbo and not thread_data.test_sd2:
         thread_data.turbo = req.turbo
@@ -606,7 +616,7 @@ def do_mk_img(req: Request):
                         thread_data.modelFS.to(thread_data.device)
 
                     n_steps = req.num_inference_steps if req.init_image is None else t_enc
-                    img_callback = get_image_progress_generator(req, {"total_steps": n_steps})
+                    img_callback = get_image_progress_generator(req, data_queue, task_temp_images, step_callback, {"total_steps": n_steps})
 
                     # run the handler
                     try:
@@ -615,13 +625,6 @@ def do_mk_img(req: Request):
                             x_samples = _txt2img(req.width, req.height, req.num_outputs, req.num_inference_steps, req.guidance_scale, None, opt_C, opt_f, opt_ddim_eta, c, uc, opt_seed, img_callback, mask, req.sampler)
                         else:
                             x_samples = _img2img(init_latent, t_enc, batch_size, req.guidance_scale, c, uc, req.num_inference_steps, opt_ddim_eta, opt_seed, img_callback, mask, opt_C, req.height, req.width, opt_f)
-
-                        if req.stream_progress_updates:
-                            yield from x_samples
-                        if hasattr(thread_data, 'partial_x_samples'):
-                            if thread_data.partial_x_samples is not None:
-                                x_samples = thread_data.partial_x_samples
-                            del thread_data.partial_x_samples
                     except UserInitiatedStop:
                         if not hasattr(thread_data, 'partial_x_samples'):
                             continue
@@ -666,9 +669,11 @@ def do_mk_img(req: Request):
                             save_metadata(meta_out_path, req, prompts[0], opt_seed)
 
                         if return_orig_img:
-                            img_str = img_to_base64_str(img, req.output_format)
+                            img_buffer = img_to_buffer(img, req.output_format)
+                            img_str = buffer_to_base64_str(img_buffer, req.output_format)
                             res_image_orig = ResponseImage(data=img_str, seed=opt_seed)
                             res.images.append(res_image_orig)
+                            task_temp_images[i] = img_buffer
 
                             if req.save_to_disk_path is not None:
                                 res_image_orig.path_abs = img_out_path
@@ -684,9 +689,11 @@ def do_mk_img(req: Request):
                                 filters_applied.append(req.use_upscale)
                             if (len(filters_applied) > 0):
                                 filtered_image = Image.fromarray(img_data[i])
-                                filtered_img_data = img_to_base64_str(filtered_image, req.output_format)
+                                filtered_buffer = img_to_buffer(filtered_image, req.output_format)
+                                filtered_img_data = buffer_to_base64_str(filtered_buffer, req.output_format)
                                 response_image = ResponseImage(data=filtered_img_data, seed=opt_seed)
                                 res.images.append(response_image)
+                                task_temp_images[i] = filtered_buffer
                                 if req.save_to_disk_path is not None:
                                     filtered_img_out_path = get_base_path(req.save_to_disk_path, req.session_id, prompts[0], img_id, req.output_format, "_".join(filters_applied))
                                     save_image(filtered_image, filtered_img_out_path)
@@ -705,7 +712,10 @@ def do_mk_img(req: Request):
                         print(f'memory_final = {round(torch.cuda.memory_allocated(thread_data.device) / 1e6, 2)}Mb')
 
     print('Task completed')
-    yield json.dumps(res.json())
+    res = res.json()
+    data_queue.put(json.dumps(res))
+
+    return res
 
 def save_image(img, img_out_path):
     try:
@@ -771,7 +781,7 @@ def _txt2img(opt_W, opt_H, opt_n_samples, opt_ddim_steps, opt_scale, start_code,
             sampler.make_schedule(ddim_num_steps=opt_ddim_steps, ddim_eta=opt_ddim_eta, verbose=False)
 
 
-        samples_ddim = sampler.sample(
+        samples_ddim, intermediates = sampler.sample(
             S=opt_ddim_steps,
             conditioning=c,
             batch_size=opt_n_samples,
@@ -804,7 +814,7 @@ def _txt2img(opt_W, opt_H, opt_n_samples, opt_ddim_steps, opt_scale, start_code,
             mask=mask,
             sampler = sampler_name,
         )
-    yield from samples_ddim
+    return samples_ddim
 
 def _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc, opt_ddim_steps, opt_ddim_eta, opt_seed, img_callback, mask, opt_C=1, opt_H=1, opt_W=1, opt_f=1):
     # encode (scaled latent)
@@ -842,7 +852,7 @@ def _img2img(init_latent, t_enc, batch_size, opt_scale, c, uc, opt_ddim_steps, o
             x_T=x_T,
             sampler = 'ddim'
         )
-    yield from samples_ddim
+    return samples_ddim
 
 def gc():
     gc_collect()
@@ -910,8 +920,16 @@ def load_mask(mask_str, h0, w0, newH, newW, invert=False):
 
 # https://stackoverflow.com/a/61114178
 def img_to_base64_str(img, output_format="PNG"):
+    buffered = img_to_buffer(img, output_format)
+    return buffer_to_base64_str(buffered, output_format)
+
+def img_to_buffer(img, output_format="PNG"):
     buffered = BytesIO()
     img.save(buffered, format=output_format)
+    buffered.seek(0)
+    return buffered
+
+def buffer_to_base64_str(buffered, output_format="PNG"):
     buffered.seek(0)
     img_byte = buffered.getvalue()
     mime_type = "image/png" if output_format.lower() == "png" else "image/jpeg"

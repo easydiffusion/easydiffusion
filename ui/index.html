@@ -3,6 +3,7 @@
 <head>
     <title>Stable Diffusion UI</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#673AB6">
     <link rel="icon" type="image/png" href="/media/images/favicon-16x16.png" sizes="16x16">
     <link rel="icon" type="image/png" href="/media/images/favicon-32x32.png" sizes="32x32">
     <link rel="stylesheet" href="/media/css/fonts.css">
@@ -12,7 +13,10 @@
     <link rel="stylesheet" href="/media/css/modifier-thumbnails.css">
     <link rel="stylesheet" href="/media/css/fontawesome-all.min.css">
     <link rel="stylesheet" href="/media/css/drawingboard.min.css">
+    <link rel="stylesheet" href="/media/css/jquery-confirm.min.css">
+    <link rel="manifest" href="/media/manifest.webmanifest">
     <script src="/media/js/jquery-3.6.1.min.js"></script>
+    <script src="/media/js/jquery-confirm.min.js"></script>
     <script src="/media/js/drawingboard.min.js"></script>
     <script src="/media/js/marked.min.js"></script>
 </head>
@@ -22,7 +26,7 @@
         <div id="logo">
             <h1>
                 Stable Diffusion UI
-                <small>v2.4.15 <span id="updateBranchLabel"></span></small>
+                <small>v2.4.17 <span id="updateBranchLabel"></span></small>
             </h1>
         </div>
         <div id="server-status">
@@ -67,7 +71,7 @@
                         <div id="init_image_wrapper">
                             <img id="init_image_preview" src="" />
                             <span id="init_image_size_box"></span>
-                            <button class="init_image_clear image_clear_btn">X</button>
+                            <button class="init_image_clear image_clear_btn"><i class="fa-solid fa-xmark"></i></button>
                         </div>
 
                         <br/>
@@ -82,7 +86,7 @@
                 </div>
 
                 <div id="editor-inputs-tags-container" class="row">
-                    <label>Image Modifiers: <small>(click an Image Modifier to remove it)</small></label>
+                    <label>Image Modifiers <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">click an Image Modifier to remove it, use Ctrl+Mouse Wheel to adjust its weight</span></i>:</label>
                     <div id="editor-inputs-tags-list"></div>
                 </div>
 
@@ -104,7 +108,7 @@
                 <div id="editor-settings-entries" class="collapsible-content">
                     <div><table>
                     <tr><b class="settings-subheader">Image Settings</b></tr>
-                    <tr class="pl-5"><td><label for="seed">Seed:</label></td><td><input id="seed" name="seed" size="10" value="30000" onkeypress="preventNonNumericalInput(event)"> <input id="random_seed" name="random_seed" type="checkbox" checked><label for="random_seed">Random</label></td></tr>
+                    <tr class="pl-5"><td><label for="seed">Seed:</label></td><td><input id="seed" name="seed" size="10" value="0" onkeypress="preventNonNumericalInput(event)"> <input id="random_seed" name="random_seed" type="checkbox" checked><label for="random_seed">Random</label></td></tr>
                     <tr class="pl-5"><td><label for="num_outputs_total">Number of Images:</label></td><td><input id="num_outputs_total" name="num_outputs_total" value="1" size="1" onkeypress="preventNonNumericalInput(event)"> <label><small>(total)</small></label> <input id="num_outputs_parallel" name="num_outputs_parallel" value="1" size="1" onkeypress="preventNonNumericalInput(event)"> <label for="num_outputs_parallel"><small>(in parallel)</small></label></td></tr>
                     <tr class="pl-5"><td><label for="stable_diffusion_model">Model:</label></td><td>
                         <select id="stable_diffusion_model" name="stable_diffusion_model">
@@ -250,8 +254,17 @@
                 <br/><br/>
                 <div>
                     <h3><i class="fa fa-microchip icon"></i> System Info</h3>
-                    <div id="system-info"></div>
+                    <div id="system-info">
+                        <table>
+                            <tr><td><label>Processor:</label></td><td id="system-info-cpu" class="value"></td></tr>
+                            <tr><td><label>Compatible Graphics Cards (all):</label></td><td id="system-info-gpus-all" class="value"></td></tr>
+                            <tr><td></td><td>&nbsp;</td></tr>
+                            <tr><td><label>Used for rendering 🔥:</label></td><td id="system-info-rendering-devices" class="value"></td></tr>
+                            <tr><td><label>Server Addresses <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">You can access Stable Diffusion UI from other devices using these addresses</span></i> :</label></td><td id="system-info-server-hosts" class="value"></td></tr>
+                        </table>
+                    </div>
                 </div>
+
             </div>
         </div>
         <div id="tab-content-about" class="tab-content">
@@ -346,9 +359,9 @@ async function init() {
     await getModels()
     await getDiskPath()
     await getAppConfig()
-    await loadModifiers()
     await loadUIPlugins()
-    await getDevices()
+    await loadModifiers()
+    await getSystemInfo()
 
     setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
     healthCheck()
