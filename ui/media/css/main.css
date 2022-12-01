@@ -64,6 +64,11 @@ code {
     top: 0px;
     right: 0px;
 }
+.image_clear_btn:active {
+    position: absolute;
+    top: 0px;
+    left: auto;
+}
 .settings-box ul {
     font-size: 9pt;
     margin-bottom: 5px;
@@ -756,6 +761,15 @@ input::file-selector-button {
     }
 }
 
+@media screen and (max-width: 500px) {
+    #server-status #server-status-msg {
+        display: none;
+    }
+    #server-status:hover #server-status-msg {
+        display: inline;
+    }
+}
+
 @media (min-width: 700px) {
     /* #editor {
         max-width: 480px;
@@ -1024,8 +1038,17 @@ button:hover,
 button:active {
   transition-duration: 0.1s;
   background-color: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 24%));
+  position: relative;
+  top: 1px;
+  left: 1px;
 }
 
 button#save-system-settings-btn {
     padding: 4pt 8pt;
+}
+#ip-info a {
+    color:var(--text-color)
+}
+#ip-info div {
+    line-height: 200%;
 }

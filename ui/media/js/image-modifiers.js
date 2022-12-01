@@ -85,14 +85,13 @@ function createModifierGroup(modifierGroup, initiallyExpanded) {
 
         if(typeof modifierCard == 'object') {
             modifiersEl.appendChild(modifierCard)
+            const trimmedName = trimModifiers(modifierName)
 
             modifierCard.addEventListener('click', () => {
-                if (activeTags.map(x => x.name).includes(modifierName)) {
+                if (activeTags.map(x => trimModifiers(x.name)).includes(trimmedName)) {
                     // remove modifier from active array
-                    activeTags = activeTags.filter(x => x.name != modifierName)
-                    modifierCard.classList.remove(activeCardClass)
-
-                    modifierCard.querySelector('.modifier-card-image-overlay').innerText = '+'
+                    activeTags = activeTags.filter(x => trimModifiers(x.name) != trimmedName)
+                    toggleCardState(trimmedName, false)
                 } else {
                     // add modifier to active array
                     activeTags.push({
@@ -101,10 +100,7 @@ function createModifierGroup(modifierGroup, initiallyExpanded) {
                         'originElement': modifierCard,
                         'previews': modifierPreviews
                     })
-
-                    modifierCard.classList.add(activeCardClass)
-
-                    modifierCard.querySelector('.modifier-card-image-overlay').innerText = '-'
+                    toggleCardState(trimmedName, true)
                 }
 
                 refreshTagsList()
@@ -123,6 +119,10 @@ function createModifierGroup(modifierGroup, initiallyExpanded) {
     editorModifierEntries.insertBefore(e, customModifierEntriesToolbar.nextSibling)
 
     return e
+}
+
+function trimModifiers(tag) {
+    return tag.replace(/^\(+|\)+$/g, '').replace(/^\[+|\]+$/g, '')
 }
 
 async function loadModifiers() {
@@ -219,11 +219,10 @@ function refreshTagsList() {
         editorModifierTagsList.appendChild(tag.element)
 
         tag.element.addEventListener('click', () => {
-            let idx = activeTags.indexOf(tag)
+            let idx = activeTags.findIndex(o => { return o.name === tag.name })            
 
-            if (idx !== -1 && activeTags[idx].originElement !== undefined) {
-                activeTags[idx].originElement.classList.remove(activeCardClass)
-                activeTags[idx].originElement.querySelector('.modifier-card-image-overlay').innerText = '+'
+            if (idx !== -1) {
+                toggleCardState(activeTags[idx].name, false)
 
                 activeTags.splice(idx, 1)
                 refreshTagsList()
@@ -234,6 +233,22 @@ function refreshTagsList() {
     let brk = document.createElement('br')
     brk.style.clear = 'both'
     editorModifierTagsList.appendChild(brk)
+}
+
+function toggleCardState(modifierName, makeActive) {
+    document.querySelector('#editor-modifiers').querySelectorAll('.modifier-card').forEach(card => {
+        const name = card.querySelector('.modifier-card-label').innerText
+        if (trimModifiers(modifierName) == trimModifiers(name)) {
+            if(makeActive) {
+                card.classList.add(activeCardClass)
+                card.querySelector('.modifier-card-image-overlay').innerText = '-'
+            }
+            else{
+                card.classList.remove(activeCardClass)
+                card.querySelector('.modifier-card-image-overlay').innerText = '+'
+            }
+        }
+    })
 }
 
 function changePreviewImages(val) {
@@ -310,31 +325,7 @@ function saveCustomModifiers() {
 }
 
 function loadCustomModifiers() {
-    let customModifiers = localStorage.getItem(CUSTOM_MODIFIERS_KEY, '')
-    customModifiersTextBox.value = customModifiers
-
-    if (customModifiersGroupElement !== undefined) {
-        customModifiersGroupElement.remove()
-    }
-
-    if (customModifiers && customModifiers.trim() !== '') {
-        customModifiers = customModifiers.split('\n')
-        customModifiers = customModifiers.filter(m => m.trim() !== '')
-        customModifiers = customModifiers.map(function(m) {
-            return {
-                "modifier": m
-            }
-        })
-
-        let customGroup = {
-            'category': 'Custom Modifiers',
-            'modifiers': customModifiers
-        }
-
-        customModifiersGroupElement = createModifierGroup(customGroup, true)
-
-        createCollapsibles(customModifiersGroupElement)
-    }
+    PLUGINS['MODIFIERS_LOAD'].forEach(fn=>fn.loader.call())
 }
 
 customModifiersTextBox.addEventListener('change', saveCustomModifiers)
