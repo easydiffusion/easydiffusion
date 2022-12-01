@@ -5,6 +5,7 @@
 - **Automatic scanning for malicious model files** - using `picklescan`. Thanks @JeLuf
 - **Support for custom VAE models**. You can place your VAE files in the `models/vae` folder, and refresh the browser page to use them. More info: https://github.com/cmdr2/stable-diffusion-ui/wiki/VAE-Variational-Auto-Encoder
 - **Experimental support for multiple GPUs!** It should work automatically. Just open one browser tab per GPU, and spread your tasks across your GPUs. For e.g. open our UI in two browser tabs if you have two GPUs. You can customize which GPUs it should use in the "Settings" tab, otherwise let it automatically pick the best GPUs. Thanks @madrang . More info: https://github.com/cmdr2/stable-diffusion-ui/wiki/Run-on-Multiple-GPUs
+- **Image Editor** - for drawing simple images for guiding the AI. Thanks @mdiller
 - **Cleaner UI design** - Show settings and help in new tabs, instead of dropdown popups (which were buggy). Thanks @mdiller
 - **Progress bar.** Thanks @mdiller
 - **Custom Image Modifiers** - You can now save your custom image modifiers! Your saved modifiers can include special characters like `{}, (), [], |`
@@ -23,6 +24,8 @@
 - Show the network addresses of the server in the systems setting dialog
 
 ### Detailed changelog
+* 2.4.18 - 1 Dec 2022 - Image Editor, for drawing simple images for guiding the AI. Thanks @mdiller
+* 2.4.18 - 1 Dec 2022 - Disable an image modifier temporarily by right-clicking it. Thanks @patriceac
 * 2.4.17 - 30 Nov 2022 - Scroll to generated image. Thanks @patriceac
 * 2.4.17 - 30 Nov 2022 - Show the network addresses of the server in the systems setting dialog. Thanks @JeLuf
 * 2.4.17 - 30 Nov 2022 - Fix a bug where GFPGAN wouldn't work properly when multiple GPUs tried to run it at the same time. Thanks @madrang
