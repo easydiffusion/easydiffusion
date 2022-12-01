@@ -29,7 +29,7 @@ const PLUGINS = {
 
 async function loadUIPlugins() {
     try {
-        let res = await fetch('/get/ui_plugins')
+        let res = await fetch('get/ui_plugins')
         if (res.status === 200) {
             res = await res.json()
             res.forEach(pluginPath => {

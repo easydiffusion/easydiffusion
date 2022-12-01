@@ -26,10 +26,10 @@
     linkTabContents(document.querySelector('#tab-news'))
 
     let markedScript = document.createElement('script')
-    markedScript.src = '/media/js/marked.min.js'
+    markedScript.src = 'media/js/marked.min.js'
 
     markedScript.onload = async function() {
-        let appConfig = await fetch('/get/app_config')
+        let appConfig = await fetch('get/app_config')
         appConfig = await appConfig.json()
 
         let updateBranch = appConfig.update_branch || 'main'
