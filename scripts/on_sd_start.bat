@@ -27,6 +27,8 @@ if exist "Open Developer Console.cmd" del "Open Developer Console.cmd"
 
 @call python -c "import os; import shutil; frm = 'sd-ui-files\\ui\\hotfix\\9c24e6cd9f499d02c4f21a033736dabd365962dc80fe3aeb57a8f85ea45a20a3.26fead7ea4f0f843f6eb4055dfd25693f1a71f3c6871b184042d4b126244e142'; dst = os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'transformers', '9c24e6cd9f499d02c4f21a033736dabd365962dc80fe3aeb57a8f85ea45a20a3.26fead7ea4f0f843f6eb4055dfd25693f1a71f3c6871b184042d4b126244e142'); shutil.copyfile(frm, dst) if os.path.exists(dst) else print(''); print('Hotfixed broken JSON file from OpenAI');"
 
+if NOT DEFINED test_sd2 set test_sd2=N
+
 @>nul findstr /m "sd_git_cloned" scripts\install_status.txt
 @if "%ERRORLEVEL%" EQU "0" (
     @echo "Stable Diffusion's git repository was already installed. Updating.."
@@ -37,9 +39,13 @@ if exist "Open Developer Console.cmd" del "Open Developer Console.cmd"
 
     @call git reset --hard
     @call git pull
-    @call git -c advice.detachedHead=false checkout 7f32368ed1030a6e710537047bacd908adea183a
 
-    @call git apply --whitespace=warn ..\ui\sd_internal\ddim_callback.patch
+    if "%test_sd2%" == "N" (
+        @call git -c advice.detachedHead=false checkout 7f32368ed1030a6e710537047bacd908adea183a
+    )
+    if "%test_sd2%" == "Y" (
+        @call git -c advice.detachedHead=false checkout 5d647c5459f4cd790672512222bc41903c01bb71
+    )
 
     @cd ..
 ) else (
@@ -55,8 +61,6 @@ if exist "Open Developer Console.cmd" del "Open Developer Console.cmd"
 
     @cd stable-diffusion
     @call git -c advice.detachedHead=false checkout 7f32368ed1030a6e710537047bacd908adea183a
-
-    @call git apply --whitespace=warn ..\ui\sd_internal\ddim_callback.patch
 
     @cd ..
 )
@@ -346,7 +350,9 @@ echo. > "..\models\vae\Put your VAE files here.txt"
     )
 )
 
-
+if "%test_sd2%" == "Y" (
+    @call pip install open_clip_torch==2.0.2
+)
 
 @>nul findstr /m "sd_install_complete" ..\scripts\install_status.txt
 @if "%ERRORLEVEL%" NEQ "0" (

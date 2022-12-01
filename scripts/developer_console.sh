@@ -35,6 +35,15 @@ if [ "$0" == "bash" ]; then
   which python
   python --version
 
+  # set the PYTHONPATH
+  cd stable-diffusion
+  SD_PATH=`pwd`
+  export PYTHONPATH="$SD_PATH:$SD_PATH/env/lib/python3.8/site-packages"
+  echo "PYTHONPATH=$PYTHONPATH"
+  cd ..
+
+  # done
+
   echo ""
 else
   file_name=$(basename "${BASH_SOURCE[0]}")

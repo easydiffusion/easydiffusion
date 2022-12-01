@@ -192,9 +192,9 @@ const TASK_MAPPING = {
         parse: (val) => val
     },
 
-    numOutputsParallel: { name: 'Parallel Images',
-        setUI: (numOutputsParallel) => {
-            numOutputsParallelField.value = numOutputsParallel
+    num_outputs: { name: 'Parallel Images',
+        setUI: (num_outputs) => {
+            numOutputsParallelField.value = num_outputs
         },
         readUI: () => parseInt(numOutputsParallelField.value),
         parse: (val) => val
@@ -328,6 +328,7 @@ function getModelPath(filename, extensions)
             filename = filename.slice(0, filename.length - ext.length)
         }
     })
+    return filename
 }
 
 const TASK_TEXT_MAPPING = {
