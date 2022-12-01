@@ -696,6 +696,12 @@ async function checkTasks() {
 
     const genSeeds = Boolean(typeof task.reqBody.seed !== 'number' || (task.reqBody.seed === task.seed && task.numOutputsTotal > 1))
     const startSeed = task.reqBody.seed || task.seed
+    
+    // Update the seed *before* starting the processing so it's retained if user stops the task
+    if (randomSeedField.checked) {
+        seedField.value = task.seed
+    }
+    
     for (let i = 0; i < task.batchCount; i++) {
         let newTask = task
         if (task.batchCount > 1) {
@@ -740,10 +746,6 @@ async function checkTasks() {
         if (task.outputMsg.innerText.toLowerCase().indexOf('error') === -1) {
             task.outputMsg.innerText = 'Task ended after ' + time + ' seconds'
         }
-    }
-
-    if (randomSeedField.checked) {
-        seedField.value = task.seed
     }
 
     currentTask = null
@@ -1208,7 +1210,7 @@ async function getModels() {
 function checkRandomSeed() {
     if (randomSeedField.checked) {
         seedField.disabled = true
-        seedField.value = "0"
+        //seedField.value = "0" // This causes the seed to be lost if the user changes their mind after toggling the checkbox
     } else {
         seedField.disabled = false
     }
