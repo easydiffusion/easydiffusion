@@ -45,7 +45,7 @@ code {
     display: block;
 }
 .image_preview_container {
-    margin-top: 10pt;
+    margin-top: 6px;
 }
 .image_clear_btn {
     position: absolute;
@@ -275,32 +275,6 @@ img {
     transform: translateY(25%);
 }
 
-#inpaintingEditor {
-    width: 300pt;
-    height: 300pt;
-    margin-top: 5pt;
-}
-.drawing-board-canvas-wrapper {
-    background-size: 100% 100%;
-}
-.drawing-board-controls {
-    min-width: 273px;
-}
-.drawing-board-control > button {
-    background-color: #eee;
-    border-radius: 3pt;
-}
-.drawing-board-control-inner {
-    background-color: #eee;
-    border-radius: 3pt;
-}
-#inpaintingEditor canvas {
-    opacity: 0.6;
-}
-#enable_mask {
-    margin-top: 8pt;
-}
-
 #top-nav {
     position: relative;
     background: var(--background-color4);
@@ -484,8 +458,48 @@ img {
 #prompt_from_file {
     display: none;
 }
+
+#init_image_preview_container:not(.has-image) #inpaintingEditor,
+#init_image_preview_container:not(.has-image) #samplerSelection,
+#init_image_preview_container:not(.has-image) #init_image_wrapper,
+#init_image_preview_container:not(.has-image) #init_image_button_inpaint  {
+    display: none;
+}
+
+#init_image_preview_container:not(.has-image) {
+    grid-template-columns: 50% 50%;
+}
+
+#init_image_preview_container {
+    padding: 4px;
+    display: grid;
+    grid-template-columns: max-content auto;
+    grid-template-rows: 33% 33% 33%;
+    gap: 8px
+}
+
+#init_image_preview_container > div:not(:first-child) {
+    position: relative;
+    min-height: 32px;
+}
+
+#init_image_preview_container > div:not(:first-child) > input {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+}
+
+#init_image_wrapper {
+    grid-row: span 3;
+    position: relative;
+    width: fit-content;
+    max-height: 150px;
+}
+
 #init_image_preview {
-    max-width: 150px;
     max-height: 150px;
     height: 100%;
     width: 100%;
@@ -493,23 +507,18 @@ img {
     border-radius: 6px;
     transition: all 1s ease-in-out;
 }
-
+/* 
 #init_image_preview:hover {
     max-width: 500px;
     max-height: 1000px;
 
     transition: all 1s 0.5s ease-in-out;
-}
-
-#init_image_wrapper {
-    position: relative;
-    width: fit-content;
-}
+} */
 
 #init_image_size_box {
     position: absolute;
     right: 0px;
-    bottom: 3px;
+    bottom: 0px;
     padding: 3px;
     background: black;
     color: white;
@@ -561,6 +570,10 @@ option {
     cursor: pointer;
 }
 
+input[type="file"] * {
+    cursor: pointer;
+}
+
 input,
 select,
 textarea {
@@ -599,12 +612,21 @@ input[type="file"] {
 }
 
 button,
-input::file-selector-button { 
+input::file-selector-button,
+.button { 
     padding: 2px 4px;
     border-radius: 4px;
     background: var(--button-color);
     color: var(--button-text-color);
     border: var(--button-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.button i {
+    margin-right: 8px;
 }
 
 input::file-selector-button {
@@ -969,8 +991,8 @@ input::file-selector-button {
     display: none;
 }
 
-#tab-content-wrapper {
-    border-top: 8px solid var(--background-color1);
+#tab-content-wrapper > * {
+    padding-top: 8px;
 }
 
 .tab-content-inner {
@@ -1007,7 +1029,8 @@ i.active {
     float: right;
     font-weight: bold;
 }
-button:hover {
+button:hover,
+.button:hover {
   transition-duration: 0.1s;
   background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
 }
