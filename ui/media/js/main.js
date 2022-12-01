@@ -138,6 +138,35 @@ function isServerAvailable() {
     }
 }
 
+// shiftOrConfirm(e, prompt, fn)
+//   e      : MouseEvent
+//   prompt : Text to be shown as prompt. Should be a question to which "yes" is a good answer.
+//   fn     : function to be called if the user confirms the dialog or has the shift key pressed
+//
+// If the user had the shift key pressed while clicking, the function fn will be executed.
+// If the setting "confirm_dangerous_actions" in the system settings is disabled, the function 
+// fn will be executed.
+// Otherwise, a confirmation dialog is shown. If the user confirms, the function fn will also
+// be executed.
+function shiftOrConfirm(e, prompt, fn) {
+    e.stopPropagation()
+    if (e.shiftKey || !confirmDangerousActionsField.checked) {
+         fn(e)
+    } else {
+        $.confirm({
+            theme: 'modern',
+            title: prompt,
+            useBootstrap: false,
+            animateFromElement: false,
+            content: '<small>Tip: To skip this dialog, use shift-click or disable the "Confirm dangerous actions" setting in the Settings tab.</small>',
+            buttons: {
+                yes: () => { fn(e) },
+                cancel: () => {}
+            }
+        }); 
+    }
+}
+
 function logMsg(msg, level, outputMsg) {
     if (outputMsg.hasChildNodes()) {
         outputMsg.appendChild(document.createElement('br'))
@@ -168,34 +197,6 @@ function playSound() {
             console.warn("browser blocked autoplay")
         })
     }
-}
-function setSystemInfo(devices) {
-    let cpu = devices.all.cpu.name
-    let allGPUs = Object.keys(devices.all).filter(d => d != 'cpu')
-    let activeGPUs = Object.keys(devices.active)
-
-    function ID_TO_TEXT(d) {
-        let info = devices.all[d]
-        if ("mem_free" in info && "mem_total" in info) {
-            return `${info.name} <small>(${d}) (${info.mem_free.toFixed(1)}Gb free / ${info.mem_total.toFixed(1)} Gb total)</small>`
-        } else {
-            return `${info.name} <small>(${d}) (no memory info)</small>`
-        }
-    }
-
-    allGPUs = allGPUs.map(ID_TO_TEXT)
-    activeGPUs = activeGPUs.map(ID_TO_TEXT)
-
-    let systemInfo = `
-    <table>
-        <tr><td><label>Processor:</label></td><td class="value">${cpu}</td></tr>
-        <tr><td><label>Compatible Graphics Cards (all):</label></td><td class="value">${allGPUs.join('</br>')}</td></tr>
-        <tr><td></td><td>&nbsp;</td></tr>
-        <tr><td><label>Used for rendering 🔥:</label></td><td class="value">${activeGPUs.join('</br>')}</td></tr>
-    </table>`
-
-    let systemInfoEl = document.querySelector('#system-info')
-    systemInfoEl.innerHTML = systemInfo
 }
 
 async function healthCheck() {
@@ -231,7 +232,7 @@ async function healthCheck() {
                 break
         }
         if (serverState.devices) {
-            setSystemInfo(serverState.devices)
+            setDeviceInfo(serverState.devices)
         }
         serverState.time = Date.now()
     } catch (e) {
@@ -887,24 +888,26 @@ function createTask(task) {
     task['progressBar'] = taskEntry.querySelector('.progress-bar')
     task['stopTask'] = taskEntry.querySelector('.stopTask')
 
-    task['stopTask'].addEventListener('click', async function(e) {
-        e.stopPropagation()
-        if (task['isProcessing']) {
-            task.isProcessing = false
-            task.progressBar.classList.remove("active")
-            try {
-                let res = await fetch('/image/stop?session_id=' + sessionId)
-            } catch (e) {
-                console.log(e)
-            }
-        } else {
-            let idx = taskQueue.indexOf(task)
-            if (idx >= 0) {
-                taskQueue.splice(idx, 1)
-            }
+    task['stopTask'].addEventListener('click', (e) => {
+        let question = (task['isProcessing'] ? "Stop this task?" : "Remove this task?")
+        shiftOrConfirm(e, question, async function(e) {
+            if (task['isProcessing']) {
+                task.isProcessing = false
+                task.progressBar.classList.remove("active")
+                try {
+                    let res = await fetch('/image/stop?session_id=' + sessionId)
+                } catch (e) {
+                    console.log(e)
+                }
+            } else {
+                let idx = taskQueue.indexOf(task)
+                if (idx >= 0) {
+                    taskQueue.splice(idx, 1)
+                }
 
-            taskEntry.remove()
-        }
+                removeTask(taskEntry)
+            }
+        })
     })
 
     task['useSettings'] = taskEntry.querySelector('.useSettings')
@@ -1047,21 +1050,25 @@ async function stopAllTasks() {
     }
 }
 
-clearAllPreviewsBtn.addEventListener('click', async function() {
+function removeTask(taskToRemove) {
+    taskToRemove.remove()
+
+    if (document.querySelector('.imageTaskContainer') === null) {
+        previewTools.style.display = 'none'
+        initialText.style.display = 'block'
+    }
+}
+
+clearAllPreviewsBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Clear all the results and tasks in this window?", async function() {
     await stopAllTasks()
 
     let taskEntries = document.querySelectorAll('.imageTaskContainer')
-    taskEntries.forEach(task => {
-        task.remove()
-    })
+    taskEntries.forEach(removeTask)
+})})
 
-    previewTools.style.display = 'none'
-    initialText.style.display = 'block'
-})
-
-stopImageBtn.addEventListener('click', async function() {
+stopImageBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Stop all the tasks?", async function(e) {
     await stopAllTasks()
-})
+})})
 
 widthField.addEventListener('change', onDimensionChange)
 heightField.addEventListener('change', onDimensionChange)

@@ -115,6 +115,14 @@ var PARAMETERS = [
         default: true,
     },
     {
+        id: "confirm_dangerous_actions",
+        type: ParameterType.checkbox,
+        label: "Confirm dangerous actions",
+        note: "Actions that might lead to data loss must either be clicked with the shift key pressed, or confirmed in an 'Are you sure?' dialog",
+        icon: "fa-check-double",
+        default: true,
+    },
+    {
         id: "listen_to_network",
         type: ParameterType.checkbox,
         label: "Make Stable Diffusion available on your network",
@@ -207,8 +215,10 @@ let listenPortField = document.querySelector("#listen_port")
 let testSD2Field = document.querySelector("#test_sd2")
 let useBetaChannelField = document.querySelector("#use_beta_channel")
 let uiOpenBrowserOnStartField = document.querySelector("#ui_open_browser_on_start")
+let confirmDangerousActionsField = document.querySelector("#confirm_dangerous_actions")
 
 let saveSettingsBtn = document.querySelector('#save-system-settings-btn')
+
 
 async function changeAppConfig(configDelta) {
     try {
@@ -327,14 +337,45 @@ async function getDiskPath() {
     }
 }
 
-async function getDevices() {
+function setDeviceInfo(devices) {
+    let cpu = devices.all.cpu.name
+    let allGPUs = Object.keys(devices.all).filter(d => d != 'cpu')
+    let activeGPUs = Object.keys(devices.active)
+
+    function ID_TO_TEXT(d) {
+        let info = devices.all[d]
+        if ("mem_free" in info && "mem_total" in info) {
+            return `${info.name} <small>(${d}) (${info.mem_free.toFixed(1)}Gb free / ${info.mem_total.toFixed(1)} Gb total)</small>`
+        } else {
+            return `${info.name} <small>(${d}) (no memory info)</small>`
+        }
+    }
+
+    allGPUs = allGPUs.map(ID_TO_TEXT)
+    activeGPUs = activeGPUs.map(ID_TO_TEXT)
+
+    let systemInfoEl = document.querySelector('#system-info')
+    systemInfoEl.querySelector('#system-info-cpu').innerText = cpu
+    systemInfoEl.querySelector('#system-info-gpus-all').innerHTML = allGPUs.join('</br>')
+    systemInfoEl.querySelector('#system-info-rendering-devices').innerHTML = activeGPUs.join('</br>')
+}
+
+function setHostInfo(hosts) {
+    let port = listenPortField.value
+    hosts = hosts.map(addr => `http://${addr}:${port}/`).map(url => `<div><a href="${url}">${url}</a></div>`)
+    document.querySelector('#system-info-server-hosts').innerHTML = hosts.join('')
+}
+
+async function getSystemInfo() {
     try {
-        let res = await fetch('/get/devices')
+        let res = await fetch('/get/system_info')
         if (res.status === 200) {
             res = await res.json()
+            let devices = res['devices']
+            let hosts = res['hosts']
 
-            let allDeviceIds = Object.keys(res['all']).filter(d => d !== 'cpu')
-            let activeDeviceIds = Object.keys(res['active']).filter(d => d !== 'cpu')
+            let allDeviceIds = Object.keys(devices['all']).filter(d => d !== 'cpu')
+            let activeDeviceIds = Object.keys(devices['active']).filter(d => d !== 'cpu')
 
             if (activeDeviceIds.length === 0) {
                 useCPUField.checked = true
@@ -352,11 +393,11 @@ async function getDevices() {
                 useCPUField.disabled = true // no compatible GPUs, so make the CPU mandatory
             }
 
-            autoPickGPUsField.checked = (res['config'] === 'auto')
+            autoPickGPUsField.checked = (devices['config'] === 'auto')
 
             useGPUsField.innerHTML = ''
             allDeviceIds.forEach(device => {
-                let deviceName = res['all'][device]['name']
+                let deviceName = devices['all'][device]['name']
                 let deviceOption = `<option value="${device}">${deviceName} (${device})</option>`
                 useGPUsField.insertAdjacentHTML('beforeend', deviceOption)
             })
@@ -367,6 +408,9 @@ async function getDevices() {
             } else {
                 $('#use_gpus').val(activeDeviceIds)
             }
+
+            setDeviceInfo(devices)
+            setHostInfo(hosts)
         }
     } catch (e) {
         console.log('error fetching devices', e)

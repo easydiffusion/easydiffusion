@@ -35,6 +35,7 @@ const SETTINGS_IDS_LIST = [
     "sound_toggle",
     "turbo",
     "use_full_precision",
+    "confirm_dangerous_actions",
     "auto_save_settings"
 ]
 
@@ -54,6 +55,9 @@ async function initSettings() {
         var element = document.getElementById(id)
         if (!element) {
             console.error(`Missing settings element ${id}`)
+        }
+        if (id in SETTINGS) { // don't create it again
+            return
         }
         SETTINGS[id] = {
             key: id,

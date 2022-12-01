@@ -7,6 +7,7 @@ import traceback
 
 import sys
 import os
+import socket
 import picklescan.scanner
 import rich
 
@@ -244,9 +245,9 @@ def is_malicious_model(file_path):
             return False
     except Exception as e:
         print('error while scanning', file_path, 'error:', e)
-
     return False
 
+known_models = {}
 def getModels():
     models = {
         'active': {
@@ -269,9 +270,14 @@ def getModels():
                 if not file.endswith(model_extension):
                     continue
 
-                if is_malicious_model(os.path.join(models_dir, file)):
-                    models['scan-error'] = file
-                    return
+                model_path = os.path.join(models_dir, file)
+                mtime = os.path.getmtime(model_path)
+                mod_time = known_models[model_path] if model_path in known_models else -1
+                if mod_time != mtime:
+                    if is_malicious_model(model_path):
+                        models['scan-error'] = file
+                        return
+                known_models[model_path] = mtime
 
                 model_name = file[:-len(model_extension)]
                 models['options'][model_type].append(model_name)
@@ -300,6 +306,11 @@ def getUIPlugins():
 
     return plugins
 
+def getIPConfig():
+    ips = socket.gethostbyname_ex(socket.gethostname())
+    ips[2].append(ips[0])
+    return ips[2]
+
 @app.get('/get/{key:path}')
 def read_web_data(key:str=None):
     if not key: # /get without parameters, stable-diffusion easter egg.
@@ -309,11 +320,14 @@ def read_web_data(key:str=None):
         if config is None:
             config = APP_CONFIG_DEFAULTS
         return JSONResponse(config, headers=NOCACHE_HEADERS)
-    elif key == 'devices':
+    elif key == 'system_info':
         config = getConfig()
-        devices = task_manager.get_devices()
-        devices['config'] = config.get('render_devices', "auto")
-        return JSONResponse(devices, headers=NOCACHE_HEADERS)
+        system_info = {
+            'devices': task_manager.get_devices(),
+            'hosts': getIPConfig(),
+        }
+        system_info['devices']['config'] = config.get('render_devices', "auto")
+        return JSONResponse(system_info, headers=NOCACHE_HEADERS)
     elif key == 'models':
         return JSONResponse(getModels(), headers=NOCACHE_HEADERS)
     elif key == 'modifiers': return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'), headers=NOCACHE_HEADERS)
@@ -448,6 +462,9 @@ class LogSuppressFilter(logging.Filter):
                 return False
         return True
 logging.getLogger('uvicorn.access').addFilter(LogSuppressFilter())
+
+# Check models and prepare cache for UI open
+getModels()
 
 # Start the task_manager
 task_manager.default_model_to_load = resolve_ckpt_to_use()
