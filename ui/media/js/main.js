@@ -938,8 +938,9 @@ function getPrompts() {
     prompts = prompts.map(prompt => prompt.trim())
     prompts = prompts.filter(prompt => prompt !== '')
 
-    if (activeTags.length > 0) {
-        const promptTags = activeTags.map(x => x.name).join(", ")
+    const newTags = activeTags.filter(tag => tag.inactive === undefined || tag.inactive === false)
+    if (newTags.length > 0) {
+        const promptTags = newTags.map(x => x.name).join(", ")
         prompts = prompts.map((prompt) => `${prompt}, ${promptTags}`)
     }
 
