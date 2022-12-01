@@ -359,8 +359,8 @@ async function init() {
     await getModels()
     await getDiskPath()
     await getAppConfig()
-    await loadModifiers()
     await loadUIPlugins()
+    await loadModifiers()
     await getSystemInfo()
 
     setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
