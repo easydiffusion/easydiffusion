@@ -619,7 +619,6 @@ input::file-selector-button,
     background: var(--button-color);
     color: var(--button-text-color);
     border: var(--button-border);
-    display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;

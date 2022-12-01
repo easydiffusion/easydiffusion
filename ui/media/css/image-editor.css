@@ -197,3 +197,9 @@
 	opacity: 0.75;
 }
 
+#init_image_preview_container .button {
+	display: flex;
+}
+#image-editor .button {
+	display: flex;
+}
