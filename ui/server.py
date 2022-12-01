@@ -395,7 +395,7 @@ def render(req : task_manager.ImageRequest):
         response = {
             'status': str(task_manager.current_state), 
             'queue': len(task_manager.tasks_queue),
-            'stream': f'/image/stream/{req.session_id}/{id(new_task)}',
+            'stream': f'image/stream/{req.session_id}/{id(new_task)}',
             'task': id(new_task)
         }
         return JSONResponse(response, headers=NOCACHE_HEADERS)
