@@ -790,6 +790,7 @@ input::file-selector-button {
 
 #promptsFromFileBtn {
     font-size: 9pt;
+    display: inline;
 }
 
 .section-button {
