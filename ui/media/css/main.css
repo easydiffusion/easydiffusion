@@ -1032,12 +1032,15 @@ button:active {
 button#save-system-settings-btn {
     padding: 4pt 8pt;
 }
+<<<<<<< Updated upstream
+=======
 #ip-info a {
     color:var(--text-color)
 }
 #ip-info div {
     line-height: 200%;
 }
+>>>>>>> Stashed changes
 
 /* SCROLLBARS */
 .scrollbar-preview::-webkit-scrollbar {
