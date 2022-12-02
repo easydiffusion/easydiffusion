@@ -257,7 +257,6 @@ class EditorHistory {
 		if (new_rewind_index < 0 || new_rewind_index > this.events.length) {
 			return; // do nothing if target index is out of bounds
 		}
-		console.log(`rewinding to ${new_rewind_index}`)
 
 		var ctx = this.editor.layers.drawing.ctx
 		ctx.clearRect(0, 0, this.editor.width, this.editor.height)
@@ -551,7 +550,6 @@ class ImageEditor {
 			document.removeEventListener("keyup", this.keyHandlerBound)
 			return // this catches if something else closes the window but doesnt properly unbind the key handler
 		}
-		console.log("i")
 
 		// keybindings
 		if (event.type == "keydown") {
