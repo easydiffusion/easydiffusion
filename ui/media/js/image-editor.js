@@ -72,6 +72,9 @@ const IMAGE_EDITOR_TOOLS = [
 				ctx.clearRect(0, 0, editor.width, editor.height)
 				editor.canvas_current.style.opacity = ""
 			}
+		},
+		setBrush: (editor, layer) => {
+			layer.ctx.globalCompositeOperation = "destination-out"
 		}
 	},
 	{
@@ -101,7 +104,7 @@ const IMAGE_EDITOR_ACTIONS = [
 		name: "Clear",
 		icon: "fa-solid fa-xmark",
 		handler: (editor) => {
-			editor.clear()
+			this.ctx_current.clearRect(0, 0, this.width, this.height)
 		}
 	}
 ]
@@ -197,10 +200,113 @@ var IMAGE_EDITOR_SECTIONS = [
 	}
 ]
 
+class EditorHistory {
+	constructor(editor) {
+		this.editor = editor
+		this.events = [] // stack of all events (actions/edits)
+		this.current_edit = null
+		this.rewind_index = 0 // how many events back into the history we've rewound to. (current state is just after event at index 'length - this.rewind_index - 1')
+	}
+	push(event) {
+		// probably add something here eventually to save state every x events
+		if (this.rewind_index != 0) {
+			this.events = this.events.slice(0, 0 - this.rewind_index)
+			this.rewind_index = 0
+		}
+		var snapshot_frequency = 20 // (every x edits, take a snapshot of the current drawing state, for faster rewinding)
+		if (this.events.length > 0 && this.events.length % snapshot_frequency == 0) {
+			event.snapshot = this.editor.layers.drawing.ctx.getImageData(0, 0, this.editor.width, this.editor.height)
+		}
+		this.events.push(event)
+	}
+	pushAction(action) {
+		this.push({
+			type: "action",
+			id: action
+		});
+	}
+	editBegin(x, y) {
+		this.current_edit = {
+			type: "edit",
+			id: this.editor.getOptionValue("tool"),
+			options: Object.assign({}, this.editor.options),
+			points: [ { x: x, y: y } ]
+		}
+	}
+	editMove(x, y) {
+		if (this.current_edit) {
+			this.current_edit.points.push({ x: x, y: y })
+		}
+	}
+	editEnd(x, y) {
+		if (this.current_edit) {
+			this.push(this.current_edit)
+			this.current_edit = null
+		}
+	}
+	clear() {
+		this.events = []
+	}
+	undo() {
+		this.rewindTo(this.rewind_index + 1)
+	}
+	redo() {
+		this.rewindTo(this.rewind_index - 1)
+	}
+	rewindTo(new_rewind_index) {
+		if (new_rewind_index < 0 || new_rewind_index > this.events.length) {
+			return; // do nothing if target index is out of bounds
+		}
+		console.log(`rewinding to ${new_rewind_index}`)
+
+		var ctx = this.editor.layers.drawing.ctx
+		ctx.clearRect(0, 0, this.editor.width, this.editor.height)
+
+		var target_index = this.events.length - 1 - new_rewind_index
+		var snapshot_index = target_index
+		while (snapshot_index > -1) {
+			if (this.events[snapshot_index].snapshot) {
+				break
+			}
+			snapshot_index--
+		}
+
+		if (snapshot_index != -1) {
+			ctx.putImageData(this.events[snapshot_index].snapshot, 0, 0);
+		}
+
+		for (var i = (snapshot_index + 1); i <= target_index; i++) {
+			var event = this.events[i]
+			if (event.type == "action") {
+				var action = IMAGE_EDITOR_ACTIONS.find(a => a.id == event.id)
+				action.handler(this.editor)
+			}
+			else if (event.type == "edit") {
+				var tool = IMAGE_EDITOR_TOOLS.find(t => t.id == event.id)
+				this.editor.setBrush(this.editor.layers.drawing, event.options)
+
+				var first_point = event.points[0]
+				tool.begin(this.editor, ctx, first_point.x, first_point.y)
+				for (var point_i = 1; point_i < event.points.length; point_i++) {
+					tool.move(this.editor, ctx, event.points[point_i].x, event.points[point_i].y)
+				}
+				var last_point = event.points[event.points.length - 1]
+				tool.end(this.editor, ctx, last_point.x, last_point.y)
+			}
+		}
+
+		// re-set brush to current settings
+		this.editor.setBrush(this.editor.layers.drawing)
+
+		this.rewind_index = new_rewind_index
+	}
+}
+
 class ImageEditor {
 	constructor(popup, inpainter = false) {
 		this.inpainter = inpainter
 		this.popup = popup
+		this.history = new EditorHistory(this)
 		if (inpainter) {
 			this.popup.classList.add("inpainter")
 		}
@@ -224,8 +330,6 @@ class ImageEditor {
 			}
 		})
 
-		this.setSize(512, 512)
-
 		// add mouse handlers
 		this.container.addEventListener("mousedown", this.mouseHandler.bind(this))
 		this.container.addEventListener("mouseup", this.mouseHandler.bind(this))
@@ -237,16 +341,6 @@ class ImageEditor {
 		this.container.addEventListener("touchmove", this.mouseHandler.bind(this))
 		this.container.addEventListener("touchcancel", this.mouseHandler.bind(this))
 		this.container.addEventListener("touchend", this.mouseHandler.bind(this))
-		// setup forwarding for keypresses so the eyedropper works accordingly
-		var mouseHandlerHelper = this.mouseHandler.bind(this)
-		this.container.addEventListener("mouseenter",function() {
-			document.addEventListener("keyup", mouseHandlerHelper)
-			document.addEventListener("keydown", mouseHandlerHelper)
-		})
-		this.container.addEventListener("mouseout",function() {
-			document.removeEventListener("keyup", mouseHandlerHelper)
-			document.removeEventListener("keydown", mouseHandlerHelper)
-		})
 
 		// initialize editor controls
 		this.options = {}
@@ -314,16 +408,24 @@ class ImageEditor {
 			element.appendChild(icon)
 			element.append(action.name)
 			actionsContainer.appendChild(element)
-			element.addEventListener("click", event => action.handler(this))
+			element.addEventListener("click", event => this.runAction(action.id))
 		})
 		this.popup.querySelector(".editor-controls-right").appendChild(actionsContainer)
 		this.popup.querySelector(".editor-controls-right").appendChild(buttonContainer)
+
+		this.keyHandlerBound = this.keyHandler.bind(this)
+
+		this.setSize(512, 512)
 	}
 	show() {
 		this.popup.classList.add("active")
+		document.addEventListener("keydown", this.keyHandlerBound)
+		document.addEventListener("keyup", this.keyHandlerBound)
 	}
 	hide() {
 		this.popup.classList.remove("active")
+		document.removeEventListener("keydown", this.keyHandlerBound)
+		document.removeEventListener("keyup", this.keyHandlerBound)
 	}
 	setSize(width, height) {
 		if (width == this.width && height == this.height) {
@@ -356,6 +458,7 @@ class ImageEditor {
 			this.saveImage() // We've reset the size of the image so inpainting is different
 		}
 		this.setBrush()
+		this.history.clear()
 	}
 	get tool() {
 		var tool_id = this.getOptionValue("tool")
@@ -382,6 +485,7 @@ class ImageEditor {
 			this.layers.background.ctx.rect(0, 0, this.width, this.height)
 			this.layers.background.ctx.fill()
 		}
+		this.history.clear()
 	}
 	saveImage() {
 		if (!this.inpainter) {
@@ -402,23 +506,29 @@ class ImageEditor {
 	getImg() { // a drop-in replacement of the drawingboard version
 		return this.layers.drawing.canvas.toDataURL()
 	}
-	clear() {
-		this.ctx_current.clearRect(0, 0, this.width, this.height)
+	runAction(action_id) {
+		var action = IMAGE_EDITOR_ACTIONS.find(a => a.id == action_id)
+		this.history.pushAction(action_id)
+		action.handler(this)
 	}
-	get eraser_active() {
-		return this.getOptionValue("tool") == "erase"
-	}
-	setBrush(layer = null) {
+	setBrush(layer = null, options = null) {
+		if (options == null) {
+			options = this.options
+		}
 		if (layer) {
 			layer.ctx.lineCap = "round"
 			layer.ctx.lineJoin = "round"
-			layer.ctx.lineWidth = this.getOptionValue("brush_size")
-			layer.ctx.fillStyle = this.getOptionValue("color")
-			layer.ctx.strokeStyle = this.getOptionValue("color")
-			var sharpness = parseInt(this.getOptionValue("sharpness") * this.getOptionValue("brush_size"))
+			layer.ctx.lineWidth = options.brush_size
+			layer.ctx.fillStyle = options.color
+			layer.ctx.strokeStyle = options.color
+			var sharpness = parseInt(options.sharpness * options.brush_size)
 			layer.ctx.filter = sharpness == 0 ? `none` : `blur(${sharpness}px)`
-			layer.ctx.globalAlpha = (1 - this.getOptionValue("opacity"))
-			layer.ctx.globalCompositeOperation = this.eraser_active ? "destination-out" : "source-over"
+			layer.ctx.globalAlpha = (1 - options.opacity)
+			layer.ctx.globalCompositeOperation = "source-over"
+			var tool = IMAGE_EDITOR_TOOLS.find(t => t.id == options.tool)
+			if (tool && tool.setBrush) {
+				tool.setBrush(editor, layer)
+			}
 		}
 		else {
 			Object.values([ "drawing", "overlay" ]).map(name => this.layers[name]).forEach(l => {
@@ -434,6 +544,35 @@ class ImageEditor {
 	}
 	get canvas_current() {
 		return this.layers.drawing.canvas
+	}
+	keyHandler(event) { // handles keybinds like ctrl+z, ctrl+y
+		if (!this.popup.classList.contains("active")) {
+			document.removeEventListener("keydown", this.keyHandlerBound)
+			document.removeEventListener("keyup", this.keyHandlerBound)
+			return // this catches if something else closes the window but doesnt properly unbind the key handler
+		}
+		console.log("i")
+
+		// keybindings
+		if (event.type == "keydown") {
+			if (event.key == "z" && event.ctrlKey) {
+				this.history.undo()
+			}
+			if (event.key == "y" && event.ctrlKey) {
+				this.history.redo()
+			}
+		}
+		
+		// dropper ctrl holding handler stuff
+		var dropper_active = this.temp_previous_tool != null;
+		if (dropper_active && !event.ctrlKey) {
+			this.selectOption("tool", IMAGE_EDITOR_TOOLS.findIndex(t => t.id == this.temp_previous_tool))
+			this.temp_previous_tool = null
+		}
+		else if (!dropper_active && event.ctrlKey) {
+			this.temp_previous_tool = this.getOptionValue("tool")
+			this.selectOption("tool", IMAGE_EDITOR_TOOLS.findIndex(t => t.id == "colorpicker"))
+		}
 	}
 	mouseHandler(event) {
 		var bbox = this.layers.overlay.canvas.getBoundingClientRect()
@@ -460,12 +599,14 @@ class ImageEditor {
 			this.drawing = true
 			this.tool.begin(this, this.ctx_current, x, y)
 			this.tool.begin(this, this.ctx_overlay, x, y, true)
+			this.history.editBegin(x, y)
 		}
 		if (type == "mouseup" || type == "mousemove") {
 			if (this.drawing) {
 				if (x > 0 && y > 0) {
 					this.tool.move(this, this.ctx_current, x, y)
 					this.tool.move(this, this.ctx_overlay, x, y, true)
+					this.history.editMove(x, y)
 				}
 			}
 		}
@@ -474,19 +615,7 @@ class ImageEditor {
 				this.drawing = false
 				this.tool.end(this, this.ctx_current, x, y)
 				this.tool.end(this, this.ctx_overlay, x, y, true)
-			}
-		}
-
-		// cursor-icon stuff
-		if ([ "mouseenter", "mousemove", "keydown", "keyup" ].includes(type)) {
-			var dropper_active = this.temp_previous_tool != null;
-			if (dropper_active && !event.ctrlKey) {
-				this.selectOption("tool", IMAGE_EDITOR_TOOLS.findIndex(t => t.id == this.temp_previous_tool))
-				this.temp_previous_tool = null
-			}
-			else if (!dropper_active && event.ctrlKey) {
-				this.temp_previous_tool = this.getOptionValue("tool")
-				this.selectOption("tool", IMAGE_EDITOR_TOOLS.findIndex(t => t.id == "colorpicker"))
+				this.history.editEnd(x, y)
 			}
 		}
 	}
