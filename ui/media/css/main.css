@@ -1002,3 +1002,11 @@ button:active {
 button#save-system-settings-btn {
     padding: 4pt 8pt;
 }
+div#model-tokens-section {
+    display: none;
+}
+div#model-tokens-section button{
+    margin-top: 1px;
+    margin-bottom: 2px;
+}
+

@@ -7,6 +7,7 @@ class sduiTab {
         this.label = label
         this.icon = icon
         this.render()
+	this.onactive = function() {} 
     }
 
     setContent(content) {
@@ -26,7 +27,10 @@ class sduiTab {
         `)
         this.content = document.querySelector(`#tab-content-${this.name}`)
         linkTabContents(document.querySelector(`#tab-${this.name}`))
+	document.querySelector(`#tab-${this.name}`).addEventListener('click', e => { this.onactive() } )
     }
+    
+    
 }
 
 let models=null;
@@ -35,7 +39,10 @@ let models=null;
 
     let tab = new sduiTab('modelmgr', "Model Manager", "fa-folder-tree")
     let token = {prefix:{},suffix:{}} 
+    let modelTokensSection = document.querySelector('#model-tokens-section')
+    let modelTokensContent = document.querySelector('#model-tokens-content')
     let t = localStorage.getItem('modelToken')
+
     if (t!=null) {
         token = JSON.parse(t)
     }
@@ -51,16 +58,14 @@ let models=null;
 	content += `<div id="modelmgr-sd">`
 
         content += '<h4><i class="fa-regular fa-folder-open icon"></i> Stable Diffusion Models</h4>'
-        content += '<button id="modelmgr-sd-add" class="primaryButton">Add model</button>'
+        content += '<button id="modelmgr-sd-add" class="primaryButton">Download model</button>'
         models["options"]["stable-diffusion"].forEach( (m) => { 
             content += `
 	       <div class="panel-box">
 	         <div><i class="fa fa-file-code icon"></i> ${m}</div>
 	         <div style="padding-left:2em;">
-	           <table>
-                     <tr><th><i class="fa fa-backward-step icon"></i> Prefix token:</th><td><input size="25" data-model="${m}" data-type="prefix" value="${token["prefix"][m] || ""}"><td></tr>
-                     <tr><th><i class="fa fa-forward-step icon"></i> Suffix token:</th><td><input size="25" data-model="${m}" data-type="suffix"i value="${token["suffix"][m] || ""}"><td></tr>
-	           </table>
+		   <label><i class="fa fa-bars-staggered"></i> Trained tokens</label><br/>
+		   <textarea data-model="${m}" style="width:100%;">${token[m]}</textarea>
 	         </div>
 	       </div>
 	    `
@@ -71,29 +76,51 @@ let models=null;
         // TODO Other models
         content += `</div>`
         tab.setContent(content)
+
+        document.querySelectorAll('#modelmgr-sd textarea').forEach( element => { 
+	    element.onkeyup = event => {
+	        element.style.height = "1px";
+	        element.style.height = (15 + element.scrollHeight) + "px";
+            }
+	})
+	tab.onactive= function() { 
+	    document.querySelectorAll('#modelmgr-sd textarea').forEach( element => { element.onkeyup() } )
+	}
     }
 
     function addModelToken(prompts) { 
         let model = stableDiffusionModelField.value
 	let prefix = ""
 	let suffix = ""
-	if( token["prefix"][model] != "") {
+	if (token["prefix"][model] != "") {
 	    prefix = token["prefix"][model] + ", "
 	}
-	if( token["suffix"][model] != "") {
+	if (token["suffix"][model] != "") {
 	    suffix = ", " + token["suffix"][model]
 	}
 
         return prompts.map( x => prefix + x + suffix )
     }
 
+    async function updateModelTokenSection() {
+        let model = stableDiffusionModelField.value
+	if (token[model] == "") {
+	    modelTokensSection.style.display="none";
+	} else {
+	    modelTokensContent.innerHTML=token[model].split('\n').map( a => "<button>"+a+"</button> ").join('')
+	    modelTokensContent.querySelectorAll('button').forEach( b => { console.log(b); b.addEventListener('click', e => { typeInTextarea(b.textContent, promptField)}) }) 
+	    modelTokensSection.style.display="block";
+	}
+    }
+
     await updateModels()
+    await updateModelTokenSection()
 
     document.querySelector('#modelmgr-sd').onchange = function() {
-         document.querySelectorAll('#modelmgr-sd input').forEach( i => {
-             token[i.dataset.type][i.dataset.model] = i.value
-         })
-         localStorage.setItem('modelToken', JSON.stringify(token))
+        document.querySelectorAll('#modelmgr-sd textarea').forEach( i => {
+            token[i.dataset.model] = i.value
+        })
+        localStorage.setItem('modelToken', JSON.stringify(token))
     }
 
     document.querySelector('#modelmgr-sd-add').onclick = async function() {
@@ -126,8 +153,7 @@ let models=null;
 	await updateModels()
     }
 
-
-    PLUGINS['GET_PROMPTS_HOOK'].push(addModelToken)
+    stableDiffusionModelField.addEventListener('change', updateModelTokenSection)
 
 })()
 
