@@ -238,7 +238,8 @@ function refreshTagsList() {
 function toggleCardState(modifierName, makeActive) {
     document.querySelector('#editor-modifiers').querySelectorAll('.modifier-card').forEach(card => {
         const name = card.querySelector('.modifier-card-label').innerText
-        if (trimModifiers(modifierName) == trimModifiers(name)) {
+        if (   trimModifiers(modifierName) == trimModifiers(name)
+            || trimModifiers(modifierName) == 'by ' + trimModifiers(name)) {
             if(makeActive) {
                 card.classList.add(activeCardClass)
                 card.querySelector('.modifier-card-image-overlay').innerText = '-'
