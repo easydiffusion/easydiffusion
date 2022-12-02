@@ -58,7 +58,7 @@ const IMAGE_EDITOR_TOOLS = [
 		id: "erase",
 		name: "Erase",
 		icon: "fa-solid fa-eraser",
-		cursor: "url(/media/images/fa-eraser.png) 0 6, pointer",
+		cursor: "url(/media/images/fa-eraser.png) 0 18, pointer",
 		begin: defaultToolBegin,
 		move: (editor, ctx, x, y, is_overlay = false) => {
 			ctx.lineTo(x, y)
