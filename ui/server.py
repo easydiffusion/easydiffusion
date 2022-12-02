@@ -7,6 +7,7 @@ import traceback
 
 import sys
 import os
+import socket
 import picklescan.scanner
 import rich
 
@@ -305,6 +306,11 @@ def getUIPlugins():
 
     return plugins
 
+def getIPConfig():
+    ips = socket.gethostbyname_ex(socket.gethostname())
+    ips[2].append(ips[0])
+    return ips[2]
+
 @app.get('/get/{key:path}')
 def read_web_data(key:str=None):
     if not key: # /get without parameters, stable-diffusion easter egg.
@@ -314,11 +320,14 @@ def read_web_data(key:str=None):
         if config is None:
             config = APP_CONFIG_DEFAULTS
         return JSONResponse(config, headers=NOCACHE_HEADERS)
-    elif key == 'devices':
+    elif key == 'system_info':
         config = getConfig()
-        devices = task_manager.get_devices()
-        devices['config'] = config.get('render_devices', "auto")
-        return JSONResponse(devices, headers=NOCACHE_HEADERS)
+        system_info = {
+            'devices': task_manager.get_devices(),
+            'hosts': getIPConfig(),
+        }
+        system_info['devices']['config'] = config.get('render_devices', "auto")
+        return JSONResponse(system_info, headers=NOCACHE_HEADERS)
     elif key == 'models':
         return JSONResponse(getModels(), headers=NOCACHE_HEADERS)
     elif key == 'modifiers': return FileResponse(os.path.join(SD_UI_DIR, 'modifiers.json'), headers=NOCACHE_HEADERS)

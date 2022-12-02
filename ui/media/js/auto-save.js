@@ -56,6 +56,9 @@ async function initSettings() {
         if (!element) {
             console.error(`Missing settings element ${id}`)
         }
+        if (id in SETTINGS) { // don't create it again
+            return
+        }
         SETTINGS[id] = {
             key: id,
             element: element,

@@ -226,6 +226,7 @@ let confirmDangerousActionsField = document.querySelector("#confirm_dangerous_ac
 
 let saveSettingsBtn = document.querySelector('#save-system-settings-btn')
 
+
 async function changeAppConfig(configDelta) {
     try {
         let res = await fetch('/app_config', {
@@ -343,11 +344,42 @@ async function getDiskPath() {
     }
 }
 
-async function getDevices() {
+function setDeviceInfo(devices) {
+    let cpu = devices.all.cpu.name
+    let allGPUs = Object.keys(devices.all).filter(d => d != 'cpu')
+    let activeGPUs = Object.keys(devices.active)
+
+    function ID_TO_TEXT(d) {
+        let info = devices.all[d]
+        if ("mem_free" in info && "mem_total" in info) {
+            return `${info.name} <small>(${d}) (${info.mem_free.toFixed(1)}Gb free / ${info.mem_total.toFixed(1)} Gb total)</small>`
+        } else {
+            return `${info.name} <small>(${d}) (no memory info)</small>`
+        }
+    }
+
+    allGPUs = allGPUs.map(ID_TO_TEXT)
+    activeGPUs = activeGPUs.map(ID_TO_TEXT)
+
+    let systemInfoEl = document.querySelector('#system-info')
+    systemInfoEl.querySelector('#system-info-cpu').innerText = cpu
+    systemInfoEl.querySelector('#system-info-gpus-all').innerHTML = allGPUs.join('</br>')
+    systemInfoEl.querySelector('#system-info-rendering-devices').innerHTML = activeGPUs.join('</br>')
+}
+
+function setHostInfo(hosts) {
+    let port = listenPortField.value
+    hosts = hosts.map(addr => `http://${addr}:${port}/`).map(url => `<div><a href="${url}">${url}</a></div>`)
+    document.querySelector('#system-info-server-hosts').innerHTML = hosts.join('')
+}
+
+async function getSystemInfo() {
     try {
-        const res = await SD.getDevices()
-        let allDeviceIds = Object.keys(res['all']).filter(d => d !== 'cpu')
-        let activeDeviceIds = Object.keys(res['active']).filter(d => d !== 'cpu')
+        const res = await SD.getSystemInfo()
+        let devices = res['devices']
+
+        let allDeviceIds = Object.keys(devices['all']).filter(d => d !== 'cpu')
+        let activeDeviceIds = Object.keys(devices['active']).filter(d => d !== 'cpu')
 
         if (activeDeviceIds.length === 0) {
             useCPUField.checked = true
@@ -365,11 +397,11 @@ async function getDevices() {
             useCPUField.disabled = true // no compatible GPUs, so make the CPU mandatory
         }
 
-        autoPickGPUsField.checked = (res['config'] === 'auto')
+        autoPickGPUsField.checked = (devices['config'] === 'auto')
 
         useGPUsField.innerHTML = ''
         allDeviceIds.forEach(device => {
-            let deviceName = res['all'][device]['name']
+            let deviceName = devices['all'][device]['name']
             let deviceOption = `<option value="${device}">${deviceName} (${device})</option>`
             useGPUsField.insertAdjacentHTML('beforeend', deviceOption)
         })
@@ -380,6 +412,9 @@ async function getDevices() {
         } else {
             $('#use_gpus').val(activeDeviceIds)
         }
+
+        setDeviceInfo(devices)
+        setHostInfo(res['hosts'])
     } catch (e) {
         console.log('error fetching devices', e)
     }

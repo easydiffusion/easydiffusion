@@ -25,6 +25,7 @@ const PLUGINS = {
      * })
      */
     IMAGE_INFO_BUTTONS: [],
+    MODIFIERS_LOAD: [],
     TASK_CREATE: [],
     OUTPUTS_FORMATS: new ServiceContainer(
         function png() { return (reqBody) => new SD.RenderTask(reqBody) }

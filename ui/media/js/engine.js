@@ -1008,23 +1008,35 @@
         }
     }
 
-    async function getDevices() {
-        let devices = {
-            all: {},
-            active: {},
+    const getSystemInfo = debounce(async function() {
+        let systemInfo = {
+            devices: {
+                all: {},
+                active: {},
+            },
+            hosts: []
         }
         try {
-            const res = await fetch('/get/devices')
+            const res = await fetch('/get/system_info')
             if (!res.ok) {
                 console.error('Invalid response fetching devices', res.statusText)
-                return devices
+                return systemInfo
             }
-            devices = await res.json()
+            systemInfo = await res.json()
         } catch (e) {
-            console.error('error fetching devices', e)
+            console.error('error fetching system info', e)
         }
-        return devices
+        return systemInfo
+    }, 250, true)
+    async function getDevices() {
+        let systemInfo = getSystemInfo()
+        return systemInfo.devices
     }
+    async function getHosts() {
+        let systemInfo = getSystemInfo()
+        return systemInfo.hosts
+    }
+
     async function getModels() {
         let models = {
             'stable-diffusion': [],
@@ -1103,18 +1115,18 @@
 
         const serverCapacity = 2
         for (let [task, generator] of task_queue.entries()) {
+            const cTsk = completedTasks.find((item) => item.generator === generator)
+            if (cTsk?.promise?.rejectReason || task.hasFailed) {
+                eventSource.fireEvent(EVENT_TASK_ERROR, {task, generator, reason: cTsk?.promise?.rejectReason || task.exception })
+                task_queue.delete(task)
+                continue
+            }
             if (task.isCompleted || task.isStopped) {
                 const eventEndArgs = {task, generator}
                 if (task.isStopped) {
                     eventEndArgs.stopped = true
                 }
                 eventSource.fireEvent(EVENT_TASK_END, eventEndArgs)
-                task_queue.delete(task)
-                continue
-            }
-            const cTsk = completedTasks.find((item) => item.generator === generator)
-            if (task.hasFailed || cTsk) {
-                eventSource.fireEvent(EVENT_TASK_ERROR, {task, generator, reason: task.exception || cTsk.promise.rejectReason})
                 task_queue.delete(task)
                 continue
             }
@@ -1191,8 +1203,12 @@
 
         isServerAvailable,
 
-        getDevices: debounce(getDevices, 250, true),
-        getModels: debounce(getModels, 250, true),
+        getSystemInfo,
+        getDevices,
+        getHosts,
+
+        getModels,
+
         render: (...args) => RenderTask.run(...args),
         filter: (...args) => FilterTask.run(...args),
         waitUntil,

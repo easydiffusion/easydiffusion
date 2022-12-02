@@ -30,6 +30,9 @@
     --primary-button-border: none;
     --input-switch-padding: 1px;
     --input-height: 18px;
+
+    /* Main theme color, hex color fallback. */
+    --theme-color-fallback: #673AB6;
 }
 
 .theme-light {
@@ -44,6 +47,8 @@
     --input-text-color: black;
     --input-background-color: #f8f9fa; 
     --input-border-color: grey; 
+
+    --theme-color-fallback: #aaaaaa;
 }
 
 .theme-discord {
@@ -58,6 +63,8 @@
     --input-border-size: 2px; 
     --input-background-color: #202225; 
     --input-border-color: var(--input-background-color); 
+
+    --theme-color-fallback: #202225;
 }
 
 .theme-cool-blue {
@@ -71,8 +78,10 @@
 	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (3 * var(--value-step))));
 
     --input-background-color: var(--background-color3);
-    
+
     --accent-hue: 212;
+
+    --theme-color-fallback: #0056b8;
 }
 
 
@@ -87,6 +96,8 @@
 	--background-color4: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (3 * var(--value-step))));
 
     --input-background-color: var(--background-color3);
+
+    --theme-color-fallback: #5300b8;
 }
 
 .theme-super-dark {
@@ -101,6 +112,8 @@
 
     --input-background-color: var(--background-color3);
     --input-border-size: 0px;
+
+    --theme-color-fallback: #000000;
 }
 
 .theme-wild {
@@ -117,9 +130,10 @@
     
     --input-border-size: 1px; 
     --input-background-color: hsl(222, var(--main-saturation), calc(var(--value-base) - (2 * var(--value-step))));
-	--input-text-color: red;
-	--input-border-color: green;
+    --input-text-color: #FF0000;
+    --input-border-color: #005E05;
 }
+
 
 .theme-gnomie {
     --background-color1: #242424;
@@ -136,6 +150,8 @@
     --input-background-color: #2a2a2a; 
     --input-border-size: 0px; 
     --input-border-color: var(--input-background-color); 
+
+    --theme-color-fallback: #2168bf;
 }
 
 .theme-gnomie .panel-box {
@@ -143,4 +159,3 @@
     box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
 }
-
