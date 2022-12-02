@@ -5,6 +5,7 @@
 - **Automatic scanning for malicious model files** - using `picklescan`. Thanks @JeLuf
 - **Support for custom VAE models**. You can place your VAE files in the `models/vae` folder, and refresh the browser page to use them. More info: https://github.com/cmdr2/stable-diffusion-ui/wiki/VAE-Variational-Auto-Encoder
 - **Experimental support for multiple GPUs!** It should work automatically. Just open one browser tab per GPU, and spread your tasks across your GPUs. For e.g. open our UI in two browser tabs if you have two GPUs. You can customize which GPUs it should use in the "Settings" tab, otherwise let it automatically pick the best GPUs. Thanks @madrang . More info: https://github.com/cmdr2/stable-diffusion-ui/wiki/Run-on-Multiple-GPUs
+- **Image Editor** - for drawing simple images for guiding the AI. Thanks @mdiller
 - **Cleaner UI design** - Show settings and help in new tabs, instead of dropdown popups (which were buggy). Thanks @mdiller
 - **Progress bar.** Thanks @mdiller
 - **Custom Image Modifiers** - You can now save your custom image modifiers! Your saved modifiers can include special characters like `{}, (), [], |`
@@ -19,8 +20,24 @@
 - Configuration to prevent the browser from opening on startup
 - Lots of minor bug fixes
 - A `What's New?` tab in the UI
+- Ask for a confimation before clearing the results pane or stopping a render task. The dialog can be skipped by holding down the shift key while clicking on the button.
+- Show the network addresses of the server in the systems setting dialog
 
 ### Detailed changelog
+* 2.4.18 - 1 Dec 2022 - Image Editor, for drawing simple images for guiding the AI. Thanks @mdiller
+* 2.4.18 - 1 Dec 2022 - Disable an image modifier temporarily by right-clicking it. Thanks @patriceac
+* 2.4.17 - 30 Nov 2022 - Scroll to generated image. Thanks @patriceac
+* 2.4.17 - 30 Nov 2022 - Show the network addresses of the server in the systems setting dialog. Thanks @JeLuf
+* 2.4.17 - 30 Nov 2022 - Fix a bug where GFPGAN wouldn't work properly when multiple GPUs tried to run it at the same time. Thanks @madrang
+* 2.4.17 - 30 Nov 2022 - Confirm before stopping or clearing all the tasks. Thanks @JeLuf
+* 2.4.16 - 29 Nov 2022 - Bug fixes for SD 2.0 - remove the need for patching, default to SD 1.4 model if trying to load an SD2 model in SD1.4.
+* 2.4.15 - 25 Nov 2022 - Experimental support for SD 2.0. Uses lots of memory, not optimized, probably GPU-only.
+* 2.4.14 - 22 Nov 2022 - Change the backend to a custom fork of Stable Diffusion
+* 2.4.13 - 21 Nov 2022 - Change the modifier weight via mouse wheel, drag to reorder selected modifiers, and some more modifier-related fixes. Thanks @patriceac
+* 2.4.12 - 21 Nov 2022 - Another fix for improving how long images take to generate. Reduces the time taken for an enqueued task to start processing.
+* 2.4.11 - 21 Nov 2022 - Installer improvements: avoid crashing if the username contains a space or special characters, allow moving/renaming the folder after installation on Windows, whitespace fix on git apply
+* 2.4.11 - 21 Nov 2022 - Validate inputs before submitting the Image request
+* 2.4.11 - 19 Nov 2022 - New system settings to manage the network config (port number and whether to only listen on localhost)
 * 2.4.11 - 19 Nov 2022 - Address a regression in how long images take to generate. Use the previous code for moving a model to CPU. This improves things by a second or two per image, but we still have a regression (investigating).
 * 2.4.10 - 18 Nov 2022 - Textarea for negative prompts. Thanks @JeLuf
 * 2.4.10 - 18 Nov 2022 - Improved design for Settings, and rounded toggle buttons instead of checkboxes for a more modern look. Thanks @mdiller

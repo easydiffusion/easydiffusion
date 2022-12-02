@@ -1,0 +1,8 @@
+{
+  "name": "Stable Diffusion UI",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay"
+  ],
+  "theme_color": "#000000"
+}

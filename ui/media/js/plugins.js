@@ -25,7 +25,8 @@ const PLUGINS = {
      * })
      */
     GET_PROMPTS_HOOK: [],
-    IMAGE_INFO_BUTTONS: []
+    IMAGE_INFO_BUTTONS: [],
+    MODIFIERS_LOAD: []
 }
 
 async function loadUIPlugins() {

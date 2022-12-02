@@ -1,5 +1,8 @@
 @echo off
 
+@REM Caution, this file will make your eyes and brain bleed. It's such an unholy mess.
+@REM Note to self: Please rewrite this in Python. For the sake of your own sanity.
+
 @copy sd-ui-files\scripts\on_env_start.bat scripts\ /Y
 @copy sd-ui-files\scripts\bootstrap.bat scripts\ /Y
 
@@ -7,16 +10,24 @@ if exist "%cd%\profile" (
     set USERPROFILE=%cd%\profile
 )
 
+@mkdir tmp
+@set TMP=%cd%\tmp
+@set TEMP=%cd%\tmp
+
 @rem activate the installer env
 call conda activate
-
-@REM Caution, this file will make your eyes and brain bleed. It's such an unholy mess.
-@REM Note to self: Please rewrite this in Python. For the sake of your own sanity.
+@if "%ERRORLEVEL%" NEQ "0" (
+       @echo. & echo "Error activating conda for Stable Diffusion. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
+       pause
+       exit /b
+)
 
 @REM remove the old version of the dev console script, if it's still present
 if exist "Open Developer Console.cmd" del "Open Developer Console.cmd"
 
 @call python -c "import os; import shutil; frm = 'sd-ui-files\\ui\\hotfix\\9c24e6cd9f499d02c4f21a033736dabd365962dc80fe3aeb57a8f85ea45a20a3.26fead7ea4f0f843f6eb4055dfd25693f1a71f3c6871b184042d4b126244e142'; dst = os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'transformers', '9c24e6cd9f499d02c4f21a033736dabd365962dc80fe3aeb57a8f85ea45a20a3.26fead7ea4f0f843f6eb4055dfd25693f1a71f3c6871b184042d4b126244e142'); shutil.copyfile(frm, dst) if os.path.exists(dst) else print(''); print('Hotfixed broken JSON file from OpenAI');"
+
+if NOT DEFINED test_sd2 set test_sd2=N
 
 @>nul findstr /m "sd_git_cloned" scripts\install_status.txt
 @if "%ERRORLEVEL%" EQU "0" (
@@ -24,18 +35,23 @@ if exist "Open Developer Console.cmd" del "Open Developer Console.cmd"
 
     @cd stable-diffusion
 
+    @call git remote set-url origin https://github.com/easydiffusion/diffusion-kit.git
+
     @call git reset --hard
     @call git pull
-    @call git -c advice.detachedHead=false checkout f6cfebffa752ee11a7b07497b8529d5971de916c
 
-    @call git apply ..\ui\sd_internal\ddim_callback.patch
-    @call git apply ..\ui\sd_internal\env_yaml.patch
+    if "%test_sd2%" == "N" (
+        @call git -c advice.detachedHead=false checkout 7f32368ed1030a6e710537047bacd908adea183a
+    )
+    if "%test_sd2%" == "Y" (
+        @call git -c advice.detachedHead=false checkout 5d647c5459f4cd790672512222bc41903c01bb71
+    )
 
     @cd ..
 ) else (
     @echo. & echo "Downloading Stable Diffusion.." & echo.
 
-    @call git clone https://github.com/basujindal/stable-diffusion.git && (
+    @call git clone https://github.com/easydiffusion/diffusion-kit.git stable-diffusion && (
         @echo sd_git_cloned >> scripts\install_status.txt
     ) || (
         @echo "Error downloading Stable Diffusion. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
@@ -44,10 +60,7 @@ if exist "Open Developer Console.cmd" del "Open Developer Console.cmd"
     )
 
     @cd stable-diffusion
-    @call git -c advice.detachedHead=false checkout f6cfebffa752ee11a7b07497b8529d5971de916c
-
-    @call git apply ..\ui\sd_internal\ddim_callback.patch
-    @call git apply ..\ui\sd_internal\env_yaml.patch
+    @call git -c advice.detachedHead=false checkout 7f32368ed1030a6e710537047bacd908adea183a
 
     @cd ..
 )
@@ -68,8 +81,6 @@ if exist "Open Developer Console.cmd" del "Open Developer Console.cmd"
     @set PYTHONNOUSERSITE=1
 
     set USERPROFILE=%cd%\profile
-    set TMP=%cd%\tmp
-    set TEMP=%cd%\tmp
 
     set PYTHONPATH=%cd%;%cd%\env\lib\site-packages
 
@@ -80,12 +91,6 @@ if exist "Open Developer Console.cmd" del "Open Developer Console.cmd"
     )
 
     @call conda activate .\env
-
-    @call conda install -c conda-forge -y --prefix env antlr4-python3-runtime=4.8 || (
-        @echo. & echo "Error installing antlr4-python3-runtime for Stable Diffusion. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
-        pause
-        exit /b
-    )
 
     for /f "tokens=*" %%a in ('python -c "import torch; import ldm; import transformers; import numpy; import antlr4; print(42)"') do if "%%a" NEQ "42" (
         @echo. & echo "Dependency test failed! Error installing the packages necessary for Stable Diffusion. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
@@ -107,22 +112,8 @@ set PATH=C:\Windows\System32;%PATH%
     @set PYTHONNOUSERSITE=1
 
     set USERPROFILE=%cd%\profile
-    set TMP=%cd%\tmp
-    set TEMP=%cd%\tmp
 
     set PYTHONPATH=%cd%;%cd%\env\lib\site-packages
-
-    @call pip install -e git+https://github.com/TencentARC/GFPGAN#egg=GFPGAN || (
-        @echo. & echo "Error installing the packages necessary for GFPGAN (Face Correction). Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
-        pause
-        exit /b
-    )
-
-    @call pip install basicsr==1.4.2 || (
-        @echo. & echo "Error installing the basicsr package necessary for GFPGAN (Face Correction). Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
-        pause
-        exit /b
-    )
 
     for /f "tokens=*" %%a in ('python -c "from gfpgan import GFPGANer; print(42)"') do if "%%a" NEQ "42" (
         @echo. & echo "Dependency test failed! Error installing the packages necessary for GFPGAN (Face Correction). Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
@@ -142,16 +133,8 @@ set PATH=C:\Windows\System32;%PATH%
     @set PYTHONNOUSERSITE=1
 
     set USERPROFILE=%cd%\profile
-    set TMP=%cd%\tmp
-    set TEMP=%cd%\tmp
 
     set PYTHONPATH=%cd%;%cd%\env\lib\site-packages
-
-    @call pip install -e git+https://github.com/xinntao/Real-ESRGAN#egg=realesrgan || (
-        @echo. & echo "Error installing the packages necessary for ESRGAN (Resolution Upscaling). Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
-        pause
-        exit /b
-    )
 
     for /f "tokens=*" %%a in ('python -c "from basicsr.archs.rrdbnet_arch import RRDBNet; from realesrgan import RealESRGANer; print(42)"') do if "%%a" NEQ "42" (
         @echo. & echo "Dependency test failed! Error installing the packages necessary for ESRGAN (Resolution Upscaling). Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
@@ -171,8 +154,6 @@ set PATH=C:\Windows\System32;%PATH%
     @set PYTHONNOUSERSITE=1
 
     set USERPROFILE=%cd%\profile
-    set TMP=%cd%\tmp
-    set TEMP=%cd%\tmp
 
     set PYTHONPATH=%cd%;%cd%\env\lib\site-packages
 
@@ -369,7 +350,9 @@ echo. > "..\models\vae\Put your VAE files here.txt"
     )
 )
 
-
+if "%test_sd2%" == "Y" (
+    @call pip install open_clip_torch==2.0.2
+)
 
 @>nul findstr /m "sd_install_complete" ..\scripts\install_status.txt
 @if "%ERRORLEVEL%" NEQ "0" (
@@ -392,6 +375,14 @@ call python --version
 @cd ..
 @set SD_UI_PATH=%cd%\ui
 @cd stable-diffusion
+
+@rem
+@rem Rewrite easy-install.pth. This fixes the installation if the user has relocated the SDUI installation
+@rem
+>env\Lib\site-packages\easy-install.pth echo %cd%\src\taming-transformers
+>>env\Lib\site-packages\easy-install.pth echo %cd%\src\clip
+>>env\Lib\site-packages\easy-install.pth echo %cd%\src\gfpgan
+>>env\Lib\site-packages\easy-install.pth echo %cd%\src\realesrgan
 
 @if NOT DEFINED SD_UI_BIND_PORT set SD_UI_BIND_PORT=9000
 @if NOT DEFINED SD_UI_BIND_IP set SD_UI_BIND_IP=0.0.0.0

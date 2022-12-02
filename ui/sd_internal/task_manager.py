@@ -268,7 +268,7 @@ def thread_render(device):
             return
         task = thread_get_next_task()
         if task is None:
-            time.sleep(1)
+            time.sleep(0.05)
             continue
         if task.error is not None:
             print(task.error)
@@ -283,45 +283,26 @@ def thread_render(device):
         print(f'Session {task.request.session_id} starting task {id(task)} on {runtime.thread_data.device_name}')
         if not task.lock.acquire(blocking=False): raise Exception('Got locked task from queue.')
         try:
-            if runtime.thread_data.device == 'cpu' and is_alive() > 1:
-                # CPU is not the only device. Keep track of active time to unload resources later.
-                runtime.thread_data.lastActive = time.time()
-            # Open data generator.
-            res = runtime.mk_img(task.request)
-            if current_model_path == task.request.use_stable_diffusion_model:
-                current_state = ServerStates.Rendering
-            else:
+            if runtime.is_model_reload_necessary(task.request):
                 current_state = ServerStates.LoadingModel
-            # Start reading from generator.
-            dataQueue = None
-            if task.request.stream_progress_updates:
-                dataQueue = task.buffer_queue
-            for result in res:
-                if current_state == ServerStates.LoadingModel:
-                    current_state = ServerStates.Rendering
-                    current_model_path = task.request.use_stable_diffusion_model
-                    current_vae_path = task.request.use_vae_model
+                runtime.reload_model()
+                current_model_path = task.request.use_stable_diffusion_model
+                current_vae_path = task.request.use_vae_model
+
+            def step_callback():
+                global current_state_error
+
                 if isinstance(current_state_error, SystemExit) or isinstance(current_state_error, StopAsyncIteration) or isinstance(task.error, StopAsyncIteration):
                     runtime.thread_data.stop_processing = True
                     if isinstance(current_state_error, StopAsyncIteration):
                         task.error = current_state_error
                         current_state_error = None
                         print(f'Session {task.request.session_id} sent cancel signal for task {id(task)}')
-                if dataQueue:
-                    dataQueue.put(result)
-                if isinstance(result, str):
-                    result = json.loads(result)
-                task.response = result
-                if 'output' in result:
-                    for out_obj in result['output']:
-                        if 'path' in out_obj:
-                            img_id = out_obj['path'][out_obj['path'].rindex('/') + 1:]
-                            task.temp_images[int(img_id)] = runtime.thread_data.temp_images[out_obj['path'][11:]]
-                        elif 'data' in out_obj:
-                            buf = runtime.base64_str_to_buffer(out_obj['data'])
-                            task.temp_images[result['output'].index(out_obj)] = buf
-                # Before looping back to the generator, mark cache as still alive.
-                task_cache.keep(task.request.session_id, TASK_TTL)
+
+                    task_cache.keep(task.request.session_id, TASK_TTL)
+
+            current_state = ServerStates.Rendering
+            task.response = runtime.mk_img(task.request, task.buffer_queue, task.temp_images, step_callback)
         except Exception as e:
             task.error = e
             print(traceback.format_exc())
