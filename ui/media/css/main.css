@@ -614,18 +614,25 @@ input[type="file"] {
 button,
 input::file-selector-button,
 .button { 
-    padding: 2px 4px;
-    border-radius: 4px;
+    padding: 6px;
+    border-radius: var(--input-border-radius);
     background: var(--button-color);
     color: var(--button-text-color);
     border: var(--button-border);
+    height: 24px;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    box-shadow: 2px 2px 1px 1px #00000088;
 }
 
 .button i {
     margin-right: 8px;
+}
+
+button:hover,
+.button:hover {
+  background: var(--background-color4)
 }
 
 input::file-selector-button {
@@ -1028,11 +1035,6 @@ i.active {
 #system-info label {
     float: right;
     font-weight: bold;
-}
-button:hover,
-.button:hover {
-  transition-duration: 0.1s;
-  background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
 }
 
 button:active {

@@ -658,5 +658,3 @@ document.getElementById("init_image_button_inpaint").addEventListener("click", (
 	imageInpainter.show()
 })
 
-
-imageEditor.show()
