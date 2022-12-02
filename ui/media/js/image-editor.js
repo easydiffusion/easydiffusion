@@ -168,7 +168,7 @@ var IMAGE_EDITOR_SECTIONS = [
 		name: "opacity",
 		title: "Opacity",
 		default: 0,
-		options: [ 0, 0.25, 0.5, 0.75, 1 ],
+		options: [ 0, 0.2, 0.4, 0.6, 0.8 ],
 		initElement: (element, option) => {
 			element.style.background = `repeating-conic-gradient(rgba(0, 0, 0, ${option}) 0% 25%, rgba(255, 255, 255, ${option}) 0% 50%) 50% / 10px 10px`
 		}
