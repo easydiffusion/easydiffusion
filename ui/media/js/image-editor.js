@@ -4,13 +4,6 @@ const IMAGE_EDITOR_MAX_SIZE = 800
 
 const IMAGE_EDITOR_BUTTONS = [
 	{
-		name: "Clear",
-		icon: "fa-solid fa-xmark",
-		handler: editor => {
-			editor.clear()
-		}
-	},
-	{
 		name: "Cancel",
 		icon: "fa-regular fa-circle-xmark",
 		handler: editor => {
@@ -99,6 +92,17 @@ const IMAGE_EDITOR_TOOLS = [
 		},
 		move: (editor, ctx, x, y, is_overlay = false) => {},
 		end: (editor, ctx, x, y, is_overlay = false) => {}
+	}
+]
+
+const IMAGE_EDITOR_ACTIONS = [
+	{
+		id: "clear",
+		name: "Clear",
+		icon: "fa-solid fa-xmark",
+		handler: (editor) => {
+			editor.clear()
+		}
 	}
 ]
 
@@ -298,6 +302,21 @@ class ImageEditor {
 			buttonContainer.appendChild(element)
 			element.addEventListener("click", event => button.handler(this))
 		})
+		var actionsContainer = document.createElement("div")
+		var actionsTitle = document.createElement("h4")
+		actionsTitle.textContent = "Actions"
+		actionsContainer.appendChild(actionsTitle);
+		IMAGE_EDITOR_ACTIONS.forEach(action => {
+			var element = document.createElement("div")
+			var icon = document.createElement("i")
+			element.className = "image-editor-button button"
+			icon.className = action.icon
+			element.appendChild(icon)
+			element.append(action.name)
+			actionsContainer.appendChild(element)
+			element.addEventListener("click", event => action.handler(this))
+		})
+		this.popup.querySelector(".editor-controls-right").appendChild(actionsContainer)
 		this.popup.querySelector(".editor-controls-right").appendChild(buttonContainer)
 	}
 	show() {

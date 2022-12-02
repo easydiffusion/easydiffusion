@@ -198,3 +198,6 @@
 #image-editor .button {
 	display: flex;
 }
+#image-editor h4 {
+	text-align: left;
+}
