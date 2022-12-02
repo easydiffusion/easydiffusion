@@ -75,6 +75,7 @@ let models=null;
 
         // TODO Other models
         content += `</div>`
+	content += `<div id="modelmgr-civitai" class="popup"><div>Hello</div></div>`
         tab.setContent(content)
 
         document.querySelectorAll('#modelmgr-sd textarea').forEach( element => { 
