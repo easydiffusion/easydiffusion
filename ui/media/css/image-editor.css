@@ -85,8 +85,13 @@
 	opacity: 0;
 }
 
+.image_editor_tool .editor-options-container {
+	flex-wrap: wrap;
+}
+
 .image_editor_tool .editor-options-container > * {
 	padding: 2px;
+	flex: 50%;
 }
 
 .editor-controls-center {
@@ -106,16 +111,6 @@
 	position: absolute;
 	left: 0;
 	top: 0;
-}
-
-.editor-controls-center .cursor-icon {
-	position: absolute;
-	left: 0px;
-	right: 0px;
-	pointer-events: none;
-	opacity: 0;
-	width: 0px;
-	text-shadow: 0 0 5px black;
 }
 
 .editor-controls-right {
