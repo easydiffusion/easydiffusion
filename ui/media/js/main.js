@@ -61,6 +61,14 @@ let serverStatusColor = document.querySelector('#server-status-color')
 let serverStatusMsg = document.querySelector('#server-status-msg')
 
 
+document.querySelector('.drawing-board-control-navigation-back').innerHTML = '<i class="fa-solid fa-rotate-left"></i>'
+document.querySelector('.drawing-board-control-navigation-forward').innerHTML = '<i class="fa-solid fa-rotate-right"></i>'
+
+let maskResetButton = document.querySelector('.drawing-board-control-navigation-reset')
+maskResetButton.innerHTML = 'Clear'
+maskResetButton.style.fontWeight = 'normal'
+maskResetButton.style.fontSize = '10pt'
+
 let serverState = {'status': 'Offline', 'time': Date.now()}
 let bellPending = false
 
@@ -132,35 +140,6 @@ function isServerAvailable() {
     }
 }
 
-// shiftOrConfirm(e, prompt, fn)
-//   e      : MouseEvent
-//   prompt : Text to be shown as prompt. Should be a question to which "yes" is a good answer.
-//   fn     : function to be called if the user confirms the dialog or has the shift key pressed
-//
-// If the user had the shift key pressed while clicking, the function fn will be executed.
-// If the setting "confirm_dangerous_actions" in the system settings is disabled, the function 
-// fn will be executed.
-// Otherwise, a confirmation dialog is shown. If the user confirms, the function fn will also
-// be executed.
-function shiftOrConfirm(e, prompt, fn) {
-    e.stopPropagation()
-    if (e.shiftKey || !confirmDangerousActionsField.checked) {
-         fn(e)
-    } else {
-        $.confirm({
-            theme: 'modern',
-            title: prompt,
-            useBootstrap: false,
-            animateFromElement: false,
-            content: '<small>Tip: To skip this dialog, use shift-click or disable the "Confirm dangerous actions" setting in the Settings tab.</small>',
-            buttons: {
-                yes: () => { fn(e) },
-                cancel: () => {}
-            }
-        }); 
-    }
-}
-
 function logMsg(msg, level, outputMsg) {
     if (outputMsg.hasChildNodes()) {
         outputMsg.appendChild(document.createElement('br'))
@@ -191,6 +170,34 @@ function playSound() {
             console.warn("browser blocked autoplay")
         })
     }
+}
+function setSystemInfo(devices) {
+    let cpu = devices.all.cpu.name
+    let allGPUs = Object.keys(devices.all).filter(d => d != 'cpu')
+    let activeGPUs = Object.keys(devices.active)
+
+    function ID_TO_TEXT(d) {
+        let info = devices.all[d]
+        if ("mem_free" in info && "mem_total" in info) {
+            return `${info.name} <small>(${d}) (${info.mem_free.toFixed(1)}Gb free / ${info.mem_total.toFixed(1)} Gb total)</small>`
+        } else {
+            return `${info.name} <small>(${d}) (no memory info)</small>`
+        }
+    }
+
+    allGPUs = allGPUs.map(ID_TO_TEXT)
+    activeGPUs = activeGPUs.map(ID_TO_TEXT)
+
+    let systemInfo = `
+    <table>
+        <tr><td><label>Processor:</label></td><td class="value">${cpu}</td></tr>
+        <tr><td><label>Compatible Graphics Cards (all):</label></td><td class="value">${allGPUs.join('</br>')}</td></tr>
+        <tr><td></td><td>&nbsp;</td></tr>
+        <tr><td><label>Used for rendering 🔥:</label></td><td class="value">${activeGPUs.join('</br>')}</td></tr>
+    </table>`
+
+    let systemInfoEl = document.querySelector('#system-info')
+    systemInfoEl.innerHTML = systemInfo
 }
 
 async function healthCheck() {
@@ -226,7 +233,7 @@ async function healthCheck() {
                 break
         }
         if (serverState.devices) {
-            setDeviceInfo(serverState.devices)
+            setSystemInfo(serverState.devices)
         }
         serverState.time = Date.now()
     } catch (e) {
@@ -329,7 +336,11 @@ function onUseAsInputClick(req, img) {
     initImageSelector.value = null
     initImagePreview.src = imgData
 
+    initImagePreviewContainer.style.display = 'block'
+    inpaintingEditorContainer.style.display = 'none'
+    promptStrengthContainer.style.display = 'table-row'
     maskSetting.checked = false
+    samplerSelectionContainer.style.display = 'none'
 }
 
 function onDownloadImageClick(req, img) {
@@ -687,12 +698,6 @@ async function checkTasks() {
 
     const genSeeds = Boolean(typeof task.reqBody.seed !== 'number' || (task.reqBody.seed === task.seed && task.numOutputsTotal > 1))
     const startSeed = task.reqBody.seed || task.seed
-    
-    // Update the seed *before* starting the processing so it's retained if user stops the task
-    if (randomSeedField.checked) {
-        seedField.value = task.seed
-    }
-    
     for (let i = 0; i < task.batchCount; i++) {
         let newTask = task
         if (task.batchCount > 1) {
@@ -737,6 +742,10 @@ async function checkTasks() {
         if (task.outputMsg.innerText.toLowerCase().indexOf('error') === -1) {
             task.outputMsg.innerText = 'Task ended after ' + time + ' seconds'
         }
+    }
+
+    if (randomSeedField.checked) {
+        seedField.value = task.seed
     }
 
     currentTask = null
@@ -796,7 +805,7 @@ function getCurrentUserRequest() {
         //     newTask.reqBody.mask = maskImagePreview.src
         // }
         if (maskSetting.checked) {
-            newTask.reqBody.mask = imageInpainter.getImg()
+            newTask.reqBody.mask = inpaintingEditor.getImg()
         }
         newTask.reqBody.sampler = 'ddim'
     } else {
@@ -881,26 +890,24 @@ function createTask(task) {
     task['progressBar'] = taskEntry.querySelector('.progress-bar')
     task['stopTask'] = taskEntry.querySelector('.stopTask')
 
-    task['stopTask'].addEventListener('click', (e) => {
-        let question = (task['isProcessing'] ? "Stop this task?" : "Remove this task?")
-        shiftOrConfirm(e, question, async function(e) {
-            if (task['isProcessing']) {
-                task.isProcessing = false
-                task.progressBar.classList.remove("active")
-                try {
-                    let res = await fetch('/image/stop?session_id=' + sessionId)
-                } catch (e) {
-                    console.log(e)
-                }
-            } else {
-                let idx = taskQueue.indexOf(task)
-                if (idx >= 0) {
-                    taskQueue.splice(idx, 1)
-                }
-
-                removeTask(taskEntry)
+    task['stopTask'].addEventListener('click', async function(e) {
+        e.stopPropagation()
+        if (task['isProcessing']) {
+            task.isProcessing = false
+            task.progressBar.classList.remove("active")
+            try {
+                let res = await fetch('/image/stop?session_id=' + sessionId)
+            } catch (e) {
+                console.log(e)
             }
-        })
+        } else {
+            let idx = taskQueue.indexOf(task)
+            if (idx >= 0) {
+                taskQueue.splice(idx, 1)
+            }
+
+            taskEntry.remove()
+        }
     })
 
     task['useSettings'] = taskEntry.querySelector('.useSettings')
@@ -936,12 +943,11 @@ function getPrompts() {
     prompts = prompts.map(prompt => prompt.trim())
     prompts = prompts.filter(prompt => prompt !== '')
 
-    const newTags = activeTags.filter(tag => tag.inactive === undefined || tag.inactive === false)
-    if (newTags.length > 0) {
-        const promptTags = newTags.map(x => x.name).join(", ")
-        prompts = prompts.map((prompt) => `${prompt}, ${promptTags}`)
+    if (activeTags.length > 0) {
+	const promptTags = activeTags.map(x => x.name).join(", ")
+	prompts = prompts.map((prompt) => `${prompt}, ${promptTags}`)
     }
-
+	
     let promptsToMake = applySetOperator(prompts)
     promptsToMake = applyPermuteOperator(promptsToMake)
 
@@ -1051,28 +1057,22 @@ async function stopAllTasks() {
     }
 }
 
-function removeTask(taskToRemove) {
-    taskToRemove.remove()
-
-    if (document.querySelector('.imageTaskContainer') === null) {
-        previewTools.style.display = 'none'
-        initialText.style.display = 'block'
-    }
-}
-
-clearAllPreviewsBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Clear all the results and tasks in this window?", async function() {
+clearAllPreviewsBtn.addEventListener('click', async function() {
     await stopAllTasks()
 
     let taskEntries = document.querySelectorAll('.imageTaskContainer')
-    taskEntries.forEach(removeTask)
-})})
+    taskEntries.forEach(task => {
+        task.remove()
+    })
 
-stopImageBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Stop all the tasks?", async function(e) {
     previewTools.style.display = 'none'
     previewPane.style.display = 'none'
     initialText.style.display = 'block'
+})
+
+stopImageBtn.addEventListener('click', async function() {
     await stopAllTasks()
-})})
+})
 
 widthField.addEventListener('change', onDimensionChange)
 heightField.addEventListener('change', onDimensionChange)
@@ -1093,14 +1093,13 @@ numOutputsTotalField.addEventListener('change', renameMakeImageButton)
 numOutputsParallelField.addEventListener('change', renameMakeImageButton)
 
 function onDimensionChange() {
+    if (!maskSetting.checked) {
+        return
+    }
     let widthValue = parseInt(widthField.value)
     let heightValue = parseInt(heightField.value)
-    if (!initImagePreviewContainer.classList.contains("has-image")) {
-        imageEditor.setImage(null, widthValue, heightValue)
-    }
-    else {
-        imageInpainter.setImage(initImagePreview.src, widthValue, heightValue)
-    }
+
+    resizeInpaintingEditor(widthValue, heightValue)
 }
 
 diskPathField.disabled = !saveToDiskField.checked
@@ -1213,7 +1212,7 @@ async function getModels() {
 function checkRandomSeed() {
     if (randomSeedField.checked) {
         seedField.disabled = true
-        //seedField.value = "0" // This causes the seed to be lost if the user changes their mind after toggling the checkbox
+        seedField.value = "0"
     } else {
         seedField.disabled = false
     }
@@ -1223,6 +1222,10 @@ checkRandomSeed()
 
 function showInitImagePreview() {
     if (initImageSelector.files.length === 0) {
+        initImagePreviewContainer.style.display = 'none'
+        // inpaintingEditorContainer.style.display = 'none'
+        promptStrengthContainer.style.display = 'none'
+        // maskSetting.style.display = 'none'
         return
     }
 
@@ -1230,7 +1233,13 @@ function showInitImagePreview() {
     let file = initImageSelector.files[0]
 
     reader.addEventListener('load', function(event) {
+        // console.log(file.name, reader.result)
         initImagePreview.src = reader.result
+        initImagePreviewContainer.style.display = 'block'
+        inpaintingEditorContainer.style.display = 'none'
+        promptStrengthContainer.style.display = 'table-row'
+        samplerSelectionContainer.style.display = 'none'
+        // maskSetting.checked = false
     })
 
     if (file) {
@@ -1241,25 +1250,34 @@ initImageSelector.addEventListener('change', showInitImagePreview)
 showInitImagePreview()
 
 initImagePreview.addEventListener('load', function() {
-    promptStrengthContainer.style.display = 'table-row'
-    initImagePreviewContainer.classList.add("has-image")
-
+    inpaintingEditorCanvasBackground.style.backgroundImage = "url('" + this.src + "')"
+    // maskSetting.style.display = 'block'
+    // inpaintingEditorContainer.style.display = 'block'
     initImageSizeBox.textContent = initImagePreview.naturalWidth + " x " + initImagePreview.naturalHeight
-    imageEditor.setImage(this.src, initImagePreview.naturalWidth, initImagePreview.naturalHeight)
-    imageInpainter.setImage(this.src, parseInt(widthField.value), parseInt(heightField.value))
+    initImageSizeBox.style.display = 'block'
 })
 
 initImageClearBtn.addEventListener('click', function() {
     initImageSelector.value = null
+    // maskImageSelector.value = null
+
     initImagePreview.src = ''
+    // maskImagePreview.src = ''
     maskSetting.checked = false
 
+    initImagePreviewContainer.style.display = 'none'
+    // inpaintingEditorContainer.style.display = 'none'
+    // maskImagePreviewContainer.style.display = 'none'
+
+    // maskSetting.style.display = 'none'
+
     promptStrengthContainer.style.display = 'none'
-    initImagePreviewContainer.classList.remove("has-image")
-    imageEditor.setImage(null, parseInt(widthField.value), parseInt(heightField.value))
+    samplerSelectionContainer.style.display = 'table-row'
+    initImageSizeBox.style.display = 'none'
 })
 
 maskSetting.addEventListener('click', function() {
+    inpaintingEditorContainer.style.display = (this.checked ? 'block' : 'none')
     onDimensionChange()
 })
 
@@ -1307,22 +1325,9 @@ document.querySelectorAll('.popup').forEach(popup => {
     }
 })
 
-var tabElements = []
-function selectTab(tab_id) {
-    let tabInfo = tabElements.find(t => t.tab.id == tab_id)
-    if (!tabInfo.tab.classList.contains("active")) {
-        tabElements.forEach(info => {
-            if (info.tab.classList.contains("active")) {
-                info.tab.classList.toggle("active")
-                info.content.classList.toggle("active")
-            }
-        })
-        tabInfo.tab.classList.toggle("active")
-        tabInfo.content.classList.toggle("active")
-    }
-}
+var tabElements = [];
 function linkTabContents(tab) {
-    var name = tab.id.replace("tab-", "")
+    var name = tab.id.replace("tab-", "");
     var content = document.getElementById(`tab-content-${name}`)
     tabElements.push({
         name: name,
@@ -1330,7 +1335,18 @@ function linkTabContents(tab) {
         content: content
     })
 
-    tab.addEventListener("click", event => selectTab(tab.id))
+    tab.addEventListener("click", event => {
+        if (!tab.classList.contains("active")) {
+            tabElements.forEach(tabInfo => {
+                if (tabInfo.tab.classList.contains("active")) {
+                    tabInfo.tab.classList.toggle("active")
+                    tabInfo.content.classList.toggle("active")
+                }
+            })
+            tab.classList.toggle("active")
+            content.classList.toggle("active")
+        }
+    })
 }
 
 document.querySelectorAll(".tab").forEach(linkTabContents)
