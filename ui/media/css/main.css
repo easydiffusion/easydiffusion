@@ -161,9 +161,8 @@ code {
 @media (min-width: 700px) {
     #preview {
         /*bottom: 0; // The height of this pane must be set at runtime, once all UI elements are loaded. */
-        margin-left: 365pt;
+        margin-left: 370pt;
         margin-right: 10pt;
-        margin-top: 45pt;
         left: 0;
         right:0;
         position: fixed;
@@ -172,11 +171,10 @@ code {
     #preview-pane {
         display: none;
         overflow-y: auto;
-        top: 0;
         /*bottom: 0; // The height of this pane must be set at runtime, once all UI elements are loaded. */
-        margin-left: 365pt;
-        margin-right: 10pt;
-        margin-top: 80pt;
+        margin-top: 8pt;
+        margin-left: 370pt;
+        margin-right: 6pt;
         left: 0;
         right:0;
         position: fixed;
@@ -268,7 +266,9 @@ img {
 .line-separator-preview-pane {
     background: var(--background-color3);
     height: 1pt;
-    margin: 8px 0px;
+    margin-top: 0;
+    position: sticky;
+    top:0;
 }
 #editor-inputs-tags-container {
     margin-top: 5pt;
@@ -496,7 +496,7 @@ img {
 }
 #preview-tools {
     display: none;
-    padding: 2pt 4pt 4pt 4pt;
+    padding: 4pt;
 }
 .taskConfig {
     font-size: 10pt;
@@ -1031,6 +1031,12 @@ button:active {
 
 button#save-system-settings-btn {
     padding: 4pt 8pt;
+}
+#ip-info a {
+    color:var(--text-color)
+}
+#ip-info div {
+    line-height: 200%;
 }
 
 /* SCROLLBARS */

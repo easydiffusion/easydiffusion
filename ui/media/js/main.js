@@ -1303,9 +1303,9 @@ promptsFromFileSelector.addEventListener('change', function() {
 })
 
 function updatePreviewSize() {
-    $('#preview').css('top', Math.max(-window.pageYOffset, -$('#top-nav').outerHeight(true)) + 'px')
+    $('#preview').css('top', Math.max(-window.pageYOffset + $('#logo').outerHeight(true) + $('#tab-container').outerHeight(true), 0) + 'px')
     $('#preview').css('bottom', Math.max($(window).height() - ($("#footer .line-separator").offset().top - $(document).scrollTop()), 0) + 'px')
-    $('#preview-pane').css('top', (Math.max(-window.pageYOffset, -$('#top-nav').outerHeight(true))) + 'px')
+    $('#preview-pane').css('top', Math.max(-window.pageYOffset + $('#logo').outerHeight(true) + $('#tab-container').outerHeight(true) + $('#preview-tools').outerHeight(true), $('#preview-tools').outerHeight(true)) + 'px')
     $('#preview-pane').css('bottom', Math.max($(window).height() - ($("#footer .line-separator").offset().top - $(document).scrollTop()), 0) + 'px')
 };
 window.addEventListener("scroll", updatePreviewSize)
