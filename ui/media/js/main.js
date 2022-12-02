@@ -1229,6 +1229,7 @@ showInitImagePreview()
 
 initImagePreview.addEventListener('load', function() {
     promptStrengthContainer.style.display = 'table-row'
+    samplerSelectionContainer.style.display = "none"
     initImagePreviewContainer.classList.add("has-image")
 
     initImageSizeBox.textContent = initImagePreview.naturalWidth + " x " + initImagePreview.naturalHeight
@@ -1241,7 +1242,8 @@ initImageClearBtn.addEventListener('click', function() {
     initImagePreview.src = ''
     maskSetting.checked = false
 
-    promptStrengthContainer.style.display = 'none'
+    promptStrengthContainer.style.display = "none"
+    samplerSelectionContainer.style.display = ""
     initImagePreviewContainer.classList.remove("has-image")
     imageEditor.setImage(null, parseInt(widthField.value), parseInt(heightField.value))
 })
