@@ -71,8 +71,6 @@ def thread_init(device):
     thread_data.device_name = None
     thread_data.unet_bs = 1
     thread_data.precision = 'autocast'
-    thread_data.sampler_plms = None
-    thread_data.sampler_ddim = None
 
     thread_data.turbo = False
     thread_data.force_full_precision = False
