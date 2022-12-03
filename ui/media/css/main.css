@@ -1049,9 +1049,14 @@ button#save-system-settings-btn {
 div#model-tokens-section {
     display: none;
 }
-div#model-tokens-section button{
+div#model-tokens-section button {
     margin-top: 1px;
     margin-bottom: 2px;
+}
+div#modelmgr-sd button {
+    margin-top: 1px;
+    margin-bottom: 2px;
+    padding: 8px;
 }
 
 #ip-info a {

@@ -1272,20 +1272,22 @@ promptsFromFileSelector.addEventListener('change', function() {
     }
 })
 
-/* setup popup handlers */
-document.querySelectorAll('.popup').forEach(popup => {
-    popup.addEventListener('click', event => {
-        if (event.target == popup) {
-            popup.classList.remove("active")
+async function setupPopupHandlers() {
+    /* setup popup handlers */
+    document.querySelectorAll('.popup').forEach(popup => {
+        popup.addEventListener('click', event => {
+            if (event.target == popup) {
+                popup.classList.remove("active")
+            }
+        })
+        var closeButton = popup.querySelector(".close-button")
+        if (closeButton) {
+            closeButton.addEventListener('click', () => {
+                popup.classList.remove("active")
+            })
         }
     })
-    var closeButton = popup.querySelector(".close-button")
-    if (closeButton) {
-        closeButton.addEventListener('click', () => {
-            popup.classList.remove("active")
-        })
-    }
-})
+}
 
 var tabElements = []
 function selectTab(tab_id) {
