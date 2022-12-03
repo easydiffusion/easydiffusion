@@ -387,16 +387,19 @@ function enqueueImageVariationTask(req, img, reqDiff) {
 }
 
 function onUpscaleClick(req, img) {
+    const newRequestBody = {
+        use_upscale: upscaleModelField.value
+    }
+    // If the user is editing pictures, stop modifyCurrentRequest from importing new values
+    // by setting the empty properties to undefined
     if (!IMAGE_REGEX.test(req.init_image)) {
-        delete req.init_image
-        delete req.mask
+        newRequestBody.init_image = undefined
+        newRequestBody.mask = undefined
     }
     if (!IMAGE_REGEX.test(req.mask)) {
-        delete req.mask
+        newRequestBody.mask = undefined
     }
-    enqueueImageVariationTask(req, img, {
-        use_upscale: upscaleModelField.value,
-    })
+    enqueueImageVariationTask(req, img, newRequestBody)
 }
 
 function onFixFacesClick(req, img) {
