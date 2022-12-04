@@ -38,7 +38,7 @@ if [ -e "scripts/install_status.txt" ] && [ `grep -c sd_git_cloned scripts/insta
     if [ "$test_sd2" == "N" ]; then
         git -c advice.detachedHead=false checkout 7f32368ed1030a6e710537047bacd908adea183a
     elif [ "$test_sd2" == "Y" ]; then
-        git -c advice.detachedHead=false checkout 5d647c5459f4cd790672512222bc41903c01bb71
+        git -c advice.detachedHead=false checkout b1a80dfc75388914252ce363f923103185eaf48f
     fi
 
     cd ..

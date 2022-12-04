@@ -402,9 +402,28 @@ function enqueueImageVariationTask(req, img, reqDiff) {
 }
 
 function onUpscaleClick(req, img) {
-    enqueueImageVariationTask(req, img, {
-        use_upscale: upscaleModelField.value
-    })
+    if (IMAGE_REGEX.test(req.init_image) && IMAGE_REGEX.test(req.mask)) {
+        enqueueImageVariationTask(req, img, {
+            use_upscale: upscaleModelField.value,
+            init_image: req.init_image,
+            mask: req.mask
+        })
+    }
+    else if (IMAGE_REGEX.test(req.init_image)) {
+        enqueueImageVariationTask(req, img, {
+            use_upscale: upscaleModelField.value,
+            init_image: req.init_image,
+            mask: undefined
+        })
+    }
+    else
+    {
+        enqueueImageVariationTask(req, img, {
+            use_upscale: upscaleModelField.value,
+            init_image: undefined,
+            mask: undefined
+        })
+    }
 }
 
 function onFixFacesClick(req, img) {

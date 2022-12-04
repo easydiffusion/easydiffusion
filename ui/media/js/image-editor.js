@@ -372,7 +372,7 @@ class ImageEditor {
 				var y = (touch.clientY || 0) - bbox.top
 			}
 		}
-	
+		event.preventDefault()	
 		// do drawing-related stuff
 		if (type == "mousedown" || (type == "mouseenter" && event.buttons == 1)) {
 			if (this.dropper_active) {
