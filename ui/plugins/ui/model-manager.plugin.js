@@ -33,8 +33,7 @@ class sduiTab {
     
 }
 
-let models=null;
-let civitai=null;
+//let models=null;
 
 (async function() {
 
@@ -42,6 +41,7 @@ let civitai=null;
     let token = {prefix:{},suffix:{}} 
     let modelTokensSection = document.querySelector('#model-tokens-section')
     let modelTokensContent = document.querySelector('#model-tokens-content')
+    let searchResults = null
     let t = localStorage.getItem('modelToken')
 
     if (t!=null) {
@@ -80,7 +80,7 @@ let civitai=null;
 	content += `
 	    <div id="modelmgr-catalog" class="popup image-editor-popup">
 	        <div style="text-align:left;">
-		    <h2 style="margin-top:0px;color=#C1C2C5;"><a href="https://civitai.com/" style="text-decoration:none;color:white;">Civit<span style="color:#228be6;">ai</span></a></h2>
+		    <h2 style="margin-top:0px;color=#C1C2C5;"><a href="https://civitai.com/" target="_blank" style="text-decoration:none;color:white;">Civit<span style="color:#228be6;">ai</span></a></h2>
 		    <i class="close-button fa-solid fa-xmark"></i>
 		    <div id="modelmgr-results"></div>
 		</div>
@@ -126,6 +126,7 @@ let civitai=null;
     await updateModels()
     await updateModelTokenSection()
 
+    // Save trained tokens to localstorage upon update
     document.querySelector('#modelmgr-sd').onchange = function() {
         document.querySelectorAll('#modelmgr-sd textarea').forEach( i => {
             token[i.dataset.model] = i.value
@@ -133,8 +134,7 @@ let civitai=null;
         localStorage.setItem('modelToken', JSON.stringify(token))
     }
 
-    document.querySelector('#modelmgr-sd-add').onclick = async function() {
-        let url = prompt('URL of the model:')
+    async function downloadFromURL(url) {
         let res = await fetch('/model/download', {
             method: 'POST',
             headers: {
@@ -161,13 +161,25 @@ let civitai=null;
 	    }
 	} while (data==null || data['state'] != 'completed')
 	await updateModels()
+        
     }
 
+    // Download via URL
+    document.querySelector('#modelmgr-sd-add').onclick = async function() {
+        let url = prompt('URL of the model:')
+	downloadFromURL(url)
+    }
+
+    // Show details of a modell
     function renderCivitaiModellDetails(item) {
 	let resultsPane = document.querySelector('#modelmgr-results')
 	let content = `<hr><h2>${item.name} <span style="color:#777788;">#${item.id}</span></h2>`
 	if ( item.creator.username != 'Civitai' ) {
-	    content += `<h3><i>by ${item.creator.username}</i></h3>`
+	    let image = ""
+	    if ( item.creator.image != null ) {
+	        image = `<img src="${item.creator.image}" width="24" height="24" style="border-radius:4px;"> `
+            }
+	    content += `<h3>${image}<i>by ${item.creator.username}</i></h3>`
 	}
 	item.tags.forEach( tag => {
 	    content += `<span class="modelmgr-tag" style="border-radius:3px;background:var(--background-color1); padding: 3px 6px 3px 6px;">${tag}</span> `
@@ -182,7 +194,7 @@ let civitai=null;
 	        })
 	    }
 	    model.files.forEach( file => {
-	        content += `<br/><button style="padding: 3px 6px;background:var(--accent-color);margin:3px 0 3px 0;">Download ${(file.sizeKB/1024/1024).toFixed(1)}GB</button> `
+	        content += `<br/><button style="padding: 3px 6px;background:var(--accent-color);margin:3px 0 3px 0;" >Download ${(file.sizeKB/1024/1024).toFixed(1)}GB</button> `
 	    })
 	    content += `<p>`
 	    model.images.forEach( imageData => {
@@ -195,6 +207,7 @@ let civitai=null;
 	resultsPane.innerHTML = content
     }
 
+    // Show an overview of search results
     function renderCivitaiResults(result) {
 	let resultsPane = document.querySelector('#modelmgr-results')
 	resultsPane.innerHTML=""
@@ -262,21 +275,23 @@ let civitai=null;
 	})
     }
 
+    
 
     document.querySelector('#modelmgr-sd-catalog').onclick = async function() {
+	let resultsPane = document.querySelector('#modelmgr-results')
         let catalogPane = document.querySelector('#modelmgr-catalog')
+	resultsPane.innerHTML = '<h1>Loading...</h1>'
         catalogPane.classList.toggle('active')
-	let res
-	let ckpt
-	try {
-	    res = await fetch('https://civitai.com/api/v1/models?limit=20&type=Checkpoint&sort=Most+Downloaded')
-	    ckpt = await res.json()
-	} catch (e) {
-	    console.log(e)
+	if ( searchResults == null ) {
+	    try {
+	        let res = await fetch('https://civitai.com/api/v1/models?limit=20&type=Checkpoint&sort=Most+Downloaded')
+	        searchResults = await res.json()
+	    } catch (e) {
+	        console.log(e)
+	    }
+	    console.log(searchResults)
 	}
-	console.log(ckpt)
-	civitai=ckpt
-	renderCivitaiResults(ckpt)
+	renderCivitaiResults(searchResults)
     }
 
     stableDiffusionModelField.addEventListener('change', updateModelTokenSection)
