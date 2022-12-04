@@ -347,6 +347,16 @@ function asyncDelay(timeout) {
     })
 }
 
+/* Simple debounce function, placeholder for the one in engine.js for simple use cases */
+function debounce(func, timeout = 300){
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { func.apply(this, args); }, timeout);
+  };
+}
+
+
 function preventNonNumericalInput(e) {
     e = e || window.event;
     let charCode = (typeof e.which == "undefined") ? e.keyCode : e.which;

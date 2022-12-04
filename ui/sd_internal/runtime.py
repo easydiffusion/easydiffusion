@@ -664,12 +664,12 @@ def do_mk_img(req: Request, data_queue: queue.Queue, task_temp_images: list, ste
                         if req.save_to_disk_path is not None:
                             if return_orig_img:
                                 img_out_path = get_base_path(req.save_to_disk_path, req.session_id, prompts[0], img_id, req.output_format)
-                                save_image(img, img_out_path)
+                                save_image(img, img_out_path, req.output_format, req.output_quality)
                             meta_out_path = get_base_path(req.save_to_disk_path, req.session_id, prompts[0], img_id, 'txt')
                             save_metadata(meta_out_path, req, prompts[0], opt_seed)
 
                         if return_orig_img:
-                            img_buffer = img_to_buffer(img, req.output_format)
+                            img_buffer = img_to_buffer(img, req.output_format, req.output_quality)
                             img_str = buffer_to_base64_str(img_buffer, req.output_format)
                             res_image_orig = ResponseImage(data=img_str, seed=opt_seed)
                             res.images.append(res_image_orig)
@@ -689,14 +689,14 @@ def do_mk_img(req: Request, data_queue: queue.Queue, task_temp_images: list, ste
                                 filters_applied.append(req.use_upscale)
                             if (len(filters_applied) > 0):
                                 filtered_image = Image.fromarray(img_data[i])
-                                filtered_buffer = img_to_buffer(filtered_image, req.output_format)
+                                filtered_buffer = img_to_buffer(filtered_image, req.output_format, req.output_quality)
                                 filtered_img_data = buffer_to_base64_str(filtered_buffer, req.output_format)
                                 response_image = ResponseImage(data=filtered_img_data, seed=opt_seed)
                                 res.images.append(response_image)
                                 task_temp_images[i] = filtered_buffer
                                 if req.save_to_disk_path is not None:
                                     filtered_img_out_path = get_base_path(req.save_to_disk_path, req.session_id, prompts[0], img_id, req.output_format, "_".join(filters_applied))
-                                    save_image(filtered_image, filtered_img_out_path)
+                                    save_image(filtered_image, filtered_img_out_path, req.output_format, req.output_quality)
                                     response_image.path_abs = filtered_img_out_path
                                 del filtered_image
                         # Filter Applied, move to next seed
@@ -717,9 +717,12 @@ def do_mk_img(req: Request, data_queue: queue.Queue, task_temp_images: list, ste
 
     return res
 
-def save_image(img, img_out_path):
+def save_image(img, img_out_path, output_format="", output_quality=75):
     try:
-        img.save(img_out_path)
+        if output_format.upper() == "JPEG":
+            img.save(img_out_path, quality=output_quality)
+        else:
+            img.save(img_out_path)
     except:
         print('could not save the file', traceback.format_exc())
 
@@ -919,13 +922,16 @@ def load_mask(mask_str, h0, w0, newH, newW, invert=False):
     return image
 
 # https://stackoverflow.com/a/61114178
-def img_to_base64_str(img, output_format="PNG"):
-    buffered = img_to_buffer(img, output_format)
+def img_to_base64_str(img, output_format="PNG", output_quality=75):
+    buffered = img_to_buffer(img, output_format, quality=output_quality)
     return buffer_to_base64_str(buffered, output_format)
 
-def img_to_buffer(img, output_format="PNG"):
+def img_to_buffer(img, output_format="PNG", output_quality=75):
     buffered = BytesIO()
-    img.save(buffered, format=output_format)
+    if ( output_format.upper() == "JPEG" ):
+        img.save(buffered, format=output_format, quality=output_quality)
+    else:
+        img.save(buffered, format=output_format)
     buffered.seek(0)
     return buffered
 
