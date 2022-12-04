@@ -684,7 +684,6 @@ async function checkTasks() {
     setStatus('request', 'fetching..')
 
     stopImageBtn.style.display = 'block'
-    renameMakeImageButton()
     bellPending = true
 
     previewTools.style.display = 'block'
@@ -700,6 +699,7 @@ async function checkTasks() {
     task['stopTask'].innerHTML = '<i class="fa-solid fa-circle-stop"></i> Stop'
     task['taskStatusLabel'].innerText = "Starting"
     task['taskStatusLabel'].classList.add('waitingTaskLabel')
+    renameMakeImageButton() // refresh the make image button AFTER the task processing is started (task.isProcessing = true)
 
     const genSeeds = Boolean(typeof task.reqBody.seed !== 'number' || (task.reqBody.seed === task.seed && task.numOutputsTotal > 1))
     const startSeed = task.reqBody.seed || task.seed
@@ -1085,15 +1085,25 @@ heightField.addEventListener('change', onDimensionChange)
 
 function renameMakeImageButton() {
     let totalImages = Math.max(parseInt(numOutputsTotalField.value), parseInt(numOutputsParallelField.value))
-    let imageLabel = 'Image'
-    if (totalImages > 1) {
-        imageLabel = totalImages + ' Images'
-    }
-    if (taskQueue.length == 0) {
-        makeImageBtn.innerText = 'Make ' + imageLabel
+    let imageLabel
+    if (currentTask === null || currentTask.stopped) {
+        if (totalImages == 1) {
+            imageLabel = 'Make Image'
+        }
+        else 
+        {
+            imageLabel = `Make ${totalImages} Images`
+        }
     } else {
-        makeImageBtn.innerText = 'Enqueue Next ' + imageLabel
+        if (totalImages == 1) {
+            imageLabel = "Enqueue Image"
+        }
+        else 
+        {
+            imageLabel = `Enqueue Next ${totalImages} Images`
+        }
     }
+    makeImageBtn.innerText = imageLabel
 }
 numOutputsTotalField.addEventListener('change', renameMakeImageButton)
 numOutputsParallelField.addEventListener('change', renameMakeImageButton)
