@@ -150,6 +150,13 @@ else
     pip install picklescan || fail "Picklescan installation failed."
 fi
 
+if python -c "import safetensors" --help >/dev/null 2>&1; then
+    echo "SafeTensors is already installed."
+else
+    echo "SafeTensors not found, installing."
+    pip install safetensors || fail "SafeTensors installation failed."
+fi
+
 
 
 mkdir -p "../models/stable-diffusion"
