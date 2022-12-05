@@ -739,7 +739,7 @@ function onTaskStart(task) {
             instance = factory(newTaskReqBody)
         }
         if (!instance) {
-            console.error(`${factory ? "Factory " + String(factory) : 'No factory defined'} for ouput format ${newTaskReqBody.output_format}. Instance is ${instance || 'undefined'}. Using default renderer.`)
+            console.error(`${factory ? "Factory " + String(factory) : 'No factory defined'} for output format ${newTaskReqBody.output_format}. Instance is ${instance || 'undefined'}. Using default renderer.`)
             instance = new SD.RenderTask(newTaskReqBody)
         }
     }
@@ -1162,7 +1162,6 @@ outputFormatField.addEventListener('change', e => {
         outputQualityRow.style.display='none'
     }
 })
-
 
 async function getModels() {
     try {
