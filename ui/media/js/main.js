@@ -1152,7 +1152,7 @@ function updateOutputQualitySlider() {
 }
 
 outputQualitySlider.addEventListener('input', updateOutputQuality)
-outputQualityField.addEventListener('input', debounce(updateOutputQualitySlider))
+outputQualityField.addEventListener('input', debounce(updateOutputQualitySlider, 1500))
 updateOutputQuality()
 
 outputFormatField.addEventListener('change', e => {
