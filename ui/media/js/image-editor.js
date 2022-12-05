@@ -591,7 +591,7 @@ class ImageEditor {
 				var y = (touch.clientY || 0) - bbox.top
 			}
 		}
-	
+		event.preventDefault()	
 		// do drawing-related stuff
 		if (type == "mousedown" || (type == "mouseenter" && event.buttons == 1)) {
 			this.drawing = true
@@ -657,4 +657,3 @@ document.getElementById("init_image_button_draw").addEventListener("click", () =
 document.getElementById("init_image_button_inpaint").addEventListener("click", () => {
 	imageInpainter.show()
 })
-
