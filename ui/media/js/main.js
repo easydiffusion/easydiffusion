@@ -940,14 +940,16 @@ function getPrompts() {
     prompts = prompts.map(prompt => prompt.trim())
     prompts = prompts.filter(prompt => prompt !== '')
 
+    let promptsToMake = applyPermuteOperator(prompts)
+    promptsToMake = applySetOperator(promptsToMake)
     const newTags = activeTags.filter(tag => tag.inactive === undefined || tag.inactive === false)
     if (newTags.length > 0) {
         const promptTags = newTags.map(x => x.name).join(", ")
-        prompts = prompts.map((prompt) => `${prompt}, ${promptTags}`)
+        promptsToMake = promptsToMake.map((prompt) => `${prompt}, ${promptTags}`)
     }
 
-    let promptsToMake = applySetOperator(prompts)
     promptsToMake = applyPermuteOperator(promptsToMake)
+    promptsToMake = applySetOperator(promptsToMake)
 
     return promptsToMake
 }
