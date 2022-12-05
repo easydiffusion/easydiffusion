@@ -717,6 +717,7 @@
         "turbo": 'boolean',
         "use_full_precision": 'boolean',
         "output_format": 'string',
+        "output_quality": 'number',
     }
     const TASK_DEFAULTS = {
         "sampler": "euler_a",
@@ -732,6 +733,7 @@
         "turbo": false,
         "use_full_precision": false,
         "output_format": "png",
+        "output_quality": 75,
     }
     const TASK_OPTIONAL = {
         "device": 'string',
