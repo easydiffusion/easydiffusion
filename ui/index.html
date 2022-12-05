@@ -195,6 +195,9 @@
                             <option value="png">png</option>
                         </select>
                     </td></tr>
+                    <tr class="pl-5" id="output_quality_row"><td><label for="output_quality">JPEG Quality:</label></td><td>
+		        <input id="output_quality_slider" name="output_quality" class="editor-slider" value="75" type="range" min="10" max="95"> <input id="output_quality" name="output_quality" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)">
+	            </td></tr>
                     </table></div>
 
                     <div><ul>

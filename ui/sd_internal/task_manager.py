@@ -79,6 +79,7 @@ class ImageRequest(BaseModel):
     use_vae_model: str = None
     show_only_filtered_image: bool = False
     output_format: str = "jpeg" # or "png"
+    output_quality: int = 75
 
     stream_progress_updates: bool = False
     stream_image_progress: bool = False
@@ -95,6 +96,7 @@ class FilterRequest(BaseModel):
     render_device: str = None
     use_full_precision: bool = False
     output_format: str = "jpeg" # or "png"
+    output_quality: int = 75
 
 # Temporary cache to allow to query tasks results for a short time after they are completed.
 class TaskCache():
@@ -504,6 +506,7 @@ def render(req : ImageRequest):
     r.use_vae_model = req.use_vae_model
     r.show_only_filtered_image = req.show_only_filtered_image
     r.output_format = req.output_format
+    r.output_quality = req.output_quality
 
     r.stream_progress_updates = True # the underlying implementation only supports streaming
     r.stream_image_progress = req.stream_image_progress
