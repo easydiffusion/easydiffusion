@@ -375,11 +375,21 @@ function onMakeSimilarClick(req, img) {
 function enqueueImageVariationTask(req, img, reqDiff) {
     const imageSeed = img.getAttribute('data-seed')
 
-    const newTaskRequest = modifyCurrentRequest(req, reqDiff, {
+    const newRequestBody = {
         num_outputs: 1, // this can be user-configurable in the future
         seed: imageSeed
-    })
+    }
 
+    // If the user is editing pictures, stop modifyCurrentRequest from importing
+    // new values by setting the missing properties to undefined
+    if (!('init_image' in req) && !('init_image' in reqDiff)) {
+        newRequestBody.init_image = undefined
+        newRequestBody.mask = undefined
+    } else if (!('mask' in req) && !('mask' in reqDiff)) {
+        newRequestBody.mask = undefined
+    }
+
+    const newTaskRequest = modifyCurrentRequest(req, reqDiff, newRequestBody)
     newTaskRequest.numOutputsTotal = 1 // this can be user-configurable in the future
     newTaskRequest.batchCount = 1
 
@@ -387,28 +397,9 @@ function enqueueImageVariationTask(req, img, reqDiff) {
 }
 
 function onUpscaleClick(req, img) {
-    if (IMAGE_REGEX.test(req.init_image) && IMAGE_REGEX.test(req.mask)) {
-        enqueueImageVariationTask(req, img, {
-            use_upscale: upscaleModelField.value,
-            init_image: req.init_image,
-            mask: req.mask
-        })
-    }
-    else if (IMAGE_REGEX.test(req.init_image)) {
-        enqueueImageVariationTask(req, img, {
-            use_upscale: upscaleModelField.value,
-            init_image: req.init_image,
-            mask: undefined
-        })
-    }
-    else
-    {
-        enqueueImageVariationTask(req, img, {
-            use_upscale: upscaleModelField.value,
-            init_image: undefined,
-            mask: undefined
-        })
-    }
+    enqueueImageVariationTask(req, img, {
+        use_upscale: upscaleModelField.value
+    })
 }
 
 function onFixFacesClick(req, img) {
