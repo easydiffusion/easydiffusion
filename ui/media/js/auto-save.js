@@ -21,6 +21,7 @@ const SETTINGS_IDS_LIST = [
     "guidance_scale",
     "prompt_strength",
     "output_format",
+    "output_quality",
     "negative_prompt",
     "stream_image_progress",
     "use_face_correction",

@@ -16,6 +16,9 @@ let numOutputsParallelField = document.querySelector('#num_outputs_parallel')
 let numInferenceStepsField = document.querySelector('#num_inference_steps')
 let guidanceScaleSlider = document.querySelector('#guidance_scale_slider')
 let guidanceScaleField = document.querySelector('#guidance_scale')
+let outputQualitySlider = document.querySelector('#output_quality_slider')
+let outputQualityField = document.querySelector('#output_quality')
+let outputQualityRow = document.querySelector('#output_quality_row')
 let randomSeedField = document.querySelector("#random_seed")
 let seedField = document.querySelector('#seed')
 let widthField = document.querySelector('#width')
@@ -791,6 +794,7 @@ function getCurrentUserRequest() {
             stream_image_progress: (numOutputsTotal > 50 ? false : streamImageProgressField.checked),
             show_only_filtered_image: showOnlyFilteredImageField.checked,
             output_format: outputFormatField.value,
+            output_quality: outputQualityField.value,
             original_prompt: promptField.value,
             active_tags: (activeTags.map(x => x.name))
         }
@@ -1116,6 +1120,7 @@ document.onkeydown = function(e) {
     }
 }
 
+/********************* Guidance **************************/
 function updateGuidanceScale() {
     guidanceScaleField.value = guidanceScaleSlider.value / 10
     guidanceScaleField.dispatchEvent(new Event("change"))
@@ -1136,6 +1141,7 @@ guidanceScaleSlider.addEventListener('input', updateGuidanceScale)
 guidanceScaleField.addEventListener('input', updateGuidanceScaleSlider)
 updateGuidanceScale()
 
+/********************* Prompt Strength *******************/
 function updatePromptStrength() {
     promptStrengthField.value = promptStrengthSlider.value / 100
     promptStrengthField.dispatchEvent(new Event("change"))
@@ -1155,6 +1161,36 @@ function updatePromptStrengthSlider() {
 promptStrengthSlider.addEventListener('input', updatePromptStrength)
 promptStrengthField.addEventListener('input', updatePromptStrengthSlider)
 updatePromptStrength()
+
+/********************* JPEG Quality **********************/
+function updateOutputQuality() {
+    outputQualityField.value =  0 | outputQualitySlider.value
+    outputQualityField.dispatchEvent(new Event("change"))
+}
+
+function updateOutputQualitySlider() {
+    if (outputQualityField.value < 10) {
+        outputQualityField.value = 10
+    } else if (outputQualityField.value > 95) {
+        outputQualityField.value = 95
+    }
+
+    outputQualitySlider.value =  0 | outputQualityField.value
+    outputQualitySlider.dispatchEvent(new Event("change"))
+}
+
+outputQualitySlider.addEventListener('input', updateOutputQuality)
+outputQualityField.addEventListener('input', debounce(updateOutputQualitySlider))
+updateOutputQuality()
+
+outputFormatField.addEventListener('change', e => {
+    if (outputFormatField.value == 'jpeg') {
+        outputQualityRow.style.display='table-row'
+    } else {
+        outputQualityRow.style.display='none'
+    }
+})
+
 
 async function getModels() {
     try {
