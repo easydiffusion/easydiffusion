@@ -872,7 +872,7 @@ function getCurrentUserRequest() {
             stream_image_progress: (numOutputsTotal > 50 ? false : streamImageProgressField.checked),
             show_only_filtered_image: showOnlyFilteredImageField.checked,
             output_format: outputFormatField.value,
-            output_quality: outputQualityField.value,
+            output_quality: parseInt(outputQualityField.value),
             original_prompt: promptField.value,
             active_tags: (activeTags.map(x => x.name))
         }
