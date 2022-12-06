@@ -72,19 +72,23 @@
                             <span id="init_image_size_box"></span>
                             <button class="init_image_clear image_clear_btn"><i class="fa-solid fa-xmark"></i></button>
                         </div>
-                        <div class="button">
-                            <i class="fa-regular fa-folder-open"></i>
-                            Browse
-                            <input id="init_image" name="init_image" type="file" />
-                        </div>
-                        <div id="init_image_button_draw" class="button">
-                            <i class="fa-solid fa-pencil"></i>
-                            Draw
-                        </div>
-                        <div id="init_image_button_inpaint" class="button">
-                            <i class="fa-solid fa-paintbrush"></i>
-                            Inpaint
-                            <input id="enable_mask" name="enable_mask" type="checkbox">
+                        <div id="init_image_buttons">
+                            <div class="button">
+                                <i class="fa-regular fa-folder-open"></i>
+                                Browse
+                                <input id="init_image" name="init_image" type="file" />
+                            </div>
+                            <div id="init_image_button_draw" class="button">
+                                <i class="fa-solid fa-pencil"></i>
+                                Draw
+                            </div>
+                            <div id="inpaint_button_container">
+                                <div id="init_image_button_inpaint" class="button">
+                                    <i class="fa-solid fa-paintbrush"></i>
+                                    Inpaint
+                                </div>
+                                <input id="enable_mask" name="enable_mask" type="checkbox">
+                            </div>
                         </div>
                     </div>
 

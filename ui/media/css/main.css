@@ -44,9 +44,6 @@ code {
     margin-top: 5px;
     display: block;
 }
-.image_preview_container {
-    margin-top: 6px;
-}
 .image_clear_btn {
     position: absolute;
     transform: translate(30%, -30%);
@@ -459,37 +456,47 @@ img {
     display: none;
 }
 
-#init_image_preview_container:not(.has-image) #inpaintingEditor,
-#init_image_preview_container:not(.has-image) #samplerSelection,
+#init_image_preview_container {
+    display: flex;
+    margin-top: 6px;
+    margin-bottom: 8px;
+}
+
 #init_image_preview_container:not(.has-image) #init_image_wrapper,
-#init_image_preview_container:not(.has-image) #init_image_button_inpaint  {
+#init_image_preview_container:not(.has-image) #inpaint_button_container  {
     display: none;
 }
 
-#init_image_preview_container:not(.has-image) {
-    grid-template-columns: 50% 50%;
+
+#init_image_buttons {
+    display: flex;
+    gap: 8px;
 }
 
-#init_image_preview_container {
-    padding: 4px;
-    display: grid;
-    grid-template-columns: max-content auto;
-    grid-template-rows: 33% 33% 33%;
-    gap: 8px
+#init_image_preview_container.has-image #init_image_buttons {
+    flex-direction: column;
+    padding-left: 8px;
 }
 
-#init_image_preview_container > div:not(:first-child) {
+#init_image_buttons .button {
     position: relative;
-    min-height: 32px;
+    height: 32px;
+    width: 150px;
 }
 
-#init_image_preview_container > div:not(:first-child) > input {
+#init_image_buttons .button > input {
     position: absolute;
     left: 0;
     top: 0;
     right: 0;
     bottom: 0;
     opacity: 0;
+}
+
+#inpaint_button_container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 #init_image_wrapper {
@@ -614,18 +621,25 @@ input[type="file"] {
 button,
 input::file-selector-button,
 .button { 
-    padding: 2px 4px;
-    border-radius: 4px;
+    padding: 6px;
+    border-radius: var(--input-border-radius);
     background: var(--button-color);
     color: var(--button-text-color);
     border: var(--button-border);
+    height: 24px;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    box-shadow: 2px 2px 1px 1px #00000088;
 }
 
 .button i {
     margin-right: 8px;
+}
+
+button:hover,
+.button:hover {
+  background: var(--background-color4)
 }
 
 input::file-selector-button {
@@ -1028,11 +1042,6 @@ i.active {
 #system-info label {
     float: right;
     font-weight: bold;
-}
-button:hover,
-.button:hover {
-  transition-duration: 0.1s;
-  background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
 }
 
 button:active {

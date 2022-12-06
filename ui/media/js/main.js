@@ -1254,7 +1254,7 @@ function checkRandomSeed() {
 randomSeedField.addEventListener('input', checkRandomSeed)
 checkRandomSeed()
 
-function showInitImagePreview() {
+function loadImg2ImgFromFile() {
     if (initImageSelector.files.length === 0) {
         return
     }
@@ -1270,27 +1270,32 @@ function showInitImagePreview() {
         reader.readAsDataURL(file)
     }
 }
-initImageSelector.addEventListener('change', showInitImagePreview)
-showInitImagePreview()
+initImageSelector.addEventListener('change', loadImg2ImgFromFile)
+loadImg2ImgFromFile()
 
-initImagePreview.addEventListener('load', function() {
+function img2imgLoad() {
     promptStrengthContainer.style.display = 'table-row'
+    samplerSelectionContainer.style.display = "none"
     initImagePreviewContainer.classList.add("has-image")
 
     initImageSizeBox.textContent = initImagePreview.naturalWidth + " x " + initImagePreview.naturalHeight
     imageEditor.setImage(this.src, initImagePreview.naturalWidth, initImagePreview.naturalHeight)
     imageInpainter.setImage(this.src, parseInt(widthField.value), parseInt(heightField.value))
-})
+}
 
-initImageClearBtn.addEventListener('click', function() {
+function img2imgUnload() {
     initImageSelector.value = null
     initImagePreview.src = ''
     maskSetting.checked = false
 
-    promptStrengthContainer.style.display = 'none'
+    promptStrengthContainer.style.display = "none"
+    samplerSelectionContainer.style.display = ""
     initImagePreviewContainer.classList.remove("has-image")
     imageEditor.setImage(null, parseInt(widthField.value), parseInt(heightField.value))
-})
+
+}
+initImagePreview.addEventListener('load', img2imgLoad)
+initImageClearBtn.addEventListener('click', img2imgUnload)
 
 maskSetting.addEventListener('click', function() {
     onDimensionChange()
