@@ -181,7 +181,7 @@ describe('stable-diffusion-ui', function() {
                 "height": 128,
                 "seed": Math.floor(Math.random() * 10000000),
 
-                "sampler": "euler_a",
+                "sampler": "dpm2",
                 "use_stable_diffusion_model": "sd-v1-4",
                 "num_inference_steps": nbr_steps,
                 "guidance_scale": 7.5,

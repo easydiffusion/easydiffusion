@@ -720,7 +720,7 @@
         "output_quality": 'number',
     }
     const TASK_DEFAULTS = {
-        "sampler": "euler_a",
+        "sampler": "dpm2",
         "use_stable_diffusion_model": "sd-v1-4",
         "num_inference_steps": 50,
         "guidance_scale": 7.5,
