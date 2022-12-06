@@ -28,6 +28,9 @@ from gfpgan import GFPGANer
 from basicsr.archs.rrdbnet_arch import RRDBNet
 from realesrgan import RealESRGANer
 
+from . import hypernetwork
+from server import HYPERNETWORK_MODEL_EXTENSIONS# , STABLE_DIFFUSION_MODEL_EXTENSIONS, VAE_MODEL_EXTENSIONS
+
 from threading import Lock
 from safetensors.torch import load_file
 
@@ -57,12 +60,15 @@ def thread_init(device):
 
     thread_data.ckpt_file = None
     thread_data.vae_file = None
+    thread_data.hypernetwork_file = None
     thread_data.gfpgan_file = None
     thread_data.real_esrgan_file = None
 
     thread_data.model = None
     thread_data.modelCS = None
     thread_data.modelFS = None
+    thread_data.hypernetwork = None
+    thread_data.hypernetwork_strength = 1
     thread_data.model_gfpgan = None
     thread_data.model_real_esrgan = None
 
@@ -72,6 +78,8 @@ def thread_init(device):
     thread_data.device_name = None
     thread_data.unet_bs = 1
     thread_data.precision = 'autocast'
+    thread_data.sampler_plms = None
+    thread_data.sampler_ddim = None
 
     thread_data.turbo = False
     thread_data.force_full_precision = False
@@ -433,6 +441,49 @@ def reload_model():
     unload_filters()
     load_model_ckpt()
 
+def is_hypernetwork_reload_necessary(req: Request):
+    needs_model_reload = False
+    if thread_data.hypernetwork_file != req.use_hypernetwork_model:
+        thread_data.hypernetwork_file = req.use_hypernetwork_model
+        needs_model_reload = True
+
+    return needs_model_reload
+
+def load_hypernetwork():
+    if thread_data.hypernetwork_file is not None:
+        try:
+            loaded = False
+            for model_extension in HYPERNETWORK_MODEL_EXTENSIONS:
+                if os.path.exists(thread_data.hypernetwork_file + model_extension):
+                    print(f"Loading hypernetwork weights from: {thread_data.hypernetwork_file}{model_extension}")
+                    thread_data.hypernetwork = hypernetwork.load_hypernetwork(thread_data.hypernetwork_file + model_extension)
+                    loaded = True
+                    break
+
+            if not loaded:
+                print(f'Cannot find hypernetwork: {thread_data.hypernetwork_file}')
+                thread_data.hypernetwork_file = None
+        except:
+            print(traceback.format_exc())
+            print(f'Could not load hypernetwork: {thread_data.hypernetwork_file}')
+            thread_data.hypernetwork_file = None
+
+def unload_hypernetwork():
+    if thread_data.hypernetwork is not None:
+        print('Unloading hypernetwork...')
+        if thread_data.device != 'cpu':
+            for i in thread_data.hypernetwork:
+                thread_data.hypernetwork[i][0].to('cpu')
+                thread_data.hypernetwork[i][1].to('cpu')
+        del thread_data.hypernetwork
+    thread_data.hypernetwork = None
+
+    gc()
+
+def reload_hypernetwork():
+    unload_hypernetwork()
+    load_hypernetwork()
+
 def mk_img(req: Request, data_queue: queue.Queue, task_temp_images: list, step_callback):
     try:
         return do_mk_img(req, data_queue, task_temp_images, step_callback)
@@ -509,6 +560,7 @@ def do_mk_img(req: Request, data_queue: queue.Queue, task_temp_images: list, ste
     res = Response()
     res.request = req
     res.images = []
+    thread_data.hypernetwork_strength = req.hypernetwork_strength
 
     thread_data.temp_images.clear()
 
@@ -751,6 +803,8 @@ Sampler: {req.sampler}
 Negative Prompt: {req.negative_prompt}
 Stable Diffusion model: {req.use_stable_diffusion_model + '.ckpt'}
 VAE model: {req.use_vae_model}
+Hypernetwork Model: {req.use_hypernetwork_model}
+Hypernetwork Strength: {req.hypernetwork_strength}
 '''
     try:
         with open(meta_out_path, 'w', encoding='utf-8') as f:
