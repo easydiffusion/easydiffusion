@@ -104,7 +104,7 @@ const IMAGE_EDITOR_ACTIONS = [
 		name: "Clear",
 		icon: "fa-solid fa-xmark",
 		handler: (editor) => {
-			this.ctx_current.clearRect(0, 0, this.width, this.height)
+			editor.ctx_current.clearRect(0, 0, editor.width, editor.height)
 		}
 	}
 ]
@@ -505,6 +505,19 @@ class ImageEditor {
 	getImg() { // a drop-in replacement of the drawingboard version
 		return this.layers.drawing.canvas.toDataURL()
 	}
+	setImg(dataUrl) { // a drop-in replacement of the drawingboard version
+		var image = new Image()
+		image.onload = () => {
+			var ctx = this.layers.drawing.ctx;
+			ctx.clearRect(0, 0, this.width, this.height)
+			ctx.globalCompositeOperation = "source-over"
+			ctx.globalAlpha = 1
+			ctx.filter = "none"
+			ctx.drawImage(image, 0, 0, this.width, this.height)
+			this.setBrush(this.layers.drawing)
+		}
+		image.src = dataUrl
+	}
 	runAction(action_id) {
 		var action = IMAGE_EDITOR_ACTIONS.find(a => a.id == action_id)
 		this.history.pushAction(action_id)
@@ -553,8 +566,13 @@ class ImageEditor {
 
 		// keybindings
 		if (event.type == "keydown") {
-			if (event.key == "z" && event.ctrlKey) {
-				this.history.undo()
+			if ((event.key == "z" || event.key == "Z") && event.ctrlKey) {
+				if (!event.shiftKey) {
+					this.history.undo()
+				}
+				else {
+					this.history.redo()
+				}
 			}
 			if (event.key == "y" && event.ctrlKey) {
 				this.history.redo()

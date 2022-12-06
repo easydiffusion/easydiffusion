@@ -195,9 +195,10 @@
 #init_image_preview_container .button {
 	display: flex;
 }
-#image-editor .button {
+
+.image-editor-popup .button {
 	display: flex;
 }
-#image-editor h4 {
+.image-editor-popup h4 {
 	text-align: left;
 }

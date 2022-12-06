@@ -44,9 +44,6 @@ code {
     margin-top: 5px;
     display: block;
 }
-.image_preview_container {
-    margin-top: 6px;
-}
 .image_clear_btn {
     position: absolute;
     transform: translate(30%, -30%);
@@ -461,6 +458,8 @@ img {
 
 #init_image_preview_container {
     display: flex;
+    margin-top: 6px;
+    margin-bottom: 8px;
 }
 
 #init_image_preview_container:not(.has-image) #init_image_wrapper,
