@@ -12,12 +12,11 @@
     <link rel="stylesheet" href="/media/css/auto-save.css">
     <link rel="stylesheet" href="/media/css/modifier-thumbnails.css">
     <link rel="stylesheet" href="/media/css/fontawesome-all.min.css">
-    <link rel="stylesheet" href="/media/css/drawingboard.min.css">
+    <link rel="stylesheet" href="/media/css/image-editor.css">
     <link rel="stylesheet" href="/media/css/jquery-confirm.min.css">
     <link rel="manifest" href="/media/manifest.webmanifest">
     <script src="/media/js/jquery-3.6.1.min.js"></script>
     <script src="/media/js/jquery-confirm.min.js"></script>
-    <script src="/media/js/drawingboard.min.js"></script>
     <script src="/media/js/marked.min.js"></script>
 </head>
 <body>
@@ -26,7 +25,7 @@
         <div id="logo">
             <h1>
                 Stable Diffusion UI
-                <small>v2.4.17 <span id="updateBranchLabel"></span></small>
+                <small>v2.4.18 <span id="updateBranchLabel"></span></small>
             </h1>
         </div>
         <div id="server-status">
@@ -65,7 +64,7 @@
                 </div>
 
                 <div id="editor-inputs-init-image" class="row">
-                    <label for="init_image">Initial Image (img2img) <small>(optional)</small> </label> <input id="init_image" name="init_image" type="file" /><br/>
+                    <label for="init_image">Initial Image (img2img) <small>(optional)</small> </label>
 
                     <div id="init_image_preview_container" class="image_preview_container">
                         <div id="init_image_wrapper">
@@ -73,16 +72,26 @@
                             <span id="init_image_size_box"></span>
                             <button class="init_image_clear image_clear_btn"><i class="fa-solid fa-xmark"></i></button>
                         </div>
-
-                        <br/>
-                        <input id="enable_mask" name="enable_mask" type="checkbox">
-                        <label for="enable_mask">
-                            In-Painting (beta)
-                            <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Inpainting" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">Click to learn more about InPainting</span></i></a>
-                            <small>(select the area which the AI will paint into)</small>
-                        </label>
-                        <div id="inpaintingEditor"></div>
+                        <div id="init_image_buttons">
+                            <div class="button">
+                                <i class="fa-regular fa-folder-open"></i>
+                                Browse
+                                <input id="init_image" name="init_image" type="file" />
+                            </div>
+                            <div id="init_image_button_draw" class="button">
+                                <i class="fa-solid fa-pencil"></i>
+                                Draw
+                            </div>
+                            <div id="inpaint_button_container">
+                                <div id="init_image_button_inpaint" class="button">
+                                    <i class="fa-solid fa-paintbrush"></i>
+                                    Inpaint
+                                </div>
+                                <input id="enable_mask" name="enable_mask" type="checkbox">
+                            </div>
+                        </div>
                     </div>
+
                 </div>
 
                 <div id="editor-inputs-tags-container" class="row">
@@ -108,7 +117,7 @@
                 <div id="editor-settings-entries" class="collapsible-content">
                     <div><table>
                     <tr><b class="settings-subheader">Image Settings</b></tr>
-                    <tr class="pl-5"><td><label for="seed">Seed:</label></td><td><input id="seed" name="seed" size="10" value="30000" onkeypress="preventNonNumericalInput(event)"> <input id="random_seed" name="random_seed" type="checkbox" checked><label for="random_seed">Random</label></td></tr>
+                    <tr class="pl-5"><td><label for="seed">Seed:</label></td><td><input id="seed" name="seed" size="10" value="0" onkeypress="preventNonNumericalInput(event)"> <input id="random_seed" name="random_seed" type="checkbox" checked><label for="random_seed">Random</label></td></tr>
                     <tr class="pl-5"><td><label for="num_outputs_total">Number of Images:</label></td><td><input id="num_outputs_total" name="num_outputs_total" value="1" size="1" onkeypress="preventNonNumericalInput(event)"> <label><small>(total)</small></label> <input id="num_outputs_parallel" name="num_outputs_parallel" value="1" size="1" onkeypress="preventNonNumericalInput(event)"> <label for="num_outputs_parallel"><small>(in parallel)</small></label></td></tr>
                     <tr class="pl-5"><td><label for="stable_diffusion_model">Model:</label></td><td>
                         <select id="stable_diffusion_model" name="stable_diffusion_model">
@@ -190,11 +199,14 @@
                             <option value="png">png</option>
                         </select>
                     </td></tr>
+                    <tr class="pl-5" id="output_quality_row"><td><label for="output_quality">JPEG Quality:</label></td><td>
+		        <input id="output_quality_slider" name="output_quality" class="editor-slider" value="75" type="range" min="10" max="95"> <input id="output_quality" name="output_quality" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)">
+	            </td></tr>
                     </table></div>
 
                     <div><ul>
                     <li><b class="settings-subheader">Render Settings</b></li>
-                    <li class="pl-5"><input id="stream_image_progress" name="stream_image_progress" type="checkbox"> <label for="stream_image_progress">Show a live preview <small>(uses more VRAM, and slower image creation)</small></label></li>
+                    <li class="pl-5"><input id="stream_image_progress" name="stream_image_progress" type="checkbox"> <label for="stream_image_progress">Show a live preview <small>(uses more VRAM, slower images)</small></label></li>
                     <li class="pl-5"><input id="use_face_correction" name="use_face_correction" type="checkbox"> <label for="use_face_correction">Fix incorrect faces and eyes <small>(uses GFPGAN)</small></label></li>
                     <li class="pl-5">
                         <input id="use_upscale" name="use_upscale" type="checkbox"> <label for="use_upscale">Upscale image by 4x with </label>
@@ -330,6 +342,38 @@
         </div>
     </div>
 
+    <div id="image-editor" class="popup image-editor-popup">
+        <div>
+            <i class="close-button fa-solid fa-xmark"></i>
+            <h1>Image Editor</h1>
+            <div class="flex-container">
+                <div class="editor-controls-left"></div>
+                <div class="editor-controls-center">
+                    <div></div>
+                </div>
+                <div class="editor-controls-right">
+                    <div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="image-inpainter" class="popup image-editor-popup">
+        <div>
+            <i class="close-button fa-solid fa-xmark"></i>
+            <h1>Inpainter</h1>
+            <div class="flex-container">
+                <div class="editor-controls-left"></div>
+                <div class="editor-controls-center">
+                    <div></div>
+                </div>
+                <div class="editor-controls-right">
+                    <div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="footer-spacer"></div>
     <div id="footer">
         <div class="line-separator">&nbsp;</div>
@@ -343,24 +387,23 @@
     </div>
 </div>
 </body>
-
 <script src="media/js/utils.js"></script>
 <script src="media/js/parameters.js"></script>
 <script src="media/js/plugins.js"></script>
-<script src="media/js/inpainting-editor.js"></script>
 <script src="media/js/image-modifiers.js"></script>
 <script src="media/js/auto-save.js"></script>
 <script src="media/js/main.js"></script>
 <script src="media/js/themes.js"></script>
 <script src="media/js/dnd.js"></script>
+<script src="media/js/image-editor.js"></script>
 <script>
 async function init() {
     await initSettings()
     await getModels()
     await getDiskPath()
     await getAppConfig()
-    await loadModifiers()
     await loadUIPlugins()
+    await loadModifiers()
     await getSystemInfo()
 
     setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)

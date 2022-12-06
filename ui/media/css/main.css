@@ -44,9 +44,6 @@ code {
     margin-top: 5px;
     display: block;
 }
-.image_preview_container {
-    margin-top: 10pt;
-}
 .image_clear_btn {
     position: absolute;
     transform: translate(30%, -30%);
@@ -275,32 +272,6 @@ img {
     transform: translateY(25%);
 }
 
-#inpaintingEditor {
-    width: 300pt;
-    height: 300pt;
-    margin-top: 5pt;
-}
-.drawing-board-canvas-wrapper {
-    background-size: 100% 100%;
-}
-.drawing-board-controls {
-    min-width: 273px;
-}
-.drawing-board-control > button {
-    background-color: #eee;
-    border-radius: 3pt;
-}
-.drawing-board-control-inner {
-    background-color: #eee;
-    border-radius: 3pt;
-}
-#inpaintingEditor canvas {
-    opacity: 0.6;
-}
-#enable_mask {
-    margin-top: 8pt;
-}
-
 #top-nav {
     position: relative;
     background: var(--background-color4);
@@ -484,8 +455,58 @@ img {
 #prompt_from_file {
     display: none;
 }
+
+#init_image_preview_container {
+    display: flex;
+    margin-top: 6px;
+    margin-bottom: 8px;
+}
+
+#init_image_preview_container:not(.has-image) #init_image_wrapper,
+#init_image_preview_container:not(.has-image) #inpaint_button_container  {
+    display: none;
+}
+
+
+#init_image_buttons {
+    display: flex;
+    gap: 8px;
+}
+
+#init_image_preview_container.has-image #init_image_buttons {
+    flex-direction: column;
+    padding-left: 8px;
+}
+
+#init_image_buttons .button {
+    position: relative;
+    height: 32px;
+    width: 150px;
+}
+
+#init_image_buttons .button > input {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+}
+
+#inpaint_button_container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#init_image_wrapper {
+    grid-row: span 3;
+    position: relative;
+    width: fit-content;
+    max-height: 150px;
+}
+
 #init_image_preview {
-    max-width: 150px;
     max-height: 150px;
     height: 100%;
     width: 100%;
@@ -493,23 +514,18 @@ img {
     border-radius: 6px;
     transition: all 1s ease-in-out;
 }
-
+/* 
 #init_image_preview:hover {
     max-width: 500px;
     max-height: 1000px;
 
     transition: all 1s 0.5s ease-in-out;
-}
-
-#init_image_wrapper {
-    position: relative;
-    width: fit-content;
-}
+} */
 
 #init_image_size_box {
     position: absolute;
     right: 0px;
-    bottom: 3px;
+    bottom: 0px;
     padding: 3px;
     background: black;
     color: white;
@@ -561,6 +577,10 @@ option {
     cursor: pointer;
 }
 
+input[type="file"] * {
+    cursor: pointer;
+}
+
 input,
 select,
 textarea {
@@ -599,12 +619,26 @@ input[type="file"] {
 }
 
 button,
-input::file-selector-button { 
+input::file-selector-button,
+.button { 
     padding: 2px 4px;
-    border-radius: 4px;
+    border-radius: var(--input-border-radius);
     background: var(--button-color);
     color: var(--button-text-color);
     border: var(--button-border);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.button i {
+    margin-right: 8px;
+}
+
+button:hover,
+.button:hover {
+  transition-duration: 0.1s;
+  background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
 }
 
 input::file-selector-button {
@@ -768,6 +802,8 @@ input::file-selector-button {
 
 #promptsFromFileBtn {
     font-size: 9pt;
+    display: inline;
+    background-color: var(--accent-color);
 }
 
 .section-button {
@@ -969,8 +1005,8 @@ input::file-selector-button {
     display: none;
 }
 
-#tab-content-wrapper {
-    border-top: 8px solid var(--background-color1);
+#tab-content-wrapper > * {
+    padding-top: 8px;
 }
 
 .tab-content-inner {
@@ -1006,10 +1042,6 @@ i.active {
 #system-info label {
     float: right;
     font-weight: bold;
-}
-button:hover {
-  transition-duration: 0.1s;
-  background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
 }
 
 button:active {

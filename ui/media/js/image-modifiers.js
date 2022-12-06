@@ -91,7 +91,7 @@ function createModifierGroup(modifierGroup, initiallyExpanded) {
                 if (activeTags.map(x => trimModifiers(x.name)).includes(trimmedName)) {
                     // remove modifier from active array
                     activeTags = activeTags.filter(x => trimModifiers(x.name) != trimmedName)
-                    toggleCardState(modifierCard, false)
+                    toggleCardState(trimmedName, false)
                 } else {
                     // add modifier to active array
                     activeTags.push({
@@ -100,7 +100,7 @@ function createModifierGroup(modifierGroup, initiallyExpanded) {
                         'originElement': modifierCard,
                         'previews': modifierPreviews
                     })
-                    toggleCardState(modifierCard, true)
+                    toggleCardState(trimmedName, true)
                 }
 
                 refreshTagsList()
@@ -219,10 +219,10 @@ function refreshTagsList() {
         editorModifierTagsList.appendChild(tag.element)
 
         tag.element.addEventListener('click', () => {
-            let idx = activeTags.indexOf(tag)
+            let idx = activeTags.findIndex(o => { return o.name === tag.name })            
 
-            if (idx !== -1 && activeTags[idx].originElement !== undefined) {
-                toggleCardState(activeTags[idx].originElement, false)
+            if (idx !== -1) {
+                toggleCardState(activeTags[idx].name, false)
 
                 activeTags.splice(idx, 1)
                 refreshTagsList()
@@ -235,14 +235,21 @@ function refreshTagsList() {
     editorModifierTagsList.appendChild(brk)
 }
 
-function toggleCardState(card, makeActive) {
-    if (makeActive) {
-        card.classList.add(activeCardClass)
-        card.querySelector('.modifier-card-image-overlay').innerText = '-'
-    } else {
-        card.classList.remove(activeCardClass)
-        card.querySelector('.modifier-card-image-overlay').innerText = '+'
-    }
+function toggleCardState(modifierName, makeActive) {
+    document.querySelector('#editor-modifiers').querySelectorAll('.modifier-card').forEach(card => {
+        const name = card.querySelector('.modifier-card-label').innerText
+        if (   trimModifiers(modifierName) == trimModifiers(name)
+            || trimModifiers(modifierName) == 'by ' + trimModifiers(name)) {
+            if(makeActive) {
+                card.classList.add(activeCardClass)
+                card.querySelector('.modifier-card-image-overlay').innerText = '-'
+            }
+            else{
+                card.classList.remove(activeCardClass)
+                card.querySelector('.modifier-card-image-overlay').innerText = '+'
+            }
+        }
+    })
 }
 
 function changePreviewImages(val) {
@@ -319,31 +326,7 @@ function saveCustomModifiers() {
 }
 
 function loadCustomModifiers() {
-    let customModifiers = localStorage.getItem(CUSTOM_MODIFIERS_KEY, '')
-    customModifiersTextBox.value = customModifiers
-
-    if (customModifiersGroupElement !== undefined) {
-        customModifiersGroupElement.remove()
-    }
-
-    if (customModifiers && customModifiers.trim() !== '') {
-        customModifiers = customModifiers.split('\n')
-        customModifiers = customModifiers.filter(m => m.trim() !== '')
-        customModifiers = customModifiers.map(function(m) {
-            return {
-                "modifier": m
-            }
-        })
-
-        let customGroup = {
-            'category': 'Custom Modifiers',
-            'modifiers': customModifiers
-        }
-
-        customModifiersGroupElement = createModifierGroup(customGroup, true)
-
-        createCollapsibles(customModifiersGroupElement)
-    }
+    PLUGINS['MODIFIERS_LOAD'].forEach(fn=>fn.loader.call())
 }
 
 customModifiersTextBox.addEventListener('change', saveCustomModifiers)

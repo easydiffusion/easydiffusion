@@ -16,6 +16,9 @@ let numOutputsParallelField = document.querySelector('#num_outputs_parallel')
 let numInferenceStepsField = document.querySelector('#num_inference_steps')
 let guidanceScaleSlider = document.querySelector('#guidance_scale_slider')
 let guidanceScaleField = document.querySelector('#guidance_scale')
+let outputQualitySlider = document.querySelector('#output_quality_slider')
+let outputQualityField = document.querySelector('#output_quality')
+let outputQualityRow = document.querySelector('#output_quality_row')
 let randomSeedField = document.querySelector("#random_seed")
 let seedField = document.querySelector('#seed')
 let widthField = document.querySelector('#width')
@@ -58,14 +61,6 @@ let imagePreview = document.querySelector("#preview")
 let serverStatusColor = document.querySelector('#server-status-color')
 let serverStatusMsg = document.querySelector('#server-status-msg')
 
-
-document.querySelector('.drawing-board-control-navigation-back').innerHTML = '<i class="fa-solid fa-rotate-left"></i>'
-document.querySelector('.drawing-board-control-navigation-forward').innerHTML = '<i class="fa-solid fa-rotate-right"></i>'
-
-let maskResetButton = document.querySelector('.drawing-board-control-navigation-reset')
-maskResetButton.innerHTML = 'Clear'
-maskResetButton.style.fontWeight = 'normal'
-maskResetButton.style.fontSize = '10pt'
 
 let serverState = {'status': 'Offline', 'time': Date.now()}
 let bellPending = false
@@ -335,11 +330,7 @@ function onUseAsInputClick(req, img) {
     initImageSelector.value = null
     initImagePreview.src = imgData
 
-    initImagePreviewContainer.style.display = 'block'
-    inpaintingEditorContainer.style.display = 'none'
-    promptStrengthContainer.style.display = 'table-row'
     maskSetting.checked = false
-    samplerSelectionContainer.style.display = 'none'
 }
 
 function onDownloadImageClick(req, img) {
@@ -387,11 +378,21 @@ function onMakeSimilarClick(req, img) {
 function enqueueImageVariationTask(req, img, reqDiff) {
     const imageSeed = img.getAttribute('data-seed')
 
-    const newTaskRequest = modifyCurrentRequest(req, reqDiff, {
+    const newRequestBody = {
         num_outputs: 1, // this can be user-configurable in the future
         seed: imageSeed
-    })
+    }
 
+    // If the user is editing pictures, stop modifyCurrentRequest from importing
+    // new values by setting the missing properties to undefined
+    if (!('init_image' in req) && !('init_image' in reqDiff)) {
+        newRequestBody.init_image = undefined
+        newRequestBody.mask = undefined
+    } else if (!('mask' in req) && !('mask' in reqDiff)) {
+        newRequestBody.mask = undefined
+    }
+
+    const newTaskRequest = modifyCurrentRequest(req, reqDiff, newRequestBody)
     newTaskRequest.numOutputsTotal = 1 // this can be user-configurable in the future
     newTaskRequest.batchCount = 1
 
@@ -696,6 +697,12 @@ async function checkTasks() {
 
     const genSeeds = Boolean(typeof task.reqBody.seed !== 'number' || (task.reqBody.seed === task.seed && task.numOutputsTotal > 1))
     const startSeed = task.reqBody.seed || task.seed
+    
+    // Update the seed *before* starting the processing so it's retained if user stops the task
+    if (randomSeedField.checked) {
+        seedField.value = task.seed
+    }
+    
     for (let i = 0; i < task.batchCount; i++) {
         let newTask = task
         if (task.batchCount > 1) {
@@ -740,10 +747,6 @@ async function checkTasks() {
         if (task.outputMsg.innerText.toLowerCase().indexOf('error') === -1) {
             task.outputMsg.innerText = 'Task ended after ' + time + ' seconds'
         }
-    }
-
-    if (randomSeedField.checked) {
-        seedField.value = task.seed
     }
 
     currentTask = null
@@ -791,6 +794,7 @@ function getCurrentUserRequest() {
             stream_image_progress: (numOutputsTotal > 50 ? false : streamImageProgressField.checked),
             show_only_filtered_image: showOnlyFilteredImageField.checked,
             output_format: outputFormatField.value,
+            output_quality: outputQualityField.value,
             original_prompt: promptField.value,
             active_tags: (activeTags.map(x => x.name))
         }
@@ -803,7 +807,7 @@ function getCurrentUserRequest() {
         //     newTask.reqBody.mask = maskImagePreview.src
         // }
         if (maskSetting.checked) {
-            newTask.reqBody.mask = inpaintingEditor.getImg()
+            newTask.reqBody.mask = imageInpainter.getImg()
         }
         newTask.reqBody.sampler = 'ddim'
     } else {
@@ -936,8 +940,9 @@ function getPrompts() {
     prompts = prompts.map(prompt => prompt.trim())
     prompts = prompts.filter(prompt => prompt !== '')
 
-    if (activeTags.length > 0) {
-        const promptTags = activeTags.map(x => x.name).join(", ")
+    const newTags = activeTags.filter(tag => tag.inactive === undefined || tag.inactive === false)
+    if (newTags.length > 0) {
+        const promptTags = newTags.map(x => x.name).join(", ")
         prompts = prompts.map((prompt) => `${prompt}, ${promptTags}`)
     }
 
@@ -1089,13 +1094,14 @@ numOutputsTotalField.addEventListener('change', renameMakeImageButton)
 numOutputsParallelField.addEventListener('change', renameMakeImageButton)
 
 function onDimensionChange() {
-    if (!maskSetting.checked) {
-        return
-    }
     let widthValue = parseInt(widthField.value)
     let heightValue = parseInt(heightField.value)
-
-    resizeInpaintingEditor(widthValue, heightValue)
+    if (!initImagePreviewContainer.classList.contains("has-image")) {
+        imageEditor.setImage(null, widthValue, heightValue)
+    }
+    else {
+        imageInpainter.setImage(initImagePreview.src, widthValue, heightValue)
+    }
 }
 
 diskPathField.disabled = !saveToDiskField.checked
@@ -1114,6 +1120,7 @@ document.onkeydown = function(e) {
     }
 }
 
+/********************* Guidance **************************/
 function updateGuidanceScale() {
     guidanceScaleField.value = guidanceScaleSlider.value / 10
     guidanceScaleField.dispatchEvent(new Event("change"))
@@ -1134,6 +1141,7 @@ guidanceScaleSlider.addEventListener('input', updateGuidanceScale)
 guidanceScaleField.addEventListener('input', updateGuidanceScaleSlider)
 updateGuidanceScale()
 
+/********************* Prompt Strength *******************/
 function updatePromptStrength() {
     promptStrengthField.value = promptStrengthSlider.value / 100
     promptStrengthField.dispatchEvent(new Event("change"))
@@ -1153,6 +1161,36 @@ function updatePromptStrengthSlider() {
 promptStrengthSlider.addEventListener('input', updatePromptStrength)
 promptStrengthField.addEventListener('input', updatePromptStrengthSlider)
 updatePromptStrength()
+
+/********************* JPEG Quality **********************/
+function updateOutputQuality() {
+    outputQualityField.value =  0 | outputQualitySlider.value
+    outputQualityField.dispatchEvent(new Event("change"))
+}
+
+function updateOutputQualitySlider() {
+    if (outputQualityField.value < 10) {
+        outputQualityField.value = 10
+    } else if (outputQualityField.value > 95) {
+        outputQualityField.value = 95
+    }
+
+    outputQualitySlider.value =  0 | outputQualityField.value
+    outputQualitySlider.dispatchEvent(new Event("change"))
+}
+
+outputQualitySlider.addEventListener('input', updateOutputQuality)
+outputQualityField.addEventListener('input', debounce(updateOutputQualitySlider))
+updateOutputQuality()
+
+outputFormatField.addEventListener('change', e => {
+    if (outputFormatField.value == 'jpeg') {
+        outputQualityRow.style.display='table-row'
+    } else {
+        outputQualityRow.style.display='none'
+    }
+})
+
 
 async function getModels() {
     try {
@@ -1208,7 +1246,7 @@ async function getModels() {
 function checkRandomSeed() {
     if (randomSeedField.checked) {
         seedField.disabled = true
-        seedField.value = "0"
+        //seedField.value = "0" // This causes the seed to be lost if the user changes their mind after toggling the checkbox
     } else {
         seedField.disabled = false
     }
@@ -1216,12 +1254,8 @@ function checkRandomSeed() {
 randomSeedField.addEventListener('input', checkRandomSeed)
 checkRandomSeed()
 
-function showInitImagePreview() {
+function loadImg2ImgFromFile() {
     if (initImageSelector.files.length === 0) {
-        initImagePreviewContainer.style.display = 'none'
-        // inpaintingEditorContainer.style.display = 'none'
-        promptStrengthContainer.style.display = 'none'
-        // maskSetting.style.display = 'none'
         return
     }
 
@@ -1229,51 +1263,41 @@ function showInitImagePreview() {
     let file = initImageSelector.files[0]
 
     reader.addEventListener('load', function(event) {
-        // console.log(file.name, reader.result)
         initImagePreview.src = reader.result
-        initImagePreviewContainer.style.display = 'block'
-        inpaintingEditorContainer.style.display = 'none'
-        promptStrengthContainer.style.display = 'table-row'
-        samplerSelectionContainer.style.display = 'none'
-        // maskSetting.checked = false
     })
 
     if (file) {
         reader.readAsDataURL(file)
     }
 }
-initImageSelector.addEventListener('change', showInitImagePreview)
-showInitImagePreview()
+initImageSelector.addEventListener('change', loadImg2ImgFromFile)
+loadImg2ImgFromFile()
 
-initImagePreview.addEventListener('load', function() {
-    inpaintingEditorCanvasBackground.style.backgroundImage = "url('" + this.src + "')"
-    // maskSetting.style.display = 'block'
-    // inpaintingEditorContainer.style.display = 'block'
+function img2imgLoad() {
+    promptStrengthContainer.style.display = 'table-row'
+    samplerSelectionContainer.style.display = "none"
+    initImagePreviewContainer.classList.add("has-image")
+
     initImageSizeBox.textContent = initImagePreview.naturalWidth + " x " + initImagePreview.naturalHeight
-    initImageSizeBox.style.display = 'block'
-})
+    imageEditor.setImage(this.src, initImagePreview.naturalWidth, initImagePreview.naturalHeight)
+    imageInpainter.setImage(this.src, parseInt(widthField.value), parseInt(heightField.value))
+}
 
-initImageClearBtn.addEventListener('click', function() {
+function img2imgUnload() {
     initImageSelector.value = null
-    // maskImageSelector.value = null
-
     initImagePreview.src = ''
-    // maskImagePreview.src = ''
     maskSetting.checked = false
 
-    initImagePreviewContainer.style.display = 'none'
-    // inpaintingEditorContainer.style.display = 'none'
-    // maskImagePreviewContainer.style.display = 'none'
+    promptStrengthContainer.style.display = "none"
+    samplerSelectionContainer.style.display = ""
+    initImagePreviewContainer.classList.remove("has-image")
+    imageEditor.setImage(null, parseInt(widthField.value), parseInt(heightField.value))
 
-    // maskSetting.style.display = 'none'
-
-    promptStrengthContainer.style.display = 'none'
-    samplerSelectionContainer.style.display = 'table-row'
-    initImageSizeBox.style.display = 'none'
-})
+}
+initImagePreview.addEventListener('load', img2imgLoad)
+initImageClearBtn.addEventListener('click', img2imgUnload)
 
 maskSetting.addEventListener('click', function() {
-    inpaintingEditorContainer.style.display = (this.checked ? 'block' : 'none')
     onDimensionChange()
 })
 
@@ -1313,9 +1337,22 @@ document.querySelectorAll('.popup').forEach(popup => {
     }
 })
 
-var tabElements = [];
+var tabElements = []
+function selectTab(tab_id) {
+    let tabInfo = tabElements.find(t => t.tab.id == tab_id)
+    if (!tabInfo.tab.classList.contains("active")) {
+        tabElements.forEach(info => {
+            if (info.tab.classList.contains("active")) {
+                info.tab.classList.toggle("active")
+                info.content.classList.toggle("active")
+            }
+        })
+        tabInfo.tab.classList.toggle("active")
+        tabInfo.content.classList.toggle("active")
+    }
+}
 function linkTabContents(tab) {
-    var name = tab.id.replace("tab-", "");
+    var name = tab.id.replace("tab-", "")
     var content = document.getElementById(`tab-content-${name}`)
     tabElements.push({
         name: name,
@@ -1323,18 +1360,7 @@ function linkTabContents(tab) {
         content: content
     })
 
-    tab.addEventListener("click", event => {
-        if (!tab.classList.contains("active")) {
-            tabElements.forEach(tabInfo => {
-                if (tabInfo.tab.classList.contains("active")) {
-                    tabInfo.tab.classList.toggle("active")
-                    tabInfo.content.classList.toggle("active")
-                }
-            })
-            tab.classList.toggle("active")
-            content.classList.toggle("active")
-        }
-    })
+    tab.addEventListener("click", event => selectTab(tab.id))
 }
 
 document.querySelectorAll(".tab").forEach(linkTabContents)

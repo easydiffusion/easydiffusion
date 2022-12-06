@@ -85,13 +85,14 @@ const TASK_MAPPING = {
             if (!seed) {
                 randomSeedField.checked = true
                 seedField.disabled = true
+                seedField.value = 0
                 return
             }
             randomSeedField.checked = false
             seedField.disabled = false
             seedField.value = seed
         },
-        readUI: () => (randomSeedField.checked ? Math.floor(Math.random() * 10000000) : parseInt(seedField.value)),
+        readUI: () => parseInt(seedField.value), // just return the value the user is seeing in the UI
         parse: (val) => parseInt(val)
     },
     num_inference_steps: { name: 'Steps',
@@ -127,10 +128,12 @@ const TASK_MAPPING = {
     },
     mask:  { name: 'Mask',
         setUI: (mask) => {
-            inpaintingEditor.setImg(mask)
+            setTimeout(() => { // add a delay to insure this happens AFTER the main image loads (which reloads the inpainter)
+                imageInpainter.setImg(mask)
+            }, 250)
             maskSetting.checked = Boolean(mask)
         },
-        readUI: () => (maskSetting.checked ? inpaintingEditor.getImg() : undefined),
+        readUI: () => (maskSetting.checked ? imageInpainter.getImg() : undefined),
         parse: (val) => val
     },
 
@@ -289,18 +292,11 @@ function restoreTaskToUI(task, fieldsToSkip) {
     // Show the source picture if present
     initImagePreview.src = (task.reqBody.init_image == undefined ? '' : task.reqBody.init_image)
     if (IMAGE_REGEX.test(initImagePreview.src)) {
-        Boolean(task.reqBody.mask) ? inpaintingEditor.setImg(task.reqBody.mask) : inpaintingEditor.resetBackground()
-        initImagePreviewContainer.style.display = 'block'
-        inpaintingEditorContainer.style.display = 'none'
-        promptStrengthContainer.style.display = 'table-row'
-        //samplerSelectionContainer.style.display = 'none'
-        // maskSetting.checked = false
-        inpaintingEditorContainer.style.display = maskSetting.checked ? 'block' : 'none'
-    } else {
-        initImagePreviewContainer.style.display = 'none'
-        // inpaintingEditorContainer.style.display = 'none'
-        promptStrengthContainer.style.display = 'none'
-        // maskSetting.style.display = 'none'
+        if (Boolean(task.reqBody.mask)) {
+            setTimeout(() => { // add a delay to insure this happens AFTER the main image loads (which reloads the inpainter)
+                imageInpainter.setImg(task.reqBody.mask)
+            }, 250)
+        }
     }
 }
 function readUI() {

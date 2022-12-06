@@ -29,6 +29,7 @@ from basicsr.archs.rrdbnet_arch import RRDBNet
 from realesrgan import RealESRGANer
 
 from threading import Lock
+from safetensors.torch import load_file
 
 import uuid
 
@@ -71,8 +72,6 @@ def thread_init(device):
     thread_data.device_name = None
     thread_data.unet_bs = 1
     thread_data.precision = 'autocast'
-    thread_data.sampler_plms = None
-    thread_data.sampler_ddim = None
 
     thread_data.turbo = False
     thread_data.force_full_precision = False
@@ -98,7 +97,12 @@ def isSD2():
 
 def load_model_ckpt():
     if not thread_data.ckpt_file: raise ValueError(f'Thread ckpt_file is undefined.')
-    if not os.path.exists(thread_data.ckpt_file + '.ckpt'): raise FileNotFoundError(f'Cannot find {thread_data.ckpt_file}.ckpt')
+    if os.path.exists(thread_data.ckpt_file + '.ckpt'):
+        thread_data.ckpt_file += '.ckpt'
+    elif os.path.exists(thread_data.ckpt_file + '.safetensors'):
+        thread_data.ckpt_file += '.safetensors'
+    elif not os.path.exists(thread_data.ckpt_file):
+        raise FileNotFoundError(f'Cannot find {thread_data.ckpt_file}.ckpt or .safetensors')
 
     if not thread_data.precision:
         thread_data.precision = 'full' if thread_data.force_full_precision else 'autocast'
@@ -109,7 +113,7 @@ def load_model_ckpt():
     if thread_data.device == 'cpu':
         thread_data.precision = 'full'
 
-    print('loading', thread_data.ckpt_file + '.ckpt', 'to device', thread_data.device, 'using precision', thread_data.precision)
+    print('loading', thread_data.ckpt_file, 'to device', thread_data.device, 'using precision', thread_data.precision)
 
     if thread_data.test_sd2:
         load_model_ckpt_sd2()
@@ -117,7 +121,7 @@ def load_model_ckpt():
         load_model_ckpt_sd1()
 
 def load_model_ckpt_sd1():
-    sd = load_model_from_config(thread_data.ckpt_file + '.ckpt')
+    sd = load_model_from_config(thread_data.ckpt_file)
     li, lo = [], []
     for key, value in sd.items():
         sp = key.split(".")
@@ -204,7 +208,7 @@ def load_model_ckpt_sd1():
         thread_data.model_fs_is_half = False
 
     print(f'''loaded model
- model file: {thread_data.ckpt_file}.ckpt
+ model file: {thread_data.ckpt_file}
  model.device: {model.device}
  modelCS.device: {modelCS.cond_stage_model.device}
  modelFS.device: {thread_data.modelFS.device}
@@ -215,7 +219,7 @@ def load_model_ckpt_sd2():
     config = OmegaConf.load(config_file)
     verbose = False
 
-    sd = load_model_from_config(thread_data.ckpt_file + '.ckpt')
+    sd = load_model_from_config(thread_data.ckpt_file)
 
     thread_data.model = instantiate_from_config(config.model)
     m, u = thread_data.model.load_state_dict(sd, strict=False)
@@ -230,6 +234,8 @@ def load_model_ckpt_sd2():
     thread_data.model.eval()
     del sd
 
+    thread_data.model.cond_stage_model.device = torch.device(thread_data.device)
+
     if thread_data.device != "cpu" and thread_data.precision == "autocast":
         thread_data.model.half()
         thread_data.model_is_half = True
@@ -239,7 +245,7 @@ def load_model_ckpt_sd2():
         thread_data.model_fs_is_half = False
 
     print(f'''loaded model
- model file: {thread_data.ckpt_file}.ckpt
+ model file: {thread_data.ckpt_file}
  using precision: {thread_data.precision}''')
 
 def unload_filters():
@@ -401,7 +407,12 @@ def is_model_reload_necessary(req: Request):
     # custom model support:
     #  the req.use_stable_diffusion_model needs to be a valid path
     #  to the ckpt file (without the extension).
-    if not os.path.exists(req.use_stable_diffusion_model + '.ckpt'): raise FileNotFoundError(f'Cannot find {req.use_stable_diffusion_model}.ckpt')
+    if os.path.exists(req.use_stable_diffusion_model + '.ckpt'):
+        req.use_stable_diffusion_model += '.ckpt'
+    elif os.path.exists(req.use_stable_diffusion_model + '.safetensors'):
+        req.use_stable_diffusion_model += '.safetensors'
+    elif not os.path.exists(req.use_stable_diffusion_model): 
+        raise FileNotFoundError(f'Cannot find {req.use_stable_diffusion_model}.ckpt or .safetensors')
 
     needs_model_reload = False
     if not thread_data.model or thread_data.ckpt_file != req.use_stable_diffusion_model or thread_data.vae_file != req.use_vae_model:
@@ -664,12 +675,12 @@ def do_mk_img(req: Request, data_queue: queue.Queue, task_temp_images: list, ste
                         if req.save_to_disk_path is not None:
                             if return_orig_img:
                                 img_out_path = get_base_path(req.save_to_disk_path, req.session_id, prompts[0], img_id, req.output_format)
-                                save_image(img, img_out_path)
+                                save_image(img, img_out_path, req.output_format, req.output_quality)
                             meta_out_path = get_base_path(req.save_to_disk_path, req.session_id, prompts[0], img_id, 'txt')
                             save_metadata(meta_out_path, req, prompts[0], opt_seed)
 
                         if return_orig_img:
-                            img_buffer = img_to_buffer(img, req.output_format)
+                            img_buffer = img_to_buffer(img, req.output_format, req.output_quality)
                             img_str = buffer_to_base64_str(img_buffer, req.output_format)
                             res_image_orig = ResponseImage(data=img_str, seed=opt_seed)
                             res.images.append(res_image_orig)
@@ -689,14 +700,14 @@ def do_mk_img(req: Request, data_queue: queue.Queue, task_temp_images: list, ste
                                 filters_applied.append(req.use_upscale)
                             if (len(filters_applied) > 0):
                                 filtered_image = Image.fromarray(img_data[i])
-                                filtered_buffer = img_to_buffer(filtered_image, req.output_format)
+                                filtered_buffer = img_to_buffer(filtered_image, req.output_format, req.output_quality)
                                 filtered_img_data = buffer_to_base64_str(filtered_buffer, req.output_format)
                                 response_image = ResponseImage(data=filtered_img_data, seed=opt_seed)
                                 res.images.append(response_image)
                                 task_temp_images[i] = filtered_buffer
                                 if req.save_to_disk_path is not None:
                                     filtered_img_out_path = get_base_path(req.save_to_disk_path, req.session_id, prompts[0], img_id, req.output_format, "_".join(filters_applied))
-                                    save_image(filtered_image, filtered_img_out_path)
+                                    save_image(filtered_image, filtered_img_out_path, req.output_format, req.output_quality)
                                     response_image.path_abs = filtered_img_out_path
                                 del filtered_image
                         # Filter Applied, move to next seed
@@ -717,9 +728,12 @@ def do_mk_img(req: Request, data_queue: queue.Queue, task_temp_images: list, ste
 
     return res
 
-def save_image(img, img_out_path):
+def save_image(img, img_out_path, output_format="", output_quality=75):
     try:
-        img.save(img_out_path)
+        if output_format.upper() == "JPEG":
+            img.save(img_out_path, quality=output_quality)
+        else:
+            img.save(img_out_path)
     except:
         print('could not save the file', traceback.format_exc())
 
@@ -753,7 +767,7 @@ def _txt2img(opt_W, opt_H, opt_n_samples, opt_ddim_steps, opt_scale, start_code,
     if not thread_data.test_sd2:
         move_to_cpu(thread_data.modelCS)
 
-    if thread_data.test_sd2 and sampler_name not in ('plms', 'ddim'):
+    if thread_data.test_sd2 and sampler_name not in ('plms', 'ddim', 'dpm2'):
         raise Exception('Only plms and ddim samplers are supported right now, in SD 2.0')
 
 
@@ -768,18 +782,18 @@ def _txt2img(opt_W, opt_H, opt_n_samples, opt_ddim_steps, opt_scale, start_code,
     #                                                  x_T=start_code)
 
     if thread_data.test_sd2:
-        from ldm.models.diffusion.ddim import DDIMSampler
-        from ldm.models.diffusion.plms import PLMSSampler
-
-        shape = [opt_C, opt_H // opt_f, opt_W // opt_f]
-
         if sampler_name == 'plms':
+            from ldm.models.diffusion.plms import PLMSSampler
             sampler = PLMSSampler(thread_data.model)
         elif sampler_name == 'ddim':
+            from ldm.models.diffusion.ddim import DDIMSampler
             sampler = DDIMSampler(thread_data.model)
-
             sampler.make_schedule(ddim_num_steps=opt_ddim_steps, ddim_eta=opt_ddim_eta, verbose=False)
+        elif sampler_name == 'dpm2':
+            from ldm.models.diffusion.dpm_solver import DPMSolverSampler
+            sampler = DPMSolverSampler(thread_data.model)
 
+        shape = [opt_C, opt_H // opt_f, opt_W // opt_f]
 
         samples_ddim, intermediates = sampler.sample(
             S=opt_ddim_steps,
@@ -869,13 +883,21 @@ def chunk(it, size):
 
 def load_model_from_config(ckpt, verbose=False):
     print(f"Loading model from {ckpt}")
-    pl_sd = torch.load(ckpt, map_location="cpu")
+
+    if ckpt.endswith(".safetensors"):
+        print("Loading from safetensors")
+        pl_sd = load_file(ckpt, device="cpu")
+    else:
+        pl_sd = torch.load(ckpt, map_location="cpu")
+
     if "global_step" in pl_sd:
         print(f"Global Step: {pl_sd['global_step']}")
-    sd = pl_sd["state_dict"]
-    return sd
 
-# utils
+    if "state_dict" in pl_sd:
+        return pl_sd["state_dict"]
+    else:
+        return pl_sd
+
 class UserInitiatedStop(Exception):
     pass
 
@@ -919,13 +941,16 @@ def load_mask(mask_str, h0, w0, newH, newW, invert=False):
     return image
 
 # https://stackoverflow.com/a/61114178
-def img_to_base64_str(img, output_format="PNG"):
-    buffered = img_to_buffer(img, output_format)
+def img_to_base64_str(img, output_format="PNG", output_quality=75):
+    buffered = img_to_buffer(img, output_format, quality=output_quality)
     return buffer_to_base64_str(buffered, output_format)
 
-def img_to_buffer(img, output_format="PNG"):
+def img_to_buffer(img, output_format="PNG", output_quality=75):
     buffered = BytesIO()
-    img.save(buffered, format=output_format)
+    if ( output_format.upper() == "JPEG" ):
+        img.save(buffered, format=output_format, quality=output_quality)
+    else:
+        img.save(buffered, format=output_format)
     buffered.seek(0)
     return buffered
 
