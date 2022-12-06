@@ -94,12 +94,6 @@ def apply_hypernetwork(hypernetwork, context, layer=None):
     context_v = hypernetwork_layers[1](context)
     return context_k, context_v
 
-
-def default(val, d):
-    if val is not None:
-        return val
-    return d() if inspect.isfunction(x) else d
-
 def get_kv(context, hypernetwork):
     if hypernetwork is None:
         return context, context
@@ -108,6 +102,7 @@ def get_kv(context, hypernetwork):
 
 # This might need updating as the optimisedSD code changes
 # I think yall have a system for this (patch files in sd_internal) but idk how it works and no amount of searching gave me any clue
+# just in case for attribution https://github.com/easydiffusion/diffusion-kit/blob/e8ea0cadd543056059cd951e76d4744de76327d2/optimizedSD/splitAttention.py#L171
 def new_cross_attention_forward(self, x, context=None, mask=None):
     h = self.heads
 
