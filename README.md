@@ -10,8 +10,8 @@ New! Experimental support for Stable Diffusion 2.0 is available in beta!
 ## Step 1: Download the installer
 
 <p float="left">
-  <a href="#installation"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/develop/media/download-win.png" width="200" /></a>
-  <a href="#installation"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/develop/media/download-linux.png" width="200" /></a>
+  <a href="#installation"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-win.png" width="200" /></a>
+  <a href="#installation"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-linux.png" width="200" /></a>
 </p>
 
 ## Step 2: Run the program
