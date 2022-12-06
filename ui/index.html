@@ -388,10 +388,14 @@
 </div>
 </body>
 <script src="media/js/utils.js"></script>
+<script src="media/js/engine.js"></script>
 <script src="media/js/parameters.js"></script>
 <script src="media/js/plugins.js"></script>
+
+<script src="media/js/inpainting-editor.js"></script>
 <script src="media/js/image-modifiers.js"></script>
 <script src="media/js/auto-save.js"></script>
+
 <script src="media/js/main.js"></script>
 <script src="media/js/themes.js"></script>
 <script src="media/js/dnd.js"></script>
@@ -406,8 +410,12 @@ async function init() {
     await loadModifiers()
     await getSystemInfo()
 
-    setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
-    healthCheck()
+    SD.init({
+        events: {
+            statusChange: setServerStatus
+            , idle: onIdle
+        }
+    })
 
     playSound()
 }
