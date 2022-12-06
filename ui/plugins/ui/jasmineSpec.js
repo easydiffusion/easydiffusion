@@ -181,7 +181,7 @@ describe('stable-diffusion-ui', function() {
                 "height": 128,
                 "seed": Math.floor(Math.random() * 10000000),
 
-                "sampler": "dpm2",
+                "sampler": "plms",
                 "use_stable_diffusion_model": "sd-v1-4",
                 "num_inference_steps": nbr_steps,
                 "guidance_scale": 7.5,
@@ -275,7 +275,7 @@ describe('stable-diffusion-ui', function() {
                 console.log(this, event)
                 if ('update' in event) {
                     const stepUpdate = event.update
-                    if (complete) {
+                    if (complete || (stepUpdate.status && stepUpdate.step === stepUpdate.total_steps)) {
                         expect(stepUpdate.status).toBe('succeeded')
                         expect(stepUpdate.output).toHaveSize(2)
                     } else {
@@ -317,7 +317,7 @@ describe('stable-diffusion-ui', function() {
             //for await (const stepUpdate of renderTask.reader) {
             for await (const stepUpdate of renderTask.reader.open()) {
                 console.log(stepUpdate)
-                if (complete) {
+                if (complete || (stepUpdate.status && stepUpdate.step === stepUpdate.total_steps)) {
                     expect(stepUpdate.status).toBe('succeeded')
                     expect(stepUpdate.output).toHaveSize(1)
                 } else {
@@ -350,7 +350,7 @@ describe('stable-diffusion-ui', function() {
                 console.log(this, event)
                 if ('update' in event) {
                     const stepUpdate = event.update
-                    if (complete) {
+                    if (complete || (stepUpdate.status && stepUpdate.step === stepUpdate.total_steps)) {
                         expect(stepUpdate.status).toBe('succeeded')
                         expect(stepUpdate.output).toHaveSize(2)
                     } else {
