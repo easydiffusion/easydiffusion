@@ -62,6 +62,13 @@ var PARAMETERS = [
         default: true,
     },
     {
+        id: "process_order_toggle",
+        type: ParameterType.checkbox,
+        label: "Process newest jobs first",
+        note: "reverse the normal processing order",
+        default: false,
+    },
+    {
         id: "ui_open_browser_on_start",
         type: ParameterType.checkbox,
         label: "Open browser on startup",
@@ -368,73 +375,69 @@ function setHostInfo(hosts) {
 
 async function getSystemInfo() {
     try {
-        let res = await fetch('/get/system_info')
-        if (res.status === 200) {
-            res = await res.json()
-            let devices = res['devices']
-            let hosts = res['hosts']
+        const res = await SD.getSystemInfo()
+        let devices = res['devices']
 
-            let allDeviceIds = Object.keys(devices['all']).filter(d => d !== 'cpu')
-            let activeDeviceIds = Object.keys(devices['active']).filter(d => d !== 'cpu')
+        let allDeviceIds = Object.keys(devices['all']).filter(d => d !== 'cpu')
+        let activeDeviceIds = Object.keys(devices['active']).filter(d => d !== 'cpu')
 
-            if (activeDeviceIds.length === 0) {
-                useCPUField.checked = true
-            }
-
-            if (allDeviceIds.length < MIN_GPUS_TO_SHOW_SELECTION || useCPUField.checked) {
-                let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
-                gpuSettingEntry.style.display = 'none'
-                let autoPickGPUSettingEntry = getParameterSettingsEntry('auto_pick_gpus')
-                autoPickGPUSettingEntry.style.display = 'none'
-            }
-
-            if (allDeviceIds.length === 0) {
-                useCPUField.checked = true
-                useCPUField.disabled = true // no compatible GPUs, so make the CPU mandatory
-            }
-
-            autoPickGPUsField.checked = (devices['config'] === 'auto')
-
-            useGPUsField.innerHTML = ''
-            allDeviceIds.forEach(device => {
-                let deviceName = devices['all'][device]['name']
-                let deviceOption = `<option value="${device}">${deviceName} (${device})</option>`
-                useGPUsField.insertAdjacentHTML('beforeend', deviceOption)
-            })
-
-            if (autoPickGPUsField.checked) {
-                let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
-                gpuSettingEntry.style.display = 'none'
-            } else {
-                $('#use_gpus').val(activeDeviceIds)
-            }
-
-            setDeviceInfo(devices)
-            setHostInfo(hosts)
+        if (activeDeviceIds.length === 0) {
+            useCPUField.checked = true
         }
+
+        if (allDeviceIds.length < MIN_GPUS_TO_SHOW_SELECTION || useCPUField.checked) {
+            let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
+            gpuSettingEntry.style.display = 'none'
+            let autoPickGPUSettingEntry = getParameterSettingsEntry('auto_pick_gpus')
+            autoPickGPUSettingEntry.style.display = 'none'
+        }
+
+        if (allDeviceIds.length === 0) {
+            useCPUField.checked = true
+            useCPUField.disabled = true // no compatible GPUs, so make the CPU mandatory
+        }
+
+        autoPickGPUsField.checked = (devices['config'] === 'auto')
+
+        useGPUsField.innerHTML = ''
+        allDeviceIds.forEach(device => {
+            let deviceName = devices['all'][device]['name']
+            let deviceOption = `<option value="${device}">${deviceName} (${device})</option>`
+            useGPUsField.insertAdjacentHTML('beforeend', deviceOption)
+        })
+
+        if (autoPickGPUsField.checked) {
+            let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
+            gpuSettingEntry.style.display = 'none'
+        } else {
+            $('#use_gpus').val(activeDeviceIds)
+        }
+
+        setDeviceInfo(devices)
+        setHostInfo(res['hosts'])
     } catch (e) {
         console.log('error fetching devices', e)
     }
 }
 
 saveSettingsBtn.addEventListener('click', function() {
-    let updateBranch = (useBetaChannelField.checked ? 'beta' : 'main')
-
     if (listenPortField.value == '') {
         alert('The network port field must not be empty.')
-    } else if (listenPortField.value<1 || listenPortField.value>65535) {
-        alert('The network port must be a number from 1 to 65535')
-    } else {
-        changeAppConfig({
-            'render_devices': getCurrentRenderDeviceSelection(),
-            'update_branch': updateBranch,
-            'ui_open_browser_on_start': uiOpenBrowserOnStartField.checked,
-            'listen_to_network': listenToNetworkField.checked,
-            'listen_port': listenPortField.value,
-            'test_sd2': testSD2Field.checked
-        })
+        return
     }
-
+    if (listenPortField.value < 1 || listenPortField.value > 65535) {
+        alert('The network port must be a number from 1 to 65535')
+        return
+    }
+    let updateBranch = (useBetaChannelField.checked ? 'beta' : 'main')
+    changeAppConfig({
+        'render_devices': getCurrentRenderDeviceSelection(),
+        'update_branch': updateBranch,
+        'ui_open_browser_on_start': uiOpenBrowserOnStartField.checked,
+        'listen_to_network': listenToNetworkField.checked,
+        'listen_port': listenPortField.value,
+        'test_sd2': testSD2Field.checked
+    })
     saveSettingsBtn.classList.add('active')
     asyncDelay(300).then(() => saveSettingsBtn.classList.remove('active'))
 })

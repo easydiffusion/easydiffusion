@@ -1,7 +1,10 @@
-(function () {
-    "use strict"
+(function () { "use strict"
+    if (typeof editorModifierTagsList !== 'object') {
+        console.error('editorModifierTagsList missing...')
+        return
+    }
 
-    var styleSheet = document.createElement("style");
+    const styleSheet = document.createElement("style");
     styleSheet.textContent = `
         .modifier-card-tiny.drag-sort-active {
             background: transparent;
@@ -12,7 +15,7 @@
     document.head.appendChild(styleSheet);
 
     // observe for changes in tag list
-    var observer = new MutationObserver(function (mutations) {
+    const observer = new MutationObserver(function (mutations) {
     //    mutations.forEach(function (mutation) {
             if (editorModifierTagsList.childNodes.length > 0) {
                 ModifierDragAndDrop(editorModifierTagsList)
