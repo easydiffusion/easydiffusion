@@ -1074,3 +1074,37 @@ div#modelmgr-sd button {
 #ip-info div {
     line-height: 200%;
 }
+
+a.modelmgr-modellink {
+    color: var(--text-color);
+    text-decoration: none;
+    background-color: var(--accent-color);
+    padding: 6px;
+    border-radius: 5px;
+}
+button.modelmgr-downloadmodel {
+    padding: 3px 6px;
+    background: var(--accent-color);
+    margin:3px 0 3px 0;
+}
+
+span.modelmgr-tag {
+    border-radius: 3px;
+    background: var(--background-color1);
+    padding: 3px 6px 3px 6px;
+}
+
+div.modelmgr-version-pane {
+    background: var(--background-color3);
+    padding: 3px 10px;
+    margin: 12px 0px 0px 3em;
+}
+div#modelmgr {
+    text-align:left;
+}
+div#modelmgr-catalog > div {
+    text-align:left;
+}
+div#modelmgr-catalog > div > h2 {
+    margin-top:0px;
+}

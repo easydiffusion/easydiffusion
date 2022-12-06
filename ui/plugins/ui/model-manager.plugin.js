@@ -53,7 +53,7 @@ class sduiTab {
         let models = await res.json()
         console.log(models)
 
-        let content = `<div id="modelmgr" class="tab-content-inner" style="text-align:left;">`
+        let content = `<div id="modelmgr" class="tab-content-inner">`
 
 	// Stable Diffusion
 	content += `<div id="modelmgr-sd">`
@@ -67,7 +67,7 @@ class sduiTab {
 	         <div><i class="fa fa-file-code icon"></i> ${m}</div>
 	         <div style="padding-left:2em;">
 		   <label><i class="fa fa-bars-staggered"></i> Trained tokens</label><br/>
-		   <textarea data-model="${m}" style="width:100%;">${token[m]}</textarea>
+		   <textarea data-model="${m}" style="width:100%;">${token[m] || ""}</textarea>
 	         </div>
 	       </div>
 	    `
@@ -79,8 +79,8 @@ class sduiTab {
         content += `</div>`
 	content += `
 	    <div id="modelmgr-catalog" class="popup image-editor-popup">
-	        <div style="text-align:left;">
-		    <h2 style="margin-top:0px;color=#C1C2C5;"><a href="https://civitai.com/" target="_blank" style="text-decoration:none;color:white;">Civit<span style="color:#228be6;">ai</span></a></h2>
+	        <div>
+		    <h2 style="color=#C1C2C5;"><a href="https://civitai.com/" target="_blank" style="text-decoration:none;color:white;">Civit<span style="color:#228be6;">ai</span></a></h2>
 		    <i class="close-button fa-solid fa-xmark"></i>
 		    <div id="modelmgr-results"></div>
 		</div>
@@ -96,6 +96,27 @@ class sduiTab {
 	tab.onactive= function() { 
 	    document.querySelectorAll('#modelmgr-sd textarea').forEach( element => { element.onkeyup() } )
 	}
+        document.querySelector('#modelmgr-sd-catalog').onclick = async function() {
+	    let resultsPane = document.querySelector('#modelmgr-results')
+	    resultsPane.innerHTML = '<h1>Loading...</h1>'
+            catalogPane.classList.toggle('active')
+	    if ( searchResults == null ) {
+	        try {
+	            let res = await fetch('https://civitai.com/api/v1/models?limit=20&types=Checkpoint&sort=Most+Downloaded')
+	            searchResults = await res.json()
+	        } catch (e) {
+	            console.log(e)
+	        }
+	        console.log(searchResults)
+	    }
+	    renderCivitaiResults(searchResults)
+        }
+
+        // Download via URL
+        document.querySelector('#modelmgr-sd-add').onclick = async function() {
+            let url = prompt('URL of the model:')
+	    downloadFromURL(url)
+        }
     }
 
     function addModelToken(prompts) { 
@@ -123,18 +144,17 @@ class sduiTab {
 	}
     }
 
-    await updateModels()
-    await updateModelTokenSection()
 
     // Save trained tokens to localstorage upon update
-    document.querySelector('#modelmgr-sd').onchange = function() {
+    function persistTokens() {
         document.querySelectorAll('#modelmgr-sd textarea').forEach( i => {
             token[i.dataset.model] = i.value
         })
         localStorage.setItem('modelToken', JSON.stringify(token))
     }
 
-    async function downloadFromURL(url) {
+
+    async function downloadFromURL(url, tokens={}) {
         let res = await fetch('/model/download', {
             method: 'POST',
             headers: {
@@ -149,31 +169,32 @@ class sduiTab {
 	let progress = document.querySelector('#modelmgr-download-progress')
 	let i=0
 	let data = null
+	let filename = ""
 	do {
 	    await asyncDelay(1333)
 	    try {
 	        res = await fetch('/model/download/'+downloadRequest.taskId)
 	        data = await res.json()
 	        console.log(data)
-                progress.innerHTML = '<big>Downloaded ' + ( ( data.downloaded * 100 / data.total ) >>0 ) + "%</big>"
+                progress.innerHTML = `<big>Downloaded ${ ( data.downloaded * 100 / data.total ) >>0 }%</big><br><small>${data.filename}</small>`
 	    } catch (e) {
 	        console.log(e)
 	    }
 	} while (data==null || data['state'] != 'completed')
+
+        let modelname = filename.split('.').slice(0, -1).join('.')
+        token[modelname] = tokens
 	await updateModels()
         
     }
 
-    // Download via URL
-    document.querySelector('#modelmgr-sd-add').onclick = async function() {
-        let url = prompt('URL of the model:')
-	downloadFromURL(url)
-    }
 
     // Show details of a modell
     function renderCivitaiModellDetails(item) {
 	let resultsPane = document.querySelector('#modelmgr-results')
+	let modeltokens = {}
 	let content = `<hr><h2>${item.name} <span style="color:#777788;">#${item.id}</span></h2>`
+	content += `<p><a href="https://civitai.com/models/${item.id}" target="_blank" class="modelmgr-modellink"><i class="fa-regular fa-file-lines"></i> Model description page on civitai.com</a></p>`
 	if ( item.creator.username != 'Civitai' ) {
 	    let image = ""
 	    if ( item.creator.image != null ) {
@@ -182,19 +203,20 @@ class sduiTab {
 	    content += `<h3>${image}<i>by ${item.creator.username}</i></h3>`
 	}
 	item.tags.forEach( tag => {
-	    content += `<span class="modelmgr-tag" style="border-radius:3px;background:var(--background-color1); padding: 3px 6px 3px 6px;">${tag}</span> `
+	    content += `<span class="modelmgr-tag">${tag}</span> `
 	})
 
 	item.modelVersions.forEach( model => {
-	    content += `<div class="modelmgr-version-pane" style="background:var(--background-color3);padding:3px 10px; margin: 12px 0px 0px 3em;"><h3>Version ${model.name}</h3>`
+	    content += `<div class="modelmgr-version-pane"><h3>Version ${model.name}</h3>`
 	    if ( model.trainedWords.length != 0 ) {
 	        content += '<b>Trained Tokens:</b> '
 	        model.trainedWords.forEach( word => {
-	            content += `<span class="modelmgr-tag" style="border-radius:3px;background:var(--background-color1); padding: 3px 6px 3px 6px;">${word}</span> `
+	            content += `<span class="modelmgr-tag">${word}</span> `
 	        })
 	    }
 	    model.files.forEach( file => {
-	        content += `<br/><button style="padding: 3px 6px;background:var(--accent-color);margin:3px 0 3px 0;" >Download ${(file.sizeKB/1024/1024).toFixed(1)}GB</button> `
+	        content += `<br/><button data-url="${model.downloadUrl}" class="modelmgr-downloadmodel"><i class="fa-solid fa-download"></i> Download ${(file.sizeKB/1024/1024).toFixed(1)}GB</button> `
+		modeltokens[model.downloadUrl] = model.trainedWords
 	    })
 	    content += `<p>`
 	    model.images.forEach( imageData => {
@@ -205,6 +227,14 @@ class sduiTab {
 
 	})
 	resultsPane.innerHTML = content
+	document.querySelectorAll('.modelmgr-downloadmodel').forEach( b => {
+	    b.addEventListener('click',  async (e) => {
+	        console.log(`DOWNLOAD: URL=${b.dataset['url']}`)
+		console.log(modeltokens[b.dataset['url']])
+                catalogPane.classList.toggle('active')
+		await downloadFromURL( b.dataset['url'] );
+	    })
+	})
     }
 
     // Show an overview of search results
@@ -276,23 +306,11 @@ class sduiTab {
     }
 
     
+    await updateModels()
+    await updateModelTokenSection()
+    let catalogPane = document.querySelector('#modelmgr-catalog')
+    document.querySelector('#modelmgr-sd').addEventListener('change', persistTokens)
 
-    document.querySelector('#modelmgr-sd-catalog').onclick = async function() {
-	let resultsPane = document.querySelector('#modelmgr-results')
-        let catalogPane = document.querySelector('#modelmgr-catalog')
-	resultsPane.innerHTML = '<h1>Loading...</h1>'
-        catalogPane.classList.toggle('active')
-	if ( searchResults == null ) {
-	    try {
-	        let res = await fetch('https://civitai.com/api/v1/models?limit=20&type=Checkpoint&sort=Most+Downloaded')
-	        searchResults = await res.json()
-	    } catch (e) {
-	        console.log(e)
-	    }
-	    console.log(searchResults)
-	}
-	renderCivitaiResults(searchResults)
-    }
 
     stableDiffusionModelField.addEventListener('change', updateModelTokenSection)
 
