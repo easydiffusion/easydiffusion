@@ -25,6 +25,7 @@
 - Support loading models in the safetensor format, for improved safety
 
 ### Detailed changelog
+* 2.4.19 - 6 Dec 2022 - Re-organize the code, to make it easier to write user plugins. Thanks @madrang
 * 2.4.18 - 5 Dec 2022 - Make JPEG Output quality user controllable. Thanks @JeLuf
 * 2.4.18 - 5 Dec 2022 - Support loading models in the safetensor format, for improved safety. Thanks @JeLuf
 * 2.4.18 - 1 Dec 2022 - Image Editor, for drawing simple images for guiding the AI. Thanks @mdiller
