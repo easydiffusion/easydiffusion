@@ -26,6 +26,7 @@ class Request:
     use_vae_model: str = None
     show_only_filtered_image: bool = False
     output_format: str = "jpeg" # or "png"
+    output_quality: int = 75
 
     stream_progress_updates: bool = False
     stream_image_progress: bool = False
@@ -48,6 +49,7 @@ class Request:
             "use_stable_diffusion_model": self.use_stable_diffusion_model,
             "use_vae_model": self.use_vae_model,
             "output_format": self.output_format,
+            "output_quality": self.output_quality,
         }
 
     def __str__(self):
@@ -71,6 +73,7 @@ class Request:
     use_vae_model: {self.use_vae_model}
     show_only_filtered_image: {self.show_only_filtered_image}
     output_format: {self.output_format}
+    output_quality: {self.output_quality}
 
     stream_progress_updates: {self.stream_progress_updates}
     stream_image_progress: {self.stream_image_progress}'''

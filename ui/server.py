@@ -24,7 +24,7 @@ USER_UI_PLUGINS_DIR = os.path.abspath(os.path.join(SD_DIR, '..', 'plugins', 'ui'
 CORE_UI_PLUGINS_DIR = os.path.abspath(os.path.join(SD_UI_DIR, 'plugins', 'ui'))
 UI_PLUGINS_SOURCES = ((CORE_UI_PLUGINS_DIR, 'core'), (USER_UI_PLUGINS_DIR, 'user'))
 
-STABLE_DIFFUSION_MODEL_EXTENSIONS = ['.ckpt']
+STABLE_DIFFUSION_MODEL_EXTENSIONS = ['.ckpt', '.safetensors']
 VAE_MODEL_EXTENSIONS = ['.vae.pt', '.ckpt']
 
 OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder

@@ -44,7 +44,7 @@ if NOT DEFINED test_sd2 set test_sd2=N
         @call git -c advice.detachedHead=false checkout 7f32368ed1030a6e710537047bacd908adea183a
     )
     if "%test_sd2%" == "Y" (
-        @call git -c advice.detachedHead=false checkout 5d647c5459f4cd790672512222bc41903c01bb71
+        @call git -c advice.detachedHead=false checkout b1a80dfc75388914252ce363f923103185eaf48f
     )
 
     @cd ..
@@ -177,6 +177,16 @@ call WHERE uvicorn > .tmp
     @echo. & echo Picklescan not found. Installing
     @call pip install picklescan || (
         echo "Error installing the picklescan package necessary for Stable Diffusion UI. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
+        pause
+        exit /b
+    )
+)
+
+@>nul 2>nul call python -c "import safetensors"
+@if "%ERRORLEVEL%" NEQ "0" (
+    @echo. & echo SafeTensors not found. Installing
+    @call pip install safetensors || (
+        echo "Error installing the safetensors package necessary for Stable Diffusion UI. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
         pause
         exit /b
     )
