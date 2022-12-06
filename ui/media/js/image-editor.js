@@ -148,6 +148,9 @@ var IMAGE_EDITOR_SECTIONS = [
 				element.appendChild(input)
 				var span = document.createElement("span")
 				span.textContent = "Custom"
+				span.onclick = function(e) {
+					input.click()
+				}
 				element.appendChild(span)
 			}
 			else {
