@@ -621,16 +621,14 @@ input[type="file"] {
 button,
 input::file-selector-button,
 .button { 
-    padding: 6px;
+    padding: 2px 4px;
     border-radius: var(--input-border-radius);
     background: var(--button-color);
     color: var(--button-text-color);
     border: var(--button-border);
-    height: 24px;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 2px 2px 1px 1px #00000088;
 }
 
 .button i {
@@ -639,7 +637,8 @@ input::file-selector-button,
 
 button:hover,
 .button:hover {
-  background: var(--background-color4)
+  transition-duration: 0.1s;
+  background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
 }
 
 input::file-selector-button {
@@ -804,6 +803,7 @@ input::file-selector-button {
 #promptsFromFileBtn {
     font-size: 9pt;
     display: inline;
+    background-color: var(--accent-color);
 }
 
 .section-button {

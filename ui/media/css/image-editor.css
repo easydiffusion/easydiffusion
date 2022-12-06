@@ -194,6 +194,13 @@
 
 #init_image_preview_container .button {
 	display: flex;
+	padding: 6px;
+	height: 24px;
+	box-shadow: 2px 2px 1px 1px #00000088;
+}
+
+#init_image_preview_container .button:hover {
+  background: var(--background-color4)
 }
 
 .image-editor-popup .button {
