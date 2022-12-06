@@ -927,6 +927,8 @@ function createTask(task) {
         task.previewPrompt.innerHTML = '&nbsp;' // allows the results to be collapsed
     }
 
+    // [plugin event] give plugins a chance to update the task before it's enqueued (e.g. to add custom properties)
+    document.dispatchEvent(new CustomEvent('createTask_Before', { detail: task.reqBody }))
     taskQueue.unshift(task)
 }
 

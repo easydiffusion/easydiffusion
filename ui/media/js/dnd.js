@@ -303,8 +303,8 @@ function restoreTaskToUI(task, fieldsToSkip) {
         promptStrengthContainer.style.display = 'none'
         // maskSetting.style.display = 'none'
     }
-    // plugin event - UI settings just got restored
-    document.dispatchEvent(new CustomEvent('restoreTaskToUI_End', { detail: task.reqBody }))
+    // [plugin event] UI settings just got restored
+    document.dispatchEvent(new CustomEvent('restoreTaskToUI_After', { detail: task.reqBody }))
 }
 function readUI() {
     const reqBody = {}
