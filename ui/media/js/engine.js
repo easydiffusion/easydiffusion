@@ -806,6 +806,11 @@
                     continue
                 }
                 if (key in TASK_OPTIONAL) {
+                    if (typeof this._reqBody[key] == "undefined") {
+                        delete this._reqBody[key]
+                        console.warn(`reqBody[${key}] was set to undefined. Removing optional key without value...`)
+                        continue
+                    }
                     if (typeof this._reqBody[key] !== TASK_OPTIONAL[key]) {
                         throw new Error(`${key} need to be of type ${TASK_OPTIONAL[key]} but ${typeof this._reqBody[key]} was found.`)
                     }
