@@ -879,6 +879,10 @@ function getCurrentUserRequest() {
     if (useUpscalingField.checked) {
         newTask.reqBody.use_upscale = upscaleModelField.value
     }
+    if (hypernetworkModelField.value) {
+        newTask.reqBody.use_hypernetwork_model = hypernetworkModelField.value
+        newTask.reqBody.hypernetwork_strength = parseFloat(hypernetworkStrengthField.value)
+    }
     return newTask
 }
 
@@ -1185,7 +1189,7 @@ async function getModels() {
 
         const stableDiffusionOptions = modelsOptions['stable-diffusion']
         const vaeOptions = modelsOptions['vae']
-        const hypernetworkOptions = modelOptions['hypernetwork']
+        const hypernetworkOptions = modelsOptions['hypernetwork']
 
         vaeOptions.unshift('') // add a None option
         hypernetworkOptions.unshift('') // add a None option

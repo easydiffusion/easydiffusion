@@ -28,7 +28,6 @@ from gfpgan import GFPGANer
 from basicsr.archs.rrdbnet_arch import RRDBNet
 from realesrgan import RealESRGANer
 
-from . import hypernetwork
 from server import HYPERNETWORK_MODEL_EXTENSIONS# , STABLE_DIFFUSION_MODEL_EXTENSIONS, VAE_MODEL_EXTENSIONS
 
 from threading import Lock
@@ -450,6 +449,11 @@ def is_hypernetwork_reload_necessary(req: Request):
     return needs_model_reload
 
 def load_hypernetwork():
+    if thread_data.test_sd2:
+        # Not yet supported in SD2
+        return
+
+    from . import hypernetwork
     if thread_data.hypernetwork_file is not None:
         try:
             loaded = False
