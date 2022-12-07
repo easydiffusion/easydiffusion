@@ -743,6 +743,8 @@
         "use_face_correction": 'string',
         "use_upscale": 'string',
         "use_vae_model": 'string',
+        "use_hypernetwork_model": 'string',
+        "hypernetwork_strength": 'number',
     }
 
     // Higer values will result in...
