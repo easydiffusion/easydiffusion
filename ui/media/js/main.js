@@ -705,13 +705,13 @@ function onTaskStart(task) {
     })
     let instance = eventInfo.instance
     if (!instance) {
-        const factory = PLUGINS.OUTPUTS_FORMATS.get(newTaskReqBody.output_format)
+        const factory = PLUGINS.OUTPUTS_FORMATS.get(eventInfo.reqBody?.output_format || newTaskReqBody.output_format)
         if (factory) {
-            instance = factory(newTaskReqBody)
+            instance = factory(eventInfo.reqBody || newTaskReqBody)
         }
         if (!instance) {
-            console.error(`${factory ? "Factory " + String(factory) : 'No factory defined'} for output format ${newTaskReqBody.output_format}. Instance is ${instance || 'undefined'}. Using default renderer.`)
-            instance = new SD.RenderTask(newTaskReqBody)
+            console.error(`${factory ? "Factory " + String(factory) : 'No factory defined'} for output format ${eventInfo.reqBody?.output_format || newTaskReqBody.output_format}. Instance is ${instance || 'undefined'}. Using default renderer.`)
+            instance = new SD.RenderTask(eventInfo.reqBody || newTaskReqBody)
         }
     }
 
