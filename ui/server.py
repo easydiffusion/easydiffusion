@@ -26,6 +26,7 @@ UI_PLUGINS_SOURCES = ((CORE_UI_PLUGINS_DIR, 'core'), (USER_UI_PLUGINS_DIR, 'user
 
 STABLE_DIFFUSION_MODEL_EXTENSIONS = ['.ckpt', '.safetensors']
 VAE_MODEL_EXTENSIONS = ['.vae.pt', '.ckpt']
+HYPERNETWORK_MODEL_EXTENSIONS = ['.pt']
 
 OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder
 TASK_TTL = 15 * 60 # Discard last session's task timeout
@@ -193,6 +194,12 @@ def resolve_vae_to_use(model_name:str=None):
     except:
         return None
 
+def resolve_hypernetwork_to_use(model_name:str=None):
+    try:
+        return resolve_model_to_use(model_name, model_type='hypernetwork', model_dir='hypernetwork', model_extensions=HYPERNETWORK_MODEL_EXTENSIONS, default_models=[])
+    except:
+        return None
+
 class SetAppConfigRequest(BaseModel):
     update_branch: str = None
     render_devices: Union[List[str], List[int], str, int] = None
@@ -253,10 +260,12 @@ def getModels():
         'active': {
             'stable-diffusion': 'sd-v1-4',
             'vae': '',
+            'hypernetwork': '',
         },
         'options': {
             'stable-diffusion': ['sd-v1-4'],
             'vae': [],
+            'hypernetwork': [],
         },
     }
 
@@ -288,7 +297,7 @@ def getModels():
     # custom models
     listModels(models_dirname='stable-diffusion', model_type='stable-diffusion', model_extensions=STABLE_DIFFUSION_MODEL_EXTENSIONS)
     listModels(models_dirname='vae', model_type='vae', model_extensions=VAE_MODEL_EXTENSIONS)
-
+    listModels(models_dirname='hypernetwork', model_type='hypernetwork', model_extensions=HYPERNETWORK_MODEL_EXTENSIONS)
     # legacy
     custom_weight_path = os.path.join(SD_DIR, 'custom-model.ckpt')
     if os.path.exists(custom_weight_path):
@@ -363,16 +372,19 @@ def ping(session_id:str=None):
     response['devices'] = task_manager.get_devices()
     return JSONResponse(response, headers=NOCACHE_HEADERS)
 
-def save_model_to_config(ckpt_model_name, vae_model_name):
+def save_model_to_config(ckpt_model_name, vae_model_name, hypernetwork_model_name):
     config = getConfig()
     if 'model' not in config:
         config['model'] = {}
 
     config['model']['stable-diffusion'] = ckpt_model_name
     config['model']['vae'] = vae_model_name
+    config['model']['hypernetwork'] = hypernetwork_model_name
 
     if vae_model_name is None or vae_model_name == "":
         del config['model']['vae']
+    if hypernetwork_model_name is None or hypernetwork_model_name == "":
+        del config['model']['hypernetwork']
 
     setConfig(config)
 
@@ -388,9 +400,10 @@ def update_render_devices_in_config(config, render_devices):
 @app.post('/render')
 def render(req : task_manager.ImageRequest):
     try:
-        save_model_to_config(req.use_stable_diffusion_model, req.use_vae_model)
+        save_model_to_config(req.use_stable_diffusion_model, req.use_vae_model, req.use_hypernetwork_model)
         req.use_stable_diffusion_model = resolve_ckpt_to_use(req.use_stable_diffusion_model)
         req.use_vae_model = resolve_vae_to_use(req.use_vae_model)
+        req.use_hypernetwork_model = resolve_hypernetwork_to_use(req.use_hypernetwork_model)
         new_task = task_manager.render(req)
         response = {
             'status': str(task_manager.current_state), 
@@ -469,6 +482,7 @@ getModels()
 # Start the task_manager
 task_manager.default_model_to_load = resolve_ckpt_to_use()
 task_manager.default_vae_to_load = resolve_vae_to_use()
+task_manager.default_hypernetwork_to_load = resolve_hypernetwork_to_use()
 
 def update_render_threads():
     config = getConfig()

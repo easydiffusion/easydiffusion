@@ -201,8 +201,10 @@ call WHERE uvicorn > .tmp
 
 if not exist "..\models\stable-diffusion" mkdir "..\models\stable-diffusion"
 if not exist "..\models\vae" mkdir "..\models\vae"
+if not exist "..\models\hypernetwork" mkdir "..\models\hypernetwork"
 echo. > "..\models\stable-diffusion\Put your custom ckpt files here.txt"
 echo. > "..\models\vae\Put your VAE files here.txt"
+echo. > "..\models\hypernetwork\Put your hypernetwork files here.txt"
 
 @if exist "sd-v1-4.ckpt" (
     for %%I in ("sd-v1-4.ckpt") do if "%%~zI" EQU "4265380512" (

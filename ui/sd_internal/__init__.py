@@ -23,6 +23,8 @@ class Request:
     use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
     use_stable_diffusion_model: str = "sd-v1-4"
     use_vae_model: str = None
+    use_hypernetwork_model: str = None
+    hypernetwork_strength: float = 1
     show_only_filtered_image: bool = False
     output_format: str = "jpeg" # or "png"
     output_quality: int = 75
@@ -38,6 +40,7 @@ class Request:
             "num_outputs": self.num_outputs,
             "num_inference_steps": self.num_inference_steps,
             "guidance_scale": self.guidance_scale,
+            "hypernetwork_strengtgh": self.guidance_scale,
             "width": self.width,
             "height": self.height,
             "seed": self.seed,
@@ -47,6 +50,8 @@ class Request:
             "use_upscale": self.use_upscale,
             "use_stable_diffusion_model": self.use_stable_diffusion_model,
             "use_vae_model": self.use_vae_model,
+            "use_hypernetwork_model": self.use_hypernetwork_model,
+            "hypernetwork_strength": self.hypernetwork_strength,
             "output_format": self.output_format,
             "output_quality": self.output_quality,
         }
@@ -70,6 +75,8 @@ class Request:
     use_upscale: {self.use_upscale}
     use_stable_diffusion_model: {self.use_stable_diffusion_model}
     use_vae_model: {self.use_vae_model}
+    use_hypernetwork_model: {self.use_hypernetwork_model}
+    hypernetwork_strength: {self.hypernetwork_strength}
     show_only_filtered_image: {self.show_only_filtered_image}
     output_format: {self.output_format}
     output_quality: {self.output_quality}

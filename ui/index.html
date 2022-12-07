@@ -131,6 +131,12 @@
                         </select>
                         <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/VAE-Variational-Auto-Encoder" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">Click to learn more about VAEs</span></i></a>
                     </td></tr>
+                    <tr class="pl-5"><td><label for="hypernetwork_model">Hypernetwork:</i></label></td><td>
+                        <select id="hypernetwork_model" name="hypernetwork_model">
+                            <!-- <option value="" selected>None</option> -->
+                        </select>
+                    </td></tr>
+                    <tr id="hypernetwork_strength_container" class="pl-5"><td><label for="hypernetwork_strength_slider">Hypernetwork Strength:</label></td><td> <input id="hypernetwork_strength_slider" name="hypernetwork_strength_slider" class="editor-slider" value="100" type="range" min="0" max="100"> <input id="hypernetwork_strength" name="hypernetwork_strength" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"><br/></td></tr></span>
                     <tr id="samplerSelection" class="pl-5"><td><label for="sampler">Sampler:</label></td><td>
                         <select id="sampler" name="sampler">
                             <option value="plms">plms</option>
