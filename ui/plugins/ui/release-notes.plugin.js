@@ -1,4 +1,14 @@
 (function() {
+    // Register selftests when loaded by jasmine.
+    if (typeof PLUGINS?.SELFTEST === 'object') {
+        PLUGINS.SELFTEST["release-notes"] = function() {
+            it('should be able to fetch CHANGES.md', async function() {
+                let releaseNotes = await fetch(`https://raw.githubusercontent.com/cmdr2/stable-diffusion-ui/main/CHANGES.md`)
+                expect(releaseNotes.status).toBe(200)
+            })
+        }
+    }
+
     document.querySelector('#tab-container')?.insertAdjacentHTML('beforeend', `
         <span id="tab-news" class="tab">
             <span><i class="fa fa-bolt icon"></i> What's new?</span>
