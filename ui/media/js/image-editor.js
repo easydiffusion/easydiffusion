@@ -680,3 +680,5 @@ document.getElementById("init_image_button_draw").addEventListener("click", () =
 document.getElementById("init_image_button_inpaint").addEventListener("click", () => {
 	imageInpainter.show()
 })
+
+img2imgUnload() // no init image when the app starts
