@@ -40,7 +40,6 @@ class Request:
             "num_outputs": self.num_outputs,
             "num_inference_steps": self.num_inference_steps,
             "guidance_scale": self.guidance_scale,
-            "hypernetwork_strengtgh": self.guidance_scale,
             "width": self.width,
             "height": self.height,
             "seed": self.seed,

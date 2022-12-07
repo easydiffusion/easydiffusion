@@ -82,7 +82,7 @@ def auto_pick_devices(currently_active_devices):
     devices = list(map(lambda x: x['device'], devices))
     return devices
 
-def device_init(thread_data, device):
+def device_init(context, device):
     '''
     This function assumes the 'device' has already been verified to be compatible.
     `get_device_delta()` has already filtered out incompatible devices.
@@ -91,21 +91,22 @@ def device_init(thread_data, device):
     validate_device_id(device, log_prefix='device_init')
 
     if device == 'cpu':
-        thread_data.device = 'cpu'
-        thread_data.device_name = get_processor_name()
-        print('Render device CPU available as', thread_data.device_name)
+        context.device = 'cpu'
+        context.device_name = get_processor_name()
+        context.precision = 'full'
+        print('Render device CPU available as', context.device_name)
         return
 
-    thread_data.device_name = torch.cuda.get_device_name(device)
-    thread_data.device = device
+    context.device_name = torch.cuda.get_device_name(device)
+    context.device = device
 
     # Force full precision on 1660 and 1650 NVIDIA cards to avoid creating green images
-    device_name = thread_data.device_name.lower()
-    thread_data.force_full_precision = (('nvidia' in device_name or 'geforce' in device_name) and (' 1660' in device_name or ' 1650' in device_name)) or ('Quadro T2000' in device_name)
-    if thread_data.force_full_precision:
-        print('forcing full precision on NVIDIA 16xx cards, to avoid green images. GPU detected: ', thread_data.device_name)
+    device_name = context.device_name.lower()
+    force_full_precision = (('nvidia' in device_name or 'geforce' in device_name) and (' 1660' in device_name or ' 1650' in device_name)) or ('Quadro T2000' in device_name)
+    if force_full_precision:
+        print('forcing full precision on NVIDIA 16xx cards, to avoid green images. GPU detected: ', context.device_name)
         # Apply force_full_precision now before models are loaded.
-        thread_data.precision = 'full'
+        context.precision = 'full'
 
     print(f'Setting {device} as active')
     torch.cuda.device(device)

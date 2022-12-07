@@ -177,50 +177,14 @@ manager_lock = threading.RLock()
 render_threads = []
 current_state = ServerStates.Init
 current_state_error:Exception = None
-current_model_path = None
-current_vae_path = None
-current_hypernetwork_path = None
 tasks_queue = []
 task_cache = TaskCache()
-default_model_to_load = None
-default_vae_to_load = None
-default_hypernetwork_to_load = None
 weak_thread_data = weakref.WeakKeyDictionary()
 
-def preload_model(ckpt_file_path=None, vae_file_path=None, hypernetwork_file_path=None):
-    global current_state, current_state_error, current_model_path, current_vae_path, current_hypernetwork_path
-    if ckpt_file_path == None:
-        ckpt_file_path = default_model_to_load
-    if vae_file_path == None:
-        vae_file_path = default_vae_to_load
-    if hypernetwork_file_path == None:
-        hypernetwork_file_path = default_hypernetwork_to_load
-    if ckpt_file_path == current_model_path and vae_file_path == current_vae_path:
-        return
-    current_state = ServerStates.LoadingModel
-    try:
-        from . import runtime
-        runtime.thread_data.hypernetwork_file = hypernetwork_file_path
-        runtime.thread_data.ckpt_file = ckpt_file_path
-        runtime.thread_data.vae_file = vae_file_path
-        runtime.load_model_ckpt()
-        runtime.load_hypernetwork()
-        current_model_path = ckpt_file_path
-        current_vae_path = vae_file_path
-        current_hypernetwork_path = hypernetwork_file_path
-        current_state_error = None
-        current_state = ServerStates.Online
-    except Exception as e:
-        current_model_path = None
-        current_vae_path = None
-        current_state_error = e
-        current_state = ServerStates.Unavailable
-        print(traceback.format_exc())
-
 def thread_get_next_task():
-    from . import runtime
+    from sd_internal import runtime2
     if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT):
-        print('Render thread on device', runtime.thread_data.device, 'failed to acquire manager lock.')
+        print('Render thread on device', runtime2.thread_data.device, 'failed to acquire manager lock.')
         return None
     if len(tasks_queue) <= 0:
         manager_lock.release()
@@ -228,7 +192,7 @@ def thread_get_next_task():
     task = None
     try:  # Select a render task.
         for queued_task in tasks_queue:
-            if queued_task.render_device and runtime.thread_data.device != queued_task.render_device:
+            if queued_task.render_device and runtime2.thread_data.device != queued_task.render_device:
                 # Is asking for a specific render device.
                 if is_alive(queued_task.render_device) > 0:
                     continue  # requested device alive, skip current one.
@@ -237,7 +201,7 @@ def thread_get_next_task():
                     queued_task.error = Exception(queued_task.render_device + ' is not currently active.')
                     task = queued_task
                     break
-            if not queued_task.render_device and runtime.thread_data.device == 'cpu' and is_alive() > 1:
+            if not queued_task.render_device and runtime2.thread_data.device == 'cpu' and is_alive() > 1:
                 # not asking for any specific devices, cpu want to grab task but other render devices are alive.
                 continue  # Skip Tasks, don't run on CPU unless there is nothing else or user asked for it.
             task = queued_task
@@ -249,30 +213,31 @@ def thread_get_next_task():
         manager_lock.release()
 
 def thread_render(device):
-    global current_state, current_state_error, current_model_path, current_vae_path, current_hypernetwork_path
-    from . import runtime
+    global current_state, current_state_error
+
+    from sd_internal import runtime2
     try:
-        runtime.thread_init(device)
+        runtime2.init(device)
     except Exception as e:
         print(traceback.format_exc())
         weak_thread_data[threading.current_thread()] = {
             'error': e
         }
         return
+
     weak_thread_data[threading.current_thread()] = {
-        'device': runtime.thread_data.device,
-        'device_name': runtime.thread_data.device_name,
+        'device': runtime2.thread_data.device,
+        'device_name': runtime2.thread_data.device_name,
         'alive': True
     }
-    if runtime.thread_data.device != 'cpu' or is_alive() == 1:
-        preload_model()
-        current_state = ServerStates.Online
+
+    current_state = ServerStates.Online
+
     while True:
         task_cache.clean()
         if not weak_thread_data[threading.current_thread()]['alive']:
-            print(f'Shutting down thread for device {runtime.thread_data.device}')
-            runtime.unload_models()
-            runtime.unload_filters()
+            print(f'Shutting down thread for device {runtime2.thread_data.device}')
+            runtime2.destroy()
             return
         if isinstance(current_state_error, SystemExit):
             current_state = ServerStates.Unavailable
@@ -291,24 +256,17 @@ def thread_render(device):
             task.response = {"status": 'failed', "detail": str(task.error)}
             task.buffer_queue.put(json.dumps(task.response))
             continue
-        print(f'Session {task.request.session_id} starting task {id(task)} on {runtime.thread_data.device_name}')
+        print(f'Session {task.request.session_id} starting task {id(task)} on {runtime2.thread_data.device_name}')
         if not task.lock.acquire(blocking=False): raise Exception('Got locked task from queue.')
         try:
-            if runtime.is_hypernetwork_reload_necessary(task.request):
-                runtime.reload_hypernetwork()
-                current_hypernetwork_path = task.request.use_hypernetwork_model
-                
-            if runtime.is_model_reload_necessary(task.request):
-                current_state = ServerStates.LoadingModel
-                runtime.reload_model()
-                current_model_path = task.request.use_stable_diffusion_model
-                current_vae_path = task.request.use_vae_model
+            current_state = ServerStates.LoadingModel
+            runtime2.reload_models(task.request)
 
             def step_callback():
                 global current_state_error
 
                 if isinstance(current_state_error, SystemExit) or isinstance(current_state_error, StopAsyncIteration) or isinstance(task.error, StopAsyncIteration):
-                    runtime.thread_data.stop_processing = True
+                    runtime2.thread_data.stop_processing = True
                     if isinstance(current_state_error, StopAsyncIteration):
                         task.error = current_state_error
                         current_state_error = None
@@ -317,7 +275,7 @@ def thread_render(device):
                     task_cache.keep(task.request.session_id, TASK_TTL)
 
             current_state = ServerStates.Rendering
-            task.response = runtime.mk_img(task.request, task.buffer_queue, task.temp_images, step_callback)
+            task.response = runtime2.make_image(task.request, task.buffer_queue, task.temp_images, step_callback)
         except Exception as e:
             task.error = e
             print(traceback.format_exc())
@@ -331,7 +289,7 @@ def thread_render(device):
         elif task.error is not None:
             print(f'Session {task.request.session_id} task {id(task)} failed!')
         else:
-            print(f'Session {task.request.session_id} task {id(task)} completed by {runtime.thread_data.device_name}.')
+            print(f'Session {task.request.session_id} task {id(task)} completed by {runtime2.thread_data.device_name}.')
         current_state = ServerStates.Online
 
 def get_cached_task(session_id:str, update_ttl:bool=False):
@@ -493,8 +451,7 @@ def render(req : ImageRequest):
     if task and not task.response and not task.error and not task.lock.locked():
         # Unstarted task pending, deny queueing more than one.
         raise ConnectionRefusedError(f'Session {req.session_id} has an already pending task.')
-    #
-    from . import runtime
+
     r = Request()
     r.session_id = req.session_id
     r.prompt = req.prompt
