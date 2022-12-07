@@ -1,6 +1,5 @@
 "use strict"
 
-
 class sduiTab {
     constructor(name, label, icon) {
         this.name = name
@@ -32,8 +31,6 @@ class sduiTab {
     
     
 }
-
-//let models=null;
 
 (async function() {
 
@@ -232,7 +229,7 @@ class sduiTab {
 	        console.log(`DOWNLOAD: URL=${b.dataset['url']}`)
 		console.log(modeltokens[b.dataset['url']])
                 catalogPane.classList.toggle('active')
-		await downloadFromURL( b.dataset['url'] );
+		await downloadFromURL(b.dataset['url'], modeltokens[b.dataset['url']]);
 	    })
 	})
     }
