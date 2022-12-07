@@ -35,6 +35,9 @@ let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
 let stableDiffusionModelField = document.querySelector('#stable_diffusion_model')
 let vaeModelField = document.querySelector('#vae_model')
+let hypernetworkModelField = document.querySelector('#hypernetwork_model')
+let hypernetworkStrengthSlider = document.querySelector('#hypernetwork_strength_slider')
+let hypernetworkStrengthField = document.querySelector('#hypernetwork_strength')
 let outputFormatField = document.querySelector('#output_format')
 let showOnlyFilteredImageField = document.querySelector("#show_only_filtered_image")
 let updateBranchLabel = document.querySelector("#updateBranchLabel")
@@ -654,6 +657,7 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
     }
 }
 
+
 function onTaskStart(task) {
     if (!task.isProcessing || task.batchesDone >= task.batchCount) {
         return
@@ -705,13 +709,13 @@ function onTaskStart(task) {
     })
     let instance = eventInfo.instance
     if (!instance) {
-        const factory = PLUGINS.OUTPUTS_FORMATS.get(newTaskReqBody.output_format)
+        const factory = PLUGINS.OUTPUTS_FORMATS.get(eventInfo.reqBody?.output_format || newTaskReqBody.output_format)
         if (factory) {
-            instance = factory(newTaskReqBody)
+            instance = factory(eventInfo.reqBody || newTaskReqBody)
         }
         if (!instance) {
-            console.error(`${factory ? "Factory " + String(factory) : 'No factory defined'} for output format ${newTaskReqBody.output_format}. Instance is ${instance || 'undefined'}. Using default renderer.`)
-            instance = new SD.RenderTask(newTaskReqBody)
+            console.error(`${factory ? "Factory " + String(factory) : 'No factory defined'} for output format ${eventInfo.reqBody?.output_format || newTaskReqBody.output_format}. Instance is ${instance || 'undefined'}. Using default renderer.`)
+            instance = new SD.RenderTask(eventInfo.reqBody || newTaskReqBody)
         }
     }
 
@@ -749,6 +753,10 @@ function createTask(task) {
     }
     if (task.reqBody.use_upscale) {
         taskConfig += `, <b>Upscale:</b> ${task.reqBody.use_upscale}`
+    }
+    if (task.reqBody.use_hypernetwork_model) {
+        taskConfig += `, <b>Hypernetwork:</b> ${task.reqBody.use_hypernetwork_model}`
+        taskConfig += `, <b>Hypernetwork Strength:</b> ${task.reqBody.hypernetwork_strength}`
     }
 
     let taskEntry = document.createElement('div')
@@ -1105,6 +1113,27 @@ promptStrengthSlider.addEventListener('input', updatePromptStrength)
 promptStrengthField.addEventListener('input', updatePromptStrengthSlider)
 updatePromptStrength()
 
+/********************* Hypernetwork Strength **********************/
+function updateHypernetworkStrength() {
+    hypernetworkStrengthField.value = hypernetworkStrengthSlider.value / 100
+    hypernetworkStrengthField.dispatchEvent(new Event("change"))
+}
+
+function updateHypernetworkStrengthSlider() {
+    if (hypernetworkStrengthField.value < 0) {
+        hypernetworkStrengthField.value = 0
+    } else if (hypernetworkStrengthField.value > 0.99) {
+        hypernetworkStrengthField.value = 0.99
+    }
+
+    hypernetworkStrengthSlider.value = hypernetworkStrengthField.value * 100
+    hypernetworkStrengthSlider.dispatchEvent(new Event("change"))
+}
+
+hypernetworkStrengthSlider.addEventListener('input', updateHypernetworkStrength)
+hypernetworkStrengthField.addEventListener('input', updateHypernetworkStrengthSlider)
+updateHypernetworkStrength()
+
 /********************* JPEG Quality **********************/
 function updateOutputQuality() {
     outputQualityField.value =  0 | outputQualitySlider.value
@@ -1138,12 +1167,14 @@ async function getModels() {
     try {
         const sd_model_setting_key = "stable_diffusion_model"
         const vae_model_setting_key = "vae_model"
+        const hypernetwork_model_key = "hypernetwork_model"
         const selectedSDModel = SETTINGS[sd_model_setting_key].value
         const selectedVaeModel = SETTINGS[vae_model_setting_key].value
+        const selectedHypernetworkModel = SETTINGS[hypernetwork_model_key].value
 
         const models = await SD.getModels()
         const modelsOptions = models['options']
-        if ( "scan-error" in models) {
+        if ("scan-error" in models) {
             // let previewPane = document.getElementById('tab-content-wrapper')
             let previewPane = document.getElementById('preview')
             previewPane.style.background="red"
@@ -1154,7 +1185,10 @@ async function getModels() {
 
         const stableDiffusionOptions = modelsOptions['stable-diffusion']
         const vaeOptions = modelsOptions['vae']
+        const hypernetworkOptions = modelOptions['hypernetwork']
+
         vaeOptions.unshift('') // add a None option
+        hypernetworkOptions.unshift('') // add a None option
 
         function createModelOptions(modelField, selectedModel) {
             return function(modelName) {
@@ -1172,6 +1206,7 @@ async function getModels() {
 
         stableDiffusionOptions.forEach(createModelOptions(stableDiffusionModelField, selectedSDModel))
         vaeOptions.forEach(createModelOptions(vaeModelField, selectedVaeModel))
+        hypernetworkOptions.forEach(createModelOptions(hypernetworkModelField, selectedHypernetworkModel))
 
         // TODO: set default for model here too
         SETTINGS[sd_model_setting_key].default = stableDiffusionOptions[0]
