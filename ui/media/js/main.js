@@ -1,11 +1,9 @@
 "use strict" // Opt in to a restricted variant of JavaScript
-const HEALTH_PING_INTERVAL = 5 // seconds
 const MAX_INIT_IMAGE_DIMENSION = 768
 const MIN_GPUS_TO_SHOW_SELECTION = 2
 
 const IMAGE_REGEX = new RegExp('data:image/[A-Za-z]+;base64')
-
-let sessionId = Date.now()
+const htmlTaskMap = new WeakMap()
 
 let promptField = document.querySelector('#prompt')
 let promptsFromFileSelector = document.querySelector('#prompt_from_file')
@@ -59,17 +57,58 @@ let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
 
 let maskSetting = document.querySelector('#enable_mask')
 
+const processOrder = document.querySelector('#process_order_toggle')
+
 let imagePreview = document.querySelector("#preview")
+imagePreview.addEventListener('drop', function(ev) {
+    const data = ev.dataTransfer?.getData("text/plain");
+    if (!data) {
+        return
+    }
+    const movedTask = document.getElementById(data)
+    if (!movedTask) {
+        return
+    }
+    ev.preventDefault()
+    let moveTarget = ev.target
+    while (moveTarget && typeof moveTarget === 'object' && moveTarget.parentNode !== imagePreview) {
+        moveTarget = moveTarget.parentNode
+    }
+    if (moveTarget === initialText || moveTarget === previewTools) {
+        moveTarget = null
+    }
+    if (moveTarget === movedTask) {
+        return
+    }
+    if (moveTarget) {
+        const childs = Array.from(imagePreview.children)
+        if (moveTarget.nextSibling && childs.indexOf(movedTask) < childs.indexOf(moveTarget)) {
+            // Move after the target if lower than current position.
+            moveTarget = moveTarget.nextSibling
+        }
+    }
+    const newNode = imagePreview.insertBefore(movedTask, moveTarget || previewTools.nextSibling)
+    if (newNode === movedTask) {
+        return
+    }
+    imagePreview.removeChild(movedTask)
+    const task = htmlTaskMap.get(movedTask)
+    if (task) {
+        htmlTaskMap.delete(movedTask)
+    }
+    if (task) {
+        htmlTaskMap.set(newNode, task)
+    }
+})
+
+let showConfigToggle = document.querySelector('#configToggleBtn')
+// let configBox = document.querySelector('#config')
+// let outputMsg = document.querySelector('#outputMsg')
+
+let soundToggle = document.querySelector('#sound_toggle')
 
 let serverStatusColor = document.querySelector('#server-status-color')
 let serverStatusMsg = document.querySelector('#server-status-msg')
-
-
-let serverState = {'status': 'Offline', 'time': Date.now()}
-let bellPending = false
-
-let taskQueue = []
-let currentTask = null
 
 function getLocalStorageBoolItem(key, fallback) {
     let item = localStorage.getItem(key)
@@ -103,17 +142,17 @@ function getSavedDiskPath() {
 function setStatus(statusType, msg, msgType) {
 }
 
-function setServerStatus(msgType, msg) {
-    switch(msgType) {
+function setServerStatus(event) {
+    switch(event.type) {
         case 'online':
             serverStatusColor.style.color = 'green'
             serverStatusMsg.style.color = 'green'
-            serverStatusMsg.innerText = 'Stable Diffusion is ' + msg
+            serverStatusMsg.innerText = 'Stable Diffusion is ' + event.message
             break
         case 'busy':
             serverStatusColor.style.color = 'rgb(200, 139, 0)'
             serverStatusMsg.style.color = 'rgb(200, 139, 0)'
-            serverStatusMsg.innerText = 'Stable Diffusion is ' + msg
+            serverStatusMsg.innerText = 'Stable Diffusion is ' + event.message
             break
         case 'error':
             serverStatusColor.style.color = 'red'
@@ -121,18 +160,8 @@ function setServerStatus(msgType, msg) {
             serverStatusMsg.innerText = 'Stable Diffusion has stopped'
             break
     }
-}
-function isServerAvailable() {
-    if (typeof serverState !== 'object') {
-        return false
-    }
-    switch (serverState.status) {
-        case 'LoadingModel':
-        case 'Rendering':
-        case 'Online':
-            return true
-        default:
-            return false
+    if (SD.serverState.devices) {
+        setDeviceInfo(SD.serverState.devices)
     }
 }
 
@@ -194,49 +223,6 @@ function playSound() {
         promise.then(_ => {}).catch(error => {
             console.warn("browser blocked autoplay")
         })
-    }
-}
-
-async function healthCheck() {
-    try {
-        let res = undefined
-        if (sessionId) {
-            res = await fetch('/ping?session_id=' + sessionId)
-        } else {
-            res = await fetch('/ping')
-        }
-        serverState = await res.json()
-        if (typeof serverState !== 'object' || typeof serverState.status !== 'string') {
-            serverState = {'status': 'Offline', 'time': Date.now()}
-            setServerStatus('error', 'offline')
-            return
-        }
-        // Set status
-        switch(serverState.status) {
-            case 'Init':
-                // Wait for init to complete before updating status.
-                break
-            case 'Online':
-                setServerStatus('online', 'ready')
-                break
-            case 'LoadingModel':
-                setServerStatus('busy', 'loading..')
-                break
-            case 'Rendering':
-                setServerStatus('busy', 'rendering..')
-                break
-            default: // Unavailable
-                setServerStatus('error', serverState.status.toLowerCase())
-                break
-        }
-        if (serverState.devices) {
-            setDeviceInfo(serverState.devices)
-        }
-        serverState.time = Date.now()
-    } catch (e) {
-        console.log(e)
-        serverState = {'status': 'Offline', 'time': Date.now()}
-        setServerStatus('error', 'offline')
     }
 }
 
@@ -333,11 +319,7 @@ function onUseAsInputClick(req, img) {
     initImageSelector.value = null
     initImagePreview.src = imgData
 
-    initImagePreviewContainer.style.display = 'block'
-    inpaintingEditorContainer.style.display = 'none'
-    promptStrengthContainer.style.display = 'table-row'
     maskSetting.checked = false
-    samplerSelectionContainer.style.display = 'none'
 }
 
 function onDownloadImageClick(req, img) {
@@ -424,439 +406,335 @@ function onContinueDrawingClick(req, img) {
     })
 }
 
-// makes a single image. don't call this directly, use makeImage() instead
-async function doMakeImage(task) {
-    if (task.stopped) {
+function getUncompletedTaskEntries() {
+    const taskEntries = Array.from(
+        document.querySelectorAll('#preview .imageTaskContainer .taskStatusLabel')
+        ).filter((taskLabel) => taskLabel.style.display !== 'none'
+        ).map(function(taskLabel) {
+            let imageTaskContainer = taskLabel.parentNode
+            while(!imageTaskContainer.classList.contains('imageTaskContainer') && imageTaskContainer.parentNode) {
+                imageTaskContainer = imageTaskContainer.parentNode
+            }
+            return imageTaskContainer
+        })
+    if (!processOrder.checked) {
+        taskEntries.reverse()
+    }
+    return taskEntries
+}
+
+function makeImage() {
+    if (!SD.isServerAvailable()) {
+        alert('The server is not available.')
         return
     }
+    if (!randomSeedField.checked && seedField.value == '') {
+        alert('The "Seed" field must not be empty.')
+        return
+    }
+    if (numInferenceStepsField.value == '') {
+        alert('The "Inference Steps" field must not be empty.')
+        return
+    }
+    if (numOutputsTotalField.value == '') {
+        numOutputsTotalField.value = 1
+    }
+    if (numOutputsParallelField.value == '') {
+        numOutputsParallelField.value = 1
+    }
+    if (guidanceScaleField.value == '') {
+        guidanceScaleField.value = guidanceScaleSlider.value / 10
+    }
+    const taskTemplate = getCurrentUserRequest()
+    const newTaskRequests = getPrompts().map((prompt) => Object.assign({}, taskTemplate, {
+        reqBody: Object.assign({ prompt: prompt }, taskTemplate.reqBody)
+    }))
+    newTaskRequests.forEach(createTask)
 
-    const RETRY_DELAY_IF_BUFFER_IS_EMPTY = 1000 // ms
-    const RETRY_DELAY_IF_SERVER_IS_BUSY = 30 * 1000 // ms, status_code 503, already a task running
-    const TASK_START_DELAY_ON_SERVER = 1500 // ms
-    const SERVER_STATE_VALIDITY_DURATION = 90 * 1000 // ms
+    initialText.style.display = 'none'
+}
 
-    const reqBody = task.reqBody
-    const batchCount = task.batchCount
-    const outputContainer = document.createElement('div')
+function onIdle() {
+    for (const taskEntry of getUncompletedTaskEntries()) {
+        if (SD.activeTasks.size >= 1) {
+            continue
+        }
+        const task = htmlTaskMap.get(taskEntry)
+        if (!task) {
+            const taskStatusLabel = taskEntry.querySelector('.taskStatusLabel')
+            taskStatusLabel.style.display = 'none'
+            continue
+        }
+        onTaskStart(task)
+    }
+}
 
-    outputContainer.className = 'img-batch'
-    task.outputContainer.insertBefore(outputContainer, task.outputContainer.firstChild)
-
+function getTaskUpdater(task, reqBody, outputContainer) {
     const outputMsg = task['outputMsg']
-    const previewPrompt = task['previewPrompt']
     const progressBar = task['progressBar']
     const progressBarInner = progressBar.querySelector("div")
 
-    let res = undefined
-    try {
-        let renderRequest = undefined
-        do {
-            res = await fetch('/render', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(reqBody)
-            })
-            renderRequest = await res.json()
-            // status_code 503, already a task running.
-        } while (res.status === 503 && await asyncDelay(RETRY_DELAY_IF_SERVER_IS_BUSY))
-
-        if (typeof renderRequest?.stream !== 'string') {
-            console.log('Endpoint response: ', renderRequest)
-            throw new Error(renderRequest?.detail || 'Endpoint response does not contains a response stream url.')
-        }
-
-        task['taskStatusLabel'].innerText = "Waiting"
-        task['taskStatusLabel'].classList.add('waitingTaskLabel')
-        task['taskStatusLabel'].classList.remove('activeTaskLabel')
-
-        do { // Wait for server status to update.
-            await asyncDelay(250)
-            if (!isServerAvailable()) {
-                throw new Error('Connexion with server lost.')
-            }
-        } while (Date.now() < (serverState.time + SERVER_STATE_VALIDITY_DURATION) && serverState.task !== renderRequest.task)
-
-        switch(serverState.session) {
-            case 'pending':
-            case 'running':
-            case 'buffer':
-                // Normal expected messages.
-                break
-            case 'completed':
-                console.warn('Server %o render request %o completed unexpectedly', serverState, renderRequest)
-                break // Continue anyway to try to read cached result.
-            case 'error':
-                console.error('Server %o render request %o has failed', serverState, renderRequest)
-                break // Still valid, Update UI with error message
-            case 'stopped':
-                console.log('Server %o render request %o was stopped', serverState, renderRequest)
-                return false
-            default:
-                throw new Error('Unexpected server task state: ' + serverState.session || 'Undefined')
-        }
-
-        while (serverState.task === renderRequest.task && serverState.session === 'pending') {
-            // Wait for task to start on server.
-            await asyncDelay(TASK_START_DELAY_ON_SERVER)
-        }
-
-        // Task started!
-        res = await fetch(renderRequest.stream, {
-            headers: {
-                'Content-Type': 'application/json'
-            },
-        })
-
-        task['taskStatusLabel'].innerText = "Processing"
-        task['taskStatusLabel'].classList.add('activeTaskLabel')
-        task['taskStatusLabel'].classList.remove('waitingTaskLabel')
-
-        let stepUpdate = undefined
-        let reader = res.body.getReader()
-        let textDecoder = new TextDecoder()
-        let finalJSON = ''
-        let readComplete = false
-        while (!readComplete || finalJSON.length > 0) {
-            let t = Date.now()
-            let jsonStr = ''
-            if (!readComplete) {
-                const {value, done} = await reader.read()
-                if (done) {
-                    readComplete = true
-                }
-                if (value) {
-                    jsonStr = textDecoder.decode(value)
-                }
-            }
-            stepUpdate = undefined
-            try {
-                // hack for a middleman buffering all the streaming updates, and unleashing them on the poor browser in one shot.
-                // this results in having to parse JSON like {"step": 1}{"step": 2}{"step": 3}{"ste...
-                // which is obviously invalid and can happen at any point while rendering.
-                // So we need to extract only the next {} section
-                if (finalJSON.length > 0) {
-                    // Append new data when required
-                    if (jsonStr.length > 0) {
-                        jsonStr = finalJSON + jsonStr
+    const batchCount = task.batchCount
+    let lastStatus = undefined
+    return async function(event) {
+        if (this.status !== lastStatus) {
+            lastStatus = this.status
+            switch(this.status) {
+                case SD.TaskStatus.pending:
+                    task['taskStatusLabel'].innerText = "Pending"
+                    task['taskStatusLabel'].classList.add('waitingTaskLabel')
+                    break
+                case SD.TaskStatus.waiting:
+                    task['taskStatusLabel'].innerText = "Waiting"
+                    task['taskStatusLabel'].classList.add('waitingTaskLabel')
+                    task['taskStatusLabel'].classList.remove('activeTaskLabel')
+                    break
+                case SD.TaskStatus.processing:
+                case SD.TaskStatus.completed:
+                    task['taskStatusLabel'].innerText = "Processing"
+                    task['taskStatusLabel'].classList.add('activeTaskLabel')
+                    task['taskStatusLabel'].classList.remove('waitingTaskLabel')
+                    break
+                case SD.TaskStatus.stopped:
+                    break
+                case SD.TaskStatus.failed:
+                    if (!SD.isServerAvailable()) {
+                        logError("Stable Diffusion is still starting up, please wait. If this goes on beyond a few minutes, Stable Diffusion has probably crashed. Please check the error message in the command-line window.", event, outputMsg)
+                    } else if (typeof event?.response === 'object') {
+                        let msg = 'Stable Diffusion had an error reading the response:<br/><pre>'
+                        if (this.exception) {
+                            msg += `Error: ${this.exception.message}<br/>`
+                        }
+                        try { // 'Response': body stream already read
+                            msg += 'Read: ' + await event.response.text()
+                        } catch(e) {
+                            msg += 'Unexpected end of stream. '
+                        }
+                        const bufferString = event.reader.bufferedString
+                        if (bufferString) {
+                            msg += 'Buffered data: ' + bufferString
+                        }
+                        msg += '</pre>'
+                        logError(msg, event, outputMsg)
                     } else {
-                        jsonStr = finalJSON
+                        let msg = `Unexpected Read Error:<br/><pre>Error:${this.exception}<br/>EventInfo: ${JSON.stringify(event, undefined, 4)}</pre>`
+                        logError(msg, event, outputMsg)
                     }
-                    finalJSON = ''
-                }
-                // Find next delimiter
-                let lastChunkIdx = jsonStr.indexOf('}{')
-                if (lastChunkIdx !== -1) {
-                    finalJSON = jsonStr.substring(0, lastChunkIdx + 1)
-                    jsonStr = jsonStr.substring(lastChunkIdx + 1)
-                } else {
-                    finalJSON = jsonStr
-                    jsonStr = ''
-                }
-                // Try to parse
-                stepUpdate = (finalJSON.length > 0 ? JSON.parse(finalJSON) : undefined)
-                finalJSON = jsonStr
-            } catch (e) {
-                if (e instanceof SyntaxError && !readComplete) {
-                    finalJSON += jsonStr
-                } else {
-                    throw e
-                }
-            }
-            if (typeof stepUpdate === 'object' && 'step' in stepUpdate) {
-                let batchSize = stepUpdate.total_steps
-                let overallStepCount = stepUpdate.step + task.batchesDone * batchSize
-                let totalSteps = batchCount * batchSize
-                let percent = 100 * (overallStepCount / totalSteps)
-                percent = (percent > 100 ? 100 : percent)
-                percent = percent.toFixed(0)
-                let timeTaken = stepUpdate.step_time // sec
-
-                let stepsRemaining = totalSteps - overallStepCount
-                stepsRemaining = (stepsRemaining < 0 ? 0 : stepsRemaining)
-                let timeRemaining = (timeTaken === -1 ? '' : stepsRemaining * timeTaken * 1000) // ms
-
-                outputMsg.innerHTML = `Batch ${task.batchesDone+1} of ${batchCount}`
-                outputMsg.innerHTML += `. Generating image(s): ${percent}%`
-
-                timeRemaining = (timeTaken !== -1 ? millisecondsToStr(timeRemaining) : '')
-                outputMsg.innerHTML += `. Time remaining (approx): ${timeRemaining}`
-                outputMsg.style.display = 'block'
-
-                progressBarInner.style.width = `${percent}%`
-                if (percent == 100) {
-                    task.progressBar.style.height = "0px"
-                    task.progressBar.style.border = "0px solid var(--background-color3)"
-                    task.progressBar.classList.remove("active")
-                }
-
-                if (stepUpdate.output !== undefined) {
-                    showImages(reqBody, stepUpdate, outputContainer, true)
-                }
-            }
-            if (stepUpdate?.status) {
-                break
-            }
-            if (readComplete && finalJSON.length <= 0) {
-                if (res.status === 200) {
-                    await asyncDelay(RETRY_DELAY_IF_BUFFER_IS_EMPTY)
-                    res = await fetch(renderRequest.stream, {
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                    })
-                    reader = res.body.getReader()
-                    readComplete = false
-                } else {
-                    console.log('Stream stopped: ', res)
-                }
+                    break
             }
         }
-
-        if (typeof stepUpdate === 'object' && stepUpdate.status !== 'succeeded') {
-            let msg = ''
-            if ('detail' in stepUpdate && typeof stepUpdate.detail === 'string' && stepUpdate.detail.length > 0) {
-                msg = stepUpdate.detail
-                if (msg.toLowerCase().includes('out of memory')) {
-                    msg += `<br/><br/>
-                            <b>Suggestions</b>:
-                            <br/>
-                            1. If you have set an initial image, please try reducing its dimension to ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION} or smaller.<br/>
-                            2. Try disabling the '<em>Turbo mode</em>' under '<em>Advanced Settings</em>'.<br/>
-                            3. Try generating a smaller image.<br/>`
-                }
-            } else {
-                msg = `Unexpected Read Error:<br/><pre>StepUpdate: ${JSON.stringify(stepUpdate, undefined, 4)}</pre>`
+        if ('update' in event) {
+            const stepUpdate = event.update
+            if (!('step' in stepUpdate)) {
+                return
             }
-            logError(msg, res, outputMsg)
-            return false
-        }
-        if (typeof stepUpdate !== 'object' || !res || res.status != 200) {
-            if (!isServerAvailable()) {
-                logError("Stable Diffusion is still starting up, please wait. If this goes on beyond a few minutes, Stable Diffusion has probably crashed. Please check the error message in the command-line window.", res, outputMsg)
-            } else if (typeof res === 'object') {
-                let msg = 'Stable Diffusion had an error reading the response: '
-                try { // 'Response': body stream already read
-                    msg += 'Read: ' + await res.text()
-                } catch(e) {
-                    msg += 'Unexpected end of stream. '
-                }
-                if (finalJSON) {
-                    msg += 'Buffered data: ' + finalJSON
-                }
-                logError(msg, res, outputMsg)
-            } else {
-                let msg = `Unexpected Read Error:<br/><pre>Response: ${res}<br/>StepUpdate: ${typeof stepUpdate === 'object' ? JSON.stringify(stepUpdate, undefined, 4) : stepUpdate}</pre>`
-                logError(msg, res, outputMsg)
-            }
-            return false
-        }
+            // task.instances can be a mix of different tasks with uneven number of steps (Render Vs Filter Tasks)
+            const overallStepCount = task.instances.reduce(
+                (sum, instance) => sum + (instance.isPending ? Math.max(0, instance.step || stepUpdate.step) / (instance.total_steps || stepUpdate.total_steps) : 1),
+                0 // Initial value
+            ) * stepUpdate.total_steps // Scale to current number of steps.
+            const totalSteps = task.instances.reduce(
+                (sum, instance) => sum + (instance.total_steps || stepUpdate.total_steps),
+                stepUpdate.total_steps * (batchCount - task.batchesDone) // Initial value at (unstarted task count * Nbr of steps)
+            )
+            const percent = Math.min(100, 100 * (overallStepCount / totalSteps)).toFixed(0)
 
-        showImages(reqBody, stepUpdate, outputContainer, false)
-    } catch (e) {
-        console.log('request error', e)
-        logError('Stable Diffusion had an error. Please check the logs in the command-line window. <br/><br/>' + e + '<br/><pre>' + e.stack + '</pre>', res, outputMsg)
-        setStatus('request', 'error', 'error')
-        return false
+            const timeTaken = stepUpdate.step_time // sec
+            const stepsRemaining = Math.max(0, totalSteps - overallStepCount)
+            const timeRemaining = (timeTaken < 0 ? '' : millisecondsToStr(stepsRemaining * timeTaken * 1000))
+            outputMsg.innerHTML = `Batch ${task.batchesDone} of ${batchCount}. Generating image(s): ${percent}%. Time remaining (approx): ${timeRemaining}`
+            outputMsg.style.display = 'block'
+            progressBarInner.style.width = `${percent}%`
+
+            if (stepUpdate.output) {
+                showImages(reqBody, stepUpdate, outputContainer, true)
+            }
+        }
     }
-    return true
 }
 
-async function checkTasks() {
-    if (taskQueue.length === 0) {
-        setStatus('request', 'done', 'success')
-        setTimeout(checkTasks, 500)
-        stopImageBtn.style.display = 'none'
-        renameMakeImageButton()
-
-        currentTask = null
-
-        if (bellPending) {
-            if (isSoundEnabled()) {
-                playSound()
-            }
-            bellPending = false
+function abortTask(task) {
+    if (!task.isProcessing) {
+        return false
+    }
+    task.isProcessing = false
+    task.progressBar.classList.remove("active")
+    task['taskStatusLabel'].style.display = 'none'
+    task['stopTask'].innerHTML = '<i class="fa-solid fa-trash-can"></i> Remove'
+    if (!task.instances?.some((r) => r.isPending)) {
+        return
+    }
+    task.instances.forEach((instance) => {
+        try {
+            instance.abort()
+        } catch (e) {
+            console.error(e)
         }
+    })
+}
 
+function onTaskErrorHandler(task, reqBody, instance, reason) {
+    if (!task.isProcessing) {
+        return
+    }
+    console.log('Render request %o, Instance: %o, Error: %s', reqBody, instance, reason)
+    abortTask(task)
+    const outputMsg = task['outputMsg']
+    logError('Stable Diffusion had an error. Please check the logs in the command-line window. <br/><br/>' + reason + '<br/><pre>' + reason.stack + '</pre>', task, outputMsg)
+    setStatus('request', 'error', 'error')
+}
+
+function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
+    if (typeof stepUpdate !== 'object') {
+        return
+    }
+    if (stepUpdate.status !== 'succeeded') {
+        const outputMsg = task['outputMsg']
+        let msg = ''
+        if ('detail' in stepUpdate && typeof stepUpdate.detail === 'string' && stepUpdate.detail.length > 0) {
+            msg = stepUpdate.detail
+            if (msg.toLowerCase().includes('out of memory')) {
+                msg += `<br/><br/>
+                        <b>Suggestions</b>:
+                        <br/>
+                        1. If you have set an initial image, please try reducing its dimension to ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION} or smaller.<br/>
+                        2. Try disabling the '<em>Turbo mode</em>' under '<em>Advanced Settings</em>'.<br/>
+                        3. Try generating a smaller image.<br/>`
+            }
+        } else {
+            msg = `Unexpected Read Error:<br/><pre>StepUpdate: ${JSON.stringify(stepUpdate, undefined, 4)}</pre>`
+        }
+        logError(msg, stepUpdate, outputMsg)
+        return false
+    }
+    showImages(reqBody, stepUpdate, outputContainer, false)
+    if (task.isProcessing && task.batchesDone < task.batchCount) {
+        task['taskStatusLabel'].innerText = "Pending"
+        task['taskStatusLabel'].classList.add('waitingTaskLabel')
+        task['taskStatusLabel'].classList.remove('activeTaskLabel')
+        return
+    }
+    if ('instances' in task && task.instances.some((ins) => ins != instance && ins.isPending)) {
         return
     }
 
-    setStatus('request', 'fetching..')
-
-    stopImageBtn.style.display = 'block'
-    renameMakeImageButton()
-    bellPending = true
-
-    previewTools.style.display = 'block'
-
-    let task = taskQueue.pop()
-    currentTask = task
-
-    let time = Date.now()
-
-    let successCount = 0
-
-    task.isProcessing = true
-    task['stopTask'].innerHTML = '<i class="fa-solid fa-circle-stop"></i> Stop'
-    task['taskStatusLabel'].innerText = "Starting"
-    task['taskStatusLabel'].classList.add('waitingTaskLabel')
-
-    const genSeeds = Boolean(typeof task.reqBody.seed !== 'number' || (task.reqBody.seed === task.seed && task.numOutputsTotal > 1))
-    const startSeed = task.reqBody.seed || task.seed
-    
-    // Update the seed *before* starting the processing so it's retained if user stops the task
-    if (randomSeedField.checked) {
-        seedField.value = task.seed
-    }
-    
-    for (let i = 0; i < task.batchCount; i++) {
-        let newTask = task
-        if (task.batchCount > 1) {
-            // Each output render batch needs it's own task instance to avoid altering the other runs after they are completed.
-            newTask = Object.assign({}, task, {
-                reqBody: Object.assign({}, task.reqBody)
-            })
-        }
-        if (genSeeds) {
-            newTask.reqBody.seed = parseInt(startSeed) + (i * newTask.reqBody.num_outputs)
-            newTask.seed = newTask.reqBody.seed
-        } else if (newTask.seed !== newTask.reqBody.seed) {
-            newTask.seed = newTask.reqBody.seed
-        }
-
-        let success = await doMakeImage(newTask)
-        task.batchesDone++
-
-        if (!task.isProcessing || !success) {
-            break
-        }
-
-        if (success) {
-            successCount++
-        }
-    }
+    setStatus('request', 'done', 'success')
 
     task.isProcessing = false
     task['stopTask'].innerHTML = '<i class="fa-solid fa-trash-can"></i> Remove'
     task['taskStatusLabel'].style.display = 'none'
 
-    time = Date.now() - time
+    let time = Date.now() - task.startTime
     time /= 1000
 
-    if (successCount === task.batchCount) {
-        task.outputMsg.innerText = 'Processed ' + task.numOutputsTotal + ' images in ' + time + ' seconds'
+    if (task.batchesDone == task.batchCount) {
+        task.outputMsg.innerText = `Processed ${task.numOutputsTotal} images in ${time} seconds`
         task.progressBar.style.height = "0px"
         task.progressBar.style.border = "0px solid var(--background-color3)"
         task.progressBar.classList.remove("active")
-        // setStatus('request', 'done', 'success')
+        setStatus('request', 'done', 'success')
     } else {
-        if (task.outputMsg.innerText.toLowerCase().indexOf('error') === -1) {
-            task.outputMsg.innerText = 'Task ended after ' + time + ' seconds'
+        task.outputMsg.innerText += `Task ended after ${time} seconds`
+    }
+
+    if (randomSeedField.checked) {
+        seedField.value = task.seed
+    }
+
+    if (SD.activeTasks.size > 0) {
+        return
+    }
+    const uncompletedTasks = getUncompletedTaskEntries()
+    if (uncompletedTasks && uncompletedTasks.length > 0) {
+        return
+    }
+
+    stopImageBtn.style.display = 'none'
+    renameMakeImageButton()
+
+    if (isSoundEnabled()) {
+        playSound()
+    }
+}
+
+
+function onTaskStart(task) {
+    if (!task.isProcessing || task.batchesDone >= task.batchCount) {
+        return
+    }
+
+    if (typeof task.startTime !== 'number') {
+        task.startTime = Date.now()
+    }
+    if (!('instances' in task)) {
+        task['instances'] = []
+    }
+
+    task['stopTask'].innerHTML = '<i class="fa-solid fa-circle-stop"></i> Stop'
+    task['taskStatusLabel'].innerText = "Starting"
+    task['taskStatusLabel'].classList.add('waitingTaskLabel')
+
+    let newTaskReqBody = task.reqBody
+    if (task.batchCount > 1) {
+        // Each output render batch needs it's own task reqBody instance to avoid altering the other runs after they are completed.
+        newTaskReqBody = Object.assign({}, task.reqBody)
+    }
+
+    const startSeed = task.seed || newTaskReqBody.seed
+    const genSeeds = Boolean(typeof newTaskReqBody.seed !== 'number' || (newTaskReqBody.seed === task.seed && task.numOutputsTotal > 1))
+    if (genSeeds) {
+        newTaskReqBody.seed = parseInt(startSeed) + (task.batchesDone * newTaskReqBody.num_outputs)
+    }
+
+    // Update the seed *before* starting the processing so it's retained if user stops the task
+    if (randomSeedField.checked) {
+        seedField.value = task.seed
+    }
+
+    const outputContainer = document.createElement('div')
+    outputContainer.className = 'img-batch'
+    task.outputContainer.insertBefore(outputContainer, task.outputContainer.firstChild)
+
+    const eventInfo = {reqBody:newTaskReqBody}
+    PLUGINS['TASK_CREATE'].forEach((hook) => {
+        if (typeof hook !== 'function') {
+            console.error('The provided TASK_CREATE hook is not a function. Hook: %o', hook)
+            return
+        }
+        try {
+            hook.call(task, eventInfo)
+        } catch (err) {
+            console.error(err)
+        }
+    })
+    let instance = eventInfo.instance
+    if (!instance) {
+        const factory = PLUGINS.OUTPUTS_FORMATS.get(eventInfo.reqBody?.output_format || newTaskReqBody.output_format)
+        if (factory) {
+            instance = factory(eventInfo.reqBody || newTaskReqBody)
+        }
+        if (!instance) {
+            console.error(`${factory ? "Factory " + String(factory) : 'No factory defined'} for output format ${eventInfo.reqBody?.output_format || newTaskReqBody.output_format}. Instance is ${instance || 'undefined'}. Using default renderer.`)
+            instance = new SD.RenderTask(eventInfo.reqBody || newTaskReqBody)
         }
     }
 
-    currentTask = null
+    task['instances'].push(instance)
+    task.batchesDone++
 
-    if (typeof requestIdleCallback === 'function') {
-        requestIdleCallback(checkTasks, { timeout: 30 * 1000 })
-    } else {
-        setTimeout(checkTasks, 500)
-    }
-}
-if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(checkTasks, { timeout: 30 * 1000 })
-} else {
-    setTimeout(checkTasks, 10)
-}
-
-function getCurrentUserRequest() {
-    const numOutputsTotal = parseInt(numOutputsTotalField.value)
-    const numOutputsParallel = parseInt(numOutputsParallelField.value)
-    const seed = (randomSeedField.checked ? Math.floor(Math.random() * 10000000) : parseInt(seedField.value))
-
-    const newTask = {
-        isProcessing: false,
-        stopped: false,
-        batchesDone: 0,
-        numOutputsTotal: numOutputsTotal,
-        batchCount: Math.ceil(numOutputsTotal / numOutputsParallel),
-        seed,
-
-        reqBody: {
-            session_id: sessionId,
-            seed,
-            negative_prompt: negativePromptField.value.trim(),
-            num_outputs: numOutputsParallel,
-            num_inference_steps: numInferenceStepsField.value,
-            guidance_scale: guidanceScaleField.value,
-            width: widthField.value,
-            height: heightField.value,
-            // allow_nsfw: allowNSFWField.checked,
-            turbo: turboField.checked,
-            use_full_precision: useFullPrecisionField.checked,
-            use_stable_diffusion_model: stableDiffusionModelField.value,
-            use_vae_model: vaeModelField.value,
-            use_hypernetwork_model: hypernetworkModelField.value,
-            hypernetwork_strength: hypernetworkStrengthField.value,
-            stream_progress_updates: true,
-            stream_image_progress: (numOutputsTotal > 50 ? false : streamImageProgressField.checked),
-            show_only_filtered_image: showOnlyFilteredImageField.checked,
-            output_format: outputFormatField.value,
-            output_quality: outputQualityField.value,
-            original_prompt: promptField.value,
-            active_tags: (activeTags.map(x => x.name))
+    instance.enqueue(getTaskUpdater(task, newTaskReqBody, outputContainer)).then(
+        (renderResult) => {
+            onTaskCompleted(task, newTaskReqBody, instance, outputContainer, renderResult)
+        },
+        (reason) => {
+            onTaskErrorHandler(task, newTaskReqBody, instance, reason)
         }
-    }
-    if (IMAGE_REGEX.test(initImagePreview.src)) {
-        newTask.reqBody.init_image = initImagePreview.src
-        newTask.reqBody.prompt_strength = promptStrengthField.value
+    )
 
-        // if (IMAGE_REGEX.test(maskImagePreview.src)) {
-        //     newTask.reqBody.mask = maskImagePreview.src
-        // }
-        if (maskSetting.checked) {
-            newTask.reqBody.mask = imageInpainter.getImg()
-        }
-        newTask.reqBody.sampler = 'ddim'
-    } else {
-        newTask.reqBody.sampler = samplerField.value
-    }
-    if (saveToDiskField.checked && diskPathField.value.trim() !== '') {
-        newTask.reqBody.save_to_disk_path = diskPathField.value.trim()
-    }
-    if (useFaceCorrectionField.checked) {
-        newTask.reqBody.use_face_correction = 'GFPGANv1.3'
-    }
-    if (useUpscalingField.checked) {
-        newTask.reqBody.use_upscale = upscaleModelField.value
-    }
-    return newTask
-}
-
-function makeImage() {
-    if (!isServerAvailable()) {
-        alert('The server is not available.')
-    } else if (!randomSeedField.checked && seedField.value == '') {
-        alert('The "Seed" field must not be empty.')
-    } else if (numOutputsTotalField.value == '') {
-        alert('The "Number of Images" field must not be empty.')
-    } else if (numOutputsParallelField.value == '') {
-        alert('The "Number of parallel Images" field must not be empty.')
-    } else if (numInferenceStepsField.value == '') {
-        alert('The "Inference Steps" field must not be empty.')
-    } else if (guidanceScaleField.value == '') {
-        alert('The Guidance Scale field must not be empty.')
-    } else {
-        const taskTemplate = getCurrentUserRequest()
-        const newTaskRequests = []
-        getPrompts().forEach((prompt) => newTaskRequests.push(Object.assign({}, taskTemplate, {
-            reqBody: Object.assign({ prompt: prompt }, taskTemplate.reqBody)
-        })))
-        newTaskRequests.forEach(createTask)
-
-        initialText.style.display = 'none'
-    }
+    setStatus('request', 'fetching..')
+    stopImageBtn.style.display = 'block'
+    renameMakeImageButton()
+    previewTools.style.display = 'block'
 }
 
 function createTask(task) {
@@ -882,6 +760,7 @@ function createTask(task) {
     }
 
     let taskEntry = document.createElement('div')
+    taskEntry.id = `imageTaskContainer-${Date.now()}`
     taskEntry.className = 'imageTaskContainer'
     taskEntry.innerHTML = ` <div class="header-content panel collapsible active">
                                 <div class="taskStatusLabel">Enqueued</div>
@@ -908,22 +787,10 @@ function createTask(task) {
     task['stopTask'].addEventListener('click', (e) => {
         let question = (task['isProcessing'] ? "Stop this task?" : "Remove this task?")
         shiftOrConfirm(e, question, async function(e) {
-            if (task['isProcessing']) {
-                task.isProcessing = false
-                task.progressBar.classList.remove("active")
-                try {
-                    let res = await fetch('/image/stop?session_id=' + sessionId)
-                } catch (e) {
-                    console.log(e)
-                }
-            } else {
-                let idx = taskQueue.indexOf(task)
-                if (idx >= 0) {
-                    taskQueue.splice(idx, 1)
-                }
-
-                removeTask(taskEntry)
+            if (task.batchesDone <= 0 || !task.isProcessing) {
+                taskEntry.remove()
             }
+            abortTask(task)
         })
     })
 
@@ -933,18 +800,92 @@ function createTask(task) {
         restoreTaskToUI(task, TASK_REQ_NO_EXPORT)
     })
 
-    imagePreview.insertBefore(taskEntry, previewTools.nextSibling)
+    task.isProcessing = true
+    taskEntry = imagePreview.insertBefore(taskEntry, previewTools.nextSibling)
+    taskEntry.draggable = true
+    htmlTaskMap.set(taskEntry, task)
+    taskEntry.addEventListener('dragstart', function(ev) {
+        ev.dataTransfer.setData("text/plain", ev.target.id);
+    })
 
     task.previewPrompt.innerText = task.reqBody.prompt
     if (task.previewPrompt.innerText.trim() === '') {
         task.previewPrompt.innerHTML = '&nbsp;' // allows the results to be collapsed
     }
 
-    taskQueue.unshift(task)
+    // Allow prompt text to be selected.
+    task.previewPrompt.addEventListener("mouseover", function() {
+        taskEntry.setAttribute("draggable", "false");
+    });
+    task.previewPrompt.addEventListener("mouseout", function() {
+        taskEntry.setAttribute("draggable", "true");
+    });
 }
 
-function getPrompts() {
-    let prompts = promptField.value
+function getCurrentUserRequest() {
+    const numOutputsTotal = parseInt(numOutputsTotalField.value)
+    const numOutputsParallel = parseInt(numOutputsParallelField.value)
+    const seed = (randomSeedField.checked ? Math.floor(Math.random() * 10000000) : parseInt(seedField.value))
+
+    const newTask = {
+        batchesDone: 0,
+        numOutputsTotal: numOutputsTotal,
+        batchCount: Math.ceil(numOutputsTotal / numOutputsParallel),
+        seed,
+
+        reqBody: {
+            seed,
+            negative_prompt: negativePromptField.value.trim(),
+            num_outputs: numOutputsParallel,
+            num_inference_steps: parseInt(numInferenceStepsField.value),
+            guidance_scale: parseFloat(guidanceScaleField.value),
+            width: parseInt(widthField.value),
+            height: parseInt(heightField.value),
+            // allow_nsfw: allowNSFWField.checked,
+            turbo: turboField.checked,
+            //render_device: undefined, // Set device affinity. Prefer this device, but wont activate.
+            use_full_precision: useFullPrecisionField.checked,
+            use_stable_diffusion_model: stableDiffusionModelField.value,
+            use_vae_model: vaeModelField.value,
+            stream_progress_updates: true,
+            stream_image_progress: (numOutputsTotal > 50 ? false : streamImageProgressField.checked),
+            show_only_filtered_image: showOnlyFilteredImageField.checked,
+            output_format: outputFormatField.value,
+            output_quality: parseInt(outputQualityField.value),
+            original_prompt: promptField.value,
+            active_tags: (activeTags.map(x => x.name))
+        }
+    }
+    if (IMAGE_REGEX.test(initImagePreview.src)) {
+        newTask.reqBody.init_image = initImagePreview.src
+        newTask.reqBody.prompt_strength = parseFloat(promptStrengthField.value)
+
+        // if (IMAGE_REGEX.test(maskImagePreview.src)) {
+        //     newTask.reqBody.mask = maskImagePreview.src
+        // }
+        if (maskSetting.checked) {
+            newTask.reqBody.mask = imageInpainter.getImg()
+        }
+        newTask.reqBody.sampler = 'ddim'
+    } else {
+        newTask.reqBody.sampler = samplerField.value
+    }
+    if (saveToDiskField.checked && diskPathField.value.trim() !== '') {
+        newTask.reqBody.save_to_disk_path = diskPathField.value.trim()
+    }
+    if (useFaceCorrectionField.checked) {
+        newTask.reqBody.use_face_correction = 'GFPGANv1.3'
+    }
+    if (useUpscalingField.checked) {
+        newTask.reqBody.use_upscale = upscaleModelField.value
+    }
+    return newTask
+}
+
+function getPrompts(prompts) {
+    if (typeof prompts === 'undefined') {
+        prompts = promptField.value
+    }
     if (prompts.trim() === '') {
         return ['']
     }
@@ -1052,20 +993,17 @@ function createFileName(prompt, seed, steps, guidance, outputFormat) {
 }
 
 async function stopAllTasks() {
-    taskQueue.forEach(task => {
-        task.isProcessing = false
+    getUncompletedTaskEntries().forEach((taskEntry) => {
+        const taskStatusLabel = taskEntry.querySelector('.taskStatusLabel')
+        if (taskStatusLabel) {
+            taskStatusLabel.style.display = 'none'
+        }
+        const task = htmlTaskMap.get(taskEntry)
+        if (!task) {
+            return
+        }
+        abortTask(task)
     })
-    taskQueue = []
-
-    if (currentTask !== null) {
-        currentTask.isProcessing = false
-    }
-
-    try {
-        let res = await fetch('/image/stop?session_id=' + sessionId)
-    } catch (e) {
-        console.log(e)
-    }
 }
 
 function removeTask(taskToRemove) {
@@ -1097,7 +1035,7 @@ function renameMakeImageButton() {
     if (totalImages > 1) {
         imageLabel = totalImages + ' Images'
     }
-    if (taskQueue.length == 0) {
+    if (SD.activeTasks.size == 0) {
         makeImageBtn.innerText = 'Make ' + imageLabel
     } else {
         makeImageBtn.innerText = 'Enqueue Next ' + imageLabel
@@ -1214,7 +1152,7 @@ function updateOutputQualitySlider() {
 }
 
 outputQualitySlider.addEventListener('input', updateOutputQuality)
-outputQualityField.addEventListener('input', debounce(updateOutputQualitySlider))
+outputQualityField.addEventListener('input', debounce(updateOutputQualitySlider, 1500))
 updateOutputQuality()
 
 outputFormatField.addEventListener('change', e => {
@@ -1225,21 +1163,18 @@ outputFormatField.addEventListener('change', e => {
     }
 })
 
-
 async function getModels() {
     try {
-        var sd_model_setting_key = "stable_diffusion_model"
-        var vae_model_setting_key = "vae_model"
-        var hypernetwork_model_key = "hypernetwork_model"
-        var selectedSDModel = SETTINGS[sd_model_setting_key].value
-        var selectedVaeModel = SETTINGS[vae_model_setting_key].value
-        var selectedHypernetworkModel = SETTINGS[hypernetwork_model_key].value
-        let res = await fetch('/get/models')
-        const models = await res.json()
+        const sd_model_setting_key = "stable_diffusion_model"
+        const vae_model_setting_key = "vae_model"
+        const hypernetwork_model_key = "hypernetwork_model"
+        const selectedSDModel = SETTINGS[sd_model_setting_key].value
+        const selectedVaeModel = SETTINGS[vae_model_setting_key].value
+        const selectedHypernetworkModel = SETTINGS[hypernetwork_model_key].value
 
-        console.log('got models response', models)
-
-        if ( "scan-error" in models ) {
+        const models = await SD.getModels()
+        const modelsOptions = models['options']
+        if ("scan-error" in models) {
             // let previewPane = document.getElementById('tab-content-wrapper')
             let previewPane = document.getElementById('preview')
             previewPane.style.background="red"
@@ -1247,16 +1182,17 @@ async function getModels() {
             previewPane.innerHTML = '<H1>🔥Malware alert!🔥</H1><h2>The file <i>' + models['scan-error'] + '</i> in your <tt>models/stable-diffusion</tt> folder is probably malware infected.</h2><h2>Please delete this file from the folder before proceeding!</h2>After deleting the file, reload this page.<br><br><button onClick="window.location.reload();">Reload Page</button>'
             makeImageBtn.disabled = true
         }
-        let modelOptions = models['options']
-        let stableDiffusionOptions = modelOptions['stable-diffusion']
-        let vaeOptions = modelOptions['vae']
-        let hypernetworkOptions = modelOptions['hypernetwork']
+
+        const stableDiffusionOptions = modelsOptions['stable-diffusion']
+        const vaeOptions = modelsOptions['vae']
+        const hypernetworkOptions = modelOptions['hypernetwork']
+
         vaeOptions.unshift('') // add a None option
-        hypernetworkOptions .unshift('') // add a None option
+        hypernetworkOptions.unshift('') // add a None option
 
         function createModelOptions(modelField, selectedModel) {
             return function(modelName) {
-                let modelOption = document.createElement('option')
+                const modelOption = document.createElement('option')
                 modelOption.value = modelName
                 modelOption.innerText = modelName !== '' ? modelName : 'None'
 
