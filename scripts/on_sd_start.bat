@@ -44,7 +44,7 @@ if NOT DEFINED test_sd2 set test_sd2=N
         @call git -c advice.detachedHead=false checkout 7f32368ed1030a6e710537047bacd908adea183a
     )
     if "%test_sd2%" == "Y" (
-        @call git -c advice.detachedHead=false checkout b1a80dfc75388914252ce363f923103185eaf48f
+        @call git -c advice.detachedHead=false checkout 733a1f6f9cae9b9a9b83294bf3281b123378cb1f
     )
 
     @cd ..

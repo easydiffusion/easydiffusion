@@ -1,6 +1,7 @@
 import json
 
 class Request:
+    request_id: str = None
     session_id: str = "session"
     prompt: str = ""
     negative_prompt: str = ""

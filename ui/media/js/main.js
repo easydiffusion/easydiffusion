@@ -455,9 +455,10 @@ function makeImage() {
 }
 
 function onIdle() {
+    const serverCapacity = SD.serverCapacity
     for (const taskEntry of getUncompletedTaskEntries()) {
-        if (SD.activeTasks.size >= 1) {
-            continue
+        if (SD.activeTasks.size >= serverCapacity) {
+            break
         }
         const task = htmlTaskMap.get(taskEntry)
         if (!task) {

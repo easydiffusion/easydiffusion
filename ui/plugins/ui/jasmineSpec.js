@@ -202,12 +202,12 @@ describe('stable-diffusion-ui', function() {
         // Wait for server status to update.
         await SD.waitUntil(() => {
             console.log('Waiting for %s to be received...', renderRequest.task)
-            return (!SD.serverState.task || SD.serverState.task === renderRequest.task)
+            return (!SD.serverState.tasks || SD.serverState.tasks[String(renderRequest.task)])
         }, 250, 10 * 60 * 1000)
         // Wait for task to start on server.
         await SD.waitUntil(() => {
             console.log('Waiting for %s to start...', renderRequest.task)
-            return SD.serverState.task !== renderRequest.task || SD.serverState.session !== 'pending'
+            return !SD.serverState.tasks || SD.serverState.tasks[String(renderRequest.task)] !== 'pending'
         }, 250)
 
         const reader = new SD.ChunkedStreamReader(renderRequest.stream)

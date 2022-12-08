@@ -523,15 +523,16 @@ def update_temp_img(req, x_samples, task_temp_images: list):
         del img, x_sample, x_sample_ddim
         # don't delete x_samples, it is used in the code that called this callback
 
-        thread_data.temp_images[str(req.session_id) + '/' + str(i)] = buf
+        thread_data.temp_images[f'{req.request_id}/{i}'] = buf
         task_temp_images[i] = buf
-        partial_images.append({'path': f'/image/tmp/{req.session_id}/{i}'})
+        partial_images.append({'path': f'/image/tmp/{req.request_id}/{i}'})
     return partial_images
 
 # Build and return the apropriate generator for do_mk_img
 def get_image_progress_generator(req, data_queue: queue.Queue, task_temp_images: list, step_callback, extra_props=None):
     if not req.stream_progress_updates:
-        def empty_callback(x_samples, i): return x_samples
+        def empty_callback(x_samples, i):
+            step_callback()
         return empty_callback
 
     thread_data.partial_x_samples = None
@@ -638,11 +639,6 @@ def do_mk_img(req: Request, data_queue: queue.Queue, task_temp_images: list, ste
         assert 0. <= req.prompt_strength <= 1., 'can only work with strength in [0.0, 1.0]'
         t_enc = int(req.prompt_strength * req.num_inference_steps)
         print(f"target t_enc is {t_enc} steps")
-
-    if req.save_to_disk_path is not None:
-        session_out_path = get_session_out_path(req.save_to_disk_path, req.session_id)
-    else:
-        session_out_path = None
 
     with torch.no_grad():
         for n in trange(opt_n_iter, desc="Sampling"):
