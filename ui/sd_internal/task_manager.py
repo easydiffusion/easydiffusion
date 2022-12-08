@@ -310,9 +310,6 @@ def thread_render(device):
         print(f'Session {task.request.session_id} starting task {id(task)} on {runtime2.thread_data.device_name}')
         if not task.lock.acquire(blocking=False): raise Exception('Got locked task from queue.')
         try:
-            current_state = ServerStates.LoadingModel
-            runtime2.reload_models(task.request)
-
             def step_callback():
                 global current_state_error
 
@@ -322,6 +319,9 @@ def thread_render(device):
                         task.error = current_state_error
                         current_state_error = None
                         print(f'Session {task.request.session_id} sent cancel signal for task {id(task)}')
+
+            current_state = ServerStates.LoadingModel
+            runtime2.reload_models_if_necessary(task.request)
 
             current_state = ServerStates.Rendering
             task.response = runtime2.make_image(task.request, task.buffer_queue, task.temp_images, step_callback)

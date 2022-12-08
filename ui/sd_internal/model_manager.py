@@ -4,6 +4,10 @@ from sd_internal import app
 import picklescan.scanner
 import rich
 
+STABLE_DIFFUSION_MODEL_EXTENSIONS = ['.ckpt', '.safetensors']
+VAE_MODEL_EXTENSIONS = ['.vae.pt', '.ckpt']
+HYPERNETWORK_MODEL_EXTENSIONS = ['.pt']
+
 default_model_to_load = None
 default_vae_to_load = None
 default_hypernetwork_to_load = None
@@ -59,22 +63,17 @@ def resolve_model_to_use(model_name:str, model_type:str, model_dir:str, model_ex
                         print(f'Could not find the configured custom model {model_name}{model_extension}. Using the default one: {default_model_path}{model_extension}')
                     return default_model_path + model_extension
 
-    raise Exception('No valid models found.')
+    print(f'No valid models found for model_name: {model_name}')
+    return None
 
 def resolve_ckpt_to_use(model_name:str=None):
-    return resolve_model_to_use(model_name, model_type='stable-diffusion', model_dir='stable-diffusion', model_extensions=app.STABLE_DIFFUSION_MODEL_EXTENSIONS, default_models=app.APP_CONFIG_DEFAULT_MODELS)
+    return resolve_model_to_use(model_name, model_type='stable-diffusion', model_dir='stable-diffusion', model_extensions=STABLE_DIFFUSION_MODEL_EXTENSIONS, default_models=app.APP_CONFIG_DEFAULT_MODELS)
 
 def resolve_vae_to_use(model_name:str=None):
-    try:
-        return resolve_model_to_use(model_name, model_type='vae', model_dir='vae', model_extensions=app.VAE_MODEL_EXTENSIONS, default_models=[])
-    except:
-        return None
+    return resolve_model_to_use(model_name, model_type='vae', model_dir='vae', model_extensions=VAE_MODEL_EXTENSIONS, default_models=[])
 
 def resolve_hypernetwork_to_use(model_name:str=None):
-    try:
-        return resolve_model_to_use(model_name, model_type='hypernetwork', model_dir='hypernetwork', model_extensions=app.HYPERNETWORK_MODEL_EXTENSIONS, default_models=[])
-    except:
-        return None
+    return resolve_model_to_use(model_name, model_type='hypernetwork', model_dir='hypernetwork', model_extensions=HYPERNETWORK_MODEL_EXTENSIONS, default_models=[])
 
 def is_malicious_model(file_path):
     try:
@@ -129,9 +128,9 @@ def getModels():
         models['options'][model_type].sort()
 
     # custom models
-    listModels(models_dirname='stable-diffusion', model_type='stable-diffusion', model_extensions=app.STABLE_DIFFUSION_MODEL_EXTENSIONS)
-    listModels(models_dirname='vae', model_type='vae', model_extensions=app.VAE_MODEL_EXTENSIONS)
-    listModels(models_dirname='hypernetwork', model_type='hypernetwork', model_extensions=app.HYPERNETWORK_MODEL_EXTENSIONS)
+    listModels(models_dirname='stable-diffusion', model_type='stable-diffusion', model_extensions=STABLE_DIFFUSION_MODEL_EXTENSIONS)
+    listModels(models_dirname='vae', model_type='vae', model_extensions=VAE_MODEL_EXTENSIONS)
+    listModels(models_dirname='hypernetwork', model_type='hypernetwork', model_extensions=HYPERNETWORK_MODEL_EXTENSIONS)
 
     # legacy
     custom_weight_path = os.path.join(app.SD_DIR, 'custom-model.ckpt')

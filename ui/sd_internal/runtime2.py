@@ -1,7 +1,8 @@
 import threading
 import queue
 
-from sd_internal import device_manager, Request, Response, Image as ResponseImage
+from sd_internal import device_manager, model_manager
+from sd_internal import Request, Response, Image as ResponseImage
 
 from modules import model_loader, image_generator, image_utils
 
@@ -18,7 +19,7 @@ def init(device):
     thread_data.temp_images = {}
 
     thread_data.models = {}
-    thread_data.loaded_model_paths = {}
+    thread_data.model_paths = {}
 
     thread_data.device = None
     thread_data.device_name = None
@@ -27,14 +28,34 @@ def init(device):
 
     device_manager.device_init(thread_data, device)
 
-    reload_models()
+    load_default_models()
 
 def destroy():
     model_loader.unload_sd_model(thread_data)
     model_loader.unload_gfpgan_model(thread_data)
     model_loader.unload_realesrgan_model(thread_data)
 
-def reload_models(req: Request=None):
+def load_default_models():
+    thread_data.model_paths['stable-diffusion'] = model_manager.default_model_to_load
+    thread_data.model_paths['vae'] = model_manager.default_vae_to_load
+
+    model_loader.load_sd_model(thread_data)
+
+def reload_models_if_necessary(req: Request=None):
+    needs_model_reload = False
+    if 'stable-diffusion' not in thread_data.models or thread_data.ckpt_file != req.use_stable_diffusion_model or thread_data.vae_file != req.use_vae_model:
+        thread_data.ckpt_file = req.use_stable_diffusion_model
+        thread_data.vae_file = req.use_vae_model
+        needs_model_reload = True
+
+    if thread_data.device != 'cpu':
+        if (thread_data.precision == 'autocast' and (req.use_full_precision or not thread_data.model_is_half)) or \
+            (thread_data.precision == 'full' and not req.use_full_precision and not thread_data.force_full_precision):
+            thread_data.precision = 'full' if req.use_full_precision else 'autocast'
+            needs_model_reload = True
+
+    return needs_model_reload
+
     if is_hypernetwork_reload_necessary(task.request):
         current_state = ServerStates.LoadingModel
         runtime.reload_hypernetwork()
