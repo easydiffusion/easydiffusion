@@ -327,20 +327,10 @@ autoPickGPUsField.addEventListener('click', function() {
     gpuSettingEntry.style.display = (this.checked ? 'none' : '')
 })
 
-async function getDiskPath() {
-    try {
-        var diskPath = getSetting("diskPath")
-        if (diskPath == '' || diskPath == undefined || diskPath == "undefined") {
-            let res = await fetch('/get/output_dir')
-            if (res.status === 200) {
-                res = await res.json()
-                res = res.output_dir
-
-                setSetting("diskPath", res)
-            }
-        }
-    } catch (e) {
-        console.log('error fetching output dir path', e)
+async function setDiskPath(defaultDiskPath) {
+    var diskPath = getSetting("diskPath")
+    if (diskPath == '' || diskPath == undefined || diskPath == "undefined") {
+        setSetting("diskPath", defaultDiskPath)
     }
 }
 
@@ -415,6 +405,7 @@ async function getSystemInfo() {
 
         setDeviceInfo(devices)
         setHostInfo(res['hosts'])
+        setDiskPath(res['default_output_dir'])
     } catch (e) {
         console.log('error fetching devices', e)
     }

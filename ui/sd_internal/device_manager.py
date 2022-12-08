@@ -101,10 +101,8 @@ def device_init(context, device):
     context.device = device
 
     # Force full precision on 1660 and 1650 NVIDIA cards to avoid creating green images
-    device_name = context.device_name.lower()
-    force_full_precision = (('nvidia' in device_name or 'geforce' in device_name) and (' 1660' in device_name or ' 1650' in device_name)) or ('Quadro T2000' in device_name)
-    if force_full_precision:
-        print('forcing full precision on NVIDIA 16xx cards, to avoid green images. GPU detected: ', context.device_name)
+    if needs_to_force_full_precision(context.device_name):
+        print(f'forcing full precision on this GPU, to avoid green images. GPU detected: {context.device_name}')
         # Apply force_full_precision now before models are loaded.
         context.precision = 'full'
 
@@ -112,6 +110,10 @@ def device_init(context, device):
     torch.cuda.device(device)
 
     return
+
+def needs_to_force_full_precision(context):
+    device_name = context.device_name.lower()
+    return (('nvidia' in device_name or 'geforce' in device_name) and (' 1660' in device_name or ' 1650' in device_name)) or ('Quadro T2000' in device_name)
 
 def validate_device_id(device, log_prefix=''):
     def is_valid():

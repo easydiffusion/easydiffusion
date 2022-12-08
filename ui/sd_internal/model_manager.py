@@ -1,32 +1,39 @@
 import os
 
-from sd_internal import app
+from sd_internal import app, device_manager
+from sd_internal import Request
 import picklescan.scanner
 import rich
 
-STABLE_DIFFUSION_MODEL_EXTENSIONS = ['.ckpt', '.safetensors']
-VAE_MODEL_EXTENSIONS = ['.vae.pt', '.ckpt']
-HYPERNETWORK_MODEL_EXTENSIONS = ['.pt']
-
-default_model_to_load = None
-default_vae_to_load = None
-default_hypernetwork_to_load = None
+KNOWN_MODEL_TYPES = ['stable-diffusion', 'vae', 'hypernetwork', 'gfpgan', 'realesrgan']
+MODEL_EXTENSIONS = {
+    'stable-diffusion': ['.ckpt', '.safetensors'],
+    'vae': ['.vae.pt', '.ckpt'],
+    'hypernetwork': ['.pt'],
+    'gfpgan': ['.pth'],
+    'realesrgan': ['.pth'],
+}
+DEFAULT_MODELS = {
+    'stable-diffusion': [ # needed to support the legacy installations
+        'custom-model', # only one custom model file was supported initially, creatively named 'custom-model'
+        'sd-v1-4', # Default fallback.
+    ],
+    'gfpgan': ['GFPGANv1.3'],
+    'realesrgan': ['RealESRGAN_x4plus'],
+}
 
 known_models = {}
 
 def init():
-    global default_model_to_load, default_vae_to_load, default_hypernetwork_to_load
-
-    default_model_to_load = resolve_ckpt_to_use()
-    default_vae_to_load = resolve_vae_to_use()
-    default_hypernetwork_to_load = resolve_hypernetwork_to_use()
-
+    make_model_folders()
     getModels() # run this once, to cache the picklescan results
 
-def resolve_model_to_use(model_name:str, model_type:str, model_dir:str, model_extensions:list, default_models=[]):
+def resolve_model_to_use(model_name:str, model_type:str):
+    model_extensions = MODEL_EXTENSIONS.get(model_type, [])
+    default_models = DEFAULT_MODELS.get(model_type, [])
     config = app.getConfig()
 
-    model_dirs = [os.path.join(app.MODELS_DIR, model_dir), app.SD_DIR]
+    model_dirs = [os.path.join(app.MODELS_DIR, model_type), app.SD_DIR]
     if not model_name: # When None try user configured model.
         # config = getConfig()
         if 'model' in config and model_type in config['model']:
@@ -39,7 +46,7 @@ def resolve_model_to_use(model_name:str, model_type:str, model_dir:str, model_ex
             model_name = 'sd-v1-4'
 
         # Check models directory
-        models_dir_path = os.path.join(app.MODELS_DIR, model_dir, model_name)
+        models_dir_path = os.path.join(app.MODELS_DIR, model_type, model_name)
         for model_extension in model_extensions:
             if os.path.exists(models_dir_path + model_extension):
                 return models_dir_path + model_extension
@@ -66,14 +73,32 @@ def resolve_model_to_use(model_name:str, model_type:str, model_dir:str, model_ex
     print(f'No valid models found for model_name: {model_name}')
     return None
 
-def resolve_ckpt_to_use(model_name:str=None):
-    return resolve_model_to_use(model_name, model_type='stable-diffusion', model_dir='stable-diffusion', model_extensions=STABLE_DIFFUSION_MODEL_EXTENSIONS, default_models=app.APP_CONFIG_DEFAULT_MODELS)
+def resolve_sd_model_to_use(model_name:str=None):
+    return resolve_model_to_use(model_name, model_type='stable-diffusion')
 
-def resolve_vae_to_use(model_name:str=None):
-    return resolve_model_to_use(model_name, model_type='vae', model_dir='vae', model_extensions=VAE_MODEL_EXTENSIONS, default_models=[])
+def resolve_vae_model_to_use(model_name:str=None):
+    return resolve_model_to_use(model_name, model_type='vae')
 
-def resolve_hypernetwork_to_use(model_name:str=None):
-    return resolve_model_to_use(model_name, model_type='hypernetwork', model_dir='hypernetwork', model_extensions=HYPERNETWORK_MODEL_EXTENSIONS, default_models=[])
+def resolve_hypernetwork_model_to_use(model_name:str=None):
+    return resolve_model_to_use(model_name, model_type='hypernetwork')
+
+def resolve_gfpgan_model_to_use(model_name:str=None):
+    return resolve_model_to_use(model_name, model_type='gfpgan')
+
+def resolve_realesrgan_model_to_use(model_name:str=None):
+    return resolve_model_to_use(model_name, model_type='realesrgan')
+
+def make_model_folders():
+    for model_type in KNOWN_MODEL_TYPES:
+        model_dir_path = os.path.join(app.MODELS_DIR, model_type)
+
+        os.makedirs(model_dir_path, exist_ok=True)
+
+        help_file_name = f'Place your {model_type} model files here.txt'
+        help_file_contents = f'Supported extensions: {" or ".join(MODEL_EXTENSIONS.get(model_type))}'
+
+        with open(os.path.join(model_dir_path, help_file_name)) as f:
+            f.write(help_file_contents)
 
 def is_malicious_model(file_path):
     try:
@@ -102,8 +127,9 @@ def getModels():
         },
     }
 
-    def listModels(models_dirname, model_type, model_extensions):
-        models_dir = os.path.join(app.MODELS_DIR, models_dirname)
+    def listModels(model_type):
+        model_extensions = MODEL_EXTENSIONS.get(model_type, [])
+        models_dir = os.path.join(app.MODELS_DIR, model_type)
         if not os.path.exists(models_dir):
             os.makedirs(models_dir)
 
@@ -128,9 +154,9 @@ def getModels():
         models['options'][model_type].sort()
 
     # custom models
-    listModels(models_dirname='stable-diffusion', model_type='stable-diffusion', model_extensions=STABLE_DIFFUSION_MODEL_EXTENSIONS)
-    listModels(models_dirname='vae', model_type='vae', model_extensions=VAE_MODEL_EXTENSIONS)
-    listModels(models_dirname='hypernetwork', model_type='hypernetwork', model_extensions=HYPERNETWORK_MODEL_EXTENSIONS)
+    listModels(model_type='stable-diffusion')
+    listModels(model_type='vae')
+    listModels(model_type='hypernetwork')
 
     # legacy
     custom_weight_path = os.path.join(app.SD_DIR, 'custom-model.ckpt')
@@ -138,3 +164,19 @@ def getModels():
         models['options']['stable-diffusion'].append('custom-model')
 
     return models
+
+def is_sd_model_reload_necessary(thread_data, req: Request):
+    needs_model_reload = False
+    if 'stable-diffusion' not in thread_data.models or \
+        thread_data.model_paths['stable-diffusion'] != req.use_stable_diffusion_model or \
+        thread_data.model_paths['vae'] != req.use_vae_model:
+
+        needs_model_reload = True
+
+    if thread_data.device != 'cpu':
+        if (thread_data.precision == 'autocast' and req.use_full_precision) or \
+            (thread_data.precision == 'full' and not req.use_full_precision and not device_manager.needs_to_force_full_precision(thread_data)):
+            thread_data.precision = 'full' if req.use_full_precision else 'autocast'
+            needs_model_reload = True
+
+    return needs_model_reload

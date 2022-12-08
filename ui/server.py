@@ -137,9 +137,9 @@ def ping(session_id:str=None):
 def render(req : task_manager.ImageRequest):
     try:
         app.save_model_to_config(req.use_stable_diffusion_model, req.use_vae_model, req.use_hypernetwork_model)
-        req.use_stable_diffusion_model = model_manager.resolve_ckpt_to_use(req.use_stable_diffusion_model)
-        req.use_vae_model = model_manager.resolve_vae_to_use(req.use_vae_model)
-        req.use_hypernetwork_model = model_manager.resolve_hypernetwork_to_use(req.use_hypernetwork_model)
+        req.use_stable_diffusion_model = model_manager.resolve_sd_model_to_use(req.use_stable_diffusion_model)
+        req.use_vae_model = model_manager.resolve_vae_model_to_use(req.use_vae_model)
+        req.use_hypernetwork_model = model_manager.resolve_hypernetwork_model_to_use(req.use_hypernetwork_model)
 
         new_task = task_manager.render(req)
         response = {

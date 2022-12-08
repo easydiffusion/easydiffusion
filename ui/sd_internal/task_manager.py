@@ -324,7 +324,7 @@ def thread_render(device):
             runtime2.reload_models_if_necessary(task.request)
 
             current_state = ServerStates.Rendering
-            task.response = runtime2.make_image(task.request, task.buffer_queue, task.temp_images, step_callback)
+            task.response = runtime2.make_images(task.request, task.buffer_queue, task.temp_images, step_callback)
             # Before looping back to the generator, mark cache as still alive.
             task_cache.keep(id(task), TASK_TTL)
             session_cache.keep(task.request.session_id, TASK_TTL)

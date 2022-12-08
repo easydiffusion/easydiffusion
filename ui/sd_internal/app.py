@@ -28,11 +28,6 @@ APP_CONFIG_DEFAULTS = {
         'open_browser_on_start': True,
     },
 }
-DEFAULT_MODELS = [
-    # needed to support the legacy installations
-    'custom-model', # Check if user has a custom model, use it first.
-    'sd-v1-4', # Default fallback.
-]
 
 def init():
     os.makedirs(USER_UI_PLUGINS_DIR, exist_ok=True)

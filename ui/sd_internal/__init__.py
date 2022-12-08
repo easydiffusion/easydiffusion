@@ -105,6 +105,10 @@ class Response:
     request: Request
     images: list
 
+    def __init__(self, request: Request, images: list):
+        self.request = request
+        self.images = images
+
     def json(self):
         res = {
             "status": 'succeeded',
@@ -116,3 +120,6 @@ class Response:
             res["output"].append(image.json())
 
         return res
+
+class UserInitiatedStop(Exception):
+    pass
