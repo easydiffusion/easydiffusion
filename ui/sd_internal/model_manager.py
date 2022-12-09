@@ -28,7 +28,7 @@ def init():
     make_model_folders()
     getModels() # run this once, to cache the picklescan results
 
-def resolve_model_to_use(model_name:str, model_type:str):
+def resolve_model_to_use(model_name:str=None, model_type:str=None):
     model_extensions = MODEL_EXTENSIONS.get(model_type, [])
     default_models = DEFAULT_MODELS.get(model_type, [])
     config = app.getConfig()
@@ -71,21 +71,6 @@ def resolve_model_to_use(model_name:str, model_type:str):
                     return default_model_path + model_extension
 
     return None
-
-def resolve_sd_model_to_use(model_name:str=None):
-    return resolve_model_to_use(model_name, model_type='stable-diffusion')
-
-def resolve_vae_model_to_use(model_name:str=None):
-    return resolve_model_to_use(model_name, model_type='vae')
-
-def resolve_hypernetwork_model_to_use(model_name:str=None):
-    return resolve_model_to_use(model_name, model_type='hypernetwork')
-
-def resolve_gfpgan_model_to_use(model_name:str=None):
-    return resolve_model_to_use(model_name, model_type='gfpgan')
-
-def resolve_realesrgan_model_to_use(model_name:str=None):
-    return resolve_model_to_use(model_name, model_type='realesrgan')
 
 def make_model_folders():
     for model_type in KNOWN_MODEL_TYPES:

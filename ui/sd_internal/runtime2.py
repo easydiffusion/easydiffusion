@@ -39,18 +39,13 @@ def init(device):
     init_and_load_default_models()
 
 def destroy():
-    model_loader.unload_model(thread_data, 'stable-diffusion')
-    model_loader.unload_model(thread_data, 'gfpgan')
-    model_loader.unload_model(thread_data, 'realesrgan')
-    model_loader.unload_model(thread_data, 'hypernetwork')
+    for model_type in ('stable-diffusion', 'hypernetwork', 'gfpgan', 'realesrgan'):
+        model_loader.unload_model(thread_data, model_type)
 
 def init_and_load_default_models():
     # init default model paths
-    thread_data.model_paths['stable-diffusion'] = model_manager.resolve_sd_model_to_use()
-    thread_data.model_paths['vae'] = model_manager.resolve_vae_model_to_use()
-    thread_data.model_paths['hypernetwork'] = model_manager.resolve_hypernetwork_model_to_use()
-    thread_data.model_paths['gfpgan'] = model_manager.resolve_gfpgan_model_to_use()
-    thread_data.model_paths['realesrgan'] = model_manager.resolve_realesrgan_model_to_use()
+    for model_type in ('stable-diffusion', 'vae', 'hypernetwork', 'gfpgan', 'realesrgan'):
+        thread_data.model_paths[model_type] = model_manager.resolve_model_to_use(model_type=model_type)
 
     # load mandatory models
     model_loader.load_model(thread_data, 'stable-diffusion')
@@ -119,8 +114,8 @@ def apply_filters(req: Request, images: list, user_stopped):
         return images
 
     filters = []
-    if req.use_face_correction.startswith('GFPGAN'): filters.append((image_filters.apply_gfpgan, model_manager.resolve_gfpgan_model_to_use(req.use_face_correction)))
-    if req.use_upscale.startswith('RealESRGAN'): filters.append((image_filters.apply_realesrgan, model_manager.resolve_realesrgan_model_to_use(req.use_upscale)))
+    if req.use_face_correction.startswith('GFPGAN'): filters.append((image_filters.apply_gfpgan, model_manager.resolve_model_to_use(req.use_face_correction, model_type='gfpgan')))
+    if req.use_upscale.startswith('RealESRGAN'): filters.append((image_filters.apply_realesrgan, model_manager.resolve_model_to_use(req.use_upscale, model_type='realesrgan')))
 
     filtered_images = []
     for img, seed, _ in images:

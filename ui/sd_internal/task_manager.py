@@ -11,10 +11,10 @@ TASK_TTL = 15 * 60 # seconds, Discard last session's task timeout
 
 import torch
 import queue, threading, time, weakref
-from typing import Any, Generator, Hashable, Optional, Union
+from typing import Any, Hashable
 
 from pydantic import BaseModel
-from sd_internal import Request, Response, runtime, device_manager
+from sd_internal import Request, device_manager
 
 THREAD_NAME_PREFIX = 'Runtime-Render/'
 ERR_LOCK_FAILED = ' failed to acquire lock within timeout.'
