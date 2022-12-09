@@ -3,8 +3,20 @@ import socket
 import sys
 import json
 import traceback
+import logging
+from rich.logging import RichHandler
 
 from sd_internal import task_manager
+
+LOG_FORMAT = '[%(threadName)s] %(message)s'
+logging.basicConfig(
+        level=logging.INFO,
+        format=LOG_FORMAT,
+        datefmt="[%X.%f]",
+        handlers=[RichHandler(markup=True)]
+)
+
+log = logging.getLogger()
 
 SD_DIR = os.getcwd()
 
@@ -49,8 +61,7 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
                 config['net']['listen_to_network'] = (os.getenv('SD_UI_BIND_IP') == '0.0.0.0')
             return config
     except Exception as e:
-        print(str(e))
-        print(traceback.format_exc())
+        log.warn(traceback.format_exc())
         return default_val
 
 def setConfig(config):
@@ -59,7 +70,7 @@ def setConfig(config):
         with open(config_json_path, 'w', encoding='utf-8') as f:
             json.dump(config, f)
     except:
-        print(traceback.format_exc())
+        log.error(traceback.format_exc())
 
     try: # config.bat
         config_bat_path = os.path.join(CONFIG_DIR, 'config.bat')
@@ -78,7 +89,7 @@ def setConfig(config):
             with open(config_bat_path, 'w', encoding='utf-8') as f:
                 f.write('\r\n'.join(config_bat))
     except:
-        print(traceback.format_exc())
+        log.error(traceback.format_exc())
 
     try: # config.sh
         config_sh_path = os.path.join(CONFIG_DIR, 'config.sh')
@@ -97,7 +108,7 @@ def setConfig(config):
             with open(config_sh_path, 'w', encoding='utf-8') as f:
                 f.write('\n'.join(config_sh))
     except:
-        print(traceback.format_exc())
+        log.error(traceback.format_exc())
 
 def save_model_to_config(ckpt_model_name, vae_model_name, hypernetwork_model_name):
     config = getConfig()
@@ -120,7 +131,7 @@ def update_render_threads():
     render_devices = config.get('render_devices', 'auto')
     active_devices = task_manager.get_devices()['active'].keys()
 
-    print('requesting for render_devices', render_devices)
+    log.debug(f'requesting for render_devices: {render_devices}')
     task_manager.update_render_threads(render_devices, active_devices)
 
 def getUIPlugins():

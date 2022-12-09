@@ -1,9 +1,12 @@
 import os
+import logging
+import picklescan.scanner
+import rich
 
 from sd_internal import app, device_manager
 from sd_internal import Request
-import picklescan.scanner
-import rich
+
+log = logging.getLogger()
 
 KNOWN_MODEL_TYPES = ['stable-diffusion', 'vae', 'hypernetwork', 'gfpgan', 'realesrgan']
 MODEL_EXTENSIONS = {
@@ -42,7 +45,7 @@ def resolve_model_to_use(model_name:str=None, model_type:str=None):
     if model_name:
         is_sd2 = config.get('test_sd2', False)
         if model_name.startswith('sd2_') and not is_sd2: # temp hack, until SD2 is unified with 1.4
-            print('ERROR: Cannot use SD 2.0 models with SD 1.0 code. Using the sd-v1-4 model instead!')
+            log.error('ERROR: Cannot use SD 2.0 models with SD 1.0 code. Using the sd-v1-4 model instead!')
             model_name = 'sd-v1-4'
 
         # Check models directory
@@ -67,7 +70,7 @@ def resolve_model_to_use(model_name:str=None, model_type:str=None):
             for model_extension in model_extensions:
                 if os.path.exists(default_model_path + model_extension):
                     if model_name is not None:
-                        print(f'Could not find the configured custom model {model_name}{model_extension}. Using the default one: {default_model_path}{model_extension}')
+                        log.warn(f'Could not find the configured custom model {model_name}{model_extension}. Using the default one: {default_model_path}{model_extension}')
                     return default_model_path + model_extension
 
     return None
@@ -88,13 +91,13 @@ def is_malicious_model(file_path):
     try:
         scan_result = picklescan.scanner.scan_file_path(file_path)
         if scan_result.issues_count > 0 or scan_result.infected_files > 0:
-            rich.print(":warning: [bold red]Scan %s: %d scanned, %d issue, %d infected.[/bold red]" % (file_path, scan_result.scanned_files, scan_result.issues_count, scan_result.infected_files))
+            log.warn(":warning: [bold red]Scan %s: %d scanned, %d issue, %d infected.[/bold red]" % (file_path, scan_result.scanned_files, scan_result.issues_count, scan_result.infected_files))
             return True
         else:
-            rich.print("Scan %s: [green]%d scanned, %d issue, %d infected.[/green]" % (file_path, scan_result.scanned_files, scan_result.issues_count, scan_result.infected_files))
+            log.debug("Scan %s: [green]%d scanned, %d issue, %d infected.[/green]" % (file_path, scan_result.scanned_files, scan_result.issues_count, scan_result.infected_files))
             return False
     except Exception as e:
-        print('error while scanning', file_path, 'error:', e)
+        log.error(f'error while scanning: {file_path}, error: {e}')
     return False
 
 def getModels():
@@ -111,7 +114,10 @@ def getModels():
         },
     }
 
+    models_scanned = 0
     def listModels(model_type):
+        nonlocal models_scanned
+
         model_extensions = MODEL_EXTENSIONS.get(model_type, [])
         models_dir = os.path.join(app.MODELS_DIR, model_type)
         if not os.path.exists(models_dir):
@@ -126,6 +132,7 @@ def getModels():
                 mtime = os.path.getmtime(model_path)
                 mod_time = known_models[model_path] if model_path in known_models else -1
                 if mod_time != mtime:
+                    models_scanned += 1
                     if is_malicious_model(model_path):
                         models['scan-error'] = file
                         return
@@ -141,6 +148,8 @@ def getModels():
     listModels(model_type='stable-diffusion')
     listModels(model_type='vae')
     listModels(model_type='hypernetwork')
+
+    if models_scanned > 0: log.info(f'[green]Scanned {models_scanned} models. 0 infected[/]')
 
     # legacy
     custom_weight_path = os.path.join(app.SD_DIR, 'custom-model.ckpt')

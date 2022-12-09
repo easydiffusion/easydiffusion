@@ -14,7 +14,9 @@ from pydantic import BaseModel
 
 from sd_internal import app, model_manager, task_manager
 
-print('started in ', app.SD_DIR)
+log = logging.getLogger()
+
+log.info(f'started in {app.SD_DIR}')
 
 server_api = FastAPI()
 
@@ -84,7 +86,7 @@ async def setAppConfig(req : SetAppConfigRequest):
 
         return JSONResponse({'status': 'OK'}, headers=NOCACHE_HEADERS)
     except Exception as e:
-        print(traceback.format_exc())
+        log.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
 def update_render_devices_in_config(config, render_devices):
@@ -153,8 +155,7 @@ def render(req : task_manager.ImageRequest):
     except ConnectionRefusedError as e: # Unstarted task pending limit reached, deny queueing too many.
         raise HTTPException(status_code=503, detail=str(e)) # HTTP503 Service Unavailable
     except Exception as e:
-        print(e)
-        print(traceback.format_exc())
+        log.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
 @server_api.get('/image/stream/{task_id:int}')
@@ -165,10 +166,10 @@ def stream(task_id:int):
     #if (id(task) != task_id): raise HTTPException(status_code=409, detail=f'Wrong task id received. Expected:{id(task)}, Received:{task_id}') # HTTP409 Conflict
     if task.buffer_queue.empty() and not task.lock.locked():
         if task.response:
-            #print(f'Session {session_id} sending cached response')
+            #log.info(f'Session {session_id} sending cached response')
             return JSONResponse(task.response, headers=NOCACHE_HEADERS)
         raise HTTPException(status_code=425, detail='Too Early, task not started yet.') # HTTP425 Too Early
-    #print(f'Session {session_id} opened live render stream {id(task.buffer_queue)}')
+    #log.info(f'Session {session_id} opened live render stream {id(task.buffer_queue)}')
     return StreamingResponse(task.read_buffer_generator(), media_type='application/json')
 
 @server_api.get('/image/stop')

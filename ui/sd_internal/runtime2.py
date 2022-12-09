@@ -6,11 +6,14 @@ import os
 import base64
 import re
 import traceback
+import logging
 
 from sd_internal import device_manager, model_manager
 from sd_internal import Request, Response, Image as ResponseImage, UserInitiatedStop
 
 from modules import model_loader, image_generator, image_utils, filters as image_filters
+
+log = logging.getLogger()
 
 thread_data = threading.local()
 '''
@@ -69,7 +72,7 @@ def make_images(req: Request, data_queue: queue.Queue, task_temp_images: list, s
     try:
         return _make_images_internal(req, data_queue, task_temp_images, step_callback)
     except Exception as e:
-        print(traceback.format_exc())
+        log.error(traceback.format_exc())
 
         data_queue.put(json.dumps({
             "status": 'failed',
@@ -91,7 +94,7 @@ def _make_images_internal(req: Request, data_queue: queue.Queue, task_temp_image
     res = Response(req, images=construct_response(req, images))
     res = res.json()
     data_queue.put(json.dumps(res))
-    print('Task completed')
+    log.info('Task completed')
 
     return res
 

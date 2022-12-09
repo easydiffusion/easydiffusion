@@ -6,6 +6,7 @@ Notes:
 """
 import json
 import traceback
+import logging
 
 TASK_TTL = 15 * 60 # seconds, Discard last session's task timeout
 
@@ -15,6 +16,8 @@ from typing import Any, Hashable
 
 from pydantic import BaseModel
 from sd_internal import Request, device_manager
+
+log = logging.getLogger()
 
 THREAD_NAME_PREFIX = 'Runtime-Render/'
 ERR_LOCK_FAILED = ' failed to acquire lock within timeout.'
@@ -140,11 +143,11 @@ class DataCache():
             for key in to_delete:
                 (_, val) = self._base[key]
                 if isinstance(val, RenderTask):
-                    print(f'RenderTask {key} expired. Data removed.')
+                    log.debug(f'RenderTask {key} expired. Data removed.')
                 elif isinstance(val, SessionState):
-                    print(f'Session {key} expired. Data removed.')
+                    log.debug(f'Session {key} expired. Data removed.')
                 else:
-                    print(f'Key {key} expired. Data removed.')
+                    log.debug(f'Key {key} expired. Data removed.')
                 del self._base[key]
         finally:
             self._lock.release()
@@ -178,8 +181,7 @@ class DataCache():
                 self._get_ttl_time(ttl), value
             )
         except Exception as e:
-            print(str(e))
-            print(traceback.format_exc())
+            log.error(traceback.format_exc())
             return False
         else:
             return True
@@ -190,7 +192,7 @@ class DataCache():
         try:
             ttl, value = self._base.get(key, (None, None))
             if ttl is not None and self._is_expired(ttl):
-                print(f'Session {key} expired. Discarding data.')
+                log.debug(f'Session {key} expired. Discarding data.')
                 del self._base[key]
                 return None
             return value
@@ -234,7 +236,7 @@ class SessionState():
 def thread_get_next_task():
     from sd_internal import runtime2
     if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT):
-        print('Render thread on device', runtime2.thread_data.device, 'failed to acquire manager lock.')
+        log.warn(f'Render thread on device: {runtime2.thread_data.device} failed to acquire manager lock.')
         return None
     if len(tasks_queue) <= 0:
         manager_lock.release()
@@ -269,7 +271,7 @@ def thread_render(device):
     try:
         runtime2.init(device)
     except Exception as e:
-        print(traceback.format_exc())
+        log.error(traceback.format_exc())
         weak_thread_data[threading.current_thread()] = {
             'error': e
         }
@@ -287,7 +289,7 @@ def thread_render(device):
         session_cache.clean()
         task_cache.clean()
         if not weak_thread_data[threading.current_thread()]['alive']:
-            print(f'Shutting down thread for device {runtime2.thread_data.device}')
+            log.info(f'Shutting down thread for device {runtime2.thread_data.device}')
             runtime2.destroy()
             return
         if isinstance(current_state_error, SystemExit):
@@ -299,7 +301,7 @@ def thread_render(device):
             idle_event.wait(timeout=1)
             continue
         if task.error is not None:
-            print(task.error)
+            log.error(task.error)
             task.response = {"status": 'failed', "detail": str(task.error)}
             task.buffer_queue.put(json.dumps(task.response))
             continue
@@ -308,7 +310,7 @@ def thread_render(device):
             task.response = {"status": 'failed', "detail": str(task.error)}
             task.buffer_queue.put(json.dumps(task.response))
             continue
-        print(f'Session {task.request.session_id} starting task {id(task)} on {runtime2.thread_data.device_name}')
+        log.info(f'Session {task.request.session_id} starting task {id(task)} on {runtime2.thread_data.device_name}')
         if not task.lock.acquire(blocking=False): raise Exception('Got locked task from queue.')
         try:
             def step_callback():
@@ -319,7 +321,7 @@ def thread_render(device):
                     if isinstance(current_state_error, StopAsyncIteration):
                         task.error = current_state_error
                         current_state_error = None
-                        print(f'Session {task.request.session_id} sent cancel signal for task {id(task)}')
+                        log.info(f'Session {task.request.session_id} sent cancel signal for task {id(task)}')
 
             current_state = ServerStates.LoadingModel
             runtime2.reload_models_if_necessary(task.request)
@@ -331,7 +333,7 @@ def thread_render(device):
             session_cache.keep(task.request.session_id, TASK_TTL)
         except Exception as e:
             task.error = e
-            print(traceback.format_exc())
+            log.error(traceback.format_exc())
             continue
         finally:
             # Task completed
@@ -339,11 +341,11 @@ def thread_render(device):
         task_cache.keep(id(task), TASK_TTL)
         session_cache.keep(task.request.session_id, TASK_TTL)
         if isinstance(task.error, StopAsyncIteration):
-            print(f'Session {task.request.session_id} task {id(task)} cancelled!')
+            log.info(f'Session {task.request.session_id} task {id(task)} cancelled!')
         elif task.error is not None:
-            print(f'Session {task.request.session_id} task {id(task)} failed!')
+            log.info(f'Session {task.request.session_id} task {id(task)} failed!')
         else:
-            print(f'Session {task.request.session_id} task {id(task)} completed by {runtime2.thread_data.device_name}.')
+            log.info(f'Session {task.request.session_id} task {id(task)} completed by {runtime2.thread_data.device_name}.')
         current_state = ServerStates.Online
 
 def get_cached_task(task_id:str, update_ttl:bool=False):
@@ -429,7 +431,7 @@ def is_alive(device=None):
 
 def start_render_thread(device):
     if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('start_render_thread' + ERR_LOCK_FAILED)
-    print('Start new Rendering Thread on device', device)
+    log.info(f'Start new Rendering Thread on device: {device}')
     try:
         rthread = threading.Thread(target=thread_render, kwargs={'device': device})
         rthread.daemon = True
@@ -441,7 +443,7 @@ def start_render_thread(device):
     timeout = DEVICE_START_TIMEOUT
     while not rthread.is_alive() or not rthread in weak_thread_data or not 'device' in weak_thread_data[rthread]:
         if rthread in weak_thread_data and 'error' in weak_thread_data[rthread]:
-            print(rthread, device, 'error:', weak_thread_data[rthread]['error'])
+            log.error(f"{rthread}, {device}, error: {weak_thread_data[rthread]['error']}")
             return False
         if timeout <= 0:
             return False
@@ -453,11 +455,11 @@ def stop_render_thread(device):
     try:
         device_manager.validate_device_id(device, log_prefix='stop_render_thread')
     except:
-        print(traceback.format_exc())
+        log.error(traceback.format_exc())
         return False
 
     if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('stop_render_thread' + ERR_LOCK_FAILED)
-    print('Stopping Rendering Thread on device', device)
+    log.info(f'Stopping Rendering Thread on device: {device}')
 
     try:
         thread_to_remove = None
@@ -480,27 +482,27 @@ def stop_render_thread(device):
 
 def update_render_threads(render_devices, active_devices):
     devices_to_start, devices_to_stop = device_manager.get_device_delta(render_devices, active_devices)
-    print('devices_to_start', devices_to_start)
-    print('devices_to_stop', devices_to_stop)
+    log.debug(f'devices_to_start: {devices_to_start}')
+    log.debug(f'devices_to_stop: {devices_to_stop}')
 
     for device in devices_to_stop:
         if is_alive(device) <= 0:
-            print(device, 'is not alive')
+            log.debug(f'{device} is not alive')
             continue
         if not stop_render_thread(device):
-            print(device, 'could not stop render thread')
+            log.warn(f'{device} could not stop render thread')
 
     for device in devices_to_start:
         if is_alive(device) >= 1:
-            print(device, 'already registered.')
+            log.debug(f'{device} already registered.')
             continue
         if not start_render_thread(device):
-            print(device, 'failed to start.')
+            log.warn(f'{device} failed to start.')
 
     if is_alive() <= 0: # No running devices, probably invalid user config.
         raise EnvironmentError('ERROR: No active render devices! Please verify the "render_devices" value in config.json')
 
-    print('active devices', get_devices()['active'])
+    log.debug(f"active devices: {get_devices()['active']}")
 
 def shutdown_event(): # Signal render thread to close on shutdown
     global current_state_error
