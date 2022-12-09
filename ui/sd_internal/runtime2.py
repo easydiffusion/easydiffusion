@@ -10,7 +10,7 @@ import traceback
 from sd_internal import device_manager, model_manager
 from sd_internal import Request, Response, Image as ResponseImage, UserInitiatedStop
 
-from modules import model_loader, image_generator, image_utils, image_filters
+from modules import model_loader, image_generator, image_utils, filters as image_filters
 
 thread_data = threading.local()
 '''
