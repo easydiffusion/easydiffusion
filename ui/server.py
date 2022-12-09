@@ -20,7 +20,6 @@ server_api = FastAPI()
 
 # don't show access log entries for URLs that start with the given prefix
 ACCESS_LOG_SUPPRESS_PATH_PREFIXES = ['/ping', '/image', '/modifier-thumbnails']
-
 NOCACHE_HEADERS={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
 
 class NoCacheStaticFiles(StaticFiles):
