@@ -8,12 +8,12 @@ from rich.logging import RichHandler
 
 from sd_internal import task_manager
 
-LOG_FORMAT = '[%(threadName)s] %(message)s'
+LOG_FORMAT = '%(levelname)s %(threadName)s %(message)s'
 logging.basicConfig(
         level=logging.INFO,
         format=LOG_FORMAT,
-        datefmt="[%X.%f]",
-        handlers=[RichHandler(markup=True)]
+        datefmt="%X.%f",
+        handlers=[RichHandler(markup=True, rich_tracebacks=True, show_level=False)]
 )
 
 log = logging.getLogger()

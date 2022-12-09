@@ -19,7 +19,7 @@ from sd_internal import Request, device_manager
 
 log = logging.getLogger()
 
-THREAD_NAME_PREFIX = 'Runtime-Render/'
+THREAD_NAME_PREFIX = ''
 ERR_LOCK_FAILED = ' failed to acquire lock within timeout.'
 LOCK_TIMEOUT = 15 # Maximum locking time in seconds before failing a task.
 # It's better to get an exception than a deadlock... ALWAYS use timeout in critical paths.

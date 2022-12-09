@@ -70,6 +70,7 @@ def reload_models_if_necessary(req: Request):
 
 def make_images(req: Request, data_queue: queue.Queue, task_temp_images: list, step_callback):
     try:
+        log.info(req)
         return _make_images_internal(req, data_queue, task_temp_images, step_callback)
     except Exception as e:
         log.error(traceback.format_exc())
