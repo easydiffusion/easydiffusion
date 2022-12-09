@@ -53,7 +53,7 @@ logging.getLogger('uvicorn.access').addFilter(LogSuppressFilter())
 server_api.mount('/media', NoCacheStaticFiles(directory=os.path.join(app.SD_UI_DIR, 'media')), name="media")
 
 for plugins_dir, dir_prefix in app.UI_PLUGINS_SOURCES:
-    app.mount(f'/plugins/{dir_prefix}', NoCacheStaticFiles(directory=plugins_dir), name=f"plugins-{dir_prefix}")
+    server_api.mount(f'/plugins/{dir_prefix}', NoCacheStaticFiles(directory=plugins_dir), name=f"plugins-{dir_prefix}")
 
 @server_api.post('/app_config')
 async def setAppConfig(req : SetAppConfigRequest):
