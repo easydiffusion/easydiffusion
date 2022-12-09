@@ -39,7 +39,8 @@ const SETTINGS_IDS_LIST = [
     "turbo",
     "use_full_precision",
     "confirm_dangerous_actions",
-    "auto_save_settings"
+    "auto_save_settings",
+    "apply_color_correction"
 ]
 
 const IGNORE_BY_DEFAULT = [

@@ -76,6 +76,7 @@ class ImageRequest(BaseModel):
     negative_prompt: str = ""
     init_image: str = None # base64
     mask: str = None # base64
+    apply_color_correction: bool = False
     num_outputs: int = 1
     num_inference_steps: int = 50
     guidance_scale: float = 7.5
@@ -522,6 +523,7 @@ def render(req : ImageRequest):
     r.negative_prompt = req.negative_prompt
     r.init_image = req.init_image
     r.mask = req.mask
+    r.apply_color_correction = req.apply_color_correction
     r.num_outputs = req.num_outputs
     r.num_inference_steps = req.num_inference_steps
     r.guidance_scale = req.guidance_scale

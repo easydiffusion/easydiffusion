@@ -26,6 +26,8 @@ let initImagePreview = document.querySelector("#init_image_preview")
 let initImageSizeBox = document.querySelector("#init_image_size_box")
 let maskImageSelector = document.querySelector("#mask")
 let maskImagePreview = document.querySelector("#mask_preview")
+let applyColorCorrectionField = document.querySelector('#apply_color_correction')
+let colorCorrectionSetting = document.querySelector('#apply_color_correction_setting')
 let promptStrengthSlider = document.querySelector('#prompt_strength_slider')
 let promptStrengthField = document.querySelector('#prompt_strength')
 let samplerField = document.querySelector('#sampler')
@@ -759,6 +761,9 @@ function createTask(task) {
         taskConfig += `, <b>Hypernetwork:</b> ${task.reqBody.use_hypernetwork_model}`
         taskConfig += `, <b>Hypernetwork Strength:</b> ${task.reqBody.hypernetwork_strength}`
     }
+    if (task.reqBody.apply_color_correction) {
+        taskConfig += `, <b>Color Correction:</b> true`
+    }
 
     let taskEntry = document.createElement('div')
     taskEntry.id = `imageTaskContainer-${Date.now()}`
@@ -867,6 +872,7 @@ function getCurrentUserRequest() {
         if (maskSetting.checked) {
             newTask.reqBody.mask = imageInpainter.getImg()
         }
+        newTask.reqBody.apply_color_correction = applyColorCorrectionField.checked
         newTask.reqBody.sampler = 'ddim'
     } else {
         newTask.reqBody.sampler = samplerField.value
@@ -1257,6 +1263,7 @@ function img2imgLoad() {
     promptStrengthContainer.style.display = 'table-row'
     samplerSelectionContainer.style.display = "none"
     initImagePreviewContainer.classList.add("has-image")
+    colorCorrectionSetting.style.display = ''
 
     initImageSizeBox.textContent = initImagePreview.naturalWidth + " x " + initImagePreview.naturalHeight
     imageEditor.setImage(this.src, initImagePreview.naturalWidth, initImagePreview.naturalHeight)
@@ -1271,6 +1278,7 @@ function img2imgUnload() {
     promptStrengthContainer.style.display = "none"
     samplerSelectionContainer.style.display = ""
     initImagePreviewContainer.classList.remove("has-image")
+    colorCorrectionSetting.style.display = 'none'
     imageEditor.setImage(null, parseInt(widthField.value), parseInt(heightField.value))
 
 }

@@ -7,6 +7,7 @@ class Request:
     negative_prompt: str = ""
     init_image: str = None # base64
     mask: str = None # base64
+    apply_color_correction = False
     num_outputs: int = 1
     num_inference_steps: int = 50
     guidance_scale: float = 7.5
@@ -35,6 +36,7 @@ class Request:
 
     def json(self):
         return {
+            "request_id": self.request_id,
             "session_id": self.session_id,
             "prompt": self.prompt,
             "negative_prompt": self.negative_prompt,
@@ -46,6 +48,7 @@ class Request:
             "seed": self.seed,
             "prompt_strength": self.prompt_strength,
             "sampler": self.sampler,
+            "apply_color_correction": self.apply_color_correction,
             "use_face_correction": self.use_face_correction,
             "use_upscale": self.use_upscale,
             "use_stable_diffusion_model": self.use_stable_diffusion_model,
@@ -71,6 +74,7 @@ class Request:
     save_to_disk_path: {self.save_to_disk_path}
     turbo: {self.turbo}
     use_full_precision: {self.use_full_precision}
+    apply_color_correction: {self.apply_color_correction}
     use_face_correction: {self.use_face_correction}
     use_upscale: {self.use_upscale}
     use_stable_diffusion_model: {self.use_stable_diffusion_model}
