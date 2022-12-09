@@ -44,7 +44,7 @@ def destroy():
 
 def init_and_load_default_models():
     # init default model paths
-    for model_type in ('stable-diffusion', 'vae', 'hypernetwork', 'gfpgan', 'realesrgan'):
+    for model_type in model_manager.KNOWN_MODEL_TYPES:
         thread_data.model_paths[model_type] = model_manager.resolve_model_to_use(model_type=model_type)
 
     # load mandatory models
