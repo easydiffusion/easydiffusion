@@ -41,6 +41,7 @@ def destroy():
     model_loader.unload_sd_model(thread_data)
     model_loader.unload_gfpgan_model(thread_data)
     model_loader.unload_realesrgan_model(thread_data)
+    model_loader.unload_hypernetwork_model(thread_data)
 
 def init_and_load_default_models():
     # init default model paths
@@ -60,9 +61,13 @@ def reload_models_if_necessary(req: Request):
 
         model_loader.load_sd_model(thread_data)
 
-    # if is_hypernetwork_reload_necessary(task.request):
-    #     current_state = ServerStates.LoadingModel
-    #     runtime.reload_hypernetwork()
+    if thread_data.model_paths.get('hypernetwork') != req.use_hypernetwork_model:
+        thread_data.model_paths['hypernetwork'] = req.use_hypernetwork_model
+
+        if thread_data.model_paths['hypernetwork'] is not None:
+            model_loader.load_hypernetwork_model(thread_data)
+        else:
+            model_loader.unload_hypernetwork_model(thread_data)
 
 def make_images(req: Request, data_queue: queue.Queue, task_temp_images: list, step_callback):
     images, user_stopped = generate_images(req, data_queue, task_temp_images, step_callback)

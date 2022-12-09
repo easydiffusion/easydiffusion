@@ -70,7 +70,6 @@ def resolve_model_to_use(model_name:str, model_type:str):
                         print(f'Could not find the configured custom model {model_name}{model_extension}. Using the default one: {default_model_path}{model_extension}')
                     return default_model_path + model_extension
 
-    print(f'No valid models found for model_name: {model_name}')
     return None
 
 def resolve_sd_model_to_use(model_name:str=None):
