@@ -83,7 +83,12 @@ def _make_images_internal(req: Request, data_queue: queue.Queue, task_temp_image
 
     save_images(req, images)
 
-    return Response(req, images=construct_response(req, images))
+    res = Response(req, images=construct_response(req, images))
+    res = res.json()
+    data_queue.put(json.dumps(res))
+    print('Task completed')
+
+    return res
 
 def generate_images(req: Request, data_queue: queue.Queue, task_temp_images: list, step_callback):
     thread_data.temp_images.clear()
@@ -91,7 +96,7 @@ def generate_images(req: Request, data_queue: queue.Queue, task_temp_images: lis
     image_generator.on_image_step = make_step_callback(req, data_queue, task_temp_images, step_callback)
 
     try:
-        images = image_generator.make_image(context=thread_data, args=get_mk_img_args(req))
+        images = image_generator.make_images(context=thread_data, args=get_mk_img_args(req))
         user_stopped = False
     except UserInitiatedStop:
         images = []

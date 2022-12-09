@@ -101,7 +101,7 @@ def device_init(context, device):
     context.device = device
 
     # Force full precision on 1660 and 1650 NVIDIA cards to avoid creating green images
-    if needs_to_force_full_precision(context.device_name):
+    if needs_to_force_full_precision(context):
         print(f'forcing full precision on this GPU, to avoid green images. GPU detected: {context.device_name}')
         # Apply force_full_precision now before models are loaded.
         context.precision = 'full'
