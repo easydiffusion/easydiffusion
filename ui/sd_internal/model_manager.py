@@ -96,7 +96,7 @@ def make_model_folders():
         help_file_name = f'Place your {model_type} model files here.txt'
         help_file_contents = f'Supported extensions: {" or ".join(MODEL_EXTENSIONS.get(model_type))}'
 
-        with open(os.path.join(model_dir_path, help_file_name)) as f:
+        with open(os.path.join(model_dir_path, help_file_name), 'w', encoding='utf-8') as f:
             f.write(help_file_contents)
 
 def is_malicious_model(file_path):
