@@ -757,8 +757,37 @@ function onTaskStart(task) {
     previewTools.style.display = 'block'
 }
 
+/* Hover effect for the init image in the task list */
+function createInitImageHover(taskEntry) {
+    var $tooltip = $( taskEntry.querySelector('.task-fs-initimage') )
+    $( taskEntry.querySelector('div.task-initimg > img') ).on('mouseenter', function() {
+        var img = this,
+           $img = $(img),
+           offset = $img.offset();
+    
+       $tooltip
+       .css({
+           'top': offset.top,
+           'left': offset.left,
+           'z-index': 99999,
+           'display': 'block'
+       })
+       .append($img.clone().css({width:"", height:""}));
+    })
+    $tooltip.on('mouseleave', function() {
+       $tooltip.empty().addClass('hidden');
+    });
+}
+
 function createTask(task) {
-    let taskConfig = `<b>Seed:</b> ${task.seed}, <b>Sampler:</b> ${task.reqBody.sampler}, <b>Inference Steps:</b> ${task.reqBody.num_inference_steps}, <b>Guidance Scale:</b> ${task.reqBody.guidance_scale}, <b>Model:</b> ${task.reqBody.use_stable_diffusion_model}`
+    let taskConfig = ''
+
+    if (task.reqBody.init_image !== undefined) {
+        let h = 80
+	let w = task.reqBody.width * h / task.reqBody.height >>0
+        taskConfig += `<div class="task-initimg" style="float:left;"><img style="width:${w}px;height:${h}px;" src="${task.reqBody.init_image}"><div class="task-fs-initimage"></div></div>`
+    }
+    taskConfig += `<b>Seed:</b> ${task.seed}, <b>Sampler:</b> ${task.reqBody.sampler}, <b>Inference Steps:</b> ${task.reqBody.num_inference_steps}, <b>Guidance Scale:</b> ${task.reqBody.guidance_scale}, <b>Model:</b> ${task.reqBody.use_stable_diffusion_model}`
     if (task.reqBody.use_vae_model.trim() !== '') {
         taskConfig += `, <b>VAE:</b> ${task.reqBody.use_vae_model}`
     }
@@ -796,6 +825,11 @@ function createTask(task) {
                             </div>`
 
     createCollapsibles(taskEntry)
+
+
+    if (task.reqBody.init_image !== undefined) {
+        createInitImageHover(taskEntry)
+    }
 
     task['taskStatusLabel'] = taskEntry.querySelector('.taskStatusLabel')
     task['outputContainer'] = taskEntry.querySelector('.img-preview')

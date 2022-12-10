@@ -945,6 +945,7 @@ input::file-selector-button {
     height: 16px;
     position: relative;
     transition: 0.25s 1s border, 0.25s 1s height;
+    clear: both;
 }
 .progress-bar > div {
     background: var(--accent-color);
@@ -1094,6 +1095,15 @@ button:active {
   position: relative;
   top: 1px;
   left: 1px;
+}
+
+div.task-initimg > img {
+    margin-right: 6px;
+    display:      block;
+}
+div.task-fs-initimage {
+    display:  none;
+    position: absolute;
 }
 
 button#save-system-settings-btn {
