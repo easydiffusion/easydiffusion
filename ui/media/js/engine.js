@@ -1081,7 +1081,7 @@
 
     function getServerCapacity() {
         let activeDevicesCount = Object.keys(serverState?.devices?.active || {}).length
-        if (window.document.visibilityState === 'hidden') {
+        if (typeof window === "object" && window.document.visibilityState === 'hidden') {
             activeDevicesCount = 1 + activeDevicesCount
         }
         return activeDevicesCount
