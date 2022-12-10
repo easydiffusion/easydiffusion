@@ -55,7 +55,7 @@
                     <input id="prompt_from_file" name="prompt_from_file" type="file" /> <!-- hidden -->
                     <label for="negative_prompt" class="collapsible" id="negative_prompt_handle">
                         Negative Prompt
-                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Writing-prompts#negative-prompts" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">Click to learn more about Negative Prompts</span></i></a>
+                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Writing-prompts#negative-prompts" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about Negative Prompts</span></i></a>
                         <small>(optional)</small>
                     </label>
                     <div class="collapsible-content">
@@ -95,7 +95,7 @@
                 </div>
 
                 <div id="editor-inputs-tags-container" class="row">
-                    <label>Image Modifiers <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">click an Image Modifier to remove it, use Ctrl+Mouse Wheel to adjust its weight</span></i>:</label>
+                    <label>Image Modifiers <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">click an Image Modifier to remove it, use Ctrl+Mouse Wheel to adjust its weight</span></i>:</label>
                     <div id="editor-inputs-tags-list"></div>
                 </div>
 
@@ -109,7 +109,7 @@
                 <h4 class="collapsible">
                     Image Settings
                     <i id="reset-image-settings" class="fa-solid fa-arrow-rotate-left section-button">
-                        <span class="simple-tooltip right">
+                        <span class="simple-tooltip top-left">
                             Reset Image Settings
                         </span>
                     </i>
@@ -123,13 +123,13 @@
                         <select id="stable_diffusion_model" name="stable_diffusion_model">
                             <!-- <option value="sd-v1-4" selected>sd-v1-4</option> -->
                         </select>
-                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Custom-Models" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">Click to learn more about custom models</span></i></a>
+                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Custom-Models" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about custom models</span></i></a>
                     </td></tr>
                     <tr class="pl-5"><td><label for="vae_model">Custom VAE:</i></label></td><td>
                         <select id="vae_model" name="vae_model">
                             <!-- <option value="" selected>None</option> -->
                         </select>
-                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/VAE-Variational-Auto-Encoder" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">Click to learn more about VAEs</span></i></a>
+                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/VAE-Variational-Auto-Encoder" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about VAEs</span></i></a>
                     </td></tr>
                     <tr class="pl-5"><td><label for="hypernetwork_model">Hypernetwork:</i></label></td><td>
                         <select id="hypernetwork_model" name="hypernetwork_model">
@@ -148,7 +148,7 @@
                             <option value="dpm2_a">dpm2_a</option>
                             <option value="lms">lms</option>
                         </select>
-                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/How-to-Use#samplers" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">Click to learn more about samplers</span></i></a>
+                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/How-to-Use#samplers" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about samplers</span></i></a>
                     </td></tr>
                     <tr class="pl-5"><td><label>Image Size: </label></td><td>
                         <select id="width" name="width" value="512">
@@ -278,7 +278,7 @@
                             <tr><td><label>Compatible Graphics Cards (all):</label></td><td id="system-info-gpus-all" class="value"></td></tr>
                             <tr><td></td><td>&nbsp;</td></tr>
                             <tr><td><label>Used for rendering 🔥:</label></td><td id="system-info-rendering-devices" class="value"></td></tr>
-                            <tr><td><label>Server Addresses <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">You can access Stable Diffusion UI from other devices using these addresses</span></i> :</label></td><td id="system-info-server-hosts" class="value"></td></tr>
+                            <tr><td><label>Server Addresses <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">You can access Stable Diffusion UI from other devices using these addresses</span></i> :</label></td><td id="system-info-server-hosts" class="value"></td></tr>
                         </table>
                     </div>
                 </div>
