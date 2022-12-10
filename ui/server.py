@@ -26,6 +26,7 @@ UI_PLUGINS_SOURCES = ((CORE_UI_PLUGINS_DIR, 'core'), (USER_UI_PLUGINS_DIR, 'user
 
 STABLE_DIFFUSION_MODEL_EXTENSIONS = ['.ckpt', '.safetensors']
 VAE_MODEL_EXTENSIONS = ['.vae.pt', '.ckpt']
+HYPERNETWORK_MODEL_EXTENSIONS = ['.pt']
 
 OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder
 TASK_TTL = 15 * 60 # Discard last session's task timeout
@@ -49,7 +50,6 @@ from starlette.responses import FileResponse, JSONResponse, StreamingResponse
 from time import time
 from pydantic import BaseModel
 import logging
-#import queue, threading, time
 from typing import Any, Generator, Hashable, List, Optional, Union
 
 from sd_internal import Request, Response, task_manager, ModelDownloadRequest
@@ -57,7 +57,6 @@ from sd_internal.downloader import modelDownloadTask, getDownloadProgress
 
 app = FastAPI()
 
-modifiers_cache = None
 outpath = os.path.join(os.path.expanduser("~"), OUTPUT_DIRNAME)
 
 os.makedirs(USER_UI_PLUGINS_DIR, exist_ok=True)
@@ -195,6 +194,12 @@ def resolve_vae_to_use(model_name:str=None):
     except:
         return None
 
+def resolve_hypernetwork_to_use(model_name:str=None):
+    try:
+        return resolve_model_to_use(model_name, model_type='hypernetwork', model_dir='hypernetwork', model_extensions=HYPERNETWORK_MODEL_EXTENSIONS, default_models=[])
+    except:
+        return None
+
 class SetAppConfigRequest(BaseModel):
     update_branch: str = None
     render_devices: Union[List[str], List[int], str, int] = None
@@ -268,10 +273,12 @@ def getModels():
         'active': {
             'stable-diffusion': 'sd-v1-4',
             'vae': '',
+            'hypernetwork': '',
         },
         'options': {
             'stable-diffusion': ['sd-v1-4'],
             'vae': [],
+            'hypernetwork': [],
         },
     }
 
@@ -303,7 +310,7 @@ def getModels():
     # custom models
     listModels(models_dirname='stable-diffusion', model_type='stable-diffusion', model_extensions=STABLE_DIFFUSION_MODEL_EXTENSIONS)
     listModels(models_dirname='vae', model_type='vae', model_extensions=VAE_MODEL_EXTENSIONS)
-
+    listModels(models_dirname='hypernetwork', model_type='hypernetwork', model_extensions=HYPERNETWORK_MODEL_EXTENSIONS)
     # legacy
     custom_weight_path = os.path.join(SD_DIR, 'custom-model.ckpt')
     if os.path.exists(custom_weight_path):
@@ -360,34 +367,24 @@ def ping(session_id:str=None):
     # Alive
     response = {'status': str(task_manager.current_state)}
     if session_id:
-        task = task_manager.get_cached_task(session_id, update_ttl=True)
-        if task:
-            response['task'] = id(task)
-            if task.lock.locked():
-                response['session'] = 'running'
-            elif isinstance(task.error, StopAsyncIteration):
-                response['session'] = 'stopped'
-            elif task.error:
-                response['session'] = 'error'
-            elif not task.buffer_queue.empty():
-                response['session'] = 'buffer'
-            elif task.response:
-                response['session'] = 'completed'
-            else:
-                response['session'] = 'pending'
+        session = task_manager.get_cached_session(session_id, update_ttl=True)
+        response['tasks'] = {id(t): t.status for t in session.tasks}
     response['devices'] = task_manager.get_devices()
     return JSONResponse(response, headers=NOCACHE_HEADERS)
 
-def save_model_to_config(ckpt_model_name, vae_model_name):
+def save_model_to_config(ckpt_model_name, vae_model_name, hypernetwork_model_name):
     config = getConfig()
     if 'model' not in config:
         config['model'] = {}
 
     config['model']['stable-diffusion'] = ckpt_model_name
     config['model']['vae'] = vae_model_name
+    config['model']['hypernetwork'] = hypernetwork_model_name
 
     if vae_model_name is None or vae_model_name == "":
         del config['model']['vae']
+    if hypernetwork_model_name is None or hypernetwork_model_name == "":
+        del config['model']['hypernetwork']
 
     setConfig(config)
 
@@ -403,30 +400,33 @@ def update_render_devices_in_config(config, render_devices):
 @app.post('/render')
 def render(req : task_manager.ImageRequest):
     try:
-        save_model_to_config(req.use_stable_diffusion_model, req.use_vae_model)
+        save_model_to_config(req.use_stable_diffusion_model, req.use_vae_model, req.use_hypernetwork_model)
         req.use_stable_diffusion_model = resolve_ckpt_to_use(req.use_stable_diffusion_model)
         req.use_vae_model = resolve_vae_to_use(req.use_vae_model)
+        req.use_hypernetwork_model = resolve_hypernetwork_to_use(req.use_hypernetwork_model)
         new_task = task_manager.render(req)
         response = {
             'status': str(task_manager.current_state), 
             'queue': len(task_manager.tasks_queue),
-            'stream': f'/image/stream/{req.session_id}/{id(new_task)}',
+            'stream': f'/image/stream/{id(new_task)}',
             'task': id(new_task)
         }
         return JSONResponse(response, headers=NOCACHE_HEADERS)
     except ChildProcessError as e: # Render thread is dead
         raise HTTPException(status_code=500, detail=f'Rendering thread has died.') # HTTP500 Internal Server Error
-    except ConnectionRefusedError as e: # Unstarted task pending, deny queueing more than one.
-        raise HTTPException(status_code=503, detail=f'Session {req.session_id} has an already pending task.') # HTTP503 Service Unavailable
+    except ConnectionRefusedError as e: # Unstarted task pending limit reached, deny queueing too many.
+        raise HTTPException(status_code=503, detail=str(e)) # HTTP503 Service Unavailable
     except Exception as e:
+        print(e)
+        print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get('/image/stream/{session_id:str}/{task_id:int}')
-def stream(session_id:str, task_id:int):
+@app.get('/image/stream/{task_id:int}')
+def stream(task_id:int):
     #TODO Move to WebSockets ??
-    task = task_manager.get_cached_task(session_id, update_ttl=True)
-    if not task: raise HTTPException(status_code=410, detail='No request received.') # HTTP410 Gone
-    if (id(task) != task_id): raise HTTPException(status_code=409, detail=f'Wrong task id received. Expected:{id(task)}, Received:{task_id}') # HTTP409 Conflict
+    task = task_manager.get_cached_task(task_id, update_ttl=True)
+    if not task: raise HTTPException(status_code=404, detail=f'Request {task_id} not found.') # HTTP404 NotFound
+    #if (id(task) != task_id): raise HTTPException(status_code=409, detail=f'Wrong task id received. Expected:{id(task)}, Received:{task_id}') # HTTP409 Conflict
     if task.buffer_queue.empty() and not task.lock.locked():
         if task.response:
             #print(f'Session {session_id} sending cached response')
@@ -436,22 +436,23 @@ def stream(session_id:str, task_id:int):
     return StreamingResponse(task.read_buffer_generator(), media_type='application/json')
 
 @app.get('/image/stop')
-def stop(session_id:str=None):
-    if not session_id:
+def stop(task: int):
+    if not task:
         if task_manager.current_state == task_manager.ServerStates.Online or task_manager.current_state == task_manager.ServerStates.Unavailable:
             raise HTTPException(status_code=409, detail='Not currently running any tasks.') # HTTP409 Conflict
         task_manager.current_state_error = StopAsyncIteration('')
         return {'OK'}
-    task = task_manager.get_cached_task(session_id, update_ttl=False)
-    if not task: raise HTTPException(status_code=404, detail=f'Session {session_id} has no active task.') # HTTP404 Not Found
-    if isinstance(task.error, StopAsyncIteration): raise HTTPException(status_code=409, detail=f'Session {session_id} task is already stopped.') # HTTP409 Conflict
-    task.error = StopAsyncIteration('')
+    task_id = task
+    task = task_manager.get_cached_task(task_id, update_ttl=False)
+    if not task: raise HTTPException(status_code=404, detail=f'Task {task_id} was not found.') # HTTP404 Not Found
+    if isinstance(task.error, StopAsyncIteration): raise HTTPException(status_code=409, detail=f'Task {task_id} is already stopped.') # HTTP409 Conflict
+    task.error = StopAsyncIteration(f'Task {task_id} stop requested.')
     return {'OK'}
 
-@app.get('/image/tmp/{session_id}/{img_id:int}')
-def get_image(session_id, img_id):
-    task = task_manager.get_cached_task(session_id, update_ttl=True)
-    if not task: raise HTTPException(status_code=410, detail=f'Session {session_id} has not submitted a task.') # HTTP410 Gone
+@app.get('/image/tmp/{task_id:int}/{img_id:int}')
+def get_image(task_id: int, img_id: int):
+    task = task_manager.get_cached_task(task_id, update_ttl=True)
+    if not task: raise HTTPException(status_code=410, detail=f'Task {task_id} could not be found.') # HTTP404 NotFound
     if not task.temp_images[img_id]: raise HTTPException(status_code=425, detail='Too Early, task data is not available yet.') # HTTP425 Too Early
     try:
         img_data = task.temp_images[img_id]
@@ -484,6 +485,7 @@ getModels()
 # Start the task_manager
 task_manager.default_model_to_load = resolve_ckpt_to_use()
 task_manager.default_vae_to_load = resolve_vae_to_use()
+task_manager.default_hypernetwork_to_load = resolve_hypernetwork_to_use()
 
 def update_render_threads():
     config = getConfig()

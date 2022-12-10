@@ -35,6 +35,9 @@ let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
 let stableDiffusionModelField = document.querySelector('#stable_diffusion_model')
 let vaeModelField = document.querySelector('#vae_model')
+let hypernetworkModelField = document.querySelector('#hypernetwork_model')
+let hypernetworkStrengthSlider = document.querySelector('#hypernetwork_strength_slider')
+let hypernetworkStrengthField = document.querySelector('#hypernetwork_strength')
 let outputFormatField = document.querySelector('#output_format')
 let showOnlyFilteredImageField = document.querySelector("#show_only_filtered_image")
 let updateBranchLabel = document.querySelector("#updateBranchLabel")
@@ -55,6 +58,29 @@ let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
 let maskSetting = document.querySelector('#enable_mask')
 
 const processOrder = document.querySelector('#process_order_toggle')
+
+const editorContainer = document.querySelector('#editor')
+window.addEventListener("scroll", updatePreviewSize)
+let lastScrollTop = 0
+updatePreviewSize()
+
+// update preview pane size and position
+function updatePreviewSize() {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+    if (scrollTop > lastScrollTop) {
+        previewTools.style.top = -previewTools.offsetHeight + 'px'
+    }
+    else if (scrollTop < lastScrollTop) {
+        const elem = preview.getElementsByClassName('img-batch')[0]
+        if (elem !== undefined && Math.round(window.scrollY) !== Math.round(elem.closest(".imageTaskContainer").offsetTop)) {
+            previewTools.style.top = '0'
+        }
+    }
+    lastScrollTop = scrollTop
+
+    $('#editor').css('top', Math.max(-window.pageYOffset + $("#tab-container").offset().top + $('#tab-container').outerHeight(true), 0) + 'px')
+    $('#editor').css('bottom', Math.max($(window).height() - ($("#footer .line-separator").offset().top - $(document).scrollTop()), 0) + 'px')
+};
 
 let imagePreview = document.querySelector("#preview")
 imagePreview.addEventListener('drop', function(ev) {
@@ -264,9 +290,9 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         imageElem.setAttribute('data-steps', imageInferenceSteps)
         imageElem.setAttribute('data-guidance', imageGuidanceScale)
 
-
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
         imageInfo.style.visibility = (livePreview ? 'hidden' : 'visible')
+        updatePreviewSize()
 
         if ('seed' in result && !imageElem.hasAttribute('data-seed')) {
             const req = Object.assign({}, reqBody, {
@@ -408,11 +434,7 @@ function getUncompletedTaskEntries() {
         document.querySelectorAll('#preview .imageTaskContainer .taskStatusLabel')
         ).filter((taskLabel) => taskLabel.style.display !== 'none'
         ).map(function(taskLabel) {
-            let imageTaskContainer = taskLabel.parentNode
-            while(!imageTaskContainer.classList.contains('imageTaskContainer') && imageTaskContainer.parentNode) {
-                imageTaskContainer = imageTaskContainer.parentNode
-            }
-            return imageTaskContainer
+            return taskLabel.closest('.imageTaskContainer')
         })
     if (!processOrder.checked) {
         taskEntries.reverse()
@@ -452,9 +474,10 @@ function makeImage() {
 }
 
 function onIdle() {
+    const serverCapacity = SD.serverCapacity
     for (const taskEntry of getUncompletedTaskEntries()) {
-        if (SD.activeTasks.size >= 1) {
-            continue
+        if (SD.activeTasks.size >= serverCapacity) {
+            break
         }
         const task = htmlTaskMap.get(taskEntry)
         if (!task) {
@@ -654,6 +677,7 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
     }
 }
 
+
 function onTaskStart(task) {
     if (!task.isProcessing || task.batchesDone >= task.batchCount) {
         return
@@ -705,13 +729,13 @@ function onTaskStart(task) {
     })
     let instance = eventInfo.instance
     if (!instance) {
-        const factory = PLUGINS.OUTPUTS_FORMATS.get(newTaskReqBody.output_format)
+        const factory = PLUGINS.OUTPUTS_FORMATS.get(eventInfo.reqBody?.output_format || newTaskReqBody.output_format)
         if (factory) {
-            instance = factory(newTaskReqBody)
+            instance = factory(eventInfo.reqBody || newTaskReqBody)
         }
         if (!instance) {
-            console.error(`${factory ? "Factory " + String(factory) : 'No factory defined'} for output format ${newTaskReqBody.output_format}. Instance is ${instance || 'undefined'}. Using default renderer.`)
-            instance = new SD.RenderTask(newTaskReqBody)
+            console.error(`${factory ? "Factory " + String(factory) : 'No factory defined'} for output format ${eventInfo.reqBody?.output_format || newTaskReqBody.output_format}. Instance is ${instance || 'undefined'}. Using default renderer.`)
+            instance = new SD.RenderTask(eventInfo.reqBody || newTaskReqBody)
         }
     }
 
@@ -750,6 +774,10 @@ function createTask(task) {
     if (task.reqBody.use_upscale) {
         taskConfig += `, <b>Upscale:</b> ${task.reqBody.use_upscale}`
     }
+    if (task.reqBody.use_hypernetwork_model) {
+        taskConfig += `, <b>Hypernetwork:</b> ${task.reqBody.use_hypernetwork_model}`
+        taskConfig += `, <b>Hypernetwork Strength:</b> ${task.reqBody.hypernetwork_strength}`
+    }
 
     let taskEntry = document.createElement('div')
     taskEntry.id = `imageTaskContainer-${Date.now()}`
@@ -780,7 +808,7 @@ function createTask(task) {
         let question = (task['isProcessing'] ? "Stop this task?" : "Remove this task?")
         shiftOrConfirm(e, question, async function(e) {
             if (task.batchesDone <= 0 || !task.isProcessing) {
-                taskEntry.remove()
+                removeTask(taskEntry)
             }
             abortTask(task)
         })
@@ -871,6 +899,10 @@ function getCurrentUserRequest() {
     if (useUpscalingField.checked) {
         newTask.reqBody.use_upscale = upscaleModelField.value
     }
+    if (hypernetworkModelField.value) {
+        newTask.reqBody.use_hypernetwork_model = hypernetworkModelField.value
+        newTask.reqBody.hypernetwork_strength = parseFloat(hypernetworkStrengthField.value)
+    }
     return newTask
 }
 
@@ -886,14 +918,16 @@ function getPrompts(prompts) {
     prompts = prompts.map(prompt => prompt.trim())
     prompts = prompts.filter(prompt => prompt !== '')
 
+    let promptsToMake = applyPermuteOperator(prompts)
+    promptsToMake = applySetOperator(promptsToMake)
     const newTags = activeTags.filter(tag => tag.inactive === undefined || tag.inactive === false)
     if (newTags.length > 0) {
         const promptTags = newTags.map(x => x.name).join(", ")
-        prompts = prompts.map((prompt) => `${prompt}, ${promptTags}`)
+        promptsToMake = promptsToMake.map((prompt) => `${prompt}, ${promptTags}`)
     }
 
-    let promptsToMake = applySetOperator(prompts)
     promptsToMake = applyPermuteOperator(promptsToMake)
+    promptsToMake = applySetOperator(promptsToMake)
 
     PLUGINS['GET_PROMPTS_HOOK'].forEach(fn => { promptsToMake = fn(promptsToMake) })
     return promptsToMake
@@ -1006,6 +1040,7 @@ function removeTask(taskToRemove) {
         previewTools.style.display = 'none'
         initialText.style.display = 'block'
     }
+    updatePreviewSize()
 }
 
 clearAllPreviewsBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Clear all the results and tasks in this window?", async function() {
@@ -1106,6 +1141,27 @@ promptStrengthSlider.addEventListener('input', updatePromptStrength)
 promptStrengthField.addEventListener('input', updatePromptStrengthSlider)
 updatePromptStrength()
 
+/********************* Hypernetwork Strength **********************/
+function updateHypernetworkStrength() {
+    hypernetworkStrengthField.value = hypernetworkStrengthSlider.value / 100
+    hypernetworkStrengthField.dispatchEvent(new Event("change"))
+}
+
+function updateHypernetworkStrengthSlider() {
+    if (hypernetworkStrengthField.value < 0) {
+        hypernetworkStrengthField.value = 0
+    } else if (hypernetworkStrengthField.value > 0.99) {
+        hypernetworkStrengthField.value = 0.99
+    }
+
+    hypernetworkStrengthSlider.value = hypernetworkStrengthField.value * 100
+    hypernetworkStrengthSlider.dispatchEvent(new Event("change"))
+}
+
+hypernetworkStrengthSlider.addEventListener('input', updateHypernetworkStrength)
+hypernetworkStrengthField.addEventListener('input', updateHypernetworkStrengthSlider)
+updateHypernetworkStrength()
+
 /********************* JPEG Quality **********************/
 function updateOutputQuality() {
     outputQualityField.value =  0 | outputQualitySlider.value
@@ -1139,12 +1195,14 @@ async function getModels() {
     try {
         const sd_model_setting_key = "stable_diffusion_model"
         const vae_model_setting_key = "vae_model"
+        const hypernetwork_model_key = "hypernetwork_model"
         const selectedSDModel = SETTINGS[sd_model_setting_key].value
         const selectedVaeModel = SETTINGS[vae_model_setting_key].value
+        const selectedHypernetworkModel = SETTINGS[hypernetwork_model_key].value
 
         const models = await SD.getModels()
         const modelsOptions = models['options']
-        if ( "scan-error" in models) {
+        if ("scan-error" in models) {
             // let previewPane = document.getElementById('tab-content-wrapper')
             let previewPane = document.getElementById('preview')
             previewPane.style.background="red"
@@ -1155,7 +1213,10 @@ async function getModels() {
 
         const stableDiffusionOptions = modelsOptions['stable-diffusion']
         const vaeOptions = modelsOptions['vae']
+        const hypernetworkOptions = modelsOptions['hypernetwork']
+
         vaeOptions.unshift('') // add a None option
+        hypernetworkOptions.unshift('') // add a None option
 
         function createModelOptions(modelField, selectedModel) {
             return function(modelName) {
@@ -1173,6 +1234,7 @@ async function getModels() {
 
         stableDiffusionOptions.forEach(createModelOptions(stableDiffusionModelField, selectedSDModel))
         vaeOptions.forEach(createModelOptions(vaeModelField, selectedVaeModel))
+        hypernetworkOptions.forEach(createModelOptions(hypernetworkModelField, selectedHypernetworkModel))
 
         // TODO: set default for model here too
         SETTINGS[sd_model_setting_key].default = stableDiffusionOptions[0]

@@ -14,12 +14,14 @@ const SETTINGS_IDS_LIST = [
     "num_outputs_parallel",
     "stable_diffusion_model",
     "vae_model",
+    "hypernetwork_model",
     "sampler",
     "width",
     "height",
     "num_inference_steps",
     "guidance_scale",
     "prompt_strength",
+    "hypernetwork_strength",
     "output_format",
     "output_quality",
     "negative_prompt",
@@ -129,7 +131,7 @@ function loadSettings() {
     var saved_settings_text = localStorage.getItem(SETTINGS_KEY)
     if (saved_settings_text) {
         var saved_settings = JSON.parse(saved_settings_text)
-        if (saved_settings.find(s => s.key == "auto_save_settings").value == false) {
+        if (saved_settings.find(s => s.key == "auto_save_settings")?.value == false) {
             setSetting("auto_save_settings", false)
             return
         }

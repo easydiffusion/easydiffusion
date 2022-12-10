@@ -4,8 +4,10 @@
 ### Major Changes
 - **Automatic scanning for malicious model files** - using `picklescan`, and support for `safetensor` model format. Thanks @JeLuf
 - **Support for custom VAE models**. You can place your VAE files in the `models/vae` folder, and refresh the browser page to use them. More info: https://github.com/cmdr2/stable-diffusion-ui/wiki/VAE-Variational-Auto-Encoder
+- **Use pre-trained hypernetworks** - for improving the quality of images. Thanks @C0bra5
 - **Experimental support for multiple GPUs!** It should work automatically. Just open one browser tab per GPU, and spread your tasks across your GPUs. For e.g. open our UI in two browser tabs if you have two GPUs. You can customize which GPUs it should use in the "Settings" tab, otherwise let it automatically pick the best GPUs. Thanks @madrang . More info: https://github.com/cmdr2/stable-diffusion-ui/wiki/Run-on-Multiple-GPUs
 - **Image Editor** - for drawing simple images for guiding the AI. Thanks @mdiller
+- **Allow reordering the task queue** (by dragging and dropping tasks). Thanks @madrang
 - **Cleaner UI design** - Show settings and help in new tabs, instead of dropdown popups (which were buggy). Thanks @mdiller
 - **Progress bar.** Thanks @mdiller
 - **Custom Image Modifiers** - You can now save your custom image modifiers! Your saved modifiers can include special characters like `{}, (), [], |`
@@ -25,6 +27,9 @@
 - Support loading models in the safetensor format, for improved safety
 
 ### Detailed changelog
+* 2.4.19 - 7 Dec 2022 - Use pre-trained hypernetworks while generating images. Thanks @C0bra5
+* 2.4.19 - 6 Dec 2022 - Allow processing new tasks first. Thanks @madrang
+* 2.4.19 - 6 Dec 2022 - Allow reordering the task queue (by dragging tasks). Thanks @madrang
 * 2.4.19 - 6 Dec 2022 - Re-organize the code, to make it easier to write user plugins. Thanks @madrang
 * 2.4.18 - 5 Dec 2022 - Make JPEG Output quality user controllable. Thanks @JeLuf
 * 2.4.18 - 5 Dec 2022 - Support loading models in the safetensor format, for improved safety. Thanks @JeLuf

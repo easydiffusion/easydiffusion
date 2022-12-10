@@ -37,7 +37,8 @@ class ServerStates:
 
 class RenderTask(): # Task with output queue and completion lock.
     def __init__(self, req: Request):
-        self.request: Request = req # Initial Request
+        req.request_id = id(self)
+        self.request: Request = req  # Initial Request
         self.response: Any = None # Copy of the last reponse
         self.render_device = None # Select the task affinity. (Not used to change active devices).
         self.temp_images:list = [None] * req.num_outputs * (1 if req.show_only_filtered_image else 2)
@@ -51,6 +52,22 @@ class RenderTask(): # Task with output queue and completion lock.
                 self.buffer_queue.task_done()
                 yield res
         except queue.Empty as e: yield
+    @property
+    def status(self):
+        if self.lock.locked():
+            return 'running'
+        if isinstance(self.error, StopAsyncIteration):
+            return 'stopped'
+        if self.error:
+            return 'error'
+        if not self.buffer_queue.empty():
+            return 'buffer'
+        if self.response:
+            return 'completed'
+        return 'pending'
+    @property
+    def is_pending(self):
+        return bool(not self.response and not self.error)
 
 # defaults from https://huggingface.co/blog/stable_diffusion
 class ImageRequest(BaseModel):
@@ -77,6 +94,8 @@ class ImageRequest(BaseModel):
     use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
     use_stable_diffusion_model: str = "sd-v1-4"
     use_vae_model: str = None
+    use_hypernetwork_model: str = None
+    hypernetwork_strength: float = None
     show_only_filtered_image: bool = False
     output_format: str = "jpeg" # or "png"
     output_quality: int = 75
@@ -99,7 +118,7 @@ class FilterRequest(BaseModel):
     output_quality: int = 75
 
 # Temporary cache to allow to query tasks results for a short time after they are completed.
-class TaskCache():
+class DataCache():
     def __init__(self):
         self._base = dict()
         self._lock: threading.Lock = threading.Lock()
@@ -108,7 +127,7 @@ class TaskCache():
     def _is_expired(self, timestamp: int) -> bool:
         return int(time.time()) >= timestamp
     def clean(self) -> None:
-        if not self._lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('TaskCache.clean' + ERR_LOCK_FAILED)
+        if not self._lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('DataCache.clean' + ERR_LOCK_FAILED)
         try:
             # Create a list of expired keys to delete
             to_delete = []
@@ -118,16 +137,22 @@ class TaskCache():
                     to_delete.append(key)
             # Remove Items
             for key in to_delete:
+                (_, val) = self._base[key]
+                if isinstance(val, RenderTask):
+                    print(f'RenderTask {key} expired. Data removed.')
+                elif isinstance(val, SessionState):
+                    print(f'Session {key} expired. Data removed.')
+                else:
+                    print(f'Key {key} expired. Data removed.')
                 del self._base[key]
-                print(f'Session {key} expired. Data removed.')
         finally:
             self._lock.release()
     def clear(self) -> None:
-        if not self._lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('TaskCache.clear' + ERR_LOCK_FAILED)
+        if not self._lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('DataCache.clear' + ERR_LOCK_FAILED)
         try: self._base.clear()
         finally: self._lock.release()
     def delete(self, key: Hashable) -> bool:
-        if not self._lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('TaskCache.delete' + ERR_LOCK_FAILED)
+        if not self._lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('DataCache.delete' + ERR_LOCK_FAILED)
         try:
             if key not in self._base:
                 return False
@@ -136,7 +161,7 @@ class TaskCache():
         finally:
             self._lock.release()
     def keep(self, key: Hashable, ttl: int) -> bool:
-        if not self._lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('TaskCache.keep' + ERR_LOCK_FAILED)
+        if not self._lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('DataCache.keep' + ERR_LOCK_FAILED)
         try:
             if key in self._base:
                 _, value = self._base.get(key)
@@ -146,7 +171,7 @@ class TaskCache():
         finally:
             self._lock.release()
     def put(self, key: Hashable, value: Any, ttl: int) -> bool:
-        if not self._lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('TaskCache.put' + ERR_LOCK_FAILED)
+        if not self._lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('DataCache.put' + ERR_LOCK_FAILED)
         try:
             self._base[key] = (
                 self._get_ttl_time(ttl), value
@@ -160,7 +185,7 @@ class TaskCache():
         finally:
             self._lock.release()
     def tryGet(self, key: Hashable) -> Any:
-        if not self._lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('TaskCache.tryGet' + ERR_LOCK_FAILED)
+        if not self._lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('DataCache.tryGet' + ERR_LOCK_FAILED)
         try:
             ttl, value = self._base.get(key, (None, None))
             if ttl is not None and self._is_expired(ttl):
@@ -177,28 +202,61 @@ current_state = ServerStates.Init
 current_state_error:Exception = None
 current_model_path = None
 current_vae_path = None
+current_hypernetwork_path = None
 tasks_queue = []
-task_cache = TaskCache()
+session_cache = DataCache()
+task_cache = DataCache()
 default_model_to_load = None
 default_vae_to_load = None
+default_hypernetwork_to_load = None
 weak_thread_data = weakref.WeakKeyDictionary()
+idle_event: threading.Event = threading.Event()
 
-def preload_model(ckpt_file_path=None, vae_file_path=None):
-    global current_state, current_state_error, current_model_path, current_vae_path
+class SessionState():
+    def __init__(self, id: str):
+        self._id = id
+        self._tasks_ids = []
+    @property
+    def id(self):
+        return self._id
+    @property
+    def tasks(self):
+        tasks = []
+        for task_id in self._tasks_ids:
+            task = task_cache.tryGet(task_id)
+            if task:
+                tasks.append(task)
+        return tasks
+    def put(self, task, ttl=TASK_TTL):
+        task_id = id(task)
+        self._tasks_ids.append(task_id)
+        if not task_cache.put(task_id, task, ttl):
+            return False
+        while len(self._tasks_ids) > len(render_threads) * 2:
+            self._tasks_ids.pop(0)
+        return True
+
+def preload_model(ckpt_file_path=None, vae_file_path=None, hypernetwork_file_path=None):
+    global current_state, current_state_error, current_model_path, current_vae_path, current_hypernetwork_path
     if ckpt_file_path == None:
         ckpt_file_path = default_model_to_load
     if vae_file_path == None:
         vae_file_path = default_vae_to_load
+    if hypernetwork_file_path == None:
+        hypernetwork_file_path = default_hypernetwork_to_load
     if ckpt_file_path == current_model_path and vae_file_path == current_vae_path:
         return
     current_state = ServerStates.LoadingModel
     try:
         from . import runtime
+        runtime.thread_data.hypernetwork_file = hypernetwork_file_path
         runtime.thread_data.ckpt_file = ckpt_file_path
         runtime.thread_data.vae_file = vae_file_path
         runtime.load_model_ckpt()
+        runtime.load_hypernetwork()
         current_model_path = ckpt_file_path
         current_vae_path = vae_file_path
+        current_hypernetwork_path = hypernetwork_file_path
         current_state_error = None
         current_state = ServerStates.Online
     except Exception as e:
@@ -240,7 +298,7 @@ def thread_get_next_task():
         manager_lock.release()
 
 def thread_render(device):
-    global current_state, current_state_error, current_model_path, current_vae_path
+    global current_state, current_state_error, current_model_path, current_vae_path, current_hypernetwork_path
     from . import runtime
     try:
         runtime.thread_init(device)
@@ -259,6 +317,7 @@ def thread_render(device):
         preload_model()
         current_state = ServerStates.Online
     while True:
+        session_cache.clean()
         task_cache.clean()
         if not weak_thread_data[threading.current_thread()]['alive']:
             print(f'Shutting down thread for device {runtime.thread_data.device}')
@@ -270,7 +329,8 @@ def thread_render(device):
             return
         task = thread_get_next_task()
         if task is None:
-            time.sleep(0.05)
+            idle_event.clear()
+            idle_event.wait(timeout=1)
             continue
         if task.error is not None:
             print(task.error)
@@ -285,6 +345,10 @@ def thread_render(device):
         print(f'Session {task.request.session_id} starting task {id(task)} on {runtime.thread_data.device_name}')
         if not task.lock.acquire(blocking=False): raise Exception('Got locked task from queue.')
         try:
+            if runtime.is_hypernetwork_reload_necessary(task.request):
+                runtime.reload_hypernetwork()
+                current_hypernetwork_path = task.request.use_hypernetwork_model
+                
             if runtime.is_model_reload_necessary(task.request):
                 current_state = ServerStates.LoadingModel
                 runtime.reload_model()
@@ -301,10 +365,11 @@ def thread_render(device):
                         current_state_error = None
                         print(f'Session {task.request.session_id} sent cancel signal for task {id(task)}')
 
-                    task_cache.keep(task.request.session_id, TASK_TTL)
-
             current_state = ServerStates.Rendering
             task.response = runtime.mk_img(task.request, task.buffer_queue, task.temp_images, step_callback)
+            # Before looping back to the generator, mark cache as still alive.
+            task_cache.keep(id(task), TASK_TTL)
+            session_cache.keep(task.request.session_id, TASK_TTL)
         except Exception as e:
             task.error = e
             print(traceback.format_exc())
@@ -312,7 +377,8 @@ def thread_render(device):
         finally:
             # Task completed
             task.lock.release()
-        task_cache.keep(task.request.session_id, TASK_TTL)
+        task_cache.keep(id(task), TASK_TTL)
+        session_cache.keep(task.request.session_id, TASK_TTL)
         if isinstance(task.error, StopAsyncIteration):
             print(f'Session {task.request.session_id} task {id(task)} cancelled!')
         elif task.error is not None:
@@ -321,12 +387,21 @@ def thread_render(device):
             print(f'Session {task.request.session_id} task {id(task)} completed by {runtime.thread_data.device_name}.')
         current_state = ServerStates.Online
 
-def get_cached_task(session_id:str, update_ttl:bool=False):
+def get_cached_task(task_id:str, update_ttl:bool=False):
     # By calling keep before tryGet, wont discard if was expired.
-    if update_ttl and not task_cache.keep(session_id, TASK_TTL):
+    if update_ttl and not task_cache.keep(task_id, TASK_TTL):
         # Failed to keep task, already gone.
         return None
-    return task_cache.tryGet(session_id)
+    return task_cache.tryGet(task_id)
+
+def get_cached_session(session_id:str, update_ttl:bool=False):
+    if update_ttl:
+        session_cache.keep(session_id, TASK_TTL)
+    session = session_cache.tryGet(session_id)
+    if not session:
+        session = SessionState(session_id)
+        session_cache.put(session_id, session, TASK_TTL)
+    return session
 
 def get_devices():
     devices = {
@@ -473,14 +548,16 @@ def shutdown_event(): # Signal render thread to close on shutdown
     current_state_error = SystemExit('Application shutting down.')
 
 def render(req : ImageRequest):
-    if is_alive() <= 0: # Render thread is dead
+    current_thread_count = is_alive()
+    if current_thread_count <= 0:  # Render thread is dead
         raise ChildProcessError('Rendering thread has died.')
+
     # Alive, check if task in cache
-    task = task_cache.tryGet(req.session_id)
-    if task and not task.response and not task.error and not task.lock.locked():
-        # Unstarted task pending, deny queueing more than one.
-        raise ConnectionRefusedError(f'Session {req.session_id} has an already pending task.')
-    #
+    session = get_cached_session(req.session_id, update_ttl=True)
+    pending_tasks = list(filter(lambda t: t.is_pending, session.tasks))
+    if current_thread_count < len(pending_tasks):
+        raise ConnectionRefusedError(f'Session {req.session_id} already has {len(pending_tasks)} pending tasks out of {current_thread_count}.')
+
     from . import runtime
     r = Request()
     r.session_id = req.session_id
@@ -504,6 +581,8 @@ def render(req : ImageRequest):
     r.use_face_correction = req.use_face_correction
     r.use_stable_diffusion_model = req.use_stable_diffusion_model
     r.use_vae_model = req.use_vae_model
+    r.use_hypernetwork_model = req.use_hypernetwork_model
+    r.hypernetwork_strength = req.hypernetwork_strength
     r.show_only_filtered_image = req.show_only_filtered_image
     r.output_format = req.output_format
     r.output_quality = req.output_quality
@@ -515,13 +594,13 @@ def render(req : ImageRequest):
         r.stream_image_progress = False
 
     new_task = RenderTask(r)
-
-    if task_cache.put(r.session_id, new_task, TASK_TTL):
+    if session.put(new_task, TASK_TTL):
         # Use twice the normal timeout for adding user requests.
-        # Tries to force task_cache.put to fail before tasks_queue.put would. 
+        # Tries to force session.put to fail before tasks_queue.put would.
         if manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT * 2):
             try:
                 tasks_queue.append(new_task)
+                idle_event.set()
                 return new_task
             finally:
                 manager_lock.release()

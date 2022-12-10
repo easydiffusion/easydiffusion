@@ -40,6 +40,7 @@ class sduiTab {
     let modelTokensContent = document.querySelector('#model-tokens-content')
     let searchResults = null
     let t = localStorage.getItem('modelToken')
+    let catalogPane = null
 
     if (t!=null) {
         token = JSON.parse(t)
@@ -83,6 +84,7 @@ class sduiTab {
 		</div>
 	    </div>`
         tab.setContent(content)
+        catalogPane = document.querySelector('#modelmgr-catalog')
 
         document.querySelectorAll('#modelmgr-sd textarea').forEach( element => { 
 	    element.onkeyup = event => {
@@ -218,7 +220,7 @@ class sduiTab {
 	    content += `<p>`
 	    model.images.forEach( imageData => {
 	       let width = imageData.width * 256 / imageData.height
-	       content += `<img src="${imageData.url}" width="${width}" height="256" style="margin: 6px;">`
+	       content += `<img src="${item.nsfw? 'media/images/nsfw.jpg' : imageData.url}" width="${width}" height="256" style="margin: 6px;">`
 	    })
 	    content += `</p></div>`
 
@@ -278,7 +280,13 @@ class sduiTab {
 	        labeldiv.innerHTML = `<b>${item.name}</b>`
 	    }
 
-	    img.src= imageData.url
+            if ( item.nsfw ) {
+	         img.src = 'media/images/nsfw.jpg'
+		 imageData.width  = 512
+		 imageData.height = 512
+            } else {
+	         img.src = imageData.url
+	    }
 	    let displacement = 0
 
 	    if (imageData.width == imageData.height) {
@@ -305,7 +313,6 @@ class sduiTab {
     
     await updateModels()
     await updateModelTokenSection()
-    let catalogPane = document.querySelector('#modelmgr-catalog')
     document.querySelector('#modelmgr-sd').addEventListener('change', persistTokens)
 
 

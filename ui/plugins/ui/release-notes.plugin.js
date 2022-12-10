@@ -1,4 +1,14 @@
 (function() {
+    // Register selftests when loaded by jasmine.
+    if (typeof PLUGINS?.SELFTEST === 'object') {
+        PLUGINS.SELFTEST["release-notes"] = function() {
+            it('should be able to fetch CHANGES.md', async function() {
+                let releaseNotes = await fetch(`https://raw.githubusercontent.com/cmdr2/stable-diffusion-ui/main/CHANGES.md`)
+                expect(releaseNotes.status).toBe(200)
+            })
+        }
+    }
+
     document.querySelector('#tab-container')?.insertAdjacentHTML('beforeend', `
         <span id="tab-news" class="tab">
             <span><i class="fa fa-bolt icon"></i> What's new?</span>
@@ -13,7 +23,17 @@
         </div>
     `)
 
-    document.querySelector('body')?.insertAdjacentHTML('beforeend', `
+    const tabNews = document.querySelector('#tab-news')
+    if (tabNews) {
+        linkTabContents(tabNews)
+    }
+    const news = document.querySelector('#news')
+    if (!news) {
+        // news tab not found, dont exec plugin code.
+        return
+    }
+
+    document.querySelector('body').insertAdjacentHTML('beforeend', `
         <style>
         #tab-content-news .tab-content-inner {
             max-width: 100%;
@@ -22,15 +42,6 @@
         }
         </style>
     `)
-
-    const tabNews = document.querySelector('#tab-news')
-    if (tabNews) {
-        linkTabContents(tabNews)
-    }
-    const news = document.querySelector('#news')
-    if (!news) {
-        return
-    }
 
     const markedScript = document.createElement('script')
     markedScript.src = '/media/js/marked.min.js'

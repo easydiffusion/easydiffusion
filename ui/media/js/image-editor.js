@@ -166,11 +166,12 @@ var IMAGE_EDITOR_SECTIONS = [
 		name: "brush_size",
 		title: "Brush Size",
 		default: 48,
-		options: [ 16, 24, 32, 48, 64 ],
+		options: [ 6, 12, 16, 24, 30, 40, 48, 64 ],
 		initElement: (element, option) => {
 			element.parentElement.style.flex = option
 			element.style.width = option + "px"
 			element.style.height = option + "px"
+			element.style['margin-right'] = '2px'
 			element.style["border-radius"] = (option / 2).toFixed() + "px"
 		}
 	},
@@ -384,6 +385,7 @@ class ImageEditor {
 
 		if (this.inpainter) {
 			this.selectOption("color", IMAGE_EDITOR_SECTIONS.find(s => s.name == "color").options.indexOf("#ffffff"))
+			this.selectOption("opacity", IMAGE_EDITOR_SECTIONS.find(s => s.name == "opacity").options.indexOf(0.4))
 		}
 
 		// initialize the right-side controls
@@ -678,3 +680,5 @@ document.getElementById("init_image_button_draw").addEventListener("click", () =
 document.getElementById("init_image_button_inpaint").addEventListener("click", () => {
 	imageInpainter.show()
 })
+
+img2imgUnload() // no init image when the app starts
