@@ -1087,6 +1087,7 @@
         return activeDevicesCount
     }
 
+    let idleEventPromise = undefined
     function continueTasks() {
         if (typeof navigator?.scheduling?.isInputPending === 'function') {
             const inputPendingOptions = {
@@ -1101,14 +1102,18 @@
         }
         const serverCapacity = getServerCapacity()
         if (task_queue.size <= 0 && concurrent_generators.size <= 0) {
-            eventSource.fireEvent(EVENT_IDLE, {capacity: serverCapacity, idle: true})
+            if (!idleEventPromise?.isPending) {
+                idleEventPromise = makeQuerablePromise(eventSource.fireEvent(EVENT_IDLE, {capacity: serverCapacity, idle: true}))
+            }
             // Calling idle could result in task being added to queue.
             if (task_queue.size <= 0 && concurrent_generators.size <= 0) {
-                return asyncDelay(IDLE_COOLDOWN)
+                return idleEventPromise.then(() => asyncDelay(IDLE_COOLDOWN))
             }
         }
         if (task_queue.size < serverCapacity) {
-            eventSource.fireEvent(EVENT_IDLE, {capacity: serverCapacity - task_queue.size})
+            if (!idleEventPromise?.isPending) {
+                idleEventPromise = makeQuerablePromise(eventSource.fireEvent(EVENT_IDLE, {capacity: serverCapacity - task_queue.size}))
+            }
         }
         const completedTasks = []
         for (let [generator, promise] of concurrent_generators.entries()) {
