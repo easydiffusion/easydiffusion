@@ -196,7 +196,7 @@
     const eventSource = new GenericEventSource(EVENTS_TYPES)
 
     function setServerStatus(msgType, msg) {
-        eventSource.fireEvent(EVENT_STATUS_CHANGED, {type: msgType, message: msg})
+        return eventSource.fireEvent(EVENT_STATUS_CHANGED, {type: msgType, message: msg})
     }
 
     const ServerStates = {
@@ -625,7 +625,7 @@
             }
             this._setStatus(TaskStatus.pending)
             task_queue.set(this, promiseGenerator)
-            eventSource.fireEvent(EVENT_TASK_QUEUED, {task:this})
+            await eventSource.fireEvent(EVENT_TASK_QUEUED, {task:this})
             await Task.enqueue(promiseGenerator, ...args)
             await this.waitUntil({status: TaskStatus.completed})
             if (this.exception) {
@@ -843,7 +843,7 @@
             if (typeof jsonResponse?.task !== 'number') {
                 console.warn('Endpoint error response: ', jsonResponse)
                 const event = Object.assign({task:this}, jsonResponse)
-                eventSource.fireEvent(EVENT_UNEXPECTED_RESPONSE, event)
+                await eventSource.fireEvent(EVENT_UNEXPECTED_RESPONSE, event)
                 if ('continueWith' in event) {
                     jsonResponse = await Promise.resolve(event.continueWith)
                 }
@@ -1175,8 +1175,8 @@
                 continue
             }
             const event = {task, generator};
-            eventSource.fireEvent(EVENT_TASK_START, event) // optional beforeStart promise to wait on before starting task.
-            const promise = makeQuerablePromise(Promise.resolve(event.beforeStart))
+            const beforeStart = eventSource.fireEvent(EVENT_TASK_START, event) // optional beforeStart promise to wait on before starting task.
+            const promise = makeQuerablePromise(beforeStart.then(() => Promise.resolve(event.beforeStart)))
             concurrent_generators.set(event.generator, promise)
             task_queue.set(task, event.generator)
         }
@@ -1201,7 +1201,7 @@
             }
             const continuePromise = continueTasks().catch(async function(err) {
                 console.error(err)
-                eventSource.fireEvent(EVENT_UNHANDLED_REJECTION, {reason: err})
+                await eventSource.fireEvent(EVENT_UNHANDLED_REJECTION, {reason: err})
                 await asyncDelay(RETRY_DELAY_ON_ERROR)
             })
             taskPromise = makeQuerablePromise(continuePromise)
