@@ -62,10 +62,8 @@ def reload_models_if_necessary(task_data: TaskData):
         if thread_data.model_paths.get(model_type) != model_path_in_req:
             thread_data.model_paths[model_type] = model_path_in_req
 
-            if thread_data.model_paths[model_type] is not None:
-                model_loader.load_model(thread_data, model_type)
-            else:
-                model_loader.unload_model(thread_data, model_type)
+            action_fn = model_loader.unload_model if thread_data.model_paths[model_type] is None else model_loader.load_model
+            action_fn(thread_data, model_type)
 
 def make_images(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback):
     try:
@@ -94,7 +92,6 @@ def _make_images_internal(req: GenerateImageRequest, task_data: TaskData, data_q
     print(metadata)
 
     images, user_stopped = generate_images(req, data_queue, task_temp_images, step_callback, task_data.stream_image_progress)
-    images = apply_color_correction(req, images, user_stopped)
     images = apply_filters(task_data, images, user_stopped, task_data.show_only_filtered_image)
 
     if task_data.save_to_disk_path is not None:
@@ -138,17 +135,6 @@ def generate_images(req: GenerateImageRequest, data_queue: queue.Queue, task_tem
     images = [(image, req.seed + i, False) for i, image in enumerate(images)]
 
     return images, user_stopped
-
-def apply_color_correction(req: GenerateImageRequest, images: list, user_stopped):
-    if user_stopped or req.init_image is None or not req.apply_color_correction:
-        return images
-
-    for i, img_info in enumerate(images):
-        img, seed, filtered = img_info
-        img = image_utils.apply_color_correction(orig_image=req.init_image, image_to_correct=img)
-        images[i] = (img, seed, filtered)
-
-    return images
 
 def apply_filters(task_data: TaskData, images: list, user_stopped, show_only_filtered_image):
     if user_stopped or (task_data.use_face_correction is None and task_data.use_upscale is None):

@@ -761,8 +761,8 @@ function createTask(task) {
         taskConfig += `, <b>Hypernetwork:</b> ${task.reqBody.use_hypernetwork_model}`
         taskConfig += `, <b>Hypernetwork Strength:</b> ${task.reqBody.hypernetwork_strength}`
     }
-    if (task.reqBody.apply_color_correction) {
-        taskConfig += `, <b>Color Correction:</b> true`
+    if (task.reqBody.preserve_init_image_color_profile) {
+        taskConfig += `, <b>Preserve Color Profile:</b> true`
     }
 
     let taskEntry = document.createElement('div')
@@ -871,7 +871,7 @@ function getCurrentUserRequest() {
         if (maskSetting.checked) {
             newTask.reqBody.mask = imageInpainter.getImg()
         }
-        newTask.reqBody.apply_color_correction = applyColorCorrectionField.checked
+        newTask.reqBody.preserve_init_image_color_profile = applyColorCorrectionField.checked
         newTask.reqBody.sampler = 'ddim'
     } else {
         newTask.reqBody.sampler = samplerField.value
