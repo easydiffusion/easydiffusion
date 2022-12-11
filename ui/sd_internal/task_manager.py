@@ -283,6 +283,7 @@ def thread_render(device):
         'alive': True
     }
 
+    runtime2.load_default_models()
     current_state = ServerStates.Online
 
     while True:

@@ -39,13 +39,11 @@ def init(device):
 
     device_manager.device_init(thread_data, device)
 
-    init_and_load_default_models()
-
 def destroy():
     for model_type in ('stable-diffusion', 'hypernetwork', 'gfpgan', 'realesrgan'):
         model_loader.unload_model(thread_data, model_type)
 
-def init_and_load_default_models():
+def load_default_models():
     # init default model paths
     for model_type in model_manager.KNOWN_MODEL_TYPES:
         thread_data.model_paths[model_type] = model_manager.resolve_model_to_use(model_type=model_type)
