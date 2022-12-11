@@ -277,10 +277,10 @@ def thread_render(device):
                         log.info(f'Session {task.task_data.session_id} sent cancel signal for task {id(task)}')
 
             current_state = ServerStates.LoadingModel
-            runtime2.reload_models_if_necessary(task.task_data)
+            model_manager.resolve_model_paths(task.task_data)
+            model_manager.reload_models_if_necessary(runtime2.thread_data, task.task_data)
 
             current_state = ServerStates.Rendering
-            runtime2.resolve_model_paths(task.task_data)
             task.response = runtime2.make_images(task.render_request, task.task_data, task.buffer_queue, task.temp_images, step_callback)
             # Before looping back to the generator, mark cache as still alive.
             task_cache.keep(id(task), TASK_TTL)

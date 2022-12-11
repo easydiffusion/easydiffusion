@@ -1,4 +1,3 @@
-import threading
 import queue
 import time
 import json
@@ -8,7 +7,7 @@ import re
 import traceback
 import logging
 
-from sd_internal import device_manager, model_manager
+from sd_internal import device_manager
 from sd_internal import TaskData, Response, Image as ResponseImage, UserInitiatedStop
 
 from modules import model_loader, image_generator, image_utils, filters as image_filters
@@ -32,26 +31,6 @@ def init(device):
     thread_data.partial_x_samples = None
 
     device_manager.device_init(thread_data, device)
-
-def reload_models_if_necessary(task_data: TaskData):
-    model_paths_in_req = (
-        ('hypernetwork', task_data.use_hypernetwork_model),
-        ('gfpgan', task_data.use_face_correction),
-        ('realesrgan', task_data.use_upscale),
-    )
-
-    if thread_data.model_paths.get('stable-diffusion') != task_data.use_stable_diffusion_model or thread_data.model_paths.get('vae') != task_data.use_vae_model:
-        thread_data.model_paths['stable-diffusion'] = task_data.use_stable_diffusion_model
-        thread_data.model_paths['vae'] = task_data.use_vae_model
-
-        model_loader.load_model(thread_data, 'stable-diffusion')
-
-    for model_type, model_path_in_req in model_paths_in_req:
-        if thread_data.model_paths.get(model_type) != model_path_in_req:
-            thread_data.model_paths[model_type] = model_path_in_req
-
-            action_fn = model_loader.unload_model if thread_data.model_paths[model_type] is None else model_loader.load_model
-            action_fn(thread_data, model_type)
 
 def make_images(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback):
     try:
@@ -79,14 +58,6 @@ def _make_images_internal(req: GenerateImageRequest, task_data: TaskData, data_q
     log.info('Task completed')
 
     return res
-
-def resolve_model_paths(task_data: TaskData):
-    task_data.use_stable_diffusion_model = model_manager.resolve_model_to_use(task_data.use_stable_diffusion_model, model_type='stable-diffusion')
-    task_data.use_vae_model = model_manager.resolve_model_to_use(task_data.use_vae_model, model_type='vae')
-    task_data.use_hypernetwork_model = model_manager.resolve_model_to_use(task_data.use_hypernetwork_model, model_type='hypernetwork')
-
-    if task_data.use_face_correction: task_data.use_face_correction = model_manager.resolve_model_to_use(task_data.use_face_correction, 'gfpgan')
-    if task_data.use_upscale: task_data.use_upscale = model_manager.resolve_model_to_use(task_data.use_upscale, 'gfpgan')
 
 def generate_images(req: GenerateImageRequest, data_queue: queue.Queue, task_temp_images: list, step_callback, stream_image_progress: bool):
     log.info(req.to_metadata())

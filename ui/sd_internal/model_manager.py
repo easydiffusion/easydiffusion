@@ -3,7 +3,7 @@ import logging
 import picklescan.scanner
 import rich
 
-from sd_internal import app
+from sd_internal import app, TaskData
 from modules import model_loader
 from modules.types import Context
 
@@ -87,6 +87,34 @@ def resolve_model_to_use(model_name:str=None, model_type:str=None):
                     return default_model_path + model_extension
 
     return None
+
+def reload_models_if_necessary(context: Context, task_data: TaskData):
+    model_paths_in_req = (
+        ('hypernetwork', task_data.use_hypernetwork_model),
+        ('gfpgan', task_data.use_face_correction),
+        ('realesrgan', task_data.use_upscale),
+    )
+
+    if context.model_paths.get('stable-diffusion') != task_data.use_stable_diffusion_model or context.model_paths.get('vae') != task_data.use_vae_model:
+        context.model_paths['stable-diffusion'] = task_data.use_stable_diffusion_model
+        context.model_paths['vae'] = task_data.use_vae_model
+
+        model_loader.load_model(context, 'stable-diffusion')
+
+    for model_type, model_path_in_req in model_paths_in_req:
+        if context.model_paths.get(model_type) != model_path_in_req:
+            context.model_paths[model_type] = model_path_in_req
+
+            action_fn = model_loader.unload_model if context.model_paths[model_type] is None else model_loader.load_model
+            action_fn(context, model_type)
+
+def resolve_model_paths(task_data: TaskData):
+    task_data.use_stable_diffusion_model = resolve_model_to_use(task_data.use_stable_diffusion_model, model_type='stable-diffusion')
+    task_data.use_vae_model = resolve_model_to_use(task_data.use_vae_model, model_type='vae')
+    task_data.use_hypernetwork_model = resolve_model_to_use(task_data.use_hypernetwork_model, model_type='hypernetwork')
+
+    if task_data.use_face_correction: task_data.use_face_correction = resolve_model_to_use(task_data.use_face_correction, 'gfpgan')
+    if task_data.use_upscale: task_data.use_upscale = resolve_model_to_use(task_data.use_upscale, 'gfpgan')
 
 def make_model_folders():
     for model_type in KNOWN_MODEL_TYPES:
