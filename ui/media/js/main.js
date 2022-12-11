@@ -45,6 +45,8 @@ let streamImageProgressField = document.querySelector("#stream_image_progress")
 
 let makeImageBtn = document.querySelector('#makeImage')
 let stopImageBtn = document.querySelector('#stopImage')
+let pauseBtn = document.querySelector('#pause')
+let resumeBtn = document.querySelector('#resume')
 
 let imagesContainer = document.querySelector('#current-images')
 let initImagePreviewContainer = document.querySelector('#init_image_preview_container')
@@ -1364,6 +1366,33 @@ function linkTabContents(tab) {
 
     tab.addEventListener("click", event => selectTab(tab.id))
 }
+
+let pauseClient = false
+
+function resumeClient() {
+    if (pauseClient) {
+        resumeBtn.style.display = "inline"
+        document.body.classList.remove('wait-pause')
+        document.body.classList.add('pause')
+    }
+    return new Promise(resolve => {
+        let playbuttonclick = function () {
+            resumeBtn.removeEventListener("click", playbuttonclick);
+            resumeBtn.style.display = "none"
+            pauseBtn.style.display = "inline"
+            document.body.classList.remove('pause')
+            pauseClient = false
+            resolve("resolved");
+        }
+        resumeBtn.addEventListener("click", playbuttonclick)
+    })
+}
+
+pauseBtn.addEventListener("click", function () {
+    pauseClient = true
+    pauseBtn.style.display="none"
+    document.body.classList.add('wait-pause')
+})
 
 document.querySelectorAll(".tab").forEach(linkTabContents)
 

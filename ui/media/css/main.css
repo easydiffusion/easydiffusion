@@ -1138,3 +1138,17 @@ button#save-system-settings-btn {
     background: var(--background-color2);
     border-radius: var(--scrollbar-radius);
 }
+
+body.pause {
+    border: solid 12px var(--accent-color);
+}
+
+body.wait-pause {
+    animation: blinker 2s linear infinite;
+}
+
+@keyframes blinker {
+     0% { border: solid 12px var(--accent-color); }
+    50% { border: solid 12px var(--background-color1); }
+   100% { border: solid 12px var(--accent-color); }
+}

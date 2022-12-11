@@ -10,8 +10,8 @@
     const IDLE_COOLDOWN = 2500 // ms
     const CONCURRENT_TASK_INTERVAL = 500 // ms
 
-    /** Connects to an endpoint and resumes connexion after reaching end of stream until all data is received.
-     * Allows closing the connexion while the server buffers more data.
+    /** Connects to an endpoint and resumes connection after reaching end of stream until all data is received.
+     * Allows closing the connection while the server buffers more data.
      */
     class ChunkedStreamReader {
         #bufferedString = '' // Data received waiting to be read.
@@ -248,7 +248,7 @@
                     setServerStatus('busy', 'rendering..')
                     break
                 default: // Unavailable
-                    console.error('Ping received an unexpedted server status. Status: %s', serverState.status)
+                    console.error('Ping received an unexpected server status. Status: %s', serverState.status)
                     setServerStatus('error', serverState.status.toLowerCase())
                     break
             }
@@ -264,11 +264,11 @@
 
     function isServerAvailable() {
         if (typeof serverState !== 'object') {
-            console.error('serverState not set to a value. Connexion to server could be lost...')
+            console.error('serverState not set to a value. Connection to server could be lost...')
             return false
         }
         if (Date.now() >= serverState.time + SERVER_STATE_VALIDITY_DURATION) {
-            console.warn('SERVER_STATE_VALIDITY_DURATION elapsed. Connexion to server could be lost...')
+            console.warn('SERVER_STATE_VALIDITY_DURATION elapsed. Connection to server could be lost...')
             return false
         }
         switch (serverState.status) {
@@ -277,7 +277,7 @@
             case ServerStates.online:
                 return true
             default:
-                console.warn('Unexpedted server status. Server could be unavailable... Status: %s', serverState.status)
+                console.warn('Unexpected server status. Server could be unavailable... Status: %s', serverState.status)
                 return false
         }
     }
@@ -306,7 +306,7 @@
                 if (await healthCheck() && isServerAvailable()) { // Force a recheck of server status before failure...
                     continue // Continue waiting if last healthCheck confirmed the server is still alive.
                 }
-                throw new Error('Connexion with server lost.')
+                throw new Error('Connection with server lost.')
             }
         }
         if (Date.now() >= serverState.time + SERVER_STATE_VALIDITY_DURATION) {
@@ -437,6 +437,9 @@
          * @memberof Task
          */
         async post(url, timeout=-1) {
+	    if (typeof pauseClient != 'undefined' && pauseClient===true) {
+	        await resumeClient()
+	    }
             if(this.status !== TaskStatus.init && this.status !== TaskStatus.pending) {
                 throw new Error(`Task status ${this.status} is not valid for post.`)
             }
