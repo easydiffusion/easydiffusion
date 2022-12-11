@@ -149,7 +149,7 @@ def getModels():
     listModels(model_type='vae')
     listModels(model_type='hypernetwork')
 
-    if models_scanned > 0: log.info(f'[green]Scanned {models_scanned} models. 0 infected[/]')
+    if models_scanned > 0: log.info(f'[green]Scanned {models_scanned} models. Nothing infected[/]')
 
     # legacy
     custom_weight_path = os.path.join(app.SD_DIR, 'custom-model.ckpt')

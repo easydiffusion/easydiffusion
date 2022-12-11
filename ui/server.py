@@ -5,6 +5,7 @@ Notes:
 import os
 import traceback
 import logging
+import datetime
 from typing import List, Union
 
 from fastapi import FastAPI, HTTPException
@@ -17,6 +18,7 @@ from sd_internal import app, model_manager, task_manager
 log = logging.getLogger()
 
 log.info(f'started in {app.SD_DIR}')
+log.info(f'started at {datetime.datetime.now():%x %X}')
 
 server_api = FastAPI()
 
