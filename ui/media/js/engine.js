@@ -437,9 +437,6 @@
          * @memberof Task
          */
         async post(url, timeout=-1) {
-	    if (typeof pauseClient != 'undefined' && pauseClient===true && typeof resumeClient === 'function') {
-	        await resumeClient()
-	    }
             if(this.status !== TaskStatus.init && this.status !== TaskStatus.pending) {
                 throw new Error(`Task status ${this.status} is not valid for post.`)
             }

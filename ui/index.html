@@ -29,8 +29,6 @@
             </h1>
         </div>
         <div id="server-status">
-	    <button id="pause"  style="background: var(--accent-color);"><i class="fa-solid fa-pause"></i> Pause</button>
-	    <button id="resume" style="background: var(--accent-color);display: none;"><i class="fa-solid fa-play"></i> Resume</button>
             <div id="server-status-color">●</div>
             <span id="server-status-msg">Stable Diffusion is starting..</span>
         </div>
@@ -102,7 +100,11 @@
                 </div>
 
                 <button id="makeImage" class="primaryButton">Make Image</button>
-                <button id="stopImage" class="secondaryButton">Stop All</button>
+		<div id="render-buttons">
+		   <button id="stopImage" class="secondaryButton">Stop All</button>
+		   <button id="pause"><i class="fa-solid fa-pause"></i> Pause All</button>
+		   <button id="resume"><i class="fa-solid fa-play"></i> Resume</button>
+		</div>
             </div>
 
             <span class="line-separator"></span>

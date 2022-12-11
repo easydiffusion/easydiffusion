@@ -47,6 +47,7 @@ let makeImageBtn = document.querySelector('#makeImage')
 let stopImageBtn = document.querySelector('#stopImage')
 let pauseBtn = document.querySelector('#pause')
 let resumeBtn = document.querySelector('#resume')
+let renderButtons = document.querySelector('#render-buttons')
 
 let imagesContainer = document.querySelector('#current-images')
 let initImagePreviewContainer = document.querySelector('#init_image_preview_container')
@@ -477,6 +478,10 @@ function makeImage() {
 
 async function onIdle() {
     const serverCapacity = SD.serverCapacity
+    if (pauseClient===true) {
+        await resumeClient()
+    }
+
     for (const taskEntry of getUncompletedTaskEntries()) {
         if (SD.activeTasks.size >= serverCapacity) {
             break
@@ -669,7 +674,7 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
         return
     }
 
-    stopImageBtn.style.display = 'none'
+    renderButtons.style.display = 'none'
     renameMakeImageButton()
 
     if (isSoundEnabled()) {
@@ -754,7 +759,7 @@ async function onTaskStart(task) {
     )
 
     setStatus('request', 'fetching..')
-    stopImageBtn.style.display = 'block'
+    renderButtons.style.display = 'flex'
     renameMakeImageButton()
     previewTools.style.display = 'block'
 }
@@ -1405,17 +1410,12 @@ let pauseClient = false
 
 function resumeClient() {
     if (pauseClient) {
-        resumeBtn.style.display = "inline"
         document.body.classList.remove('wait-pause')
         document.body.classList.add('pause')
     }
     return new Promise(resolve => {
         let playbuttonclick = function () {
             resumeBtn.removeEventListener("click", playbuttonclick);
-            resumeBtn.style.display = "none"
-            pauseBtn.style.display = "inline"
-            document.body.classList.remove('pause')
-            pauseClient = false
             resolve("resolved");
         }
         resumeBtn.addEventListener("click", playbuttonclick)
@@ -1425,7 +1425,16 @@ function resumeClient() {
 pauseBtn.addEventListener("click", function () {
     pauseClient = true
     pauseBtn.style.display="none"
+    resumeBtn.style.display = "inline"
     document.body.classList.add('wait-pause')
+})
+
+resumeBtn.addEventListener("click", function () {
+    pauseClient = false
+    resumeBtn.style.display = "none"
+    pauseBtn.style.display = "inline"
+    document.body.classList.remove('pause')
+    document.body.classList.remove('wait-pause')
 })
 
 document.querySelectorAll(".tab").forEach(linkTabContents)
