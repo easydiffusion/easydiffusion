@@ -78,8 +78,8 @@ function updatePreviewSize() {
     }
     lastScrollTop = scrollTop
 
-    $('#editor').css('top', Math.max(-window.pageYOffset + $("#tab-container").offset().top + $('#tab-container').outerHeight(true), 0) + 'px')
-    $('#editor').css('bottom', Math.max($(window).height() - ($("#footer .line-separator").offset().top - $(document).scrollTop()), 0) + 'px')
+    editorContainer.style.top = Math.max(-window.pageYOffset + document.querySelector('#tab-container').offsetTop + document.querySelector('#tab-container').offsetHeight, 0) + 'px'
+    editorContainer.style.bottom =  Math.max(window.innerHeight - (document.querySelector('#footer').getElementsByClassName('line-separator')[0].offsetTop - window.scrollY), 0) + 'px'
 };
 
 let imagePreview = document.querySelector("#preview")
