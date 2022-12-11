@@ -473,7 +473,7 @@ function makeImage() {
     initialText.style.display = 'none'
 }
 
-function onIdle() {
+async function onIdle() {
     const serverCapacity = SD.serverCapacity
     for (const taskEntry of getUncompletedTaskEntries()) {
         if (SD.activeTasks.size >= serverCapacity) {
@@ -485,7 +485,7 @@ function onIdle() {
             taskStatusLabel.style.display = 'none'
             continue
         }
-        onTaskStart(task)
+        await onTaskStart(task)
     }
 }
 
@@ -676,7 +676,7 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
 }
 
 
-function onTaskStart(task) {
+async function onTaskStart(task) {
     if (!task.isProcessing || task.batchesDone >= task.batchCount) {
         return
     }
@@ -714,22 +714,24 @@ function onTaskStart(task) {
     task.outputContainer.insertBefore(outputContainer, task.outputContainer.firstChild)
 
     const eventInfo = {reqBody:newTaskReqBody}
-    PLUGINS['TASK_CREATE'].forEach((hook) => {
+    const callbacksPromises = PLUGINS['TASK_CREATE'].map((hook) => {
         if (typeof hook !== 'function') {
             console.error('The provided TASK_CREATE hook is not a function. Hook: %o', hook)
-            return
+            return Promise.reject(new Error('hook is not a function.'))
         }
         try {
-            hook.call(task, eventInfo)
+            return Promise.resolve(hook.call(task, eventInfo))
         } catch (err) {
             console.error(err)
+            return Promise.reject(err)
         }
     })
+    await Promise.allSettled(callbacksPromises)
     let instance = eventInfo.instance
     if (!instance) {
         const factory = PLUGINS.OUTPUTS_FORMATS.get(eventInfo.reqBody?.output_format || newTaskReqBody.output_format)
         if (factory) {
-            instance = factory(eventInfo.reqBody || newTaskReqBody)
+            instance = await Promise.resolve(factory(eventInfo.reqBody || newTaskReqBody))
         }
         if (!instance) {
             console.error(`${factory ? "Factory " + String(factory) : 'No factory defined'} for output format ${eventInfo.reqBody?.output_format || newTaskReqBody.output_format}. Instance is ${instance || 'undefined'}. Using default renderer.`)
