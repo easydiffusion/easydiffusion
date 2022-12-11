@@ -140,10 +140,16 @@ def ping(session_id:str=None):
 def render(req : task_manager.ImageRequest):
     try:
         app.save_model_to_config(req.use_stable_diffusion_model, req.use_vae_model, req.use_hypernetwork_model)
+
+        # resolve the model paths to use
         req.use_stable_diffusion_model = model_manager.resolve_model_to_use(req.use_stable_diffusion_model, model_type='stable-diffusion')
         req.use_vae_model = model_manager.resolve_model_to_use(req.use_vae_model, model_type='vae')
         req.use_hypernetwork_model = model_manager.resolve_model_to_use(req.use_hypernetwork_model, model_type='hypernetwork')
 
+        if req.use_face_correction: req.use_face_correction = model_manager.resolve_model_to_use(req.use_face_correction, 'gfpgan')
+        if req.use_upscale: req.use_upscale = model_manager.resolve_model_to_use(req.use_upscale, 'gfpgan')
+
+        # enqueue the task
         new_task = task_manager.render(req)
         response = {
             'status': str(task_manager.current_state), 
