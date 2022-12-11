@@ -455,10 +455,10 @@ function makeImage() {
         alert('The "Inference Steps" field must not be empty.')
         return
     }
-    if (numOutputsTotalField.value == '') {
+    if (numOutputsTotalField.value == '' || numOutputsTotalField.value == 0) {
         numOutputsTotalField.value = 1
     }
-    if (numOutputsParallelField.value == '') {
+    if (numOutputsParallelField.value == '' || numOutputsParallelField.value == 0) {
         numOutputsParallelField.value = 1
     }
     if (guidanceScaleField.value == '') {
