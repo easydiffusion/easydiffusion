@@ -569,16 +569,22 @@ class GenericEventSource {
             throw new Error(`Event ${String(name)} missing from Events.types`)
         }
         if (!this.#events.hasOwnProperty(name)) {
-            return
+            return Promise.resolve()
         }
         if (!args || !args.length) {
             args = []
         }
         const evs = this.#events[name]
-        const len = evs.length
-        for (let i = 0; i < len; ++i) {
-            evs[i].apply(SD, args)
+        if (evs.length <= 0) {
+            return Promise.resolve()
         }
+        return Promise.allSettled(evs.map((callback) => {
+            try {
+                return Promise.resolve(callback.apply(SD, args))
+            } catch (ex) {
+                return Promise.reject(ex)
+            }
+        }))
     }
 }
 

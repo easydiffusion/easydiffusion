@@ -196,7 +196,7 @@
     const eventSource = new GenericEventSource(EVENTS_TYPES)
 
     function setServerStatus(msgType, msg) {
-        eventSource.fireEvent(EVENT_STATUS_CHANGED, {type: msgType, message: msg})
+        return eventSource.fireEvent(EVENT_STATUS_CHANGED, {type: msgType, message: msg})
     }
 
     const ServerStates = {
@@ -248,7 +248,7 @@
                     setServerStatus('busy', 'rendering..')
                     break
                 default: // Unavailable
-                    console.error('Ping received an unexpedted server status. Status: %s', serverState.status)
+                    console.error('Ping received an unexpected server status. Status: %s', serverState.status)
                     setServerStatus('error', serverState.status.toLowerCase())
                     break
             }
@@ -277,7 +277,7 @@
             case ServerStates.online:
                 return true
             default:
-                console.warn('Unexpedted server status. Server could be unavailable... Status: %s', serverState.status)
+                console.warn('Unexpected server status. Server could be unavailable... Status: %s', serverState.status)
                 return false
         }
     }
@@ -625,7 +625,7 @@
             }
             this._setStatus(TaskStatus.pending)
             task_queue.set(this, promiseGenerator)
-            eventSource.fireEvent(EVENT_TASK_QUEUED, {task:this})
+            await eventSource.fireEvent(EVENT_TASK_QUEUED, {task:this})
             await Task.enqueue(promiseGenerator, ...args)
             await this.waitUntil({status: TaskStatus.completed})
             if (this.exception) {
@@ -843,7 +843,7 @@
             if (typeof jsonResponse?.task !== 'number') {
                 console.warn('Endpoint error response: ', jsonResponse)
                 const event = Object.assign({task:this}, jsonResponse)
-                eventSource.fireEvent(EVENT_UNEXPECTED_RESPONSE, event)
+                await eventSource.fireEvent(EVENT_UNEXPECTED_RESPONSE, event)
                 if ('continueWith' in event) {
                     jsonResponse = await Promise.resolve(event.continueWith)
                 }
@@ -1081,12 +1081,13 @@
 
     function getServerCapacity() {
         let activeDevicesCount = Object.keys(serverState?.devices?.active || {}).length
-        if (window.document.visibilityState === 'hidden') {
+        if (typeof window === "object" && window.document.visibilityState === 'hidden') {
             activeDevicesCount = 1 + activeDevicesCount
         }
         return activeDevicesCount
     }
 
+    let idleEventPromise = undefined
     function continueTasks() {
         if (typeof navigator?.scheduling?.isInputPending === 'function') {
             const inputPendingOptions = {
@@ -1101,14 +1102,18 @@
         }
         const serverCapacity = getServerCapacity()
         if (task_queue.size <= 0 && concurrent_generators.size <= 0) {
-            eventSource.fireEvent(EVENT_IDLE, {capacity: serverCapacity, idle: true})
+            if (!idleEventPromise?.isPending) {
+                idleEventPromise = makeQuerablePromise(eventSource.fireEvent(EVENT_IDLE, {capacity: serverCapacity, idle: true}))
+            }
             // Calling idle could result in task being added to queue.
             if (task_queue.size <= 0 && concurrent_generators.size <= 0) {
-                return asyncDelay(IDLE_COOLDOWN)
+                return idleEventPromise.then(() => asyncDelay(IDLE_COOLDOWN))
             }
         }
         if (task_queue.size < serverCapacity) {
-            eventSource.fireEvent(EVENT_IDLE, {capacity: serverCapacity - task_queue.size})
+            if (!idleEventPromise?.isPending) {
+                idleEventPromise = makeQuerablePromise(eventSource.fireEvent(EVENT_IDLE, {capacity: serverCapacity - task_queue.size}))
+            }
         }
         const completedTasks = []
         for (let [generator, promise] of concurrent_generators.entries()) {
@@ -1175,8 +1180,8 @@
                 continue
             }
             const event = {task, generator};
-            eventSource.fireEvent(EVENT_TASK_START, event) // optional beforeStart promise to wait on before starting task.
-            const promise = makeQuerablePromise(Promise.resolve(event.beforeStart))
+            const beforeStart = eventSource.fireEvent(EVENT_TASK_START, event) // optional beforeStart promise to wait on before starting task.
+            const promise = makeQuerablePromise(beforeStart.then(() => Promise.resolve(event.beforeStart)))
             concurrent_generators.set(event.generator, promise)
             task_queue.set(task, event.generator)
         }
@@ -1201,7 +1206,7 @@
             }
             const continuePromise = continueTasks().catch(async function(err) {
                 console.error(err)
-                eventSource.fireEvent(EVENT_UNHANDLED_REJECTION, {reason: err})
+                await eventSource.fireEvent(EVENT_UNHANDLED_REJECTION, {reason: err})
                 await asyncDelay(RETRY_DELAY_ON_ERROR)
             })
             taskPromise = makeQuerablePromise(continuePromise)
