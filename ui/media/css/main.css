@@ -35,6 +35,7 @@ code {
     margin-top: 5px;
     display: block;
     border: 2px solid var(--background-color2);
+    max-width: 100%
 }
 #negative_prompt {
     width: 100%;
@@ -43,6 +44,7 @@ code {
     margin-bottom: 5px;
     margin-top: 5px;
     display: block;
+    max-width: 100%
 }
 .image_clear_btn {
     position: absolute;
