@@ -937,6 +937,15 @@ input::file-selector-button {
     transform: translate(-50%, 100%);
 }
 
+.simple-tooltip.top-left {
+    top: 0px;
+    left: 0px;
+    transform: translate(calc(-100% + 15%), calc(-100% + 15%));
+}
+:hover > .simple-tooltip.top-left {
+    transform: translate(-80%, -100%);
+}
+
 /* PROGRESS BAR */
 .progress-bar {
     background: var(--background-color3);
