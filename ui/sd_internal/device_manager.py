@@ -6,6 +6,13 @@ import logging
 
 log = logging.getLogger()
 
+'''
+Set `FORCE_FULL_PRECISION` in the environment variables, or in `config.bat`/`config.sh` to set full precision (i.e. float32).
+Otherwise the models will load at half-precision (i.e. float16).
+
+Half-precision is fine most of the time. Full precision is only needed for working around GPU bugs (like NVIDIA 16xx GPUs).
+'''
+
 COMPARABLE_GPU_PERCENTILE = 0.65 # if a GPU's free_mem is within this % of the GPU with the most free_mem, it will be picked
 
 mem_free_threshold = 0
@@ -96,7 +103,7 @@ def device_init(context, device):
     if device == 'cpu':
         context.device = 'cpu'
         context.device_name = get_processor_name()
-        context.precision = 'full'
+        context.half_precision = False
         log.debug(f'Render device CPU available as {context.device_name}')
         return
 
@@ -107,7 +114,7 @@ def device_init(context, device):
     if needs_to_force_full_precision(context):
         log.warn(f'forcing full precision on this GPU, to avoid green images. GPU detected: {context.device_name}')
         # Apply force_full_precision now before models are loaded.
-        context.precision = 'full'
+        context.half_precision = False
 
     log.info(f'Setting {device} as active')
     torch.cuda.device(device)
@@ -115,6 +122,9 @@ def device_init(context, device):
     return
 
 def needs_to_force_full_precision(context):
+    if 'FORCE_FULL_PRECISION' in os.environ:
+        return True
+
     device_name = context.device_name.lower()
     return (('nvidia' in device_name or 'geforce' in device_name) and (' 1660' in device_name or ' 1650' in device_name)) or ('Quadro T2000' in device_name)
 

@@ -106,14 +106,6 @@ var PARAMETERS = [
         default: false,
     },
     {
-        id: "use_full_precision",
-        type: ParameterType.checkbox,
-        label: "Use Full Precision",
-        note: "for GPU-only. warning: this will consume more VRAM",
-        icon: "fa-crosshairs",
-        default: false,
-    },
-    {
         id: "auto_save_settings",
         type: ParameterType.checkbox,
         label: "Auto-Save Settings",
@@ -214,7 +206,6 @@ let turboField = document.querySelector('#turbo')
 let useCPUField = document.querySelector('#use_cpu')
 let autoPickGPUsField = document.querySelector('#auto_pick_gpus')
 let useGPUsField = document.querySelector('#use_gpus')
-let useFullPrecisionField = document.querySelector('#use_full_precision')
 let saveToDiskField = document.querySelector('#save_to_disk')
 let diskPathField = document.querySelector('#diskPath')
 let listenToNetworkField = document.querySelector("#listen_to_network")

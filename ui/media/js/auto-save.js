@@ -37,7 +37,6 @@ const SETTINGS_IDS_LIST = [
     "diskPath",
     "sound_toggle",
     "turbo",
-    "use_full_precision",
     "confirm_dangerous_actions",
     "auto_save_settings",
     "apply_color_correction"
@@ -278,7 +277,6 @@ function tryLoadOldSettings() {
         "soundEnabled": "sound_toggle",
         "saveToDisk": "save_to_disk",
         "useCPU": "use_cpu",
-        "useFullPrecision": "use_full_precision",
         "useTurboMode": "turbo",
         "diskPath": "diskPath",
         "useFaceCorrection": "use_face_correction",

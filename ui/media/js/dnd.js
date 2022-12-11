@@ -217,13 +217,6 @@ const TASK_MAPPING = {
         readUI: () => turboField.checked,
         parse: (val) => Boolean(val)
     },
-    use_full_precision: { name: 'Use Full Precision',
-        setUI: (use_full_precision) => {
-            useFullPrecisionField.checked = use_full_precision
-        },
-        readUI: () => useFullPrecisionField.checked,
-        parse: (val) => Boolean(val)
-    },
 
     stream_image_progress: { name: 'Stream Image Progress',
         setUI: (stream_image_progress) => {
@@ -453,7 +446,6 @@ document.addEventListener("dragover", dragOverHandler)
 const TASK_REQ_NO_EXPORT = [
     "use_cpu",
     "turbo",
-    "use_full_precision",
     "save_to_disk_path"
 ]
 const resetSettings = document.getElementById('reset-image-settings')

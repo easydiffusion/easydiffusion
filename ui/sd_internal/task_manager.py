@@ -14,8 +14,8 @@ import torch
 import queue, threading, time, weakref
 from typing import Any, Hashable
 
-from pydantic import BaseModel
-from sd_internal import Request, device_manager
+from sd_internal import TaskData, device_manager
+from modules.types import GenerateImageRequest
 
 log = logging.getLogger()
 
@@ -39,9 +39,10 @@ class ServerStates:
     class Unavailable(Symbol): pass
 
 class RenderTask(): # Task with output queue and completion lock.
-    def __init__(self, req: Request):
+    def __init__(self, req: GenerateImageRequest, task_data: TaskData):
         req.request_id = id(self)
-        self.request: Request = req  # Initial Request
+        self.render_request: GenerateImageRequest = req  # Initial Request
+        self.task_data: TaskData = task_data
         self.response: Any = None # Copy of the last reponse
         self.render_device = None # Select the task affinity. (Not used to change active devices).
         self.temp_images:list = [None] * req.num_outputs * (1 if req.show_only_filtered_image else 2)
@@ -71,55 +72,6 @@ class RenderTask(): # Task with output queue and completion lock.
     @property
     def is_pending(self):
         return bool(not self.response and not self.error)
-
-# defaults from https://huggingface.co/blog/stable_diffusion
-class ImageRequest(BaseModel):
-    session_id: str = "session"
-    prompt: str = ""
-    negative_prompt: str = ""
-    init_image: str = None # base64
-    mask: str = None # base64
-    apply_color_correction: bool = False
-    num_outputs: int = 1
-    num_inference_steps: int = 50
-    guidance_scale: float = 7.5
-    width: int = 512
-    height: int = 512
-    seed: int = 42
-    prompt_strength: float = 0.8
-    sampler: str = None # "ddim", "plms", "heun", "euler", "euler_a", "dpm2", "dpm2_a", "lms"
-    # allow_nsfw: bool = False
-    save_to_disk_path: str = None
-    turbo: bool = True
-    use_cpu: bool = False ##TODO Remove after UI and plugins transition.
-    render_device: str = None # Select the task affinity. (Not used to change active devices).
-    use_full_precision: bool = False
-    use_face_correction: str = None # or "GFPGANv1.3"
-    use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
-    use_stable_diffusion_model: str = "sd-v1-4"
-    use_vae_model: str = None
-    use_hypernetwork_model: str = None
-    hypernetwork_strength: float = None
-    show_only_filtered_image: bool = False
-    output_format: str = "jpeg" # or "png"
-    output_quality: int = 75
-
-    stream_progress_updates: bool = False
-    stream_image_progress: bool = False
-
-class FilterRequest(BaseModel):
-    session_id: str = "session"
-    model: str = None
-    name: str = ""
-    init_image: str = None # base64
-    width: int = 512
-    height: int = 512
-    save_to_disk_path: str = None
-    turbo: bool = True
-    render_device: str = None
-    use_full_precision: bool = False
-    output_format: str = "jpeg" # or "png"
-    output_quality: int = 75
 
 # Temporary cache to allow to query tasks results for a short time after they are completed.
 class DataCache():
@@ -311,7 +263,7 @@ def thread_render(device):
             task.response = {"status": 'failed', "detail": str(task.error)}
             task.buffer_queue.put(json.dumps(task.response))
             continue
-        log.info(f'Session {task.request.session_id} starting task {id(task)} on {runtime2.thread_data.device_name}')
+        log.info(f'Session {task.task_data.session_id} starting task {id(task)} on {runtime2.thread_data.device_name}')
         if not task.lock.acquire(blocking=False): raise Exception('Got locked task from queue.')
         try:
             def step_callback():
@@ -322,16 +274,16 @@ def thread_render(device):
                     if isinstance(current_state_error, StopAsyncIteration):
                         task.error = current_state_error
                         current_state_error = None
-                        log.info(f'Session {task.request.session_id} sent cancel signal for task {id(task)}')
+                        log.info(f'Session {task.task_data.session_id} sent cancel signal for task {id(task)}')
 
             current_state = ServerStates.LoadingModel
-            runtime2.reload_models_if_necessary(task.request)
+            runtime2.reload_models_if_necessary(task.task_data)
 
             current_state = ServerStates.Rendering
-            task.response = runtime2.make_images(task.request, task.buffer_queue, task.temp_images, step_callback)
+            task.response = runtime2.make_images(task.render_request, task.task_data, task.buffer_queue, task.temp_images, step_callback)
             # Before looping back to the generator, mark cache as still alive.
             task_cache.keep(id(task), TASK_TTL)
-            session_cache.keep(task.request.session_id, TASK_TTL)
+            session_cache.keep(task.task_data.session_id, TASK_TTL)
         except Exception as e:
             task.error = e
             log.error(traceback.format_exc())
@@ -340,13 +292,13 @@ def thread_render(device):
             # Task completed
             task.lock.release()
         task_cache.keep(id(task), TASK_TTL)
-        session_cache.keep(task.request.session_id, TASK_TTL)
+        session_cache.keep(task.task_data.session_id, TASK_TTL)
         if isinstance(task.error, StopAsyncIteration):
-            log.info(f'Session {task.request.session_id} task {id(task)} cancelled!')
+            log.info(f'Session {task.task_data.session_id} task {id(task)} cancelled!')
         elif task.error is not None:
-            log.info(f'Session {task.request.session_id} task {id(task)} failed!')
+            log.info(f'Session {task.task_data.session_id} task {id(task)} failed!')
         else:
-            log.info(f'Session {task.request.session_id} task {id(task)} completed by {runtime2.thread_data.device_name}.')
+            log.info(f'Session {task.task_data.session_id} task {id(task)} completed by {runtime2.thread_data.device_name}.')
         current_state = ServerStates.Online
 
 def get_cached_task(task_id:str, update_ttl:bool=False):
@@ -509,53 +461,18 @@ def shutdown_event(): # Signal render thread to close on shutdown
     global current_state_error
     current_state_error = SystemExit('Application shutting down.')
 
-def render(req : ImageRequest):
+def render(render_req: GenerateImageRequest, task_data: TaskData):
     current_thread_count = is_alive()
     if current_thread_count <= 0:  # Render thread is dead
         raise ChildProcessError('Rendering thread has died.')
 
     # Alive, check if task in cache
-    session = get_cached_session(req.session_id, update_ttl=True)
+    session = get_cached_session(task_data.session_id, update_ttl=True)
     pending_tasks = list(filter(lambda t: t.is_pending, session.tasks))
     if current_thread_count < len(pending_tasks):
-        raise ConnectionRefusedError(f'Session {req.session_id} already has {len(pending_tasks)} pending tasks out of {current_thread_count}.')
+        raise ConnectionRefusedError(f'Session {task_data.session_id} already has {len(pending_tasks)} pending tasks out of {current_thread_count}.')
 
-    r = Request()
-    r.session_id = req.session_id
-    r.prompt = req.prompt
-    r.negative_prompt = req.negative_prompt
-    r.init_image = req.init_image
-    r.mask = req.mask
-    r.apply_color_correction = req.apply_color_correction
-    r.num_outputs = req.num_outputs
-    r.num_inference_steps = req.num_inference_steps
-    r.guidance_scale = req.guidance_scale
-    r.width = req.width
-    r.height = req.height
-    r.seed = req.seed
-    r.prompt_strength = req.prompt_strength
-    r.sampler = req.sampler
-    # r.allow_nsfw = req.allow_nsfw
-    r.turbo = req.turbo
-    r.use_full_precision = req.use_full_precision
-    r.save_to_disk_path = req.save_to_disk_path
-    r.use_upscale: str = req.use_upscale
-    r.use_face_correction = req.use_face_correction
-    r.use_stable_diffusion_model = req.use_stable_diffusion_model
-    r.use_vae_model = req.use_vae_model
-    r.use_hypernetwork_model = req.use_hypernetwork_model
-    r.hypernetwork_strength = req.hypernetwork_strength
-    r.show_only_filtered_image = req.show_only_filtered_image
-    r.output_format = req.output_format
-    r.output_quality = req.output_quality
-
-    r.stream_progress_updates = True # the underlying implementation only supports streaming
-    r.stream_image_progress = req.stream_image_progress
-
-    if not req.stream_progress_updates:
-        r.stream_image_progress = False
-
-    new_task = RenderTask(r)
+    new_task = RenderTask(render_req, task_data)
     if session.put(new_task, TASK_TTL):
         # Use twice the normal timeout for adding user requests.
         # Tries to force session.put to fail before tasks_queue.put would.

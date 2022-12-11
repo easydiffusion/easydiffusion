@@ -3,8 +3,7 @@ import logging
 import picklescan.scanner
 import rich
 
-from sd_internal import app, device_manager
-from sd_internal import Request
+from sd_internal import app
 
 log = logging.getLogger()
 
@@ -157,19 +156,3 @@ def getModels():
         models['options']['stable-diffusion'].append('custom-model')
 
     return models
-
-def is_sd_model_reload_necessary(thread_data, req: Request):
-    needs_model_reload = False
-    if 'stable-diffusion' not in thread_data.models or \
-        thread_data.model_paths['stable-diffusion'] != req.use_stable_diffusion_model or \
-        thread_data.model_paths['vae'] != req.use_vae_model:
-
-        needs_model_reload = True
-
-    if thread_data.device != 'cpu':
-        if (thread_data.precision == 'autocast' and req.use_full_precision) or \
-            (thread_data.precision == 'full' and not req.use_full_precision and not device_manager.needs_to_force_full_precision(thread_data)):
-            thread_data.precision = 'full' if req.use_full_precision else 'autocast'
-            needs_model_reload = True
-
-    return needs_model_reload

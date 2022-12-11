@@ -728,7 +728,6 @@
         "stream_image_progress": 'boolean',
         "show_only_filtered_image": 'boolean',
         "turbo": 'boolean',
-        "use_full_precision": 'boolean',
         "output_format": 'string',
         "output_quality": 'number',
     }
@@ -744,7 +743,6 @@
         "stream_image_progress": true,
         "show_only_filtered_image": true,
         "turbo": false,
-        "use_full_precision": false,
         "output_format": "png",
         "output_quality": 75,
     }

@@ -9,13 +9,14 @@ import traceback
 import logging
 
 from sd_internal import device_manager, model_manager
-from sd_internal import Request, Response, Image as ResponseImage, UserInitiatedStop
+from sd_internal import TaskData, Response, Image as ResponseImage, UserInitiatedStop
 
 from modules import model_loader, image_generator, image_utils, filters as image_filters
+from modules.types import Context, GenerateImageRequest
 
 log = logging.getLogger()
 
-thread_data = threading.local()
+thread_data = Context()
 '''
 runtime data (bound locally to this thread), for e.g. device, references to loaded models, optimization flags etc
 '''
@@ -28,14 +29,7 @@ def init(device):
     '''
     thread_data.stop_processing = False
     thread_data.temp_images = {}
-
-    thread_data.models = {}
-    thread_data.model_paths = {}
-
-    thread_data.device = None
-    thread_data.device_name = None
-    thread_data.precision = 'autocast'
-    thread_data.vram_optimizations = ('TURBO', 'MOVE_MODELS')
+    thread_data.partial_x_samples = None
 
     device_manager.device_init(thread_data, device)
 
@@ -51,16 +45,16 @@ def load_default_models():
     # load mandatory models
     model_loader.load_model(thread_data, 'stable-diffusion')
 
-def reload_models_if_necessary(req: Request):
+def reload_models_if_necessary(task_data: TaskData):
     model_paths_in_req = (
-        ('hypernetwork', req.use_hypernetwork_model),
-        ('gfpgan', req.use_face_correction),
-        ('realesrgan', req.use_upscale),
+        ('hypernetwork', task_data.use_hypernetwork_model),
+        ('gfpgan', task_data.use_face_correction),
+        ('realesrgan', task_data.use_upscale),
     )
 
-    if model_manager.is_sd_model_reload_necessary(thread_data, req):
-        thread_data.model_paths['stable-diffusion'] = req.use_stable_diffusion_model
-        thread_data.model_paths['vae'] = req.use_vae_model
+    if thread_data.model_paths.get('stable-diffusion') != task_data.use_stable_diffusion_model or thread_data.model_paths.get('vae') != task_data.use_vae_model:
+        thread_data.model_paths['stable-diffusion'] = task_data.use_stable_diffusion_model
+        thread_data.model_paths['vae'] = task_data.use_vae_model
 
         model_loader.load_model(thread_data, 'stable-diffusion')
 
@@ -73,10 +67,17 @@ def reload_models_if_necessary(req: Request):
             else:
                 model_loader.unload_model(thread_data, model_type)
 
-def make_images(req: Request, data_queue: queue.Queue, task_temp_images: list, step_callback):
+def make_images(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback):
     try:
-        log.info(req)
-        return _make_images_internal(req, data_queue, task_temp_images, step_callback)
+        # resolve the model paths to use
+        resolve_model_paths(task_data)
+
+        # convert init image to PIL.Image
+        req.init_image = image_utils.base64_str_to_img(req.init_image) if req.init_image is not None else None
+        req.init_image_mask = image_utils.base64_str_to_img(req.init_image_mask) if req.init_image_mask is not None else None
+
+        # generate
+        return _make_images_internal(req, task_data, data_queue, task_temp_images, step_callback)
     except Exception as e:
         log.error(traceback.format_exc())
 
@@ -86,66 +87,76 @@ def make_images(req: Request, data_queue: queue.Queue, task_temp_images: list, s
         }))
         raise e
 
-def _make_images_internal(req: Request, data_queue: queue.Queue, task_temp_images: list, step_callback):
-    args = req_to_args(req)
+def _make_images_internal(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback):
+    metadata = req.dict()
+    del metadata['init_image']
+    del metadata['init_image_mask']
+    print(metadata)
 
-    images, user_stopped = generate_images(args, data_queue, task_temp_images, step_callback, req.stream_image_progress)
-    images = apply_color_correction(args, images, user_stopped)
-    images = apply_filters(args, images, user_stopped, req.show_only_filtered_image)
+    images, user_stopped = generate_images(req, data_queue, task_temp_images, step_callback, task_data.stream_image_progress)
+    images = apply_color_correction(req, images, user_stopped)
+    images = apply_filters(task_data, images, user_stopped, task_data.show_only_filtered_image)
 
-    if req.save_to_disk_path is not None:
-        out_path = os.path.join(req.save_to_disk_path, filename_regex.sub('_', req.session_id))
-        save_images(images, out_path, metadata=req.json(), show_only_filtered_image=req.show_only_filtered_image)
+    if task_data.save_to_disk_path is not None:
+        out_path = os.path.join(task_data.save_to_disk_path, filename_regex.sub('_', task_data.session_id))
+        save_images(images, out_path, metadata=metadata, show_only_filtered_image=task_data.show_only_filtered_image)
 
-    res = Response(req, images=construct_response(req, images))
+    res = Response(req, task_data, images=construct_response(images))
     res = res.json()
     data_queue.put(json.dumps(res))
     log.info('Task completed')
 
     return res
 
-def generate_images(args: dict, data_queue: queue.Queue, task_temp_images: list, step_callback, stream_image_progress: bool):
+def resolve_model_paths(task_data: TaskData):
+    task_data.use_stable_diffusion_model = model_manager.resolve_model_to_use(task_data.use_stable_diffusion_model, model_type='stable-diffusion')
+    task_data.use_vae_model = model_manager.resolve_model_to_use(task_data.use_vae_model, model_type='vae')
+    task_data.use_hypernetwork_model = model_manager.resolve_model_to_use(task_data.use_hypernetwork_model, model_type='hypernetwork')
+
+    if task_data.use_face_correction: task_data.use_face_correction = model_manager.resolve_model_to_use(task_data.use_face_correction, 'gfpgan')
+    if task_data.use_upscale: task_data.use_upscale = model_manager.resolve_model_to_use(task_data.use_upscale, 'gfpgan')
+
+def generate_images(req: GenerateImageRequest, data_queue: queue.Queue, task_temp_images: list, step_callback, stream_image_progress: bool):
     thread_data.temp_images.clear()
 
-    image_generator.on_image_step = make_step_callback(args, data_queue, task_temp_images, step_callback, stream_image_progress)
+    image_generator.on_image_step = make_step_callback(req, data_queue, task_temp_images, step_callback, stream_image_progress)
 
     try:
-        images = image_generator.make_images(context=thread_data, args=args)
+        images = image_generator.make_images(context=thread_data, req=req)
         user_stopped = False
     except UserInitiatedStop:
         images = []
         user_stopped = True
-        if not hasattr(thread_data, 'partial_x_samples') or thread_data.partial_x_samples is None:
-            return images
-        for i in range(args['num_outputs']):
-            images[i] = image_utils.latent_to_img(thread_data, thread_data.partial_x_samples[i].unsqueeze(0))
-        
-        del thread_data.partial_x_samples
+        if thread_data.partial_x_samples is not None:
+            for i in range(req.num_outputs):
+                images[i] = image_utils.latent_to_img(thread_data, thread_data.partial_x_samples[i].unsqueeze(0))
+
+        thread_data.partial_x_samples = None
     finally:
         model_loader.gc(thread_data)
     
-    images = [(image, args['seed'] + i, False) for i, image in enumerate(images)]
+    images = [(image, req.seed + i, False) for i, image in enumerate(images)]
 
     return images, user_stopped
 
-def apply_color_correction(args: dict, images: list, user_stopped):
-    if user_stopped or args['init_image'] is None or not args['apply_color_correction']:
+def apply_color_correction(req: GenerateImageRequest, images: list, user_stopped):
+    if user_stopped or req.init_image is None or not req.apply_color_correction:
         return images
 
     for i, img_info in enumerate(images):
         img, seed, filtered = img_info
-        img = image_utils.apply_color_correction(orig_image=args['init_image'], image_to_correct=img)
+        img = image_utils.apply_color_correction(orig_image=req.init_image, image_to_correct=img)
         images[i] = (img, seed, filtered)
 
     return images
 
-def apply_filters(args: dict, images: list, user_stopped, show_only_filtered_image):
-    if user_stopped or (args['use_face_correction'] is None and args['use_upscale'] is None):
+def apply_filters(task_data: TaskData, images: list, user_stopped, show_only_filtered_image):
+    if user_stopped or (task_data.use_face_correction is None and task_data.use_upscale is None):
         return images
 
     filters = []
-    if 'gfpgan' in args['use_face_correction'].lower(): filters.append(image_filters.apply_gfpgan)
-    if 'realesrgan' in args['use_face_correction'].lower(): filters.append(image_filters.apply_realesrgan)
+    if 'gfpgan' in task_data.use_face_correction.lower(): filters.append(image_filters.apply_gfpgan)
+    if 'realesrgan' in task_data.use_face_correction.lower(): filters.append(image_filters.apply_realesrgan)
 
     filtered_images = []
     for img, seed, _ in images:
@@ -188,37 +199,29 @@ def save_images(images: list, save_to_disk_path, metadata: dict, show_only_filte
         img_path += '.' + metadata['output_format']
         img.save(img_path, quality=metadata['output_quality'])
 
-def construct_response(req: Request, images: list):
+def construct_response(task_data: TaskData, images: list):
     return [
         ResponseImage(
-            data=image_utils.img_to_base64_str(img, req.output_format, req.output_quality),
+            data=image_utils.img_to_base64_str(img, task_data.output_format, task_data.output_quality),
             seed=seed
         ) for img, seed, _ in images
     ]
 
-def req_to_args(req: Request):
-    args = req.json()
-
-    args['init_image'] = image_utils.base64_str_to_img(req.init_image) if req.init_image is not None else None
-    args['mask'] = image_utils.base64_str_to_img(req.mask) if req.mask is not None else None
-
-    return args
-
-def make_step_callback(args: dict, data_queue: queue.Queue, task_temp_images: list, step_callback, stream_image_progress: bool):
-    n_steps = args['num_inference_steps'] if args['init_image'] is None else int(args['num_inference_steps'] * args['prompt_strength'])
+def make_step_callback(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback, stream_image_progress: bool):
+    n_steps = req.num_inference_steps if req.init_image is None else int(req.num_inference_steps * req.prompt_strength)
     last_callback_time = -1
 
     def update_temp_img(x_samples, task_temp_images: list):
         partial_images = []
-        for i in range(args['num_outputs']):
+        for i in range(req.num_outputs):
             img = image_utils.latent_to_img(thread_data, x_samples[i].unsqueeze(0))
             buf = image_utils.img_to_buffer(img, output_format='JPEG')
 
             del img
 
-            thread_data.temp_images[f"{args['request_id']}/{i}"] = buf
+            thread_data.temp_images[f"{task_data.request_id}/{i}"] = buf
             task_temp_images[i] = buf
-            partial_images.append({'path': f"/image/tmp/{args['request_id']}/{i}"})
+            partial_images.append({'path': f"/image/tmp/{task_data.request_id}/{i}"})
         return partial_images
 
     def on_image_step(x_samples, i):

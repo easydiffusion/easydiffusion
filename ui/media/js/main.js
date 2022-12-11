@@ -850,7 +850,6 @@ function getCurrentUserRequest() {
             // allow_nsfw: allowNSFWField.checked,
             turbo: turboField.checked,
             //render_device: undefined, // Set device affinity. Prefer this device, but wont activate.
-            use_full_precision: useFullPrecisionField.checked,
             use_stable_diffusion_model: stableDiffusionModelField.value,
             use_vae_model: vaeModelField.value,
             stream_progress_updates: true,
