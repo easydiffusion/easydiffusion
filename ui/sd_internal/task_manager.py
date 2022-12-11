@@ -186,9 +186,9 @@ class SessionState():
         return True
 
 def thread_get_next_task():
-    from sd_internal import runtime2
+    from sd_internal import renderer
     if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT):
-        log.warn(f'Render thread on device: {runtime2.thread_data.device} failed to acquire manager lock.')
+        log.warn(f'Render thread on device: {renderer.context.device} failed to acquire manager lock.')
         return None
     if len(tasks_queue) <= 0:
         manager_lock.release()
@@ -196,7 +196,7 @@ def thread_get_next_task():
     task = None
     try:  # Select a render task.
         for queued_task in tasks_queue:
-            if queued_task.render_device and runtime2.thread_data.device != queued_task.render_device:
+            if queued_task.render_device and renderer.context.device != queued_task.render_device:
                 # Is asking for a specific render device.
                 if is_alive(queued_task.render_device) > 0:
                     continue  # requested device alive, skip current one.
@@ -205,7 +205,7 @@ def thread_get_next_task():
                     queued_task.error = Exception(queued_task.render_device + ' is not currently active.')
                     task = queued_task
                     break
-            if not queued_task.render_device and runtime2.thread_data.device == 'cpu' and is_alive() > 1:
+            if not queued_task.render_device and renderer.context.device == 'cpu' and is_alive() > 1:
                 # not asking for any specific devices, cpu want to grab task but other render devices are alive.
                 continue  # Skip Tasks, don't run on CPU unless there is nothing else or user asked for it.
             task = queued_task
@@ -219,9 +219,9 @@ def thread_get_next_task():
 def thread_render(device):
     global current_state, current_state_error
 
-    from sd_internal import runtime2, model_manager
+    from sd_internal import renderer, model_manager
     try:
-        runtime2.init(device)
+        renderer.init(device)
     except Exception as e:
         log.error(traceback.format_exc())
         weak_thread_data[threading.current_thread()] = {
@@ -230,20 +230,20 @@ def thread_render(device):
         return
 
     weak_thread_data[threading.current_thread()] = {
-        'device': runtime2.thread_data.device,
-        'device_name': runtime2.thread_data.device_name,
+        'device': renderer.context.device,
+        'device_name': renderer.context.device_name,
         'alive': True
     }
 
-    model_manager.load_default_models(runtime2.thread_data)
+    model_manager.load_default_models(renderer.context)
     current_state = ServerStates.Online
 
     while True:
         session_cache.clean()
         task_cache.clean()
         if not weak_thread_data[threading.current_thread()]['alive']:
-            log.info(f'Shutting down thread for device {runtime2.thread_data.device}')
-            model_manager.unload_all(runtime2.thread_data)
+            log.info(f'Shutting down thread for device {renderer.context.device}')
+            model_manager.unload_all(renderer.context)
             return
         if isinstance(current_state_error, SystemExit):
             current_state = ServerStates.Unavailable
@@ -263,14 +263,14 @@ def thread_render(device):
             task.response = {"status": 'failed', "detail": str(task.error)}
             task.buffer_queue.put(json.dumps(task.response))
             continue
-        log.info(f'Session {task.task_data.session_id} starting task {id(task)} on {runtime2.thread_data.device_name}')
+        log.info(f'Session {task.task_data.session_id} starting task {id(task)} on {renderer.context.device_name}')
         if not task.lock.acquire(blocking=False): raise Exception('Got locked task from queue.')
         try:
             def step_callback():
                 global current_state_error
 
                 if isinstance(current_state_error, SystemExit) or isinstance(current_state_error, StopAsyncIteration) or isinstance(task.error, StopAsyncIteration):
-                    runtime2.thread_data.stop_processing = True
+                    renderer.context.stop_processing = True
                     if isinstance(current_state_error, StopAsyncIteration):
                         task.error = current_state_error
                         current_state_error = None
@@ -278,10 +278,10 @@ def thread_render(device):
 
             current_state = ServerStates.LoadingModel
             model_manager.resolve_model_paths(task.task_data)
-            model_manager.reload_models_if_necessary(runtime2.thread_data, task.task_data)
+            model_manager.reload_models_if_necessary(renderer.context, task.task_data)
 
             current_state = ServerStates.Rendering
-            task.response = runtime2.make_images(task.render_request, task.task_data, task.buffer_queue, task.temp_images, step_callback)
+            task.response = renderer.make_images(task.render_request, task.task_data, task.buffer_queue, task.temp_images, step_callback)
             # Before looping back to the generator, mark cache as still alive.
             task_cache.keep(id(task), TASK_TTL)
             session_cache.keep(task.task_data.session_id, TASK_TTL)
@@ -299,7 +299,7 @@ def thread_render(device):
         elif task.error is not None:
             log.info(f'Session {task.task_data.session_id} task {id(task)} failed!')
         else:
-            log.info(f'Session {task.task_data.session_id} task {id(task)} completed by {runtime2.thread_data.device_name}.')
+            log.info(f'Session {task.task_data.session_id} task {id(task)} completed by {renderer.context.device_name}.')
         current_state = ServerStates.Online
 
 def get_cached_task(task_id:str, update_ttl:bool=False):
