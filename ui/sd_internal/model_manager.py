@@ -4,6 +4,8 @@ import picklescan.scanner
 import rich
 
 from sd_internal import app
+from modules import model_loader
+from modules.types import Context
 
 log = logging.getLogger()
 
@@ -29,6 +31,18 @@ known_models = {}
 def init():
     make_model_folders()
     getModels() # run this once, to cache the picklescan results
+
+def load_default_models(context: Context):
+    # init default model paths
+    for model_type in KNOWN_MODEL_TYPES:
+        context.model_paths[model_type] = resolve_model_to_use(model_type=model_type)
+
+    # load mandatory models
+    model_loader.load_model(context, 'stable-diffusion')
+
+def unload_all(context: Context):
+    for model_type in KNOWN_MODEL_TYPES:
+        model_loader.unload_model(context, model_type)
 
 def resolve_model_to_use(model_name:str=None, model_type:str=None):
     model_extensions = MODEL_EXTENSIONS.get(model_type, [])

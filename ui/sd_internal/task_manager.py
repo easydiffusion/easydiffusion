@@ -219,7 +219,7 @@ def thread_get_next_task():
 def thread_render(device):
     global current_state, current_state_error
 
-    from sd_internal import runtime2
+    from sd_internal import runtime2, model_manager
     try:
         runtime2.init(device)
     except Exception as e:
@@ -235,7 +235,7 @@ def thread_render(device):
         'alive': True
     }
 
-    runtime2.load_default_models()
+    model_manager.load_default_models(runtime2.thread_data)
     current_state = ServerStates.Online
 
     while True:
@@ -243,7 +243,7 @@ def thread_render(device):
         task_cache.clean()
         if not weak_thread_data[threading.current_thread()]['alive']:
             log.info(f'Shutting down thread for device {runtime2.thread_data.device}')
-            runtime2.destroy()
+            model_manager.unload_all(runtime2.thread_data)
             return
         if isinstance(current_state_error, SystemExit):
             current_state = ServerStates.Unavailable
@@ -280,6 +280,7 @@ def thread_render(device):
             runtime2.reload_models_if_necessary(task.task_data)
 
             current_state = ServerStates.Rendering
+            runtime2.resolve_model_paths(task.task_data)
             task.response = runtime2.make_images(task.render_request, task.task_data, task.buffer_queue, task.temp_images, step_callback)
             # Before looping back to the generator, mark cache as still alive.
             task_cache.keep(id(task), TASK_TTL)

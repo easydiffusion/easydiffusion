@@ -33,18 +33,6 @@ def init(device):
 
     device_manager.device_init(thread_data, device)
 
-def destroy():
-    for model_type in model_manager.KNOWN_MODEL_TYPES:
-        model_loader.unload_model(thread_data, model_type)
-
-def load_default_models():
-    # init default model paths
-    for model_type in model_manager.KNOWN_MODEL_TYPES:
-        thread_data.model_paths[model_type] = model_manager.resolve_model_to_use(model_type=model_type)
-
-    # load mandatory models
-    model_loader.load_model(thread_data, 'stable-diffusion')
-
 def reload_models_if_necessary(task_data: TaskData):
     model_paths_in_req = (
         ('hypernetwork', task_data.use_hypernetwork_model),
@@ -67,14 +55,6 @@ def reload_models_if_necessary(task_data: TaskData):
 
 def make_images(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback):
     try:
-        # resolve the model paths to use
-        resolve_model_paths(task_data)
-
-        # convert init image to PIL.Image
-        req.init_image = image_utils.base64_str_to_img(req.init_image) if req.init_image is not None else None
-        req.init_image_mask = image_utils.base64_str_to_img(req.init_image_mask) if req.init_image_mask is not None else None
-
-        # generate
         return _make_images_internal(req, task_data, data_queue, task_temp_images, step_callback)
     except Exception as e:
         log.error(traceback.format_exc())
@@ -86,17 +66,12 @@ def make_images(req: GenerateImageRequest, task_data: TaskData, data_queue: queu
         raise e
 
 def _make_images_internal(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback):
-    metadata = req.dict()
-    del metadata['init_image']
-    del metadata['init_image_mask']
-    print(metadata)
-
     images, user_stopped = generate_images(req, data_queue, task_temp_images, step_callback, task_data.stream_image_progress)
     images = apply_filters(task_data, images, user_stopped, task_data.show_only_filtered_image)
 
     if task_data.save_to_disk_path is not None:
         out_path = os.path.join(task_data.save_to_disk_path, filename_regex.sub('_', task_data.session_id))
-        save_images(images, out_path, metadata=metadata, show_only_filtered_image=task_data.show_only_filtered_image)
+        save_images(images, out_path, metadata=req.to_metadata(), show_only_filtered_image=task_data.show_only_filtered_image)
 
     res = Response(req, task_data, images=construct_response(images))
     res = res.json()
@@ -114,6 +89,7 @@ def resolve_model_paths(task_data: TaskData):
     if task_data.use_upscale: task_data.use_upscale = model_manager.resolve_model_to_use(task_data.use_upscale, 'gfpgan')
 
 def generate_images(req: GenerateImageRequest, data_queue: queue.Queue, task_temp_images: list, step_callback, stream_image_progress: bool):
+    log.info(req.to_metadata())
     thread_data.temp_images.clear()
 
     image_generator.on_image_step = make_step_callback(req, data_queue, task_temp_images, step_callback, stream_image_progress)
@@ -125,13 +101,11 @@ def generate_images(req: GenerateImageRequest, data_queue: queue.Queue, task_tem
         images = []
         user_stopped = True
         if thread_data.partial_x_samples is not None:
-            for i in range(req.num_outputs):
-                images[i] = image_utils.latent_to_img(thread_data, thread_data.partial_x_samples[i].unsqueeze(0))
-
-        thread_data.partial_x_samples = None
+            images = image_utils.latent_samples_to_images(thread_data, thread_data.partial_x_samples)
+            thread_data.partial_x_samples = None
     finally:
         model_loader.gc(thread_data)
-    
+
     images = [(image, req.seed + i, False) for i, image in enumerate(images)]
 
     return images, user_stopped
