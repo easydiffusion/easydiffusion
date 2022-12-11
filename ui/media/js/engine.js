@@ -248,7 +248,7 @@
                     setServerStatus('busy', 'rendering..')
                     break
                 default: // Unavailable
-                    console.error('Ping received an unexpedted server status. Status: %s', serverState.status)
+                    console.error('Ping received an unexpected server status. Status: %s', serverState.status)
                     setServerStatus('error', serverState.status.toLowerCase())
                     break
             }
@@ -277,7 +277,7 @@
             case ServerStates.online:
                 return true
             default:
-                console.warn('Unexpedted server status. Server could be unavailable... Status: %s', serverState.status)
+                console.warn('Unexpected server status. Server could be unavailable... Status: %s', serverState.status)
                 return false
         }
     }
