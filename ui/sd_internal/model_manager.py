@@ -37,6 +37,9 @@ def load_default_models(context: Context):
     for model_type in KNOWN_MODEL_TYPES:
         context.model_paths[model_type] = resolve_model_to_use(model_type=model_type)
 
+    # disable TURBO initially (this should be read from the config eventually)
+    context.vram_optimizations -= {'TURBO'}
+
     # load mandatory models
     model_loader.load_model(context, 'stable-diffusion')
 
@@ -115,6 +118,12 @@ def resolve_model_paths(task_data: TaskData):
 
     if task_data.use_face_correction: task_data.use_face_correction = resolve_model_to_use(task_data.use_face_correction, 'gfpgan')
     if task_data.use_upscale: task_data.use_upscale = resolve_model_to_use(task_data.use_upscale, 'gfpgan')
+
+def set_vram_optimizations(context: Context, task_data: TaskData):
+    if task_data.turbo:
+        context.vram_optimizations += {'TURBO'}
+    else:
+        context.vram_optimizations -= {'TURBO'}
 
 def make_model_folders():
     for model_type in KNOWN_MODEL_TYPES:
