@@ -55,7 +55,7 @@ def make_images(req: GenerateImageRequest, task_data: TaskData, data_queue: queu
         raise e
 
 def _make_images_internal(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback):
-    images, user_stopped = generate_images(req, data_queue, task_temp_images, step_callback, task_data.stream_image_progress)
+    images, user_stopped = generate_images(req, task_data, data_queue, task_temp_images, step_callback, task_data.stream_image_progress)
     filtered_images = apply_filters(task_data, images, user_stopped)
 
     if task_data.save_to_disk_path is not None:
@@ -64,10 +64,10 @@ def _make_images_internal(req: GenerateImageRequest, task_data: TaskData, data_q
 
     return filtered_images if task_data.show_only_filtered_image else images + filtered_images
 
-def generate_images(req: GenerateImageRequest, data_queue: queue.Queue, task_temp_images: list, step_callback, stream_image_progress: bool):
+def generate_images(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback, stream_image_progress: bool):
     context.temp_images.clear()
 
-    image_generator.on_image_step = make_step_callback(req, data_queue, task_temp_images, step_callback, stream_image_progress)
+    image_generator.on_image_step = make_step_callback(req, task_data, data_queue, task_temp_images, step_callback, stream_image_progress)
 
     try:
         images = image_generator.make_images(context=context, req=req)

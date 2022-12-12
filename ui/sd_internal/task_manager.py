@@ -40,12 +40,12 @@ class ServerStates:
 
 class RenderTask(): # Task with output queue and completion lock.
     def __init__(self, req: GenerateImageRequest, task_data: TaskData):
-        req.request_id = id(self)
+        task_data.request_id = id(self)
         self.render_request: GenerateImageRequest = req  # Initial Request
         self.task_data: TaskData = task_data
         self.response: Any = None # Copy of the last reponse
         self.render_device = None # Select the task affinity. (Not used to change active devices).
-        self.temp_images:list = [None] * req.num_outputs * (1 if req.show_only_filtered_image else 2)
+        self.temp_images:list = [None] * req.num_outputs * (1 if task_data.show_only_filtered_image else 2)
         self.error: Exception = None
         self.lock: threading.Lock = threading.Lock() # Locks at task start and unlocks when task is completed
         self.buffer_queue: queue.Queue = queue.Queue() # Queue of JSON string segments
@@ -235,7 +235,9 @@ def thread_render(device):
         'alive': True
     }
 
+    current_state = ServerStates.LoadingModel
     model_manager.load_default_models(renderer.context)
+
     current_state = ServerStates.Online
 
     while True:

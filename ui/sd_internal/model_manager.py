@@ -121,9 +121,9 @@ def resolve_model_paths(task_data: TaskData):
 
 def set_vram_optimizations(context: Context, task_data: TaskData):
     if task_data.turbo:
-        context.vram_optimizations += {'TURBO'}
+        context.vram_optimizations.add('TURBO')
     else:
-        context.vram_optimizations -= {'TURBO'}
+        context.vram_optimizations.remove('TURBO')
 
 def make_model_folders():
     for model_type in KNOWN_MODEL_TYPES:
