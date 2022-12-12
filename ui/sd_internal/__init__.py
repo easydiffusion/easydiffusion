@@ -7,14 +7,17 @@ class TaskData(BaseModel):
     session_id: str = "session"
     save_to_disk_path: str = None
     turbo: bool = True
+
     use_face_correction: str = None # or "GFPGANv1.3"
     use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
     use_stable_diffusion_model: str = "sd-v1-4"
     use_vae_model: str = None
     use_hypernetwork_model: str = None
+
     show_only_filtered_image: bool = False
     output_format: str = "jpeg" # or "png"
     output_quality: int = 75
+    metadata_output_format: str = "txt" # or "json"
     stream_image_progress: bool = False
 
 class Image:
