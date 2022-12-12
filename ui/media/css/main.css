@@ -139,7 +139,7 @@ code {
     padding: 16px;
     display: flex;
     flex-direction: column;
-    flex: 0 0 370pt;
+    flex: 0 0 380pt;
 }
 #editor label {
     font-weight: normal;
@@ -893,6 +893,15 @@ input::file-selector-button {
     transform: translate(-50%, 100%);
 }
 
+.simple-tooltip.top-left {
+    top: 0px;
+    left: 0px;
+    transform: translate(calc(-100% + 15%), calc(-100% + 15%));
+}
+:hover > .simple-tooltip.top-left {
+    transform: translate(-80%, -100%);
+}
+
 /* PROGRESS BAR */
 .progress-bar {
     background: var(--background-color3);
@@ -901,6 +910,7 @@ input::file-selector-button {
     height: 16px;
     position: relative;
     transition: 0.25s 1s border, 0.25s 1s height;
+    clear: both;
 }
 .progress-bar > div {
     background: var(--accent-color);
@@ -1050,6 +1060,15 @@ button:active {
   position: relative;
   top: 1px;
   left: 1px;
+}
+
+div.task-initimg > img {
+    margin-right: 6px;
+    display:      block;
+}
+div.task-fs-initimage {
+    display:  none;
+    position: absolute;
 }
 
 button#save-system-settings-btn {

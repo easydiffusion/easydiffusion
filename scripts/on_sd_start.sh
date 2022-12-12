@@ -38,7 +38,7 @@ if [ -e "scripts/install_status.txt" ] && [ `grep -c sd_git_cloned scripts/insta
     if [ "$test_sd2" == "N" ]; then
         git -c advice.detachedHead=false checkout 7f32368ed1030a6e710537047bacd908adea183a
     elif [ "$test_sd2" == "Y" ]; then
-        git -c advice.detachedHead=false checkout b1a80dfc75388914252ce363f923103185eaf48f
+        git -c advice.detachedHead=false checkout 733a1f6f9cae9b9a9b83294bf3281b123378cb1f
     fi
 
     cd ..
@@ -161,8 +161,10 @@ fi
 
 mkdir -p "../models/stable-diffusion"
 mkdir -p "../models/vae"
+mkdir -p "../models/hypernetwork"
 echo "" > "../models/stable-diffusion/Put your custom ckpt files here.txt"
 echo "" > "../models/vae/Put your VAE files here.txt"
+echo "" > "../models/hypernetwork/Put your hypernetwork files here.txt"
 
 if [ -f "sd-v1-4.ckpt" ]; then
     model_size=`find "sd-v1-4.ckpt" -printf "%s"`

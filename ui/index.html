@@ -25,7 +25,7 @@
         <div id="logo">
             <h1>
                 Stable Diffusion UI
-                <small>v2.4.18 <span id="updateBranchLabel"></span></small>
+                <small>v2.4.19 <span id="updateBranchLabel"></span></small>
             </h1>
         </div>
         <div id="server-status">
@@ -55,7 +55,7 @@
                     <input id="prompt_from_file" name="prompt_from_file" type="file" /> <!-- hidden -->
                     <label for="negative_prompt" class="collapsible" id="negative_prompt_handle">
                         Negative Prompt
-                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Writing-prompts#negative-prompts" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">Click to learn more about Negative Prompts</span></i></a>
+                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Writing-prompts#negative-prompts" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about Negative Prompts</span></i></a>
                         <small>(optional)</small>
                     </label>
                     <div class="collapsible-content">
@@ -95,7 +95,7 @@
                 </div>
 
                 <div id="editor-inputs-tags-container" class="row">
-                    <label>Image Modifiers <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">click an Image Modifier to remove it, use Ctrl+Mouse Wheel to adjust its weight</span></i>:</label>
+                    <label>Image Modifiers <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">click an Image Modifier to remove it, use Ctrl+Mouse Wheel to adjust its weight</span></i>:</label>
                     <div id="editor-inputs-tags-list"></div>
                 </div>
 
@@ -109,7 +109,7 @@
                 <h4 class="collapsible">
                     Image Settings
                     <i id="reset-image-settings" class="fa-solid fa-arrow-rotate-left section-button">
-                        <span class="simple-tooltip right">
+                        <span class="simple-tooltip top-left">
                             Reset Image Settings
                         </span>
                     </i>
@@ -123,13 +123,13 @@
                         <select id="stable_diffusion_model" name="stable_diffusion_model">
                             <!-- <option value="sd-v1-4" selected>sd-v1-4</option> -->
                         </select>
-                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Custom-Models" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">Click to learn more about custom models</span></i></a>
+                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Custom-Models" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about custom models</span></i></a>
                     </td></tr>
                     <tr class="pl-5"><td><label for="vae_model">Custom VAE:</i></label></td><td>
                         <select id="vae_model" name="vae_model">
                             <!-- <option value="" selected>None</option> -->
                         </select>
-                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/VAE-Variational-Auto-Encoder" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">Click to learn more about VAEs</span></i></a>
+                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/VAE-Variational-Auto-Encoder" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about VAEs</span></i></a>
                     </td></tr>
                     <tr id="samplerSelection" class="pl-5"><td><label for="sampler">Sampler:</label></td><td>
                         <select id="sampler" name="sampler">
@@ -142,7 +142,7 @@
                             <option value="dpm2_a">dpm2_a</option>
                             <option value="lms">lms</option>
                         </select>
-                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/How-to-Use#samplers" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">Click to learn more about samplers</span></i></a>
+                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/How-to-Use#samplers" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about samplers</span></i></a>
                     </td></tr>
                     <tr class="pl-5"><td><label>Image Size: </label></td><td>
                         <select id="width" name="width" value="512">
@@ -192,7 +192,16 @@
                     </td></tr>
                     <tr class="pl-5"><td><label for="num_inference_steps">Inference Steps:</label></td><td> <input id="num_inference_steps" name="num_inference_steps" size="4" value="25" onkeypress="preventNonNumericalInput(event)"></td></tr>
                     <tr class="pl-5"><td><label for="guidance_scale_slider">Guidance Scale:</label></td><td> <input id="guidance_scale_slider" name="guidance_scale_slider" class="editor-slider" value="75" type="range" min="10" max="500"> <input id="guidance_scale" name="guidance_scale" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"></td></tr>
-                    <tr id="prompt_strength_container" class="pl-5"><td><label for="prompt_strength_slider">Prompt Strength:</label></td><td> <input id="prompt_strength_slider" name="prompt_strength_slider" class="editor-slider" value="80" type="range" min="0" max="99"> <input id="prompt_strength" name="prompt_strength" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"><br/></td></tr></span>
+                    <tr id="prompt_strength_container" class="pl-5"><td><label for="prompt_strength_slider">Prompt Strength:</label></td><td> <input id="prompt_strength_slider" name="prompt_strength_slider" class="editor-slider" value="80" type="range" min="0" max="99"> <input id="prompt_strength" name="prompt_strength" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"><br/></td></tr>
+                    <tr class="pl-5"><td><label for="hypernetwork_model">Hypernetwork:</i></label></td><td>
+                        <select id="hypernetwork_model" name="hypernetwork_model">
+                            <!-- <option value="" selected>None</option> -->
+                        </select>
+                    </td></tr>
+                    <tr id="hypernetwork_strength_container" class="pl-5">
+                        <td><label for="hypernetwork_strength_slider">Hypernetwork Strength:</label></td>
+                        <td> <input id="hypernetwork_strength_slider" name="hypernetwork_strength_slider" class="editor-slider" value="100" type="range" min="0" max="100"> <input id="hypernetwork_strength" name="hypernetwork_strength" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"><br/></td>
+                    </tr>
                     <tr class="pl-5"><td><label for="output_format">Output Format:</label></td><td>
                         <select id="output_format" name="output_format">
                             <option value="jpeg" selected>jpeg</option>
@@ -200,8 +209,8 @@
                         </select>
                     </td></tr>
                     <tr class="pl-5" id="output_quality_row"><td><label for="output_quality">JPEG Quality:</label></td><td>
-		        <input id="output_quality_slider" name="output_quality" class="editor-slider" value="75" type="range" min="10" max="95"> <input id="output_quality" name="output_quality" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)">
-	            </td></tr>
+                    <input id="output_quality_slider" name="output_quality" class="editor-slider" value="75" type="range" min="10" max="95"> <input id="output_quality" name="output_quality" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)">
+                    </td></tr>
                     </table></div>
 
                     <div><ul>
@@ -272,7 +281,7 @@
                             <tr><td><label>Compatible Graphics Cards (all):</label></td><td id="system-info-gpus-all" class="value"></td></tr>
                             <tr><td></td><td>&nbsp;</td></tr>
                             <tr><td><label>Used for rendering 🔥:</label></td><td id="system-info-rendering-devices" class="value"></td></tr>
-                            <tr><td><label>Server Addresses <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">You can access Stable Diffusion UI from other devices using these addresses</span></i> :</label></td><td id="system-info-server-hosts" class="value"></td></tr>
+                            <tr><td><label>Server Addresses <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">You can access Stable Diffusion UI from other devices using these addresses</span></i> :</label></td><td id="system-info-server-hosts" class="value"></td></tr>
                         </table>
                     </div>
                 </div>
@@ -388,10 +397,13 @@
 </div>
 </body>
 <script src="media/js/utils.js"></script>
+<script src="media/js/engine.js"></script>
 <script src="media/js/parameters.js"></script>
 <script src="media/js/plugins.js"></script>
+
 <script src="media/js/image-modifiers.js"></script>
 <script src="media/js/auto-save.js"></script>
+
 <script src="media/js/main.js"></script>
 <script src="media/js/themes.js"></script>
 <script src="media/js/dnd.js"></script>
@@ -406,8 +418,12 @@ async function init() {
     await loadModifiers()
     await getSystemInfo()
 
-    setInterval(healthCheck, HEALTH_PING_INTERVAL * 1000)
-    healthCheck()
+    SD.init({
+        events: {
+            statusChange: setServerStatus
+            , idle: onIdle
+        }
+    })
 
     playSound()
 }

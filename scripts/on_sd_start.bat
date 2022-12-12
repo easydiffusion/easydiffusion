@@ -44,7 +44,7 @@ if NOT DEFINED test_sd2 set test_sd2=N
         @call git -c advice.detachedHead=false checkout 7f32368ed1030a6e710537047bacd908adea183a
     )
     if "%test_sd2%" == "Y" (
-        @call git -c advice.detachedHead=false checkout b1a80dfc75388914252ce363f923103185eaf48f
+        @call git -c advice.detachedHead=false checkout 733a1f6f9cae9b9a9b83294bf3281b123378cb1f
     )
 
     @cd ..
@@ -201,8 +201,10 @@ call WHERE uvicorn > .tmp
 
 if not exist "..\models\stable-diffusion" mkdir "..\models\stable-diffusion"
 if not exist "..\models\vae" mkdir "..\models\vae"
+if not exist "..\models\hypernetwork" mkdir "..\models\hypernetwork"
 echo. > "..\models\stable-diffusion\Put your custom ckpt files here.txt"
 echo. > "..\models\vae\Put your VAE files here.txt"
+echo. > "..\models\hypernetwork\Put your hypernetwork files here.txt"
 
 @if exist "sd-v1-4.ckpt" (
     for %%I in ("sd-v1-4.ckpt") do if "%%~zI" EQU "4265380512" (
