@@ -15,7 +15,7 @@ const SETTINGS_IDS_LIST = [
     "stable_diffusion_model",
     "vae_model",
     "hypernetwork_model",
-    "sampler",
+    "sampler_name",
     "width",
     "height",
     "num_inference_steps",

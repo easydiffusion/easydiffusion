@@ -30,7 +30,7 @@ let applyColorCorrectionField = document.querySelector('#apply_color_correction'
 let colorCorrectionSetting = document.querySelector('#apply_color_correction_setting')
 let promptStrengthSlider = document.querySelector('#prompt_strength_slider')
 let promptStrengthField = document.querySelector('#prompt_strength')
-let samplerField = document.querySelector('#sampler')
+let samplerField = document.querySelector('#sampler_name')
 let samplerSelectionContainer = document.querySelector("#samplerSelection")
 let useFaceCorrectionField = document.querySelector("#use_face_correction")
 let useUpscalingField = document.querySelector("#use_upscale")
@@ -741,7 +741,7 @@ function onTaskStart(task) {
 }
 
 function createTask(task) {
-    let taskConfig = `<b>Seed:</b> ${task.seed}, <b>Sampler:</b> ${task.reqBody.sampler}, <b>Inference Steps:</b> ${task.reqBody.num_inference_steps}, <b>Guidance Scale:</b> ${task.reqBody.guidance_scale}, <b>Model:</b> ${task.reqBody.use_stable_diffusion_model}`
+    let taskConfig = `<b>Seed:</b> ${task.seed}, <b>Sampler:</b> ${task.reqBody.sampler_name}, <b>Inference Steps:</b> ${task.reqBody.num_inference_steps}, <b>Guidance Scale:</b> ${task.reqBody.guidance_scale}, <b>Model:</b> ${task.reqBody.use_stable_diffusion_model}`
     if (task.reqBody.use_vae_model.trim() !== '') {
         taskConfig += `, <b>VAE:</b> ${task.reqBody.use_vae_model}`
     }
@@ -872,9 +872,9 @@ function getCurrentUserRequest() {
             newTask.reqBody.mask = imageInpainter.getImg()
         }
         newTask.reqBody.preserve_init_image_color_profile = applyColorCorrectionField.checked
-        newTask.reqBody.sampler = 'ddim'
+        newTask.reqBody.sampler_name = 'ddim'
     } else {
-        newTask.reqBody.sampler = samplerField.value
+        newTask.reqBody.sampler_name = samplerField.value
     }
     if (saveToDiskField.checked && diskPathField.value.trim() !== '') {
         newTask.reqBody.save_to_disk_path = diskPathField.value.trim()
