@@ -15,7 +15,7 @@ import queue, threading, time, weakref
 from typing import Any, Hashable
 
 from sd_internal import TaskData, device_manager
-from modules.types import GenerateImageRequest
+from diffusionkit.types import GenerateImageRequest
 
 log = logging.getLogger()
 

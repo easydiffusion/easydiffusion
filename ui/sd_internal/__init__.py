@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from modules.types import GenerateImageRequest
+from diffusionkit.types import GenerateImageRequest
 
 class TaskData(BaseModel):
     request_id: str = None

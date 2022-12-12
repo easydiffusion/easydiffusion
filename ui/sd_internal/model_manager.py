@@ -4,8 +4,8 @@ import picklescan.scanner
 import rich
 
 from sd_internal import app, TaskData
-from modules import model_loader
-from modules.types import Context
+from diffusionkit import model_loader
+from diffusionkit.types import Context
 
 log = logging.getLogger()
 
