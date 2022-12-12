@@ -820,6 +820,8 @@ function createTask(task) {
     task['stopTask'] = taskEntry.querySelector('.stopTask')
 
     task['stopTask'].addEventListener('click', (e) => {
+        e.stopPropagation()
+
         let question = (task['isProcessing'] ? "Stop this task?" : "Remove this task?")
         shiftOrConfirm(e, question, async function(e) {
             if (task.batchesDone <= 0 || !task.isProcessing) {
