@@ -38,6 +38,7 @@ const SETTINGS_IDS_LIST = [
     "sound_toggle",
     "turbo",
     "confirm_dangerous_actions",
+    "metadata_output_format",
     "auto_save_settings",
     "apply_color_correction"
 ]
