@@ -1175,6 +1175,12 @@ hypernetworkStrengthSlider.addEventListener('input', updateHypernetworkStrength)
 hypernetworkStrengthField.addEventListener('input', updateHypernetworkStrengthSlider)
 updateHypernetworkStrength()
 
+function updateHypernetworkStrengthContainer() {
+    document.querySelector("#hypernetwork_strength_container").style.display = (hypernetworkModelField.value === "" ? 'none' : '')
+}
+hypernetworkModelField.addEventListener('change', updateHypernetworkStrengthContainer)
+updateHypernetworkStrengthContainer()
+
 /********************* JPEG Quality **********************/
 function updateOutputQuality() {
     outputQualityField.value =  0 | outputQualitySlider.value
@@ -1248,6 +1254,10 @@ async function getModels() {
         stableDiffusionOptions.forEach(createModelOptions(stableDiffusionModelField, selectedSDModel))
         vaeOptions.forEach(createModelOptions(vaeModelField, selectedVaeModel))
         hypernetworkOptions.forEach(createModelOptions(hypernetworkModelField, selectedHypernetworkModel))
+
+        stableDiffusionModelField.dispatchEvent(new Event('change'))
+        vaeModelField.dispatchEvent(new Event('change'))
+        hypernetworkModelField.dispatchEvent(new Event('change'))
 
         // TODO: set default for model here too
         SETTINGS[sd_model_setting_key].default = stableDiffusionOptions[0]
