@@ -139,7 +139,7 @@ code {
     padding: 16px;
     display: flex;
     flex-direction: column;
-    flex: 0 0 370pt;
+    flex: 0 0 380pt;
 }
 #editor label {
     font-weight: normal;
