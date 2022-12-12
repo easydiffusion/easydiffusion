@@ -101,26 +101,23 @@ def apply_filters(task_data: TaskData, images: list, user_stopped):
     return filtered_images
 
 def save_to_disk(images: list, filtered_images: list, save_folder_path, req: GenerateImageRequest, task_data: TaskData):
-    metadata = req.dict()
-    del metadata['init_image']
-    del metadata['init_image_mask']
-    metadata.update({
-        'use_stable_diffusion_model': task_data.use_stable_diffusion_model,
-        'use_vae_model': task_data.use_vae_model,
-        'use_hypernetwork_model': task_data.use_hypernetwork_model,
-        'use_face_correction': task_data.use_face_correction,
-        'use_upscale': task_data.use_upscale,
-    })
-
     metadata_entries = get_metadata_entries(req, task_data)
 
     if task_data.show_only_filtered_image or filtered_images == images:
-        data_utils.save_images(filtered_images, save_folder_path, file_name=get_output_filename_callback(req), output_format=task_data.output_format, output_quality=task_data.output_quality)
-        data_utils.save_metadata(metadata_entries, save_folder_path, file_name=get_output_filename_callback(req), output_format=task_data.metadata_output_format)
+        data_utils.save_images(filtered_images, save_folder_path, file_name=make_filename_callback(req), output_format=task_data.output_format, output_quality=task_data.output_quality)
+        data_utils.save_metadata(metadata_entries, save_folder_path, file_name=make_filename_callback(req), output_format=task_data.metadata_output_format)
     else:
-        data_utils.save_images(images, save_folder_path, file_name=get_output_filename_callback(req), output_format=task_data.output_format, output_quality=task_data.output_quality)
-        data_utils.save_images(filtered_images, save_folder_path, file_name=get_output_filename_callback(req, suffix='filtered'), output_format=task_data.output_format, output_quality=task_data.output_quality)
-        data_utils.save_metadata(metadata_entries, save_folder_path, file_name=get_output_filename_callback(req, suffix='filtered'), output_format=task_data.metadata_output_format)
+        data_utils.save_images(images, save_folder_path, file_name=make_filename_callback(req), output_format=task_data.output_format, output_quality=task_data.output_quality)
+        data_utils.save_images(filtered_images, save_folder_path, file_name=make_filename_callback(req, suffix='filtered'), output_format=task_data.output_format, output_quality=task_data.output_quality)
+        data_utils.save_metadata(metadata_entries, save_folder_path, file_name=make_filename_callback(req, suffix='filtered'), output_format=task_data.metadata_output_format)
+
+def construct_response(images: list, task_data: TaskData, base_seed: int):
+    return [
+        ResponseImage(
+            data=image_utils.img_to_base64_str(img, task_data.output_format, task_data.output_quality),
+            seed=base_seed + i
+        ) for i, img in enumerate(images)
+    ]
 
 def get_metadata_entries(req: GenerateImageRequest, task_data: TaskData):
     metadata = req.dict()
@@ -136,7 +133,7 @@ def get_metadata_entries(req: GenerateImageRequest, task_data: TaskData):
 
     return [metadata.copy().update({'seed': req.seed + i}) for i in range(req.num_outputs)]
 
-def get_output_filename_callback(req: GenerateImageRequest, suffix=None):
+def make_filename_callback(req: GenerateImageRequest, suffix=None):
     def make_filename(i):
         img_id = base64.b64encode(int(time.time()+i).to_bytes(8, 'big')).decode() # Generate unique ID based on time.
         img_id = img_id.translate({43:None, 47:None, 61:None})[-8:] # Remove + / = and keep last 8 chars.
@@ -147,14 +144,6 @@ def get_output_filename_callback(req: GenerateImageRequest, suffix=None):
         return name
 
     return make_filename
-
-def construct_response(images: list, task_data: TaskData, base_seed: int):
-    return [
-        ResponseImage(
-            data=image_utils.img_to_base64_str(img, task_data.output_format, task_data.output_quality),
-            seed=base_seed + i
-        ) for i, img in enumerate(images)
-    ]
 
 def make_step_callback(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback, stream_image_progress: bool):
     n_steps = req.num_inference_steps if req.init_image is None else int(req.num_inference_steps * req.prompt_strength)
