@@ -822,7 +822,7 @@ def _txt2img(opt_W, opt_H, opt_n_samples, opt_ddim_steps, opt_scale, start_code,
         move_to_cpu(thread_data.modelCS)
 
     if thread_data.test_sd2 and sampler_name not in ('plms', 'ddim', 'dpm2'):
-        raise Exception('Only plms and ddim samplers are supported right now, in SD 2.0')
+        raise Exception('Only plms, ddim and dpm2 samplers are supported right now, in SD 2.0')
 
 
     # samples, _ = sampler.sample(S=opt.steps,
