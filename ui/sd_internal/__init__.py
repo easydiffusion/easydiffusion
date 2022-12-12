@@ -48,6 +48,9 @@ class Response:
         self.images = images
 
     def json(self):
+        del self.render_request.init_image
+        del self.render_request.init_image_mask
+
         res = {
             "status": 'succeeded',
             "render_request": self.render_request.dict(),

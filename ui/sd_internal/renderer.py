@@ -33,7 +33,7 @@ def init(device):
     device_manager.device_init(context, device)
 
 def make_images(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback):
-    log.info(f'request: {req.dict()}')
+    log.info(f'request: {get_printable_request(req)}')
     log.info(f'task data: {task_data.dict()}')
 
     try:
@@ -120,9 +120,7 @@ def construct_response(images: list, task_data: TaskData, base_seed: int):
     ]
 
 def get_metadata_entries(req: GenerateImageRequest, task_data: TaskData):
-    metadata = req.dict()
-    del metadata['init_image']
-    del metadata['init_image_mask']
+    metadata = get_printable_request(req)
     metadata.update({
         'use_stable_diffusion_model': task_data.use_stable_diffusion_model,
         'use_vae_model': task_data.use_vae_model,
@@ -132,6 +130,12 @@ def get_metadata_entries(req: GenerateImageRequest, task_data: TaskData):
     })
 
     return [metadata.copy().update({'seed': req.seed + i}) for i in range(req.num_outputs)]
+
+def get_printable_request(req: GenerateImageRequest):
+    metadata = req.dict()
+    del metadata['init_image']
+    del metadata['init_image_mask']
+    return metadata
 
 def make_filename_callback(req: GenerateImageRequest, suffix=None):
     def make_filename(i):
