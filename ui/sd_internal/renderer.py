@@ -11,7 +11,7 @@ from sd_internal import device_manager
 from sd_internal import TaskData, Response, Image as ResponseImage, UserInitiatedStop
 
 from modules import model_loader, image_generator, image_utils, filters as image_filters, data_utils
-from modules.types import Context, GenerateImageRequest
+from modules.types import Context, GenerateImageRequest, FilterImageRequest
 
 log = logging.getLogger()
 
@@ -88,15 +88,16 @@ def apply_filters(task_data: TaskData, images: list, user_stopped):
         return images
 
     filters = []
-    if 'gfpgan' in task_data.use_face_correction.lower(): filters.append(image_filters.apply_gfpgan)
-    if 'realesrgan' in task_data.use_face_correction.lower(): filters.append(image_filters.apply_realesrgan)
+    if 'gfpgan' in task_data.use_face_correction.lower(): filters.append('gfpgan')
+    if 'realesrgan' in task_data.use_face_correction.lower(): filters.append('realesrgan')
 
     filtered_images = []
     for img in images:
-        for filter_fn in filters:
-            img = filter_fn(context, img)
+        filter_req = FilterImageRequest()
+        filter_req.init_image = img
 
-        filtered_images.append(img)
+        filtered_image = image_filters.apply(context, filters, filter_req)
+        filtered_images.append(filtered_image)
 
     return filtered_images
 
