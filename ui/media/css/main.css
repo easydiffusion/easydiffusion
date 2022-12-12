@@ -139,7 +139,7 @@ code {
     padding: 16px;
     display: flex;
     flex-direction: column;
-    flex: 0 0 370pt;
+    flex: 0 0 380pt;
 }
 #editor label {
     font-weight: normal;
@@ -783,6 +783,9 @@ input::file-selector-button {
 }
 
 @media (min-width: 700px) {
+    /* #editor {
+        max-width: 480px;
+    }*/
     .float-container {
         padding: 20px;
     }
@@ -790,53 +793,6 @@ input::file-selector-button {
         width: 50%;
         float: left;
         padding: 20px;
-    }
-    #editor {
-        position:  fixed;
-        overflow-y: auto;
-        top: 0;
-        bottom: 0;
-        overflow-x: hidden;
-        padding-right: 8px;
-        z-index: 1;
-        width: 374pt;
-    }
-
-    #preview {
-        padding-left: 380pt;
-        margin-right: 10pt;
-        left: 0;
-        right:0;
-        min-height: 80vh;
-    }
-
-    #preview-pane {
-        display: none;
-        overflow-y: auto;
-        margin-top: 8pt;
-        left: 0;
-        right:0;
-    }
-
-    #preview-tools {
-        background: var(--background-color1);
-        position: sticky;
-        top: 0;
-        transition: 0.25s;
-        z-index: 1;
-        padding-top:10px;
-        padding-bottom: 10px;
-        -webkit-mask-image: linear-gradient(to bottom, black 0%, black 90%, transparent 100%);
-        mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);
-    }
-
-    #editor-modifiers {
-        overflow-y: initial;
-        overflow-x: initial;
-    }
-    .image_preview_container {
-        padding: 6px;
-        width: 454px;
     }
 }
 
@@ -1123,37 +1079,4 @@ button#save-system-settings-btn {
 }
 #ip-info div {
     line-height: 200%;
-}
-
-/* SCROLLBARS */
-:root {
-    --scrollbar-width: 14px;
-    --scrollbar-radius: 10px;
-}
-
-.scrollbar-editor::-webkit-scrollbar {
-    width: 8px;
-}
-
-.scrollbar-editor::-webkit-scrollbar-track {
-    border-radius: 10px;
-}
-
-.scrollbar-editor::-webkit-scrollbar-thumb {
-    background: --background-color2;
-    border-radius: 10px;
-}
-
-::-webkit-scrollbar {
-    width: var(--scrollbar-width);
-}
-
-::-webkit-scrollbar-track {
-    box-shadow: inset 0 0 5px var(--input-border-color);
-    border-radius: var(--input-border-radius);
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--background-color2);
-    border-radius: var(--scrollbar-radius);
 }

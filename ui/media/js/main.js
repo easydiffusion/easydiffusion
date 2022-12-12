@@ -61,29 +61,6 @@ let maskSetting = document.querySelector('#enable_mask')
 
 const processOrder = document.querySelector('#process_order_toggle')
 
-const editorContainer = document.querySelector('#editor')
-window.addEventListener("scroll", updatePreviewSize)
-let lastScrollTop = 0
-updatePreviewSize()
-
-// update preview pane size and position
-function updatePreviewSize() {
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-    if (scrollTop > lastScrollTop) {
-        previewTools.style.top = -previewTools.offsetHeight + 'px'
-    }
-    else if (scrollTop < lastScrollTop) {
-        const elem = preview.getElementsByClassName('img-batch')[0]
-        if (elem !== undefined && Math.round(window.scrollY) !== Math.round(elem.closest(".imageTaskContainer").offsetTop)) {
-            previewTools.style.top = '0'
-        }
-    }
-    lastScrollTop = scrollTop
-
-    $('#editor').css('top', Math.max(-window.pageYOffset + $("#tab-container").offset().top + $('#tab-container').outerHeight(true), 0) + 'px')
-    $('#editor').css('bottom', Math.max($(window).height() - ($("#footer .line-separator").offset().top - $(document).scrollTop()), 0) + 'px')
-};
-
 let imagePreview = document.querySelector("#preview")
 imagePreview.addEventListener('drop', function(ev) {
     const data = ev.dataTransfer?.getData("text/plain");
@@ -292,9 +269,9 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         imageElem.setAttribute('data-steps', imageInferenceSteps)
         imageElem.setAttribute('data-guidance', imageGuidanceScale)
 
+
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
         imageInfo.style.visibility = (livePreview ? 'hidden' : 'visible')
-        updatePreviewSize()
 
         if ('seed' in result && !imageElem.hasAttribute('data-seed')) {
             const req = Object.assign({}, reqBody, {
@@ -436,7 +413,11 @@ function getUncompletedTaskEntries() {
         document.querySelectorAll('#preview .imageTaskContainer .taskStatusLabel')
         ).filter((taskLabel) => taskLabel.style.display !== 'none'
         ).map(function(taskLabel) {
-            return taskLabel.closest('.imageTaskContainer')
+            let imageTaskContainer = taskLabel.parentNode
+            while(!imageTaskContainer.classList.contains('imageTaskContainer') && imageTaskContainer.parentNode) {
+                imageTaskContainer = imageTaskContainer.parentNode
+            }
+            return imageTaskContainer
         })
     if (!processOrder.checked) {
         taskEntries.reverse()
@@ -845,10 +826,12 @@ function createTask(task) {
     task['stopTask'] = taskEntry.querySelector('.stopTask')
 
     task['stopTask'].addEventListener('click', (e) => {
+        e.stopPropagation()
+
         let question = (task['isProcessing'] ? "Stop this task?" : "Remove this task?")
         shiftOrConfirm(e, question, async function(e) {
             if (task.batchesDone <= 0 || !task.isProcessing) {
-                removeTask(taskEntry)
+                taskEntry.remove()
             }
             abortTask(task)
         })
@@ -1079,7 +1062,6 @@ function removeTask(taskToRemove) {
         previewTools.style.display = 'none'
         initialText.style.display = 'block'
     }
-    updatePreviewSize()
 }
 
 clearAllPreviewsBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Clear all the results and tasks in this window?", async function() {
@@ -1201,6 +1183,12 @@ hypernetworkStrengthSlider.addEventListener('input', updateHypernetworkStrength)
 hypernetworkStrengthField.addEventListener('input', updateHypernetworkStrengthSlider)
 updateHypernetworkStrength()
 
+function updateHypernetworkStrengthContainer() {
+    document.querySelector("#hypernetwork_strength_container").style.display = (hypernetworkModelField.value === "" ? 'none' : '')
+}
+hypernetworkModelField.addEventListener('change', updateHypernetworkStrengthContainer)
+updateHypernetworkStrengthContainer()
+
 /********************* JPEG Quality **********************/
 function updateOutputQuality() {
     outputQualityField.value =  0 | outputQualitySlider.value
@@ -1274,6 +1262,10 @@ async function getModels() {
         stableDiffusionOptions.forEach(createModelOptions(stableDiffusionModelField, selectedSDModel))
         vaeOptions.forEach(createModelOptions(vaeModelField, selectedVaeModel))
         hypernetworkOptions.forEach(createModelOptions(hypernetworkModelField, selectedHypernetworkModel))
+
+        stableDiffusionModelField.dispatchEvent(new Event('change'))
+        vaeModelField.dispatchEvent(new Event('change'))
+        hypernetworkModelField.dispatchEvent(new Event('change'))
 
         // TODO: set default for model here too
         SETTINGS[sd_model_setting_key].default = stableDiffusionOptions[0]
