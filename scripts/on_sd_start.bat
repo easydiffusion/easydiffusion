@@ -393,7 +393,7 @@ call python --version
 
 @if NOT DEFINED SD_UI_BIND_PORT set SD_UI_BIND_PORT=9000
 @if NOT DEFINED SD_UI_BIND_IP set SD_UI_BIND_IP=0.0.0.0
-@uvicorn server:server_api --app-dir "%SD_UI_PATH%" --port %SD_UI_BIND_PORT% --host %SD_UI_BIND_IP% --log-level critical
+@uvicorn server:server_api --app-dir "%SD_UI_PATH%" --port %SD_UI_BIND_PORT% --host %SD_UI_BIND_IP% --log-level error
 
 
 @pause
