@@ -61,6 +61,29 @@ let maskSetting = document.querySelector('#enable_mask')
 
 const processOrder = document.querySelector('#process_order_toggle')
 
+const editorContainer = document.querySelector('#editor')
+window.addEventListener("scroll", updatePreviewSize)
+let lastScrollTop = 0
+updatePreviewSize()
+
+// update preview pane size and position
+function updatePreviewSize() {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+    if (scrollTop > lastScrollTop) {
+        previewTools.style.top = -previewTools.offsetHeight + 'px'
+    }
+    else if (scrollTop < lastScrollTop) {
+        const elem = preview.getElementsByClassName('img-batch')[0]
+        if (elem !== undefined && Math.round(window.scrollY) !== Math.round(elem.closest(".imageTaskContainer").offsetTop)) {
+            previewTools.style.top = '0'
+        }
+    }
+    lastScrollTop = scrollTop
+
+    $('#editor').css('top', Math.max(-window.pageYOffset + $("#tab-container").offset().top + $('#tab-container').outerHeight(true), 0) + 'px')
+    $('#editor').css('bottom', Math.max($(window).height() - ($("#footer .line-separator").offset().top - $(document).scrollTop()), 0) + 'px')
+};
+
 let imagePreview = document.querySelector("#preview")
 imagePreview.addEventListener('drop', function(ev) {
     const data = ev.dataTransfer?.getData("text/plain");
@@ -269,9 +292,9 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         imageElem.setAttribute('data-steps', imageInferenceSteps)
         imageElem.setAttribute('data-guidance', imageGuidanceScale)
 
-
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
         imageInfo.style.visibility = (livePreview ? 'hidden' : 'visible')
+        updatePreviewSize()
 
         if ('seed' in result && !imageElem.hasAttribute('data-seed')) {
             const req = Object.assign({}, reqBody, {
@@ -413,11 +436,7 @@ function getUncompletedTaskEntries() {
         document.querySelectorAll('#preview .imageTaskContainer .taskStatusLabel')
         ).filter((taskLabel) => taskLabel.style.display !== 'none'
         ).map(function(taskLabel) {
-            let imageTaskContainer = taskLabel.parentNode
-            while(!imageTaskContainer.classList.contains('imageTaskContainer') && imageTaskContainer.parentNode) {
-                imageTaskContainer = imageTaskContainer.parentNode
-            }
-            return imageTaskContainer
+            return taskLabel.closest('.imageTaskContainer')
         })
     if (!processOrder.checked) {
         taskEntries.reverse()
@@ -438,10 +457,10 @@ function makeImage() {
         alert('The "Inference Steps" field must not be empty.')
         return
     }
-    if (numOutputsTotalField.value == '') {
+    if (numOutputsTotalField.value == '' || numOutputsTotalField.value == 0) {
         numOutputsTotalField.value = 1
     }
-    if (numOutputsParallelField.value == '') {
+    if (numOutputsParallelField.value == '' || numOutputsParallelField.value == 0) {
         numOutputsParallelField.value = 1
     }
     if (guidanceScaleField.value == '') {
@@ -456,7 +475,7 @@ function makeImage() {
     initialText.style.display = 'none'
 }
 
-function onIdle() {
+async function onIdle() {
     const serverCapacity = SD.serverCapacity
     for (const taskEntry of getUncompletedTaskEntries()) {
         if (SD.activeTasks.size >= serverCapacity) {
@@ -468,7 +487,7 @@ function onIdle() {
             taskStatusLabel.style.display = 'none'
             continue
         }
-        onTaskStart(task)
+        await onTaskStart(task)
     }
 }
 
@@ -588,29 +607,29 @@ function onTaskErrorHandler(task, reqBody, instance, reason) {
 }
 
 function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
-    if (typeof stepUpdate !== 'object') {
-        return
-    }
-    if (stepUpdate.status !== 'succeeded') {
-        const outputMsg = task['outputMsg']
-        let msg = ''
-        if ('detail' in stepUpdate && typeof stepUpdate.detail === 'string' && stepUpdate.detail.length > 0) {
-            msg = stepUpdate.detail
-            if (msg.toLowerCase().includes('out of memory')) {
-                msg += `<br/><br/>
-                        <b>Suggestions</b>:
-                        <br/>
-                        1. If you have set an initial image, please try reducing its dimension to ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION} or smaller.<br/>
-                        2. Try disabling the '<em>Turbo mode</em>' under '<em>Advanced Settings</em>'.<br/>
-                        3. Try generating a smaller image.<br/>`
-            }
+    if (typeof stepUpdate === 'object') {
+        if (stepUpdate.status === 'succeeded') {
+            showImages(reqBody, stepUpdate, outputContainer, false)
         } else {
-            msg = `Unexpected Read Error:<br/><pre>StepUpdate: ${JSON.stringify(stepUpdate, undefined, 4)}</pre>`
+            task.isProcessing = false
+            const outputMsg = task['outputMsg']
+            let msg = ''
+            if ('detail' in stepUpdate && typeof stepUpdate.detail === 'string' && stepUpdate.detail.length > 0) {
+                msg = stepUpdate.detail
+                if (msg.toLowerCase().includes('out of memory')) {
+                    msg += `<br/><br/>
+                            <b>Suggestions</b>:
+                            <br/>
+                            1. If you have set an initial image, please try reducing its dimension to ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION} or smaller.<br/>
+                            2. Try disabling the '<em>Turbo mode</em>' under '<em>Advanced Settings</em>'.<br/>
+                            3. Try generating a smaller image.<br/>`
+                }
+            } else {
+                msg = `Unexpected Read Error:<br/><pre>StepUpdate: ${JSON.stringify(stepUpdate, undefined, 4)}</pre>`
+            }
+            logError(msg, stepUpdate, outputMsg)
         }
-        logError(msg, stepUpdate, outputMsg)
-        return false
     }
-    showImages(reqBody, stepUpdate, outputContainer, false)
     if (task.isProcessing && task.batchesDone < task.batchCount) {
         task['taskStatusLabel'].innerText = "Pending"
         task['taskStatusLabel'].classList.add('waitingTaskLabel')
@@ -620,8 +639,6 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
     if ('instances' in task && task.instances.some((ins) => ins != instance && ins.isPending)) {
         return
     }
-
-    setStatus('request', 'done', 'success')
 
     task.isProcessing = false
     task['stopTask'].innerHTML = '<i class="fa-solid fa-trash-can"></i> Remove'
@@ -661,7 +678,7 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
 }
 
 
-function onTaskStart(task) {
+async function onTaskStart(task) {
     if (!task.isProcessing || task.batchesDone >= task.batchCount) {
         return
     }
@@ -699,22 +716,24 @@ function onTaskStart(task) {
     task.outputContainer.insertBefore(outputContainer, task.outputContainer.firstChild)
 
     const eventInfo = {reqBody:newTaskReqBody}
-    PLUGINS['TASK_CREATE'].forEach((hook) => {
+    const callbacksPromises = PLUGINS['TASK_CREATE'].map((hook) => {
         if (typeof hook !== 'function') {
             console.error('The provided TASK_CREATE hook is not a function. Hook: %o', hook)
-            return
+            return Promise.reject(new Error('hook is not a function.'))
         }
         try {
-            hook.call(task, eventInfo)
+            return Promise.resolve(hook.call(task, eventInfo))
         } catch (err) {
             console.error(err)
+            return Promise.reject(err)
         }
     })
+    await Promise.allSettled(callbacksPromises)
     let instance = eventInfo.instance
     if (!instance) {
         const factory = PLUGINS.OUTPUTS_FORMATS.get(eventInfo.reqBody?.output_format || newTaskReqBody.output_format)
         if (factory) {
-            instance = factory(eventInfo.reqBody || newTaskReqBody)
+            instance = await Promise.resolve(factory(eventInfo.reqBody || newTaskReqBody))
         }
         if (!instance) {
             console.error(`${factory ? "Factory " + String(factory) : 'No factory defined'} for output format ${eventInfo.reqBody?.output_format || newTaskReqBody.output_format}. Instance is ${instance || 'undefined'}. Using default renderer.`)
@@ -740,8 +759,38 @@ function onTaskStart(task) {
     previewTools.style.display = 'block'
 }
 
+/* Hover effect for the init image in the task list */
+function createInitImageHover(taskEntry) {
+    var $tooltip = $( taskEntry.querySelector('.task-fs-initimage') )
+    $( taskEntry.querySelector('div.task-initimg > img') ).on('mouseenter', function() {
+        var img = this,
+           $img = $(img),
+           offset = $img.offset();
+    
+       $tooltip
+       .css({
+           'top': offset.top,
+           'left': offset.left,
+           'z-index': 99999,
+           'display': 'block'
+       })
+       .append($img.clone().css({width:"", height:""}));
+    })
+    $tooltip.on('mouseleave', function() {
+       $tooltip.empty().addClass('hidden');
+    });
+}
+
 function createTask(task) {
-    let taskConfig = `<b>Seed:</b> ${task.seed}, <b>Sampler:</b> ${task.reqBody.sampler_name}, <b>Inference Steps:</b> ${task.reqBody.num_inference_steps}, <b>Guidance Scale:</b> ${task.reqBody.guidance_scale}, <b>Model:</b> ${task.reqBody.use_stable_diffusion_model}`
+    let taskConfig = ''
+
+    if (task.reqBody.init_image !== undefined) {
+        let h = 80
+        let w = task.reqBody.width * h / task.reqBody.height >>0
+        taskConfig += `<div class="task-initimg" style="float:left;"><img style="width:${w}px;height:${h}px;" src="${task.reqBody.init_image}"><div class="task-fs-initimage"></div></div>`
+    }
+    taskConfig += `<b>Seed:</b> ${task.seed}, <b>Sampler:</b> ${task.reqBody.sampler_name}, <b>Inference Steps:</b> ${task.reqBody.num_inference_steps}, <b>Guidance Scale:</b> ${task.reqBody.guidance_scale}, <b>Model:</b> ${task.reqBody.use_stable_diffusion_model}`
+
     if (task.reqBody.use_vae_model.trim() !== '') {
         taskConfig += `, <b>VAE:</b> ${task.reqBody.use_vae_model}`
     }
@@ -783,6 +832,11 @@ function createTask(task) {
 
     createCollapsibles(taskEntry)
 
+
+    if (task.reqBody.init_image !== undefined) {
+        createInitImageHover(taskEntry)
+    }
+
     task['taskStatusLabel'] = taskEntry.querySelector('.taskStatusLabel')
     task['outputContainer'] = taskEntry.querySelector('.img-preview')
     task['outputMsg'] = taskEntry.querySelector('.outputMsg')
@@ -794,7 +848,7 @@ function createTask(task) {
         let question = (task['isProcessing'] ? "Stop this task?" : "Remove this task?")
         shiftOrConfirm(e, question, async function(e) {
             if (task.batchesDone <= 0 || !task.isProcessing) {
-                taskEntry.remove()
+                removeTask(taskEntry)
             }
             abortTask(task)
         })
@@ -904,14 +958,16 @@ function getPrompts(prompts) {
     prompts = prompts.map(prompt => prompt.trim())
     prompts = prompts.filter(prompt => prompt !== '')
 
+    let promptsToMake = applyPermuteOperator(prompts)
+    promptsToMake = applySetOperator(promptsToMake)
     const newTags = activeTags.filter(tag => tag.inactive === undefined || tag.inactive === false)
     if (newTags.length > 0) {
         const promptTags = newTags.map(x => x.name).join(", ")
-        prompts = prompts.map((prompt) => `${prompt}, ${promptTags}`)
+        promptsToMake = promptsToMake.map((prompt) => `${prompt}, ${promptTags}`)
     }
 
-    let promptsToMake = applySetOperator(prompts)
     promptsToMake = applyPermuteOperator(promptsToMake)
+    promptsToMake = applySetOperator(promptsToMake)
 
     return promptsToMake
 }
@@ -1023,6 +1079,7 @@ function removeTask(taskToRemove) {
         previewTools.style.display = 'none'
         initialText.style.display = 'block'
     }
+    updatePreviewSize()
 }
 
 clearAllPreviewsBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Clear all the results and tasks in this window?", async function() {
