@@ -75,10 +75,14 @@ class sduiTab {
 
         // TODO Other models
         content += `</div>`
+	const sortorder = [ 'Highest Rated', 'Most Downloaded', 'Newest' ]
 	content += `
 	    <div id="modelmgr-catalog" class="popup image-editor-popup">
 	        <div>
-		    <h2 style="color=#C1C2C5;"><a href="https://civitai.com/" target="_blank" style="text-decoration:none;color:white;">Civit<span style="color:#228be6;">ai</span></a></h2>
+		    <span style="color=#C1C2C5;font-size:200%;font-weight:bold;"><a href="https://civitai.com/" target="_blank" style="text-decoration:none;color:white;">Civit<span style="color:#228be6;">ai</span></a></span>
+		    <select id="modelmgr-catalog-sort" style="margin-left:2em;">
+		       ${sortorder.map( (v,k) => `<option value="${k}">${v}</option>`).join('')}
+		    </select>
 		    <i class="close-button fa-solid fa-xmark"></i>
 		    <div id="modelmgr-results"></div>
 		</div>
