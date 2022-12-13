@@ -825,7 +825,7 @@ function createTask(task) {
         let question = (task['isProcessing'] ? "Stop this task?" : "Remove this task?")
         shiftOrConfirm(e, question, async function(e) {
             if (task.batchesDone <= 0 || !task.isProcessing) {
-                taskEntry.remove()
+                removeTask(taskEntry)
             }
             abortTask(task)
         })
