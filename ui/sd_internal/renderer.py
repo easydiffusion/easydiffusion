@@ -36,23 +36,14 @@ def make_images(req: GenerateImageRequest, task_data: TaskData, data_queue: queu
     log.info(f'request: {get_printable_request(req)}')
     log.info(f'task data: {task_data.dict()}')
 
-    try:
-        images = _make_images_internal(req, task_data, data_queue, task_temp_images, step_callback)
+    images = _make_images_internal(req, task_data, data_queue, task_temp_images, step_callback)
 
-        res = Response(req, task_data, images=construct_response(images, task_data, base_seed=req.seed))
-        res = res.json()
-        data_queue.put(json.dumps(res))
-        log.info('Task completed')
+    res = Response(req, task_data, images=construct_response(images, task_data, base_seed=req.seed))
+    res = res.json()
+    data_queue.put(json.dumps(res))
+    log.info('Task completed')
 
-        return res
-    except Exception as e:
-        log.error(traceback.format_exc())
-
-        data_queue.put(json.dumps({
-            "status": 'failed',
-            "detail": str(e)
-        }))
-        raise e
+    return res
 
 def _make_images_internal(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback):
     images, user_stopped = generate_images(req, task_data, data_queue, task_temp_images, step_callback, task_data.stream_image_progress)
