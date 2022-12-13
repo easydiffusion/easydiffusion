@@ -222,23 +222,24 @@ def thread_render(device):
     from sd_internal import renderer, model_manager
     try:
         renderer.init(device)
+
+        weak_thread_data[threading.current_thread()] = {
+            'device': renderer.context.device,
+            'device_name': renderer.context.device_name,
+            'alive': True
+        }
+
+        current_state = ServerStates.LoadingModel
+        model_manager.load_default_models(renderer.context)
+
+        current_state = ServerStates.Online
     except Exception as e:
         log.error(traceback.format_exc())
         weak_thread_data[threading.current_thread()] = {
-            'error': e
+            'error': e,
+            'alive': False
         }
         return
-
-    weak_thread_data[threading.current_thread()] = {
-        'device': renderer.context.device,
-        'device_name': renderer.context.device_name,
-        'alive': True
-    }
-
-    current_state = ServerStates.LoadingModel
-    model_manager.load_default_models(renderer.context)
-
-    current_state = ServerStates.Online
 
     while True:
         session_cache.clean()

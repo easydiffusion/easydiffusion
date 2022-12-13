@@ -42,6 +42,8 @@ def load_default_models(context: Context):
 
     # load mandatory models
     model_loader.load_model(context, 'stable-diffusion')
+    model_loader.load_model(context, 'vae')
+    model_loader.load_model(context, 'hypernetwork')
 
 def unload_all(context: Context):
     for model_type in KNOWN_MODEL_TYPES:
@@ -93,16 +95,12 @@ def resolve_model_to_use(model_name:str=None, model_type:str=None):
 
 def reload_models_if_necessary(context: Context, task_data: TaskData):
     model_paths_in_req = (
+        ('stable-diffusion', task_data.use_stable_diffusion_model),
+        ('vae', task_data.use_vae_model),
         ('hypernetwork', task_data.use_hypernetwork_model),
         ('gfpgan', task_data.use_face_correction),
         ('realesrgan', task_data.use_upscale),
     )
-
-    if context.model_paths.get('stable-diffusion') != task_data.use_stable_diffusion_model or context.model_paths.get('vae') != task_data.use_vae_model:
-        context.model_paths['stable-diffusion'] = task_data.use_stable_diffusion_model
-        context.model_paths['vae'] = task_data.use_vae_model
-
-        model_loader.load_model(context, 'stable-diffusion')
 
     for model_type, model_path_in_req in model_paths_in_req:
         if context.model_paths.get(model_type) != model_path_in_req:
