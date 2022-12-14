@@ -894,6 +894,7 @@ function getCurrentUserRequest() {
             show_only_filtered_image: showOnlyFilteredImageField.checked,
             output_format: outputFormatField.value,
             output_quality: parseInt(outputQualityField.value),
+            metadata_output_format: document.querySelector('#metadata_output_format').value,
             original_prompt: promptField.value,
             active_tags: (activeTags.map(x => x.name))
         }

@@ -57,11 +57,15 @@ var PARAMETERS = [
         id: "metadata_output_format",
         type: ParameterType.select,
         label: "Metadata format",
-        note: "the metadata will be saved to disk in this format",
+        note: "will be saved to disk in this format",
         default: "txt",
         options: [
             {
                 value: "txt",
+                label: "txt"
+            },
+            {
+                value: "json",
                 label: "json"
             }
         ],
