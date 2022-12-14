@@ -629,9 +629,9 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
     time /= 1000
 
     if (task.batchesDone == task.batchCount) {
-	if (!task.outputMsg.innerText.toLowerCase().includes('error')) {
+        if (!task.outputMsg.innerText.toLowerCase().includes('error')) {
             task.outputMsg.innerText = `Processed ${task.numOutputsTotal} images in ${time} seconds`
-	}
+        }
         task.progressBar.style.height = "0px"
         task.progressBar.style.border = "0px solid var(--background-color3)"
         task.progressBar.classList.remove("active")
