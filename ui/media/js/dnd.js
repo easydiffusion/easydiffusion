@@ -171,7 +171,7 @@ const TASK_MAPPING = {
         setUI: (use_stable_diffusion_model) => {
             const oldVal = stableDiffusionModelField.value
 
-            use_stable_diffusion_model = getModelPath(use_stable_diffusion_model, ['.ckpt'])
+            use_stable_diffusion_model = getModelPath(use_stable_diffusion_model, ['.ckpt', '.safetensors'])
             stableDiffusionModelField.value = use_stable_diffusion_model
 
             if (!stableDiffusionModelField.value) {
