@@ -343,6 +343,7 @@ function getModelPath(filename, extensions)
 }
 
 const TASK_TEXT_MAPPING = {
+    prompt: 'Prompt',
     width: 'Width',
     height: 'Height',
     seed: 'Seed',
