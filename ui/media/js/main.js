@@ -629,7 +629,9 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
     time /= 1000
 
     if (task.batchesDone == task.batchCount) {
-        task.outputMsg.innerText = `Processed ${task.numOutputsTotal} images in ${time} seconds`
+	if (!task.outputMsg.innerText.toLowerCase().includes('error')) {
+            task.outputMsg.innerText = `Processed ${task.numOutputsTotal} images in ${time} seconds`
+	}
         task.progressBar.style.height = "0px"
         task.progressBar.style.border = "0px solid var(--background-color3)"
         task.progressBar.classList.remove("active")
@@ -831,7 +833,7 @@ function createTask(task) {
         let question = (task['isProcessing'] ? "Stop this task?" : "Remove this task?")
         shiftOrConfirm(e, question, async function(e) {
             if (task.batchesDone <= 0 || !task.isProcessing) {
-                taskEntry.remove()
+                removeTask(taskEntry)
             }
             abortTask(task)
         })
