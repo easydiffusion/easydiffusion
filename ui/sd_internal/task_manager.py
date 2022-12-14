@@ -372,8 +372,6 @@ def thread_render(device):
             session_cache.keep(task.request.session_id, TASK_TTL)
         except Exception as e:
             task.error = e
-            task.response = {"status": 'failed', "detail": str(task.error)}
-            task.buffer_queue.put(json.dumps(task.response))
             print(traceback.format_exc())
             continue
         finally:
