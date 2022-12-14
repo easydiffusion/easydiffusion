@@ -184,6 +184,7 @@ const TASK_MAPPING = {
     use_vae_model: { name: 'VAE model',
         setUI: (use_vae_model) => {
             const oldVal = vaeModelField.value
+            use_vae_model = (use_vae_model === undefined || use_vae_model === null ? '' : use_vae_model)
 
             if (use_vae_model !== '') {
                 use_vae_model = getModelPath(use_vae_model, ['.vae.pt', '.ckpt'])
@@ -197,6 +198,7 @@ const TASK_MAPPING = {
     use_hypernetwork_model: { name: 'Hypernetwork model',
         setUI: (use_hypernetwork_model) => {
             const oldVal = hypernetworkModelField.value
+            use_hypernetwork_model = (use_hypernetwork_model === undefined || use_hypernetwork_model === null ? '' : use_hypernetwork_model)
 
             if (use_hypernetwork_model !== '') {
                 use_hypernetwork_model = getModelPath(use_hypernetwork_model, ['.pt'])
@@ -404,6 +406,9 @@ async function parseContent(text) {
     if (text.startsWith('{') && text.endsWith('}')) {
         try {
             const task = JSON.parse(text)
+            if (!('reqBody' in task)) { // support the format saved to the disk, by the UI
+                task.reqBody = Object.assign({}, task)
+            }
             restoreTaskToUI(task)
             return true
         } catch (e) {
