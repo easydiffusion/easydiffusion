@@ -121,7 +121,10 @@ def get_metadata_entries(req: GenerateImageRequest, task_data: TaskData):
         'use_upscale': task_data.use_upscale,
     })
 
-    return [metadata.copy().update({'seed': req.seed + i}) for i in range(req.num_outputs)]
+    entries = [metadata.copy() for _ in range(req.num_outputs)]
+    for i, entry in enumerate(entries):
+        entry['seed'] = req.seed + i
+    return entries
 
 def get_printable_request(req: GenerateImageRequest):
     metadata = req.dict()
