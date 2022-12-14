@@ -160,9 +160,9 @@ const TASK_MAPPING = {
         readUI: () => (useUpscalingField.checked ? upscaleModelField.value : undefined),
         parse: (val) => val
     },
-    sampler: { name: 'Sampler',
-        setUI: (sampler) => {
-            samplerField.value = sampler
+    sampler_name: { name: 'Sampler',
+        setUI: (sampler_name) => {
+            samplerField.value = sampler_name
         },
         readUI: () => samplerField.value,
         parse: (val) => val
@@ -351,7 +351,7 @@ const TASK_TEXT_MAPPING = {
     prompt_strength: 'Prompt Strength',
     use_face_correction: 'Use Face Correction',
     use_upscale: 'Use Upscaling',
-    sampler: 'Sampler',
+    sampler_name: 'Sampler',
     negative_prompt: 'Negative Prompt',
     use_stable_diffusion_model: 'Stable Diffusion model',
     use_hypernetwork_model: 'Hypernetwork model',
