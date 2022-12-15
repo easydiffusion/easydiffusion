@@ -110,7 +110,7 @@ def setConfig(config):
     except:
         log.error(traceback.format_exc())
 
-def save_model_to_config(ckpt_model_name, vae_model_name, hypernetwork_model_name):
+def save_to_config(ckpt_model_name, vae_model_name, hypernetwork_model_name, performance_level):
     config = getConfig()
     if 'model' not in config:
         config['model'] = {}
@@ -123,6 +123,8 @@ def save_model_to_config(ckpt_model_name, vae_model_name, hypernetwork_model_nam
         del config['model']['vae']
     if hypernetwork_model_name is None or hypernetwork_model_name == "":
         del config['model']['hypernetwork']
+
+    config['performance_level'] = performance_level
 
     setConfig(config)
 

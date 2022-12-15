@@ -36,7 +36,7 @@ const SETTINGS_IDS_LIST = [
     "save_to_disk",
     "diskPath",
     "sound_toggle",
-    "turbo",
+    "performance_level",
     "confirm_dangerous_actions",
     "metadata_output_format",
     "auto_save_settings",

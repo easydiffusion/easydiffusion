@@ -94,12 +94,20 @@ var PARAMETERS = [
         default: true,
     },
     {
-        id: "turbo",
-        type: ParameterType.checkbox,
-        label: "Turbo Mode",
-        note: "generates images faster, but uses an additional 1 GB of GPU memory",
+        id: "performance_level",
+        type: ParameterType.select,
+        label: "Performance Level",
+        note: "Faster performance requires more GPU memory<br/><br/>" +
+              "<b>High:</b> fastest, maximum GPU memory usage</br>" +
+              "<b>Medium:</b> decent speed, uses 1 GB more memory than Low<br/>" +
+              "<b>Low:</b> slowest, for GPUs with 4 GB (or less) memory",
         icon: "fa-forward",
-        default: true,
+        default: "high",
+        options: [
+            {value: "high", label: "High"},
+            {value: "medium", label: "Medium"},
+            {value: "low", label: "Low"}
+        ],
     },
     {
         id: "use_cpu",
@@ -219,7 +227,7 @@ function initParameters() {
 
 initParameters()
 
-let turboField = document.querySelector('#turbo')
+let perfLevelField = document.querySelector('#performance_level')
 let useCPUField = document.querySelector('#use_cpu')
 let autoPickGPUsField = document.querySelector('#auto_pick_gpus')
 let useGPUsField = document.querySelector('#use_gpus')

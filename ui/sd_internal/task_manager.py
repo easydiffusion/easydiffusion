@@ -281,7 +281,6 @@ def thread_render(device):
 
             current_state = ServerStates.LoadingModel
             model_manager.resolve_model_paths(task.task_data)
-            model_manager.set_vram_optimizations(renderer.context, task.task_data)
             model_manager.reload_models_if_necessary(renderer.context, task.task_data)
 
             current_state = ServerStates.Rendering
@@ -342,6 +341,7 @@ def get_devices():
             'name': torch.cuda.get_device_name(device),
             'mem_free': mem_free,
             'mem_total': mem_total,
+            'max_perf_level': device_manager.get_max_perf_level(device),
         }
 
     # list the compatible devices

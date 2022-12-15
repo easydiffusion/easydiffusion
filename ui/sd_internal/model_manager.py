@@ -3,7 +3,7 @@ import logging
 import picklescan.scanner
 import rich
 
-from sd_internal import app, TaskData
+from sd_internal import app, TaskData, device_manager
 from diffusionkit import model_loader
 from diffusionkit.types import Context
 
@@ -25,6 +25,11 @@ DEFAULT_MODELS = {
     'gfpgan': ['GFPGANv1.3'],
     'realesrgan': ['RealESRGAN_x4plus'],
 }
+PERF_LEVEL_TO_VRAM_OPTIMIZATIONS = {
+    'low': {'KEEP_ENTIRE_MODEL_IN_CPU'},
+    'medium': {'KEEP_FS_AND_CS_IN_CPU', 'SET_ATTENTION_STEP_TO_4'},
+    'high': {},
+}
 
 known_models = {}
 
@@ -37,8 +42,7 @@ def load_default_models(context: Context):
     for model_type in KNOWN_MODEL_TYPES:
         context.model_paths[model_type] = resolve_model_to_use(model_type=model_type)
 
-    # disable TURBO initially (this should be read from the config eventually)
-    context.vram_optimizations -= {'TURBO'}
+    set_vram_optimizations(context)
 
     # load mandatory models
     model_loader.load_model(context, 'stable-diffusion')
@@ -94,20 +98,23 @@ def resolve_model_to_use(model_name:str=None, model_type:str=None):
     return None
 
 def reload_models_if_necessary(context: Context, task_data: TaskData):
-    model_paths_in_req = (
-        ('stable-diffusion', task_data.use_stable_diffusion_model),
-        ('vae', task_data.use_vae_model),
-        ('hypernetwork', task_data.use_hypernetwork_model),
-        ('gfpgan', task_data.use_face_correction),
-        ('realesrgan', task_data.use_upscale),
-    )
+    model_paths_in_req = {
+        'stable-diffusion': task_data.use_stable_diffusion_model,
+        'vae': task_data.use_vae_model,
+        'hypernetwork': task_data.use_hypernetwork_model,
+        'gfpgan': task_data.use_face_correction,
+        'realesrgan': task_data.use_upscale,
+    }
+    models_to_reload = {model_type: path for model_type, path in model_paths_in_req.items() if context.model_paths.get(model_type) != path}
 
-    for model_type, model_path_in_req in model_paths_in_req:
-        if context.model_paths.get(model_type) != model_path_in_req:
-            context.model_paths[model_type] = model_path_in_req
+    if set_vram_optimizations(context): # reload SD
+        models_to_reload['stable-diffusion'] = model_paths_in_req['stable-diffusion']
 
-            action_fn = model_loader.unload_model if context.model_paths[model_type] is None else model_loader.load_model
-            action_fn(context, model_type)
+    for model_type, model_path_in_req in models_to_reload.items():
+        context.model_paths[model_type] = model_path_in_req
+
+        action_fn = model_loader.unload_model if context.model_paths[model_type] is None else model_loader.load_model
+        action_fn(context, model_type)
 
 def resolve_model_paths(task_data: TaskData):
     task_data.use_stable_diffusion_model = resolve_model_to_use(task_data.use_stable_diffusion_model, model_type='stable-diffusion')
@@ -117,11 +124,16 @@ def resolve_model_paths(task_data: TaskData):
     if task_data.use_face_correction: task_data.use_face_correction = resolve_model_to_use(task_data.use_face_correction, 'gfpgan')
     if task_data.use_upscale: task_data.use_upscale = resolve_model_to_use(task_data.use_upscale, 'gfpgan')
 
-def set_vram_optimizations(context: Context, task_data: TaskData):
-    if task_data.turbo:
-        context.vram_optimizations.add('TURBO')
-    else:
-        context.vram_optimizations.remove('TURBO')
+def set_vram_optimizations(context: Context):
+    config = app.getConfig()
+    perf_level = config.get('performance_level', device_manager.get_max_perf_level(context.device))
+    vram_optimizations = PERF_LEVEL_TO_VRAM_OPTIMIZATIONS[perf_level]
+
+    if vram_optimizations != context.vram_optimizations:
+        context.vram_optimizations = vram_optimizations
+        return True
+
+    return False
 
 def make_model_folders():
     for model_type in KNOWN_MODEL_TYPES:
