@@ -41,6 +41,7 @@ class sduiTab {
     let searchResults = null
     let t = localStorage.getItem('modelToken')
     let catalogPane = null
+    const sortorder = [ 'Highest Rated', 'Most Downloaded', 'Newest' ]
 
     if (t!=null) {
         token = JSON.parse(t)
@@ -75,18 +76,7 @@ class sduiTab {
 
         // TODO Other models
         content += `</div>`
-	const sortorder = [ 'Highest Rated', 'Most Downloaded', 'Newest' ]
-	content += `
-	    <div id="modelmgr-catalog" class="popup image-editor-popup">
-	        <div>
-		    <span style="color=#C1C2C5;font-size:200%;font-weight:bold;"><a href="https://civitai.com/" target="_blank" style="text-decoration:none;color:white;">Civit<span style="color:#228be6;">ai</span></a></span>
-		    <select id="modelmgr-catalog-sort" style="margin-left:2em;">
-		       ${sortorder.map( (v,k) => `<option value="${k}">${v}</option>`).join('')}
-		    </select>
-		    <i class="close-button fa-solid fa-xmark"></i>
-		    <div id="modelmgr-results"></div>
-		</div>
-	    </div>`
+	content += `<div id="modelmgr-catalog" class="popup image-editor-popup"></div>`
         tab.setContent(content)
         catalogPane = document.querySelector('#modelmgr-catalog')
 
@@ -100,19 +90,8 @@ class sduiTab {
 	    document.querySelectorAll('#modelmgr-sd textarea').forEach( element => { element.onkeyup() } )
 	}
         document.querySelector('#modelmgr-sd-catalog').onclick = async function() {
-	    let resultsPane = document.querySelector('#modelmgr-results')
-	    resultsPane.innerHTML = '<h1>Loading...</h1>'
-            catalogPane.classList.toggle('active')
-	    if ( searchResults == null ) {
-	        try {
-	            let res = await fetch('https://civitai.com/api/v1/models?limit=20&types=Checkpoint&sort=Most+Downloaded')
-	            searchResults = await res.json()
-	        } catch (e) {
-	            console.log(e)
-	        }
-	        console.log(searchResults)
-	    }
-	    renderCivitaiResults(searchResults)
+	    catalogPane.classList.toggle('active')
+	    await showCivitaiPane()
         }
 
         // Download via URL
@@ -120,6 +99,60 @@ class sduiTab {
             let url = prompt('URL of the model:')
 	    downloadFromURL(url)
         }
+    }
+
+    async function showCivitaiPane() {
+        catalogPane.innerHTML=`
+	        <div>
+		    <span style="color=#C1C2C5;font-size:200%;font-weight:bold;"><a href="https://civitai.com/" target="_blank" style="text-decoration:none;color:white;">Civit<span style="color:#228be6;">ai</span></a></span>
+		    <select id="modelmgr-catalog-sort" style="margin-left:2em;">
+		       ${sortorder.map( (v,k) => `<option value="${k}">${v}</option>`).join('')}
+		    </select>
+		    <label for="modelmgr-catalog-limit">Results per page:</label> <select id="modelmgr-catalog-limit">
+		       <option>20</option>
+		       <option>40</option>
+		       <option>100</option>
+		       <option>200</option>
+		    </select>
+		    <label for="modelmgr-catalog-query">Search for:</label> <input id="modelmgr-catalog-query">
+		    <i class="close-button fa-solid fa-xmark"></i>
+		    <div id="modelmgr-results"></div>
+		</div>`
+        let resultsPane = document.querySelector('#modelmgr-results')
+
+	catalogPane.querySelector('#modelmgr-catalog-sort').addEventListener('change', async function() { await updateSearch() })
+	catalogPane.querySelector('#modelmgr-catalog-limit').addEventListener('change', async function() { await updateSearch() })
+	catalogPane.querySelector('#modelmgr-catalog-query').addEventListener('keyup', async function(e) { if (e.key === 'Enter') { await updateSearch() }})
+
+        if ( searchResults == null ) {
+	    await updateSearch()
+        } else {
+	    renderCivitaiResults(searchResults)
+	}
+    }
+
+    async function updateSearch() {
+	let resultsPane = document.querySelector('#modelmgr-results')
+	resultsPane.innerHTML = '<h1>Loading...</h1>'
+        try {
+	    searchResults = await searchCivitai()
+	} catch (e) {
+	    console.log(e)
+	}
+	renderCivitaiResults(searchResults)
+    }
+    
+    async function searchCivitai() {
+	let sortby = sortorder[catalogPane.querySelector('#modelmgr-catalog-sort').value]
+	let limit  = catalogPane.querySelector('#modelmgr-catalog-limit').value
+	let query  = catalogPane.querySelector('#modelmgr-catalog-query').value
+        let url = `https://civitai.com/api/v1/models?limit=${limit}&types=Checkpoint&sort=${encodeURIComponent(sortby)}`
+	if ( query != "" ) {
+	    url += `&query=${encodeURIComponent(query)}`
+	}
+	console.log({'sortby': sortby, 'limit': limit, 'query':query, 'url':url})
+        let res = await fetch(url)
+        return await res.json()
     }
 
     function addModelToken(prompts) { 
