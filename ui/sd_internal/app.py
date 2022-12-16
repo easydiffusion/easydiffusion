@@ -110,7 +110,7 @@ def setConfig(config):
     except:
         log.error(traceback.format_exc())
 
-def save_to_config(ckpt_model_name, vae_model_name, hypernetwork_model_name, performance_level):
+def save_to_config(ckpt_model_name, vae_model_name, hypernetwork_model_name, vram_usage_level):
     config = getConfig()
     if 'model' not in config:
         config['model'] = {}
@@ -124,7 +124,7 @@ def save_to_config(ckpt_model_name, vae_model_name, hypernetwork_model_name, per
     if hypernetwork_model_name is None or hypernetwork_model_name == "":
         del config['model']['hypernetwork']
 
-    config['performance_level'] = performance_level
+    config['vram_usage_level'] = vram_usage_level
 
     setConfig(config)
 

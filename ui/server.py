@@ -134,7 +134,7 @@ def render(req: dict):
 
         render_req.init_image_mask = req.get('mask') # hack: will rename this in the HTTP API in a future revision
 
-        app.save_to_config(task_data.use_stable_diffusion_model, task_data.use_vae_model, task_data.use_hypernetwork_model, task_data.performance_level)
+        app.save_to_config(task_data.use_stable_diffusion_model, task_data.use_vae_model, task_data.use_hypernetwork_model, task_data.vram_usage_level)
 
         # enqueue the task
         new_task = task_manager.render(render_req, task_data)

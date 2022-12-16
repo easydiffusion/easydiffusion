@@ -25,9 +25,9 @@ DEFAULT_MODELS = {
     'gfpgan': ['GFPGANv1.3'],
     'realesrgan': ['RealESRGAN_x4plus'],
 }
-PERF_LEVEL_TO_VRAM_OPTIMIZATIONS = {
+VRAM_USAGE_LEVEL_TO_OPTIMIZATIONS = {
+    'balanced': {'KEEP_FS_AND_CS_IN_CPU', 'SET_ATTENTION_STEP_TO_4'},
     'low': {'KEEP_ENTIRE_MODEL_IN_CPU'},
-    'medium': {'KEEP_FS_AND_CS_IN_CPU', 'SET_ATTENTION_STEP_TO_4'},
     'high': {},
 }
 
@@ -125,9 +125,24 @@ def resolve_model_paths(task_data: TaskData):
     if task_data.use_upscale: task_data.use_upscale = resolve_model_to_use(task_data.use_upscale, 'gfpgan')
 
 def set_vram_optimizations(context: Context):
+    def is_greater(a, b): # is a > b?
+        if a == "low": # b will be "low", "balanced" or "high"
+            return False
+        elif a == "balanced" and b != "low": # b will be "balanced" or "high"
+            return False
+        return True
+
     config = app.getConfig()
-    perf_level = config.get('performance_level', device_manager.get_max_perf_level(context.device))
-    vram_optimizations = PERF_LEVEL_TO_VRAM_OPTIMIZATIONS[perf_level]
+
+    max_usage_level = device_manager.get_max_vram_usage_level(context.device)
+    vram_usage_level = config.get('vram_usage_level', 'balanced')
+
+    if is_greater(vram_usage_level, max_usage_level):
+        log.error(f'Requested GPU Memory Usage level ({vram_usage_level}) is higher than what is ' + \
+                  f'possible ({max_usage_level}) on this device ({context.device}). Using "{max_usage_level}" instead')
+        vram_usage_level = max_usage_level
+
+    vram_optimizations = VRAM_USAGE_LEVEL_TO_OPTIMIZATIONS[vram_usage_level]
 
     if vram_optimizations != context.vram_optimizations:
         context.vram_optimizations = vram_optimizations

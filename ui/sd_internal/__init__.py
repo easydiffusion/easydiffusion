@@ -6,7 +6,7 @@ class TaskData(BaseModel):
     request_id: str = None
     session_id: str = "session"
     save_to_disk_path: str = None
-    performance_level: str = "high" # or "low" or "medium"
+    vram_usage_level: str = "balanced" # or "low" or "medium"
 
     use_face_correction: str = None # or "GFPGANv1.3"
     use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"

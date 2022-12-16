@@ -94,18 +94,18 @@ var PARAMETERS = [
         default: true,
     },
     {
-        id: "performance_level",
+        id: "vram_usage_level",
         type: ParameterType.select,
-        label: "Performance Level",
+        label: "GPU Memory Usage",
         note: "Faster performance requires more GPU memory<br/><br/>" +
+              "<b>Balanced:</b> almost as fast as High, significantly lower GPU memory usage<br/>" +
               "<b>High:</b> fastest, maximum GPU memory usage</br>" +
-              "<b>Medium:</b> decent speed, uses 1 GB more memory than Low<br/>" +
-              "<b>Low:</b> slowest, for GPUs with 4 GB (or less) memory",
+              "<b>Low:</b> slowest, force-used for GPUs with 4 GB (or less) memory",
         icon: "fa-forward",
-        default: "high",
+        default: "balanced",
         options: [
+            {value: "balanced", label: "Balanced"},
             {value: "high", label: "High"},
-            {value: "medium", label: "Medium"},
             {value: "low", label: "Low"}
         ],
     },
@@ -227,7 +227,7 @@ function initParameters() {
 
 initParameters()
 
-let perfLevelField = document.querySelector('#performance_level')
+let vramUsageLevelField = document.querySelector('#vram_usage_level')
 let useCPUField = document.querySelector('#use_cpu')
 let autoPickGPUsField = document.querySelector('#auto_pick_gpus')
 let useGPUsField = document.querySelector('#use_gpus')

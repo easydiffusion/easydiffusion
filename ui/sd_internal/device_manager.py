@@ -128,7 +128,7 @@ def needs_to_force_full_precision(context):
     device_name = context.device_name.lower()
     return (('nvidia' in device_name or 'geforce' in device_name) and (' 1660' in device_name or ' 1650' in device_name)) or ('Quadro T2000' in device_name)
 
-def get_max_perf_level(device):
+def get_max_vram_usage_level(device):
     if device != 'cpu':
         _, mem_total = torch.cuda.mem_get_info(device)
         mem_total /= float(10**9)
@@ -136,7 +136,7 @@ def get_max_perf_level(device):
         if mem_total < 4.5:
             return 'low'
         elif mem_total < 6.5:
-            return 'medium'
+            return 'balanced'
 
     return 'high'
 

@@ -341,7 +341,7 @@ def get_devices():
             'name': torch.cuda.get_device_name(device),
             'mem_free': mem_free,
             'mem_total': mem_total,
-            'max_perf_level': device_manager.get_max_perf_level(device),
+            'max_vram_usage_level': device_manager.get_max_vram_usage_level(device),
         }
 
     # list the compatible devices

@@ -602,7 +602,7 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
                             <b>Suggestions</b>:
                             <br/>
                             1. If you have set an initial image, please try reducing its dimension to ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION} or smaller.<br/>
-                            2. Try picking a lower performance level in the '<em>Performance Level</em>' setting (in the '<em>Settings</em>' tab).<br/>
+                            2. Try picking a lower level in the '<em>GPU Memory Usage</em>' setting (in the '<em>Settings</em>' tab).<br/>
                             3. Try generating a smaller image.<br/>`
                 }
             } else {
@@ -887,7 +887,7 @@ function getCurrentUserRequest() {
             width: parseInt(widthField.value),
             height: parseInt(heightField.value),
             // allow_nsfw: allowNSFWField.checked,
-            performance_level: perfLevelField.value,
+            vram_usage_level: vramUsageLevelField.value,
             //render_device: undefined, // Set device affinity. Prefer this device, but wont activate.
             use_stable_diffusion_model: stableDiffusionModelField.value,
             use_vae_model: vaeModelField.value,
