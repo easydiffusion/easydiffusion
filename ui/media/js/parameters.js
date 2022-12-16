@@ -97,8 +97,8 @@ var PARAMETERS = [
         id: "vram_usage_level",
         type: ParameterType.select,
         label: "GPU Memory Usage",
-        note: "Faster performance requires more GPU memory<br/><br/>" +
-              "<b>Balanced:</b> almost as fast as High, significantly lower GPU memory usage<br/>" +
+        note: "Faster performance requires more GPU memory (VRAM)<br/><br/>" +
+              "<b>Balanced:</b> nearly as fast as High, much lower VRAM usage<br/>" +
               "<b>High:</b> fastest, maximum GPU memory usage</br>" +
               "<b>Low:</b> slowest, force-used for GPUs with 4 GB (or less) memory",
         icon: "fa-forward",
