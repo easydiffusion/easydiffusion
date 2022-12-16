@@ -79,7 +79,7 @@ You don't need to install or struggle with Python, Anaconda, Docker etc. The ins
 
 2. **Extract**:
   - For Windows: After unzipping the file, please move the `stable-diffusion-ui` folder to your `C:` (or any drive like D:, at the top root level), e.g. `C:\stable-diffusion-ui`. This will avoid a common problem with Windows (file path length limits).
-  - For Linux: After extracting the .tar.xz file, please open a terminal, and go to the `stable-diffusion-ui` directory.
+  - For Linux: After extracting the .zip file, please open a terminal, and go to the `stable-diffusion-ui` directory.
 
 3. **Run**:
   - For Windows: `Start Stable Diffusion UI.cmd` by double-clicking it.
