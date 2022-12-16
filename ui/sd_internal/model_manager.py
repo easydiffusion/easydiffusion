@@ -65,11 +65,6 @@ def resolve_model_to_use(model_name:str=None, model_type:str=None):
             model_name = config['model'][model_type]
 
     if model_name:
-        is_sd2 = config.get('test_sd2', False)
-        if model_name.startswith('sd2_') and not is_sd2: # temp hack, until SD2 is unified with 1.4
-            log.error('ERROR: Cannot use SD 2.0 models with SD 1.0 code. Using the sd-v1-4 model instead!')
-            model_name = 'sd-v1-4'
-
         # Check models directory
         models_dir_path = os.path.join(app.MODELS_DIR, model_type, model_name)
         for model_extension in model_extensions:

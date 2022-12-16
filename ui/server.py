@@ -41,7 +41,6 @@ class SetAppConfigRequest(BaseModel):
     ui_open_browser_on_start: bool = None
     listen_to_network: bool = None
     listen_port: int = None
-    test_sd2: bool = None
 
 server_api.mount('/media', NoCacheStaticFiles(directory=os.path.join(app.SD_UI_DIR, 'media')), name="media")
 
@@ -67,8 +66,6 @@ async def setAppConfig(req : SetAppConfigRequest):
        if 'net' not in config:
            config['net'] = {}
        config['net']['listen_port'] = int(req.listen_port)
-    if req.test_sd2 is not None:
-        config['test_sd2'] = req.test_sd2
     try:
         app.setConfig(config)
 

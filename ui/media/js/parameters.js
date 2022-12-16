@@ -165,14 +165,6 @@ var PARAMETERS = [
         }
     },
     {
-        id: "test_sd2",
-        type: ParameterType.checkbox,
-        label: "Test SD 2.0",
-        note: "Experimental! High memory usage! GPU-only! Not the final version! Please restart the program after changing this.",
-        icon: "fa-fire",
-        default: false,
-    },
-    {
         id: "use_beta_channel",
         type: ParameterType.checkbox,
         label: "Beta channel",
@@ -235,7 +227,6 @@ let saveToDiskField = document.querySelector('#save_to_disk')
 let diskPathField = document.querySelector('#diskPath')
 let listenToNetworkField = document.querySelector("#listen_to_network")
 let listenPortField = document.querySelector("#listen_port")
-let testSD2Field = document.querySelector("#test_sd2")
 let useBetaChannelField = document.querySelector("#use_beta_channel")
 let uiOpenBrowserOnStartField = document.querySelector("#ui_open_browser_on_start")
 let confirmDangerousActionsField = document.querySelector("#confirm_dangerous_actions")
@@ -272,12 +263,6 @@ async function getAppConfig() {
         if (config.ui && config.ui.open_browser_on_start === false) {
             uiOpenBrowserOnStartField.checked = false
         }
-        if ('test_sd2' in config) {
-            testSD2Field.checked = config['test_sd2']
-        }
-
-        let testSD2SettingEntry = getParameterSettingsEntry('test_sd2')
-        testSD2SettingEntry.style.display = (config.update_branch === 'beta' ? '' : 'none')
         if (config.net && config.net.listen_to_network === false) {
             listenToNetworkField.checked = false
         }
@@ -442,8 +427,7 @@ saveSettingsBtn.addEventListener('click', function() {
         'update_branch': updateBranch,
         'ui_open_browser_on_start': uiOpenBrowserOnStartField.checked,
         'listen_to_network': listenToNetworkField.checked,
-        'listen_port': listenPortField.value,
-        'test_sd2': testSD2Field.checked
+        'listen_port': listenPortField.value
     })
     saveSettingsBtn.classList.add('active')
     asyncDelay(300).then(() => saveSettingsBtn.classList.remove('active'))
