@@ -1380,6 +1380,7 @@ function selectTab(tab_id) {
         tabInfo.tab.classList.toggle("active")
         tabInfo.content.classList.toggle("active")
     }
+    document.dispatchEvent(new CustomEvent('tabClick', { detail: tabInfo }))
 }
 function linkTabContents(tab) {
     var name = tab.id.replace("tab-", "")
