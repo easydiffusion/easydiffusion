@@ -136,6 +136,10 @@
 	background: var(--background-color3);
 }
 
+.editor-controls-right .image-editor-button {
+	margin-bottom: 4px;
+}
+
 #init_image_button_inpaint .input-toggle {
 	position: absolute;
 	left: 16px;

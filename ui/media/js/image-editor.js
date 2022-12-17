@@ -105,7 +105,26 @@ const IMAGE_EDITOR_ACTIONS = [
 		icon: "fa-solid fa-xmark",
 		handler: (editor) => {
 			editor.ctx_current.clearRect(0, 0, editor.width, editor.height)
-		}
+		},
+		trackHistory: true
+	},
+	{
+		id: "undo",
+		name: "Undo",
+		icon: "fa-solid fa-rotate-left",
+		handler: (editor) => {
+			editor.history.undo()
+		},
+		trackHistory: false
+	},
+	{
+		id: "redo",
+		name: "Redo",
+		icon: "fa-solid fa-rotate-right",
+		handler: (editor) => {
+			editor.history.redo()
+		},
+		trackHistory: false
 	}
 ]
 
@@ -436,13 +455,14 @@ class ImageEditor {
 			return
 		}
 
-		var max_size = Math.min(parseInt(window.innerWidth * 0.9), width, 768)
 		if (width > height) {
+		        var max_size = Math.min(parseInt(window.innerWidth * 0.9), width, 768)
 			var multiplier = max_size / width
 			width = (multiplier * width).toFixed()
 			height = (multiplier * height).toFixed()
 		}
 		else {
+		        var max_size = Math.min(parseInt(window.innerHeight * 0.9), height, 768)
 			var multiplier = max_size / height
 			width = (multiplier * width).toFixed()
 			height = (multiplier * height).toFixed()
@@ -525,7 +545,9 @@ class ImageEditor {
 	}
 	runAction(action_id) {
 		var action = IMAGE_EDITOR_ACTIONS.find(a => a.id == action_id)
-		this.history.pushAction(action_id)
+		if (action.trackHistory) {
+			this.history.pushAction(action_id)
+		}
 		action.handler(this)
 	}
 	setBrush(layer = null, options = null) {
