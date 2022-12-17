@@ -99,15 +99,14 @@ def make_step_callback(req: GenerateImageRequest, task_data: TaskData, data_queu
 
     def update_temp_img(x_samples, task_temp_images: list):
         partial_images = []
-        for i in range(req.num_outputs):
-            img = image_utils.latent_to_img(context, x_samples[i].unsqueeze(0))
+        images = image_utils.latent_samples_to_images(context, x_samples)
+        for i, img in enumerate(images):
             buf = image_utils.img_to_buffer(img, output_format='JPEG')
-
-            del img
 
             context.temp_images[f"{task_data.request_id}/{i}"] = buf
             task_temp_images[i] = buf
             partial_images.append({'path': f"/image/tmp/{task_data.request_id}/{i}"})
+        del images
         return partial_images
 
     def on_image_step(x_samples, i):
