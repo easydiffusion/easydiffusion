@@ -1068,7 +1068,19 @@ div.task-initimg > img {
 }
 div.task-fs-initimage {
     display:  none;
+#    position: absolute;
+}
+div.task-initimg:hover div.task-fs-initimage {
+    display: block;
     position: absolute;
+    z-index: 9999;
+    box-shadow: 0 0 30px #000;
+    margin-top:-64px;
+}
+div.top-right {
+    position: absolute;
+    top: 8px;
+    right: 8px;
 }
 
 button#save-system-settings-btn {
