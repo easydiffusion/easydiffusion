@@ -743,23 +743,11 @@ async function onTaskStart(task) {
 /* Hover effect for the init image in the task list */
 function createInitImageHover(taskEntry) {
     var $tooltip = $( taskEntry.querySelector('.task-fs-initimage') )
-    $( taskEntry.querySelector('div.task-initimg > img') ).on('mouseenter', function() {
-        var img = this,
-           $img = $(img),
-           offset = $img.offset();
-    
-       $tooltip
-       .css({
-           'top': offset.top,
-           'left': offset.left,
-           'z-index': 99999,
-           'display': 'block'
-       })
-       .append($img.clone().css({width:"", height:""}));
-    })
-    $tooltip.on('mouseleave', function() {
-       $tooltip.empty().addClass('hidden');
-    });
+    var img = document.createElement('img')
+    img.src = taskEntry.querySelector('div.task-initimg > img').src
+    $tooltip.append(img)
+    $tooltip.append(`<div class="top-right"><button>Use as Input</button></div>`)
+    $tooltip.find('button').on('click', (e) => { onUseAsInputClick(null,img) } )
 }
 
 function createTask(task) {
