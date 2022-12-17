@@ -133,14 +133,20 @@
                     </td></tr>
                     <tr id="samplerSelection" class="pl-5"><td><label for="sampler_name">Sampler:</label></td><td>
                         <select id="sampler_name" name="sampler_name">
-                            <option value="plms">plms</option>
-                            <option value="ddim">ddim</option>
-                            <option value="heun">heun</option>
-                            <option value="euler">euler</option>
-                            <option value="euler_a" selected>euler_a</option>
-                            <option value="dpm2">dpm2</option>
-                            <option value="dpm2_a">dpm2_a</option>
-                            <option value="lms">lms</option>
+                            <option value="plms">PLMS</option>
+                            <option value="ddim">DDIM</option>
+                            <option value="heun">Heun</option>
+                            <option value="euler">Euler</option>
+                            <option value="euler_a" selected>Euler Ancestral</option>
+                            <option value="dpm2">DPM2</option>
+                            <option value="dpm2_a">DPM2 Ancestral</option>
+                            <option value="lms">LMS</option>
+                            <option value="dpm_solver_stability">DPM Solver (Stability AI)</option>
+                            <option value="dpmpp_2s_a" selected>DPM++ 2s Ancestral</option>
+                            <option value="dpmpp_2m">DPM++ 2m</option>
+                            <option value="dpmpp_sde">DPM++ SDE</option>
+                            <option value="dpm_fast">DPM Fast</option>
+                            <option value="dpm_adaptive">DPM Adaptive</option>
                         </select>
                         <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/How-to-Use#samplers" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about samplers</span></i></a>
                     </td></tr>

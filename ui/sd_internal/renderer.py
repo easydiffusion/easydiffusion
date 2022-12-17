@@ -27,6 +27,7 @@ def init(device):
     device_manager.device_init(context, device)
 
 def make_images(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback):
+    context.stop_processing = False
     log.info(f'request: {save_utils.get_printable_request(req)}')
     log.info(f'task data: {task_data.dict()}')
 
