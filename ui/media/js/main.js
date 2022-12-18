@@ -844,13 +844,6 @@ function createTask(task) {
         task.previewPrompt.innerHTML = '&nbsp;' // allows the results to be collapsed
     }
 
-    // Allow prompt text to be selected.
-/*    task.previewPrompt.addEventListener("mouseover", function() {
-        taskEntry.setAttribute("draggable", "false");
-    });
-    task.previewPrompt.addEventListener("mouseout", function() {
-        taskEntry.setAttribute("draggable", "true");
-    }); */
 }
 
 function getCurrentUserRequest() {
