@@ -8,20 +8,27 @@ Experimental support for Stable Diffusion 2.0 is available in beta!
 
 ----
 
-## Step 1: Download the installer
+## Step 1: Download and prepare the installer
 Click the download button for your operating system:
 
 <p float="left">
   <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.4.13/stable-diffusion-ui-windows.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-win.png" width="200" /></a>
-  <a href="#installation"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-linux.png" width="200" /></a>
+  <a href="https://github.com/cmdr2/stable-diffusion-ui#installation"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-linux.png" width="200" /></a>
 </p>
 
-## Step 2: Run the program
-- On Windows: Double-click `Start Stable Diffusion UI.cmd`
-- On Linux: Run `./start.sh` in a terminal
+# On Windows:
+1. Unzip/extract the folder `stable-diffusion-ui` which should be in your downloads folder, unless you changed your default downloads destination.
+2. Move the `stable-diffusion-ui` folder to your `C:` drive (or any other drive like D:, at the top root level). `C:\stable-diffusion-ui` or `D:\stable-diffusion-ui` as examples. This will avoid a common problem with Windows (file path length limits).
+# On Linux:
+1. Unzip/extract the folder `stable-diffusion-ui` which should be in your downloads folder, unless you changed your default downloads destination.
+2. Open a terminal window, and navigate to the `stable-diffusion-ui` directory.
 
-## Step 3: There is no step 3!
-It's simple to get started. You don't need to install or struggle with Python, Anaconda, Docker etc.
+## Step 2: Run the program
+# On Windows: 
+Double-click `Start Stable Diffusion UI.cmd`.
+If Windows SmartScreen prevents you from running the program click `More info` and then `Run anyway`.
+# On Linux: 
+Run `./start.sh` (or `bash start.sh`) in a terminal.
 
 The installer will take care of whatever is needed. A friendly [Discord community](https://discord.com/invite/u9yhsFmEkB) will help you if you face any problems.
 
@@ -75,17 +82,6 @@ Useful for judging (and stopping) an image quickly, without waiting for it to fi
 3. Minimum 8 GB of RAM and 25GB of disk space.
 
 You don't need to install or struggle with Python, Anaconda, Docker etc. The installer will take care of whatever is needed.
-
-# Installation
-1. **Download** [for Windows](https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.4.13/stable-diffusion-ui-windows.zip) or [for Linux](https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.4.13/stable-diffusion-ui-linux.zip).
-
-2. **Extract**:
-  - For Windows: After unzipping the file, please move the `stable-diffusion-ui` folder to your `C:` (or any drive like D:, at the top root level), e.g. `C:\stable-diffusion-ui`. This will avoid a common problem with Windows (file path length limits).
-  - For Linux: After extracting the .zip file, please open a terminal, and go to the `stable-diffusion-ui` directory.
-
-3. **Run**:
-  - For Windows: `Start Stable Diffusion UI.cmd` by double-clicking it.
-  - For Linux: In the terminal, run `./start.sh` (or `bash start.sh`)
 
 This will automatically install Stable Diffusion, set it up, and start the interface. No additional steps are needed.
 
