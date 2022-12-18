@@ -314,9 +314,15 @@ def getUIPlugins():
     return plugins
 
 def getIPConfig():
-    ips = socket.gethostbyname_ex(socket.gethostname())
-    ips[2].append(ips[0])
-    return ips[2]
+    try: 
+        ips = socket.gethostbyname_ex(socket.gethostname())
+        ips[2].append(ips[0])
+        return ips[2]
+    except Exception as e:
+        print(e)
+        print(traceback.format_exc())
+        return []
+        
 
 @app.get('/get/{key:path}')
 def read_web_data(key:str=None):
