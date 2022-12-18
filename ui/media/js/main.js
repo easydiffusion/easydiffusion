@@ -783,6 +783,7 @@ function createTask(task) {
     taskEntry.id = `imageTaskContainer-${Date.now()}`
     taskEntry.className = 'imageTaskContainer'
     taskEntry.innerHTML = ` <div class="header-content panel collapsible active">
+                                <i class="drag-handle fa-solid fa-grip"></i>
                                 <div class="taskStatusLabel">Enqueued</div>
                                 <button class="secondaryButton stopTask"><i class="fa-solid fa-trash-can"></i> Remove</button>
                                 <button class="secondaryButton useSettings"><i class="fa-solid fa-redo"></i> Use these settings</button>
@@ -796,6 +797,13 @@ function createTask(task) {
                             </div>`
 
     createCollapsibles(taskEntry)
+    let draghandle = taskEntry.querySelector('.drag-handle')
+    draghandle.addEventListener('mousedown', (e) => { taskEntry.setAttribute('draggable',true)})
+    draghandle.addEventListener('mouseup',   (e) => { taskEntry.setAttribute('draggable',false)})
+    taskEntry.addEventListener('dragend',    (e) => { taskEntry.setAttribute('draggable',false)})
+    taskEntry.addEventListener('dragstart', function(e) {
+        e.dataTransfer.setData("text/plain", taskEntry.id);
+    })
 
 
     if (task.reqBody.init_image !== undefined) {
@@ -829,11 +837,7 @@ function createTask(task) {
 
     task.isProcessing = true
     taskEntry = imagePreview.insertBefore(taskEntry, previewTools.nextSibling)
-    taskEntry.draggable = true
     htmlTaskMap.set(taskEntry, task)
-    taskEntry.addEventListener('dragstart', function(ev) {
-        ev.dataTransfer.setData("text/plain", ev.target.id);
-    })
 
     task.previewPrompt.innerText = task.reqBody.prompt
     if (task.previewPrompt.innerText.trim() === '') {
@@ -841,12 +845,12 @@ function createTask(task) {
     }
 
     // Allow prompt text to be selected.
-    task.previewPrompt.addEventListener("mouseover", function() {
+/*    task.previewPrompt.addEventListener("mouseover", function() {
         taskEntry.setAttribute("draggable", "false");
     });
     task.previewPrompt.addEventListener("mouseout", function() {
         taskEntry.setAttribute("draggable", "true");
-    });
+    }); */
 }
 
 function getCurrentUserRequest() {

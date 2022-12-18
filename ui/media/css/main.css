@@ -265,7 +265,7 @@ img {
 }
 .preview-prompt {
     font-size: 13pt;
-    margin-bottom: 10pt;
+    display: inline;
 }
 #coffeeButton {
     height: 23px;
@@ -391,14 +391,18 @@ img {
 .imageTaskContainer > div > .collapsible-handle {
     display: none;
 }
+.drag-handle {
+    margin-right: 6px;
+    cursor: move;
+}
 .taskStatusLabel {
-    float: left;
     font-size: 8pt;
     background:var(--background-color2);
     border: 1px solid rgb(61, 62, 66);
     padding: 2pt 4pt;
     border-radius: 2pt;
     margin-right: 5pt;
+    display: inline;
 }
 .activeTaskLabel {
     background:rgb(0, 90, 30);
@@ -448,6 +452,7 @@ img {
     font-size: 10pt;
     color: #aaa;
     margin-bottom: 5pt;
+    margin-top: 5pt;
 }
 .img-batch {
     display: inline;
