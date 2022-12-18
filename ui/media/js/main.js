@@ -623,8 +623,8 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
     task['stopTask'].innerHTML = '<i class="fa-solid fa-trash-can"></i> Remove'
     task['taskStatusLabel'].style.display = 'none'
 
-    let time = Date.now() - task.startTime
-    time /= 1000
+    let time = millisecondsToStr(Date.now() - task.startTime)
+
 
     if (task.batchesDone == task.batchCount) {
 	if (!task.outputMsg.innerText.toLowerCase().includes('error')) {
