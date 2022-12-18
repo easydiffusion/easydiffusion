@@ -45,6 +45,7 @@ function toggleCollapsible(element) {
             handle.innerHTML = '&#x2796;' // minus
         }
     }
+    document.dispatchEvent(new CustomEvent('collapsibleClick', { detail: collapsibleHeader }))
     
     if (COLLAPSIBLES_INITIALIZED && COLLAPSIBLE_PANELS.includes(element)) {
         saveCollapsibles()

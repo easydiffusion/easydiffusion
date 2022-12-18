@@ -1107,7 +1107,7 @@
             }
             // Calling idle could result in task being added to queue.
             if (task_queue.size <= 0 && concurrent_generators.size <= 0) {
-                return idleEventPromise.then(() => asyncDelay(IDLE_COOLDOWN))
+                return asyncDelay(IDLE_COOLDOWN).then(() => idleEventPromise)
             }
         }
         if (task_queue.size < serverCapacity) {

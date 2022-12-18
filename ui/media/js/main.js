@@ -62,29 +62,6 @@ let maskSetting = document.querySelector('#enable_mask')
 
 const processOrder = document.querySelector('#process_order_toggle')
 
-const editorContainer = document.querySelector('#editor')
-window.addEventListener("scroll", updatePreviewSize)
-let lastScrollTop = 0
-updatePreviewSize()
-
-// update preview pane size and position
-function updatePreviewSize() {
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-    if (scrollTop > lastScrollTop) {
-        previewTools.style.top = -previewTools.offsetHeight + 'px'
-    }
-    else if (scrollTop < lastScrollTop) {
-        const elem = preview.getElementsByClassName('img-batch')[0]
-        if (elem !== undefined && Math.round(window.scrollY) !== Math.round(elem.closest(".imageTaskContainer").offsetTop)) {
-            previewTools.style.top = '0'
-        }
-    }
-    lastScrollTop = scrollTop
-
-    $('#editor').css('top', Math.max(-window.pageYOffset + $("#tab-container").offset().top + $('#tab-container').outerHeight(true), 0) + 'px')
-    $('#editor').css('bottom', Math.max($(window).height() - ($("#footer .line-separator").offset().top - $(document).scrollTop()), 0) + 'px')
-};
-
 let imagePreview = document.querySelector("#preview")
 imagePreview.addEventListener('drop', function(ev) {
     const data = ev.dataTransfer?.getData("text/plain");
@@ -293,9 +270,9 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         imageElem.setAttribute('data-steps', imageInferenceSteps)
         imageElem.setAttribute('data-guidance', imageGuidanceScale)
 
+
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
         imageInfo.style.visibility = (livePreview ? 'hidden' : 'visible')
-        updatePreviewSize()
 
         if ('seed' in result && !imageElem.hasAttribute('data-seed')) {
             const req = Object.assign({}, reqBody, {
@@ -437,7 +414,11 @@ function getUncompletedTaskEntries() {
         document.querySelectorAll('#preview .imageTaskContainer .taskStatusLabel')
         ).filter((taskLabel) => taskLabel.style.display !== 'none'
         ).map(function(taskLabel) {
-            return taskLabel.closest('.imageTaskContainer')
+            let imageTaskContainer = taskLabel.parentNode
+            while(!imageTaskContainer.classList.contains('imageTaskContainer') && imageTaskContainer.parentNode) {
+                imageTaskContainer = imageTaskContainer.parentNode
+            }
+            return imageTaskContainer
         })
     if (!processOrder.checked) {
         taskEntries.reverse()
@@ -458,10 +439,10 @@ function makeImage() {
         alert('The "Inference Steps" field must not be empty.')
         return
     }
-    if (numOutputsTotalField.value == '') {
+    if (numOutputsTotalField.value == '' || numOutputsTotalField.value == 0) {
         numOutputsTotalField.value = 1
     }
-    if (numOutputsParallelField.value == '') {
+    if (numOutputsParallelField.value == '' || numOutputsParallelField.value == 0) {
         numOutputsParallelField.value = 1
     }
     if (guidanceScaleField.value == '') {
@@ -653,7 +634,9 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
     time /= 1000
 
     if (task.batchesDone == task.batchCount) {
-        task.outputMsg.innerText = `Processed ${task.numOutputsTotal} images in ${time} seconds`
+	if (!task.outputMsg.innerText.toLowerCase().includes('error')) {
+            task.outputMsg.innerText = `Processed ${task.numOutputsTotal} images in ${time} seconds`
+	}
         task.progressBar.style.height = "0px"
         task.progressBar.style.border = "0px solid var(--background-color3)"
         task.progressBar.classList.remove("active")
@@ -767,23 +750,11 @@ async function onTaskStart(task) {
 /* Hover effect for the init image in the task list */
 function createInitImageHover(taskEntry) {
     var $tooltip = $( taskEntry.querySelector('.task-fs-initimage') )
-    $( taskEntry.querySelector('div.task-initimg > img') ).on('mouseenter', function() {
-        var img = this,
-           $img = $(img),
-           offset = $img.offset();
-    
-       $tooltip
-       .css({
-           'top': offset.top,
-           'left': offset.left,
-           'z-index': 99999,
-           'display': 'block'
-       })
-       .append($img.clone().css({width:"", height:""}));
-    })
-    $tooltip.on('mouseleave', function() {
-       $tooltip.empty().addClass('hidden');
-    });
+    var img = document.createElement('img')
+    img.src = taskEntry.querySelector('div.task-initimg > img').src
+    $tooltip.append(img)
+    $tooltip.append(`<div class="top-right"><button>Use as Input</button></div>`)
+    $tooltip.find('button').on('click', (e) => { onUseAsInputClick(null,img) } )
 }
 
 function createTask(task) {
@@ -846,6 +817,8 @@ function createTask(task) {
     task['stopTask'] = taskEntry.querySelector('.stopTask')
 
     task['stopTask'].addEventListener('click', (e) => {
+        e.stopPropagation()
+
         let question = (task['isProcessing'] ? "Stop this task?" : "Remove this task?")
         shiftOrConfirm(e, question, async function(e) {
             if (task.batchesDone <= 0 || !task.isProcessing) {
@@ -1080,7 +1053,6 @@ function removeTask(taskToRemove) {
         previewTools.style.display = 'none'
         initialText.style.display = 'block'
     }
-    updatePreviewSize()
 }
 
 clearAllPreviewsBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Clear all the results and tasks in this window?", async function() {
@@ -1202,6 +1174,12 @@ hypernetworkStrengthSlider.addEventListener('input', updateHypernetworkStrength)
 hypernetworkStrengthField.addEventListener('input', updateHypernetworkStrengthSlider)
 updateHypernetworkStrength()
 
+function updateHypernetworkStrengthContainer() {
+    document.querySelector("#hypernetwork_strength_container").style.display = (hypernetworkModelField.value === "" ? 'none' : '')
+}
+hypernetworkModelField.addEventListener('change', updateHypernetworkStrengthContainer)
+updateHypernetworkStrengthContainer()
+
 /********************* JPEG Quality **********************/
 function updateOutputQuality() {
     outputQualityField.value =  0 | outputQualitySlider.value
@@ -1275,6 +1253,10 @@ async function getModels() {
         stableDiffusionOptions.forEach(createModelOptions(stableDiffusionModelField, selectedSDModel))
         vaeOptions.forEach(createModelOptions(vaeModelField, selectedVaeModel))
         hypernetworkOptions.forEach(createModelOptions(hypernetworkModelField, selectedHypernetworkModel))
+
+        stableDiffusionModelField.dispatchEvent(new Event('change'))
+        vaeModelField.dispatchEvent(new Event('change'))
+        hypernetworkModelField.dispatchEvent(new Event('change'))
 
         // TODO: set default for model here too
         SETTINGS[sd_model_setting_key].default = stableDiffusionOptions[0]
@@ -1393,6 +1375,7 @@ function selectTab(tab_id) {
         tabInfo.tab.classList.toggle("active")
         tabInfo.content.classList.toggle("active")
     }
+    document.dispatchEvent(new CustomEvent('tabClick', { detail: tabInfo }))
 }
 function linkTabContents(tab) {
     var name = tab.id.replace("tab-", "")

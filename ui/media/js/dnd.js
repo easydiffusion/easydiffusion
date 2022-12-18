@@ -194,6 +194,28 @@ const TASK_MAPPING = {
         readUI: () => vaeModelField.value,
         parse: (val) => val
     },
+    use_hypernetwork_model: { name: 'Hypernetwork model',
+        setUI: (use_hypernetwork_model) => {
+            const oldVal = hypernetworkModelField.value
+
+            if (use_hypernetwork_model !== '') {
+                use_hypernetwork_model = getModelPath(use_hypernetwork_model, ['.pt'])
+                use_hypernetwork_model = use_hypernetwork_model !== '' ? use_hypernetwork_model : oldVal
+            }
+            hypernetworkModelField.value = use_hypernetwork_model
+            hypernetworkModelField.dispatchEvent(new Event('change'))
+        },
+        readUI: () => hypernetworkModelField.value,
+        parse: (val) => val
+    },
+    hypernetwork_strength: { name: 'Hypernetwork Strength',
+        setUI: (hypernetwork_strength) => {
+            hypernetworkStrengthField.value = hypernetwork_strength
+            updateHypernetworkStrengthSlider()
+        },
+        readUI: () => parseFloat(hypernetworkStrengthField.value),
+        parse: (val) => parseFloat(val)
+    },
 
     num_outputs: { name: 'Parallel Images',
         setUI: (num_outputs) => {
@@ -338,7 +360,9 @@ const TASK_TEXT_MAPPING = {
     use_upscale: 'Use Upscaling',
     sampler: 'Sampler',
     negative_prompt: 'Negative Prompt',
-    use_stable_diffusion_model: 'Stable Diffusion model'
+    use_stable_diffusion_model: 'Stable Diffusion model',
+    use_hypernetwork_model: 'Hypernetwork model',
+    hypernetwork_strength: 'Hypernetwork Strength'
 }
 const afterPromptRe = /^\s*Width\s*:\s*\d+\s*(?:\r\n|\r|\n)+\s*Height\s*:\s*\d+\s*(\r\n|\r|\n)+Seed\s*:\s*\d+\s*$/igm
 function parseTaskFromText(str) {
