@@ -8,7 +8,7 @@ Experimental support for Stable Diffusion 2.0 is available in beta!
 
 ----
 
-## Step 1: Download and prepare the installer
+# Step 1: Download and prepare the installer
 Click the download button for your operating system:
 
 <p float="left">
@@ -16,26 +16,27 @@ Click the download button for your operating system:
   <a href="https://github.com/cmdr2/stable-diffusion-ui#installation"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-linux.png" width="200" /></a>
 </p>
 
-# On Windows:
+## On Windows:
 1. Unzip/extract the folder `stable-diffusion-ui` which should be in your downloads folder, unless you changed your default downloads destination.
-2. Move the `stable-diffusion-ui` folder to your `C:` drive (or any other drive like D:, at the top root level). `C:\stable-diffusion-ui` or `D:\stable-diffusion-ui` as examples. This will avoid a common problem with Windows (file path length limits).
-# On Linux:
+2. Move the `stable-diffusion-ui` folder to your `C:` drive (or any other drive like `D:`, at the top root level). `C:\stable-diffusion-ui` or `D:\stable-diffusion-ui` as examples. This will avoid a common problem with Windows (file path length limits).
+## On Linux:
 1. Unzip/extract the folder `stable-diffusion-ui` which should be in your downloads folder, unless you changed your default downloads destination.
 2. Open a terminal window, and navigate to the `stable-diffusion-ui` directory.
 
-## Step 2: Run the program
-# On Windows: 
+# Step 2: Run the program
+## On Windows: 
 Double-click `Start Stable Diffusion UI.cmd`.
 If Windows SmartScreen prevents you from running the program click `More info` and then `Run anyway`.
-# On Linux: 
+## On Linux: 
 Run `./start.sh` (or `bash start.sh`) in a terminal.
 
 The installer will take care of whatever is needed. A friendly [Discord community](https://discord.com/invite/u9yhsFmEkB) will help you if you face any problems.
+**To Uninstall:** Just delete the `stable-diffusion-ui` folder to uninstall all the downloaded packages.
 
 ----
 
 # Easy for new users, powerful features for advanced users
-### Features:
+## Features:
 - **No Dependencies or Technical Knowledge Required**: 1-click install for Windows 10/11 and Linux. *No dependencies*, no need for WSL or Docker or Conda or technical setup. Just download and run!
 - **Clutter-free UI**: a friendly and simple UI, while providing a lot of powerful features
 - Supports "*Text to Image*" and "*Image to Image*"
@@ -62,18 +63,18 @@ The installer will take care of whatever is needed. A friendly [Discord communit
 - **Low Memory Usage**: Creates 512x512 images with less than 4GB of VRAM!
 - **Developer Console**: A developer-mode for those who want to modify their Stable Diffusion code, and edit the conda environment.
 
-### Easy for new users:
+## Easy for new users:
 ![Screenshot of the initial UI](media/shot-v10-simple.jpg?raw=true)
 
-### Powerful features for advanced users:
+## Powerful features for advanced users:
 ![Screenshot of advanced settings](media/shot-v10.jpg?raw=true)
 
-### Live Preview
+## Live Preview
 Useful for judging (and stopping) an image quickly, without waiting for it to finish rendering.
 
 ![live-512](https://user-images.githubusercontent.com/844287/192097249-729a0a1e-a677-485e-9ccc-16a9e848fabe.gif)
 
-### Task Queue
+## Task Queue
 ![Screenshot of task queue](media/task-queue-v1.jpg?raw=true)
 
 # System Requirements
@@ -84,8 +85,6 @@ Useful for judging (and stopping) an image quickly, without waiting for it to fi
 You don't need to install or struggle with Python, Anaconda, Docker etc. The installer will take care of whatever is needed.
 
 This will automatically install Stable Diffusion, set it up, and start the interface. No additional steps are needed.
-
-**To Uninstall:** Just delete the `stable-diffusion-ui` folder to uninstall all the downloaded packages.
 
 # How to use?
 Please use our [guide](https://github.com/cmdr2/stable-diffusion-ui/wiki/How-to-Use) to understand how to use the features in this UI.
