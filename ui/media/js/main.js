@@ -624,18 +624,18 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
     task['taskStatusLabel'].style.display = 'none'
 
     let time = Date.now() - task.startTime
-    time=millisecondsToStr(time)
+    time /= 1000
 
     if (task.batchesDone == task.batchCount) {
 	if (!task.outputMsg.innerText.toLowerCase().includes('error')) {
-            task.outputMsg.innerText = `Processed ${task.numOutputsTotal} images in ${time}`
+            task.outputMsg.innerText = `Processed ${task.numOutputsTotal} images in ${time} seconds`
 	}
         task.progressBar.style.height = "0px"
         task.progressBar.style.border = "0px solid var(--background-color3)"
         task.progressBar.classList.remove("active")
         setStatus('request', 'done', 'success')
     } else {
-        task.outputMsg.innerText += `Task ended after ${time}`
+        task.outputMsg.innerText += `Task ended after ${time} seconds`
     }
 
     if (randomSeedField.checked) {
