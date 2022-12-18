@@ -3,14 +3,16 @@
 
 [![Discord Server](https://img.shields.io/discord/1014774730907209781?label=Discord)](https://discord.com/invite/u9yhsFmEkB) (for support, and development discussion) | [Troubleshooting guide for common problems](https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting)
 
-New! Experimental support for Stable Diffusion 2.0 is available in beta!
+### New: 
+Experimental support for Stable Diffusion 2.0 is available in beta!
 
 ----
 
 ## Step 1: Download the installer
+Click the download button for your operating system:
 
 <p float="left">
-  <a href="#installation"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-win.png" width="200" /></a>
+  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.4.13/stable-diffusion-ui-windows.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-win.png" width="200" /></a>
   <a href="#installation"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-linux.png" width="200" /></a>
 </p>
 
