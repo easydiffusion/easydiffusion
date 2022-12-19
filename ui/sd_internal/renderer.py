@@ -6,8 +6,8 @@ import logging
 from sd_internal import device_manager, save_utils
 from sd_internal import TaskData, Response, Image as ResponseImage, UserInitiatedStop
 
-from diffusionkit import model_loader, image_generator, image_utils, filters as image_filters, data_utils
-from diffusionkit.types import Context, GenerateImageRequest, FilterImageRequest
+from sdkit import model_loader, image_generator, image_utils, filters as image_filters
+from sdkit.types import Context, GenerateImageRequest, FilterImageRequest
 
 log = logging.getLogger()
 

@@ -3,8 +3,8 @@ import time
 import base64
 import re
 
-from diffusionkit import data_utils
-from diffusionkit.types import GenerateImageRequest
+from sdkit.utils import save_images, save_dicts
+from sdkit.types import GenerateImageRequest
 
 from sd_internal import TaskData
 
@@ -33,12 +33,12 @@ def save_to_disk(images: list, filtered_images: list, req: GenerateImageRequest,
     metadata_entries = get_metadata_entries(req, task_data)
 
     if task_data.show_only_filtered_image or filtered_images == images:
-        data_utils.save_images(filtered_images, save_folder_path, file_name=make_filename_callback(req), output_format=task_data.output_format, output_quality=task_data.output_quality)
-        data_utils.save_metadata(metadata_entries, save_folder_path, file_name=make_filename_callback(req), output_format=task_data.metadata_output_format)
+        save_images(filtered_images, save_folder_path, file_name=make_filename_callback(req), output_format=task_data.output_format, output_quality=task_data.output_quality)
+        save_dicts(metadata_entries, save_folder_path, file_name=make_filename_callback(req), output_format=task_data.metadata_output_format)
     else:
-        data_utils.save_images(images, save_folder_path, file_name=make_filename_callback(req), output_format=task_data.output_format, output_quality=task_data.output_quality)
-        data_utils.save_images(filtered_images, save_folder_path, file_name=make_filename_callback(req, suffix='filtered'), output_format=task_data.output_format, output_quality=task_data.output_quality)
-        data_utils.save_metadata(metadata_entries, save_folder_path, file_name=make_filename_callback(req, suffix='filtered'), output_format=task_data.metadata_output_format)
+        save_images(images, save_folder_path, file_name=make_filename_callback(req), output_format=task_data.output_format, output_quality=task_data.output_quality)
+        save_images(filtered_images, save_folder_path, file_name=make_filename_callback(req, suffix='filtered'), output_format=task_data.output_format, output_quality=task_data.output_quality)
+        save_dicts(metadata_entries, save_folder_path, file_name=make_filename_callback(req, suffix='filtered'), output_format=task_data.metadata_output_format)
 
 def get_metadata_entries(req: GenerateImageRequest, task_data: TaskData):
     metadata = get_printable_request(req)

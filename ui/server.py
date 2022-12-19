@@ -15,7 +15,7 @@ from pydantic import BaseModel
 
 from sd_internal import app, model_manager, task_manager
 from sd_internal import TaskData
-from diffusionkit.types import GenerateImageRequest
+from sdkit.types import GenerateImageRequest
 
 log = logging.getLogger()
 

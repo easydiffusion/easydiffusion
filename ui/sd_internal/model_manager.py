@@ -1,11 +1,10 @@
 import os
 import logging
 import picklescan.scanner
-import rich
 
 from sd_internal import app, TaskData, device_manager
-from diffusionkit import model_loader
-from diffusionkit.types import Context
+from sdkit.models import model_loader
+from sdkit.types import Context
 
 log = logging.getLogger()
 
