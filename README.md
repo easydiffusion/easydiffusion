@@ -31,9 +31,10 @@ If Windows SmartScreen prevents you from running the program click `More info` a
 Run `./start.sh` (or `bash start.sh`) in a terminal.
 
 The installer will take care of whatever is needed. A friendly [Discord community](https://discord.com/invite/u9yhsFmEkB) will help you if you face any problems.
-**To Uninstall:** Just delete the `stable-diffusion-ui` folder to uninstall all the downloaded packages.
 
 # Step 3: There is no Step 3. It's that simple!
+
+**To Uninstall:** Just delete the `stable-diffusion-ui` folder to uninstall all the downloaded packages.
 
 ----
 
