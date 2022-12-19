@@ -77,6 +77,8 @@ The installer will take care of whatever is needed. A friendly [Discord communit
 - **Multiple Prompts File:** Queue multiple prompts by entering one prompt per line, or by running a text file
 - **Save generated images to disk**
 
+*(and lots more)*
+
 ## Easy for new users:
 ![Screenshot of the initial UI](media/shot-v10-simple.jpg?raw=true)
 
