@@ -61,7 +61,7 @@ The installer will take care of whatever is needed. A friendly [Discord communit
 - **JPEG/PNG output**
 
 ### Advanced features
-- **Custom Models**: Use your own `.ckpt` file, by placing it inside the `models/stable-diffusion` folder!
+- **Custom Models**: Use your own `.ckpt` or `.safetensors` file, by placing it inside the `models/stable-diffusion` folder!
 - **Stable Diffusion 2.0 support (experimental)**: available in beta channel
 - **Use custom VAE models**
 - **Use pre-trained Hypernetworks**
