@@ -47,6 +47,7 @@ The installer will take care of whatever is needed. A friendly [Discord communit
 ### Image generation
 - Supports "*Text to Image*" and "*Image to Image*"
 - **In-Painting**: Specify areas of your image to paint into
+- **Simple Drawing Tool**: Draw basic images to guide the AI, without needing an external drawing program
 - **Face Correction (GFPGAN) and Upscaling (RealESRGAN)**
 - **Loopback**: Use the output image as the input image for the next img2img task
 - **Negative Prompt**: Specify aspects of the image to *remove*.
