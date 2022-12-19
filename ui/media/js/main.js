@@ -104,29 +104,6 @@ imagePreview.addEventListener('drop', function(ev) {
     }
 })
 
-let startX, startY;
-imagePreview.addEventListener("dragover", (event) => {
-    imagePreview.querySelectorAll(".imageTaskContainer").forEach(itc => {
-        if(itc != event.target.closest(".imageTaskContainer")){
-            itc.classList.remove('dropTargetBefore','dropTargetAfter');
-        }
-    });
-    if(event.target.closest(".imageTaskContainer")){
-        if(startX && startY){
-            console.log('x: '+startX+" : "+event.target.closest(".imageTaskContainer").offsetLeft);
-            console.log('y: '+startY+" : "+event.target.closest(".imageTaskContainer").offsetTop);
-            if(event.target.closest(".imageTaskContainer").offsetTop > startY){
-                event.target.closest(".imageTaskContainer").classList.add('dropTargetAfter');
-            }else if(event.target.closest(".imageTaskContainer").offsetTop < startY){
-                event.target.closest(".imageTaskContainer").classList.add('dropTargetBefore');
-            }else if (event.target.closest(".imageTaskContainer").offsetLeft > startX){
-                event.target.closest(".imageTaskContainer").classList.add('dropTargetAfter');
-            }else if (event.target.closest(".imageTaskContainer").offsetLeft < startX){
-                event.target.closest(".imageTaskContainer").classList.add('dropTargetBefore');
-            }
-        }
-    }
-});
 
 
 let showConfigToggle = document.querySelector('#configToggleBtn')
@@ -781,6 +758,28 @@ function createInitImageHover(taskEntry) {
     $tooltip.find('button').on('click', (e) => { onUseAsInputClick(null,img) } )
 }
 
+let startX, startY;
+function onTaskEntryDragOver(event) {
+    imagePreview.querySelectorAll(".imageTaskContainer").forEach(itc => {
+        if(itc != event.target.closest(".imageTaskContainer")){
+            itc.classList.remove('dropTargetBefore','dropTargetAfter');
+        }
+    });
+    if(event.target.closest(".imageTaskContainer")){
+        if(startX && startY){
+            if(event.target.closest(".imageTaskContainer").offsetTop > startY){
+                event.target.closest(".imageTaskContainer").classList.add('dropTargetAfter');
+            }else if(event.target.closest(".imageTaskContainer").offsetTop < startY){
+                event.target.closest(".imageTaskContainer").classList.add('dropTargetBefore');
+            }else if (event.target.closest(".imageTaskContainer").offsetLeft > startX){
+                event.target.closest(".imageTaskContainer").classList.add('dropTargetAfter');
+            }else if (event.target.closest(".imageTaskContainer").offsetLeft < startX){
+                event.target.closest(".imageTaskContainer").classList.add('dropTargetBefore');
+            }
+        }
+    }
+}
+
 function createTask(task) {
     let taskConfig = ''
 
@@ -837,8 +836,10 @@ function createTask(task) {
         imagePreview.querySelectorAll(".imageTaskContainer").forEach(itc => {
             itc.classList.remove('dropTargetBefore','dropTargetAfter');
         });
+        imagePreview.removeEventListener("dragover", onTaskEntryDragOver );
     })
     taskEntry.addEventListener('dragstart', function(e) {
+        imagePreview.addEventListener("dragover", onTaskEntryDragOver );
         e.dataTransfer.setData("text/plain", taskEntry.id);
         startX = e.target.closest(".imageTaskContainer").offsetLeft;
         startY = e.target.closest(".imageTaskContainer").offsetTop;
