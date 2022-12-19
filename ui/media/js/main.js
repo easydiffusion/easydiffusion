@@ -913,20 +913,29 @@ function getPrompts(prompts) {
     if (typeof prompts === 'undefined') {
         prompts = promptField.value
     }
-    if (prompts.trim() === '') {
+    if (prompts.trim() === '' && activeTags.length === 0) {
         return ['']
     }
 
-    prompts = prompts.split('\n')
-    prompts = prompts.map(prompt => prompt.trim())
-    prompts = prompts.filter(prompt => prompt !== '')
-
-    let promptsToMake = applyPermuteOperator(prompts)
-    promptsToMake = applySetOperator(promptsToMake)
+    let promptsToMake = []
+    if (prompts.trim() !== '') {
+        prompts = prompts.split('\n')
+        prompts = prompts.map(prompt => prompt.trim())
+        prompts = prompts.filter(prompt => prompt !== '')
+    
+        promptsToMake = applyPermuteOperator(prompts)
+        promptsToMake = applySetOperator(promptsToMake)
+    }
     const newTags = activeTags.filter(tag => tag.inactive === undefined || tag.inactive === false)
     if (newTags.length > 0) {
         const promptTags = newTags.map(x => x.name).join(", ")
-        promptsToMake = promptsToMake.map((prompt) => `${prompt}, ${promptTags}`)
+        if (promptsToMake.length > 0) {
+            promptsToMake = promptsToMake.map((prompt) => `${prompt}, ${promptTags}`)
+        }
+        else
+        {
+            promptsToMake.push(promptTags)
+        }
     }
 
     promptsToMake = applyPermuteOperator(promptsToMake)
