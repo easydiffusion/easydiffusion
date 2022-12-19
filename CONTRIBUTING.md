@@ -6,7 +6,7 @@ Thanks
 
 # For developers:
 
-If you would like to contribute to this project, there is a discord for dicussion:
+If you would like to contribute to this project, there is a discord for discussion:
 [![Discord Server](https://badgen.net/badge/icon/discord?icon=discord&label)](https://discord.com/invite/u9yhsFmEkB)
 
 ## Development environment for UI (frontend and server) changes
