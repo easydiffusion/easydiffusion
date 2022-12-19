@@ -1,5 +1,5 @@
 # Stable Diffusion UI
-### The easiest way to install and use [Stable Diffusion](https://github.com/CompVis/stable-diffusion) on your own computer. No dependencies or technical knowledge required. 1-click install, powerful features.
+### The easiest way to install and use [Stable Diffusion](https://github.com/CompVis/stable-diffusion) on your own computer. Does not require technical knowledge, does not require pre-installed software. 1-click install, powerful features, friendly community.
 
 [![Discord Server](https://img.shields.io/discord/1014774730907209781?label=Discord)](https://discord.com/invite/u9yhsFmEkB) (for support, and development discussion) | [Troubleshooting guide for common problems](https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting)
 
@@ -33,35 +33,49 @@ Run `./start.sh` (or `bash start.sh`) in a terminal.
 The installer will take care of whatever is needed. A friendly [Discord community](https://discord.com/invite/u9yhsFmEkB) will help you if you face any problems.
 **To Uninstall:** Just delete the `stable-diffusion-ui` folder to uninstall all the downloaded packages.
 
+# Step 3: There is no Step 3. It's that simple!
+
 ----
 
 # Easy for new users, powerful features for advanced users
 ## Features:
-- **No Dependencies or Technical Knowledge Required**: 1-click install for Windows 10/11 and Linux. *No dependencies*, no need for WSL or Docker or Conda or technical setup. Just download and run!
+### User experience
+- **Hassle-free installation** - No Dependencies or Technical Knowledge Required. 1-click install for Windows 10/11 and Linux. *No dependencies*, no need for WSL or Docker or Conda or technical setup. Just download and run!
 - **Clutter-free UI**: a friendly and simple UI, while providing a lot of powerful features
+
+### Image generation
 - Supports "*Text to Image*" and "*Image to Image*"
-- **Stable Diffusion 2.0 support (experimental)** - available in beta channel
-- **Custom Models**: Use your own `.ckpt` file, by placing it inside the `models/stable-diffusion` folder!
-- **Auto scan for malicious models** - uses picklescan to prevent malicious models
-- **Live Preview**: See the image as the AI is drawing it
-- **Task Queue**: Queue up all your ideas, without waiting for the current task to finish
 - **In-Painting**: Specify areas of your image to paint into
 - **Face Correction (GFPGAN) and Upscaling (RealESRGAN)**
-- **Image Modifiers**: A library of *modifier tags* like *"Realistic"*, *"Pencil Sketch"*, *"ArtStation"* etc. Experiment with various styles quickly.
 - **Loopback**: Use the output image as the input image for the next img2img task
 - **Negative Prompt**: Specify aspects of the image to *remove*.
 - **Attention/Emphasis:** () in the prompt increases the model's attention to enclosed words, and [] decreases it
 - **Weighted Prompts:** Use weights for specific words in your prompt to change their importance, e.g. `red:2.4 dragon:1.2`
 - **Prompt Matrix:** (in beta) Quickly create multiple variations of your prompt, e.g. `a photograph of an astronaut riding a horse | illustration | cinematic lighting`
 - **Lots of Samplers:** ddim, plms, heun, euler, euler_a, dpm2, dpm2_a, lms
-- **Multiple Prompts File:** Queue multiple prompts by entering one prompt per line, or by running a text file
 - **NSFW Setting**: A setting in the UI to control *NSFW content*
 - **JPEG/PNG output**
-- **Save generated images to disk**
+
+### Advanced features
+- **Custom Models**: Use your own `.ckpt` file, by placing it inside the `models/stable-diffusion` folder!
+- **Stable Diffusion 2.0 support (experimental)** - available in beta channel
+- **Use custom VAE models**
+- **Use pre-trained Hypernetworks**
+
+### Performance and security
+- **Low Memory Usage**: Creates 512x512 images with less than 4GB of GPU RAM!
+- **Multi-GPU support** - automatically spreads your tasks across multiple GPUs (if available), for faster performance!
+- **Auto scan for malicious models** - uses picklescan to prevent malicious models
 - **Use CPU setting**: If you don't have a compatible graphics card, but still want to run it on your CPU.
 - **Auto-updater**: Gets you the latest improvements and bug-fixes to a rapidly evolving project.
-- **Low Memory Usage**: Creates 512x512 images with less than 4GB of VRAM!
 - **Developer Console**: A developer-mode for those who want to modify their Stable Diffusion code, and edit the conda environment.
+
+### Usability:
+- **Live Preview**: See the image as the AI is drawing it
+- **Task Queue**: Queue up all your ideas, without waiting for the current task to finish.
+- **Image Modifiers**: A library of *modifier tags* like *"Realistic"*, *"Pencil Sketch"*, *"ArtStation"* etc. Experiment with various styles quickly.
+- **Multiple Prompts File:** Queue multiple prompts by entering one prompt per line, or by running a text file
+- **Save generated images to disk**
 
 ## Easy for new users:
 ![Screenshot of the initial UI](media/shot-v10-simple.jpg?raw=true)
