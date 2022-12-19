@@ -6,7 +6,6 @@ Notes:
 """
 import json
 import traceback
-import logging
 
 TASK_TTL = 15 * 60 # seconds, Discard last session's task timeout
 
@@ -14,10 +13,11 @@ import torch
 import queue, threading, time, weakref
 from typing import Any, Hashable
 
-from sd_internal import TaskData, device_manager
-from sdkit.types import GenerateImageRequest
+from easydiffusion import device_manager
+from easydiffusion.types import TaskData
+from easydiffusion.utils import log
 
-log = logging.getLogger()
+from sdkit.types import GenerateImageRequest
 
 THREAD_NAME_PREFIX = ''
 ERR_LOCK_FAILED = ' failed to acquire lock within timeout.'
@@ -186,7 +186,7 @@ class SessionState():
         return True
 
 def thread_get_next_task():
-    from sd_internal import renderer
+    from easydiffusion import renderer
     if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT):
         log.warn(f'Render thread on device: {renderer.context.device} failed to acquire manager lock.')
         return None
@@ -219,7 +219,7 @@ def thread_get_next_task():
 def thread_render(device):
     global current_state, current_state_error
 
-    from sd_internal import renderer, model_manager
+    from easydiffusion import renderer, model_manager
     try:
         renderer.init(device)
 

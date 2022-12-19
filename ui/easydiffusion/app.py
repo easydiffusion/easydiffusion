@@ -6,7 +6,8 @@ import traceback
 import logging
 from rich.logging import RichHandler
 
-from sd_internal import task_manager
+from easydiffusion import task_manager
+from easydiffusion.utils import log
 
 LOG_FORMAT = '%(asctime)s.%(msecs)03d %(levelname)s %(threadName)s %(message)s'
 logging.basicConfig(
@@ -15,8 +16,6 @@ logging.basicConfig(
         datefmt="%X",
         handlers=[RichHandler(markup=True, rich_tracebacks=True, show_time=False, show_level=False)]
 )
-
-log = logging.getLogger()
 
 SD_DIR = os.getcwd()
 

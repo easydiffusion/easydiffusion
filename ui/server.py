@@ -4,7 +4,6 @@ Notes:
 """
 import os
 import traceback
-import logging
 import datetime
 from typing import List, Union
 
@@ -13,11 +12,10 @@ from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
-from sd_internal import app, model_manager, task_manager
-from sd_internal import TaskData
+from easydiffusion import app, model_manager, task_manager
+from easydiffusion.types import TaskData
+from easydiffusion.utils import log
 from sdkit.types import GenerateImageRequest
-
-log = logging.getLogger()
 
 log.info(f'started in {app.SD_DIR}')
 log.info(f'started at {datetime.datetime.now():%x %X}')

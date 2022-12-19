@@ -3,10 +3,10 @@ import time
 import base64
 import re
 
+from easydiffusion.types import TaskData
+
 from sdkit.utils import save_images, save_dicts
 from sdkit.types import GenerateImageRequest
-
-from sd_internal import TaskData
 
 filename_regex = re.compile('[^a-zA-Z0-9]')
 
@@ -28,9 +28,9 @@ TASK_TEXT_MAPPING = {
     'hypernetwork_strength': 'Hypernetwork Strength'
 }
 
-def save_to_disk(images: list, filtered_images: list, req: GenerateImageRequest, task_data: TaskData):
+def save_images_to_disk(images: list, filtered_images: list, req: GenerateImageRequest, task_data: TaskData):
     save_folder_path = os.path.join(task_data.save_to_disk_path, filename_regex.sub('_', task_data.session_id))
-    metadata_entries = get_metadata_entries(req, task_data)
+    metadata_entries = get_metadata_entries_for_request(req, task_data)
 
     if task_data.show_only_filtered_image or filtered_images == images:
         save_images(filtered_images, save_folder_path, file_name=make_filename_callback(req), output_format=task_data.output_format, output_quality=task_data.output_quality)
@@ -40,7 +40,7 @@ def save_to_disk(images: list, filtered_images: list, req: GenerateImageRequest,
         save_images(filtered_images, save_folder_path, file_name=make_filename_callback(req, suffix='filtered'), output_format=task_data.output_format, output_quality=task_data.output_quality)
         save_dicts(metadata_entries, save_folder_path, file_name=make_filename_callback(req, suffix='filtered'), output_format=task_data.metadata_output_format)
 
-def get_metadata_entries(req: GenerateImageRequest, task_data: TaskData):
+def get_metadata_entries_for_request(req: GenerateImageRequest, task_data: TaskData):
     metadata = get_printable_request(req)
     metadata.update({
         'use_stable_diffusion_model': task_data.use_stable_diffusion_model,

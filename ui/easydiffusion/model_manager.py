@@ -1,12 +1,12 @@
 import os
-import logging
 import picklescan.scanner
 
-from sd_internal import app, TaskData, device_manager
+from easydiffusion import app, device_manager
+from easydiffusion.types import TaskData
+from easydiffusion.utils import log
+
 from sdkit.models import model_loader
 from sdkit.types import Context
-
-log = logging.getLogger()
 
 KNOWN_MODEL_TYPES = ['stable-diffusion', 'vae', 'hypernetwork', 'gfpgan', 'realesrgan']
 MODEL_EXTENSIONS = {

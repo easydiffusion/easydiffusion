@@ -2,9 +2,8 @@ import os
 import torch
 import traceback
 import re
-import logging
 
-log = logging.getLogger()
+from easydiffusion.utils import log
 
 '''
 Set `FORCE_FULL_PRECISION` in the environment variables, or in `config.bat`/`config.sh` to set full precision (i.e. float32).

@@ -1,15 +1,14 @@
 import queue
 import time
 import json
-import logging
 
-from sd_internal import device_manager, save_utils
-from sd_internal import TaskData, Response, Image as ResponseImage, UserInitiatedStop
+from easydiffusion import device_manager
+from easydiffusion.types import TaskData, Response, Image as ResponseImage, UserInitiatedStop
+from easydiffusion.utils import get_printable_request, save_images_to_disk, log
 
-from sdkit import model_loader, image_generator, image_utils, filters as image_filters
+from sdkit import model_loader, image_generator, filters as image_filters
+from sdkit.utils import img_to_buffer, img_to_base64_str, latent_samples_to_images
 from sdkit.types import Context, GenerateImageRequest, FilterImageRequest
-
-log = logging.getLogger()
 
 context = Context() # thread-local
 '''
@@ -28,7 +27,7 @@ def init(device):
 
 def make_images(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback):
     context.stop_processing = False
-    log.info(f'request: {save_utils.get_printable_request(req)}')
+    log.info(f'request: {get_printable_request(req)}')
     log.info(f'task data: {task_data.dict()}')
 
     images = _make_images_internal(req, task_data, data_queue, task_temp_images, step_callback)
@@ -45,7 +44,7 @@ def _make_images_internal(req: GenerateImageRequest, task_data: TaskData, data_q
     filtered_images = apply_filters(task_data, images, user_stopped)
 
     if task_data.save_to_disk_path is not None:
-        save_utils.save_to_disk(images, filtered_images, req, task_data)
+        save_images_to_disk(images, filtered_images, req, task_data)
 
     return filtered_images if task_data.show_only_filtered_image else images + filtered_images
 
@@ -61,7 +60,7 @@ def generate_images(req: GenerateImageRequest, task_data: TaskData, data_queue: 
         images = []
         user_stopped = True
         if context.partial_x_samples is not None:
-            images = image_utils.latent_samples_to_images(context, context.partial_x_samples)
+            images = latent_samples_to_images(context, context.partial_x_samples)
             context.partial_x_samples = None
     finally:
         model_loader.gc(context)
@@ -89,7 +88,7 @@ def apply_filters(task_data: TaskData, images: list, user_stopped):
 def construct_response(images: list, task_data: TaskData, base_seed: int):
     return [
         ResponseImage(
-            data=image_utils.img_to_base64_str(img, task_data.output_format, task_data.output_quality),
+            data=img_to_base64_str(img, task_data.output_format, task_data.output_quality),
             seed=base_seed + i
         ) for i, img in enumerate(images)
     ]
@@ -100,9 +99,9 @@ def make_step_callback(req: GenerateImageRequest, task_data: TaskData, data_queu
 
     def update_temp_img(x_samples, task_temp_images: list):
         partial_images = []
-        images = image_utils.latent_samples_to_images(context, x_samples)
+        images = latent_samples_to_images(context, x_samples)
         for i, img in enumerate(images):
-            buf = image_utils.img_to_buffer(img, output_format='JPEG')
+            buf = img_to_buffer(img, output_format='JPEG')
 
             context.temp_images[f"{task_data.request_id}/{i}"] = buf
             task_temp_images[i] = buf
