@@ -55,6 +55,8 @@ The installer will take care of whatever is needed. A friendly [Discord communit
 - **Weighted Prompts**: Use weights for specific words in your prompt to change their importance, e.g. `red:2.4 dragon:1.2`
 - **Prompt Matrix**: (in beta) Quickly create multiple variations of your prompt, e.g. `a photograph of an astronaut riding a horse | illustration | cinematic lighting`
 - **Lots of Samplers:** ddim, plms, heun, euler, euler_a, dpm2, dpm2_a, lms
+- **1-click Upscale/Face Correction**: Upscale or correct an image after it has been generated
+- **Make Similar Images**: Click to generate multiple variations of a generated image
 - **NSFW Setting**: A setting in the UI to control *NSFW content*
 - **JPEG/PNG output**
 
