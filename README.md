@@ -41,7 +41,7 @@ The installer will take care of whatever is needed. A friendly [Discord communit
 # Easy for new users, powerful features for advanced users
 ## Features:
 ### User experience
-- **Hassle-free installation** - No Dependencies or Technical Knowledge Required. 1-click install for Windows 10/11 and Linux. *No dependencies*, no need for WSL or Docker or Conda or technical setup. Just download and run!
+- **Hassle-free installation**: No Dependencies or Technical Knowledge Required. 1-click install for Windows 10/11 and Linux. *No dependencies*, no need for WSL or Docker or Conda or technical setup. Just download and run!
 - **Clutter-free UI**: a friendly and simple UI, while providing a lot of powerful features
 
 ### Image generation
@@ -50,24 +50,26 @@ The installer will take care of whatever is needed. A friendly [Discord communit
 - **Face Correction (GFPGAN) and Upscaling (RealESRGAN)**
 - **Loopback**: Use the output image as the input image for the next img2img task
 - **Negative Prompt**: Specify aspects of the image to *remove*.
-- **Attention/Emphasis:** () in the prompt increases the model's attention to enclosed words, and [] decreases it
-- **Weighted Prompts:** Use weights for specific words in your prompt to change their importance, e.g. `red:2.4 dragon:1.2`
-- **Prompt Matrix:** (in beta) Quickly create multiple variations of your prompt, e.g. `a photograph of an astronaut riding a horse | illustration | cinematic lighting`
+- **Attention/Emphasis**: () in the prompt increases the model's attention to enclosed words, and [] decreases it
+- **Weighted Prompts**: Use weights for specific words in your prompt to change their importance, e.g. `red:2.4 dragon:1.2`
+- **Prompt Matrix**: (in beta) Quickly create multiple variations of your prompt, e.g. `a photograph of an astronaut riding a horse | illustration | cinematic lighting`
 - **Lots of Samplers:** ddim, plms, heun, euler, euler_a, dpm2, dpm2_a, lms
 - **NSFW Setting**: A setting in the UI to control *NSFW content*
 - **JPEG/PNG output**
 
 ### Advanced features
 - **Custom Models**: Use your own `.ckpt` file, by placing it inside the `models/stable-diffusion` folder!
-- **Stable Diffusion 2.0 support (experimental)** - available in beta channel
+- **Stable Diffusion 2.0 support (experimental)**: available in beta channel
 - **Use custom VAE models**
 - **Use pre-trained Hypernetworks**
+- **UI Plugins**: Choose from a growing list of [community-generated UI plugins](https://github.com/cmdr2/stable-diffusion-ui/wiki/UI-Plugins), or write your own plugin to add features to the project!
 
 ### Performance and security
 - **Low Memory Usage**: Creates 512x512 images with less than 4GB of GPU RAM!
-- **Multi-GPU support** - automatically spreads your tasks across multiple GPUs (if available), for faster performance!
-- **Auto scan for malicious models** - uses picklescan to prevent malicious models
 - **Use CPU setting**: If you don't have a compatible graphics card, but still want to run it on your CPU.
+- **Multi-GPU support**: automatically spreads your tasks across multiple GPUs (if available), for faster performance!
+- **Auto scan for malicious models**: uses picklescan to prevent malicious models
+- **Safetensors support**: Support loading models in the safetensor format, for improved safety
 - **Auto-updater**: Gets you the latest improvements and bug-fixes to a rapidly evolving project.
 - **Developer Console**: A developer-mode for those who want to modify their Stable Diffusion code, and edit the conda environment.
 
@@ -77,6 +79,7 @@ The installer will take care of whatever is needed. A friendly [Discord communit
 - **Image Modifiers**: A library of *modifier tags* like *"Realistic"*, *"Pencil Sketch"*, *"ArtStation"* etc. Experiment with various styles quickly.
 - **Multiple Prompts File:** Queue multiple prompts by entering one prompt per line, or by running a text file
 - **Save generated images to disk**
+- **UI Themes**
 
 *(and lots more)*
 
