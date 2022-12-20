@@ -1,6 +1,25 @@
 from pydantic import BaseModel
+from typing import Any
 
-from sdkit.types import GenerateImageRequest
+class GenerateImageRequest(BaseModel):
+    prompt: str = ""
+    negative_prompt: str = ""
+
+    seed: int = 42
+    width: int = 512
+    height: int = 512
+
+    num_outputs: int = 1
+    num_inference_steps: int = 50
+    guidance_scale: float = 7.5
+
+    init_image: Any = None
+    init_image_mask: Any = None
+    prompt_strength: float = 0.8
+    preserve_init_image_color_profile = False
+
+    sampler_name: str = None # "ddim", "plms", "heun", "euler", "euler_a", "dpm2", "dpm2_a", "lms"
+    hypernetwork_strength: float = 0
 
 class TaskData(BaseModel):
     request_id: str = None

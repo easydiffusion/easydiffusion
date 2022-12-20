@@ -13,9 +13,8 @@ from starlette.responses import FileResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
 from easydiffusion import app, model_manager, task_manager
-from easydiffusion.types import TaskData
+from easydiffusion.types import TaskData, GenerateImageRequest
 from easydiffusion.utils import log
-from sdkit.types import GenerateImageRequest
 
 log.info(f'started in {app.SD_DIR}')
 log.info(f'started at {datetime.datetime.now():%x %X}')

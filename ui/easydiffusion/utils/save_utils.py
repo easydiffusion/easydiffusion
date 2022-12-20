@@ -3,10 +3,9 @@ import time
 import base64
 import re
 
-from easydiffusion.types import TaskData
+from easydiffusion.types import TaskData, GenerateImageRequest
 
 from sdkit.utils import save_images, save_dicts
-from sdkit.types import GenerateImageRequest
 
 filename_regex = re.compile('[^a-zA-Z0-9]')
 

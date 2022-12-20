@@ -14,10 +14,8 @@ import queue, threading, time, weakref
 from typing import Any, Hashable
 
 from easydiffusion import device_manager
-from easydiffusion.types import TaskData
+from easydiffusion.types import TaskData, GenerateImageRequest
 from easydiffusion.utils import log
-
-from sdkit.types import GenerateImageRequest
 
 THREAD_NAME_PREFIX = ''
 ERR_LOCK_FAILED = ' failed to acquire lock within timeout.'

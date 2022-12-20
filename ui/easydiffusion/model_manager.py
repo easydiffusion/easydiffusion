@@ -5,14 +5,14 @@ from easydiffusion import app, device_manager
 from easydiffusion.types import TaskData
 from easydiffusion.utils import log
 
-from sdkit.models import model_loader
-from sdkit.types import Context
+from sdkit import Context
+from sdkit.models import load_model, unload_model
 
 KNOWN_MODEL_TYPES = ['stable-diffusion', 'vae', 'hypernetwork', 'gfpgan', 'realesrgan']
 MODEL_EXTENSIONS = {
     'stable-diffusion': ['.ckpt', '.safetensors'],
-    'vae': ['.vae.pt', '.ckpt'],
-    'hypernetwork': ['.pt'],
+    'vae': ['.vae.pt', '.ckpt', '.safetensors'],
+    'hypernetwork': ['.pt', '.safetensors'],
     'gfpgan': ['.pth'],
     'realesrgan': ['.pth'],
 }
@@ -44,13 +44,13 @@ def load_default_models(context: Context):
     set_vram_optimizations(context)
 
     # load mandatory models
-    model_loader.load_model(context, 'stable-diffusion')
-    model_loader.load_model(context, 'vae')
-    model_loader.load_model(context, 'hypernetwork')
+    load_model(context, 'stable-diffusion')
+    load_model(context, 'vae')
+    load_model(context, 'hypernetwork')
 
 def unload_all(context: Context):
     for model_type in KNOWN_MODEL_TYPES:
-        model_loader.unload_model(context, model_type)
+        unload_model(context, model_type)
 
 def resolve_model_to_use(model_name:str=None, model_type:str=None):
     model_extensions = MODEL_EXTENSIONS.get(model_type, [])
@@ -107,7 +107,7 @@ def reload_models_if_necessary(context: Context, task_data: TaskData):
     for model_type, model_path_in_req in models_to_reload.items():
         context.model_paths[model_type] = model_path_in_req
 
-        action_fn = model_loader.unload_model if context.model_paths[model_type] is None else model_loader.load_model
+        action_fn = unload_model if context.model_paths[model_type] is None else load_model
         action_fn(context, model_type)
 
 def resolve_model_paths(task_data: TaskData):
