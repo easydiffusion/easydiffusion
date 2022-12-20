@@ -104,6 +104,8 @@ imagePreview.addEventListener('drop', function(ev) {
     }
 })
 
+
+
 let showConfigToggle = document.querySelector('#configToggleBtn')
 // let configBox = document.querySelector('#config')
 // let outputMsg = document.querySelector('#outputMsg')
@@ -756,6 +758,28 @@ function createInitImageHover(taskEntry) {
     $tooltip.find('button').on('click', (e) => { onUseAsInputClick(null,img) } )
 }
 
+let startX, startY;
+function onTaskEntryDragOver(event) {
+    imagePreview.querySelectorAll(".imageTaskContainer").forEach(itc => {
+        if(itc != event.target.closest(".imageTaskContainer")){
+            itc.classList.remove('dropTargetBefore','dropTargetAfter');
+        }
+    });
+    if(event.target.closest(".imageTaskContainer")){
+        if(startX && startY){
+            if(event.target.closest(".imageTaskContainer").offsetTop > startY){
+                event.target.closest(".imageTaskContainer").classList.add('dropTargetAfter');
+            }else if(event.target.closest(".imageTaskContainer").offsetTop < startY){
+                event.target.closest(".imageTaskContainer").classList.add('dropTargetBefore');
+            }else if (event.target.closest(".imageTaskContainer").offsetLeft > startX){
+                event.target.closest(".imageTaskContainer").classList.add('dropTargetAfter');
+            }else if (event.target.closest(".imageTaskContainer").offsetLeft < startX){
+                event.target.closest(".imageTaskContainer").classList.add('dropTargetBefore');
+            }
+        }
+    }
+}
+
 function createTask(task) {
     let taskConfig = ''
 
@@ -803,12 +827,22 @@ function createTask(task) {
                             </div>`
 
     createCollapsibles(taskEntry)
+    
     let draghandle = taskEntry.querySelector('.drag-handle')
     draghandle.addEventListener('mousedown', (e) => { taskEntry.setAttribute('draggable',true)})
     draghandle.addEventListener('mouseup',   (e) => { taskEntry.setAttribute('draggable',false)})
-    taskEntry.addEventListener('dragend',    (e) => { taskEntry.setAttribute('draggable',false)})
+    taskEntry.addEventListener('dragend',    (e) => { 
+        taskEntry.setAttribute('draggable',false);
+        imagePreview.querySelectorAll(".imageTaskContainer").forEach(itc => {
+            itc.classList.remove('dropTargetBefore','dropTargetAfter');
+        });
+        imagePreview.removeEventListener("dragover", onTaskEntryDragOver );
+    })
     taskEntry.addEventListener('dragstart', function(e) {
+        imagePreview.addEventListener("dragover", onTaskEntryDragOver );
         e.dataTransfer.setData("text/plain", taskEntry.id);
+        startX = e.target.closest(".imageTaskContainer").offsetLeft;
+        startY = e.target.closest(".imageTaskContainer").offsetTop;
     })
 
 

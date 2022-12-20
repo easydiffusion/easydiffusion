@@ -405,6 +405,22 @@ img {
 .imageTaskContainer > div > .collapsible-handle {
     display: none;
 }
+.dropTargetBefore::before{
+    content: "";
+    border: 1px solid #fff;
+    margin-bottom: -2px;
+    display: block;
+    box-shadow: 0 0 5px #fff;
+    transform: translate(0px, -14px);
+}
+.dropTargetAfter::after{
+    content: "";
+    border: 1px solid #fff;
+    margin-bottom: -2px;
+    display: block;
+    box-shadow: 0 0 5px #fff;
+    transform: translate(0px, 14px);
+}
 .drag-handle {
     margin-right: 6px;
     cursor: move;
