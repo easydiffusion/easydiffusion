@@ -43,22 +43,22 @@
         </style>
     `)
 
-    const markedScript = document.createElement('script')
-    markedScript.src = '/media/js/marked.min.js'
-
-    markedScript.onload = async function() {
+    loadScript('/media/js/marked.min.js').then(async function() {
         let appConfig = await fetch('/get/app_config')
+        if (!appConfig.ok) {
+            console.error('[release-notes] Failed to get app_config.')
+            return
+        }
         appConfig = await appConfig.json()
 
-        let updateBranch = appConfig.update_branch || 'main'
+        const updateBranch = appConfig.update_branch || 'main'
 
         let releaseNotes = await fetch(`https://raw.githubusercontent.com/cmdr2/stable-diffusion-ui/${updateBranch}/CHANGES.md`)
-        if (releaseNotes.status != 200) {
+        if (!releaseNotes.ok) {
+            console.error('[release-notes] Failed to get CHANGES.md.')
             return
         }
         releaseNotes = await releaseNotes.text()
         news.innerHTML = marked.parse(releaseNotes)
-    }
-
-    document.querySelector('body').appendChild(markedScript)
+    })
 })()
