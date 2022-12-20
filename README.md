@@ -30,7 +30,7 @@ If Windows SmartScreen prevents you from running the program click `More info` a
 ## On Linux: 
 Run `./start.sh` (or `bash start.sh`) in a terminal.
 
-The installer will take care of whatever is needed. If you face any problems, join the [Discord](https://discord.com/invite/u9yhsFmEkB) and ask fo assistance.
+The installer will take care of whatever is needed. If you face any problems, you can join the friendly [Discord community](https://discord.com/invite/u9yhsFmEkB) and ask for assistance.
 
 # Step 3: There is no Step 3. It's that simple!
 
@@ -42,7 +42,7 @@ The installer will take care of whatever is needed. If you face any problems, jo
 ## Features:
 
 ### User experience
-- **Hassle-free installation**: No Dependencies such as Docker or Conda or Technical Knowledge is required. Just download and run!
+- **Hassle-free installation**: Does not require technical knowledge, does not require pre-installed software. Just download and run!
 - **Clutter-free UI**: A friendly and simple UI, while providing a lot of powerful features.
 
 ### Image generation
@@ -109,6 +109,8 @@ Useful for judging (and stopping) an image quickly, without waiting for it to fi
 2. An NVIDIA graphics card, preferably with 4GB or more of VRAM. If you don't have a compatible graphics card, it'll automatically run in the slower "CPU Mode".
 3. Minimum 8 GB of RAM and 25GB of disk space.
 
+You don't need to install or struggle with Python, Anaconda, Docker etc. The installer will take care of whatever is needed.
+
 ----
 
 # How to use?
@@ -128,10 +130,11 @@ If you have any code contributions in mind, please feel free to say Hi to us on 
 # Disclaimer
 The authors of this project are not responsible for any content generated using this interface.
 
-The license of this software forbids you from: 
-- Sharing any content that violates any laws.
-- Producing any harm to a person.
-- Disseminating (spreading) any personal information that would be meant for harm.
-- Spreading misinformation, or target vulnerable groups. 
+The license of this software forbids you from sharing any content that:
+- Violates any laws.
+- Produces any harm to a person or persons.
+- Disseminates (spreads) any personal information that would be meant for harm.
+- Spreads misinformation.
+- Target vulnerable groups. 
 
 For the full list of restrictions please read [the License](LICENSE). You agree to these terms by using this software.
