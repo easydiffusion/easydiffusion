@@ -61,6 +61,7 @@ let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
 let maskSetting = document.querySelector('#enable_mask')
 
 const processOrder = document.querySelector('#process_order_toggle')
+const displayOrder = document.querySelector('#display_order_toggle')
 
 let imagePreview = document.querySelector("#preview")
 imagePreview.addEventListener('drop', function(ev) {
@@ -876,7 +877,11 @@ function createTask(task) {
     })
 
     task.isProcessing = true
-    taskEntry = imagePreview.insertBefore(taskEntry, previewTools.nextSibling)
+    if(displayOrder.checked){
+        taskEntry = imagePreview.appendChild(taskEntry)
+    }else{
+        taskEntry = imagePreview.append(taskEntry, previewTools.nextSibling)
+    }
     htmlTaskMap.set(taskEntry, task)
 
     task.previewPrompt.innerText = task.reqBody.prompt
