@@ -34,6 +34,7 @@ const SETTINGS_IDS_LIST = [
     "modifier-card-size-slider",
     "theme",
     "save_to_disk",
+    "display_order_toggle",
     "diskPath",
     "sound_toggle",
     "turbo",
