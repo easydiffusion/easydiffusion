@@ -880,7 +880,7 @@ function createTask(task) {
     if(displayOrder.checked){
         taskEntry = imagePreview.appendChild(taskEntry)
     }else{
-        taskEntry = imagePreview.append(taskEntry, previewTools.nextSibling)
+        taskEntry = imagePreview.insertBefore(taskEntry, previewTools.nextSibling)
     }
     htmlTaskMap.set(taskEntry, task)
 
