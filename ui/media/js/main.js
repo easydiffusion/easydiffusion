@@ -423,7 +423,9 @@ function getUncompletedTaskEntries() {
             }
             return imageTaskContainer
         })
-    if (!processOrder.checked) {
+    if (!processOrder.checked && !displayOrder.checked) {
+        taskEntries.reverse()
+    }else if(processOrder.checked && displayOrder.checked){
         taskEntries.reverse()
     }
     return taskEntries
