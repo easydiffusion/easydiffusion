@@ -69,6 +69,13 @@ var PARAMETERS = [
         default: false,
     },
     {
+        id: "display_order_toggle",
+        type: ParameterType.checkbox,
+        label: "Add new tasks to bottom",
+        note: "reverse the normal display order",
+        default: false,
+    },
+    {
         id: "ui_open_browser_on_start",
         type: ParameterType.checkbox,
         label: "Open browser on startup",
@@ -223,6 +230,7 @@ let testSD2Field = document.querySelector("#test_sd2")
 let useBetaChannelField = document.querySelector("#use_beta_channel")
 let uiOpenBrowserOnStartField = document.querySelector("#ui_open_browser_on_start")
 let confirmDangerousActionsField = document.querySelector("#confirm_dangerous_actions")
+let displayOrderToggleField = document.querySelector("#display_order_toggle")
 
 let saveSettingsBtn = document.querySelector('#save-system-settings-btn')
 
