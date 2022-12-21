@@ -71,8 +71,8 @@ var PARAMETERS = [
     {
         id: "display_order_toggle",
         type: ParameterType.checkbox,
-        label: "Add new tasks to bottom",
-        note: "reverse the normal display order",
+        label: "Add new tasks to bottom of display",
+        note: "does not affect processing order",
         default: false,
     },
     {
