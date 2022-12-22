@@ -505,8 +505,10 @@ class ImageEditor {
 	}
 	setImage(url, width, height) {
 		this.setSize(width, height)
-		this.layers.drawing.ctx.clearRect(0, 0, this.width, this.height)
 		this.layers.background.ctx.clearRect(0, 0, this.width, this.height)
+		if (!(url && this.inpainter)) {
+			this.layers.drawing.ctx.clearRect(0, 0, this.width, this.height)
+		}
 		if (url) {
 			var image = new Image()
 			image.onload = () => { 
