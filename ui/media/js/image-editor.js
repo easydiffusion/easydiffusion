@@ -100,6 +100,18 @@ const IMAGE_EDITOR_TOOLS = [
 
 const IMAGE_EDITOR_ACTIONS = [
 	{
+		id: "fill",
+		name: "Fill",
+		icon: "fa-solid fa-fill-drip",
+		handler: (editor) => {
+			editor.ctx_current.globalCompositeOperation = "source-over"
+			editor.ctx_current.rect(0, 0, editor.width, editor.height)
+			editor.ctx_current.fill()
+			editor.setBrush()
+		},
+		trackHistory: true
+	},
+	{
 		id: "clear",
 		name: "Clear",
 		icon: "fa-solid fa-xmark",
