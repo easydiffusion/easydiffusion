@@ -635,9 +635,9 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
     let time = millisecondsToStr( Date.now() - task.startTime )
 
     if (task.batchesDone == task.batchCount) {
-	if (!task.outputMsg.innerText.toLowerCase().includes('error')) {
+        if (!task.outputMsg.innerText.toLowerCase().includes('error')) {
             task.outputMsg.innerText = `Processed ${task.numOutputsTotal} images in ${time}`
-	}
+        }
         task.progressBar.style.height = "0px"
         task.progressBar.style.border = "0px solid var(--background-color3)"
         task.progressBar.classList.remove("active")
@@ -817,7 +817,7 @@ function createTask(task) {
                                 <div class="taskStatusLabel">Enqueued</div>
                                 <button class="secondaryButton stopTask"><i class="fa-solid fa-trash-can"></i> Remove</button>
                                 <button class="secondaryButton useSettings"><i class="fa-solid fa-redo"></i> Use these settings</button>
-                                <div class="preview-prompt collapsible active"></div>
+                                <div class="preview-prompt"></div>
                                 <div class="taskConfig">${taskConfig}</div>
                                 <div class="outputMsg"></div>
                                 <div class="progress-bar active"><div></div></div>
