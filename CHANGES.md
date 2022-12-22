@@ -27,6 +27,9 @@
 - Support loading models in the safetensor format, for improved safety
 
 ### Detailed changelog
+* 2.4.20 - 22 Dec 2022 - `Pause All` button to pause all the pending tasks. Thanks @JeLuf
+* 2.4.20 - 22 Dec 2022 - `Undo`/`Redo` buttons in the image editor. Thanks @JeLuf
+* 2.4.20 - 22 Dec 2022 - Drag handle to reorder the tasks. This fixed a bug where the metadata was no longer selectable (for copying). Thanks @JeLuf
 * 2.4.19 - 17 Dec 2022 - Add Undo/Redo buttons in the Image Editor. Thanks @JeLuf
 * 2.4.19 - 10 Dec 2022 - Show init img in task list
 * 2.4.19 - 7 Dec 2022 - Use pre-trained hypernetworks while generating images. Thanks @C0bra5
