@@ -55,7 +55,7 @@ The installer will take care of whatever is needed. If you face any problems, yo
 - **Negative Prompt**: Specify aspects of the image to *remove*.
 - **Attention/Emphasis**: () in the prompt increases the model's attention to enclosed words, and [] decreases it.
 - **Weighted Prompts**: Use weights for specific words in your prompt to change their importance, e.g. `red:2.4 dragon:1.2`.
-- **Prompt Matrix**: (beta only) Quickly create multiple variations of your prompt, e.g. `a photograph of an astronaut riding a horse | illustration | cinematic lighting`.
+- **Prompt Matrix**: Quickly create multiple variations of your prompt, e.g. `a photograph of an astronaut riding a horse | illustration | cinematic lighting`.
 - **Lots of Samplers**: ddim, plms, heun, euler, euler_a, dpm2, dpm2_a, lms.
 - **1-click Upscale/Face Correction**: Upscale or correct an image after it has been generated.
 - **Make Similar Images**: Click to generate multiple variations of a generated image.
