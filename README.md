@@ -30,7 +30,7 @@ If Windows SmartScreen prevents you from running the program click `More info` a
 ## On Linux: 
 Run `./start.sh` (or `bash start.sh`) in a terminal.
 
-The installer will take care of whatever is needed. A friendly [Discord community](https://discord.com/invite/u9yhsFmEkB) will help you if you face any problems.
+The installer will take care of whatever is needed. If you face any problems, you can join the friendly [Discord community](https://discord.com/invite/u9yhsFmEkB) and ask for assistance.
 
 # Step 3: There is no Step 3. It's that simple!
 
@@ -40,29 +40,31 @@ The installer will take care of whatever is needed. A friendly [Discord communit
 
 # Easy for new users, powerful features for advanced users
 ## Features:
+
 ### User experience
-- **Hassle-free installation**: No Dependencies or Technical Knowledge Required. 1-click install for Windows 10/11 and Linux. *No dependencies*, no need for WSL or Docker or Conda or technical setup. Just download and run!
-- **Clutter-free UI**: a friendly and simple UI, while providing a lot of powerful features
+- **Hassle-free installation**: Does not require technical knowledge, does not require pre-installed software. Just download and run!
+- **Clutter-free UI**: A friendly and simple UI, while providing a lot of powerful features.
 
 ### Image generation
-- Supports "*Text to Image*" and "*Image to Image*"
-- **In-Painting**: Specify areas of your image to paint into
-- **Simple Drawing Tool**: Draw basic images to guide the AI, without needing an external drawing program
-- **Face Correction (GFPGAN) and Upscaling (RealESRGAN)**
-- **Loopback**: Use the output image as the input image for the next img2img task
+- **Supports**: "*Text to Image*" and "*Image to Image*".
+- **In-Painting**: Specify areas of your image to paint into.
+- **Simple Drawing Tool**: Draw basic images to guide the AI, without needing an external drawing program.
+- **Face Correction (GFPGAN)**
+- **Upscaling (RealESRGAN)**
+- **Loopback**: Use the output image as the input image for the next img2img task.
 - **Negative Prompt**: Specify aspects of the image to *remove*.
-- **Attention/Emphasis**: () in the prompt increases the model's attention to enclosed words, and [] decreases it
-- **Weighted Prompts**: Use weights for specific words in your prompt to change their importance, e.g. `red:2.4 dragon:1.2`
-- **Prompt Matrix**: (in beta) Quickly create multiple variations of your prompt, e.g. `a photograph of an astronaut riding a horse | illustration | cinematic lighting`
-- **Lots of Samplers:** ddim, plms, heun, euler, euler_a, dpm2, dpm2_a, lms
-- **1-click Upscale/Face Correction**: Upscale or correct an image after it has been generated
-- **Make Similar Images**: Click to generate multiple variations of a generated image
-- **NSFW Setting**: A setting in the UI to control *NSFW content*
-- **JPEG/PNG output**
+- **Attention/Emphasis**: () in the prompt increases the model's attention to enclosed words, and [] decreases it.
+- **Weighted Prompts**: Use weights for specific words in your prompt to change their importance, e.g. `red:2.4 dragon:1.2`.
+- **Prompt Matrix**: (beta only) Quickly create multiple variations of your prompt, e.g. `a photograph of an astronaut riding a horse | illustration | cinematic lighting`.
+- **Lots of Samplers**: ddim, plms, heun, euler, euler_a, dpm2, dpm2_a, lms.
+- **1-click Upscale/Face Correction**: Upscale or correct an image after it has been generated.
+- **Make Similar Images**: Click to generate multiple variations of a generated image.
+- **NSFW Setting**: A setting in the UI to control *NSFW content*.
+- **JPEG/PNG output**: Multiple file formats.
 
 ### Advanced features
 - **Custom Models**: Use your own `.ckpt` or `.safetensors` file, by placing it inside the `models/stable-diffusion` folder!
-- **Stable Diffusion 2.0 support (experimental)**: available in beta channel
+- **Stable Diffusion 2.0 support (experimental)**: available in beta channel.
 - **Use custom VAE models**
 - **Use pre-trained Hypernetworks**
 - **UI Plugins**: Choose from a growing list of [community-generated UI plugins](https://github.com/cmdr2/stable-diffusion-ui/wiki/UI-Plugins), or write your own plugin to add features to the project!
@@ -70,21 +72,23 @@ The installer will take care of whatever is needed. A friendly [Discord communit
 ### Performance and security
 - **Low Memory Usage**: Creates 512x512 images with less than 4GB of GPU RAM!
 - **Use CPU setting**: If you don't have a compatible graphics card, but still want to run it on your CPU.
-- **Multi-GPU support**: automatically spreads your tasks across multiple GPUs (if available), for faster performance!
-- **Auto scan for malicious models**: uses picklescan to prevent malicious models
-- **Safetensors support**: Support loading models in the safetensor format, for improved safety
+- **Multi-GPU support**: Automatically spreads your tasks across multiple GPUs (if available), for faster performance!
+- **Auto scan for malicious models**: Uses picklescan to prevent malicious models.
+- **Safetensors support**: Support loading models in the safetensor format, for improved safety.
 - **Auto-updater**: Gets you the latest improvements and bug-fixes to a rapidly evolving project.
 - **Developer Console**: A developer-mode for those who want to modify their Stable Diffusion code, and edit the conda environment.
 
 ### Usability:
-- **Live Preview**: See the image as the AI is drawing it
+- **Live Preview**: See the image as the AI is drawing it.
 - **Task Queue**: Queue up all your ideas, without waiting for the current task to finish.
 - **Image Modifiers**: A library of *modifier tags* like *"Realistic"*, *"Pencil Sketch"*, *"ArtStation"* etc. Experiment with various styles quickly.
-- **Multiple Prompts File:** Queue multiple prompts by entering one prompt per line, or by running a text file
-- **Save generated images to disk**
-- **UI Themes**
+- **Multiple Prompts File**: Queue multiple prompts by entering one prompt per line, or by running a text file.
+- **Save generated images to disk**: Save your images to your PC!
+- **UI Themes**: Customize the program to your liking.
 
-*(and lots more)*
+**(and a lot more)**
+
+----
 
 ## Easy for new users:
 ![Screenshot of the initial UI](media/shot-v10-simple.jpg?raw=true)
@@ -107,10 +111,10 @@ Useful for judging (and stopping) an image quickly, without waiting for it to fi
 
 You don't need to install or struggle with Python, Anaconda, Docker etc. The installer will take care of whatever is needed.
 
-This will automatically install Stable Diffusion, set it up, and start the interface. No additional steps are needed.
+----
 
 # How to use?
-Please use our [guide](https://github.com/cmdr2/stable-diffusion-ui/wiki/How-to-Use) to understand how to use the features in this UI.
+Please refer to our [guide](https://github.com/cmdr2/stable-diffusion-ui/wiki/How-to-Use) to understand how to use the features in this UI.
 
 # Bugs reports and code contributions welcome
 If there are any problems or suggestions, please feel free to ask on the [discord server](https://discord.com/invite/u9yhsFmEkB) or [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues).
@@ -126,4 +130,11 @@ If you have any code contributions in mind, please feel free to say Hi to us on 
 # Disclaimer
 The authors of this project are not responsible for any content generated using this interface.
 
-The license of this software forbids you from sharing any content that violates any laws, produce any harm to a person, disseminate any personal information that would be meant for harm, spread misinformation, or target vulnerable groups. For the full list of restrictions please read [the license](LICENSE). You agree to these terms by using this software.
+The license of this software forbids you from sharing any content that:
+- Violates any laws.
+- Produces any harm to a person or persons.
+- Disseminates (spreads) any personal information that would be meant for harm.
+- Spreads misinformation.
+- Target vulnerable groups. 
+
+For the full list of restrictions please read [the License](LICENSE). You agree to these terms by using this software.
