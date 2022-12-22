@@ -10,8 +10,8 @@
     const IDLE_COOLDOWN = 2500 // ms
     const CONCURRENT_TASK_INTERVAL = 500 // ms
 
-    /** Connects to an endpoint and resumes connexion after reaching end of stream until all data is received.
-     * Allows closing the connexion while the server buffers more data.
+    /** Connects to an endpoint and resumes connection after reaching end of stream until all data is received.
+     * Allows closing the connection while the server buffers more data.
      */
     class ChunkedStreamReader {
         #bufferedString = '' // Data received waiting to be read.
@@ -264,11 +264,11 @@
 
     function isServerAvailable() {
         if (typeof serverState !== 'object') {
-            console.error('serverState not set to a value. Connexion to server could be lost...')
+            console.error('serverState not set to a value. Connection to server could be lost...')
             return false
         }
         if (Date.now() >= serverState.time + SERVER_STATE_VALIDITY_DURATION) {
-            console.warn('SERVER_STATE_VALIDITY_DURATION elapsed. Connexion to server could be lost...')
+            console.warn('SERVER_STATE_VALIDITY_DURATION elapsed. Connection to server could be lost...')
             return false
         }
         switch (serverState.status) {
@@ -306,7 +306,7 @@
                 if (await healthCheck() && isServerAvailable()) { // Force a recheck of server status before failure...
                     continue // Continue waiting if last healthCheck confirmed the server is still alive.
                 }
-                throw new Error('Connexion with server lost.')
+                throw new Error('Connection with server lost.')
             }
         }
         if (Date.now() >= serverState.time + SERVER_STATE_VALIDITY_DURATION) {

@@ -27,6 +27,7 @@
 - Support loading models in the safetensor format, for improved safety
 
 ### Detailed changelog
+* 2.4.19 - 17 Dec 2022 - Add Undo/Redo buttons in the Image Editor. Thanks @JeLuf
 * 2.4.19 - 10 Dec 2022 - Show init img in task list
 * 2.4.19 - 7 Dec 2022 - Use pre-trained hypernetworks while generating images. Thanks @C0bra5
 * 2.4.19 - 6 Dec 2022 - Allow processing new tasks first. Thanks @madrang
