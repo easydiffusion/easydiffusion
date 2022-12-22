@@ -6,7 +6,8 @@ from easydiffusion.types import TaskData
 from easydiffusion.utils import log
 
 from sdkit import Context
-from sdkit.models import load_model, unload_model
+from sdkit.models import load_model, unload_model, get_known_model_info
+from sdkit.utils import hash_file_quick
 
 KNOWN_MODEL_TYPES = ['stable-diffusion', 'vae', 'hypernetwork', 'gfpgan', 'realesrgan']
 MODEL_EXTENSIONS = {
@@ -103,6 +104,10 @@ def reload_models_if_necessary(context: Context, task_data: TaskData):
 
     if set_vram_optimizations(context): # reload SD
         models_to_reload['stable-diffusion'] = model_paths_in_req['stable-diffusion']
+
+    if 'stable-diffusion' in models_to_reload:
+        quick_hash = hash_file_quick(models_to_reload['stable-diffusion'])
+        known_model_info = get_known_model_info(quick_hash=quick_hash)
 
     for model_type, model_path_in_req in models_to_reload.items():
         context.model_paths[model_type] = model_path_in_req
