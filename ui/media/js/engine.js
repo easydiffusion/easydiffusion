@@ -8,7 +8,7 @@
     const SERVER_STATE_VALIDITY_DURATION = 90 * 1000 // ms - 90 seconds to allow ping to timeout more than once before killing tasks.
     const HEALTH_PING_INTERVAL = 5000 // ms
     const IDLE_COOLDOWN = 2500 // ms
-    const CONCURRENT_TASK_INTERVAL = 500 // ms
+    const CONCURRENT_TASK_INTERVAL = 100 // ms
 
     /** Connects to an endpoint and resumes connection after reaching end of stream until all data is received.
      * Allows closing the connection while the server buffers more data.
@@ -839,6 +839,8 @@
          * @memberof Task
          */
         async post(timeout=-1) {
+            performance.mark('make-render-request')
+            console.log('delay between clicking and making the server request:', performance.measure('diff', 'click-makeImage', 'make-render-request').duration + ' ms')
             let jsonResponse = await super.post('/render', timeout)
             if (typeof jsonResponse?.task !== 'number') {
                 console.warn('Endpoint error response: ', jsonResponse)
@@ -1106,9 +1108,9 @@
                 idleEventPromise = makeQuerablePromise(eventSource.fireEvent(EVENT_IDLE, {capacity: serverCapacity, idle: true}))
             }
             // Calling idle could result in task being added to queue.
-            if (task_queue.size <= 0 && concurrent_generators.size <= 0) {
-                return asyncDelay(IDLE_COOLDOWN).then(() => idleEventPromise)
-            }
+            // if (task_queue.size <= 0 && concurrent_generators.size <= 0) {
+            //     return asyncDelay(IDLE_COOLDOWN).then(() => idleEventPromise)
+            // }
         }
         if (task_queue.size < serverCapacity) {
             if (!idleEventPromise?.isPending) {

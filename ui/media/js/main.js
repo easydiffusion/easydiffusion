@@ -429,6 +429,7 @@ function getUncompletedTaskEntries() {
 }
 
 function makeImage() {
+    performance.mark('click-makeImage')
     if (!SD.isServerAvailable()) {
         alert('The server is not available.')
         return
