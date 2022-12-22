@@ -142,9 +142,13 @@ def getUIPlugins():
     return plugins
 
 def getIPConfig():
-    ips = socket.gethostbyname_ex(socket.gethostname())
-    ips[2].append(ips[0])
-    return ips[2]
+    try:
+        ips = socket.gethostbyname_ex(socket.gethostname())
+        ips[2].append(ips[0])
+        return ips[2]
+    except Exception as e:
+        log.exception(e)
+        return []
 
 def open_browser():
     config = getConfig()
