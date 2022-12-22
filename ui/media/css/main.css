@@ -191,15 +191,29 @@ code {
     background: rgb(132, 8, 0);
     border: 2px solid rgb(122, 29, 0);
     color: rgb(255, 221, 255);
-    width: 100%;
     height: 30pt;
     border-radius: 6px;
-    display: none;
-    margin-top: 2pt;
+    flex-grow: 2;
 }
 #stopImage:hover {
     background: rgb(177, 27, 0);
 }
+
+div#render-buttons {
+    gap: 3px;
+    margin-top: 4px;
+    display: none;
+}
+button#pause {
+    flex-grow: 1;
+    background: var(--accent-color);
+}
+button#resume {
+    flex-grow: 1;
+    background: var(--accent-color);
+    display: none;
+}
+
 .flex-container {
     display: flex;
     width: 100%;
@@ -265,7 +279,7 @@ img {
 }
 .preview-prompt {
     font-size: 13pt;
-    margin-bottom: 10pt;
+    display: inline;
 }
 #coffeeButton {
     height: 23px;
@@ -391,14 +405,34 @@ img {
 .imageTaskContainer > div > .collapsible-handle {
     display: none;
 }
+.dropTargetBefore::before{
+    content: "";
+    border: 1px solid #fff;
+    margin-bottom: -2px;
+    display: block;
+    box-shadow: 0 0 5px #fff;
+    transform: translate(0px, -14px);
+}
+.dropTargetAfter::after{
+    content: "";
+    border: 1px solid #fff;
+    margin-bottom: -2px;
+    display: block;
+    box-shadow: 0 0 5px #fff;
+    transform: translate(0px, 14px);
+}
+.drag-handle {
+    margin-right: 6px;
+    cursor: move;
+}
 .taskStatusLabel {
-    float: left;
     font-size: 8pt;
     background:var(--background-color2);
     border: 1px solid rgb(61, 62, 66);
     padding: 2pt 4pt;
     border-radius: 2pt;
     margin-right: 5pt;
+    display: inline;
 }
 .activeTaskLabel {
     background:rgb(0, 90, 30);
@@ -448,6 +482,7 @@ img {
     font-size: 10pt;
     color: #aaa;
     margin-bottom: 5pt;
+    margin-top: 5pt;
 }
 .img-batch {
     display: inline;
@@ -1068,7 +1103,19 @@ div.task-initimg > img {
 }
 div.task-fs-initimage {
     display:  none;
+#    position: absolute;
+}
+div.task-initimg:hover div.task-fs-initimage {
+    display: block;
     position: absolute;
+    z-index: 9999;
+    box-shadow: 0 0 30px #000;
+    margin-top:-64px;
+}
+div.top-right {
+    position: absolute;
+    top: 8px;
+    right: 8px;
 }
 
 button#save-system-settings-btn {
@@ -1079,4 +1126,51 @@ button#save-system-settings-btn {
 }
 #ip-info div {
     line-height: 200%;
+}
+
+/* SCROLLBARS */
+:root {
+    --scrollbar-width: 14px;
+    --scrollbar-radius: 10px;
+}
+
+.scrollbar-editor::-webkit-scrollbar {
+    width: 8px;
+}
+
+.scrollbar-editor::-webkit-scrollbar-track {
+    border-radius: 10px;
+}
+
+.scrollbar-editor::-webkit-scrollbar-thumb {
+    background: --background-color2;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar {
+    width: var(--scrollbar-width);
+}
+
+::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 5px var(--input-border-color);
+    border-radius: var(--input-border-radius);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--background-color2);
+    border-radius: var(--scrollbar-radius);
+}
+
+body.pause {
+    border: solid 12px var(--accent-color);
+}
+
+body.wait-pause {
+    animation: blinker 2s linear infinite;
+}
+
+@keyframes blinker {
+     0% { border: solid 12px var(--accent-color); }
+    50% { border: solid 12px var(--background-color1); }
+   100% { border: solid 12px var(--accent-color); }
 }

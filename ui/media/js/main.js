@@ -47,6 +47,9 @@ let streamImageProgressField = document.querySelector("#stream_image_progress")
 
 let makeImageBtn = document.querySelector('#makeImage')
 let stopImageBtn = document.querySelector('#stopImage')
+let pauseBtn = document.querySelector('#pause')
+let resumeBtn = document.querySelector('#resume')
+let renderButtons = document.querySelector('#render-buttons')
 
 let imagesContainer = document.querySelector('#current-images')
 let initImagePreviewContainer = document.querySelector('#init_image_preview_container')
@@ -102,6 +105,8 @@ imagePreview.addEventListener('drop', function(ev) {
         htmlTaskMap.set(newNode, task)
     }
 })
+
+
 
 let showConfigToggle = document.querySelector('#configToggleBtn')
 // let configBox = document.querySelector('#config')
@@ -426,6 +431,7 @@ function getUncompletedTaskEntries() {
 }
 
 function makeImage() {
+    performance.mark('click-makeImage')
     if (!SD.isServerAvailable()) {
         alert('The server is not available.')
         return
@@ -458,6 +464,10 @@ function makeImage() {
 
 async function onIdle() {
     const serverCapacity = SD.serverCapacity
+    if (pauseClient===true) {
+        await resumeClient()
+    }
+
     for (const taskEntry of getUncompletedTaskEntries()) {
         if (SD.activeTasks.size >= serverCapacity) {
             break
@@ -625,19 +635,18 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
     task['stopTask'].innerHTML = '<i class="fa-solid fa-trash-can"></i> Remove'
     task['taskStatusLabel'].style.display = 'none'
 
-    let time = Date.now() - task.startTime
-    time /= 1000
+    let time = millisecondsToStr( Date.now() - task.startTime )
 
     if (task.batchesDone == task.batchCount) {
         if (!task.outputMsg.innerText.toLowerCase().includes('error')) {
-            task.outputMsg.innerText = `Processed ${task.numOutputsTotal} images in ${time} seconds`
+            task.outputMsg.innerText = `Processed ${task.numOutputsTotal} images in ${time}`
         }
         task.progressBar.style.height = "0px"
         task.progressBar.style.border = "0px solid var(--background-color3)"
         task.progressBar.classList.remove("active")
         setStatus('request', 'done', 'success')
     } else {
-        task.outputMsg.innerText += `Task ended after ${time} seconds`
+        task.outputMsg.innerText += `Task ended after ${time}`
     }
 
     if (randomSeedField.checked) {
@@ -652,7 +661,7 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
         return
     }
 
-    stopImageBtn.style.display = 'none'
+    renderButtons.style.display = 'none'
     renameMakeImageButton()
 
     if (isSoundEnabled()) {
@@ -737,7 +746,7 @@ async function onTaskStart(task) {
     )
 
     setStatus('request', 'fetching..')
-    stopImageBtn.style.display = 'block'
+    renderButtons.style.display = 'flex'
     renameMakeImageButton()
     previewTools.style.display = 'block'
 }
@@ -745,23 +754,33 @@ async function onTaskStart(task) {
 /* Hover effect for the init image in the task list */
 function createInitImageHover(taskEntry) {
     var $tooltip = $( taskEntry.querySelector('.task-fs-initimage') )
-    $( taskEntry.querySelector('div.task-initimg > img') ).on('mouseenter', function() {
-        var img = this,
-           $img = $(img),
-           offset = $img.offset();
-    
-       $tooltip
-       .css({
-           'top': offset.top,
-           'left': offset.left,
-           'z-index': 99999,
-           'display': 'block'
-       })
-       .append($img.clone().css({width:"", height:""}));
-    })
-    $tooltip.on('mouseleave', function() {
-       $tooltip.empty().addClass('hidden');
+    var img = document.createElement('img')
+    img.src = taskEntry.querySelector('div.task-initimg > img').src
+    $tooltip.append(img)
+    $tooltip.append(`<div class="top-right"><button>Use as Input</button></div>`)
+    $tooltip.find('button').on('click', (e) => { onUseAsInputClick(null,img) } )
+}
+
+let startX, startY;
+function onTaskEntryDragOver(event) {
+    imagePreview.querySelectorAll(".imageTaskContainer").forEach(itc => {
+        if(itc != event.target.closest(".imageTaskContainer")){
+            itc.classList.remove('dropTargetBefore','dropTargetAfter');
+        }
     });
+    if(event.target.closest(".imageTaskContainer")){
+        if(startX && startY){
+            if(event.target.closest(".imageTaskContainer").offsetTop > startY){
+                event.target.closest(".imageTaskContainer").classList.add('dropTargetAfter');
+            }else if(event.target.closest(".imageTaskContainer").offsetTop < startY){
+                event.target.closest(".imageTaskContainer").classList.add('dropTargetBefore');
+            }else if (event.target.closest(".imageTaskContainer").offsetLeft > startX){
+                event.target.closest(".imageTaskContainer").classList.add('dropTargetAfter');
+            }else if (event.target.closest(".imageTaskContainer").offsetLeft < startX){
+                event.target.closest(".imageTaskContainer").classList.add('dropTargetBefore');
+            }
+        }
+    }
 }
 
 function createTask(task) {
@@ -801,10 +820,11 @@ function createTask(task) {
     taskEntry.id = `imageTaskContainer-${Date.now()}`
     taskEntry.className = 'imageTaskContainer'
     taskEntry.innerHTML = ` <div class="header-content panel collapsible active">
+                                <i class="drag-handle fa-solid fa-grip"></i>
                                 <div class="taskStatusLabel">Enqueued</div>
                                 <button class="secondaryButton stopTask"><i class="fa-solid fa-trash-can"></i> Remove</button>
                                 <button class="secondaryButton useSettings"><i class="fa-solid fa-redo"></i> Use these settings</button>
-                                <div class="preview-prompt collapsible active"></div>
+                                <div class="preview-prompt"></div>
                                 <div class="taskConfig">${taskConfig}</div>
                                 <div class="outputMsg"></div>
                                 <div class="progress-bar active"><div></div></div>
@@ -814,6 +834,23 @@ function createTask(task) {
                             </div>`
 
     createCollapsibles(taskEntry)
+    
+    let draghandle = taskEntry.querySelector('.drag-handle')
+    draghandle.addEventListener('mousedown', (e) => { taskEntry.setAttribute('draggable',true)})
+    draghandle.addEventListener('mouseup',   (e) => { taskEntry.setAttribute('draggable',false)})
+    taskEntry.addEventListener('dragend',    (e) => { 
+        taskEntry.setAttribute('draggable',false);
+        imagePreview.querySelectorAll(".imageTaskContainer").forEach(itc => {
+            itc.classList.remove('dropTargetBefore','dropTargetAfter');
+        });
+        imagePreview.removeEventListener("dragover", onTaskEntryDragOver );
+    })
+    taskEntry.addEventListener('dragstart', function(e) {
+        imagePreview.addEventListener("dragover", onTaskEntryDragOver );
+        e.dataTransfer.setData("text/plain", taskEntry.id);
+        startX = e.target.closest(".imageTaskContainer").offsetLeft;
+        startY = e.target.closest(".imageTaskContainer").offsetTop;
+    })
 
 
     if (task.reqBody.init_image !== undefined) {
@@ -847,24 +884,13 @@ function createTask(task) {
 
     task.isProcessing = true
     taskEntry = imagePreview.insertBefore(taskEntry, previewTools.nextSibling)
-    taskEntry.draggable = true
     htmlTaskMap.set(taskEntry, task)
-    taskEntry.addEventListener('dragstart', function(ev) {
-        ev.dataTransfer.setData("text/plain", ev.target.id);
-    })
 
     task.previewPrompt.innerText = task.reqBody.prompt
     if (task.previewPrompt.innerText.trim() === '') {
         task.previewPrompt.innerHTML = '&nbsp;' // allows the results to be collapsed
     }
 
-    // Allow prompt text to be selected.
-    task.previewPrompt.addEventListener("mouseover", function() {
-        taskEntry.setAttribute("draggable", "false");
-    });
-    task.previewPrompt.addEventListener("mouseout", function() {
-        taskEntry.setAttribute("draggable", "true");
-    });
 }
 
 function getCurrentUserRequest() {
@@ -936,20 +962,29 @@ function getPrompts(prompts) {
     if (typeof prompts === 'undefined') {
         prompts = promptField.value
     }
-    if (prompts.trim() === '') {
+    if (prompts.trim() === '' && activeTags.length === 0) {
         return ['']
     }
 
-    prompts = prompts.split('\n')
-    prompts = prompts.map(prompt => prompt.trim())
-    prompts = prompts.filter(prompt => prompt !== '')
-
-    let promptsToMake = applyPermuteOperator(prompts)
-    promptsToMake = applySetOperator(promptsToMake)
+    let promptsToMake = []
+    if (prompts.trim() !== '') {
+        prompts = prompts.split('\n')
+        prompts = prompts.map(prompt => prompt.trim())
+        prompts = prompts.filter(prompt => prompt !== '')
+    
+        promptsToMake = applyPermuteOperator(prompts)
+        promptsToMake = applySetOperator(promptsToMake)
+    }
     const newTags = activeTags.filter(tag => tag.inactive === undefined || tag.inactive === false)
     if (newTags.length > 0) {
         const promptTags = newTags.map(x => x.name).join(", ")
-        promptsToMake = promptsToMake.map((prompt) => `${prompt}, ${promptTags}`)
+        if (promptsToMake.length > 0) {
+            promptsToMake = promptsToMake.map((prompt) => `${prompt}, ${promptTags}`)
+        }
+        else
+        {
+            promptsToMake.push(promptTags)
+        }
     }
 
     promptsToMake = applyPermuteOperator(promptsToMake)
@@ -1389,6 +1424,7 @@ function selectTab(tab_id) {
         tabInfo.tab.classList.toggle("active")
         tabInfo.content.classList.toggle("active")
     }
+    document.dispatchEvent(new CustomEvent('tabClick', { detail: tabInfo }))
 }
 function linkTabContents(tab) {
     var name = tab.id.replace("tab-", "")
@@ -1401,6 +1437,37 @@ function linkTabContents(tab) {
 
     tab.addEventListener("click", event => selectTab(tab.id))
 }
+
+let pauseClient = false
+
+function resumeClient() {
+    if (pauseClient) {
+        document.body.classList.remove('wait-pause')
+        document.body.classList.add('pause')
+    }
+    return new Promise(resolve => {
+        let playbuttonclick = function () {
+            resumeBtn.removeEventListener("click", playbuttonclick);
+            resolve("resolved");
+        }
+        resumeBtn.addEventListener("click", playbuttonclick)
+    })
+}
+
+pauseBtn.addEventListener("click", function () {
+    pauseClient = true
+    pauseBtn.style.display="none"
+    resumeBtn.style.display = "inline"
+    document.body.classList.add('wait-pause')
+})
+
+resumeBtn.addEventListener("click", function () {
+    pauseClient = false
+    resumeBtn.style.display = "none"
+    pauseBtn.style.display = "inline"
+    document.body.classList.remove('pause')
+    document.body.classList.remove('wait-pause')
+})
 
 document.querySelectorAll(".tab").forEach(linkTabContents)
 
