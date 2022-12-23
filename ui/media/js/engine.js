@@ -840,7 +840,9 @@
          */
         async post(timeout=-1) {
             performance.mark('make-render-request')
-            console.log('delay between clicking and making the server request:', performance.measure('diff', 'click-makeImage', 'make-render-request').duration + ' ms')
+            if (performance.getEntriesByName('click-makeImage', 'mark').length > 0) {
+                console.log('delay between clicking and making the server request:', performance.measure('diff', 'click-makeImage', 'make-render-request').duration + ' ms')
+            }
             let jsonResponse = await super.post('/render', timeout)
             if (typeof jsonResponse?.task !== 'number') {
                 console.warn('Endpoint error response: ', jsonResponse)
