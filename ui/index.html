@@ -6,13 +6,7 @@
     <meta name="theme-color" content="#673AB6">
     <link rel="icon" type="image/png" href="/media/images/favicon-16x16.png" sizes="16x16">
     <link rel="icon" type="image/png" href="/media/images/favicon-32x32.png" sizes="32x32">
-    <link rel="stylesheet" href="/media/css/fonts.css">
-    <link rel="stylesheet" href="/media/css/themes.css">
-    <link rel="stylesheet" href="/media/css/main.css">
-    <link rel="stylesheet" href="/media/css/auto-save.css">
-    <link rel="stylesheet" href="/media/css/modifier-thumbnails.css">
     <link rel="stylesheet" href="/media/css/fontawesome-all.min.css">
-    <link rel="stylesheet" href="/media/css/image-editor.css">
     <link rel="stylesheet" href="/media/css/jquery-confirm.min.css">
     <link rel="manifest" href="/media/manifest.webmanifest">
     <script src="/media/js/jquery-3.6.1.min.js"></script>
@@ -400,20 +394,67 @@
     </div>
 </div>
 </body>
-<script src="media/js/utils.js"></script>
-<script src="media/js/engine.js"></script>
-<script src="media/js/parameters.js"></script>
-<script src="media/js/plugins.js"></script>
 
-<script src="media/js/image-modifiers.js"></script>
-<script src="media/js/auto-save.js"></script>
 
-<script src="media/js/main.js"></script>
-<script src="media/js/themes.js"></script>
-<script src="media/js/dnd.js"></script>
-<script src="media/js/image-editor.js"></script>
 <script>
+
+function requireScript(src) {
+  return new Promise((resolve, reject) => {
+    console.log(`init: load ${src}`)
+    const script = document.createElement('script');
+    script.src = `${src}?ts=${Date.now()}`;
+    script.onload = () => {
+      resolve();
+    };
+    script.onerror = () => {
+      reject(new Error(`Failed to load script at ${src}`));
+    };
+    document.head.appendChild(script);
+  });
+}
+
+function requireStyle(src) {
+  return new Promise((resolve, reject) => {
+    console.log(`init: load style file ${src}`)
+    const link = document.createElement('link');
+    link.rel="stylesheet"
+    link.href = `${src}?ts=${Date.now()}`;
+    link.onload = () => {
+      resolve();
+    };
+    link.onerror = () => {
+      reject(new Error(`Failed to load style at ${src}`));
+    };
+    document.head.appendChild(link);
+  });
+}
+
+/*
+    <link rel="stylesheet" href="/media/css/fonts.css">
+*/
+
 async function init() {
+    await requireStyle("media/css/fonts.css")
+    await requireStyle("/media/css/themes.css")
+    await requireStyle("/media/css/main.css")
+    await requireStyle("/media/css/auto-save.css")
+    await requireStyle("/media/css/modifier-thumbnails.css")
+    await requireStyle("/media/css/image-editor.css")
+
+    await requireScript("media/js/utils.js")
+
+    await requireScript("media/js/engine.js")
+    await requireScript("media/js/parameters.js")
+    await requireScript("media/js/plugins.js")
+
+    await requireScript("media/js/image-modifiers.js")
+    await requireScript("media/js/auto-save.js")
+    
+    await requireScript("media/js/main.js")
+    await requireScript("media/js/themes.js")
+    await requireScript("media/js/dnd.js")
+    await requireScript("media/js/image-editor.js")
+
     await initSettings()
     await getModels()
     await getDiskPath()
@@ -433,5 +474,6 @@ async function init() {
 }
 
 init()
+
 </script>
 </html>
