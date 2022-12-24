@@ -24,7 +24,7 @@ if exist "%INSTALL_ENV_DIR%" set PATH=%INSTALL_ENV_DIR%;%INSTALL_ENV_DIR%\Librar
 set PACKAGES_TO_INSTALL=
 
 if not exist "%LEGACY_INSTALL_ENV_DIR%\etc\profile.d\conda.sh" (
-    if not exist "%INSTALL_ENV_DIR%\etc\profile.d\conda.sh" set PACKAGES_TO_INSTALL=%PACKAGES_TO_INSTALL% conda
+    if not exist "%INSTALL_ENV_DIR%\etc\profile.d\conda.sh" set PACKAGES_TO_INSTALL=%PACKAGES_TO_INSTALL% conda python=3.8.5
 )
 
 call git --version >.tmp1 2>.tmp2
