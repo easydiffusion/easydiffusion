@@ -80,6 +80,22 @@ else
     fi
 fi
 
+# install rich
+if python ../scripts/check_modules.py rich; then
+    echo "rich has already been installed."
+else
+    echo "Installing rich.."
+
+    export PYTHONNOUSERSITE=1
+    export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
+
+    if pip install rich ; then
+        echo "Installed."
+    else
+        fail "Install failed for rich"
+    fi
+fi
+
 if python ../scripts/check_modules.py uvicorn fastapi ; then
     echo "Packages necessary for Stable Diffusion UI were already installed"
 else

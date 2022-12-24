@@ -56,7 +56,7 @@ if "%ERRORLEVEL%" EQU "0" (
 ) else (
     echo "Installing torch and torchvision.."
 
-    @REM prevent conda from using packages from the user's home directory, to avoid conflicts
+    @REM prevent from using packages from the user's home directory, to avoid conflicts
     set PYTHONNOUSERSITE=1
     set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 
@@ -72,7 +72,7 @@ call python ..\scripts\check_modules.py sdkit sdkit.models ldm transformers nump
 if "%ERRORLEVEL%" EQU "0" (
     echo "sdkit is already installed."
 
-    @REM prevent conda from using packages from the user's home directory, to avoid conflicts
+    @REM prevent from using packages from the user's home directory, to avoid conflicts
     set PYTHONNOUSERSITE=1
     set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 
@@ -82,12 +82,29 @@ if "%ERRORLEVEL%" EQU "0" (
 ) else (
     echo "Installing sdkit: https://pypi.org/project/sdkit/"
 
-    @REM prevent conda from using packages from the user's home directory, to avoid conflicts
+    @REM prevent from using packages from the user's home directory, to avoid conflicts
     set PYTHONNOUSERSITE=1
     set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 
     call pip install sdkit || (
         echo "Error installing sdkit. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
+        pause
+        exit /b
+    )
+)
+
+@rem install rich
+call python ..\scripts\check_modules.py rich
+if "%ERRORLEVEL%" EQU "0" (
+    echo "rich has already been installed."
+) else (
+    echo "Installing rich.."
+
+    set PYTHONNOUSERSITE=1
+    set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
+
+    call pip install rich || (
+        echo "Error installing rich. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
         pause
         exit /b
     )
