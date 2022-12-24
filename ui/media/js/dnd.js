@@ -25,6 +25,7 @@ function parseBoolean(stringValue) {
         case "no":
         case "off":
         case "0":
+        case "none":
         case null:
         case undefined:
           return false;
