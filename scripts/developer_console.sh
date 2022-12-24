@@ -26,21 +26,23 @@ if [ "$0" == "bash" ]; then
 
   echo ""
 
-  # activate the environment
-  CONDA_BASEPATH=$(conda info --base)
-  source "$CONDA_BASEPATH/etc/profile.d/conda.sh" # otherwise conda complains about 'shell not initialized' (needed when running in a script)
+  # activate the legacy environment (if present) and set PYTHONPATH
+  if [ -e "installer_files/env" ]; then
+    export PYTHONPATH="$(pwd)/installer_files/env/lib/python3.8/site-packages"
+  fi
+  if [ -e "stable-diffusion/env" ]; then
+    CONDA_BASEPATH=$(conda info --base)
+    source "$CONDA_BASEPATH/etc/profile.d/conda.sh" # otherwise conda complains about 'shell not initialized' (needed when running in a script)
 
-  conda activate ./stable-diffusion/env
+    conda activate ./stable-diffusion/env
+
+    export PYTHONPATH="$(pwd)/stable-diffusion/env/lib/python3.8/site-packages"
+  fi
 
   which python
   python --version
 
-  # set the PYTHONPATH
-  cd stable-diffusion
-  SD_PATH=`pwd`
-  export PYTHONPATH="$SD_PATH:$SD_PATH/env/lib/python3.8/site-packages"
   echo "PYTHONPATH=$PYTHONPATH"
-  cd ..
 
   # done
 
