@@ -27,6 +27,7 @@
 - Support loading models in the safetensor format, for improved safety
 
 ### Detailed changelog
+* 2.4.21 - 23 Dec 2022 - Speed up image creation, by removing a delay (regression) of 4-5 seconds between clicking the `Make Image` button and calling the server.
 * 2.4.20 - 22 Dec 2022 - `Pause All` button to pause all the pending tasks. Thanks @JeLuf
 * 2.4.20 - 22 Dec 2022 - `Undo`/`Redo` buttons in the image editor. Thanks @JeLuf
 * 2.4.20 - 22 Dec 2022 - Drag handle to reorder the tasks. This fixed a bug where the metadata was no longer selectable (for copying). Thanks @JeLuf
