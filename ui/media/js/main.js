@@ -828,12 +828,17 @@ function createTask(task) {
                             </div>`
 
     createCollapsibles(taskEntry)
-    
+
     let draghandle = taskEntry.querySelector('.drag-handle')
-    draghandle.addEventListener('mousedown', (e) => { taskEntry.setAttribute('draggable',true)})
-    draghandle.addEventListener('mouseup',   (e) => { taskEntry.setAttribute('draggable',false)})
-    taskEntry.addEventListener('dragend',    (e) => { 
-        taskEntry.setAttribute('draggable',false);
+    draghandle.addEventListener('mousedown', (e) => {
+        taskEntry.setAttribute('draggable', true)
+    })
+    // Add a debounce delay to allow mobile to bouble tap.
+    draghandle.addEventListener('mouseup', debounce((e) => {
+        taskEntry.setAttribute('draggable', false)
+    }, 2000))
+    taskEntry.addEventListener('dragend', (e) => {
+        taskEntry.setAttribute('draggable', false);
         imagePreview.querySelectorAll(".imageTaskContainer").forEach(itc => {
             itc.classList.remove('dropTargetBefore','dropTargetAfter');
         });
@@ -845,7 +850,6 @@ function createTask(task) {
         startX = e.target.closest(".imageTaskContainer").offsetLeft;
         startY = e.target.closest(".imageTaskContainer").offsetTop;
     })
-
 
     if (task.reqBody.init_image !== undefined) {
         createInitImageHover(taskEntry)
