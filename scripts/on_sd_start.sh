@@ -87,6 +87,15 @@ else
     echo conda_sd_env_created >> ../scripts/install_status.txt
 fi
 
+# allow rolling back the sdkit-based changes
+if [ -e "src-old" ] && [ ! -e "src" ]; then
+    mv src-old src
+
+    if [ -e "ldm-old" ]; then rm -r ldm-old; fi
+
+    pip uninstall -y sdkit stable-diffusion-sdkit
+fi
+
 if [ `grep -c conda_sd_gfpgan_deps_installed ../scripts/install_status.txt` -gt "0" ]; then
     echo "Packages necessary for GFPGAN (Face Correction) were already installed"
 else
