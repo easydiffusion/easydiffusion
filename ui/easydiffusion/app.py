@@ -11,6 +11,10 @@ from sdkit.utils import log as sdkit_log # hack, so we can overwrite the log con
 from easydiffusion import task_manager
 from easydiffusion.utils import log
 
+# Remove all handlers associated with the root logger object.
+for handler in logging.root.handlers[:]:
+    logging.root.removeHandler(handler)
+
 LOG_FORMAT = '%(asctime)s.%(msecs)03d %(levelname)s %(threadName)s %(message)s'
 logging.basicConfig(
         level=logging.INFO,
