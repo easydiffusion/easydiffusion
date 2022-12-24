@@ -115,7 +115,7 @@ def device_init(context, device):
         # Apply force_full_precision now before models are loaded.
         context.half_precision = False
 
-    log.info(f'Setting {device} as active')
+    log.info(f'Setting {device} as active, with precision: {"half" if context.half_precision else "full"}')
     torch.cuda.device(device)
 
     return
