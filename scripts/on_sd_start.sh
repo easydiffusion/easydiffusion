@@ -39,6 +39,10 @@ if [ -e "env" ]; then
     conda activate ./env || fail "conda activate failed"
 fi
 
+# disable the legacy src and ldm folder (otherwise this prevents installing gfpgan and realesrgan)
+if [ -e "src" ]; then mv src src-old; fi
+if [ -e "ldm" ]; then mv ldm ldm-old; fi
+
 # install torch and torchvision
 if python ../scripts/check_modules.py torch torchvision; then
     echo "torch and torchvision have already been installed."
@@ -254,10 +258,6 @@ python --version
 cd ..
 export SD_UI_PATH=`pwd`/ui
 cd stable-diffusion
-
-# disable the legacy src and ldm folder
-if [ -e "src" ]; then mv src src-old; fi
-if [ -e "ldm" ]; then mv ldm ldm-old; fi
 
 uvicorn server:server_api --app-dir "$SD_UI_PATH" --port ${SD_UI_BIND_PORT:-9000} --host ${SD_UI_BIND_IP:-0.0.0.0} --log-level error
 

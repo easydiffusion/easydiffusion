@@ -45,6 +45,10 @@ if exist "env" (
     call conda activate .\env
 )
 
+@rem disable the legacy src and ldm folder (otherwise this prevents installing gfpgan and realesrgan)
+if exist src rename src src-old
+if exist ldm rename ldm ldm-old
+
 @rem install torch and torchvision
 call python ..\scripts\check_modules.py torch torchvision
 if "%ERRORLEVEL%" EQU "0" (
@@ -299,10 +303,6 @@ call python --version
 @cd ..
 @set SD_UI_PATH=%cd%\ui
 @cd stable-diffusion
-
-@rem disable the legacy src and ldm folder
-if exist src rename src src-old
-if exist ldm rename ldm ldm-old
 
 @if NOT DEFINED SD_UI_BIND_PORT set SD_UI_BIND_PORT=9000
 @if NOT DEFINED SD_UI_BIND_IP set SD_UI_BIND_IP=0.0.0.0
