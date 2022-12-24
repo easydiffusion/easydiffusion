@@ -101,6 +101,19 @@ if NOT DEFINED test_sd2 set test_sd2=N
     @echo conda_sd_env_created >> ..\scripts\install_status.txt
 )
 
+@rem allow rolling back the sdkit-based changes
+if exist "src-old" (
+    if not exist "src" (
+        rename "src-old" "src"
+
+        if exist "ldm-old" (
+            rd /s /q "ldm-old"
+        )
+
+        call pip uninstall -y sdkit stable-diffusion-sdkit
+    )
+)
+
 set PATH=C:\Windows\System32;%PATH%
 
 @>nul findstr /m "conda_sd_gfpgan_deps_installed" ..\scripts\install_status.txt
