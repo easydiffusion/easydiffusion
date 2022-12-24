@@ -1,5 +1,22 @@
 # What's new?
 
+## v2.5
+### Major Changes
+- **Nearly twice as fast** - significantly faster speed of image generation. We're now pretty close to automatic1111's speed. Code contributions are welcome to make our project even faster: https://github.com/easydiffusion/sdkit/#is-it-fast
+- **Full support for Stable Diffusion 2.1** - supports loading v1.4 or v2.0 or v2.1 models seamlessly. No need to enable "Test SD2", and no need to add `sd2_` to your SD 2.0 model file names.
+- **Memory optimized Stable Diffusion 2.1** - you can now use 768x768 models for SD 2.1, with the same low VRAM optimizations that we've always had for SD 1.4.
+- **6 new samplers!** - explore the new samplers, some of which can generate great images in less than 10 inference steps!
+- **Model Merging** - You can now merge two models (`.ckpt` or `.safetensors`) and output `.ckpt` or `.safetensors` models, optionally in `fp16` precision. Details: https://github.com/cmdr2/stable-diffusion-ui/wiki/Model-Merging
+- **Fast loading/unloading of VAEs** - No longer needs to reload the entire Stable Diffusion model, each time you change the VAE
+- **Database of known models** - automatically picks the right configuration for known models. E.g. we automatically detect and apply "v" parameterization (required for some SD 2.0 models), and "fp32" attention precision (required for some SD 2.1 models).
+- **Color correction for img2img** - an option to preserve the color profile (histogram) of the initial image. This is especially useful if you're getting red-tinted images after inpainting/masking.
+- **Three GPU Memory Usage Settings** - `High` (fastest, maximum VRAM usage), `Balanced` (default - almost as fast, significantly lower VRAM usage), `Low` (slowest, very low VRAM usage). The `Low` setting is applied automatically for GPUs with less than 4 GB of VRAM.
+- **Save metadata as JSON** - You can now save the metadata files as either text or json files (choose in the Settings tab).
+- **Major rewrite of the code** - The codebase has been rewritten almost entirely (except for our task manager), to make it more manageable and easier for new developers to contribute features to. We've seperated our core engine into a new project called `sdkit`, which allows anyone to easily integrate Stable Diffusion into their programming projects (via a simple `pip install sdkit`): https://github.com/easydiffusion/sdkit/
+- **Name change** - Last, and probably the least, the UI is now called "Easy Diffusion". It indicates the focus of this project - an easy way for people to play with Stable Diffusion.
+
+Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
+
 ## v2.4
 ### Major Changes
 - **Allow reordering the task queue** (by dragging and dropping tasks). Thanks @madrang
