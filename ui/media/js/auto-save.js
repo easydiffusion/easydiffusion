@@ -15,7 +15,7 @@ const SETTINGS_IDS_LIST = [
     "stable_diffusion_model",
     "vae_model",
     "hypernetwork_model",
-    "sampler",
+    "sampler_name",
     "width",
     "height",
     "num_inference_steps",
@@ -36,10 +36,11 @@ const SETTINGS_IDS_LIST = [
     "save_to_disk",
     "diskPath",
     "sound_toggle",
-    "turbo",
-    "use_full_precision",
+    "vram_usage_level",
     "confirm_dangerous_actions",
-    "auto_save_settings"
+    "metadata_output_format",
+    "auto_save_settings",
+    "apply_color_correction"
 ]
 
 const IGNORE_BY_DEFAULT = [
@@ -277,7 +278,6 @@ function tryLoadOldSettings() {
         "soundEnabled": "sound_toggle",
         "saveToDisk": "save_to_disk",
         "useCPU": "use_cpu",
-        "useFullPrecision": "use_full_precision",
         "useTurboMode": "turbo",
         "diskPath": "diskPath",
         "useFaceCorrection": "use_face_correction",

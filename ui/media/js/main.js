@@ -26,9 +26,11 @@ let initImagePreview = document.querySelector("#init_image_preview")
 let initImageSizeBox = document.querySelector("#init_image_size_box")
 let maskImageSelector = document.querySelector("#mask")
 let maskImagePreview = document.querySelector("#mask_preview")
+let applyColorCorrectionField = document.querySelector('#apply_color_correction')
+let colorCorrectionSetting = document.querySelector('#apply_color_correction_setting')
 let promptStrengthSlider = document.querySelector('#prompt_strength_slider')
 let promptStrengthField = document.querySelector('#prompt_strength')
-let samplerField = document.querySelector('#sampler')
+let samplerField = document.querySelector('#sampler_name')
 let samplerSelectionContainer = document.querySelector("#samplerSelection")
 let useFaceCorrectionField = document.querySelector("#use_face_correction")
 let useUpscalingField = document.querySelector("#use_upscale")
@@ -610,7 +612,7 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
                             <b>Suggestions</b>:
                             <br/>
                             1. If you have set an initial image, please try reducing its dimension to ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION} or smaller.<br/>
-                            2. Try disabling the '<em>Turbo mode</em>' under '<em>Advanced Settings</em>'.<br/>
+                            2. Try picking a lower level in the '<em>GPU Memory Usage</em>' setting (in the '<em>Settings</em>' tab).<br/>
                             3. Try generating a smaller image.<br/>`
                 }
             } else {
@@ -786,10 +788,11 @@ function createTask(task) {
 
     if (task.reqBody.init_image !== undefined) {
         let h = 80
-	let w = task.reqBody.width * h / task.reqBody.height >>0
+        let w = task.reqBody.width * h / task.reqBody.height >>0
         taskConfig += `<div class="task-initimg" style="float:left;"><img style="width:${w}px;height:${h}px;" src="${task.reqBody.init_image}"><div class="task-fs-initimage"></div></div>`
     }
-    taskConfig += `<b>Seed:</b> ${task.seed}, <b>Sampler:</b> ${task.reqBody.sampler}, <b>Inference Steps:</b> ${task.reqBody.num_inference_steps}, <b>Guidance Scale:</b> ${task.reqBody.guidance_scale}, <b>Model:</b> ${task.reqBody.use_stable_diffusion_model}`
+    taskConfig += `<b>Seed:</b> ${task.seed}, <b>Sampler:</b> ${task.reqBody.sampler_name}, <b>Inference Steps:</b> ${task.reqBody.num_inference_steps}, <b>Guidance Scale:</b> ${task.reqBody.guidance_scale}, <b>Model:</b> ${task.reqBody.use_stable_diffusion_model}`
+
     if (task.reqBody.use_vae_model.trim() !== '') {
         taskConfig += `, <b>VAE:</b> ${task.reqBody.use_vae_model}`
     }
@@ -808,6 +811,9 @@ function createTask(task) {
     if (task.reqBody.use_hypernetwork_model) {
         taskConfig += `, <b>Hypernetwork:</b> ${task.reqBody.use_hypernetwork_model}`
         taskConfig += `, <b>Hypernetwork Strength:</b> ${task.reqBody.hypernetwork_strength}`
+    }
+    if (task.reqBody.preserve_init_image_color_profile) {
+        taskConfig += `, <b>Preserve Color Profile:</b> true`
     }
 
     let taskEntry = document.createElement('div')
@@ -914,9 +920,8 @@ function getCurrentUserRequest() {
             width: parseInt(widthField.value),
             height: parseInt(heightField.value),
             // allow_nsfw: allowNSFWField.checked,
-            turbo: turboField.checked,
+            vram_usage_level: vramUsageLevelField.value,
             //render_device: undefined, // Set device affinity. Prefer this device, but wont activate.
-            use_full_precision: useFullPrecisionField.checked,
             use_stable_diffusion_model: stableDiffusionModelField.value,
             use_vae_model: vaeModelField.value,
             stream_progress_updates: true,
@@ -924,6 +929,7 @@ function getCurrentUserRequest() {
             show_only_filtered_image: showOnlyFilteredImageField.checked,
             output_format: outputFormatField.value,
             output_quality: parseInt(outputQualityField.value),
+            metadata_output_format: document.querySelector('#metadata_output_format').value,
             original_prompt: promptField.value,
             active_tags: (activeTags.map(x => x.name))
         }
@@ -938,9 +944,10 @@ function getCurrentUserRequest() {
         if (maskSetting.checked) {
             newTask.reqBody.mask = imageInpainter.getImg()
         }
-        newTask.reqBody.sampler = 'ddim'
+        newTask.reqBody.preserve_init_image_color_profile = applyColorCorrectionField.checked
+        newTask.reqBody.sampler_name = 'ddim'
     } else {
-        newTask.reqBody.sampler = samplerField.value
+        newTask.reqBody.sampler_name = samplerField.value
     }
     if (saveToDiskField.checked && diskPathField.value.trim() !== '') {
         newTask.reqBody.save_to_disk_path = diskPathField.value.trim()
@@ -1349,6 +1356,7 @@ function img2imgLoad() {
     promptStrengthContainer.style.display = 'table-row'
     samplerSelectionContainer.style.display = "none"
     initImagePreviewContainer.classList.add("has-image")
+    colorCorrectionSetting.style.display = ''
 
     initImageSizeBox.textContent = initImagePreview.naturalWidth + " x " + initImagePreview.naturalHeight
     imageEditor.setImage(this.src, initImagePreview.naturalWidth, initImagePreview.naturalHeight)
@@ -1363,6 +1371,7 @@ function img2imgUnload() {
     promptStrengthContainer.style.display = "none"
     samplerSelectionContainer.style.display = ""
     initImagePreviewContainer.classList.remove("has-image")
+    colorCorrectionSetting.style.display = 'none'
     imageEditor.setImage(null, parseInt(widthField.value), parseInt(heightField.value))
 
 }

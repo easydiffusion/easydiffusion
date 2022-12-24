@@ -3,6 +3,15 @@ import torch
 import traceback
 import re
 
+from easydiffusion.utils import log
+
+'''
+Set `FORCE_FULL_PRECISION` in the environment variables, or in `config.bat`/`config.sh` to set full precision (i.e. float32).
+Otherwise the models will load at half-precision (i.e. float16).
+
+Half-precision is fine most of the time. Full precision is only needed for working around GPU bugs (like NVIDIA 16xx GPUs).
+'''
+
 COMPARABLE_GPU_PERCENTILE = 0.65 # if a GPU's free_mem is within this % of the GPU with the most free_mem, it will be picked
 
 mem_free_threshold = 0
@@ -34,7 +43,7 @@ def get_device_delta(render_devices, active_devices):
     if 'auto' in render_devices:
         render_devices = auto_pick_devices(active_devices)
         if 'cpu' in render_devices:
-            print('WARNING: Could not find a compatible GPU. Using the CPU, but this will be very slow!')
+            log.warn('WARNING: Could not find a compatible GPU. Using the CPU, but this will be very slow!')
 
     active_devices = set(active_devices)
     render_devices = set(render_devices)
@@ -53,7 +62,7 @@ def auto_pick_devices(currently_active_devices):
     if device_count == 1:
         return ['cuda:0'] if is_device_compatible('cuda:0') else ['cpu']
 
-    print('Autoselecting GPU. Using most free memory.')
+    log.debug('Autoselecting GPU. Using most free memory.')
     devices = []
     for device in range(device_count):
         device = f'cuda:{device}'
@@ -64,7 +73,7 @@ def auto_pick_devices(currently_active_devices):
         mem_free /= float(10**9)
         mem_total /= float(10**9)
         device_name = torch.cuda.get_device_name(device)
-        print(f'{device} detected: {device_name} - Memory (free/total): {round(mem_free, 2)}Gb / {round(mem_total, 2)}Gb')
+        log.debug(f'{device} detected: {device_name} - Memory (free/total): {round(mem_free, 2)}Gb / {round(mem_total, 2)}Gb')
         devices.append({'device': device, 'device_name': device_name, 'mem_free': mem_free})
 
     devices.sort(key=lambda x:x['mem_free'], reverse=True)
@@ -82,7 +91,7 @@ def auto_pick_devices(currently_active_devices):
     devices = list(map(lambda x: x['device'], devices))
     return devices
 
-def device_init(thread_data, device):
+def device_init(context, device):
     '''
     This function assumes the 'device' has already been verified to be compatible.
     `get_device_delta()` has already filtered out incompatible devices.
@@ -91,26 +100,44 @@ def device_init(thread_data, device):
     validate_device_id(device, log_prefix='device_init')
 
     if device == 'cpu':
-        thread_data.device = 'cpu'
-        thread_data.device_name = get_processor_name()
-        print('Render device CPU available as', thread_data.device_name)
+        context.device = 'cpu'
+        context.device_name = get_processor_name()
+        context.half_precision = False
+        log.debug(f'Render device CPU available as {context.device_name}')
         return
 
-    thread_data.device_name = torch.cuda.get_device_name(device)
-    thread_data.device = device
+    context.device_name = torch.cuda.get_device_name(device)
+    context.device = device
 
     # Force full precision on 1660 and 1650 NVIDIA cards to avoid creating green images
-    device_name = thread_data.device_name.lower()
-    thread_data.force_full_precision = (('nvidia' in device_name or 'geforce' in device_name) and (' 1660' in device_name or ' 1650' in device_name)) or ('Quadro T2000' in device_name)
-    if thread_data.force_full_precision:
-        print('forcing full precision on NVIDIA 16xx cards, to avoid green images. GPU detected: ', thread_data.device_name)
+    if needs_to_force_full_precision(context):
+        log.warn(f'forcing full precision on this GPU, to avoid green images. GPU detected: {context.device_name}')
         # Apply force_full_precision now before models are loaded.
-        thread_data.precision = 'full'
+        context.half_precision = False
 
-    print(f'Setting {device} as active')
+    log.info(f'Setting {device} as active, with precision: {"half" if context.half_precision else "full"}')
     torch.cuda.device(device)
 
     return
+
+def needs_to_force_full_precision(context):
+    if 'FORCE_FULL_PRECISION' in os.environ:
+        return True
+
+    device_name = context.device_name.lower()
+    return (('nvidia' in device_name or 'geforce' in device_name) and (' 1660' in device_name or ' 1650' in device_name)) or ('Quadro T2000' in device_name)
+
+def get_max_vram_usage_level(device):
+    if device != 'cpu':
+        _, mem_total = torch.cuda.mem_get_info(device)
+        mem_total /= float(10**9)
+
+        if mem_total < 4.5:
+            return 'low'
+        elif mem_total < 6.5:
+            return 'balanced'
+
+    return 'high'
 
 def validate_device_id(device, log_prefix=''):
     def is_valid():
@@ -132,7 +159,7 @@ def is_device_compatible(device):
     try:
         validate_device_id(device, log_prefix='is_device_compatible')
     except:
-        print(str(e))
+        log.error(str(e))
         return False
 
     if device == 'cpu': return True
@@ -141,10 +168,10 @@ def is_device_compatible(device):
         _, mem_total = torch.cuda.mem_get_info(device)
         mem_total /= float(10**9)
         if mem_total < 3.0:
-            print(f'GPU {device} with less than 3 GB of VRAM is not compatible with Stable Diffusion')
+            log.warn(f'GPU {device} with less than 3 GB of VRAM is not compatible with Stable Diffusion')
             return False
     except RuntimeError as e:
-        print(str(e))
+        log.error(str(e))
         return False
     return True
 
@@ -164,5 +191,5 @@ def get_processor_name():
                 if "model name" in line:
                     return re.sub(".*model name.*:", "", line, 1).strip()
     except:
-        print(traceback.format_exc())
+        log.error(traceback.format_exc())
         return "cpu"

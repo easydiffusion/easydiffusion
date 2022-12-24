@@ -54,6 +54,23 @@ var PARAMETERS = [
         }
     },
     {
+        id: "metadata_output_format",
+        type: ParameterType.select,
+        label: "Metadata format",
+        note: "will be saved to disk in this format",
+        default: "txt",
+        options: [
+            {
+                value: "txt",
+                label: "txt"
+            },
+            {
+                value: "json",
+                label: "json"
+            }
+        ],
+    },
+    {
         id: "sound_toggle",
         type: ParameterType.checkbox,
         label: "Enable Sound",
@@ -77,12 +94,20 @@ var PARAMETERS = [
         default: true,
     },
     {
-        id: "turbo",
-        type: ParameterType.checkbox,
-        label: "Turbo Mode",
-        note: "generates images faster, but uses an additional 1 GB of GPU memory",
+        id: "vram_usage_level",
+        type: ParameterType.select,
+        label: "GPU Memory Usage",
+        note: "Faster performance requires more GPU memory (VRAM)<br/><br/>" +
+              "<b>Balanced:</b> nearly as fast as High, much lower VRAM usage<br/>" +
+              "<b>High:</b> fastest, maximum GPU memory usage</br>" +
+              "<b>Low:</b> slowest, force-used for GPUs with 4 GB (or less) memory",
         icon: "fa-forward",
-        default: true,
+        default: "balanced",
+        options: [
+            {value: "balanced", label: "Balanced"},
+            {value: "high", label: "High"},
+            {value: "low", label: "Low"}
+        ],
     },
     {
         id: "use_cpu",
@@ -103,14 +128,6 @@ var PARAMETERS = [
         type: ParameterType.select_multiple,
         label: "GPUs to use (experimental)",
         note: "to process in parallel",
-        default: false,
-    },
-    {
-        id: "use_full_precision",
-        type: ParameterType.checkbox,
-        label: "Use Full Precision",
-        note: "for GPU-only. warning: this will consume more VRAM",
-        icon: "fa-crosshairs",
         default: false,
     },
     {
@@ -146,14 +163,6 @@ var PARAMETERS = [
         render: (parameter) => {
             return `<input id="${parameter.id}" name="${parameter.id}" size="6" value="9000" onkeypress="preventNonNumericalInput(event)">`
         }
-    },
-    {
-        id: "test_sd2",
-        type: ParameterType.checkbox,
-        label: "Test SD 2.0",
-        note: "Experimental! High memory usage! GPU-only! Not the final version! Please restart the program after changing this.",
-        icon: "fa-fire",
-        default: false,
     },
     {
         id: "use_beta_channel",
@@ -210,16 +219,14 @@ function initParameters() {
 
 initParameters()
 
-let turboField = document.querySelector('#turbo')
+let vramUsageLevelField = document.querySelector('#vram_usage_level')
 let useCPUField = document.querySelector('#use_cpu')
 let autoPickGPUsField = document.querySelector('#auto_pick_gpus')
 let useGPUsField = document.querySelector('#use_gpus')
-let useFullPrecisionField = document.querySelector('#use_full_precision')
 let saveToDiskField = document.querySelector('#save_to_disk')
 let diskPathField = document.querySelector('#diskPath')
 let listenToNetworkField = document.querySelector("#listen_to_network")
 let listenPortField = document.querySelector("#listen_port")
-let testSD2Field = document.querySelector("#test_sd2")
 let useBetaChannelField = document.querySelector("#use_beta_channel")
 let uiOpenBrowserOnStartField = document.querySelector("#ui_open_browser_on_start")
 let confirmDangerousActionsField = document.querySelector("#confirm_dangerous_actions")
@@ -256,12 +263,6 @@ async function getAppConfig() {
         if (config.ui && config.ui.open_browser_on_start === false) {
             uiOpenBrowserOnStartField.checked = false
         }
-        if ('test_sd2' in config) {
-            testSD2Field.checked = config['test_sd2']
-        }
-
-        let testSD2SettingEntry = getParameterSettingsEntry('test_sd2')
-        testSD2SettingEntry.style.display = (config.update_branch === 'beta' ? '' : 'none')
         if (config.net && config.net.listen_to_network === false) {
             listenToNetworkField.checked = false
         }
@@ -327,20 +328,10 @@ autoPickGPUsField.addEventListener('click', function() {
     gpuSettingEntry.style.display = (this.checked ? 'none' : '')
 })
 
-async function getDiskPath() {
-    try {
-        var diskPath = getSetting("diskPath")
-        if (diskPath == '' || diskPath == undefined || diskPath == "undefined") {
-            let res = await fetch('/get/output_dir')
-            if (res.status === 200) {
-                res = await res.json()
-                res = res.output_dir
-
-                setSetting("diskPath", res)
-            }
-        }
-    } catch (e) {
-        console.log('error fetching output dir path', e)
+async function setDiskPath(defaultDiskPath) {
+    var diskPath = getSetting("diskPath")
+    if (diskPath == '' || diskPath == undefined || diskPath == "undefined") {
+        setSetting("diskPath", defaultDiskPath)
     }
 }
 
@@ -415,6 +406,7 @@ async function getSystemInfo() {
 
         setDeviceInfo(devices)
         setHostInfo(res['hosts'])
+        setDiskPath(res['default_output_dir'])
     } catch (e) {
         console.log('error fetching devices', e)
     }
@@ -435,8 +427,7 @@ saveSettingsBtn.addEventListener('click', function() {
         'update_branch': updateBranch,
         'ui_open_browser_on_start': uiOpenBrowserOnStartField.checked,
         'listen_to_network': listenToNetworkField.checked,
-        'listen_port': listenPortField.value,
-        'test_sd2': testSD2Field.checked
+        'listen_port': listenPortField.value
     })
     saveSettingsBtn.classList.add('active')
     asyncDelay(300).then(() => saveSettingsBtn.classList.remove('active'))

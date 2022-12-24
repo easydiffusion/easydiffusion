@@ -5,9 +5,18 @@
 
 @copy sd-ui-files\scripts\on_env_start.bat scripts\ /Y
 @copy sd-ui-files\scripts\bootstrap.bat scripts\ /Y
+@copy sd-ui-files\scripts\check_modules.py scripts\ /Y
 
 if exist "%cd%\profile" (
     set USERPROFILE=%cd%\profile
+)
+
+@rem set the correct installer path (current vs legacy)
+if exist "%cd%\installer_files\env" (
+    set INSTALL_ENV_DIR=%cd%\installer_files\env
+)
+if exist "%cd%\stable-diffusion\env" (
+    set INSTALL_ENV_DIR=%cd%\stable-diffusion\env
 )
 
 @mkdir tmp
@@ -27,150 +36,92 @@ if exist "Open Developer Console.cmd" del "Open Developer Console.cmd"
 
 @call python -c "import os; import shutil; frm = 'sd-ui-files\\ui\\hotfix\\9c24e6cd9f499d02c4f21a033736dabd365962dc80fe3aeb57a8f85ea45a20a3.26fead7ea4f0f843f6eb4055dfd25693f1a71f3c6871b184042d4b126244e142'; dst = os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'transformers', '9c24e6cd9f499d02c4f21a033736dabd365962dc80fe3aeb57a8f85ea45a20a3.26fead7ea4f0f843f6eb4055dfd25693f1a71f3c6871b184042d4b126244e142'); shutil.copyfile(frm, dst) if os.path.exists(dst) else print(''); print('Hotfixed broken JSON file from OpenAI');"
 
-if NOT DEFINED test_sd2 set test_sd2=N
+@rem create the stable-diffusion folder, to work with legacy installations
+if not exist "stable-diffusion" mkdir stable-diffusion
+cd stable-diffusion
 
-@>nul findstr /m "sd_git_cloned" scripts\install_status.txt
-@if "%ERRORLEVEL%" EQU "0" (
-    @echo "Stable Diffusion's git repository was already installed. Updating.."
-
-    @cd stable-diffusion
-
-    @call git remote set-url origin https://github.com/easydiffusion/diffusion-kit.git
-
-    @call git reset --hard
-    @call git pull
-
-    if "%test_sd2%" == "N" (
-        @call git -c advice.detachedHead=false checkout 7f32368ed1030a6e710537047bacd908adea183a
-    )
-    if "%test_sd2%" == "Y" (
-        @call git -c advice.detachedHead=false checkout 733a1f6f9cae9b9a9b83294bf3281b123378cb1f
-    )
-
-    @cd ..
-) else (
-    @echo. & echo "Downloading Stable Diffusion.." & echo.
-
-    @call git clone https://github.com/easydiffusion/diffusion-kit.git stable-diffusion && (
-        @echo sd_git_cloned >> scripts\install_status.txt
-    ) || (
-        @echo "Error downloading Stable Diffusion. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
-        pause
-        @exit /b
-    )
-
-    @cd stable-diffusion
-    @call git -c advice.detachedHead=false checkout 7f32368ed1030a6e710537047bacd908adea183a
-
-    @cd ..
+@rem activate the old stable-diffusion env, if it exists
+if exist "env" (
+    call conda activate .\env
 )
 
-@cd stable-diffusion
+@rem disable the legacy src and ldm folder (otherwise this prevents installing gfpgan and realesrgan)
+if exist src rename src src-old
+if exist ldm rename ldm ldm-old
 
-@>nul findstr /m "conda_sd_env_created" ..\scripts\install_status.txt
-@if "%ERRORLEVEL%" EQU "0" (
-    @echo "Packages necessary for Stable Diffusion were already installed"
-
-    @call conda activate .\env
+@rem install torch and torchvision
+call python ..\scripts\check_modules.py torch torchvision
+if "%ERRORLEVEL%" EQU "0" (
+    echo "torch and torchvision have already been installed."
 ) else (
-    @echo. & echo "Downloading packages necessary for Stable Diffusion.." & echo. & echo "***** This will take some time (depending on the speed of the Internet connection) and may appear to be stuck, but please be patient ***** .." & echo.
+    echo "Installing torch and torchvision.."
 
-    @rmdir /s /q .\env
+    @REM prevent from using packages from the user's home directory, to avoid conflicts
+    set PYTHONNOUSERSITE=1
+    set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 
-    @REM prevent conda from using packages from the user's home directory, to avoid conflicts
-    @set PYTHONNOUSERSITE=1
-
-    set USERPROFILE=%cd%\profile
-
-    set PYTHONPATH=%cd%;%cd%\env\lib\site-packages
-
-    @call conda env create --prefix env -f environment.yaml || (
-        @echo. & echo "Error installing the packages necessary for Stable Diffusion. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
+    call pip install --upgrade torch torchvision --extra-index-url https://download.pytorch.org/whl/cu116 || (
+        echo "Error installing torch. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
         pause
         exit /b
     )
+)
 
-    @call conda activate .\env
+@rem install/upgrade sdkit
+call python ..\scripts\check_modules.py sdkit sdkit.models ldm transformers numpy antlr4 gfpgan realesrgan
+if "%ERRORLEVEL%" EQU "0" (
+    echo "sdkit is already installed."
 
-    for /f "tokens=*" %%a in ('python -c "import torch; import ldm; import transformers; import numpy; import antlr4; print(42)"') do if "%%a" NEQ "42" (
-        @echo. & echo "Dependency test failed! Error installing the packages necessary for Stable Diffusion. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
+    @REM prevent from using packages from the user's home directory, to avoid conflicts
+    set PYTHONNOUSERSITE=1
+    set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
+
+    call >nul pip install --upgrade sdkit || (
+        echo "Error updating sdkit"
+    )
+) else (
+    echo "Installing sdkit: https://pypi.org/project/sdkit/"
+
+    @REM prevent from using packages from the user's home directory, to avoid conflicts
+    set PYTHONNOUSERSITE=1
+    set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
+
+    call pip install sdkit || (
+        echo "Error installing sdkit. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
         pause
         exit /b
     )
-
-    @echo conda_sd_env_created >> ..\scripts\install_status.txt
 )
 
-@rem allow rolling back the sdkit-based changes
-if exist "src-old" (
-    if not exist "src" (
-        rename "src-old" "src"
+@rem install rich
+call python ..\scripts\check_modules.py rich
+if "%ERRORLEVEL%" EQU "0" (
+    echo "rich has already been installed."
+) else (
+    echo "Installing rich.."
 
-        if exist "ldm-old" (
-            rd /s /q "ldm-old"
-        )
+    set PYTHONNOUSERSITE=1
+    set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 
-        call pip uninstall -y sdkit stable-diffusion-sdkit
+    call pip install rich || (
+        echo "Error installing rich. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
+        pause
+        exit /b
     )
 )
 
 set PATH=C:\Windows\System32;%PATH%
 
-@>nul findstr /m "conda_sd_gfpgan_deps_installed" ..\scripts\install_status.txt
-@if "%ERRORLEVEL%" EQU "0" (
-    @echo "Packages necessary for GFPGAN (Face Correction) were already installed"
-) else (
-    @echo. & echo "Downloading packages necessary for GFPGAN (Face Correction).." & echo.
-
-    @set PYTHONNOUSERSITE=1
-
-    set USERPROFILE=%cd%\profile
-
-    set PYTHONPATH=%cd%;%cd%\env\lib\site-packages
-
-    for /f "tokens=*" %%a in ('python -c "from gfpgan import GFPGANer; print(42)"') do if "%%a" NEQ "42" (
-        @echo. & echo "Dependency test failed! Error installing the packages necessary for GFPGAN (Face Correction). Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
-        pause
-        exit /b
-    )
-
-    @echo conda_sd_gfpgan_deps_installed >> ..\scripts\install_status.txt
-)
-
-@>nul findstr /m "conda_sd_esrgan_deps_installed" ..\scripts\install_status.txt
-@if "%ERRORLEVEL%" EQU "0" (
-    @echo "Packages necessary for ESRGAN (Resolution Upscaling) were already installed"
-) else (
-    @echo. & echo "Downloading packages necessary for ESRGAN (Resolution Upscaling).." & echo.
-
-    @set PYTHONNOUSERSITE=1
-
-    set USERPROFILE=%cd%\profile
-
-    set PYTHONPATH=%cd%;%cd%\env\lib\site-packages
-
-    for /f "tokens=*" %%a in ('python -c "from basicsr.archs.rrdbnet_arch import RRDBNet; from realesrgan import RealESRGANer; print(42)"') do if "%%a" NEQ "42" (
-        @echo. & echo "Dependency test failed! Error installing the packages necessary for ESRGAN (Resolution Upscaling). Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
-        pause
-        exit /b
-    )
-
-    @echo conda_sd_esrgan_deps_installed >> ..\scripts\install_status.txt
-)
-
-@>nul findstr /m "conda_sd_ui_deps_installed" ..\scripts\install_status.txt
+call python ..\scripts\check_modules.py uvicorn fastapi
 @if "%ERRORLEVEL%" EQU "0" (
     echo "Packages necessary for Stable Diffusion UI were already installed"
 ) else (
     @echo. & echo "Downloading packages necessary for Stable Diffusion UI.." & echo.
 
-    @set PYTHONNOUSERSITE=1
+    set PYTHONNOUSERSITE=1
+    set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 
-    set USERPROFILE=%cd%\profile
-
-    set PYTHONPATH=%cd%;%cd%\env\lib\site-packages
-
-    @call conda install -c conda-forge -y --prefix env uvicorn fastapi || (
+    @call conda install -c conda-forge -y uvicorn fastapi || (
         echo "Error installing the packages necessary for Stable Diffusion UI. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
         pause
         exit /b
@@ -185,26 +136,6 @@ call WHERE uvicorn > .tmp
     exit /b
 )
 
-@>nul 2>nul call python -m picklescan --help
-@if "%ERRORLEVEL%" NEQ "0" (
-    @echo. & echo Picklescan not found. Installing
-    @call pip install picklescan || (
-        echo "Error installing the picklescan package necessary for Stable Diffusion UI. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
-        pause
-        exit /b
-    )
-)
-
-@>nul 2>nul call python -c "import safetensors"
-@if "%ERRORLEVEL%" NEQ "0" (
-    @echo. & echo SafeTensors not found. Installing
-    @call pip install safetensors || (
-        echo "Error installing the safetensors package necessary for Stable Diffusion UI. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
-        pause
-        exit /b
-    )
-)
-
 @>nul findstr /m "conda_sd_ui_deps_installed" ..\scripts\install_status.txt
 @if "%ERRORLEVEL%" NEQ "0" (
     @echo conda_sd_ui_deps_installed >> ..\scripts\install_status.txt
@@ -212,12 +143,7 @@ call WHERE uvicorn > .tmp
 
 
 
-if not exist "..\models\stable-diffusion" mkdir "..\models\stable-diffusion"
 if not exist "..\models\vae" mkdir "..\models\vae"
-if not exist "..\models\hypernetwork" mkdir "..\models\hypernetwork"
-echo. > "..\models\stable-diffusion\Put your custom ckpt files here.txt"
-echo. > "..\models\vae\Put your VAE files here.txt"
-echo. > "..\models\hypernetwork\Put your hypernetwork files here.txt"
 
 @if exist "sd-v1-4.ckpt" (
     for %%I in ("sd-v1-4.ckpt") do if "%%~zI" EQU "4265380512" (
@@ -375,10 +301,6 @@ echo. > "..\models\hypernetwork\Put your hypernetwork files here.txt"
     )
 )
 
-if "%test_sd2%" == "Y" (
-    @call pip install open_clip_torch==2.0.2
-)
-
 @>nul findstr /m "sd_install_complete" ..\scripts\install_status.txt
 @if "%ERRORLEVEL%" NEQ "0" (
     @echo sd_weights_downloaded >> ..\scripts\install_status.txt
@@ -389,10 +311,8 @@ if "%test_sd2%" == "Y" (
 
 @set SD_DIR=%cd%
 
-@cd env\lib\site-packages
-@set PYTHONPATH=%SD_DIR%;%cd%
-@cd ..\..\..
-@echo PYTHONPATH=%PYTHONPATH%
+set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
+echo PYTHONPATH=%PYTHONPATH%
 
 call where python
 call python --version
@@ -401,17 +321,9 @@ call python --version
 @set SD_UI_PATH=%cd%\ui
 @cd stable-diffusion
 
-@rem
-@rem Rewrite easy-install.pth. This fixes the installation if the user has relocated the SDUI installation
-@rem
->env\Lib\site-packages\easy-install.pth echo %cd%\src\taming-transformers
->>env\Lib\site-packages\easy-install.pth echo %cd%\src\clip
->>env\Lib\site-packages\easy-install.pth echo %cd%\src\gfpgan
->>env\Lib\site-packages\easy-install.pth echo %cd%\src\realesrgan
-
 @if NOT DEFINED SD_UI_BIND_PORT set SD_UI_BIND_PORT=9000
 @if NOT DEFINED SD_UI_BIND_IP set SD_UI_BIND_IP=0.0.0.0
-@uvicorn server:app --app-dir "%SD_UI_PATH%" --port %SD_UI_BIND_PORT% --host %SD_UI_BIND_IP%
+@uvicorn main:server_api --app-dir "%SD_UI_PATH%" --port %SD_UI_BIND_PORT% --host %SD_UI_BIND_IP% --log-level error
 
 
 @pause

@@ -25,6 +25,7 @@ function parseBoolean(stringValue) {
         case "no":
         case "off":
         case "0":
+        case "none":
         case null:
         case undefined:
           return false;
@@ -160,9 +161,9 @@ const TASK_MAPPING = {
         readUI: () => (useUpscalingField.checked ? upscaleModelField.value : undefined),
         parse: (val) => val
     },
-    sampler: { name: 'Sampler',
-        setUI: (sampler) => {
-            samplerField.value = sampler
+    sampler_name: { name: 'Sampler',
+        setUI: (sampler_name) => {
+            samplerField.value = sampler_name
         },
         readUI: () => samplerField.value,
         parse: (val) => val
@@ -171,7 +172,7 @@ const TASK_MAPPING = {
         setUI: (use_stable_diffusion_model) => {
             const oldVal = stableDiffusionModelField.value
 
-            use_stable_diffusion_model = getModelPath(use_stable_diffusion_model, ['.ckpt'])
+            use_stable_diffusion_model = getModelPath(use_stable_diffusion_model, ['.ckpt', '.safetensors'])
             stableDiffusionModelField.value = use_stable_diffusion_model
 
             if (!stableDiffusionModelField.value) {
@@ -184,6 +185,7 @@ const TASK_MAPPING = {
     use_vae_model: { name: 'VAE model',
         setUI: (use_vae_model) => {
             const oldVal = vaeModelField.value
+            use_vae_model = (use_vae_model === undefined || use_vae_model === null || use_vae_model === 'None' ? '' : use_vae_model)
 
             if (use_vae_model !== '') {
                 use_vae_model = getModelPath(use_vae_model, ['.vae.pt', '.ckpt'])
@@ -197,6 +199,7 @@ const TASK_MAPPING = {
     use_hypernetwork_model: { name: 'Hypernetwork model',
         setUI: (use_hypernetwork_model) => {
             const oldVal = hypernetworkModelField.value
+            use_hypernetwork_model = (use_hypernetwork_model === undefined || use_hypernetwork_model === null || use_hypernetwork_model === 'None' ? '' : use_hypernetwork_model)
 
             if (use_hypernetwork_model !== '') {
                 use_hypernetwork_model = getModelPath(use_hypernetwork_model, ['.pt'])
@@ -237,13 +240,6 @@ const TASK_MAPPING = {
             turboField.checked = turbo
         },
         readUI: () => turboField.checked,
-        parse: (val) => Boolean(val)
-    },
-    use_full_precision: { name: 'Use Full Precision',
-        setUI: (use_full_precision) => {
-            useFullPrecisionField.checked = use_full_precision
-        },
-        readUI: () => useFullPrecisionField.checked,
         parse: (val) => Boolean(val)
     },
 
@@ -350,6 +346,7 @@ function getModelPath(filename, extensions)
 }
 
 const TASK_TEXT_MAPPING = {
+    prompt: 'Prompt',
     width: 'Width',
     height: 'Height',
     seed: 'Seed',
@@ -358,7 +355,7 @@ const TASK_TEXT_MAPPING = {
     prompt_strength: 'Prompt Strength',
     use_face_correction: 'Use Face Correction',
     use_upscale: 'Use Upscaling',
-    sampler: 'Sampler',
+    sampler_name: 'Sampler',
     negative_prompt: 'Negative Prompt',
     use_stable_diffusion_model: 'Stable Diffusion model',
     use_hypernetwork_model: 'Hypernetwork model',
@@ -410,6 +407,9 @@ async function parseContent(text) {
     if (text.startsWith('{') && text.endsWith('}')) {
         try {
             const task = JSON.parse(text)
+            if (!('reqBody' in task)) { // support the format saved to the disk, by the UI
+                task.reqBody = Object.assign({}, task)
+            }
             restoreTaskToUI(task)
             return true
         } catch (e) {
@@ -477,7 +477,6 @@ document.addEventListener("dragover", dragOverHandler)
 const TASK_REQ_NO_EXPORT = [
     "use_cpu",
     "turbo",
-    "use_full_precision",
     "save_to_disk_path"
 ]
 const resetSettings = document.getElementById('reset-image-settings')
