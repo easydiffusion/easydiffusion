@@ -39,13 +39,50 @@ class SetAppConfigRequest(BaseModel):
     listen_to_network: bool = None
     listen_port: int = None
 
-server_api.mount('/media', NoCacheStaticFiles(directory=os.path.join(app.SD_UI_DIR, 'media')), name="media")
+def init():
+    server_api.mount('/media', NoCacheStaticFiles(directory=os.path.join(app.SD_UI_DIR, 'media')), name="media")
 
-for plugins_dir, dir_prefix in app.UI_PLUGINS_SOURCES:
-    server_api.mount(f'/plugins/{dir_prefix}', NoCacheStaticFiles(directory=plugins_dir), name=f"plugins-{dir_prefix}")
+    for plugins_dir, dir_prefix in app.UI_PLUGINS_SOURCES:
+        server_api.mount(f'/plugins/{dir_prefix}', NoCacheStaticFiles(directory=plugins_dir), name=f"plugins-{dir_prefix}")
 
-@server_api.post('/app_config')
-async def setAppConfig(req : SetAppConfigRequest):
+    @server_api.post('/app_config')
+    async def set_app_config(req : SetAppConfigRequest):
+        return set_app_config_internal(req)
+
+    @server_api.get('/get/{key:path}')
+    def read_web_data(key:str=None):
+        return read_web_data_internal(key)
+
+    @server_api.get('/ping') # Get server and optionally session status.
+    def ping(session_id:str=None):
+        return ping_internal(session_id)
+
+    @server_api.post('/render')
+    def render(req: dict):
+        return render_internal(req)
+
+    @server_api.get('/image/stream/{task_id:int}')
+    def stream(task_id:int):
+        return stream_internal(task_id)
+
+    @server_api.get('/image/stop')
+    def stop(task: int):
+        return stop_internal(task)
+
+    @server_api.get('/image/tmp/{task_id:int}/{img_id:int}')
+    def get_image(task_id: int, img_id: int):
+        return get_image_internal(task_id, img_id)
+
+    @server_api.get('/')
+    def read_root():
+        return FileResponse(os.path.join(app.SD_UI_DIR, 'index.html'), headers=NOCACHE_HEADERS)
+
+    @server_api.on_event("shutdown")
+    def shutdown_event(): # Signal render thread to close on shutdown
+        task_manager.current_state_error = SystemExit('Application shutting down.')
+
+# API implementations
+def set_app_config_internal(req : SetAppConfigRequest):
     config = app.getConfig()
     if req.update_branch is not None:
         config['update_branch'] = req.update_branch
@@ -83,8 +120,7 @@ def update_render_devices_in_config(config, render_devices):
 
     config['render_devices'] = render_devices
 
-@server_api.get('/get/{key:path}')
-def read_web_data(key:str=None):
+def read_web_data_internal(key:str=None):
     if not key: # /get without parameters, stable-diffusion easter egg.
         raise HTTPException(status_code=418, detail="StableDiffusion is drawing a teapot!") # HTTP418 I'm a teapot
     elif key == 'app_config':
@@ -105,8 +141,7 @@ def read_web_data(key:str=None):
     else:
         raise HTTPException(status_code=404, detail=f'Request for unknown {key}') # HTTP404 Not Found
 
-@server_api.get('/ping') # Get server and optionally session status.
-def ping(session_id:str=None):
+def ping_internal(session_id:str=None):
     if task_manager.is_alive() <= 0: # Check that render threads are alive.
         if task_manager.current_state_error: raise HTTPException(status_code=500, detail=str(task_manager.current_state_error))
         raise HTTPException(status_code=500, detail='Render thread is dead.')
@@ -119,8 +154,7 @@ def ping(session_id:str=None):
     response['devices'] = task_manager.get_devices()
     return JSONResponse(response, headers=NOCACHE_HEADERS)
 
-@server_api.post('/render')
-def render(req: dict):
+def render_internal(req: dict):
     try:
         # separate out the request data into rendering and task-specific data
         render_req: GenerateImageRequest = GenerateImageRequest.parse_obj(req)
@@ -147,8 +181,7 @@ def render(req: dict):
         log.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
-@server_api.get('/image/stream/{task_id:int}')
-def stream(task_id:int):
+def stream_internal(task_id:int):
     #TODO Move to WebSockets ??
     task = task_manager.get_cached_task(task_id, update_ttl=True)
     if not task: raise HTTPException(status_code=404, detail=f'Request {task_id} not found.') # HTTP404 NotFound
@@ -161,8 +194,7 @@ def stream(task_id:int):
     #log.info(f'Session {session_id} opened live render stream {id(task.buffer_queue)}')
     return StreamingResponse(task.read_buffer_generator(), media_type='application/json')
 
-@server_api.get('/image/stop')
-def stop(task: int):
+def stop_internal(task: int):
     if not task:
         if task_manager.current_state == task_manager.ServerStates.Online or task_manager.current_state == task_manager.ServerStates.Unavailable:
             raise HTTPException(status_code=409, detail='Not currently running any tasks.') # HTTP409 Conflict
@@ -175,8 +207,7 @@ def stop(task: int):
     task.error = StopAsyncIteration(f'Task {task_id} stop requested.')
     return {'OK'}
 
-@server_api.get('/image/tmp/{task_id:int}/{img_id:int}')
-def get_image(task_id: int, img_id: int):
+def get_image_internal(task_id: int, img_id: int):
     task = task_manager.get_cached_task(task_id, update_ttl=True)
     if not task: raise HTTPException(status_code=410, detail=f'Task {task_id} could not be found.') # HTTP404 NotFound
     if not task.temp_images[img_id]: raise HTTPException(status_code=425, detail='Too Early, task data is not available yet.') # HTTP425 Too Early
@@ -186,18 +217,3 @@ def get_image(task_id: int, img_id: int):
         return StreamingResponse(img_data, media_type='image/jpeg')
     except KeyError as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-@server_api.get('/')
-def read_root():
-    return FileResponse(os.path.join(app.SD_UI_DIR, 'index.html'), headers=NOCACHE_HEADERS)
-
-@server_api.on_event("shutdown")
-def shutdown_event(): # Signal render thread to close on shutdown
-    task_manager.current_state_error = SystemExit('Application shutting down.')
-
-# Init the app
-model_manager.init()
-app.init()
-
-# start the browser ui
-app.open_browser()
