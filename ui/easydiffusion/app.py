@@ -6,6 +6,8 @@ import traceback
 import logging
 from rich.logging import RichHandler
 
+from sdkit.utils import log as sdkit_log # hack, so we can overwrite the log config
+
 from easydiffusion import task_manager
 from easydiffusion.utils import log
 
