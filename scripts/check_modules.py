@@ -11,5 +11,3 @@ for m in modules:
     if pkgutil.find_loader(m) is None:
         print('module', m, 'not found')
         exit(1)
-
-print('ok')
