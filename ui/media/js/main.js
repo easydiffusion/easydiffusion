@@ -837,6 +837,9 @@ function createTask(task) {
     draghandle.addEventListener('mouseup', debounce((e) => {
         taskEntry.setAttribute('draggable', false)
     }, 2000))
+    draghandle.addEventListener('click', (e) => {
+        e.preventDefault() // Don't allow the results to be collapsed...
+    })
     taskEntry.addEventListener('dragend', (e) => {
         taskEntry.setAttribute('draggable', false);
         imagePreview.querySelectorAll(".imageTaskContainer").forEach(itc => {
