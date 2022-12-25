@@ -76,7 +76,7 @@ if "%ERRORLEVEL%" EQU "0" (
     set PYTHONNOUSERSITE=1
     set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 
-    call >nul pip install --upgrade sdkit || (
+    call pip install --upgrade sdkit -q || (
         echo "Error updating sdkit"
     )
 ) else (
@@ -92,6 +92,8 @@ if "%ERRORLEVEL%" EQU "0" (
         exit /b
     )
 )
+
+python -c "from importlib.metadata import version; print('sdkit version:', version('sdkit'))"
 
 @rem install rich
 call python ..\scripts\check_modules.py rich

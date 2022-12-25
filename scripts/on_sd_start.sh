@@ -66,7 +66,7 @@ if python ../scripts/check_modules.py sdkit sdkit.models ldm transformers numpy 
     export PYTHONNOUSERSITE=1
     export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
 
-    pip install --upgrade sdkit > /dev/null
+    pip install --upgrade sdkit -q
 else
     echo "Installing sdkit: https://pypi.org/project/sdkit/"
 
@@ -79,6 +79,8 @@ else
         fail "sdkit install failed"
     fi
 fi
+
+python -c "from importlib.metadata import version; print('sdkit version:', version('sdkit'))"
 
 # install rich
 if python ../scripts/check_modules.py rich; then
