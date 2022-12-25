@@ -17,6 +17,11 @@
 
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
+### Detailed changelog
+* 2.5.1 - 25 Dec 2022 - Allow custom config yaml files for models. You can put a config file (`.yaml`) next to the model file, with the same name as the model. For e.g. if you put `robo-diffusion-v2-base.yaml` next to `robo-diffusion-v2-base.ckpt`, it'll automatically use that config file.
+* 2.5.1 - 25 Dec 2022 - Fix broken rendering for SD 2.1-768 models. Fix broken rendering SD 2.0 safetensor models.
+* 2.5.0 - 25 Dec 2022 - Major new release! **Nearly twice as fast**, **Full support for SD 2.1 (including low GPU RAM optimizations)**, **6 new samplers**, **Model Merging**, and lots more.
+
 ## v2.4
 ### Major Changes
 - **Allow reordering the task queue** (by dragging and dropping tasks). Thanks @madrang
