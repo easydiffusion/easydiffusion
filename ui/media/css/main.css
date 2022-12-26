@@ -876,10 +876,11 @@ input::file-selector-button {
 	font-size: 12px;
     background-color: var(--background-color3);
 
-	visibility: hidden;
+    visibility: hidden;
 	opacity: 0;
 	position: absolute;
-	white-space: nowrap;
+	width: max-content;
+	max-width: 300px;
 	padding: 8px 12px;
 	transition: 0.3s all;
 
@@ -895,7 +896,7 @@ input::file-selector-button {
 .simple-tooltip.right {
     right: 0px;
     top: 50%;
-    transform: translate(calc(100% - 15%), -50%);
+    transform: translate(100%, -50%);
 }
 :hover > .simple-tooltip.right {
     transform: translate(100%, -50%);
