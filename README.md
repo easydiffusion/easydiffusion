@@ -1,4 +1,4 @@
-# Stable Diffusion UI
+# Easy Diffusion UI
 ### The easiest way to install and use [Stable Diffusion](https://github.com/CompVis/stable-diffusion) on your own computer. Does not require technical knowledge, does not require pre-installed software. 1-click install, powerful features, friendly community.
 
 [![Discord Server](https://img.shields.io/discord/1014774730907209781?label=Discord)](https://discord.com/invite/u9yhsFmEkB) (for support, and development discussion) | [Troubleshooting guide for common problems](https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting)
