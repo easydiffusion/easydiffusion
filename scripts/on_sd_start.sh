@@ -63,10 +63,13 @@ fi
 if python ../scripts/check_modules.py sdkit sdkit.models ldm transformers numpy antlr4 gfpgan realesrgan ; then
     echo "sdkit is already installed."
 
-    export PYTHONNOUSERSITE=1
-    export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
+    # skip sdkit upgrade if in developer-mode
+    if [ ! -e "../src/sdkit" ]; then
+        export PYTHONNOUSERSITE=1
+        export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
 
-    pip install --upgrade sdkit -q
+        pip install --upgrade sdkit -q
+    fi
 else
     echo "Installing sdkit: https://pypi.org/project/sdkit/"
 

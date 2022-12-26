@@ -72,12 +72,15 @@ call python ..\scripts\check_modules.py sdkit sdkit.models ldm transformers nump
 if "%ERRORLEVEL%" EQU "0" (
     echo "sdkit is already installed."
 
-    @REM prevent from using packages from the user's home directory, to avoid conflicts
-    set PYTHONNOUSERSITE=1
-    set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
+    @rem skip sdkit upgrade if in developer-mode
+    if not exist "..\src\sdkit" (
+        @REM prevent from using packages from the user's home directory, to avoid conflicts
+        set PYTHONNOUSERSITE=1
+        set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 
-    call pip install --upgrade sdkit -q || (
-        echo "Error updating sdkit"
+        call pip install --upgrade sdkit -q || (
+            echo "Error updating sdkit"
+        )
     )
 ) else (
     echo "Installing sdkit: https://pypi.org/project/sdkit/"
