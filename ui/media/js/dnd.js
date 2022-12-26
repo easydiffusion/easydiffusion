@@ -235,13 +235,6 @@ const TASK_MAPPING = {
         readUI: () => useCPUField.checked,
         parse: (val) => val
     },
-    turbo: { name: 'Turbo',
-        setUI: (turbo) => {
-            turboField.checked = turbo
-        },
-        readUI: () => turboField.checked,
-        parse: (val) => Boolean(val)
-    },
 
     stream_image_progress: { name: 'Stream Image Progress',
         setUI: (stream_image_progress) => {
