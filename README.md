@@ -28,6 +28,7 @@ Click the download button for your operating system:
 Double-click `Start Stable Diffusion UI.cmd`.
 If Windows SmartScreen prevents you from running the program click `More info` and then `Run anyway`.
 ## On Linux: 
+Run `chmod +x start.sh` in a terminal.
 Run `./start.sh` (or `bash start.sh`) in a terminal.
 
 The installer will take care of whatever is needed. If you face any problems, you can join the friendly [Discord community](https://discord.com/invite/u9yhsFmEkB) and ask for assistance.
