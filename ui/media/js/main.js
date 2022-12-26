@@ -287,6 +287,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             imageSeedLabel.innerText = 'Seed: ' + req.seed
 
             let buttons = [
+		{ text: 'Remove', on_click: onRemoveClick, class: 'secondaryButton' },
                 { text: 'Use as Input', on_click: onUseAsInputClick },
                 { text: 'Download', on_click: onDownloadImageClick },
                 { text: 'Make Similar Images', on_click: onMakeSimilarClick },
@@ -304,9 +305,12 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                 const newButton = document.createElement('button')
                 newButton.classList.add('tasksBtns')
                 newButton.innerText = btnInfo.text
-                newButton.addEventListener('click', function() {
-                    btnInfo.on_click(req, img)
+                newButton.addEventListener('click', function(event) {
+                    btnInfo.on_click(req, img, event)
                 })
+                if (btnInfo.class !== undefined) {
+                   newButton.classList.add(btnInfo.class)
+                }
                 imgItemInfo.appendChild(newButton)
             }
             buttons.forEach(btn => {
@@ -318,6 +322,10 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             })
         }
     })
+}
+
+function onRemoveClick(req, img, event) {
+    shiftOrConfirm(event, "Remove the image from the results?", () => { findClosestAncestor(img, '.imgItem').style.display='none' })
 }
 
 function onUseAsInputClick(req, img) {
