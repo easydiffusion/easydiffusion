@@ -1,6 +1,7 @@
 import queue
 import time
 import json
+import pprint
 
 from easydiffusion import device_manager
 from easydiffusion.types import TaskData, Response, Image as ResponseImage, UserInitiatedStop, GenerateImageRequest
@@ -28,8 +29,8 @@ def init(device):
 
 def make_images(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback):
     context.stop_processing = False
-    log.info(f'request: {get_printable_request(req)}')
-    log.info(f'task data: {task_data.dict()}')
+    log.info(f'request: {pprint.pformat(get_printable_request(req))}')
+    log.info(f'task data: {pprint.pformat(task_data.dict())}')
 
     images = make_images_internal(req, task_data, data_queue, task_temp_images, step_callback)
 
