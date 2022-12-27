@@ -83,6 +83,7 @@ var PARAMETERS = [
         type: ParameterType.checkbox,
         label: "Process newest jobs first",
         note: "reverse the normal processing order",
+        icon: "fa-arrow-down-short-wide",
         default: false,
     },
     {
