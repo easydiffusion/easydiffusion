@@ -20,6 +20,7 @@ TASK_TEXT_MAPPING = {
     'prompt_strength': 'Prompt Strength',
     'use_face_correction': 'Use Face Correction',
     'use_upscale': 'Use Upscaling',
+    'upscale_amount': 'Upscale By',
     'sampler_name': 'Sampler',
     'negative_prompt': 'Negative Prompt',
     'use_stable_diffusion_model': 'Stable Diffusion model',
@@ -48,6 +49,8 @@ def get_metadata_entries_for_request(req: GenerateImageRequest, task_data: TaskD
         'use_face_correction': task_data.use_face_correction,
         'use_upscale': task_data.use_upscale,
     })
+    if metadata['use_upscale'] is not None:
+        metadata['upscale_amount'] = task_data.upscale_amount
 
     # if text, format it in the text format expected by the UI
     is_txt_format = (task_data.metadata_output_format.lower() == 'txt')

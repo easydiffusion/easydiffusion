@@ -28,6 +28,7 @@ const SETTINGS_IDS_LIST = [
     "stream_image_progress",
     "use_face_correction",
     "use_upscale",
+    "upscale_amount",
     "show_only_filtered_image",
     "upscale_model",
     "preview-image",

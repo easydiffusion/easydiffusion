@@ -35,6 +35,7 @@ let samplerSelectionContainer = document.querySelector("#samplerSelection")
 let useFaceCorrectionField = document.querySelector("#use_face_correction")
 let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
+let upscaleAmountField = document.querySelector("#upscale_amount")
 let stableDiffusionModelField = document.querySelector('#stable_diffusion_model')
 let vaeModelField = document.querySelector('#vae_model')
 let hypernetworkModelField = document.querySelector('#hypernetwork_model')
@@ -814,7 +815,7 @@ function createTask(task) {
         taskConfig += `, <b>Fix Faces:</b> ${task.reqBody.use_face_correction}`
     }
     if (task.reqBody.use_upscale) {
-        taskConfig += `, <b>Upscale:</b> ${task.reqBody.use_upscale}`
+        taskConfig += `, <b>Upscale:</b> ${task.reqBody.use_upscale} (${task.reqBody.upscale_amount}x)`
     }
     if (task.reqBody.use_hypernetwork_model) {
         taskConfig += `, <b>Hypernetwork:</b> ${task.reqBody.use_hypernetwork_model}`
@@ -965,6 +966,7 @@ function getCurrentUserRequest() {
     }
     if (useUpscalingField.checked) {
         newTask.reqBody.use_upscale = upscaleModelField.value
+        newTask.reqBody.upscale_amount = upscaleAmountField.value
     }
     if (hypernetworkModelField.value) {
         newTask.reqBody.use_hypernetwork_model = hypernetworkModelField.value
@@ -1160,8 +1162,10 @@ function onDimensionChange() {
 diskPathField.disabled = !saveToDiskField.checked
 
 upscaleModelField.disabled = !useUpscalingField.checked
+upscaleAmountField.disabled = !useUpscalingField.checked
 useUpscalingField.addEventListener('change', function(e) {
     upscaleModelField.disabled = !this.checked
+    upscaleAmountField.disabled = !this.checked
 })
 
 makeImageBtn.addEventListener('click', makeImage)

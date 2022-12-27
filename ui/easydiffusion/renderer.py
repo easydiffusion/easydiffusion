@@ -76,7 +76,7 @@ def filter_images(task_data: TaskData, images: list, user_stopped):
     if task_data.use_face_correction and 'gfpgan' in task_data.use_face_correction.lower(): filters_to_apply.append('gfpgan')
     if task_data.use_upscale and 'realesrgan' in task_data.use_upscale.lower(): filters_to_apply.append('realesrgan')
 
-    return apply_filters(context, filters_to_apply, images)
+    return apply_filters(context, filters_to_apply, images, scale=task_data.upscale_amount)
 
 def construct_response(images: list, task_data: TaskData, base_seed: int):
     return [

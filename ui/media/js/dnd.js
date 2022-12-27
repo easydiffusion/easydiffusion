@@ -148,17 +148,26 @@ const TASK_MAPPING = {
     use_upscale: { name: 'Use Upscaling',
         setUI: (use_upscale) => {
             const oldVal = upscaleModelField.value
-            upscaleModelField.value = use_upscale
+            upscaleModelField.value = getModelPath(use_upscale, ['.pth'])
             if (upscaleModelField.value) { // Is a valid value for the field.
                 useUpscalingField.checked = true
                 upscaleModelField.disabled = false
+                upscaleAmountField.disabled = false
             } else { // Not a valid value, restore the old value and disable the filter.
                 upscaleModelField.disabled = true
+                upscaleAmountField.disabled = true
                 upscaleModelField.value = oldVal
                 useUpscalingField.checked = false
             }
         },
         readUI: () => (useUpscalingField.checked ? upscaleModelField.value : undefined),
+        parse: (val) => val
+    },
+    upscale_amount: { name: 'Upscale By',
+        setUI: (upscale_amount) => {
+            upscaleAmountField.value = upscale_amount
+        },
+        readUI: () => upscaleAmountField.value,
         parse: (val) => val
     },
     sampler_name: { name: 'Sampler',
@@ -299,6 +308,7 @@ function restoreTaskToUI(task, fieldsToSkip) {
         maskSetting.checked = false
     }
     upscaleModelField.disabled = !useUpscalingField.checked
+    upscaleAmountField.disabled = !useUpscalingField.checked
 
     // Show the source picture if present
     initImagePreview.src = (task.reqBody.init_image == undefined ? '' : task.reqBody.init_image)
@@ -348,6 +358,7 @@ const TASK_TEXT_MAPPING = {
     prompt_strength: 'Prompt Strength',
     use_face_correction: 'Use Face Correction',
     use_upscale: 'Use Upscaling',
+    upscale_amount: 'Upscale By',
     sampler_name: 'Sampler',
     negative_prompt: 'Negative Prompt',
     use_stable_diffusion_model: 'Stable Diffusion model',
