@@ -278,7 +278,6 @@ function tryLoadOldSettings() {
         "soundEnabled": "sound_toggle",
         "saveToDisk": "save_to_disk",
         "useCPU": "use_cpu",
-        "useTurboMode": "turbo",
         "diskPath": "diskPath",
         "useFaceCorrection": "use_face_correction",
         "useUpscaling": "use_upscale",

@@ -727,7 +727,6 @@
         "stream_progress_updates": 'boolean',
         "stream_image_progress": 'boolean',
         "show_only_filtered_image": 'boolean',
-        "turbo": 'boolean',
         "output_format": 'string',
         "output_quality": 'number',
     }
@@ -742,7 +741,6 @@
         "stream_progress_updates": true,
         "stream_image_progress": true,
         "show_only_filtered_image": true,
-        "turbo": false,
         "output_format": "png",
         "output_quality": 75,
     }

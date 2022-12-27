@@ -469,7 +469,6 @@ document.addEventListener("dragover", dragOverHandler)
 
 const TASK_REQ_NO_EXPORT = [
     "use_cpu",
-    "turbo",
     "save_to_disk_path"
 ]
 const resetSettings = document.getElementById('reset-image-settings')
