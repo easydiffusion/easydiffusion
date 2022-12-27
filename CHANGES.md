@@ -18,6 +18,10 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.3 - 27 Dec 2022 - Allow upscaling by 2x as well as 4x.
+* 2.5.3 - 27 Dec 2022 - Fix broken renders on a second GPU.
+* 2.5.3 - 26 Dec 2022 - Add a `Remove` button on each image. Thanks @JeLuf.
+* 2.5.2 - 26 Dec 2022 - Fix broken inpainting if using non-square target images.
 * 2.5.2 - 26 Dec 2022 - Fix a bug where an incorrect model config would get used for some SD 2.1 models.
 * 2.5.2 - 26 Dec 2022 - Slight performance and memory improvement while rendering using SD 2.1 models.
 * 2.5.1 - 25 Dec 2022 - Allow custom config yaml files for models. You can put a config file (`.yaml`) next to the model file, with the same name as the model. For e.g. if you put `robo-diffusion-v2-base.yaml` next to `robo-diffusion-v2-base.ckpt`, it'll automatically use that config file.
