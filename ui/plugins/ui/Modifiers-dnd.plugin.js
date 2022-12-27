@@ -74,6 +74,7 @@
                         // update activeTags
                         const tag = activeTags.splice(currentPos, 1)
                         activeTags.splice(droppedPos, 0, tag[0])
+                        document.dispatchEvent(new Event('refreshImageModifiers'))
                     }
                 }
             };
