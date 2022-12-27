@@ -104,6 +104,7 @@ function createModifierGroup(modifierGroup, initiallyExpanded) {
                 }
 
                 refreshTagsList()
+                document.dispatchEvent(new Event('refreshImageModifiers'))
             })
         }
     })
@@ -146,6 +147,7 @@ async function loadModifiers() {
     }
 
     loadCustomModifiers()
+    document.dispatchEvent(new Event('loadImageModifiers'))
 }
 
 function refreshModifiersState(newTags) {
@@ -227,6 +229,7 @@ function refreshTagsList() {
                 activeTags.splice(idx, 1)
                 refreshTagsList()
             }
+            document.dispatchEvent(new Event('refreshImageModifiers'))
         })
     })
 
