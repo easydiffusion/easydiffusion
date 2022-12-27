@@ -18,6 +18,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.3 - 27 Dec 2022 - Fix broken drag-and-drop for text metadata files (as well as paste in clipboard).
 * 2.5.3 - 27 Dec 2022 - Allow upscaling by 2x as well as 4x.
 * 2.5.3 - 27 Dec 2022 - Fix broken renders on a second GPU.
 * 2.5.3 - 26 Dec 2022 - Add a `Remove` button on each image. Thanks @JeLuf.
