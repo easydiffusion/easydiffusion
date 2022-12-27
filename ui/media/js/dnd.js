@@ -365,20 +365,32 @@ const TASK_TEXT_MAPPING = {
     use_hypernetwork_model: 'Hypernetwork model',
     hypernetwork_strength: 'Hypernetwork Strength'
 }
-const afterPromptRe = /^\s*Width\s*:\s*\d+\s*(?:\r\n|\r|\n)+\s*Height\s*:\s*\d+\s*(\r\n|\r|\n)+Seed\s*:\s*\d+\s*$/igm
 function parseTaskFromText(str) {
     const taskReqBody = {}
 
+    const lines = str.split('\n')
+    if (lines.length === 0) {
+        return
+    }
+
     // Prompt
-    afterPromptRe.lastIndex = 0
-    const match = afterPromptRe.exec(str)
-    if (match) {
-        let prompt = str.slice(0, match.index)
-        str = str.slice(prompt.length)
-        taskReqBody.prompt = prompt.trim()
+    let knownKeyOnFirstLine = false
+    for (let key in TASK_TEXT_MAPPING) {
+        if (lines[0].startsWith(TASK_TEXT_MAPPING[key] + ':')) {
+            knownKeyOnFirstLine = true
+            break
+        }
+    }
+    if (!knownKeyOnFirstLine) {
+        taskReqBody.prompt = lines[0]
         console.log('Prompt:', taskReqBody.prompt)
     }
+
     for (const key in TASK_TEXT_MAPPING) {
+        if (key in taskReqBody) {
+            continue
+        }
+
         const name = TASK_TEXT_MAPPING[key];
         let val = undefined
 
