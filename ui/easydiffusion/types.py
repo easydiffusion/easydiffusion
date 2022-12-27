@@ -30,7 +30,7 @@ class TaskData(BaseModel):
     use_face_correction: str = None # or "GFPGANv1.3"
     use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
     use_stable_diffusion_model: str = "sd-v1-4"
-    use_stable_diffusion_config: str = "v1-inference"
+    # use_stable_diffusion_config: str = "v1-inference"
     use_vae_model: str = None
     use_hypernetwork_model: str = None
 
