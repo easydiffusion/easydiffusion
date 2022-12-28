@@ -49,6 +49,11 @@ if exist "env" (
 if exist src rename src src-old
 if exist ldm rename ldm ldm-old
 
+if not exist "..\models\stable-diffusion" mkdir "..\models\stable-diffusion"
+if not exist "..\models\gfpgan" mkdir "..\models\gfpgan"
+if not exist "..\models\realesrgan" mkdir "..\models\realesrgan"
+if not exist "..\models\vae" mkdir "..\models\vae"
+
 @rem migrate the legacy models to the correct path (if already downloaded)
 if exist "sd-v1-4.ckpt" move sd-v1-4.ckpt ..\models\stable-diffusion\
 if exist "custom-model.ckpt" move custom-model.ckpt ..\models\stable-diffusion\
@@ -158,12 +163,6 @@ call WHERE uvicorn > .tmp
 @if "%ERRORLEVEL%" NEQ "0" (
     @echo conda_sd_ui_deps_installed >> ..\scripts\install_status.txt
 )
-
-
-if not exist "..\models\stable-diffusion" mkdir "..\models\stable-diffusion"
-if not exist "..\models\gfpgan" mkdir "..\models\gfpgan"
-if not exist "..\models\realesrgan" mkdir "..\models\realesrgan"
-if not exist "..\models\vae" mkdir "..\models\vae"
 
 @if exist "..\models\stable-diffusion\sd-v1-4.ckpt" (
     for %%I in ("..\models\stable-diffusion\sd-v1-4.ckpt") do if "%%~zI" EQU "4265380512" (

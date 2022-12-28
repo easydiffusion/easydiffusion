@@ -43,6 +43,11 @@ fi
 if [ -e "src" ]; then mv src src-old; fi
 if [ -e "ldm" ]; then mv ldm ldm-old; fi
 
+mkdir -p "../models/stable-diffusion"
+mkdir -p "../models/gfpgan"
+mkdir -p "../models/realesrgan"
+mkdir -p "../models/vae"
+
 # migrate the legacy models to the correct path (if already downloaded)
 if [ -e "sd-v1-4.ckpt" ]; then mv sd-v1-4.ckpt ../models/stable-diffusion/; fi
 if [ -e "custom-model.ckpt" ]; then mv custom-model.ckpt ../models/stable-diffusion/; fi
@@ -130,11 +135,6 @@ else
         fail "UI packages not found!"
     fi
 fi
-
-mkdir -p "../models/stable-diffusion"
-mkdir -p "../models/gfpgan"
-mkdir -p "../models/realesrgan"
-mkdir -p "../models/vae"
 
 if [ -f "../models/stable-diffusion/sd-v1-4.ckpt" ]; then
     model_size=`find "../models/stable-diffusion/sd-v1-4.ckpt" -printf "%s"`
