@@ -29,8 +29,7 @@ def init(device):
 
 def make_images(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback):
     context.stop_processing = False
-    log.info(f'request: {pprint.pformat(get_printable_request(req)).replace("[","\[")}')
-    log.info(f'task data: {pprint.pformat(task_data.dict()).replace("[","\[")}')
+    print_task_info(req, task_data)
 
     images = make_images_internal(req, task_data, data_queue, task_temp_images, step_callback)
 
@@ -40,6 +39,12 @@ def make_images(req: GenerateImageRequest, task_data: TaskData, data_queue: queu
     log.info('Task completed')
 
     return res
+
+def print_task_info(req: GenerateImageRequest, task_data: TaskData):
+    req_str = pprint.pformat(get_printable_request(req)).replace("[","\[")
+    task_str = pprint.pformat(task_data.dict()).replace("[","\[")
+    log.info(f'request: {req_str}')
+    log.info(f'task data: {task_str}')
 
 def make_images_internal(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback):
     images, user_stopped = generate_images_internal(req, task_data, data_queue, task_temp_images, step_callback, task_data.stream_image_progress)
