@@ -815,7 +815,7 @@ function createTask(task) {
         taskConfig += `, <b>Fix Faces:</b> ${task.reqBody.use_face_correction}`
     }
     if (task.reqBody.use_upscale) {
-        taskConfig += `, <b>Upscale:</b> ${task.reqBody.use_upscale} (${task.reqBody.upscale_amount}x)`
+        taskConfig += `, <b>Upscale:</b> ${task.reqBody.use_upscale} (${task.reqBody.upscale_amount !== undefined ? task.reqBody.upscale_amount : '4'}x)`
     }
     if (task.reqBody.use_hypernetwork_model) {
         taskConfig += `, <b>Hypernetwork:</b> ${task.reqBody.use_hypernetwork_model}`
