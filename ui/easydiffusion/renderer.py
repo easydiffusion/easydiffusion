@@ -48,7 +48,7 @@ def make_images_internal(req: GenerateImageRequest, task_data: TaskData, data_qu
     if task_data.save_to_disk_path is not None:
         save_images_to_disk(images, filtered_images, req, task_data)
 
-    return filtered_images if task_data.show_only_filtered_image else images + filtered_images
+    return filtered_images if task_data.show_only_filtered_image or (task_data.use_face_correction is None and task_data.use_upscale is None) else images + filtered_images
 
 def generate_images_internal(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback, stream_image_progress: bool):
     context.temp_images.clear()
