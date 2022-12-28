@@ -103,7 +103,13 @@ if "%ERRORLEVEL%" EQU "0" (
     )
 )
 
-python -c "from importlib.metadata import version; print('sdkit version:', version('sdkit'))"
+call python -c "from importlib.metadata import version; print('sdkit version:', version('sdkit'))"
+
+@rem upgrade stable-diffusion-sdkit
+call pip install --upgrade stable-diffusion-sdkit -q || (
+    echo "Error updating stable-diffusion-sdkit"
+)
+call python -c "from importlib.metadata import version; print('stable-diffusion version:', version('stable-diffusion-sdkit'))"
 
 @rem install rich
 call python ..\scripts\check_modules.py rich

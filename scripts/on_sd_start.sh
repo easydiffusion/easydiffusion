@@ -92,6 +92,10 @@ fi
 
 python -c "from importlib.metadata import version; print('sdkit version:', version('sdkit'))"
 
+# upgrade stable-diffusion-sdkit
+pip install --upgrade stable-diffusion-sdkit -q
+python -c "from importlib.metadata import version; print('stable-diffusion version:', version('stable-diffusion-sdkit'))"
+
 # install rich
 if python ../scripts/check_modules.py rich; then
     echo "rich has already been installed."
