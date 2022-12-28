@@ -18,6 +18,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.4 - 28 Dec 2022 - Full support for running tasks in parallel on multiple GPUs. Warning: 'Euler Ancestral', 'DPM2 Ancestral' and 'DPM++ 2s Ancestral' may produce slight variations in the image (if run in parallel), so we recommend using the other samplers.
 * 2.5.3 - 27 Dec 2022 - Fix broken drag-and-drop for text metadata files (as well as paste in clipboard).
 * 2.5.3 - 27 Dec 2022 - Allow upscaling by 2x as well as 4x.
 * 2.5.3 - 27 Dec 2022 - Fix broken renders on a second GPU.
