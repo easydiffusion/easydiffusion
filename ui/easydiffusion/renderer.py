@@ -29,8 +29,8 @@ def init(device):
 
 def make_images(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback):
     context.stop_processing = False
-    log.info(f'request: {pprint.pformat(get_printable_request(req))}')
-    log.info(f'task data: {pprint.pformat(task_data.dict())}')
+    log.info(f'request: {pprint.pformat(get_printable_request(req).replace("[","\["))}')
+    log.info(f'task data: {pprint.pformat(task_data.dict().replace("[","\["))}')
 
     images = make_images_internal(req, task_data, data_queue, task_temp_images, step_callback)
 
