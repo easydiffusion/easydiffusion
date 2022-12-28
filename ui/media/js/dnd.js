@@ -59,6 +59,13 @@ const TASK_MAPPING = {
         readUI: () => activeTags.map(x => x.name),
         parse: (val) => val
     },
+    inactive_tags: { name: "Inactive Image Modifiers",
+        setUI: (inactive_tags) => {
+            refreshInactiveTags(inactive_tags)
+        },
+        readUI: () => activeTags.filter(tag => tag.inactive === true).map(x => x.name),
+        parse: (val) => val
+    },
     width: { name: 'Width',
         setUI: (width) => {
             const oldVal = widthField.value
