@@ -49,6 +49,13 @@ if exist "env" (
 if exist src rename src src-old
 if exist ldm rename ldm ldm-old
 
+@rem migrate the legacy models to the correct path (if already downloaded)
+if exist "sd-v1-4.ckpt" move sd-v1-4.ckpt ..\models\stable-diffusion\
+if exist "custom-model.ckpt" move custom-model.ckpt ..\models\stable-diffusion\
+if exist "GFPGANv1.3.pth" move GFPGANv1.3.pth ..\models\gfpgan\
+if exist "RealESRGAN_x4plus.pth" move RealESRGAN_x4plus.pth ..\models\realesrgan\
+if exist "RealESRGAN_x4plus_anime_6B.pth" move RealESRGAN_x4plus_anime_6B.pth ..\models\realesrgan\
+
 @rem install torch and torchvision
 call python ..\scripts\check_modules.py torch torchvision
 if "%ERRORLEVEL%" EQU "0" (
@@ -147,33 +154,35 @@ call WHERE uvicorn > .tmp
 )
 
 
-
+if not exist "..\models\stable-diffusion" mkdir "..\models\stable-diffusion"
+if not exist "..\models\gfpgan" mkdir "..\models\gfpgan"
+if not exist "..\models\realesrgan" mkdir "..\models\realesrgan"
 if not exist "..\models\vae" mkdir "..\models\vae"
 
-@if exist "sd-v1-4.ckpt" (
-    for %%I in ("sd-v1-4.ckpt") do if "%%~zI" EQU "4265380512" (
+@if exist "..\models\stable-diffusion\sd-v1-4.ckpt" (
+    for %%I in ("..\models\stable-diffusion\sd-v1-4.ckpt") do if "%%~zI" EQU "4265380512" (
         echo "Data files (weights) necessary for Stable Diffusion were already downloaded. Using the HuggingFace 4 GB Model."
     ) else (
-        for %%J in ("sd-v1-4.ckpt") do if "%%~zJ" EQU "7703807346" (
+        for %%J in ("..\models\stable-diffusion\sd-v1-4.ckpt") do if "%%~zJ" EQU "7703807346" (
             echo "Data files (weights) necessary for Stable Diffusion were already downloaded. Using the HuggingFace 7 GB Model."
         ) else (
-            for %%K in ("sd-v1-4.ckpt") do if "%%~zK" EQU "7703810927" (
+            for %%K in ("..\models\stable-diffusion\sd-v1-4.ckpt") do if "%%~zK" EQU "7703810927" (
                 echo "Data files (weights) necessary for Stable Diffusion were already downloaded. Using the Waifu Model."
             ) else (
-                echo. & echo "The model file present at %cd%\sd-v1-4.ckpt is invalid. It is only %%~zK bytes in size. Re-downloading.." & echo.
-                del "sd-v1-4.ckpt"
+                echo. & echo "The model file present at models\stable-diffusion\sd-v1-4.ckpt is invalid. It is only %%~zK bytes in size. Re-downloading.." & echo.
+                del "..\models\stable-diffusion\sd-v1-4.ckpt"
             )
         )
     )
 )
 
-@if not exist "sd-v1-4.ckpt" (
+@if not exist "..\models\stable-diffusion\sd-v1-4.ckpt" (
     @echo. & echo "Downloading data files (weights) for Stable Diffusion.." & echo.
 
-    @call curl -L -k https://me.cmdr2.org/stable-diffusion-ui/sd-v1-4.ckpt > sd-v1-4.ckpt
+    @call curl -L -k https://huggingface.co/CompVis/stable-diffusion-v-1-4-original/resolve/main/sd-v1-4.ckpt > ..\models\stable-diffusion\sd-v1-4.ckpt
 
-    @if exist "sd-v1-4.ckpt" (
-        for %%I in ("sd-v1-4.ckpt") do if "%%~zI" NEQ "4265380512" (
+    @if exist "..\models\stable-diffusion\sd-v1-4.ckpt" (
+        for %%I in ("..\models\stable-diffusion\sd-v1-4.ckpt") do if "%%~zI" NEQ "4265380512" (
             echo. & echo "Error: The downloaded model file was invalid! Bytes downloaded: %%~zI" & echo.
             echo. & echo "Error downloading the data files (weights) for Stable Diffusion. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
             pause
@@ -188,22 +197,22 @@ if not exist "..\models\vae" mkdir "..\models\vae"
 
 
 
-@if exist "GFPGANv1.3.pth" (
-    for %%I in ("GFPGANv1.3.pth") do if "%%~zI" EQU "348632874" (
+@if exist "..\models\gfpgan\GFPGANv1.3.pth" (
+    for %%I in ("..\models\gfpgan\GFPGANv1.3.pth") do if "%%~zI" EQU "348632874" (
         echo "Data files (weights) necessary for GFPGAN (Face Correction) were already downloaded"
     ) else (
-        echo. & echo "The GFPGAN model file present at %cd%\GFPGANv1.3.pth is invalid. It is only %%~zI bytes in size. Re-downloading.." & echo.
-        del "GFPGANv1.3.pth"
+        echo. & echo "The GFPGAN model file present at models\gfpgan\GFPGANv1.3.pth is invalid. It is only %%~zI bytes in size. Re-downloading.." & echo.
+        del "..\models\gfpgan\GFPGANv1.3.pth"
     )
 )
 
-@if not exist "GFPGANv1.3.pth" (
+@if not exist "..\models\gfpgan\GFPGANv1.3.pth" (
     @echo. & echo "Downloading data files (weights) for GFPGAN (Face Correction).." & echo.
 
-    @call curl -L -k https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.3.pth > GFPGANv1.3.pth
+    @call curl -L -k https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.3.pth > ..\models\gfpgan\GFPGANv1.3.pth
 
-    @if exist "GFPGANv1.3.pth" (
-        for %%I in ("GFPGANv1.3.pth") do if "%%~zI" NEQ "348632874" (
+    @if exist "..\models\gfpgan\GFPGANv1.3.pth" (
+        for %%I in ("..\models\gfpgan\GFPGANv1.3.pth") do if "%%~zI" NEQ "348632874" (
             echo. & echo "Error: The downloaded GFPGAN model file was invalid! Bytes downloaded: %%~zI" & echo.
             echo. & echo "Error downloading the data files (weights) for GFPGAN (Face Correction). Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
             pause
@@ -218,22 +227,22 @@ if not exist "..\models\vae" mkdir "..\models\vae"
 
 
 
-@if exist "RealESRGAN_x4plus.pth" (
-    for %%I in ("RealESRGAN_x4plus.pth") do if "%%~zI" EQU "67040989" (
+@if exist "..\models\realesrgan\RealESRGAN_x4plus.pth" (
+    for %%I in ("..\models\realesrgan\RealESRGAN_x4plus.pth") do if "%%~zI" EQU "67040989" (
         echo "Data files (weights) necessary for ESRGAN (Resolution Upscaling) x4plus were already downloaded"
     ) else (
-        echo. & echo "The RealESRGAN model file present at %cd%\RealESRGAN_x4plus.pth is invalid. It is only %%~zI bytes in size. Re-downloading.." & echo.
-        del "RealESRGAN_x4plus.pth"
+        echo. & echo "The RealESRGAN model file present at models\realesrgan\RealESRGAN_x4plus.pth is invalid. It is only %%~zI bytes in size. Re-downloading.." & echo.
+        del "..\models\realesrgan\RealESRGAN_x4plus.pth"
     )
 )
 
-@if not exist "RealESRGAN_x4plus.pth" (
+@if not exist "..\models\realesrgan\RealESRGAN_x4plus.pth" (
     @echo. & echo "Downloading data files (weights) for ESRGAN (Resolution Upscaling) x4plus.." & echo.
 
-    @call curl -L -k https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth > RealESRGAN_x4plus.pth
+    @call curl -L -k https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth > ..\models\realesrgan\RealESRGAN_x4plus.pth
 
-    @if exist "RealESRGAN_x4plus.pth" (
-        for %%I in ("RealESRGAN_x4plus.pth") do if "%%~zI" NEQ "67040989" (
+    @if exist "..\models\realesrgan\RealESRGAN_x4plus.pth" (
+        for %%I in ("..\models\realesrgan\RealESRGAN_x4plus.pth") do if "%%~zI" NEQ "67040989" (
             echo. & echo "Error: The downloaded ESRGAN x4plus model file was invalid! Bytes downloaded: %%~zI" & echo.
             echo. & echo "Error downloading the data files (weights) for ESRGAN (Resolution Upscaling) x4plus. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
             pause
@@ -248,21 +257,21 @@ if not exist "..\models\vae" mkdir "..\models\vae"
 
 
 
-@if exist "RealESRGAN_x4plus_anime_6B.pth" (
-    for %%I in ("RealESRGAN_x4plus_anime_6B.pth") do if "%%~zI" EQU "17938799" (
+@if exist "..\models\realesrgan\RealESRGAN_x4plus_anime_6B.pth" (
+    for %%I in ("..\models\realesrgan\RealESRGAN_x4plus_anime_6B.pth") do if "%%~zI" EQU "17938799" (
         echo "Data files (weights) necessary for ESRGAN (Resolution Upscaling) x4plus_anime were already downloaded"
     ) else (
-        echo. & echo "The RealESRGAN model file present at %cd%\RealESRGAN_x4plus_anime_6B.pth is invalid. It is only %%~zI bytes in size. Re-downloading.." & echo.
-        del "RealESRGAN_x4plus_anime_6B.pth"
+        echo. & echo "The RealESRGAN model file present at models\realesrgan\RealESRGAN_x4plus_anime_6B.pth is invalid. It is only %%~zI bytes in size. Re-downloading.." & echo.
+        del "..\models\realesrgan\RealESRGAN_x4plus_anime_6B.pth"
     )
 )
 
-@if not exist "RealESRGAN_x4plus_anime_6B.pth" (
+@if not exist "..\models\realesrgan\RealESRGAN_x4plus_anime_6B.pth" (
     @echo. & echo "Downloading data files (weights) for ESRGAN (Resolution Upscaling) x4plus_anime.." & echo.
 
-    @call curl -L -k https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth > RealESRGAN_x4plus_anime_6B.pth
+    @call curl -L -k https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth > ..\models\realesrgan\RealESRGAN_x4plus_anime_6B.pth
 
-    @if exist "RealESRGAN_x4plus_anime_6B.pth" (
+    @if exist "..\models\realesrgan\RealESRGAN_x4plus_anime_6B.pth" (
         for %%I in ("RealESRGAN_x4plus_anime_6B.pth") do if "%%~zI" NEQ "17938799" (
             echo. & echo "Error: The downloaded ESRGAN x4plus_anime model file was invalid! Bytes downloaded: %%~zI" & echo.
             echo. & echo "Error downloading the data files (weights) for ESRGAN (Resolution Upscaling) x4plus_anime. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.

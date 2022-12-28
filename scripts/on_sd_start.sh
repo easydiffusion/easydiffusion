@@ -43,6 +43,13 @@ fi
 if [ -e "src" ]; then mv src src-old; fi
 if [ -e "ldm" ]; then mv ldm ldm-old; fi
 
+# migrate the legacy models to the correct path (if already downloaded)
+if [ -e "sd-v1-4.ckpt" ]; then mv sd-v1-4.ckpt ../models/stable-diffusion/; fi
+if [ -e "custom-model.ckpt" ]; then mv custom-model.ckpt ../models/stable-diffusion/; fi
+if [ -e "GFPGANv1.3.pth" ]; then mv GFPGANv1.3.pth ../models/gfpgan/; fi
+if [ -e "RealESRGAN_x4plus.pth" ]; then mv RealESRGAN_x4plus.pth ../models/realesrgan/; fi
+if [ -e "RealESRGAN_x4plus_anime_6B.pth" ]; then mv RealESRGAN_x4plus_anime_6B.pth ../models/realesrgan/; fi
+
 # install torch and torchvision
 if python ../scripts/check_modules.py torch torchvision; then
     echo "torch and torchvision have already been installed."
@@ -120,26 +127,29 @@ else
     fi
 fi
 
+mkdir -p "../models/stable-diffusion"
+mkdir -p "../models/gfpgan"
+mkdir -p "../models/realesrgan"
 mkdir -p "../models/vae"
 
-if [ -f "sd-v1-4.ckpt" ]; then
-    model_size=`find "sd-v1-4.ckpt" -printf "%s"`
+if [ -f "../models/stable-diffusion/sd-v1-4.ckpt" ]; then
+    model_size=`find "../models/stable-diffusion/sd-v1-4.ckpt" -printf "%s"`
 
     if [ "$model_size" -eq "4265380512" ] || [ "$model_size" -eq "7703807346" ] || [ "$model_size" -eq "7703810927" ]; then
         echo "Data files (weights) necessary for Stable Diffusion were already downloaded"
     else
-        printf "\n\nThe model file present at $PWD/sd-v1-4.ckpt is invalid. It is only $model_size bytes in size. Re-downloading.."
-        rm sd-v1-4.ckpt
+        printf "\n\nThe model file present at models/stable-diffusion/sd-v1-4.ckpt is invalid. It is only $model_size bytes in size. Re-downloading.."
+        rm ../models/stable-diffusion/sd-v1-4.ckpt
     fi
 fi
 
-if [ ! -f "sd-v1-4.ckpt" ]; then
+if [ ! -f "../models/stable-diffusion/sd-v1-4.ckpt" ]; then
     echo "Downloading data files (weights) for Stable Diffusion.."
 
-    curl -L -k https://me.cmdr2.org/stable-diffusion-ui/sd-v1-4.ckpt > sd-v1-4.ckpt
+    curl -L -k https://huggingface.co/CompVis/stable-diffusion-v-1-4-original/resolve/main/sd-v1-4.ckpt > ../models/stable-diffusion/sd-v1-4.ckpt
 
-    if [ -f "sd-v1-4.ckpt" ]; then
-        model_size=`find "sd-v1-4.ckpt" -printf "%s"`
+    if [ -f "../models/stable-diffusion/sd-v1-4.ckpt" ]; then
+        model_size=`find "../models/stable-diffusion/sd-v1-4.ckpt" -printf "%s"`
         if [ ! "$model_size" == "4265380512" ]; then
 	    fail "The downloaded model file was invalid! Bytes downloaded: $model_size"
         fi
@@ -149,24 +159,24 @@ if [ ! -f "sd-v1-4.ckpt" ]; then
 fi
 
 
-if [ -f "GFPGANv1.3.pth" ]; then
-    model_size=`find "GFPGANv1.3.pth" -printf "%s"`
+if [ -f "../models/gfpgan/GFPGANv1.3.pth" ]; then
+    model_size=`find "../models/gfpgan/GFPGANv1.3.pth" -printf "%s"`
 
     if [ "$model_size" -eq "348632874" ]; then
         echo "Data files (weights) necessary for GFPGAN (Face Correction) were already downloaded"
     else
-        printf "\n\nThe model file present at $PWD/GFPGANv1.3.pth is invalid. It is only $model_size bytes in size. Re-downloading.."
-        rm GFPGANv1.3.pth
+        printf "\n\nThe model file present at models/gfpgan/GFPGANv1.3.pth is invalid. It is only $model_size bytes in size. Re-downloading.."
+        rm ../models/gfpgan/GFPGANv1.3.pth
     fi
 fi
 
-if [ ! -f "GFPGANv1.3.pth" ]; then
+if [ ! -f "../models/gfpgan/GFPGANv1.3.pth" ]; then
     echo "Downloading data files (weights) for GFPGAN (Face Correction).."
 
-    curl -L -k https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.3.pth > GFPGANv1.3.pth
+    curl -L -k https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.3.pth > ../models/gfpgan/GFPGANv1.3.pth
 
-    if [ -f "GFPGANv1.3.pth" ]; then
-        model_size=`find "GFPGANv1.3.pth" -printf "%s"`
+    if [ -f "../models/gfpgan/GFPGANv1.3.pth" ]; then
+        model_size=`find "../models/gfpgan/GFPGANv1.3.pth" -printf "%s"`
         if [ ! "$model_size" -eq "348632874" ]; then
             fail "The downloaded GFPGAN model file was invalid! Bytes downloaded: $model_size"
         fi
@@ -176,24 +186,24 @@ if [ ! -f "GFPGANv1.3.pth" ]; then
 fi
 
 
-if [ -f "RealESRGAN_x4plus.pth" ]; then
-    model_size=`find "RealESRGAN_x4plus.pth" -printf "%s"`
+if [ -f "../models/realesrgan/RealESRGAN_x4plus.pth" ]; then
+    model_size=`find "../models/realesrgan/RealESRGAN_x4plus.pth" -printf "%s"`
 
     if [ "$model_size" -eq "67040989" ]; then
         echo "Data files (weights) necessary for ESRGAN (Resolution Upscaling) x4plus were already downloaded"
     else
-        printf "\n\nThe model file present at $PWD/RealESRGAN_x4plus.pth is invalid. It is only $model_size bytes in size. Re-downloading.."
-        rm RealESRGAN_x4plus.pth
+        printf "\n\nThe model file present at models/realesrgan/RealESRGAN_x4plus.pth is invalid. It is only $model_size bytes in size. Re-downloading.."
+        rm ../models/realesrgan/RealESRGAN_x4plus.pth
     fi
 fi
 
-if [ ! -f "RealESRGAN_x4plus.pth" ]; then
+if [ ! -f "../models/realesrgan/RealESRGAN_x4plus.pth" ]; then
     echo "Downloading data files (weights) for ESRGAN (Resolution Upscaling) x4plus.."
 
-    curl -L -k https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth > RealESRGAN_x4plus.pth
+    curl -L -k https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth > ../models/realesrgan/RealESRGAN_x4plus.pth
 
-    if [ -f "RealESRGAN_x4plus.pth" ]; then
-        model_size=`find "RealESRGAN_x4plus.pth" -printf "%s"`
+    if [ -f "../models/realesrgan/RealESRGAN_x4plus.pth" ]; then
+        model_size=`find "../models/realesrgan/RealESRGAN_x4plus.pth" -printf "%s"`
         if [ ! "$model_size" -eq "67040989" ]; then
             fail "The downloaded ESRGAN x4plus model file was invalid! Bytes downloaded: $model_size"
         fi
@@ -203,24 +213,24 @@ if [ ! -f "RealESRGAN_x4plus.pth" ]; then
 fi
 
 
-if [ -f "RealESRGAN_x4plus_anime_6B.pth" ]; then
-    model_size=`find "RealESRGAN_x4plus_anime_6B.pth" -printf "%s"`
+if [ -f "../models/realesrgan/RealESRGAN_x4plus_anime_6B.pth" ]; then
+    model_size=`find "../models/realesrgan/RealESRGAN_x4plus_anime_6B.pth" -printf "%s"`
 
     if [ "$model_size" -eq "17938799" ]; then
         echo "Data files (weights) necessary for ESRGAN (Resolution Upscaling) x4plus_anime were already downloaded"
     else
-        printf "\n\nThe model file present at $PWD/RealESRGAN_x4plus_anime_6B.pth is invalid. It is only $model_size bytes in size. Re-downloading.."
-        rm RealESRGAN_x4plus_anime_6B.pth
+        printf "\n\nThe model file present at models/realesrgan/RealESRGAN_x4plus_anime_6B.pth is invalid. It is only $model_size bytes in size. Re-downloading.."
+        rm ../models/realesrgan/RealESRGAN_x4plus_anime_6B.pth
     fi
 fi
 
-if [ ! -f "RealESRGAN_x4plus_anime_6B.pth" ]; then
+if [ ! -f "../models/realesrgan/RealESRGAN_x4plus_anime_6B.pth" ]; then
     echo "Downloading data files (weights) for ESRGAN (Resolution Upscaling) x4plus_anime.."
 
-    curl -L -k https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth > RealESRGAN_x4plus_anime_6B.pth
+    curl -L -k https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth > ../models/realesrgan/RealESRGAN_x4plus_anime_6B.pth
 
-    if [ -f "RealESRGAN_x4plus_anime_6B.pth" ]; then
-        model_size=`find "RealESRGAN_x4plus_anime_6B.pth" -printf "%s"`
+    if [ -f "../models/realesrgan/RealESRGAN_x4plus_anime_6B.pth" ]; then
+        model_size=`find "../models/realesrgan/RealESRGAN_x4plus_anime_6B.pth" -printf "%s"`
         if [ ! "$model_size" -eq "17938799" ]; then
             fail "The downloaded ESRGAN x4plus_anime model file was invalid! Bytes downloaded: $model_size"
         fi
