@@ -326,6 +326,9 @@ call python --version
 @set SD_UI_PATH=%cd%\ui
 @cd stable-diffusion
 
+@rem set any overrides
+set HF_HUB_DISABLE_SYMLINKS_WARNING=true
+
 @if NOT DEFINED SD_UI_BIND_PORT set SD_UI_BIND_PORT=9000
 @if NOT DEFINED SD_UI_BIND_IP set SD_UI_BIND_IP=0.0.0.0
 @uvicorn main:server_api --app-dir "%SD_UI_PATH%" --port %SD_UI_BIND_PORT% --host %SD_UI_BIND_IP% --log-level error
