@@ -294,6 +294,12 @@ function restoreTaskToUI(task, fieldsToSkip) {
         }
     }
 
+    // properly reset fields not present in the task
+    if (!('use_hypernetwork_model' in task.reqBody)) {
+        hypernetworkModelField.value = ""
+        hypernetworkModelField.dispatchEvent(new Event("change"))
+    }
+
     // restore the original prompt if provided (e.g. use settings), fallback to prompt as needed (e.g. copy/paste or d&d)
     promptField.value = task.reqBody.original_prompt
     if (!('original_prompt' in task.reqBody)) {
