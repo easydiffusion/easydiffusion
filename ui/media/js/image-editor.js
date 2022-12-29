@@ -604,6 +604,9 @@ class ImageEditor {
 			if (event.key == "y" && event.ctrlKey) {
 				this.history.redo()
 			}
+			if (event.key === "Escape") {
+				this.hide()
+			}
 		}
 		
 		// dropper ctrl holding handler stuff
