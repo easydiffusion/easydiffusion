@@ -19,4 +19,5 @@ which conda
 conda --version || exit 1
 
 # Download the rest of the installer and UI
+chmod +x scripts/*.sh
 scripts/on_env_start.sh
