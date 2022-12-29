@@ -219,6 +219,12 @@ echo. > "..\models\stable-diffusion\Put your custom ckpt files here.txt"
 echo. > "..\models\vae\Put your VAE files here.txt"
 echo. > "..\models\hypernetwork\Put your hypernetwork files here.txt"
 
+@rem if downgrading from v2.5, migrate the models to the legacy path (if already downloaded)
+if exist "..\models\stable-diffusion\sd-v1-4.ckpt" if not exist "sd-v1-4.ckpt" move ..\models\stable-diffusion\sd-v1-4.ckpt .
+if exist "..\models\gfpgan\GFPGANv1.3.pth" if not exist "GFPGANv1.3.pth" move ..\models\gfpgan\GFPGANv1.3.pth .
+if exist "..\models\realesrgan\RealESRGAN_x4plus.pth" if not exist "RealESRGAN_x4plus.pth" move ..\models\realesrgan\RealESRGAN_x4plus.pth .
+if exist "..\models\realesrgan\RealESRGAN_x4plus_anime_6B.pth" if not exist "RealESRGAN_x4plus_anime_6B.pth" move ..\models\realesrgan\RealESRGAN_x4plus_anime_6B.pth .
+
 @if exist "sd-v1-4.ckpt" (
     for %%I in ("sd-v1-4.ckpt") do if "%%~zI" EQU "4265380512" (
         echo "Data files (weights) necessary for Stable Diffusion were already downloaded. Using the HuggingFace 4 GB Model."

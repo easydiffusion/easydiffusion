@@ -175,6 +175,12 @@ echo "" > "../models/stable-diffusion/Put your custom ckpt files here.txt"
 echo "" > "../models/vae/Put your VAE files here.txt"
 echo "" > "../models/hypernetwork/Put your hypernetwork files here.txt"
 
+# if downgrading from v2.5, migrate the models to the legacy path (if already downloaded)
+if [ -e "../models/stable-diffusion/sd-v1-4.ckpt" ] && [ ! -e "sd-v1-4.ckpt" ]; then mv ../models/stable-diffusion/sd-v1-4.ckpt . ; fi
+if [ -e "../models/gfpgan/GFPGANv1.3.pth" ] && [ ! -e "GFPGANv1.3.pth" ]; then mv ../models/gfpgan/GFPGANv1.3.pth . ; fi
+if [ -e "../models/realesrgan/RealESRGAN_x4plus.pth" ] && [ ! -e "RealESRGAN_x4plus.pth" ]; then mv ../models/realesrgan/RealESRGAN_x4plus.pth . ; fi
+if [ -e "../models/realesrgan/RealESRGAN_x4plus_anime_6B.pth" ] && [ ! -e "RealESRGAN_x4plus_anime_6B.pth" ]; then mv ../models/realesrgan/RealESRGAN_x4plus_anime_6B.pth . ; fi
+
 if [ -f "sd-v1-4.ckpt" ]; then
     model_size=`find "sd-v1-4.ckpt" -printf "%s"`
 
