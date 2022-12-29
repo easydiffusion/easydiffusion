@@ -294,9 +294,12 @@ function restoreTaskToUI(task, fieldsToSkip) {
         }
     }
 
-    // restore the original tag
-    promptField.value = task.reqBody.original_prompt || task.reqBody.prompt
-
+    // restore the original prompt if provided (e.g. use settings), fallback to prompt as needed (e.g. copy/paste or d&d)
+    promptField.value = task.reqBody.original_prompt
+    if (!('original_prompt' in task.reqBody)) {
+        promptField.value = task.reqBody.prompt
+    }
+    
     // properly reset checkboxes
     if (!('use_face_correction' in task.reqBody)) {
         useFaceCorrectionField.checked = false
