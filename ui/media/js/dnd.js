@@ -326,13 +326,12 @@ function restoreTaskToUI(task, fieldsToSkip) {
     }
     else if (task.reqBody.init_image !== undefined) {
         // listen for inpainter loading event, which happens AFTER the main image loads (which reloads the inpainter)
-        document.addEventListener('imagePainterLoad', function() {
+        initImagePreview.addEventListener('load', function() {
             if (Boolean(task.reqBody.mask)) {
                 imageInpainter.setImg(task.reqBody.mask)
             }
         }, { once: true })
         initImagePreview.src = task.reqBody.init_image
-        initImagePreview.dispatchEvent(new Event("load"))
     }
 }
 function readUI() {
