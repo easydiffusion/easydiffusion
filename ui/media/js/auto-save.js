@@ -41,7 +41,8 @@ const SETTINGS_IDS_LIST = [
     "confirm_dangerous_actions",
     "metadata_output_format",
     "auto_save_settings",
-    "apply_color_correction"
+    "apply_color_correction",
+    "process_order_toggle"
 ]
 
 const IGNORE_BY_DEFAULT = [
