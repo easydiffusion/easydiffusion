@@ -137,7 +137,14 @@ const TASK_MAPPING = {
         readUI: () => (maskSetting.checked ? imageInpainter.getImg() : undefined),
         parse: (val) => val
     },
-
+    preserve_init_image_color_profile: { name: 'Preserve Color Profile',
+        setUI: (preserve_init_image_color_profile) => {
+            applyColorCorrectionField.checked = parseBoolean(preserve_init_image_color_profile)
+        },
+        readUI: () => applyColorCorrectionField.checked,
+        parse: (val) => parseBoolean(val)
+    },
+    
     use_face_correction: { name: 'Use Face Correction',
         setUI: (use_face_correction) => {
             useFaceCorrectionField.checked = parseBoolean(use_face_correction)
@@ -297,7 +304,11 @@ function restoreTaskToUI(task, fieldsToSkip) {
     // restore the original tag
     promptField.value = task.reqBody.original_prompt || task.reqBody.prompt
 
-    // properly reset checkboxes
+    // properly reset missing fields
+    if (!('use_hypernetwork_model' in task.reqBody)) {
+        hypernetworkModelField.value = ""
+        hypernetworkModelField.dispatchEvent(new Event("change"))
+    }
     if (!('use_face_correction' in task.reqBody)) {
         useFaceCorrectionField.checked = false
     }
@@ -306,6 +317,7 @@ function restoreTaskToUI(task, fieldsToSkip) {
     }
     if (!('mask' in task.reqBody)) {
         maskSetting.checked = false
+        maskSetting.dispatchEvent(new Event("click"))
     }
     upscaleModelField.disabled = !useUpscalingField.checked
     upscaleAmountField.disabled = !useUpscalingField.checked
@@ -313,11 +325,16 @@ function restoreTaskToUI(task, fieldsToSkip) {
     // Show the source picture if present
     initImagePreview.src = (task.reqBody.init_image == undefined ? '' : task.reqBody.init_image)
     if (IMAGE_REGEX.test(initImagePreview.src)) {
+        initImagePreview.dispatchEvent(new Event("load"))
         if (Boolean(task.reqBody.mask)) {
             setTimeout(() => { // add a delay to insure this happens AFTER the main image loads (which reloads the inpainter)
                 imageInpainter.setImg(task.reqBody.mask)
             }, 250)
         }
+    }
+    else
+    {
+        img2imgUnload()
     }
 }
 function readUI() {
