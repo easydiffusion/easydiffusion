@@ -330,7 +330,7 @@ function restoreTaskToUI(task, fieldsToSkip) {
     }
     else
     {
-        img2imgUnload()
+        initImageClearBtn.dispatchEvent(new Event("click"))
     }
 }
 function readUI() {
