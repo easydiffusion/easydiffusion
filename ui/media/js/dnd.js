@@ -304,11 +304,7 @@ function restoreTaskToUI(task, fieldsToSkip) {
     // restore the original tag
     promptField.value = task.reqBody.original_prompt || task.reqBody.prompt
 
-    // properly reset missing fields
-    if (!('use_hypernetwork_model' in task.reqBody)) {
-        hypernetworkModelField.value = ""
-        hypernetworkModelField.dispatchEvent(new Event("change"))
-    }
+    // properly reset checkboxes
     if (!('use_face_correction' in task.reqBody)) {
         useFaceCorrectionField.checked = false
     }
