@@ -1373,7 +1373,6 @@ function img2imgLoad() {
     initImageSizeBox.textContent = initImagePreview.naturalWidth + " x " + initImagePreview.naturalHeight
     imageEditor.setImage(this.src, initImagePreview.naturalWidth, initImagePreview.naturalHeight)
     imageInpainter.setImage(this.src, parseInt(widthField.value), parseInt(heightField.value))
-    document.dispatchEvent(new Event("imagePainterLoad"))    
 }
 
 function img2imgUnload() {
