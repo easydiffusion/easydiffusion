@@ -282,6 +282,7 @@ const TASK_MAPPING = {
         parse: (val) => val
     }
 }
+
 function restoreTaskToUI(task, fieldsToSkip) {
     fieldsToSkip = fieldsToSkip || []
 
@@ -311,26 +312,27 @@ function restoreTaskToUI(task, fieldsToSkip) {
     if (!('use_upscale' in task.reqBody)) {
         useUpscalingField.checked = false
     }
-    if (!('mask' in task.reqBody)) {
+    if (!('mask' in task.reqBody) && maskSetting.checked) {
         maskSetting.checked = false
         maskSetting.dispatchEvent(new Event("click"))
     }
     upscaleModelField.disabled = !useUpscalingField.checked
     upscaleAmountField.disabled = !useUpscalingField.checked
 
-    // Show the source picture if present
-    initImagePreview.src = (task.reqBody.init_image == undefined ? '' : task.reqBody.init_image)
-    if (IMAGE_REGEX.test(initImagePreview.src)) {
-        initImagePreview.dispatchEvent(new Event("load"))
-        if (Boolean(task.reqBody.mask)) {
-            setTimeout(() => { // add a delay to insure this happens AFTER the main image loads (which reloads the inpainter)
-                imageInpainter.setImg(task.reqBody.mask)
-            }, 250)
-        }
-    }
-    else
-    {
+    // hide/show source picture as needed
+    if (IMAGE_REGEX.test(initImagePreview.src) && task.reqBody.init_image == undefined) {
+        // hide source image
         initImageClearBtn.dispatchEvent(new Event("click"))
+    }
+    else if (task.reqBody.init_image !== undefined) {
+        // listen for inpainter loading event, which happens AFTER the main image loads (which reloads the inpainter)
+        document.addEventListener('imagePainterLoad', function() {
+            if (Boolean(task.reqBody.mask)) {
+                imageInpainter.setImg(task.reqBody.mask)
+            }
+        }, { once: true })
+        initImagePreview.src = task.reqBody.init_image
+        initImagePreview.dispatchEvent(new Event("load"))
     }
 }
 function readUI() {
