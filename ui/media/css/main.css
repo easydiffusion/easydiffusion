@@ -1112,6 +1112,8 @@ div.task-initimg:hover div.task-fs-initimage {
     z-index: 9999;
     box-shadow: 0 0 30px #000;
     margin-top:-64px;
+    max-width: 75vw;
+    max-height: 75vh;
 }
 div.top-right {
     position: absolute;
