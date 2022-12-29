@@ -204,6 +204,26 @@ function refreshModifiersState(newTags) {
     refreshTagsList()
 }
 
+function refreshInactiveTags(inactiveTags) {
+    // update inactive tags
+    if (inactiveTags !== undefined && inactiveTags.length > 0) {
+        activeTags.forEach (tag => {
+            if (inactiveTags.find(element => element === tag.name) !== undefined) {
+                tag.inactive = true
+            }
+        })
+    }
+    
+    // update cards
+    let overlays = document.querySelector('#editor-inputs-tags-list').querySelectorAll('.modifier-card-overlay')
+    overlays.forEach (i => {
+        let modifierName = i.parentElement.getElementsByClassName('modifier-card-label')[0].getElementsByTagName("p")[0].innerText
+        if (inactiveTags.find(element => element === modifierName) !== undefined) {
+            i.parentElement.classList.add('modifier-toggle-inactive')
+        }
+    })
+}
+
 function refreshTagsList() {
     editorModifierTagsList.innerHTML = ''
 

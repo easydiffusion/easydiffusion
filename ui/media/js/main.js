@@ -940,7 +940,8 @@ function getCurrentUserRequest() {
             output_quality: parseInt(outputQualityField.value),
             metadata_output_format: document.querySelector('#metadata_output_format').value,
             original_prompt: promptField.value,
-            active_tags: (activeTags.map(x => x.name))
+            active_tags: (activeTags.map(x => x.name)),
+            inactive_tags: (activeTags.filter(tag => tag.inactive === true).map(x => x.name))
         }
     }
     if (IMAGE_REGEX.test(initImagePreview.src)) {
