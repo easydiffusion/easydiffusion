@@ -3,8 +3,8 @@
 ## v2.5
 ### Major Changes
 - **Nearly twice as fast** - significantly faster speed of image generation. We're now pretty close to automatic1111's speed. Code contributions are welcome to make our project even faster: https://github.com/easydiffusion/sdkit/#is-it-fast
-- **Full support for Stable Diffusion 2.1** - supports loading v1.4 or v2.0 or v2.1 models seamlessly. No need to enable "Test SD2", and no need to add `sd2_` to your SD 2.0 model file names.
-- **Memory optimized Stable Diffusion 2.1** - you can now use 768x768 models for SD 2.1, with the same low VRAM optimizations that we've always had for SD 1.4.
+- **Full support for Stable Diffusion 2.1 (including CPU)** - supports loading v1.4 or v2.0 or v2.1 models seamlessly. No need to enable "Test SD2", and no need to add `sd2_` to your SD 2.0 model file names. Works on CPU as well.
+- **Memory optimized Stable Diffusion 2.1** - you can now use 768x768 models for SD 2.1, with the same low VRAM optimizations that we've always had for SD 1.4. Please note, 4 GB graphics cards can still only support images upto 512x512 resolution.
 - **6 new samplers!** - explore the new samplers, some of which can generate great images in less than 10 inference steps!
 - **Model Merging** - You can now merge two models (`.ckpt` or `.safetensors`) and output `.ckpt` or `.safetensors` models, optionally in `fp16` precision. Details: https://github.com/cmdr2/stable-diffusion-ui/wiki/Model-Merging
 - **Fast loading/unloading of VAEs** - No longer needs to reload the entire Stable Diffusion model, each time you change the VAE
@@ -18,6 +18,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.4 - 29 Dec 2022 - Lots of bug fixes in the UI. Thanks @patriceac
 * 2.5.4 - 28 Dec 2022 - Full support for running tasks in parallel on multiple GPUs. Warning: 'Euler Ancestral', 'DPM2 Ancestral' and 'DPM++ 2s Ancestral' may produce slight variations in the image (if run in parallel), so we recommend using the other samplers.
 * 2.5.3 - 27 Dec 2022 - Fix broken drag-and-drop for text metadata files (as well as paste in clipboard).
 * 2.5.3 - 27 Dec 2022 - Allow upscaling by 2x as well as 4x.
