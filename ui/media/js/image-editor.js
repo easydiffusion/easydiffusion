@@ -36,13 +36,14 @@ const defaultToolEnd = (editor, ctx, x, y, is_overlay = false) => {
 		ctx.clearRect(0, 0, editor.width, editor.height)
 	}
 }
+const toolDoNothing = (editor, ctx, x, y, is_overlay = false) => {}
 
 const IMAGE_EDITOR_TOOLS = [
 	{
 		id: "draw",
 		name: "Draw",
 		icon: "fa-solid fa-pencil",
-		cursor: "url(/media/images/fa-pencil.png) 0 24, pointer",
+		cursor: "url(/media/images/fa-pencil.svg) 0 24, pointer",
 		begin: defaultToolBegin,
 		move: defaultToolMove,
 		end: defaultToolEnd
@@ -51,7 +52,7 @@ const IMAGE_EDITOR_TOOLS = [
 		id: "erase",
 		name: "Erase",
 		icon: "fa-solid fa-eraser",
-		cursor: "url(/media/images/fa-eraser.png) 0 18, pointer",
+		cursor: "url(/media/images/fa-eraser.svg) 0 14, pointer",
 		begin: defaultToolBegin,
 		move: (editor, ctx, x, y, is_overlay = false) => {
 			ctx.lineTo(x, y)
@@ -78,31 +79,48 @@ const IMAGE_EDITOR_TOOLS = [
 		}
 	},
 	{
-		id: "colorpicker",
-		name: "Color Picker",
-		icon: "fa-solid fa-eye-dropper",
-		cursor: "url(/media/images/fa-eye-dropper.png) 0 24, pointer",
+		id: "fill",
+		name: "Fill",
+		icon: "fa-solid fa-fill",
+		cursor: "url(/media/images/fa-fill.svg) 20 6, pointer",
 		begin: (editor, ctx, x, y, is_overlay = false) => {
-			var img_rgb = editor.layers.background.ctx.getImageData(x, y, 1, 1).data
-			var drawn_rgb = editor.ctx_current.getImageData(x, y, 1, 1).data
-			var drawn_opacity = drawn_rgb[3] / 255
-			editor.custom_color_input.value = rgbToHex({ 
-				r: (drawn_rgb[0] * drawn_opacity) + (img_rgb[0] * (1 - drawn_opacity)),
-				g: (drawn_rgb[1] * drawn_opacity) + (img_rgb[1] * (1 - drawn_opacity)),
-				b: (drawn_rgb[2] * drawn_opacity) + (img_rgb[2] * (1 - drawn_opacity)),
-			})
-			editor.custom_color_input.dispatchEvent(new Event("change"))
+			if (!is_overlay) {
+				var color = hexToRgb(ctx.fillStyle)
+				color.a = parseInt(ctx.globalAlpha * 255) // layer.ctx.globalAlpha
+				flood_fill(editor, ctx, parseInt(x), parseInt(y), color)
+			}
 		},
-		move: (editor, ctx, x, y, is_overlay = false) => {},
-		end: (editor, ctx, x, y, is_overlay = false) => {}
+		move: toolDoNothing,
+		end: toolDoNothing
+	},
+	{
+		id: "colorpicker",
+		name: "Picker",
+		icon: "fa-solid fa-eye-dropper",
+		cursor: "url(/media/images/fa-eye-dropper.svg) 0 24, pointer",
+		begin: (editor, ctx, x, y, is_overlay = false) => {
+			if (!is_overlay) {
+				var img_rgb = editor.layers.background.ctx.getImageData(x, y, 1, 1).data
+				var drawn_rgb = editor.ctx_current.getImageData(x, y, 1, 1).data
+				var drawn_opacity = drawn_rgb[3] / 255
+				editor.custom_color_input.value = rgbToHex({ 
+					r: (drawn_rgb[0] * drawn_opacity) + (img_rgb[0] * (1 - drawn_opacity)),
+					g: (drawn_rgb[1] * drawn_opacity) + (img_rgb[1] * (1 - drawn_opacity)),
+					b: (drawn_rgb[2] * drawn_opacity) + (img_rgb[2] * (1 - drawn_opacity)),
+				})
+				editor.custom_color_input.dispatchEvent(new Event("change"))
+			}
+		},
+		move: toolDoNothing,
+		end: toolDoNothing
 	}
 ]
 
 const IMAGE_EDITOR_ACTIONS = [
 	{
-		id: "fill",
-		name: "Fill",
-		icon: "fa-solid fa-fill-drip",
+		id: "fill_all",
+		name: "Fill all",
+		icon: "fa-solid fa-paint-roller",
 		handler: (editor) => {
 			editor.ctx_current.globalCompositeOperation = "source-over"
 			editor.ctx_current.rect(0, 0, editor.width, editor.height)
@@ -478,8 +496,8 @@ class ImageEditor {
 			width = (multiplier * width).toFixed()
 			height = (multiplier * height).toFixed()
 		}
-		this.width = width
-		this.height = height
+		this.width = parseInt(width)
+		this.height = parseInt(height)
 	
 		this.container.style.width = width + "px"
 		this.container.style.height = height + "px"
@@ -695,14 +713,6 @@ class ImageEditor {
 	}
 }
 
-function rgbToHex(rgb) {
-	function componentToHex(c) {
-		var hex = parseInt(c).toString(16)
-		return hex.length == 1 ? "0" + hex : hex
-	}
-	return "#" + componentToHex(rgb.r) + componentToHex(rgb.g) + componentToHex(rgb.b)
-}
-
 const imageEditor = new ImageEditor(document.getElementById("image-editor"))
 const imageInpainter = new ImageEditor(document.getElementById("image-inpainter"), true)
 
@@ -717,3 +727,107 @@ document.getElementById("init_image_button_inpaint").addEventListener("click", (
 })
 
 img2imgUnload() // no init image when the app starts
+
+
+function rgbToHex(rgb) {
+	function componentToHex(c) {
+		var hex = parseInt(c).toString(16)
+		return hex.length == 1 ? "0" + hex : hex
+	}
+	return "#" + componentToHex(rgb.r) + componentToHex(rgb.g) + componentToHex(rgb.b)
+}
+
+function hexToRgb(hex) {
+	var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+	return result ? {
+		r: parseInt(result[1], 16),
+		g: parseInt(result[2], 16),
+		b: parseInt(result[3], 16)
+	} : null;
+}
+
+function pixelCompare(int1, int2) {
+	return Math.abs(int1 - int2) < 4
+}
+
+// adapted from https://ben.akrin.com/canvas_fill/fill_04.html
+function flood_fill(editor, the_canvas_context, x, y, color) {
+	pixel_stack = [{x:x, y:y}] ;
+	pixels = the_canvas_context.getImageData( 0, 0, editor.width, editor.height ) ;
+	var linear_cords = ( y * editor.width + x ) * 4 ;
+	var original_color = {r:pixels.data[linear_cords],
+						g:pixels.data[linear_cords+1],
+						b:pixels.data[linear_cords+2],
+						a:pixels.data[linear_cords+3]} ;
+	
+	var opacity = color.a / 255;
+	var new_color = {
+		r: parseInt((color.r * opacity) + (original_color.r * (1 - opacity))),
+		g: parseInt((color.g * opacity) + (original_color.g * (1 - opacity))),
+		b: parseInt((color.b * opacity) + (original_color.b * (1 - opacity)))
+	}
+
+	if ((pixelCompare(new_color.r, original_color.r) &&
+		pixelCompare(new_color.g, original_color.g) &&
+		pixelCompare(new_color.b, original_color.b)))
+	{
+		return; // This color is already the color we want, so do nothing
+	}
+	var max_stack_size = editor.width * editor.height;
+	while( pixel_stack.length > 0 && pixel_stack.length < max_stack_size ) {
+		new_pixel = pixel_stack.shift() ;
+		x = new_pixel.x ;
+		y = new_pixel.y ;
+	
+		linear_cords = ( y * editor.width + x ) * 4 ;
+		while( y-->=0 &&
+			   (pixelCompare(pixels.data[linear_cords], original_color.r) &&
+				pixelCompare(pixels.data[linear_cords+1], original_color.g) &&
+				pixelCompare(pixels.data[linear_cords+2], original_color.b))) {
+			linear_cords -= editor.width * 4 ;
+		}
+		linear_cords += editor.width * 4 ;
+		y++ ;
+
+		var reached_left = false ;
+		var reached_right = false ;
+		while( y++<editor.height &&
+			   (pixelCompare(pixels.data[linear_cords], original_color.r) &&
+				pixelCompare(pixels.data[linear_cords+1], original_color.g) &&
+				pixelCompare(pixels.data[linear_cords+2], original_color.b))) {
+			pixels.data[linear_cords]   = new_color.r ;
+			pixels.data[linear_cords+1] = new_color.g ;
+			pixels.data[linear_cords+2] = new_color.b ;
+			pixels.data[linear_cords+3] = 255 ;
+
+			if( x>0 ) {
+				if( pixelCompare(pixels.data[linear_cords-4], original_color.r) &&
+					pixelCompare(pixels.data[linear_cords-4+1], original_color.g) &&
+					pixelCompare(pixels.data[linear_cords-4+2], original_color.b)) {
+					if( !reached_left ) {
+						pixel_stack.push( {x:x-1, y:y} ) ;
+						reached_left = true ;
+					}
+				} else if( reached_left ) {
+					reached_left = false ;
+				}
+			}
+		
+			if( x<editor.width-1 ) {
+				if( pixelCompare(pixels.data[linear_cords+4], original_color.r) &&
+					pixelCompare(pixels.data[linear_cords+4+1], original_color.g) &&
+					pixelCompare(pixels.data[linear_cords+4+2], original_color.b)) {
+					if( !reached_right ) {
+						pixel_stack.push( {x:x+1,y:y} ) ;
+						reached_right = true ;
+					}
+				} else if( reached_right ) {
+					reached_right = false ;
+				}
+			}
+			
+			linear_cords += editor.width * 4 ;
+		}
+	}
+	the_canvas_context.putImageData( pixels, 0, 0 ) ;
+}
