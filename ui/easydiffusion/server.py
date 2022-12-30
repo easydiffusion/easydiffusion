@@ -13,7 +13,7 @@ from starlette.responses import FileResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
 from easydiffusion import app, model_manager, task_manager
-from easydiffusion.types import TaskData, GenerateImageRequest
+from easydiffusion.types import TaskData, GenerateImageRequest, MergeRequest
 from easydiffusion.utils import log
 
 log.info(f'started in {app.SD_DIR}')
@@ -60,6 +60,11 @@ def init():
     @server_api.post('/render')
     def render(req: dict):
         return render_internal(req)
+
+    @server_api.post('/model/merge')
+    def model_merge(req: dict):
+        print(req)
+        return model_merge_internal(req)
 
     @server_api.get('/image/stream/{task_id:int}')
     def stream(task_id:int):
@@ -177,6 +182,25 @@ def render_internal(req: dict):
         raise HTTPException(status_code=500, detail=f'Rendering thread has died.') # HTTP500 Internal Server Error
     except ConnectionRefusedError as e: # Unstarted task pending limit reached, deny queueing too many.
         raise HTTPException(status_code=503, detail=str(e)) # HTTP503 Service Unavailable
+    except Exception as e:
+        log.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
+
+def model_merge_internal(req: dict):
+    try:
+        from sdkit.train.merge_models import merge_models
+        from easydiffusion.utils.save_utils import filename_regex
+        mergeReq: MergeRequest = MergeRequest.parse_obj(req)
+        print('model_merge_internal')
+        print(mergeReq)
+        
+        merge_models(model_manager.resolve_model_to_use(mergeReq.model0,'stable-diffusion'), 
+           model_manager.resolve_model_to_use(mergeReq.model1,'stable-diffusion'), 
+           mergeReq.ratio, 
+           os.path.join(app.MODELS_DIR, 'stable-diffusion', filename_regex.sub('_', mergeReq.out_path)), 
+           mergeReq.use_fp16
+        )
+        return JSONResponse({'status':'OK'}, headers=NOCACHE_HEADERS)
     except Exception as e:
         log.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
