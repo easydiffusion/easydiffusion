@@ -4,6 +4,7 @@ import sys
 import json
 import traceback
 import logging
+import shlex
 from rich.logging import RichHandler
 
 from sdkit.utils import log as sdkit_log # hack, so we can overwrite the log config
@@ -36,6 +37,7 @@ CORE_UI_PLUGINS_DIR = os.path.abspath(os.path.join(SD_UI_DIR, 'plugins', 'ui'))
 UI_PLUGINS_SOURCES = ((CORE_UI_PLUGINS_DIR, 'core'), (USER_UI_PLUGINS_DIR, 'user'))
 
 OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder
+PRESERVE_CONFIG_VARS = ['FORCE_SAVE_PATH', 'FORCE_FULL_PRECISION']
 TASK_TTL = 15 * 60 # Discard last session's task timeout
 APP_CONFIG_DEFAULTS = {
     # auto: selects the cuda device with the most free memory, cuda: use the currently active cuda device.
@@ -88,6 +90,11 @@ def setConfig(config):
         bind_ip = '0.0.0.0' if config['net']['listen_to_network'] else '127.0.0.1'
         config_bat.append(f"@set SD_UI_BIND_IP={bind_ip}")
 
+        # Preserve these variables if they are set
+        for var in PRESERVE_CONFIG_VARS:
+            if os.getenv(var) is not None:
+                config_bat.append(f"@set {var}={os.getenv(var)}")
+
         if len(config_bat) > 0:
             with open(config_bat_path, 'w', encoding='utf-8') as f:
                 f.write('\r\n'.join(config_bat))
@@ -104,6 +111,11 @@ def setConfig(config):
         config_sh.append(f"export SD_UI_BIND_PORT={config['net']['listen_port']}")
         bind_ip = '0.0.0.0' if config['net']['listen_to_network'] else '127.0.0.1'
         config_sh.append(f"export SD_UI_BIND_IP={bind_ip}")
+
+        # Preserve these variables if they are set
+        for var in PRESERVE_CONFIG_VARS:
+            if os.getenv(var) is not None:
+                config_bat.append(f'export {var}="{shlex.quote(os.getenv(var))}"')
 
         if len(config_sh) > 1:
             with open(config_sh_path, 'w', encoding='utf-8') as f:

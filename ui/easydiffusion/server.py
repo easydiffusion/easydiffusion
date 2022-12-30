@@ -127,10 +127,14 @@ def read_web_data_internal(key:str=None):
         return JSONResponse(app.getConfig(), headers=NOCACHE_HEADERS)
     elif key == 'system_info':
         config = app.getConfig()
+
+        output_dir = os.path.join(os.path.expanduser("~"), app.OUTPUT_DIRNAME) if os.getenv('FORCE_SAVE_PATH') is None else os.getenv('FORCE_SAVE_PATH')
+
         system_info = {
             'devices': task_manager.get_devices(),
             'hosts': app.getIPConfig(),
-            'default_output_dir': os.path.join(os.path.expanduser("~"), app.OUTPUT_DIRNAME),
+            'default_output_dir': output_dir,
+            'enforce_output_dir': (os.getenv('FORCE_SAVE_PATH') is not None),
         }
         system_info['devices']['config'] = config.get('render_devices', "auto")
         return JSONResponse(system_info, headers=NOCACHE_HEADERS)
@@ -159,6 +163,10 @@ def render_internal(req: dict):
         # separate out the request data into rendering and task-specific data
         render_req: GenerateImageRequest = GenerateImageRequest.parse_obj(req)
         task_data: TaskData = TaskData.parse_obj(req)
+
+        # Overwrite user specified save path
+        if os.getenv('FORCE_SAVE_PATH') is not None:
+           task_data.save_to_disk_path = os.getenv('FORCE_SAVE_PATH')
 
         render_req.init_image_mask = req.get('mask') # hack: will rename this in the HTTP API in a future revision
 
