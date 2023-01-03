@@ -365,6 +365,8 @@
 
         // Update model list
         stableDiffusionModelField.innerHTML = ''
+        vaeModelField.innerHTML = ''
+        hypernetworkModelField.innerHTML = ''
         await getModels()
     })
 
