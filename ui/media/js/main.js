@@ -906,7 +906,7 @@ function createTask(task) {
     if (task.previewPrompt.innerText.trim() === '') {
         task.previewPrompt.innerHTML = '&nbsp;' // allows the results to be collapsed
     }
-
+    return taskEntry.id
 }
 
 function getCurrentUserRequest() {
