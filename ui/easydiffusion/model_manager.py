@@ -44,7 +44,13 @@ def load_default_models(context: Context):
     for model_type in MODELS_TO_LOAD_ON_START:
         context.model_paths[model_type] = resolve_model_to_use(model_type=model_type)
         set_model_config_path(context, model_type)
-        load_model(context, model_type)
+        try:
+           load_model(context, model_type)
+        except Exception as e:
+           log.error(f'[red]Error while loading {model_type} model: {context.model_paths[model_type]}[/red]')
+           log.error(f'[red]Error: {e}[/red]')
+           log.error(f'[red]Consider to remove the model from the model folder.[red]')
+
 
 def unload_all(context: Context):
     for model_type in KNOWN_MODEL_TYPES:
