@@ -85,12 +85,19 @@ def filter_images(task_data: TaskData, images: list, user_stopped):
     return apply_filters(context, filters_to_apply, images, scale=task_data.upscale_amount)
 
 def construct_response(images: list, task_data: TaskData, base_seed: int):
+    if task_data.show_only_filtered_image or (task_data.use_face_correction is None and task_data.use_upscale is None):
+        length = len(images)
+    else:
+        # The images list has length/2 SD images + length/2 filtered images. The seeds of image i and i+length/2 are thus the same
+        # So for 3 images + 3 filtered images and start seed 10, the seeds would be 10,11,12,10,11,12
+        length = len(images)/2
     return [
         ResponseImage(
             data=img_to_base64_str(img, task_data.output_format, task_data.output_quality),
-            seed=base_seed + i
+            seed=base_seed + ( i if i<length else i-length)
         ) for i, img in enumerate(images)
     ]
+
 
 def make_step_callback(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback, stream_image_progress: bool):
     n_steps = req.num_inference_steps if req.init_image is None else int(req.num_inference_steps * req.prompt_strength)
