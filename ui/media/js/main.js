@@ -1305,15 +1305,21 @@ async function getModels() {
 
         function createModelOptions(modelField, selectedModel) {
             return function(modelName) {
-                const modelOption = document.createElement('option')
-                modelOption.value = modelName
-                modelOption.innerText = modelName !== '' ? modelName : 'None'
+		if (typeof(modelName) == 'string') {
+                    const modelOption = document.createElement('option')
+                    modelOption.value = modelName
+                    modelOption.innerText = modelName !== '' ? modelName : 'None'
 
-                if (modelName === selectedModel) {
-                    modelOption.selected = true
-                }
-
-                modelField.appendChild(modelOption)
+                    if (modelName === selectedModel) {
+                        modelOption.selected = true
+                    }
+                    modelField.appendChild(modelOption)
+		} else {
+		    const modelGroup = document.createElement('optgroup')
+		    modelGroup.label = modelName[0]
+		    modelName[1].forEach( createModelOptions(modelGroup, selectedModel) )
+                    modelField.appendChild(modelGroup)
+		}
             }
         }
 
