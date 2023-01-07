@@ -250,6 +250,8 @@ button#resume {
 }
 img {
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
+    width:  100%;
+    object-fit: contain;
 }
 .line-separator {
     background: var(--background-color3);
