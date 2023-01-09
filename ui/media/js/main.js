@@ -440,7 +440,10 @@ function getUncompletedTaskEntries() {
 }
 
 function makeImage() {
-    performance.mark('click-makeImage')
+    if (typeof performance == "object" && performance.mark) {
+        performance.mark('click-makeImage')
+    }
+
     if (!SD.isServerAvailable()) {
         alert('The server is not available.')
         return
