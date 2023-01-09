@@ -1303,12 +1303,12 @@ async function getModels() {
         vaeOptions.unshift('') // add a None option
         hypernetworkOptions.unshift('') // add a None option
 
-        function createModelOptions(modelField, selectedModel) {
-            return function(modelName) {
+        function createModelOptions(modelField, selectedModel, path="") {
+            return function fn(modelName) {
 		if (typeof(modelName) == 'string') {
                     const modelOption = document.createElement('option')
-                    modelOption.value = modelName
-                    modelOption.innerText = modelName !== '' ? modelName : 'None'
+                    modelOption.value =  path + modelName
+                    modelOption.innerHTML = modelName !== '' ? (path != "" ? "&nbsp;&nbsp;&nbsp;"+modelName : modelName) : 'None'
 
                     if (modelName === selectedModel) {
                         modelOption.selected = true
@@ -1316,9 +1316,9 @@ async function getModels() {
                     modelField.appendChild(modelOption)
 		} else {
 		    const modelGroup = document.createElement('optgroup')
-		    modelGroup.label = modelName[0]
-		    modelName[1].forEach( createModelOptions(modelGroup, selectedModel) )
+		    modelGroup.label = path + modelName[0]
                     modelField.appendChild(modelGroup)
+		    modelName[1].forEach( createModelOptions(modelField, selectedModel, path + modelName[0] + "/" ) )
 		}
             }
         }
