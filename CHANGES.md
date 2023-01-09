@@ -60,6 +60,8 @@ Our focus continues to remain on an easy installation experience, and an easy us
 - Support loading models in the safetensor format, for improved safety
 
 ### Detailed changelog
+* 2.4.24 - 9 Jan 2022 - Urgent fix for failures on old/long-term-support browsers. Thanks @JeLuf.
+* 2.4.23/22 - 29 Dec 2022 - Allow rolling back from the upcoming v2.5 change (in beta).
 * 2.4.21 - 23 Dec 2022 - Speed up image creation, by removing a delay (regression) of 4-5 seconds between clicking the `Make Image` button and calling the server.
 * 2.4.20 - 22 Dec 2022 - `Pause All` button to pause all the pending tasks. Thanks @JeLuf
 * 2.4.20 - 22 Dec 2022 - `Undo`/`Redo` buttons in the image editor. Thanks @JeLuf
