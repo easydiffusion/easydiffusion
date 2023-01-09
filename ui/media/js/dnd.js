@@ -465,7 +465,7 @@ async function parseContent(text) {
     }
     // Normal txt file.
     const task = parseTaskFromText(text)
-    if (task) {
+    if (text.toLowerCase().match('seed:') && task) { // only parse valid task content
         restoreTaskToUI(task)
         return true
     } else {
