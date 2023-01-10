@@ -188,11 +188,9 @@ def render_internal(req: dict):
 
 def model_merge_internal(req: dict):
     try:
-        from sdkit.train.merge_models import merge_models
+        from sdkit.train import merge_models
         from easydiffusion.utils.save_utils import filename_regex
         mergeReq: MergeRequest = MergeRequest.parse_obj(req)
-        print('model_merge_internal')
-        print(mergeReq)
         
         merge_models(model_manager.resolve_model_to_use(mergeReq.model0,'stable-diffusion'), 
            model_manager.resolve_model_to_use(mergeReq.model1,'stable-diffusion'), 
