@@ -29,16 +29,15 @@ TASK_TEXT_MAPPING = {
 }
 
 def save_images_to_disk(images: list, filtered_images: list, req: GenerateImageRequest, task_data: TaskData):
+    now = time.time()
     save_dir_path = os.path.join(task_data.save_to_disk_path, filename_regex.sub('_', task_data.session_id))
     metadata_entries = get_metadata_entries_for_request(req, task_data)
+    make_filename = make_filename_callback(req, now=now)
 
     if task_data.show_only_filtered_image or filtered_images is images:
-        make_filename = make_filename_callback(req)
         save_images(filtered_images, save_dir_path, file_name=make_filename, output_format=task_data.output_format, output_quality=task_data.output_quality)
         save_dicts(metadata_entries, save_dir_path, file_name=make_filename, output_format=task_data.metadata_output_format)
     else:
-        now = time.time()
-        make_filename = make_filename_callback(req, now=now)
         make_filter_filename = make_filename_callback(req, now=now, suffix='filtered')
 
         save_images(images, save_dir_path, file_name=make_filename, output_format=task_data.output_format, output_quality=task_data.output_quality)
