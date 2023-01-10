@@ -1104,11 +1104,11 @@ button:active {
 
 div.task-initimg > img {
     margin-right: 6px;
-    display:      block;
+    display: block;
 }
 div.task-fs-initimage {
-    display:  none;
-#    position: absolute;
+    display: none;
+    position: absolute;
 }
 div.task-initimg:hover div.task-fs-initimage {
     display: block;
