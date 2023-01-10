@@ -2,12 +2,12 @@
 	padding-left: 32px;
 	text-align: left;
 	padding-bottom: 20px;
+	max-width: min-content;
 }
 
 .editor-options-container {
 	display: flex;
 	row-gap: 10px;
-	max-width: 210px;
 }
 
 .editor-options-container > * {
