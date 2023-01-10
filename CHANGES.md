@@ -11,6 +11,7 @@
 - **Database of known models** - automatically picks the right configuration for known models. E.g. we automatically detect and apply "v" parameterization (required for some SD 2.0 models), and "fp32" attention precision (required for some SD 2.1 models).
 - **Color correction for img2img** - an option to preserve the color profile (histogram) of the initial image. This is especially useful if you're getting red-tinted images after inpainting/masking.
 - **Three GPU Memory Usage Settings** - `High` (fastest, maximum VRAM usage), `Balanced` (default - almost as fast, significantly lower VRAM usage), `Low` (slowest, very low VRAM usage). The `Low` setting is applied automatically for GPUs with less than 4 GB of VRAM.
+- **Find models in sub-folders** - This allows you to organize your models into sub-folders inside `models/stable-diffusion`, instead of keeping them all in a single folder.
 - **Save metadata as JSON** - You can now save the metadata files as either text or json files (choose in the Settings tab).
 - **Major rewrite of the code** - Most of the codebase has been reorganized and rewritten, to make it more manageable and easier for new developers to contribute features. We've separated our core engine into a new project called `sdkit`, which allows anyone to easily integrate Stable Diffusion (and related modules like GFPGAN etc) into their programming projects (via a simple `pip install sdkit`): https://github.com/easydiffusion/sdkit/
 - **Name change** - Last, and probably the least, the UI is now called "Easy Diffusion". It indicates the focus of this project - an easy way for people to play with Stable Diffusion.
@@ -18,6 +19,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.6 - 10 Jan 2022 - Find Stable Diffusion models in sub-folders inside `models/stable-diffusion`. This allows you to organize your models into sub-folders, instead of keeping them all in a single folder. Thanks @JeLuf.
 * 2.5.5 - 9 Jan 2022 - Lots of bug fixes. Thanks @patriceac and @JeLuf.
 * 2.5.4 - 29 Dec 2022 - Press Esc key on the keyboard to close the Image Editor. Thanks @patriceac.
 * 2.5.4 - 29 Dec 2022 - Lots of bug fixes in the UI. Thanks @patriceac.
