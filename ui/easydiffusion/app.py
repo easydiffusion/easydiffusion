@@ -37,7 +37,7 @@ CORE_UI_PLUGINS_DIR = os.path.abspath(os.path.join(SD_UI_DIR, 'plugins', 'ui'))
 UI_PLUGINS_SOURCES = ((CORE_UI_PLUGINS_DIR, 'core'), (USER_UI_PLUGINS_DIR, 'user'))
 
 OUTPUT_DIRNAME = "Stable Diffusion UI" # in the user's home folder
-PRESERVE_CONFIG_VARS = ['FORCE_SAVE_PATH', 'FORCE_FULL_PRECISION']
+PRESERVE_CONFIG_VARS = ['FORCE_FULL_PRECISION']
 TASK_TTL = 15 * 60 # Discard last session's task timeout
 APP_CONFIG_DEFAULTS = {
     # auto: selects the cuda device with the most free memory, cuda: use the currently active cuda device.

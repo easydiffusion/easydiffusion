@@ -128,13 +128,13 @@ def read_web_data_internal(key:str=None):
     elif key == 'system_info':
         config = app.getConfig()
 
-        output_dir = os.path.join(os.path.expanduser("~"), app.OUTPUT_DIRNAME) if os.getenv('FORCE_SAVE_PATH') is None else os.getenv('FORCE_SAVE_PATH')
+        output_dir = config.get('force_save_path', os.path.join(os.path.expanduser("~"), app.OUTPUT_DIRNAME))
 
         system_info = {
             'devices': task_manager.get_devices(),
             'hosts': app.getIPConfig(),
             'default_output_dir': output_dir,
-            'enforce_output_dir': (os.getenv('FORCE_SAVE_PATH') is not None),
+            'enforce_output_dir': ('force_save_path' in config),
         }
         system_info['devices']['config'] = config.get('render_devices', "auto")
         return JSONResponse(system_info, headers=NOCACHE_HEADERS)
@@ -165,8 +165,9 @@ def render_internal(req: dict):
         task_data: TaskData = TaskData.parse_obj(req)
 
         # Overwrite user specified save path
-        if os.getenv('FORCE_SAVE_PATH') is not None:
-           task_data.save_to_disk_path = os.getenv('FORCE_SAVE_PATH')
+        config=app.getConfig
+        if 'force_save_path' in config:
+            task_data.save_to_disk_path = config['force_save_path']
 
         render_req.init_image_mask = req.get('mask') # hack: will rename this in the HTTP API in a future revision
 
