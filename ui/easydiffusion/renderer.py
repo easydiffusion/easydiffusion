@@ -31,9 +31,9 @@ def make_images(req: GenerateImageRequest, task_data: TaskData, data_queue: queu
     context.stop_processing = False
     print_task_info(req, task_data)
 
-    images = make_images_internal(req, task_data, data_queue, task_temp_images, step_callback)
+    images, seeds = make_images_internal(req, task_data, data_queue, task_temp_images, step_callback)
 
-    res = Response(req, task_data, images=construct_response(images, task_data, base_seed=req.seed))
+    res = Response(req, task_data, images=construct_response(images, seeds, task_data, base_seed=req.seed))
     res = res.json()
     data_queue.put(json.dumps(res))
     log.info('Task completed')
@@ -53,7 +53,11 @@ def make_images_internal(req: GenerateImageRequest, task_data: TaskData, data_qu
     if task_data.save_to_disk_path is not None:
         save_images_to_disk(images, filtered_images, req, task_data)
 
-    return filtered_images if task_data.show_only_filtered_image or (task_data.use_face_correction is None and task_data.use_upscale is None) else images + filtered_images
+    seeds = [*range(req.seed, req.seed + len(images))]
+    if task_data.show_only_filtered_image or filtered_images is images:
+        return filtered_images, seeds
+    else:
+        return images + filtered_images, seeds + seeds
 
 def generate_images_internal(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback, stream_image_progress: bool):
     context.temp_images.clear()
@@ -84,12 +88,12 @@ def filter_images(task_data: TaskData, images: list, user_stopped):
 
     return apply_filters(context, filters_to_apply, images, scale=task_data.upscale_amount)
 
-def construct_response(images: list, task_data: TaskData, base_seed: int):
+def construct_response(images: list, seeds: list, task_data: TaskData, base_seed: int):
     return [
         ResponseImage(
             data=img_to_base64_str(img, task_data.output_format, task_data.output_quality),
-            seed=base_seed + i
-        ) for i, img in enumerate(images)
+            seed=seed,
+        ) for img, seed in zip(images, seeds)
     ]
 
 def make_step_callback(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback, stream_image_progress: bool):
