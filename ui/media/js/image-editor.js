@@ -434,6 +434,7 @@ class ImageEditor {
 
 		if (this.inpainter) {
 			this.selectOption("color", IMAGE_EDITOR_SECTIONS.find(s => s.name == "color").options.indexOf("#ffffff"))
+			this.selectOption("opacity", IMAGE_EDITOR_SECTIONS.find(s => s.name == "opacity").options.indexOf(0.4))
 		}
 
 		// initialize the right-side controls
