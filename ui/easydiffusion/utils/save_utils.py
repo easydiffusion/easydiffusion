@@ -33,12 +33,17 @@ def save_images_to_disk(images: list, filtered_images: list, req: GenerateImageR
     metadata_entries = get_metadata_entries_for_request(req, task_data)
 
     if task_data.show_only_filtered_image or filtered_images is images:
-        save_images(filtered_images, save_dir_path, file_name=make_filename_callback(req), output_format=task_data.output_format, output_quality=task_data.output_quality)
-        save_dicts(metadata_entries, save_dir_path, file_name=make_filename_callback(req), output_format=task_data.metadata_output_format)
+        make_filename = make_filename_callback(req)
+        save_images(filtered_images, save_dir_path, file_name=make_filename, output_format=task_data.output_format, output_quality=task_data.output_quality)
+        save_dicts(metadata_entries, save_dir_path, file_name=make_filename, output_format=task_data.metadata_output_format)
     else:
-        save_images(images, save_dir_path, file_name=make_filename_callback(req), output_format=task_data.output_format, output_quality=task_data.output_quality)
-        save_images(filtered_images, save_dir_path, file_name=make_filename_callback(req, suffix='filtered'), output_format=task_data.output_format, output_quality=task_data.output_quality)
-        save_dicts(metadata_entries, save_dir_path, file_name=make_filename_callback(req, suffix='filtered'), output_format=task_data.metadata_output_format)
+        now = time.time()
+        make_filename = make_filename_callback(req, now=now)
+        make_filter_filename = make_filename_callback(req, now=now, suffix='filtered')
+
+        save_images(images, save_dir_path, file_name=make_filename, output_format=task_data.output_format, output_quality=task_data.output_quality)
+        save_images(filtered_images, save_dir_path, file_name=make_filter_filename, output_format=task_data.output_format, output_quality=task_data.output_quality)
+        save_dicts(metadata_entries, save_dir_path, file_name=make_filter_filename, output_format=task_data.metadata_output_format)
 
 def get_metadata_entries_for_request(req: GenerateImageRequest, task_data: TaskData):
     metadata = get_printable_request(req)
@@ -69,9 +74,11 @@ def get_printable_request(req: GenerateImageRequest):
     del metadata['init_image_mask']
     return metadata
 
-def make_filename_callback(req: GenerateImageRequest, suffix=None):
+def make_filename_callback(req: GenerateImageRequest, suffix=None, now=None):
+    if now is None:
+        now = time.time()
     def make_filename(i):
-        img_id = base64.b64encode(int(time.time()+i).to_bytes(8, 'big')).decode() # Generate unique ID based on time.
+        img_id = base64.b64encode(int(now+i).to_bytes(8, 'big')).decode() # Generate unique ID based on time.
         img_id = img_id.translate({43:None, 47:None, 61:None})[-8:] # Remove + / = and keep last 8 chars.
 
         prompt_flattened = filename_regex.sub('_', req.prompt)[:50]
