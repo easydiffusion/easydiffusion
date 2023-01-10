@@ -1306,17 +1306,23 @@ async function getModels() {
         vaeOptions.unshift('') // add a None option
         hypernetworkOptions.unshift('') // add a None option
 
-        function createModelOptions(modelField, selectedModel) {
-            return function(modelName) {
-                const modelOption = document.createElement('option')
-                modelOption.value = modelName
-                modelOption.innerText = modelName !== '' ? modelName : 'None'
+        function createModelOptions(modelField, selectedModel, path="") {
+            return function fn(modelName) {
+		if (typeof(modelName) == 'string') {
+                    const modelOption = document.createElement('option')
+                    modelOption.value =  path + modelName
+                    modelOption.innerHTML = modelName !== '' ? (path != "" ? "&nbsp;&nbsp;&nbsp;"+modelName : modelName) : 'None'
 
-                if (modelName === selectedModel) {
-                    modelOption.selected = true
-                }
-
-                modelField.appendChild(modelOption)
+                    if (modelName === selectedModel) {
+                        modelOption.selected = true
+                    }
+                    modelField.appendChild(modelOption)
+		} else {
+		    const modelGroup = document.createElement('optgroup')
+		    modelGroup.label = path + modelName[0]
+                    modelField.appendChild(modelGroup)
+		    modelName[1].forEach( createModelOptions(modelField, selectedModel, path + modelName[0] + "/" ) )
+		}
             }
         }
 
