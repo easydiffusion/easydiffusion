@@ -156,6 +156,8 @@ def is_device_compatible(device):
     '''
     Returns True/False, and prints any compatibility errors
     '''
+    # static variable "history". 
+    is_device_compatible.history = getattr(is_device_compatible, 'history', {})
     try:
         validate_device_id(device, log_prefix='is_device_compatible')
     except:
@@ -168,7 +170,9 @@ def is_device_compatible(device):
         _, mem_total = torch.cuda.mem_get_info(device)
         mem_total /= float(10**9)
         if mem_total < 3.0:
-            log.warn(f'GPU {device} with less than 3 GB of VRAM is not compatible with Stable Diffusion')
+            if is_device_compatible.history.get(device) == None:
+               log.warn(f'GPU {device} with less than 3 GB of VRAM is not compatible with Stable Diffusion')
+               is_device_compatible.history[device] = 1
             return False
     except RuntimeError as e:
         log.error(str(e))

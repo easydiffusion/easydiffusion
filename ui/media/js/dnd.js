@@ -144,7 +144,14 @@ const TASK_MAPPING = {
         readUI: () => (maskSetting.checked ? imageInpainter.getImg() : undefined),
         parse: (val) => val
     },
-
+    preserve_init_image_color_profile: { name: 'Preserve Color Profile',
+        setUI: (preserve_init_image_color_profile) => {
+            applyColorCorrectionField.checked = parseBoolean(preserve_init_image_color_profile)
+        },
+        readUI: () => applyColorCorrectionField.checked,
+        parse: (val) => parseBoolean(val)
+    },
+    
     use_face_correction: { name: 'Use Face Correction',
         setUI: (use_face_correction) => {
             useFaceCorrectionField.checked = parseBoolean(use_face_correction)
@@ -282,6 +289,7 @@ const TASK_MAPPING = {
         parse: (val) => val
     }
 }
+
 function restoreTaskToUI(task, fieldsToSkip) {
     fieldsToSkip = fieldsToSkip || []
 
@@ -320,20 +328,26 @@ function restoreTaskToUI(task, fieldsToSkip) {
     if (!('use_upscale' in task.reqBody)) {
         useUpscalingField.checked = false
     }
-    if (!('mask' in task.reqBody)) {
+    if (!('mask' in task.reqBody) && maskSetting.checked) {
         maskSetting.checked = false
+        maskSetting.dispatchEvent(new Event("click"))
     }
     upscaleModelField.disabled = !useUpscalingField.checked
     upscaleAmountField.disabled = !useUpscalingField.checked
 
-    // Show the source picture if present
-    initImagePreview.src = (task.reqBody.init_image == undefined ? '' : task.reqBody.init_image)
-    if (IMAGE_REGEX.test(initImagePreview.src)) {
-        if (Boolean(task.reqBody.mask)) {
-            setTimeout(() => { // add a delay to insure this happens AFTER the main image loads (which reloads the inpainter)
+    // hide/show source picture as needed
+    if (IMAGE_REGEX.test(initImagePreview.src) && task.reqBody.init_image == undefined) {
+        // hide source image
+        initImageClearBtn.dispatchEvent(new Event("click"))
+    }
+    else if (task.reqBody.init_image !== undefined) {
+        // listen for inpainter loading event, which happens AFTER the main image loads (which reloads the inpainter)
+        initImagePreview.addEventListener('load', function() {
+            if (Boolean(task.reqBody.mask)) {
                 imageInpainter.setImg(task.reqBody.mask)
-            }, 250)
-        }
+            }
+        }, { once: true })
+        initImagePreview.src = task.reqBody.init_image
     }
 }
 function readUI() {
@@ -451,7 +465,7 @@ async function parseContent(text) {
     }
     // Normal txt file.
     const task = parseTaskFromText(text)
-    if (task) {
+    if (text.toLowerCase().includes('seed:') && task) { // only parse valid task content
         restoreTaskToUI(task)
         return true
     } else {
