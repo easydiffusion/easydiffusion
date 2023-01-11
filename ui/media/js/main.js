@@ -1313,7 +1313,7 @@ async function getModels() {
                     modelOption.value =  path + modelName
                     modelOption.innerHTML = modelName !== '' ? (path != "" ? "&nbsp;&nbsp;"+modelName : modelName) : 'None'
 
-                    if (modelName === selectedModel) {
+                    if (path + modelName === selectedModel) {
                         modelOption.selected = true
                     }
                     modelField.appendChild(modelOption)
