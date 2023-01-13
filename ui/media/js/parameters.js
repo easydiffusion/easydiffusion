@@ -196,7 +196,6 @@ function getParameterSettingsEntry(id) {
 }
 
 function sliderUpdate(event) {
-    console.log(event)
     if (event.srcElement.id.endsWith('-input')) {
         console.log(event.srcElement.value)
         document.getElementById(event.srcElement.id.slice(0,-6)).value = event.srcElement.value
