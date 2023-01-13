@@ -326,7 +326,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
 }
 
 function onRemoveClick(req, img, event) {
-    shiftOrConfirm(event, "Remove the image from the results?", () => { findClosestAncestor(img, '.imgItem').style.display='none' })
+    shiftOrConfirm(event, "Remove the image from the results?", () => { img.closest('.imgItem').style.display='none' })
 }
 
 function onUseAsInputClick(req, img) {
