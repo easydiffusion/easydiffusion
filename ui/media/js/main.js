@@ -1138,7 +1138,7 @@ widthField.addEventListener('change', onDimensionChange)
 heightField.addEventListener('change', onDimensionChange)
 
 function renameMakeImageButton() {
-    let totalImages = Math.max(parseInt(numOutputsTotalField.value), parseInt(numOutputsParallelField.value))
+    let totalImages = Math.max(parseInt(numOutputsTotalField.value), parseInt(numOutputsParallelField.value)) * getPrompts().length
     let imageLabel = 'Image'
     if (totalImages > 1) {
         imageLabel = totalImages + ' Images'
@@ -1482,6 +1482,9 @@ function resumeClient() {
         resumeBtn.addEventListener("click", playbuttonclick)
     })
 }
+
+promptField.addEventListener("input", debounce( renameMakeImageButton, 1000) )
+
 
 pauseBtn.addEventListener("click", function () {
     pauseClient = true
