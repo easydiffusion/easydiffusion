@@ -7,6 +7,7 @@
     checkbox: "checkbox",
     select: "select",
     select_multiple: "select_multiple",
+    slider: "slider",
     custom: "custom",
 };
 
@@ -140,6 +141,17 @@ var PARAMETERS = [
         default: true,
     },
     {
+        id: "thumbnail_size",
+        type: ParameterType.slider,
+        label: "Maximum image display size",
+        note: "Downscale large images to keep a better overview",
+        icon: "fa-compress",
+        slider_min: 1,
+        slider_max: 100,
+        slider_unit: "%",
+        default: 70
+    },
+    {
         id: "confirm_dangerous_actions",
         type: ParameterType.checkbox,
         label: "Confirm dangerous actions",
@@ -183,6 +195,17 @@ function getParameterSettingsEntry(id) {
     return parameter[0].settingsEntry
 }
 
+function sliderUpdate(event) {
+    console.log(event)
+    if (event.srcElement.id.endsWith('-input')) {
+        console.log(event.srcElement.value)
+        document.getElementById(event.srcElement.id.slice(0,-6)).value = event.srcElement.value
+    } else {
+        console.log(event.srcElement.value)
+        document.getElementById(event.srcElement.id+'-input').value = event.srcElement.value
+    }
+}
+
 function getParameterElement(parameter) {
     switch (parameter.type) {
         case ParameterType.checkbox:
@@ -193,6 +216,8 @@ function getParameterElement(parameter) {
             var options = (parameter.options || []).map(option => `<option value="${option.value}">${option.label}</option>`).join("")
             var multiple = (parameter.type == ParameterType.select_multiple ? 'multiple' : '')
             return `<select id="${parameter.id}" name="${parameter.id}" ${multiple}>${options}</select>`
+        case ParameterType.slider:
+            return `<input id="${parameter.id}" name="${parameter.id}" class="editor-slider" type="range" value="${parameter.default}" min="${parameter.slider_min}" max="${parameter.slider_max}" oninput="sliderUpdate(event)"> <input id="${parameter.id}-input" name="${parameter.id}-input" size="4" value="${parameter.default}" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" oninput="sliderUpdate(event)">&nbsp;${parameter.slider_unit}`
         case ParameterType.custom:
             return parameter.render(parameter)
         default:
@@ -231,6 +256,7 @@ let listenPortField = document.querySelector("#listen_port")
 let useBetaChannelField = document.querySelector("#use_beta_channel")
 let uiOpenBrowserOnStartField = document.querySelector("#ui_open_browser_on_start")
 let confirmDangerousActionsField = document.querySelector("#confirm_dangerous_actions")
+let thumbnailSizeField = document.querySelector("#thumbnail_size")
 
 let saveSettingsBtn = document.querySelector('#save-system-settings-btn')
 
@@ -327,6 +353,22 @@ autoPickGPUsField.addEventListener('click', function() {
 
     let gpuSettingEntry = getParameterSettingsEntry('use_gpus')
     gpuSettingEntry.style.display = (this.checked ? 'none' : '')
+})
+
+thumbnailSizeField.addEventListener('change', () => {
+    (function (s) {
+        for (var j =0; j < document.styleSheets.length; j++) {
+            cssSheet = document.styleSheets[j]
+            for (var i = 0; i < cssSheet.cssRules.length; i++) {
+                var rule = cssSheet.cssRules[i];
+                if (rule.selectorText == "div.img-preview img") {
+                  rule.style['max-height'] = s+'vh';
+                  rule.style['max-width'] = s+'vw';
+                  return;
+                }
+            }
+        }
+    })(thumbnailSizeField.value)
 })
 
 async function setDiskPath(defaultDiskPath) {
@@ -433,3 +475,4 @@ saveSettingsBtn.addEventListener('click', function() {
     saveSettingsBtn.classList.add('active')
     asyncDelay(300).then(() => saveSettingsBtn.classList.remove('active'))
 })
+
