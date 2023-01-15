@@ -205,7 +205,8 @@ def getModels():
                     if is_malicious_model(entry.path):
                         raise MaliciousModelException(entry.path)
                 known_models[entry.path] = mtime
-                tree.append(entry.name.rsplit('.',1)[0])
+                dots_to_find = 2 if entry.name.lower().endswith('.vae.pt') else 1
+                tree.append(entry.name.rsplit('.', dots_to_find)[0])
             elif entry.is_dir():
                 scan=scan_directory(entry.path, suffixes) 
                 if len(scan) != 0:
