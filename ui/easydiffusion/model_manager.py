@@ -109,10 +109,10 @@ def reload_models_if_necessary(context: Context, task_data: TaskData):
 
     if 'stable-diffusion' in models_to_reload: # will unload most models.
         # Reaload all needed models...
-        if 'vae' in model_paths_in_req and 'vae' not in models_to_reload:
-            models_to_reload['vae'] = model_paths_in_req['vae']
-        if 'hypernetwork' in model_paths_in_req and 'hypernetwork' not in models_to_reload:
-            models_to_reload['hypernetwork'] = model_paths_in_req['hypernetwork']
+        for model_type in ['vae', 'hypernetwork']:
+            if model_type in model_paths_in_req and model_paths_in_req[model_type] is not None and model_type not in models_to_reload:
+                log.debug('Reloading model, loading missing %s !', model_type)
+                models_to_reload[model_type] = model_paths_in_req[model_type]
 
     for model_type, model_path_in_req in models_to_reload.items():
         context.model_paths[model_type] = model_path_in_req
