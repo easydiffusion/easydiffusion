@@ -107,6 +107,13 @@ def reload_models_if_necessary(context: Context, task_data: TaskData):
     if set_vram_optimizations(context): # reload SD
         models_to_reload['stable-diffusion'] = model_paths_in_req['stable-diffusion']
 
+    if 'stable-diffusion' in models_to_reload: # will unload most models.
+        # Reaload all needed models...
+        if 'vae' in model_paths_in_req and 'vae' not in models_to_reload:
+            models_to_reload['vae'] = model_paths_in_req['vae']
+        if 'hypernetwork' in model_paths_in_req and 'hypernetwork' not in models_to_reload:
+            models_to_reload['hypernetwork'] = model_paths_in_req['hypernetwork']
+
     for model_type, model_path_in_req in models_to_reload.items():
         context.model_paths[model_type] = model_path_in_req
 
