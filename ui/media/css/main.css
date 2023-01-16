@@ -140,7 +140,6 @@ code {
     display: flex;
     flex-direction: column;
     flex: 0 0 380pt;
-    overflow-x:hidden;
 }
 #editor label {
     font-weight: normal;
