@@ -190,7 +190,11 @@ def getModels():
         nonlocal models_scanned
         tree = []
         for entry in os.scandir(directory):
-            if entry.is_file() and True in [entry.name.endswith(s) for s in suffixes]:
+            if entry.is_file():
+                matching_suffix = list(filter(lambda s: entry.name.endswith(s), suffixes))
+                if len(matching_suffix) == 0: continue
+                matching_suffix = matching_suffix[0]
+
                 mtime = entry.stat().st_mtime
                 mod_time = known_models[entry.path] if entry.path in known_models else -1
                 if mod_time != mtime:
@@ -198,7 +202,7 @@ def getModels():
                     if is_malicious_model(entry.path):
                         raise MaliciousModelException(entry.path)
                 known_models[entry.path] = mtime
-                tree.append(entry.name.rsplit('.',1)[0])
+                tree.append(entry.name[:-len(matching_suffix)])
             elif entry.is_dir():
                 scan=scan_directory(entry.path, suffixes) 
                 if len(scan) != 0:
