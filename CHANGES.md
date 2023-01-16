@@ -19,6 +19,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.7 - 16 Jan 2022 - Fix a bug where VAE files ending with .vae.pt weren't getting displayed. Thanks Madrang, rbertus2000 and JeLuf.
 * 2.5.6 - 10 Jan 2022 - `Fill` tool for the Image Editor, to allow filling areas with color (or the entire image). And some bug fixes to the Image Editor. Thanks @mdiller.
 * 2.5.6 - 10 Jan 2022 - Find Stable Diffusion models in sub-folders inside `models/stable-diffusion`. This allows you to organize your models into sub-folders, instead of keeping them all in a single folder. Thanks @JeLuf.
 * 2.5.5 - 9 Jan 2022 - Lots of bug fixes. Thanks @patriceac and @JeLuf.
