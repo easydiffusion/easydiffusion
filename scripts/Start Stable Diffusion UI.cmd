@@ -1,7 +1,28 @@
 @echo off
 
 cd /d %~dp0
+echo Install dir: %~dp0
+
 set PATH=C:\Windows\System32;%PATH%
+
+if exist "on_sd_start.bat" (
+    echo ================================================================================
+    echo.
+    echo !!!! WARNING !!!!
+    echo.
+    echo It looks like you're trying to run the installation script from a source code 
+    echo download. This will not work.
+    echo.
+    echo Recommended: Please close this window and download the installer from
+    echo https://stable-diffusion-ui.github.io/docs/installation/
+    echo.
+    echo ================================================================================
+    echo.
+    echo Not Recommended: If you're sure that you want to run the installer from this
+    echo directory, please press any key to continue.
+    echo.
+    pause
+) 
 
 @rem set legacy installer's PATH, if it exists
 if exist "installer" set PATH=%cd%\installer;%cd%\installer\Library\bin;%cd%\installer\Scripts;%cd%\installer\Library\usr\bin;%PATH%
