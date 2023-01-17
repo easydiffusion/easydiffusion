@@ -4,7 +4,7 @@
 [![Discord Server](https://img.shields.io/discord/1014774730907209781?label=Discord)](https://discord.com/invite/u9yhsFmEkB) (for support, and development discussion) | [Troubleshooting guide for common problems](https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting)
 
 ### New: 
-Experimental support for Stable Diffusion 2.0 is available in beta!
+Experimental support for Stable Diffusion 2.0 is available in [beta](https://github.com/cmdr2/stable-diffusion-ui/wiki/The-beta-channel)!
 
 ----
 
