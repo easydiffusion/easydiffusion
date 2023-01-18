@@ -485,7 +485,6 @@ class ModelDropdown
         this.modelResult = document.querySelector(`#${this.modelFilter.id}-model-result`)
         this.modelNoResult = document.querySelector(`#${this.modelFilter.id}-model-no-result`)
         this.modelList.style.display = 'block'
-        this.modelList.style.paddingRight = '20px'
         this.modelFilter.style.width = this.modelList.offsetWidth + 'px'
         this.modelFilterArrow.style.height = this.modelFilter.offsetHeight + 'px'
         this.modelList.style.display = 'none'
