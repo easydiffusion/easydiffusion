@@ -18,10 +18,8 @@ if exist "on_sd_start.bat" (
     echo.
     echo ================================================================================
     echo.
-    echo Not Recommended: If you're sure that you want to run the installer from this
-    echo directory, please press any key to continue.
-    echo.
     pause
+    exit /b
 ) 
 
 @rem set legacy installer's PATH, if it exists
