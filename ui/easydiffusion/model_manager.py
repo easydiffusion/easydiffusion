@@ -24,6 +24,11 @@ DEFAULT_MODELS = {
     'gfpgan': ['GFPGANv1.3'],
     'realesrgan': ['RealESRGAN_x4plus'],
 }
+VRAM_USAGE_LEVEL_TO_OPTIMIZATIONS = {
+    'balanced': {'KEEP_FS_AND_CS_IN_CPU', 'SET_ATTENTION_STEP_TO_4'},
+    'low': {'KEEP_ENTIRE_MODEL_IN_CPU'},
+    'high': {},
+}
 MODELS_TO_LOAD_ON_START = ['stable-diffusion', 'vae', 'hypernetwork']
 
 known_models = {}
@@ -128,8 +133,10 @@ def set_vram_optimizations(context: Context):
                   f'possible ({max_usage_level}) on this device ({context.device}). Using "{max_usage_level}" instead')
         vram_usage_level = max_usage_level
 
-    if vram_usage_level != context.vram_usage_level:
-        context.vram_usage_level = vram_usage_level
+    vram_optimizations = VRAM_USAGE_LEVEL_TO_OPTIMIZATIONS[vram_usage_level]
+
+    if vram_optimizations != context.vram_optimizations:
+        context.vram_optimizations = vram_optimizations
         return True
 
     return False
