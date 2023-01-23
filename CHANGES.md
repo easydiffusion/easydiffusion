@@ -19,6 +19,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.9 - 23 Jan 2022 - Fix a bug where img2img would produce poorer-quality images for the same settings, as compared to version 2.4 of this UI.
 * 2.5.9 - 23 Jan 2022 - Reduce the VRAM usage for 'balanced' mode (without reducing the rendering speed), to make it similar to v2.4 of the UI.
 * 2.5.8 - 17 Jan 2022 - Fix a bug where 'Low' VRAM usage would consume a LOT of VRAM (on higher-end GPUs). Also fixed a bug that caused out-of-memory errors on SD 2.1-768 models, on 'high' VRAM usage setting.
 * 2.5.7 - 16 Jan 2022 - Fix a bug where VAE files ending with .vae.pt weren't getting displayed. Thanks Madrang, rbertus2000 and JeLuf.
