@@ -36,13 +36,15 @@ def save_images_to_disk(images: list, filtered_images: list, req: GenerateImageR
 
     if task_data.show_only_filtered_image or filtered_images is images:
         save_images(filtered_images, save_dir_path, file_name=make_filename, output_format=task_data.output_format, output_quality=task_data.output_quality)
-        save_dicts(metadata_entries, save_dir_path, file_name=make_filename, output_format=task_data.metadata_output_format)
+        if task_data.metadata_output_format.lower() in ['json', 'txt', 'embed']:
+            save_dicts(metadata_entries, save_dir_path, file_name=make_filename, output_format=task_data.metadata_output_format, file_format=task_data.output_format)
     else:
         make_filter_filename = make_filename_callback(req, now=now, suffix='filtered')
 
         save_images(images, save_dir_path, file_name=make_filename, output_format=task_data.output_format, output_quality=task_data.output_quality)
         save_images(filtered_images, save_dir_path, file_name=make_filter_filename, output_format=task_data.output_format, output_quality=task_data.output_quality)
-        save_dicts(metadata_entries, save_dir_path, file_name=make_filter_filename, output_format=task_data.metadata_output_format)
+        if task_data.metadata_output_format.lower() in ['json', 'txt', 'embed']:
+            save_dicts(metadata_entries, save_dir_path, file_name=make_filter_filename, output_format=task_data.metadata_output_format, file_format=task_data.output_format)
 
 def get_metadata_entries_for_request(req: GenerateImageRequest, task_data: TaskData):
     metadata = get_printable_request(req)
