@@ -1164,6 +1164,7 @@ function onDimensionChange() {
 }
 
 diskPathField.disabled = !saveToDiskField.checked
+metadataOutputFormatField.disabled = !saveToDiskField.checked
 
 upscaleModelField.disabled = !useUpscalingField.checked
 upscaleAmountField.disabled = !useUpscalingField.checked

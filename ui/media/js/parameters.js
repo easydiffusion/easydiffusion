@@ -58,8 +58,12 @@ var PARAMETERS = [
         type: ParameterType.select,
         label: "Metadata format",
         note: "will be saved to disk in this format",
-        default: "txt",
+        default: "none",
         options: [
+            {
+                value: "none",
+                label: "none"
+            },
             {
                 value: "txt",
                 label: "txt"
@@ -67,6 +71,10 @@ var PARAMETERS = [
             {
                 value: "json",
                 label: "json"
+            },
+            {
+                value: "embed",
+                label: "embed"
             }
         ],
     },
@@ -226,6 +234,7 @@ let autoPickGPUsField = document.querySelector('#auto_pick_gpus')
 let useGPUsField = document.querySelector('#use_gpus')
 let saveToDiskField = document.querySelector('#save_to_disk')
 let diskPathField = document.querySelector('#diskPath')
+let metadataOutputFormatField = document.querySelector('#metadata_output_format')
 let listenToNetworkField = document.querySelector("#listen_to_network")
 let listenPortField = document.querySelector("#listen_port")
 let useBetaChannelField = document.querySelector("#use_beta_channel")
@@ -279,6 +288,7 @@ async function getAppConfig() {
 
 saveToDiskField.addEventListener('change', function(e) {
     diskPathField.disabled = !this.checked
+    metadataOutputFormatField.disabled = !this.checked
 })
 
 function getCurrentRenderDeviceSelection() {
