@@ -876,18 +876,19 @@ input::file-selector-button {
 
 /* SIMPLE TOOTIP */
 .simple-tooltip {
-	border-radius: 3px;
-	font-weight: bold;
-	font-size: 12px;
+    border-radius: 3px;
+    font-weight: bold;
+    font-size: 12px;
     background-color: var(--background-color3);
 
     visibility: hidden;
-	opacity: 0;
-	position: absolute;
-	width: max-content;
-	max-width: 300px;
-	padding: 8px 12px;
-	transition: 0.3s all;
+    opacity: 0;
+    position: absolute;
+    width: max-content;
+    max-width: 300px;
+    padding: 8px 12px;
+    transition: 0.3s all;
+    z-index: 1000;
 
     pointer-events: none;
 }
