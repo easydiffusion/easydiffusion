@@ -363,7 +363,7 @@ function readUI() {
 }
 function getModelPath(filename, extensions)
 {
-    if (filename.includes('/models/stable-diffusion/')) {
+    if (filename.includes('/models/stable-diffusion/') || filename.includes('\\models\\stable-diffusion\\')) {
         let pathIdx = filename.lastIndexOf('/') // Linux, Mac paths
         if (pathIdx < 0) {
             pathIdx = filename.lastIndexOf('\\') // Windows paths.
