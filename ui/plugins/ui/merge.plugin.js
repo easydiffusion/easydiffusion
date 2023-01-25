@@ -130,7 +130,7 @@
     /////////////////////// Tab implementation
     document.querySelector('#tab-container')?.insertAdjacentHTML('beforeend', `
         <span id="tab-merge" class="tab">
-            <span><i class="fa fa-code-merge icon"></i> Merge models</span>
+            <span><i class="fa fa-code-merge icon"></i> Merge models <small>(beta)</small></span>
         </span>
     `)
 
@@ -225,11 +225,21 @@
          <select id="mergeModelB">
              <option>A</option>
          </select>
+         <p><small><b>Important:</b> Please merge models of similar type.<br/>For e.g. <code>SD 1.4</code> models with only <code>SD 1.4/1.5</code> models,<br/> <code>SD 2.0</code> with <code>SD 2.0</code>-type, and <code>SD 2.1</code> with <code>SD 2.1</code>-type models.</small></p>
          <p><label for="#merge-log">Log messages:</label></p>
          <div id="merge-log"></div>
       </div>
       <div class="merge-config">
          <table>
+            <tr><td><label for="#merge-filename">Output file name:</label></td>
+                <td> <input id="merge-filename" size=24></td>
+                <td> <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Base name of the output file.<br>Mix ratio and file suffix will be appended to this.</span></i></td></tr>
+            <tr><td><label for="#merge-format">File format:</label></td><td> <select id="merge-format">
+                <option value="safetensors">Safetensors (recommended)</option>
+                <option value="ckpt">CKPT (legacy format)</option>
+            </select></td>
+            <td> <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Use safetensors. It's the better format. Only use ckpt if you want to use<br>the models in legacy software not supporting saftensors.</span></i></td></tr>
+            <tr><td>&nbsp;</td></tr>
             <tr><td><label for="#merge-count">Step count:</label></td>
                 <td> <input id="merge-count" size=2 value="5"></td>
                 <td> <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Number of models to create</span></i></td></tr>
@@ -252,16 +262,8 @@
                 <option value="fp32">fp32 - Full precision (larger file size)</option>
             </select></td>
                 <td> <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Image generation uses fp16, so it's a good choice.<br>Use fp32 if you want to use the result models for more mixes</span></i></td></tr>
-            <hr />
-            <tr><td><label for="#merge-filename">Output file name:</label></td>
-                <td> <input id="merge-filename" size=24></td>
-                <td> <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Base name of the output file.<br>Mix ratio and file suffix will be appended to this.</span></i></td></tr>
-            <tr><td><label for="#merge-format">File format:</label></td><td> <select id="merge-format">
-                    <option value="safetensors">Safetensors (recommended)</option>
-                    <option value="ckpt">CKPT (legacy format)</option>
-                </select></td>
-                <td> <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Use safetensors. It's the better format. Only use ckpt if you want to use<br>the models in legacy software not supporting saftensors.</span></i></td></tr>
-         </table>   
+         </table>
+         <br/>
          <canvas id="merge-canvas" width="400" height="400"></canvas>
       </div>
       <div class="merge-buttons">
