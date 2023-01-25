@@ -7,7 +7,7 @@ from easydiffusion.types import TaskData, GenerateImageRequest
 
 from sdkit.utils import save_images, save_dicts
 
-filename_regex = re.compile('[^a-zA-Z0-9]')
+filename_regex = re.compile('[^a-zA-Z0-9._-]')
 
 # keep in sync with `ui/media/js/dnd.js`
 TASK_TEXT_MAPPING = {
