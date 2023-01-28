@@ -242,10 +242,10 @@
                     setServerStatus('online', 'ready')
                     break
                 case ServerStates.loadingModel:
-                    setServerStatus('busy', 'loading..')
+                    setServerStatus('busy', 'loading...')
                     break
                 case ServerStates.rendering:
-                    setServerStatus('busy', 'rendering..')
+                    setServerStatus('busy', 'rendering...')
                     break
                 default: // Unavailable
                     console.error('Ping received an unexpected server status. Status: %s', serverState.status)
