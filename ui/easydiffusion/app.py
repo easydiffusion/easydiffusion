@@ -20,7 +20,7 @@ logging.basicConfig(
         level=logging.INFO,
         format=LOG_FORMAT,
         datefmt="%X",
-        handlers=[RichHandler(markup=True, rich_tracebacks=True, show_time=False, show_level=False)]
+        handlers=[RichHandler(markup=True, rich_tracebacks=False, show_time=False, show_level=False)],
 )
 
 SD_DIR = os.getcwd()
