@@ -718,7 +718,7 @@
         "height": 'number',
         "seed": 'number',
 
-        "sampler": 'string',
+        "sampler_name": 'string',
         "use_stable_diffusion_model": 'string',
         "num_inference_steps": 'number',
         "guidance_scale": 'number',
@@ -731,7 +731,7 @@
         "output_quality": 'number',
     }
     const TASK_DEFAULTS = {
-        "sampler": "plms",
+        "sampler_name": "plms",
         "use_stable_diffusion_model": "sd-v1-4",
         "num_inference_steps": 50,
         "guidance_scale": 7.5,

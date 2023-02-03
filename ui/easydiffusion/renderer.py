@@ -65,6 +65,8 @@ def generate_images_internal(req: GenerateImageRequest, task_data: TaskData, dat
     callback = make_step_callback(req, task_data, data_queue, task_temp_images, step_callback, stream_image_progress)
 
     try:
+        if req.init_image is not None: req.sampler_name = 'ddim'
+
         images = generate_images(context, callback=callback, **req.dict())
         user_stopped = False
     except UserInitiatedStop:
