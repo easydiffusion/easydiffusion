@@ -658,7 +658,7 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
         task.progressBar.classList.remove("active")
         setStatus('request', 'done', 'success')
     } else {
-        task.outputMsg.innerText += `Task ended after ${time}`
+        task.outputMsg.innerText += `. Task ended after ${time}`
     }
 
     if (randomSeedField.checked) {
