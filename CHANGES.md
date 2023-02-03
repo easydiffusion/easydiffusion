@@ -19,6 +19,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.14 - 3 Feb 2023 - Fix the 'Make Similar Images' button, which was producing incorrect images (weren't very similar).
 * 2.5.13 - 1 Feb 2023 - Fix the remaining GPU memory leaks, including a better fix (more comprehensive) for the change in 2.5.12 (27 Jan).
 * 2.5.12 - 27 Jan 2023 - Fix a memory leak, which made the UI unresponsive after an out-of-memory error. The allocated memory is now freed-up after an error.
 * 2.5.11 - 25 Jan 2023 - UI for Merging Models. Thanks @JeLuf. More info: https://github.com/cmdr2/stable-diffusion-ui/wiki/Model-Merging
