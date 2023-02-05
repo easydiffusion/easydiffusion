@@ -17,6 +17,8 @@ from easydiffusion import device_manager
 from easydiffusion.types import TaskData, GenerateImageRequest
 from easydiffusion.utils import log
 
+from sdkit.utils import gc
+
 THREAD_NAME_PREFIX = ''
 ERR_LOCK_FAILED = ' failed to acquire lock within timeout.'
 LOCK_TIMEOUT = 15 # Maximum locking time in seconds before failing a task.
@@ -287,13 +289,12 @@ def thread_render(device):
             task_cache.keep(id(task), TASK_TTL)
             session_cache.keep(task.task_data.session_id, TASK_TTL)
         except Exception as e:
-            task.error = e
+            task.error = str(e)
             task.response = {"status": 'failed', "detail": str(task.error)}
             task.buffer_queue.put(json.dumps(task.response))
             log.error(traceback.format_exc())
-            continue
         finally:
-            # Task completed
+            gc(renderer.context)
             task.lock.release()
         task_cache.keep(id(task), TASK_TTL)
         session_cache.keep(task.task_data.session_id, TASK_TTL)

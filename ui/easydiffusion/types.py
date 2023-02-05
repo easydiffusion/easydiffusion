@@ -41,6 +41,13 @@ class TaskData(BaseModel):
     metadata_output_format: str = "txt" # or "json"
     stream_image_progress: bool = False
 
+class MergeRequest(BaseModel):
+    model0: str = None
+    model1: str = None
+    ratio: float = None
+    out_path: str = "mix"
+    use_fp16 = True
+
 class Image:
     data: str # base64
     seed: int

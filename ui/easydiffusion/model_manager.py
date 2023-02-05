@@ -24,11 +24,6 @@ DEFAULT_MODELS = {
     'gfpgan': ['GFPGANv1.3'],
     'realesrgan': ['RealESRGAN_x4plus'],
 }
-VRAM_USAGE_LEVEL_TO_OPTIMIZATIONS = {
-    'balanced': {'KEEP_FS_AND_CS_IN_CPU', 'SET_ATTENTION_STEP_TO_4'},
-    'low': {'KEEP_ENTIRE_MODEL_IN_CPU'},
-    'high': {},
-}
 MODELS_TO_LOAD_ON_START = ['stable-diffusion', 'vae', 'hypernetwork']
 
 known_models = {}
@@ -133,10 +128,8 @@ def set_vram_optimizations(context: Context):
                   f'possible ({max_usage_level}) on this device ({context.device}). Using "{max_usage_level}" instead')
         vram_usage_level = max_usage_level
 
-    vram_optimizations = VRAM_USAGE_LEVEL_TO_OPTIMIZATIONS[vram_usage_level]
-
-    if vram_optimizations != context.vram_optimizations:
-        context.vram_optimizations = vram_optimizations
+    if vram_usage_level != context.vram_usage_level:
+        context.vram_usage_level = vram_usage_level
         return True
 
     return False
@@ -190,7 +183,11 @@ def getModels():
         nonlocal models_scanned
         tree = []
         for entry in os.scandir(directory):
-            if entry.is_file() and True in [entry.name.endswith(s) for s in suffixes]:
+            if entry.is_file():
+                matching_suffix = list(filter(lambda s: entry.name.endswith(s), suffixes))
+                if len(matching_suffix) == 0: continue
+                matching_suffix = matching_suffix[0]
+
                 mtime = entry.stat().st_mtime
                 mod_time = known_models[entry.path] if entry.path in known_models else -1
                 if mod_time != mtime:
@@ -198,7 +195,7 @@ def getModels():
                     if is_malicious_model(entry.path):
                         raise MaliciousModelException(entry.path)
                 known_models[entry.path] = mtime
-                tree.append(entry.name.rsplit('.',1)[0])
+                tree.append(entry.name[:-len(matching_suffix)])
             elif entry.is_dir():
                 scan=scan_directory(entry.path, suffixes) 
                 if len(scan) != 0:
