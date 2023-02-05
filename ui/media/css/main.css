@@ -454,6 +454,7 @@ div.img-preview img {
     background: var(--accent-color);
     border: var(--primary-button-border);
     color: rgb(255, 221, 255);
+    padding: 3pt 6pt;
 }
 .secondaryButton {
     background: rgb(132, 8, 0);

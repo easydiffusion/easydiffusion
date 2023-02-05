@@ -60,6 +60,7 @@ let promptStrengthContainer = document.querySelector('#prompt_strength_container
 let initialText = document.querySelector("#initial-text")
 let previewTools = document.querySelector("#preview-tools")
 let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
+let saveAllImagesBtn = document.querySelector("#save-all-images")
 
 let maskSetting = document.querySelector('#enable_mask')
 
@@ -326,7 +327,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
 }
 
 function onRemoveClick(req, img, event) {
-    shiftOrConfirm(event, "Remove the image from the results?", () => { img.closest('.imgItem').style.display='none' })
+    shiftOrConfirm(event, "Remove the image from the results?", () => { img.closest('.img-batch').remove() })
 }
 
 function onUseAsInputClick(req, img) {
@@ -1129,6 +1130,16 @@ clearAllPreviewsBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Clear 
     let taskEntries = document.querySelectorAll('.imageTaskContainer')
     taskEntries.forEach(removeTask)
 })})
+
+saveAllImagesBtn.addEventListener('click', (e) => {
+    document.querySelectorAll(".imageTaskContainer").forEach(container => {
+        let req=htmlTaskMap.get(container)
+        container.querySelectorAll(".imgContainer img").forEach(img => {
+            onDownloadImageClick(req,img)
+            console.log(req)
+        })
+    })
+})
 
 stopImageBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Stop all the tasks?", async function(e) {
     await stopAllTasks()
