@@ -1196,3 +1196,10 @@ body.wait-pause {
     50% { border: solid 12px var(--background-color1); }
    100% { border: solid 12px var(--accent-color); }
 }
+
+.jconfirm.jconfirm-modern .jconfirm-box div.jconfirm-title-c {
+    color: var(--button-text-color);
+}
+.jconfirm.jconfirm-modern .jconfirm-box {
+    background-color: var(--background-color1);
+}
