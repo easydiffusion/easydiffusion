@@ -1445,7 +1445,7 @@ function selectTab(tab_id) {
     let tabInfo = tabElements.find(t => t.tab.id == tab_id)
     if (!tabInfo.tab.classList.contains("active")) {
         tabElements.forEach(info => {
-            if (info.tab.classList.contains("active")) {
+            if (info.tab.classList.contains("active") && info.tab.parentNode === tabInfo.tab.parentNode) {
                 info.tab.classList.toggle("active")
                 info.content.classList.toggle("active")
             }
