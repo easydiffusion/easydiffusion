@@ -123,6 +123,9 @@ code {
 .imgPreviewItemClearBtn {
     opacity: 0;
 }
+.imgPreviewItemClearBtn:hover {
+    background: rgb(177, 27, 0);
+}
 .imgContainer:hover > .imgItemInfo {
     opacity: 1;
 }
