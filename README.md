@@ -1,14 +1,13 @@
-# Stable Diffusion UI
-### The easiest way to install and use [Stable Diffusion](https://github.com/CompVis/stable-diffusion) on your own computer. Does not require technical knowledge, does not require pre-installed software. 1-click install, powerful features, friendly community.
+# Easy Diffusion 2.5
+### The easiest way to install and use [Stable Diffusion](https://github.com/CompVis/stable-diffusion) on your own computer.
 
-[![Discord Server](https://img.shields.io/discord/1014774730907209781?label=Discord)](https://discord.com/invite/u9yhsFmEkB) (for support, and development discussion) | [Troubleshooting guide for common problems](https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting)
+Does not require technical knowledge, does not require pre-installed software. 1-click install, powerful features, friendly community.
 
-### New: 
-Experimental support for Stable Diffusion 2.0 is available in beta!
+[Installation guide](#step-1-download-and-extract-the-installer) | [Troubleshooting guide](https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting) | <sub>[![Discord Server](https://img.shields.io/discord/1014774730907209781?label=Discord)](https://discord.com/invite/u9yhsFmEkB)</sub> <sup>(for support queries, and development discussions)</sup>
 
-----
+![t2i](https://raw.githubusercontent.com/Stability-AI/stablediffusion/main/assets/stable-samples/txt2img/768/merged-0006.png)
 
-# Step 1: Download and prepare the installer
+# Step 1: Download and extract the installer
 Click the download button for your operating system:
 
 <p float="left">
@@ -44,9 +43,18 @@ The installer will take care of whatever is needed. If you face any problems, yo
 ### User experience
 - **Hassle-free installation**: Does not require technical knowledge, does not require pre-installed software. Just download and run!
 - **Clutter-free UI**: A friendly and simple UI, while providing a lot of powerful features.
+- **Task Queue**: Queue up all your ideas, without waiting for the current task to finish.
+- **Intelligent Model Detection**: Automatically figures out the YAML config file to use for the chosen model (via a models database).
+- **Live Preview**: See the image as the AI is drawing it.
+- **Image Modifiers**: A library of *modifier tags* like *"Realistic"*, *"Pencil Sketch"*, *"ArtStation"* etc. Experiment with various styles quickly.
+- **Multiple Prompts File**: Queue multiple prompts by entering one prompt per line, or by running a text file.
+- **Save generated images to disk**: Save your images to your PC!
+- **UI Themes**: Customize the program to your liking.
+- **Organize your models into sub-folders**
 
 ### Image generation
 - **Supports**: "*Text to Image*" and "*Image to Image*".
+- **14 Samplers**: `ddim`, `plms`, `heun`, `euler`, `euler_a`, `dpm2`, `dpm2_a`, `lms`, `dpm_solver_stability`, `dpmpp_2s_a`, `dpmpp_2m`, `dpmpp_sde`, `dpm_fast`, `dpm_adaptive`
 - **In-Painting**: Specify areas of your image to paint into.
 - **Simple Drawing Tool**: Draw basic images to guide the AI, without needing an external drawing program.
 - **Face Correction (GFPGAN)**
@@ -56,7 +64,6 @@ The installer will take care of whatever is needed. If you face any problems, yo
 - **Attention/Emphasis**: () in the prompt increases the model's attention to enclosed words, and [] decreases it.
 - **Weighted Prompts**: Use weights for specific words in your prompt to change their importance, e.g. `red:2.4 dragon:1.2`.
 - **Prompt Matrix**: Quickly create multiple variations of your prompt, e.g. `a photograph of an astronaut riding a horse | illustration | cinematic lighting`.
-- **Lots of Samplers**: ddim, plms, heun, euler, euler_a, dpm2, dpm2_a, lms.
 - **1-click Upscale/Face Correction**: Upscale or correct an image after it has been generated.
 - **Make Similar Images**: Click to generate multiple variations of a generated image.
 - **NSFW Setting**: A setting in the UI to control *NSFW content*.
@@ -64,27 +71,21 @@ The installer will take care of whatever is needed. If you face any problems, yo
 
 ### Advanced features
 - **Custom Models**: Use your own `.ckpt` or `.safetensors` file, by placing it inside the `models/stable-diffusion` folder!
-- **Stable Diffusion 2.0 support (experimental)**: available in beta channel.
+- **Stable Diffusion 2.1 support**
+- **Merge Models**
 - **Use custom VAE models**
 - **Use pre-trained Hypernetworks**
 - **UI Plugins**: Choose from a growing list of [community-generated UI plugins](https://github.com/cmdr2/stable-diffusion-ui/wiki/UI-Plugins), or write your own plugin to add features to the project!
 
 ### Performance and security
-- **Low Memory Usage**: Creates 512x512 images with less than 4GB of GPU RAM!
+- **Fast**: Creates a 512x512 image with euler_a in 5 seconds, on an NVIDIA 3060 12GB.
+- **Low Memory Usage**: Create 512x512 images with less than 3 GB of GPU RAM, and 768x768 images with less than 4 GB of GPU RAM!
 - **Use CPU setting**: If you don't have a compatible graphics card, but still want to run it on your CPU.
 - **Multi-GPU support**: Automatically spreads your tasks across multiple GPUs (if available), for faster performance!
 - **Auto scan for malicious models**: Uses picklescan to prevent malicious models.
 - **Safetensors support**: Support loading models in the safetensor format, for improved safety.
 - **Auto-updater**: Gets you the latest improvements and bug-fixes to a rapidly evolving project.
 - **Developer Console**: A developer-mode for those who want to modify their Stable Diffusion code, and edit the conda environment.
-
-### Usability:
-- **Live Preview**: See the image as the AI is drawing it.
-- **Task Queue**: Queue up all your ideas, without waiting for the current task to finish.
-- **Image Modifiers**: A library of *modifier tags* like *"Realistic"*, *"Pencil Sketch"*, *"ArtStation"* etc. Experiment with various styles quickly.
-- **Multiple Prompts File**: Queue multiple prompts by entering one prompt per line, or by running a text file.
-- **Save generated images to disk**: Save your images to your PC!
-- **UI Themes**: Customize the program to your liking.
 
 **(and a lot more)**
 
