@@ -835,11 +835,10 @@
          * @memberof Task
          */
         async post(timeout=-1) {
-            if (typeof performance == "object" && performance.mark && performance.measure) {
-                performance.mark('make-render-request')
-                if (performance.getEntriesByName('click-makeImage', 'mark').length > 0) {
-                    console.log('delay between clicking and making the server request:', performance.measure('diff', 'click-makeImage', 'make-render-request').duration + ' ms')
-                }
+            performance.mark('make-render-request')
+            if (performance.getEntriesByName('click-makeImage', 'mark').length > 0) {
+                performance.measure('diff', 'click-makeImage', 'make-render-request')
+                console.log('delay between clicking and making the server request:', performance.getEntriesByName('diff', 'measure')[0].duration + ' ms')
             }
 
             let jsonResponse = await super.post('/render', timeout)

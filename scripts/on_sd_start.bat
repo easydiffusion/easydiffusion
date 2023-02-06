@@ -79,6 +79,8 @@ if "%ERRORLEVEL%" EQU "0" (
     )
 )
 
+set PATH=C:\Windows\System32;%PATH%
+
 @rem install/upgrade sdkit
 call python ..\scripts\check_modules.py sdkit sdkit.models ldm transformers numpy antlr4 gfpgan realesrgan
 if "%ERRORLEVEL%" EQU "0" (
