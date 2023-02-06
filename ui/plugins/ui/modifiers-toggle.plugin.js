@@ -46,7 +46,7 @@
                     
                     return obj;
                 });
-                console.log(activeTags)
+                document.dispatchEvent(new Event('refreshImageModifiers'))
             }
         })
     }

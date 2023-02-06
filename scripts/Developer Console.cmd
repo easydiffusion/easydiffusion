@@ -23,22 +23,19 @@ call conda --version
 
 echo.
 
-@rem activate the environment
-call conda activate .\stable-diffusion\env
+@rem activate the legacy environment (if present) and set PYTHONPATH
+if exist "installer_files\env" (
+    set PYTHONPATH=%cd%\installer_files\env\lib\site-packages
+)
+if exist "stable-diffusion\env" (
+    call conda activate .\stable-diffusion\env
+    set PYTHONPATH=%cd%\stable-diffusion\env\lib\site-packages
+)
 
 call where python
 call python --version
 
-@rem set the PYTHONPATH
-cd stable-diffusion
-set SD_DIR=%cd%
-
-cd env\lib\site-packages
-set PYTHONPATH=%SD_DIR%;%cd%
-cd ..\..\..
 echo PYTHONPATH=%PYTHONPATH%
-
-cd ..
 
 @rem done
 echo.

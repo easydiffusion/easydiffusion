@@ -58,6 +58,7 @@
                             break
                         }
                     }
+                    document.dispatchEvent(new Event('refreshImageModifiers'))
                 }
             }
         })

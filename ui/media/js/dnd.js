@@ -25,6 +25,7 @@ function parseBoolean(stringValue) {
         case "no":
         case "off":
         case "0":
+        case "none":
         case null:
         case undefined:
           return false;
@@ -56,6 +57,13 @@ const TASK_MAPPING = {
             refreshModifiersState(active_tags)
         },
         readUI: () => activeTags.map(x => x.name),
+        parse: (val) => val
+    },
+    inactive_tags: { name: "Inactive Image Modifiers",
+        setUI: (inactive_tags) => {
+            refreshInactiveTags(inactive_tags)
+        },
+        readUI: () => activeTags.filter(tag => tag.inactive === true).map(x => x.name),
         parse: (val) => val
     },
     width: { name: 'Width',
@@ -136,7 +144,14 @@ const TASK_MAPPING = {
         readUI: () => (maskSetting.checked ? imageInpainter.getImg() : undefined),
         parse: (val) => val
     },
-
+    preserve_init_image_color_profile: { name: 'Preserve Color Profile',
+        setUI: (preserve_init_image_color_profile) => {
+            applyColorCorrectionField.checked = parseBoolean(preserve_init_image_color_profile)
+        },
+        readUI: () => applyColorCorrectionField.checked,
+        parse: (val) => parseBoolean(val)
+    },
+    
     use_face_correction: { name: 'Use Face Correction',
         setUI: (use_face_correction) => {
             useFaceCorrectionField.checked = parseBoolean(use_face_correction)
@@ -147,12 +162,14 @@ const TASK_MAPPING = {
     use_upscale: { name: 'Use Upscaling',
         setUI: (use_upscale) => {
             const oldVal = upscaleModelField.value
-            upscaleModelField.value = use_upscale
+            upscaleModelField.value = getModelPath(use_upscale, ['.pth'])
             if (upscaleModelField.value) { // Is a valid value for the field.
                 useUpscalingField.checked = true
                 upscaleModelField.disabled = false
+                upscaleAmountField.disabled = false
             } else { // Not a valid value, restore the old value and disable the filter.
                 upscaleModelField.disabled = true
+                upscaleAmountField.disabled = true
                 upscaleModelField.value = oldVal
                 useUpscalingField.checked = false
             }
@@ -160,9 +177,16 @@ const TASK_MAPPING = {
         readUI: () => (useUpscalingField.checked ? upscaleModelField.value : undefined),
         parse: (val) => val
     },
-    sampler: { name: 'Sampler',
-        setUI: (sampler) => {
-            samplerField.value = sampler
+    upscale_amount: { name: 'Upscale By',
+        setUI: (upscale_amount) => {
+            upscaleAmountField.value = upscale_amount
+        },
+        readUI: () => upscaleAmountField.value,
+        parse: (val) => val
+    },
+    sampler_name: { name: 'Sampler',
+        setUI: (sampler_name) => {
+            samplerField.value = sampler_name
         },
         readUI: () => samplerField.value,
         parse: (val) => val
@@ -171,7 +195,7 @@ const TASK_MAPPING = {
         setUI: (use_stable_diffusion_model) => {
             const oldVal = stableDiffusionModelField.value
 
-            use_stable_diffusion_model = getModelPath(use_stable_diffusion_model, ['.ckpt'])
+            use_stable_diffusion_model = getModelPath(use_stable_diffusion_model, ['.ckpt', '.safetensors'])
             stableDiffusionModelField.value = use_stable_diffusion_model
 
             if (!stableDiffusionModelField.value) {
@@ -184,6 +208,7 @@ const TASK_MAPPING = {
     use_vae_model: { name: 'VAE model',
         setUI: (use_vae_model) => {
             const oldVal = vaeModelField.value
+            use_vae_model = (use_vae_model === undefined || use_vae_model === null || use_vae_model === 'None' ? '' : use_vae_model)
 
             if (use_vae_model !== '') {
                 use_vae_model = getModelPath(use_vae_model, ['.vae.pt', '.ckpt'])
@@ -197,6 +222,7 @@ const TASK_MAPPING = {
     use_hypernetwork_model: { name: 'Hypernetwork model',
         setUI: (use_hypernetwork_model) => {
             const oldVal = hypernetworkModelField.value
+            use_hypernetwork_model = (use_hypernetwork_model === undefined || use_hypernetwork_model === null || use_hypernetwork_model === 'None' ? '' : use_hypernetwork_model)
 
             if (use_hypernetwork_model !== '') {
                 use_hypernetwork_model = getModelPath(use_hypernetwork_model, ['.pt'])
@@ -232,20 +258,6 @@ const TASK_MAPPING = {
         readUI: () => useCPUField.checked,
         parse: (val) => val
     },
-    turbo: { name: 'Turbo',
-        setUI: (turbo) => {
-            turboField.checked = turbo
-        },
-        readUI: () => turboField.checked,
-        parse: (val) => Boolean(val)
-    },
-    use_full_precision: { name: 'Use Full Precision',
-        setUI: (use_full_precision) => {
-            useFullPrecisionField.checked = use_full_precision
-        },
-        readUI: () => useFullPrecisionField.checked,
-        parse: (val) => Boolean(val)
-    },
 
     stream_image_progress: { name: 'Stream Image Progress',
         setUI: (stream_image_progress) => {
@@ -277,6 +289,7 @@ const TASK_MAPPING = {
         parse: (val) => val
     }
 }
+
 function restoreTaskToUI(task, fieldsToSkip) {
     fieldsToSkip = fieldsToSkip || []
 
@@ -296,9 +309,18 @@ function restoreTaskToUI(task, fieldsToSkip) {
         }
     }
 
-    // restore the original tag
-    promptField.value = task.reqBody.original_prompt || task.reqBody.prompt
+    // properly reset fields not present in the task
+    if (!('use_hypernetwork_model' in task.reqBody)) {
+        hypernetworkModelField.value = ""
+        hypernetworkModelField.dispatchEvent(new Event("change"))
+    }
 
+    // restore the original prompt if provided (e.g. use settings), fallback to prompt as needed (e.g. copy/paste or d&d)
+    promptField.value = task.reqBody.original_prompt
+    if (!('original_prompt' in task.reqBody)) {
+        promptField.value = task.reqBody.prompt
+    }
+    
     // properly reset checkboxes
     if (!('use_face_correction' in task.reqBody)) {
         useFaceCorrectionField.checked = false
@@ -306,19 +328,26 @@ function restoreTaskToUI(task, fieldsToSkip) {
     if (!('use_upscale' in task.reqBody)) {
         useUpscalingField.checked = false
     }
-    if (!('mask' in task.reqBody)) {
+    if (!('mask' in task.reqBody) && maskSetting.checked) {
         maskSetting.checked = false
+        maskSetting.dispatchEvent(new Event("click"))
     }
     upscaleModelField.disabled = !useUpscalingField.checked
+    upscaleAmountField.disabled = !useUpscalingField.checked
 
-    // Show the source picture if present
-    initImagePreview.src = (task.reqBody.init_image == undefined ? '' : task.reqBody.init_image)
-    if (IMAGE_REGEX.test(initImagePreview.src)) {
-        if (Boolean(task.reqBody.mask)) {
-            setTimeout(() => { // add a delay to insure this happens AFTER the main image loads (which reloads the inpainter)
+    // hide/show source picture as needed
+    if (IMAGE_REGEX.test(initImagePreview.src) && task.reqBody.init_image == undefined) {
+        // hide source image
+        initImageClearBtn.dispatchEvent(new Event("click"))
+    }
+    else if (task.reqBody.init_image !== undefined) {
+        // listen for inpainter loading event, which happens AFTER the main image loads (which reloads the inpainter)
+        initImagePreview.addEventListener('load', function() {
+            if (Boolean(task.reqBody.mask)) {
                 imageInpainter.setImg(task.reqBody.mask)
-            }, 250)
-        }
+            }
+        }, { once: true })
+        initImagePreview.src = task.reqBody.init_image
     }
 }
 function readUI() {
@@ -350,6 +379,7 @@ function getModelPath(filename, extensions)
 }
 
 const TASK_TEXT_MAPPING = {
+    prompt: 'Prompt',
     width: 'Width',
     height: 'Height',
     seed: 'Seed',
@@ -358,26 +388,39 @@ const TASK_TEXT_MAPPING = {
     prompt_strength: 'Prompt Strength',
     use_face_correction: 'Use Face Correction',
     use_upscale: 'Use Upscaling',
-    sampler: 'Sampler',
+    upscale_amount: 'Upscale By',
+    sampler_name: 'Sampler',
     negative_prompt: 'Negative Prompt',
     use_stable_diffusion_model: 'Stable Diffusion model',
     use_hypernetwork_model: 'Hypernetwork model',
     hypernetwork_strength: 'Hypernetwork Strength'
 }
-const afterPromptRe = /^\s*Width\s*:\s*\d+\s*(?:\r\n|\r|\n)+\s*Height\s*:\s*\d+\s*(\r\n|\r|\n)+Seed\s*:\s*\d+\s*$/igm
 function parseTaskFromText(str) {
     const taskReqBody = {}
 
+    const lines = str.split('\n')
+    if (lines.length === 0) {
+        return
+    }
+
     // Prompt
-    afterPromptRe.lastIndex = 0
-    const match = afterPromptRe.exec(str)
-    if (match) {
-        let prompt = str.slice(0, match.index)
-        str = str.slice(prompt.length)
-        taskReqBody.prompt = prompt.trim()
+    let knownKeyOnFirstLine = false
+    for (let key in TASK_TEXT_MAPPING) {
+        if (lines[0].startsWith(TASK_TEXT_MAPPING[key] + ':')) {
+            knownKeyOnFirstLine = true
+            break
+        }
+    }
+    if (!knownKeyOnFirstLine) {
+        taskReqBody.prompt = lines[0]
         console.log('Prompt:', taskReqBody.prompt)
     }
+
     for (const key in TASK_TEXT_MAPPING) {
+        if (key in taskReqBody) {
+            continue
+        }
+
         const name = TASK_TEXT_MAPPING[key];
         let val = undefined
 
@@ -410,6 +453,9 @@ async function parseContent(text) {
     if (text.startsWith('{') && text.endsWith('}')) {
         try {
             const task = JSON.parse(text)
+            if (!('reqBody' in task)) { // support the format saved to the disk, by the UI
+                task.reqBody = Object.assign({}, task)
+            }
             restoreTaskToUI(task)
             return true
         } catch (e) {
@@ -419,7 +465,7 @@ async function parseContent(text) {
     }
     // Normal txt file.
     const task = parseTaskFromText(text)
-    if (task) {
+    if (text.toLowerCase().includes('seed:') && task) { // only parse valid task content
         restoreTaskToUI(task)
         return true
     } else {
@@ -476,8 +522,6 @@ document.addEventListener("dragover", dragOverHandler)
 
 const TASK_REQ_NO_EXPORT = [
     "use_cpu",
-    "turbo",
-    "use_full_precision",
     "save_to_disk_path"
 ]
 const resetSettings = document.getElementById('reset-image-settings')

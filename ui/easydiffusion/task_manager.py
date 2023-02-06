@@ -11,12 +11,15 @@ TASK_TTL = 15 * 60 # seconds, Discard last session's task timeout
 
 import torch
 import queue, threading, time, weakref
-from typing import Any, Generator, Hashable, Optional, Union
+from typing import Any, Hashable
 
-from pydantic import BaseModel
-from sd_internal import Request, Response, runtime, device_manager
+from easydiffusion import device_manager
+from easydiffusion.types import TaskData, GenerateImageRequest
+from easydiffusion.utils import log
 
-THREAD_NAME_PREFIX = 'Runtime-Render/'
+from sdkit.utils import gc
+
+THREAD_NAME_PREFIX = ''
 ERR_LOCK_FAILED = ' failed to acquire lock within timeout.'
 LOCK_TIMEOUT = 15 # Maximum locking time in seconds before failing a task.
 # It's better to get an exception than a deadlock... ALWAYS use timeout in critical paths.
@@ -36,12 +39,13 @@ class ServerStates:
     class Unavailable(Symbol): pass
 
 class RenderTask(): # Task with output queue and completion lock.
-    def __init__(self, req: Request):
-        req.request_id = id(self)
-        self.request: Request = req  # Initial Request
+    def __init__(self, req: GenerateImageRequest, task_data: TaskData):
+        task_data.request_id = id(self)
+        self.render_request: GenerateImageRequest = req  # Initial Request
+        self.task_data: TaskData = task_data
         self.response: Any = None # Copy of the last reponse
         self.render_device = None # Select the task affinity. (Not used to change active devices).
-        self.temp_images:list = [None] * req.num_outputs * (1 if req.show_only_filtered_image else 2)
+        self.temp_images:list = [None] * req.num_outputs * (1 if task_data.show_only_filtered_image else 2)
         self.error: Exception = None
         self.lock: threading.Lock = threading.Lock() # Locks at task start and unlocks when task is completed
         self.buffer_queue: queue.Queue = queue.Queue() # Queue of JSON string segments
@@ -69,54 +73,6 @@ class RenderTask(): # Task with output queue and completion lock.
     def is_pending(self):
         return bool(not self.response and not self.error)
 
-# defaults from https://huggingface.co/blog/stable_diffusion
-class ImageRequest(BaseModel):
-    session_id: str = "session"
-    prompt: str = ""
-    negative_prompt: str = ""
-    init_image: str = None # base64
-    mask: str = None # base64
-    num_outputs: int = 1
-    num_inference_steps: int = 50
-    guidance_scale: float = 7.5
-    width: int = 512
-    height: int = 512
-    seed: int = 42
-    prompt_strength: float = 0.8
-    sampler: str = None # "ddim", "plms", "heun", "euler", "euler_a", "dpm2", "dpm2_a", "lms"
-    # allow_nsfw: bool = False
-    save_to_disk_path: str = None
-    turbo: bool = True
-    use_cpu: bool = False ##TODO Remove after UI and plugins transition.
-    render_device: str = None # Select the task affinity. (Not used to change active devices).
-    use_full_precision: bool = False
-    use_face_correction: str = None # or "GFPGANv1.3"
-    use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
-    use_stable_diffusion_model: str = "sd-v1-4"
-    use_vae_model: str = None
-    use_hypernetwork_model: str = None
-    hypernetwork_strength: float = None
-    show_only_filtered_image: bool = False
-    output_format: str = "jpeg" # or "png"
-    output_quality: int = 75
-
-    stream_progress_updates: bool = False
-    stream_image_progress: bool = False
-
-class FilterRequest(BaseModel):
-    session_id: str = "session"
-    model: str = None
-    name: str = ""
-    init_image: str = None # base64
-    width: int = 512
-    height: int = 512
-    save_to_disk_path: str = None
-    turbo: bool = True
-    render_device: str = None
-    use_full_precision: bool = False
-    output_format: str = "jpeg" # or "png"
-    output_quality: int = 75
-
 # Temporary cache to allow to query tasks results for a short time after they are completed.
 class DataCache():
     def __init__(self):
@@ -139,11 +95,11 @@ class DataCache():
             for key in to_delete:
                 (_, val) = self._base[key]
                 if isinstance(val, RenderTask):
-                    print(f'RenderTask {key} expired. Data removed.')
+                    log.debug(f'RenderTask {key} expired. Data removed.')
                 elif isinstance(val, SessionState):
-                    print(f'Session {key} expired. Data removed.')
+                    log.debug(f'Session {key} expired. Data removed.')
                 else:
-                    print(f'Key {key} expired. Data removed.')
+                    log.debug(f'Key {key} expired. Data removed.')
                 del self._base[key]
         finally:
             self._lock.release()
@@ -177,8 +133,7 @@ class DataCache():
                 self._get_ttl_time(ttl), value
             )
         except Exception as e:
-            print(str(e))
-            print(traceback.format_exc())
+            log.error(traceback.format_exc())
             return False
         else:
             return True
@@ -189,7 +144,7 @@ class DataCache():
         try:
             ttl, value = self._base.get(key, (None, None))
             if ttl is not None and self._is_expired(ttl):
-                print(f'Session {key} expired. Discarding data.')
+                log.debug(f'Session {key} expired. Discarding data.')
                 del self._base[key]
                 return None
             return value
@@ -200,15 +155,9 @@ manager_lock = threading.RLock()
 render_threads = []
 current_state = ServerStates.Init
 current_state_error:Exception = None
-current_model_path = None
-current_vae_path = None
-current_hypernetwork_path = None
 tasks_queue = []
 session_cache = DataCache()
 task_cache = DataCache()
-default_model_to_load = None
-default_vae_to_load = None
-default_hypernetwork_to_load = None
 weak_thread_data = weakref.WeakKeyDictionary()
 idle_event: threading.Event = threading.Event()
 
@@ -236,40 +185,10 @@ class SessionState():
             self._tasks_ids.pop(0)
         return True
 
-def preload_model(ckpt_file_path=None, vae_file_path=None, hypernetwork_file_path=None):
-    global current_state, current_state_error, current_model_path, current_vae_path, current_hypernetwork_path
-    if ckpt_file_path == None:
-        ckpt_file_path = default_model_to_load
-    if vae_file_path == None:
-        vae_file_path = default_vae_to_load
-    if hypernetwork_file_path == None:
-        hypernetwork_file_path = default_hypernetwork_to_load
-    if ckpt_file_path == current_model_path and vae_file_path == current_vae_path:
-        return
-    current_state = ServerStates.LoadingModel
-    try:
-        from . import runtime
-        runtime.thread_data.hypernetwork_file = hypernetwork_file_path
-        runtime.thread_data.ckpt_file = ckpt_file_path
-        runtime.thread_data.vae_file = vae_file_path
-        runtime.load_model_ckpt()
-        runtime.load_hypernetwork()
-        current_model_path = ckpt_file_path
-        current_vae_path = vae_file_path
-        current_hypernetwork_path = hypernetwork_file_path
-        current_state_error = None
-        current_state = ServerStates.Online
-    except Exception as e:
-        current_model_path = None
-        current_vae_path = None
-        current_state_error = e
-        current_state = ServerStates.Unavailable
-        print(traceback.format_exc())
-
 def thread_get_next_task():
-    from . import runtime
+    from easydiffusion import renderer
     if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT):
-        print('Render thread on device', runtime.thread_data.device, 'failed to acquire manager lock.')
+        log.warn(f'Render thread on device: {renderer.context.device} failed to acquire manager lock.')
         return None
     if len(tasks_queue) <= 0:
         manager_lock.release()
@@ -277,7 +196,7 @@ def thread_get_next_task():
     task = None
     try:  # Select a render task.
         for queued_task in tasks_queue:
-            if queued_task.render_device and runtime.thread_data.device != queued_task.render_device:
+            if queued_task.render_device and renderer.context.device != queued_task.render_device:
                 # Is asking for a specific render device.
                 if is_alive(queued_task.render_device) > 0:
                     continue  # requested device alive, skip current one.
@@ -286,7 +205,7 @@ def thread_get_next_task():
                     queued_task.error = Exception(queued_task.render_device + ' is not currently active.')
                     task = queued_task
                     break
-            if not queued_task.render_device and runtime.thread_data.device == 'cpu' and is_alive() > 1:
+            if not queued_task.render_device and renderer.context.device == 'cpu' and is_alive() > 1:
                 # not asking for any specific devices, cpu want to grab task but other render devices are alive.
                 continue  # Skip Tasks, don't run on CPU unless there is nothing else or user asked for it.
             task = queued_task
@@ -298,31 +217,36 @@ def thread_get_next_task():
         manager_lock.release()
 
 def thread_render(device):
-    global current_state, current_state_error, current_model_path, current_vae_path, current_hypernetwork_path
-    from . import runtime
+    global current_state, current_state_error
+
+    from easydiffusion import renderer, model_manager
     try:
-        runtime.thread_init(device)
-    except Exception as e:
-        print(traceback.format_exc())
+        renderer.init(device)
+
         weak_thread_data[threading.current_thread()] = {
-            'error': e
+            'device': renderer.context.device,
+            'device_name': renderer.context.device_name,
+            'alive': True
+        }
+
+        current_state = ServerStates.LoadingModel
+        model_manager.load_default_models(renderer.context)
+
+        current_state = ServerStates.Online
+    except Exception as e:
+        log.error(traceback.format_exc())
+        weak_thread_data[threading.current_thread()] = {
+            'error': e,
+            'alive': False
         }
         return
-    weak_thread_data[threading.current_thread()] = {
-        'device': runtime.thread_data.device,
-        'device_name': runtime.thread_data.device_name,
-        'alive': True
-    }
-    if runtime.thread_data.device != 'cpu' or is_alive() == 1:
-        preload_model()
-        current_state = ServerStates.Online
+
     while True:
         session_cache.clean()
         task_cache.clean()
         if not weak_thread_data[threading.current_thread()]['alive']:
-            print(f'Shutting down thread for device {runtime.thread_data.device}')
-            runtime.unload_models()
-            runtime.unload_filters()
+            log.info(f'Shutting down thread for device {renderer.context.device}')
+            model_manager.unload_all(renderer.context)
             return
         if isinstance(current_state_error, SystemExit):
             current_state = ServerStates.Unavailable
@@ -333,7 +257,7 @@ def thread_render(device):
             idle_event.wait(timeout=1)
             continue
         if task.error is not None:
-            print(task.error)
+            log.error(task.error)
             task.response = {"status": 'failed', "detail": str(task.error)}
             task.buffer_queue.put(json.dumps(task.response))
             continue
@@ -342,51 +266,44 @@ def thread_render(device):
             task.response = {"status": 'failed', "detail": str(task.error)}
             task.buffer_queue.put(json.dumps(task.response))
             continue
-        print(f'Session {task.request.session_id} starting task {id(task)} on {runtime.thread_data.device_name}')
+        log.info(f'Session {task.task_data.session_id} starting task {id(task)} on {renderer.context.device_name}')
         if not task.lock.acquire(blocking=False): raise Exception('Got locked task from queue.')
         try:
-            if runtime.is_hypernetwork_reload_necessary(task.request):
-                runtime.reload_hypernetwork()
-                current_hypernetwork_path = task.request.use_hypernetwork_model
-                
-            if runtime.is_model_reload_necessary(task.request):
-                current_state = ServerStates.LoadingModel
-                runtime.reload_model()
-                current_model_path = task.request.use_stable_diffusion_model
-                current_vae_path = task.request.use_vae_model
-
             def step_callback():
                 global current_state_error
 
                 if isinstance(current_state_error, SystemExit) or isinstance(current_state_error, StopAsyncIteration) or isinstance(task.error, StopAsyncIteration):
-                    runtime.thread_data.stop_processing = True
+                    renderer.context.stop_processing = True
                     if isinstance(current_state_error, StopAsyncIteration):
                         task.error = current_state_error
                         current_state_error = None
-                        print(f'Session {task.request.session_id} sent cancel signal for task {id(task)}')
+                        log.info(f'Session {task.task_data.session_id} sent cancel signal for task {id(task)}')
+
+            current_state = ServerStates.LoadingModel
+            model_manager.resolve_model_paths(task.task_data)
+            model_manager.reload_models_if_necessary(renderer.context, task.task_data)
 
             current_state = ServerStates.Rendering
-            task.response = runtime.mk_img(task.request, task.buffer_queue, task.temp_images, step_callback)
+            task.response = renderer.make_images(task.render_request, task.task_data, task.buffer_queue, task.temp_images, step_callback)
             # Before looping back to the generator, mark cache as still alive.
             task_cache.keep(id(task), TASK_TTL)
-            session_cache.keep(task.request.session_id, TASK_TTL)
+            session_cache.keep(task.task_data.session_id, TASK_TTL)
         except Exception as e:
-            task.error = e
+            task.error = str(e)
             task.response = {"status": 'failed', "detail": str(task.error)}
             task.buffer_queue.put(json.dumps(task.response))
-            print(traceback.format_exc())
-            continue
+            log.error(traceback.format_exc())
         finally:
-            # Task completed
+            gc(renderer.context)
             task.lock.release()
         task_cache.keep(id(task), TASK_TTL)
-        session_cache.keep(task.request.session_id, TASK_TTL)
+        session_cache.keep(task.task_data.session_id, TASK_TTL)
         if isinstance(task.error, StopAsyncIteration):
-            print(f'Session {task.request.session_id} task {id(task)} cancelled!')
+            log.info(f'Session {task.task_data.session_id} task {id(task)} cancelled!')
         elif task.error is not None:
-            print(f'Session {task.request.session_id} task {id(task)} failed!')
+            log.info(f'Session {task.task_data.session_id} task {id(task)} failed!')
         else:
-            print(f'Session {task.request.session_id} task {id(task)} completed by {runtime.thread_data.device_name}.')
+            log.info(f'Session {task.task_data.session_id} task {id(task)} completed by {renderer.context.device_name}.')
         current_state = ServerStates.Online
 
 def get_cached_task(task_id:str, update_ttl:bool=False):
@@ -423,6 +340,7 @@ def get_devices():
             'name': torch.cuda.get_device_name(device),
             'mem_free': mem_free,
             'mem_total': mem_total,
+            'max_vram_usage_level': device_manager.get_max_vram_usage_level(device),
         }
 
     # list the compatible devices
@@ -472,7 +390,7 @@ def is_alive(device=None):
 
 def start_render_thread(device):
     if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('start_render_thread' + ERR_LOCK_FAILED)
-    print('Start new Rendering Thread on device', device)
+    log.info(f'Start new Rendering Thread on device: {device}')
     try:
         rthread = threading.Thread(target=thread_render, kwargs={'device': device})
         rthread.daemon = True
@@ -484,7 +402,7 @@ def start_render_thread(device):
     timeout = DEVICE_START_TIMEOUT
     while not rthread.is_alive() or not rthread in weak_thread_data or not 'device' in weak_thread_data[rthread]:
         if rthread in weak_thread_data and 'error' in weak_thread_data[rthread]:
-            print(rthread, device, 'error:', weak_thread_data[rthread]['error'])
+            log.error(f"{rthread}, {device}, error: {weak_thread_data[rthread]['error']}")
             return False
         if timeout <= 0:
             return False
@@ -496,11 +414,11 @@ def stop_render_thread(device):
     try:
         device_manager.validate_device_id(device, log_prefix='stop_render_thread')
     except:
-        print(traceback.format_exc())
+        log.error(traceback.format_exc())
         return False
 
     if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT): raise Exception('stop_render_thread' + ERR_LOCK_FAILED)
-    print('Stopping Rendering Thread on device', device)
+    log.info(f'Stopping Rendering Thread on device: {device}')
 
     try:
         thread_to_remove = None
@@ -523,79 +441,44 @@ def stop_render_thread(device):
 
 def update_render_threads(render_devices, active_devices):
     devices_to_start, devices_to_stop = device_manager.get_device_delta(render_devices, active_devices)
-    print('devices_to_start', devices_to_start)
-    print('devices_to_stop', devices_to_stop)
+    log.debug(f'devices_to_start: {devices_to_start}')
+    log.debug(f'devices_to_stop: {devices_to_stop}')
 
     for device in devices_to_stop:
         if is_alive(device) <= 0:
-            print(device, 'is not alive')
+            log.debug(f'{device} is not alive')
             continue
         if not stop_render_thread(device):
-            print(device, 'could not stop render thread')
+            log.warn(f'{device} could not stop render thread')
 
     for device in devices_to_start:
         if is_alive(device) >= 1:
-            print(device, 'already registered.')
+            log.debug(f'{device} already registered.')
             continue
         if not start_render_thread(device):
-            print(device, 'failed to start.')
+            log.warn(f'{device} failed to start.')
 
     if is_alive() <= 0: # No running devices, probably invalid user config.
         raise EnvironmentError('ERROR: No active render devices! Please verify the "render_devices" value in config.json')
 
-    print('active devices', get_devices()['active'])
+    log.debug(f"active devices: {get_devices()['active']}")
 
 def shutdown_event(): # Signal render thread to close on shutdown
     global current_state_error
     current_state_error = SystemExit('Application shutting down.')
 
-def render(req : ImageRequest):
+def render(render_req: GenerateImageRequest, task_data: TaskData):
     current_thread_count = is_alive()
     if current_thread_count <= 0:  # Render thread is dead
         raise ChildProcessError('Rendering thread has died.')
 
     # Alive, check if task in cache
-    session = get_cached_session(req.session_id, update_ttl=True)
+    session = get_cached_session(task_data.session_id, update_ttl=True)
     pending_tasks = list(filter(lambda t: t.is_pending, session.tasks))
     if current_thread_count < len(pending_tasks):
-        raise ConnectionRefusedError(f'Session {req.session_id} already has {len(pending_tasks)} pending tasks out of {current_thread_count}.')
+        raise ConnectionRefusedError(f'Session {task_data.session_id} already has {len(pending_tasks)} pending tasks out of {current_thread_count}.')
 
-    from . import runtime
-    r = Request()
-    r.session_id = req.session_id
-    r.prompt = req.prompt
-    r.negative_prompt = req.negative_prompt
-    r.init_image = req.init_image
-    r.mask = req.mask
-    r.num_outputs = req.num_outputs
-    r.num_inference_steps = req.num_inference_steps
-    r.guidance_scale = req.guidance_scale
-    r.width = req.width
-    r.height = req.height
-    r.seed = req.seed
-    r.prompt_strength = req.prompt_strength
-    r.sampler = req.sampler
-    # r.allow_nsfw = req.allow_nsfw
-    r.turbo = req.turbo
-    r.use_full_precision = req.use_full_precision
-    r.save_to_disk_path = req.save_to_disk_path
-    r.use_upscale: str = req.use_upscale
-    r.use_face_correction = req.use_face_correction
-    r.use_stable_diffusion_model = req.use_stable_diffusion_model
-    r.use_vae_model = req.use_vae_model
-    r.use_hypernetwork_model = req.use_hypernetwork_model
-    r.hypernetwork_strength = req.hypernetwork_strength
-    r.show_only_filtered_image = req.show_only_filtered_image
-    r.output_format = req.output_format
-    r.output_quality = req.output_quality
-
-    r.stream_progress_updates = True # the underlying implementation only supports streaming
-    r.stream_image_progress = req.stream_image_progress
-
-    if not req.stream_progress_updates:
-        r.stream_image_progress = False
-
-    new_task = RenderTask(r)
+    new_task = RenderTask(render_req, task_data)
     if session.put(new_task, TASK_TTL):
         # Use twice the normal timeout for adding user requests.
         # Tries to force session.put to fail before tasks_queue.put would.

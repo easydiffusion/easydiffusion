@@ -13,8 +13,15 @@ function initTheme() {
         .filter(sheet => sheet.href?.startsWith(window.location.origin))
         .flatMap(sheet => Array.from(sheet.cssRules))
         .forEach(rule => {
-            var selector = rule.selectorText; // TODO: also do selector == ":root", re-run un-set props
+            var selector = rule.selectorText;
             if (selector && selector.startsWith(".theme-") && !selector.includes(" ")) {
+                if (DEFAULT_THEME) { // re-add props that dont change (css needs this so they update correctly)
+                    Array.from(DEFAULT_THEME.rule.style)
+                        .filter(cssVariable => !Array.from(rule.style).includes(cssVariable))
+                        .forEach(cssVariable => {
+                        rule.style.setProperty(cssVariable, DEFAULT_THEME.rule.style.getPropertyValue(cssVariable));
+                    });
+                }
                 var theme_key = selector.substring(1);
                 THEMES.push({
                     key: theme_key,
@@ -62,12 +69,6 @@ function themeFieldChanged() {
     var theme = THEMES.find(t => t.key == theme_key);
     let borderColor = undefined
     if (theme) {
-        // refresh variables incase they are back referencing
-        Array.from(DEFAULT_THEME.rule.style)
-            .filter(cssVariable => !Array.from(theme.rule.style).includes(cssVariable))
-            .forEach(cssVariable => {
-            body.style.setProperty(cssVariable, DEFAULT_THEME.rule.style.getPropertyValue(cssVariable));
-        });
         borderColor = theme.rule.style.getPropertyValue('--input-border-color').trim()
         if (!borderColor.startsWith('#')) {
             borderColor = theme.rule.style.getPropertyValue('--theme-color-fallback')
