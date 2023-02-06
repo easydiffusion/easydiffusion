@@ -263,6 +263,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                     <div class="imgItemInfo">
                         <span class="imgSeedLabel"></span>
                     </div>
+                    <button class="imgPreviewItemClearBtn image_clear_btn"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             `
             outputContainer.appendChild(imageItemElem)
@@ -275,6 +276,11 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         imageElem.setAttribute('data-steps', imageInferenceSteps)
         imageElem.setAttribute('data-guidance', imageGuidanceScale)
 
+        const imageRemoveBtn = imageItemElem.querySelector('.imgPreviewItemClearBtn')
+        imageRemoveBtn.addEventListener('click', (e) => {
+            console.log(e)
+            shiftOrConfirm(e, "Remove the image from the results?", () => { imageItemElem.style.display = 'none' })
+        })
 
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
         imageInfo.style.visibility = (livePreview ? 'hidden' : 'visible')
@@ -288,7 +294,6 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             imageSeedLabel.innerText = 'Seed: ' + req.seed
 
             let buttons = [
-                { text: 'Remove', on_click: onRemoveClick, class: 'secondaryButton' },
                 { text: 'Use as Input', on_click: onUseAsInputClick },
                 { text: 'Download', on_click: onDownloadImageClick },
                 { text: 'Make Similar Images', on_click: onMakeSimilarClick },
@@ -323,10 +328,6 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             })
         }
     })
-}
-
-function onRemoveClick(req, img, event) {
-    shiftOrConfirm(event, "Remove the image from the results?", () => { findClosestAncestor(img, '.imgItem').style.display='none' })
 }
 
 function onUseAsInputClick(req, img) {

@@ -107,6 +107,7 @@ code {
 .imgContainer {
     display: flex;
     justify-content: flex-end;
+    position: relative;
 }
 .imgItemInfo {
     padding-bottom: 0.5em;
@@ -114,15 +115,25 @@ code {
     align-items: flex-end;
     flex-direction: column;
     position: absolute;
-    padding: 5px;
+    padding-right: 5pt;
+    padding-top: 6pt;
     opacity: 0;
     transition: 0.1s all;
+}
+.imgPreviewItemClearBtn {
+    opacity: 0;
 }
 .imgContainer:hover > .imgItemInfo {
     opacity: 1;
 }
+.imgContainer:hover > .imgPreviewItemClearBtn {
+    opacity: 1;
+}
 .imgItemInfo * {
     margin-bottom: 7px;
+}
+.imgItem .image_clear_btn {
+    transform: translate(40%, -50%);
 }
 #container {
     min-height: 100vh;
