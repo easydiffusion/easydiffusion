@@ -1029,7 +1029,7 @@ input::file-selector-button {
 }
 
 /* TABS */
-#tab-container {
+.tab-container {
     display: flex;
     align-items: flex-end;
 }

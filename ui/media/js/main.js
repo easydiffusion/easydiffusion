@@ -1466,6 +1466,9 @@ function linkTabContents(tab) {
 
     tab.addEventListener("click", event => selectTab(tab.id))
 }
+function isTabActive(tab) {
+    return tab.classList.contains("active")
+}
 
 let pauseClient = false
 
