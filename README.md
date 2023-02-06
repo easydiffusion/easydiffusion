@@ -92,10 +92,12 @@ The installer will take care of whatever is needed. If you face any problems, yo
 ----
 
 ## Easy for new users:
-![Screenshot of the initial UI](media/shot-v10-simple.jpg?raw=true)
+![Screenshot of the initial UI](https://user-images.githubusercontent.com/844287/217043152-29454d15-0387-4228-b70d-9a4b84aeb8ba.png)
+
 
 ## Powerful features for advanced users:
-![Screenshot of advanced settings](media/shot-v10.jpg?raw=true)
+![Screenshot of advanced settings](https://user-images.githubusercontent.com/844287/217042588-fc53c975-bacd-4a9c-af88-37408734ade3.png)
+
 
 ## Live Preview
 Useful for judging (and stopping) an image quickly, without waiting for it to finish rendering.
@@ -103,7 +105,9 @@ Useful for judging (and stopping) an image quickly, without waiting for it to fi
 ![live-512](https://user-images.githubusercontent.com/844287/192097249-729a0a1e-a677-485e-9ccc-16a9e848fabe.gif)
 
 ## Task Queue
-![Screenshot of task queue](media/task-queue-v1.jpg?raw=true)
+![Screenshot of task queue](https://user-images.githubusercontent.com/844287/217043984-0b35f73b-1318-47cb-9eed-a2a91b430490.png)
+
+
 
 # System Requirements
 1. Windows 10/11, or Linux. Experimental support for Mac is coming soon.
