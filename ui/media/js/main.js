@@ -673,6 +673,9 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
         return
     }
 
+    if (pauseClient) { 
+        resumeBtn.click() 
+    }
     renderButtons.style.display = 'none'
     renameMakeImageButton()
 
