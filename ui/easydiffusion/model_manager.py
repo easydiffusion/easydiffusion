@@ -182,7 +182,7 @@ def getModels():
     def scan_directory(directory, suffixes):
         nonlocal models_scanned
         tree = []
-        for entry in os.scandir(directory):
+        for entry in sorted(os.scandir(directory), key = lambda entry: (entry.is_file(), entry.name.lower())):
             if entry.is_file():
                 matching_suffix = list(filter(lambda s: entry.name.endswith(s), suffixes))
                 if len(matching_suffix) == 0: continue
