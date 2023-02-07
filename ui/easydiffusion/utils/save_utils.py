@@ -24,6 +24,7 @@ TASK_TEXT_MAPPING = {
     'sampler_name': 'Sampler',
     'negative_prompt': 'Negative Prompt',
     'use_stable_diffusion_model': 'Stable Diffusion model',
+    'use_vae_model': 'VAE model',
     'use_hypernetwork_model': 'Hypernetwork model',
     'hypernetwork_strength': 'Hypernetwork Strength'
 }
@@ -71,6 +72,8 @@ def get_printable_request(req: GenerateImageRequest):
     metadata = req.dict()
     del metadata['init_image']
     del metadata['init_image_mask']
+    if (req.init_image is None):
+        del metadata['prompt_strength']
     return metadata
 
 def make_filename_callback(req: GenerateImageRequest, suffix=None, now=None):
