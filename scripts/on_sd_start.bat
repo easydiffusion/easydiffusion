@@ -72,7 +72,7 @@ if "%ERRORLEVEL%" EQU "0" (
     set PYTHONNOUSERSITE=1
     set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 
-    call pip install --upgrade torch torchvision --extra-index-url https://download.pytorch.org/whl/cu116 || (
+    call python -m pip install --upgrade torch torchvision --extra-index-url https://download.pytorch.org/whl/cu116 || (
         echo "Error installing torch. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
         pause
         exit /b
@@ -92,7 +92,7 @@ if "%ERRORLEVEL%" EQU "0" (
         set PYTHONNOUSERSITE=1
         set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 
-        call pip install --upgrade sdkit -q || (
+        call python -m pip install --upgrade sdkit -q || (
             echo "Error updating sdkit"
         )
     )
@@ -103,7 +103,7 @@ if "%ERRORLEVEL%" EQU "0" (
     set PYTHONNOUSERSITE=1
     set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 
-    call pip install sdkit || (
+    call python -m pip install sdkit || (
         echo "Error installing sdkit. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
         pause
         exit /b
@@ -113,7 +113,7 @@ if "%ERRORLEVEL%" EQU "0" (
 call python -c "from importlib.metadata import version; print('sdkit version:', version('sdkit'))"
 
 @rem upgrade stable-diffusion-sdkit
-call pip install --upgrade stable-diffusion-sdkit -q || (
+call python -m pip install --upgrade stable-diffusion-sdkit -q || (
     echo "Error updating stable-diffusion-sdkit"
 )
 call python -c "from importlib.metadata import version; print('stable-diffusion version:', version('stable-diffusion-sdkit'))"
@@ -128,7 +128,7 @@ if "%ERRORLEVEL%" EQU "0" (
     set PYTHONNOUSERSITE=1
     set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 
-    call pip install rich || (
+    call python -m pip install rich || (
         echo "Error installing rich. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
         pause
         exit /b
