@@ -56,6 +56,8 @@ def get_metadata_entries_for_request(req: GenerateImageRequest, task_data: TaskD
     })
     if metadata['use_upscale'] is not None:
         metadata['upscale_amount'] = task_data.upscale_amount
+    if (task_data.use_hypernetwork_model is None):
+        del metadata['hypernetwork_strength']
 
     # if text, format it in the text format expected by the UI
     is_txt_format = (task_data.metadata_output_format.lower() == 'txt')
