@@ -179,10 +179,10 @@ def getModels():
         "Raised when picklescan reports a problem with a model"
         pass
 
-    def scan_directory(directory, suffixes):
+    def scan_directory(directory, suffixes, directoriesFirst:bool=True):
         nonlocal models_scanned
         tree = []
-        for entry in sorted(os.scandir(directory), key = lambda entry: (entry.is_file(), entry.name.lower())):
+        for entry in sorted(os.scandir(directory), key = lambda entry: (entry.is_file() == directoriesFirst, entry.name.lower())):
             if entry.is_file():
                 matching_suffix = list(filter(lambda s: entry.name.endswith(s), suffixes))
                 if len(matching_suffix) == 0: continue
@@ -197,9 +197,10 @@ def getModels():
                 known_models[entry.path] = mtime
                 tree.append(entry.name[:-len(matching_suffix)])
             elif entry.is_dir():
-                scan=scan_directory(entry.path, suffixes) 
+                scan=scan_directory(entry.path, suffixes, directoriesFirst=False)
+
                 if len(scan) != 0:
-                    tree.append( (entry.name, scan ) )
+                    tree.append( (entry.name, scan ) )                       
         return tree
 
     def listModels(model_type):

@@ -1322,9 +1322,12 @@ async function getModels() {
                     }
                     modelField.appendChild(modelOption)
                 } else {
-                    const modelGroup = document.createElement('optgroup')
-                    modelGroup.label = path + modelName[0]
-                    modelField.appendChild(modelGroup)
+                    // Since <optgroup/>s can't be nested, don't show empty groups
+                    if (modelName[1].some(child => typeof(child) == 'string')) {
+                        const modelGroup = document.createElement('optgroup')
+                        modelGroup.label = path + modelName[0]
+                        modelField.appendChild(modelGroup)
+                    }
                     modelName[1].forEach( createModelOptions(modelField, selectedModel, path + modelName[0] + "/" ) )
                 }
             }
