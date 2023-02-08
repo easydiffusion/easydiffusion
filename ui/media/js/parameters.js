@@ -101,7 +101,7 @@ var PARAMETERS = [
         note: "Faster performance requires more GPU memory (VRAM)<br/><br/>" +
               "<b>Balanced:</b> nearly as fast as High, much lower VRAM usage<br/>" +
               "<b>High:</b> fastest, maximum GPU memory usage</br>" +
-              "<b>Low:</b> slowest, force-used for GPUs with 3 to 4 GB memory",
+              "<b>Low:</b> slowest, recommended for GPUs with 3 to 4 GB memory",
         icon: "fa-forward",
         default: "balanced",
         options: [

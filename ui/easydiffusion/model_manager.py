@@ -118,15 +118,7 @@ def resolve_model_paths(task_data: TaskData):
 
 def set_vram_optimizations(context: Context):
     config = app.getConfig()
-
-    max_usage_level = device_manager.get_max_vram_usage_level(context.device)
     vram_usage_level = config.get('vram_usage_level', 'balanced')
-
-    v = {'low': 0, 'balanced': 1, 'high': 2}
-    if v[vram_usage_level] > v[max_usage_level]:
-        log.error(f'Requested GPU Memory Usage level ({vram_usage_level}) is higher than what is ' + \
-                  f'possible ({max_usage_level}) on this device ({context.device}). Using "{max_usage_level}" instead')
-        vram_usage_level = max_usage_level
 
     if vram_usage_level != context.vram_usage_level:
         context.vram_usage_level = vram_usage_level
