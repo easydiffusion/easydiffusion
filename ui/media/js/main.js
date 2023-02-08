@@ -774,7 +774,10 @@ function createInitImageHover(taskEntry) {
     img.src = taskEntry.querySelector('div.task-initimg > img').src
     $tooltip.append(img)
     $tooltip.append(`<div class="top-right"><button>Use as Input</button></div>`)
-    $tooltip.find('button').on('click', (e) => { onUseAsInputClick(null,img) } )
+    $tooltip.find('button').on('click', (e) => {
+        e.stopPropagation()
+        onUseAsInputClick(null,img) 
+    })
 }
 
 let startX, startY;
