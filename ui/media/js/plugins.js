@@ -25,6 +25,7 @@ const PLUGINS = {
      * })
      */
     IMAGE_INFO_BUTTONS: [],
+    GET_PROMPTS_HOOK: [],
     MODIFIERS_LOAD: [],
     TASK_CREATE: [],
     OUTPUTS_FORMATS: new ServiceContainer(
