@@ -262,10 +262,12 @@ function tryLoadOldSettings() {
         var saved_settings = JSON.parse(saved_settings_text)
         Object.keys(saved_settings.should_save).forEach(key => {
             key = key in old_map ? old_map[key] : key
+            if (!(key in SETTINGS)) return
             SETTINGS[key].ignore = !saved_settings.should_save[key]
         });
         Object.keys(saved_settings.values).forEach(key => {
             key = key in old_map ? old_map[key] : key
+            if (!(key in SETTINGS)) return
             var setting = SETTINGS[key]
             if (!setting.ignore) {
                 setting.value = saved_settings.values[key]
