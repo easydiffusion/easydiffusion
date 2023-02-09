@@ -21,6 +21,7 @@ OS_ARCH=$(uname -m)
 case "${OS_ARCH}" in
     x86_64*)    OS_ARCH="64";;
     arm64*)     OS_ARCH="arm64";;
+    aarch64*)     OS_ARCH="arm64";;
     *)          echo "Unknown system architecture: $OS_ARCH! This script runs only on x86_64 or arm64" && exit
 esac
 
