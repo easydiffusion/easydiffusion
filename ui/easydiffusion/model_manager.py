@@ -200,7 +200,7 @@ def getModels():
                 scan=scan_directory(entry.path, suffixes, directoriesFirst=False)
 
                 if len(scan) != 0:
-                    tree.append( (entry.name, scan ) )                       
+                    tree.append( (entry.name, scan ) )
         return tree
 
     def listModels(model_type):
