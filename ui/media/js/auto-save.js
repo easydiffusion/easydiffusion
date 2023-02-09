@@ -15,7 +15,7 @@ const SETTINGS_IDS_LIST = [
     "stable_diffusion_model",
     "vae_model",
     "hypernetwork_model",
-    "sampler",
+    "sampler_name",
     "width",
     "height",
     "num_inference_steps",
@@ -28,6 +28,7 @@ const SETTINGS_IDS_LIST = [
     "stream_image_progress",
     "use_face_correction",
     "use_upscale",
+    "upscale_amount",
     "show_only_filtered_image",
     "upscale_model",
     "preview-image",
@@ -36,10 +37,12 @@ const SETTINGS_IDS_LIST = [
     "save_to_disk",
     "diskPath",
     "sound_toggle",
-    "turbo",
-    "use_full_precision",
+    "vram_usage_level",
     "confirm_dangerous_actions",
-    "auto_save_settings"
+    "metadata_output_format",
+    "auto_save_settings",
+    "apply_color_correction",
+    "process_order_toggle"
 ]
 
 const IGNORE_BY_DEFAULT = [
@@ -259,10 +262,12 @@ function tryLoadOldSettings() {
         var saved_settings = JSON.parse(saved_settings_text)
         Object.keys(saved_settings.should_save).forEach(key => {
             key = key in old_map ? old_map[key] : key
+            if (!(key in SETTINGS)) return
             SETTINGS[key].ignore = !saved_settings.should_save[key]
         });
         Object.keys(saved_settings.values).forEach(key => {
             key = key in old_map ? old_map[key] : key
+            if (!(key in SETTINGS)) return
             var setting = SETTINGS[key]
             if (!setting.ignore) {
                 setting.value = saved_settings.values[key]
@@ -277,8 +282,6 @@ function tryLoadOldSettings() {
         "soundEnabled": "sound_toggle",
         "saveToDisk": "save_to_disk",
         "useCPU": "use_cpu",
-        "useFullPrecision": "use_full_precision",
-        "useTurboMode": "turbo",
         "diskPath": "diskPath",
         "useFaceCorrection": "use_face_correction",
         "useUpscaling": "use_upscale",

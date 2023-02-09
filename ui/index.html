@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Stable Diffusion UI</title>
+    <title>Easy Diffusion</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#673AB6">
     <link rel="icon" type="image/png" href="/media/images/favicon-16x16.png" sizes="16x16">
     <link rel="icon" type="image/png" href="/media/images/favicon-32x32.png" sizes="32x32">
+    <link rel="stylesheet" href="/media/css/jquery-confirm.min.css">
     <link rel="stylesheet" href="/media/css/fonts.css">
     <link rel="stylesheet" href="/media/css/themes.css">
     <link rel="stylesheet" href="/media/css/main.css">
@@ -13,7 +14,6 @@
     <link rel="stylesheet" href="/media/css/modifier-thumbnails.css">
     <link rel="stylesheet" href="/media/css/fontawesome-all.min.css">
     <link rel="stylesheet" href="/media/css/image-editor.css">
-    <link rel="stylesheet" href="/media/css/jquery-confirm.min.css">
     <link rel="manifest" href="/media/manifest.webmanifest">
     <script src="/media/js/jquery-3.6.1.min.js"></script>
     <script src="/media/js/jquery-confirm.min.js"></script>
@@ -24,15 +24,15 @@
     <div id="top-nav">
         <div id="logo">
             <h1>
-                Stable Diffusion UI
-                <small>v2.4.24 <span id="updateBranchLabel"></span></small>
+                Easy Diffusion
+                <small>v2.5.15 <span id="updateBranchLabel"></span></small>
             </h1>
         </div>
         <div id="server-status">
             <div id="server-status-color">●</div>
             <span id="server-status-msg">Stable Diffusion is starting..</span>
         </div>
-        <div id="tab-container">
+        <div id="tab-container" class="tab-container">
             <span id="tab-main" class="tab active">
                 <span><i class="fa fa-image icon"></i> Generate</span>
             </span>
@@ -55,7 +55,7 @@
                     <input id="prompt_from_file" name="prompt_from_file" type="file" /> <!-- hidden -->
                     <label for="negative_prompt" class="collapsible" id="negative_prompt_handle">
                         Negative Prompt
-                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Writing-prompts#negative-prompts" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about Negative Prompts</span></i></a>
+                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Writing-prompts#negative-prompts" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top">Click to learn more about Negative Prompts</span></i></a>
                         <small>(optional)</small>
                     </label>
                     <div class="collapsible-content">
@@ -92,10 +92,12 @@
                         </div>
                     </div>
 
+                    <div id="apply_color_correction_setting" class="pl-5"><input id="apply_color_correction" name="apply_color_correction" type="checkbox"> <label for="apply_color_correction">Preserve color profile <small>(helps during inpainting)</small></label></div>
+
                 </div>
 
                 <div id="editor-inputs-tags-container" class="row">
-                    <label>Image Modifiers <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">click an Image Modifier to remove it, use Ctrl+Mouse Wheel to adjust its weight</span></i></label>
+                    <label>Image Modifiers <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">click an Image Modifier to remove it, right-click to temporarily disable it, use Ctrl+Mouse Wheel to adjust its weight</span></i></label>
                     <div id="editor-inputs-tags-list"></div>
                 </div>
 
@@ -129,22 +131,32 @@
                         </select>
                         <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Custom-Models" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about custom models</span></i></a>
                     </td></tr>
+                    <!-- <tr id="modelConfigSelection" class="pl-5"><td><label for="model_config">Model Config:</i></label></td><td>
+                        <select id="model_config" name="model_config">
+                        </select>
+                    </td></tr> -->
                     <tr class="pl-5"><td><label for="vae_model">Custom VAE:</i></label></td><td>
                         <select id="vae_model" name="vae_model">
                             <!-- <option value="" selected>None</option> -->
                         </select>
                         <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/VAE-Variational-Auto-Encoder" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about VAEs</span></i></a>
                     </td></tr>
-                    <tr id="samplerSelection" class="pl-5"><td><label for="sampler">Sampler:</label></td><td>
-                        <select id="sampler" name="sampler">
-                            <option value="plms">plms</option>
-                            <option value="ddim">ddim</option>
-                            <option value="heun">heun</option>
-                            <option value="euler">euler</option>
-                            <option value="euler_a" selected>euler_a</option>
-                            <option value="dpm2">dpm2</option>
-                            <option value="dpm2_a">dpm2_a</option>
-                            <option value="lms">lms</option>
+                    <tr id="samplerSelection" class="pl-5"><td><label for="sampler_name">Sampler:</label></td><td>
+                        <select id="sampler_name" name="sampler_name">
+                            <option value="plms">PLMS</option>
+                            <option value="ddim">DDIM</option>
+                            <option value="heun">Heun</option>
+                            <option value="euler">Euler</option>
+                            <option value="euler_a" selected>Euler Ancestral</option>
+                            <option value="dpm2">DPM2</option>
+                            <option value="dpm2_a">DPM2 Ancestral</option>
+                            <option value="lms">LMS</option>
+                            <option value="dpm_solver_stability">DPM Solver (Stability AI)</option>
+                            <option value="dpmpp_2s_a">DPM++ 2s Ancestral</option>
+                            <option value="dpmpp_2m">DPM++ 2m</option>
+                            <option value="dpmpp_sde">DPM++ SDE</option>
+                            <option value="dpm_fast">DPM Fast</option>
+                            <option value="dpm_adaptive">DPM Adaptive</option>
                         </select>
                         <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/How-to-Use#samplers" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about samplers</span></i></a>
                     </td></tr>
@@ -222,7 +234,12 @@
                     <li class="pl-5"><input id="stream_image_progress" name="stream_image_progress" type="checkbox"> <label for="stream_image_progress">Show a live preview <small>(uses more VRAM, slower images)</small></label></li>
                     <li class="pl-5"><input id="use_face_correction" name="use_face_correction" type="checkbox"> <label for="use_face_correction">Fix incorrect faces and eyes <small>(uses GFPGAN)</small></label></li>
                     <li class="pl-5">
-                        <input id="use_upscale" name="use_upscale" type="checkbox"> <label for="use_upscale">Upscale image by 4x with </label>
+                        <input id="use_upscale" name="use_upscale" type="checkbox"> <label for="use_upscale">Scale up by</label> 
+                        <select id="upscale_amount" name="upscale_amount">
+                            <option value="2">2x</option>
+                            <option value="4" selected>4x</option>
+                        </select>
+                        with 
                         <select id="upscale_model" name="upscale_model">
                             <option value="RealESRGAN_x4plus" selected>RealESRGAN_x4plus</option>
                             <option value="RealESRGAN_x4plus_anime_6B">RealESRGAN_x4plus_anime_6B</option>
@@ -416,7 +433,6 @@
 async function init() {
     await initSettings()
     await getModels()
-    await getDiskPath()
     await getAppConfig()
     await loadUIPlugins()
     await loadModifiers()

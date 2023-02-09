@@ -26,13 +26,16 @@ let initImagePreview = document.querySelector("#init_image_preview")
 let initImageSizeBox = document.querySelector("#init_image_size_box")
 let maskImageSelector = document.querySelector("#mask")
 let maskImagePreview = document.querySelector("#mask_preview")
+let applyColorCorrectionField = document.querySelector('#apply_color_correction')
+let colorCorrectionSetting = document.querySelector('#apply_color_correction_setting')
 let promptStrengthSlider = document.querySelector('#prompt_strength_slider')
 let promptStrengthField = document.querySelector('#prompt_strength')
-let samplerField = document.querySelector('#sampler')
+let samplerField = document.querySelector('#sampler_name')
 let samplerSelectionContainer = document.querySelector("#samplerSelection")
 let useFaceCorrectionField = document.querySelector("#use_face_correction")
 let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
+let upscaleAmountField = document.querySelector("#upscale_amount")
 let stableDiffusionModelField = document.querySelector('#stable_diffusion_model')
 let vaeModelField = document.querySelector('#vae_model')
 let hypernetworkModelField = document.querySelector('#hypernetwork_model')
@@ -260,6 +263,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                     <div class="imgItemInfo">
                         <span class="imgSeedLabel"></span>
                     </div>
+                    <button class="imgPreviewItemClearBtn image_clear_btn"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             `
             outputContainer.appendChild(imageItemElem)
@@ -272,6 +276,11 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         imageElem.setAttribute('data-steps', imageInferenceSteps)
         imageElem.setAttribute('data-guidance', imageGuidanceScale)
 
+        const imageRemoveBtn = imageItemElem.querySelector('.imgPreviewItemClearBtn')
+        imageRemoveBtn.addEventListener('click', (e) => {
+            console.log(e)
+            shiftOrConfirm(e, "Remove the image from the results?", () => { imageItemElem.style.display = 'none' })
+        })
 
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
         imageInfo.style.visibility = (livePreview ? 'hidden' : 'visible')
@@ -302,9 +311,12 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                 const newButton = document.createElement('button')
                 newButton.classList.add('tasksBtns')
                 newButton.innerText = btnInfo.text
-                newButton.addEventListener('click', function() {
-                    btnInfo.on_click(req, img)
+                newButton.addEventListener('click', function(event) {
+                    btnInfo.on_click(req, img, event)
                 })
+                if (btnInfo.class !== undefined) {
+                   newButton.classList.add(btnInfo.class)
+                }
                 imgItemInfo.appendChild(newButton)
             }
             buttons.forEach(btn => {
@@ -613,7 +625,7 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
                             <b>Suggestions</b>:
                             <br/>
                             1. If you have set an initial image, please try reducing its dimension to ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION} or smaller.<br/>
-                            2. Try disabling the '<em>Turbo mode</em>' under '<em>Advanced Settings</em>'.<br/>
+                            2. Try picking a lower level in the '<em>GPU Memory Usage</em>' setting (in the '<em>Settings</em>' tab).<br/>
                             3. Try generating a smaller image.<br/>`
                 }
             } else {
@@ -647,7 +659,7 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
         task.progressBar.classList.remove("active")
         setStatus('request', 'done', 'success')
     } else {
-        task.outputMsg.innerText += `Task ended after ${time}`
+        task.outputMsg.innerText += `. Task ended after ${time}`
     }
 
     if (randomSeedField.checked) {
@@ -662,6 +674,9 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
         return
     }
 
+    if (pauseClient) { 
+        resumeBtn.click() 
+    }
     renderButtons.style.display = 'none'
     renameMakeImageButton()
 
@@ -789,10 +804,11 @@ function createTask(task) {
 
     if (task.reqBody.init_image !== undefined) {
         let h = 80
-	let w = task.reqBody.width * h / task.reqBody.height >>0
+        let w = task.reqBody.width * h / task.reqBody.height >>0
         taskConfig += `<div class="task-initimg" style="float:left;"><img style="width:${w}px;height:${h}px;" src="${task.reqBody.init_image}"><div class="task-fs-initimage"></div></div>`
     }
-    taskConfig += `<b>Seed:</b> ${task.seed}, <b>Sampler:</b> ${task.reqBody.sampler}, <b>Inference Steps:</b> ${task.reqBody.num_inference_steps}, <b>Guidance Scale:</b> ${task.reqBody.guidance_scale}, <b>Model:</b> ${task.reqBody.use_stable_diffusion_model}`
+    taskConfig += `<b>Seed:</b> ${task.seed}, <b>Sampler:</b> ${task.reqBody.sampler_name}, <b>Inference Steps:</b> ${task.reqBody.num_inference_steps}, <b>Guidance Scale:</b> ${task.reqBody.guidance_scale}, <b>Model:</b> ${task.reqBody.use_stable_diffusion_model}`
+
     if (task.reqBody.use_vae_model.trim() !== '') {
         taskConfig += `, <b>VAE:</b> ${task.reqBody.use_vae_model}`
     }
@@ -806,11 +822,14 @@ function createTask(task) {
         taskConfig += `, <b>Fix Faces:</b> ${task.reqBody.use_face_correction}`
     }
     if (task.reqBody.use_upscale) {
-        taskConfig += `, <b>Upscale:</b> ${task.reqBody.use_upscale}`
+        taskConfig += `, <b>Upscale:</b> ${task.reqBody.use_upscale} (${task.reqBody.upscale_amount || 4}x)`
     }
     if (task.reqBody.use_hypernetwork_model) {
         taskConfig += `, <b>Hypernetwork:</b> ${task.reqBody.use_hypernetwork_model}`
         taskConfig += `, <b>Hypernetwork Strength:</b> ${task.reqBody.hypernetwork_strength}`
+    }
+    if (task.reqBody.preserve_init_image_color_profile) {
+        taskConfig += `, <b>Preserve Color Profile:</b> true`
     }
 
     let taskEntry = document.createElement('div')
@@ -894,7 +913,7 @@ function createTask(task) {
     if (task.previewPrompt.innerText.trim() === '') {
         task.previewPrompt.innerHTML = '&nbsp;' // allows the results to be collapsed
     }
-
+    return taskEntry.id
 }
 
 function getCurrentUserRequest() {
@@ -917,9 +936,8 @@ function getCurrentUserRequest() {
             width: parseInt(widthField.value),
             height: parseInt(heightField.value),
             // allow_nsfw: allowNSFWField.checked,
-            turbo: turboField.checked,
+            vram_usage_level: vramUsageLevelField.value,
             //render_device: undefined, // Set device affinity. Prefer this device, but wont activate.
-            use_full_precision: useFullPrecisionField.checked,
             use_stable_diffusion_model: stableDiffusionModelField.value,
             use_vae_model: vaeModelField.value,
             stream_progress_updates: true,
@@ -927,8 +945,10 @@ function getCurrentUserRequest() {
             show_only_filtered_image: showOnlyFilteredImageField.checked,
             output_format: outputFormatField.value,
             output_quality: parseInt(outputQualityField.value),
+            metadata_output_format: document.querySelector('#metadata_output_format').value,
             original_prompt: promptField.value,
-            active_tags: (activeTags.map(x => x.name))
+            active_tags: (activeTags.map(x => x.name)),
+            inactive_tags: (activeTags.filter(tag => tag.inactive === true).map(x => x.name))
         }
     }
     if (IMAGE_REGEX.test(initImagePreview.src)) {
@@ -941,9 +961,10 @@ function getCurrentUserRequest() {
         if (maskSetting.checked) {
             newTask.reqBody.mask = imageInpainter.getImg()
         }
-        newTask.reqBody.sampler = 'ddim'
+        newTask.reqBody.preserve_init_image_color_profile = applyColorCorrectionField.checked
+        newTask.reqBody.sampler_name = 'ddim'
     } else {
-        newTask.reqBody.sampler = samplerField.value
+        newTask.reqBody.sampler_name = samplerField.value
     }
     if (saveToDiskField.checked && diskPathField.value.trim() !== '') {
         newTask.reqBody.save_to_disk_path = diskPathField.value.trim()
@@ -953,6 +974,7 @@ function getCurrentUserRequest() {
     }
     if (useUpscalingField.checked) {
         newTask.reqBody.use_upscale = upscaleModelField.value
+        newTask.reqBody.upscale_amount = upscaleAmountField.value
     }
     if (hypernetworkModelField.value) {
         newTask.reqBody.use_hypernetwork_model = hypernetworkModelField.value
@@ -1148,8 +1170,10 @@ function onDimensionChange() {
 diskPathField.disabled = !saveToDiskField.checked
 
 upscaleModelField.disabled = !useUpscalingField.checked
+upscaleAmountField.disabled = !useUpscalingField.checked
 useUpscalingField.addEventListener('change', function(e) {
     upscaleModelField.disabled = !this.checked
+    upscaleAmountField.disabled = !this.checked
 })
 
 makeImageBtn.addEventListener('click', makeImage)
@@ -1286,17 +1310,23 @@ async function getModels() {
         vaeOptions.unshift('') // add a None option
         hypernetworkOptions.unshift('') // add a None option
 
-        function createModelOptions(modelField, selectedModel) {
-            return function(modelName) {
-                const modelOption = document.createElement('option')
-                modelOption.value = modelName
-                modelOption.innerText = modelName !== '' ? modelName : 'None'
+        function createModelOptions(modelField, selectedModel, path="") {
+            return function fn(modelName) {
+                if (typeof(modelName) == 'string') {
+                    const modelOption = document.createElement('option')
+                    modelOption.value =  path + modelName
+                    modelOption.innerHTML = modelName !== '' ? (path != "" ? "&nbsp;&nbsp;"+modelName : modelName) : 'None'
 
-                if (modelName === selectedModel) {
-                    modelOption.selected = true
+                    if (path + modelName === selectedModel) {
+                        modelOption.selected = true
+                    }
+                    modelField.appendChild(modelOption)
+                } else {
+                    const modelGroup = document.createElement('optgroup')
+                    modelGroup.label = path + modelName[0]
+                    modelField.appendChild(modelGroup)
+                    modelName[1].forEach( createModelOptions(modelField, selectedModel, path + modelName[0] + "/" ) )
                 }
-
-                modelField.appendChild(modelOption)
             }
         }
 
@@ -1352,6 +1382,7 @@ function img2imgLoad() {
     promptStrengthContainer.style.display = 'table-row'
     samplerSelectionContainer.style.display = "none"
     initImagePreviewContainer.classList.add("has-image")
+    colorCorrectionSetting.style.display = ''
 
     initImageSizeBox.textContent = initImagePreview.naturalWidth + " x " + initImagePreview.naturalHeight
     imageEditor.setImage(this.src, initImagePreview.naturalWidth, initImagePreview.naturalHeight)
@@ -1366,6 +1397,7 @@ function img2imgUnload() {
     promptStrengthContainer.style.display = "none"
     samplerSelectionContainer.style.display = ""
     initImagePreviewContainer.classList.remove("has-image")
+    colorCorrectionSetting.style.display = 'none'
     imageEditor.setImage(null, parseInt(widthField.value), parseInt(heightField.value))
 
 }
@@ -1417,7 +1449,7 @@ function selectTab(tab_id) {
     let tabInfo = tabElements.find(t => t.tab.id == tab_id)
     if (!tabInfo.tab.classList.contains("active")) {
         tabElements.forEach(info => {
-            if (info.tab.classList.contains("active")) {
+            if (info.tab.classList.contains("active") && info.tab.parentNode === tabInfo.tab.parentNode) {
                 info.tab.classList.toggle("active")
                 info.content.classList.toggle("active")
             }
@@ -1437,6 +1469,9 @@ function linkTabContents(tab) {
     })
 
     tab.addEventListener("click", event => selectTab(tab.id))
+}
+function isTabActive(tab) {
+    return tab.classList.contains("active")
 }
 
 let pauseClient = false
