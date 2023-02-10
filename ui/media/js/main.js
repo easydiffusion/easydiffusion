@@ -279,9 +279,24 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         imageElem.setAttribute('data-guidance', imageGuidanceScale)
 
         const imageRemoveBtn = imageItemElem.querySelector('.imgPreviewItemClearBtn')
+        let parentTaskContainer = imageRemoveBtn.closest('.imageTaskContainer')
+        console.log(parentTaskContainer)
         imageRemoveBtn.addEventListener('click', (e) => {
             console.log(e)
-            shiftOrConfirm(e, "Remove the image from the results?", () => { imageItemElem.style.display = 'none' })
+            shiftOrConfirm(e, "Remove the image from the results?", () => { 
+                imageItemElem.style.display = 'none' 
+                let allHidden = true;
+                let children = parentTaskContainer.querySelectorAll('.imgItem');
+                for(let x = 0; x < children.length; x++) {
+                    let child = children[x];
+                    if(child.style.display != "none") {
+                        allHidden = false;
+                    }
+                    console.log(allHidden)
+                }
+                console.log(allHidden)
+                if(allHidden === true) {parentTaskContainer.classList.add("displayNone")}
+            })
         })
 
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
@@ -957,7 +972,7 @@ function getCurrentUserRequest() {
             show_only_filtered_image: showOnlyFilteredImageField.checked,
             output_format: outputFormatField.value,
             output_quality: parseInt(outputQualityField.value),
-            metadata_output_format: metadataOutputFormatField.value,
+            metadata_output_format: document.querySelector('#metadata_output_format').value,
             original_prompt: promptField.value,
             active_tags: (activeTags.map(x => x.name)),
             inactive_tags: (activeTags.filter(tag => tag.inactive === true).map(x => x.name))
@@ -1182,7 +1197,6 @@ function onDimensionChange() {
 }
 
 diskPathField.disabled = !saveToDiskField.checked
-metadataOutputFormatField.disabled = !saveToDiskField.checked
 
 gfpganModelField.disabled = !useFaceCorrectionField.checked
 useFaceCorrectionField.addEventListener('change', function(e) {
