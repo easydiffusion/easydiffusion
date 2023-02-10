@@ -27,6 +27,7 @@ const SETTINGS_IDS_LIST = [
     "negative_prompt",
     "stream_image_progress",
     "use_face_correction",
+    "gfpgan_model",
     "use_upscale",
     "upscale_amount",
     "show_only_filtered_image",

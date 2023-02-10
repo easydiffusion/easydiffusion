@@ -33,6 +33,7 @@ let promptStrengthField = document.querySelector('#prompt_strength')
 let samplerField = document.querySelector('#sampler_name')
 let samplerSelectionContainer = document.querySelector("#samplerSelection")
 let useFaceCorrectionField = document.querySelector("#use_face_correction")
+let gfpganModelField = document.querySelector("#gfpgan_model")
 let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
 let upscaleAmountField = document.querySelector("#upscale_amount")
@@ -413,7 +414,7 @@ function onUpscaleClick(req, img) {
 
 function onFixFacesClick(req, img) {
     enqueueImageVariationTask(req, img, {
-        use_face_correction: 'GFPGANv1.3'
+        use_face_correction: gfpganModelField.value
     })
 }
 
@@ -974,7 +975,7 @@ function getCurrentUserRequest() {
         newTask.reqBody.save_to_disk_path = diskPathField.value.trim()
     }
     if (useFaceCorrectionField.checked) {
-        newTask.reqBody.use_face_correction = 'GFPGANv1.3'
+        newTask.reqBody.use_face_correction = gfpganModelField.value
     }
     if (useUpscalingField.checked) {
         newTask.reqBody.use_upscale = upscaleModelField.value
@@ -1173,6 +1174,11 @@ function onDimensionChange() {
 
 diskPathField.disabled = !saveToDiskField.checked
 
+gfpganModelField.disabled = !useFaceCorrectionField.checked
+useFaceCorrectionField.addEventListener('change', function(e) {
+    gfpganModelField.disabled = !this.checked
+})
+
 upscaleModelField.disabled = !useUpscalingField.checked
 upscaleAmountField.disabled = !useUpscalingField.checked
 useUpscalingField.addEventListener('change', function(e) {
@@ -1292,9 +1298,11 @@ async function getModels() {
         const sd_model_setting_key = "stable_diffusion_model"
         const vae_model_setting_key = "vae_model"
         const hypernetwork_model_key = "hypernetwork_model"
+        const gfpgan_model_key = "gfpgan_model"
         const selectedSDModel = SETTINGS[sd_model_setting_key].value
         const selectedVaeModel = SETTINGS[vae_model_setting_key].value
         const selectedHypernetworkModel = SETTINGS[hypernetwork_model_key].value
+        const selectedGfpganModel = SETTINGS[gfpgan_model_key].value
 
         const models = await SD.getModels()
         const modelsOptions = models['options']
@@ -1310,6 +1318,7 @@ async function getModels() {
         const stableDiffusionOptions = modelsOptions['stable-diffusion']
         const vaeOptions = modelsOptions['vae']
         const hypernetworkOptions = modelsOptions['hypernetwork']
+        const gfpganOptions = modelsOptions['gfpgan']
 
         vaeOptions.unshift('') // add a None option
         hypernetworkOptions.unshift('') // add a None option
@@ -1337,6 +1346,8 @@ async function getModels() {
         stableDiffusionOptions.forEach(createModelOptions(stableDiffusionModelField, selectedSDModel))
         vaeOptions.forEach(createModelOptions(vaeModelField, selectedVaeModel))
         hypernetworkOptions.forEach(createModelOptions(hypernetworkModelField, selectedHypernetworkModel))
+        gfpganOptions.forEach(createModelOptions(gfpganModelField,selectedGfpganModel))
+
 
         stableDiffusionModelField.dispatchEvent(new Event('change'))
         vaeModelField.dispatchEvent(new Event('change'))

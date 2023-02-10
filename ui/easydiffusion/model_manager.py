@@ -211,6 +211,7 @@ def getModels():
     listModels(model_type='stable-diffusion')
     listModels(model_type='vae')
     listModels(model_type='hypernetwork')
+    listModels(model_type='gfpgan')
 
     if models_scanned > 0: log.info(f'[green]Scanned {models_scanned} models. Nothing infected[/]')
 

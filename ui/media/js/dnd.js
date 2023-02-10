@@ -154,10 +154,21 @@ const TASK_MAPPING = {
     
     use_face_correction: { name: 'Use Face Correction',
         setUI: (use_face_correction) => {
-            useFaceCorrectionField.checked = parseBoolean(use_face_correction)
+            const oldVal = gfpganModelField.value
+            gfpganModelField.value = getModelPath(use_face_correction, ['.pth'])
+            if (gfpganModelField.value) { // Is a valid value for the field.
+                useFaceCorrectionField.checked = true
+                gfpganModelField.disabled = false
+            } else { // Not a valid value, restore the old value and disable the filter.
+                gfpganModelField.disabled = true
+                gfpganModelField.value = oldVal
+                useFaceCorrectionField.checked = false
+            }
+
+            //useFaceCorrectionField.checked = parseBoolean(use_face_correction)
         },
-        readUI: () => useFaceCorrectionField.checked,
-        parse: (val) => parseBoolean(val)
+        readUI: () => (useFaceCorrectionField.checked ? gfpganModelField.value : undefined),
+        parse: (val) => val
     },
     use_upscale: { name: 'Use Upscaling',
         setUI: (use_upscale) => {
@@ -324,6 +335,7 @@ function restoreTaskToUI(task, fieldsToSkip) {
     // properly reset checkboxes
     if (!('use_face_correction' in task.reqBody)) {
         useFaceCorrectionField.checked = false
+        gfpganModelField.disabled = true
     }
     if (!('use_upscale' in task.reqBody)) {
         useUpscalingField.checked = false
