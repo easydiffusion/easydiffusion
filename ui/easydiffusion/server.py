@@ -170,7 +170,7 @@ def render_internal(req: dict):
         task_data: TaskData = TaskData.parse_obj(req)
 
         # Overwrite user specified save path
-        config=app.getConfig
+        config = app.getConfig()
         if 'force_save_path' in config:
             task_data.save_to_disk_path = config['force_save_path']
 
