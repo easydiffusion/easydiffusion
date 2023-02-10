@@ -929,7 +929,7 @@ function getCurrentUserRequest() {
 
         reqBody: {
             seed,
-            random_seed: randomSeedField.checked,
+            used_random_seed: randomSeedField.checked,
             negative_prompt: negativePromptField.value.trim(),
             num_outputs: numOutputsParallel,
             num_inference_steps: parseInt(numInferenceStepsField.value),
