@@ -280,7 +280,6 @@ function showImages(reqBody, res, outputContainer, livePreview) {
 
         const imageRemoveBtn = imageItemElem.querySelector('.imgPreviewItemClearBtn')
         let parentTaskContainer = imageRemoveBtn.closest('.imageTaskContainer')
-        console.log(parentTaskContainer)
         imageRemoveBtn.addEventListener('click', (e) => {
             console.log(e)
             shiftOrConfirm(e, "Remove the image from the results?", () => { 
