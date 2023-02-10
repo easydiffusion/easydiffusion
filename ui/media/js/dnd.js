@@ -375,12 +375,15 @@ function readUI() {
 }
 function getModelPath(filename, extensions)
 {
-    let pathIdx = filename.lastIndexOf('/') // Linux, Mac paths
-    if (pathIdx < 0) {
-        pathIdx = filename.lastIndexOf('\\') // Windows paths.
+    let pathIdx
+    if (filename.includes('/models/stable-diffusion/')) {
+        pathIdx = filename.indexOf('/models/stable-diffusion/') + 25 // Linux, Mac paths
+    }
+    else if (filename.includes('\\models\\stable-diffusion\\')) {
+        pathIdx = filename.indexOf('\\models\\stable-diffusion\\') + 25 // Linux, Mac paths
     }
     if (pathIdx >= 0) {
-        filename = filename.slice(pathIdx + 1)
+        filename = filename.slice(pathIdx)
     }
     extensions.forEach(ext => {
         if (filename.endsWith(ext)) {
