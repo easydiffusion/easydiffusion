@@ -45,7 +45,7 @@ APP_CONFIG_DEFAULTS = {
     'update_branch': 'main',
     'ui': {
         'open_browser_on_start': True,
-    },
+    }
 }
 
 def init():
@@ -57,16 +57,21 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
     try:
         config_json_path = os.path.join(CONFIG_DIR, 'config.json')
         if not os.path.exists(config_json_path):
-            return default_val
-        with open(config_json_path, 'r', encoding='utf-8') as f:
-            config = json.load(f)
-            if 'net' not in config:
-                config['net'] = {}
-            if os.getenv('SD_UI_BIND_PORT') is not None:
-                config['net']['listen_port'] = int(os.getenv('SD_UI_BIND_PORT'))
-            if os.getenv('SD_UI_BIND_IP') is not None:
-                config['net']['listen_to_network'] = (os.getenv('SD_UI_BIND_IP') == '0.0.0.0')
-            return config
+            config = default_val
+        else:
+            with open(config_json_path, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+        if 'net' not in config:
+            config['net'] = {}
+        if os.getenv('SD_UI_BIND_PORT') is not None:
+            config['net']['listen_port'] = int(os.getenv('SD_UI_BIND_PORT'))
+        else:
+            config['net']['listen_port'] = 9000
+        if os.getenv('SD_UI_BIND_IP') is not None:
+            config['net']['listen_to_network'] = (os.getenv('SD_UI_BIND_IP') == '0.0.0.0')
+        else:
+            config['net']['listen_to_network'] = True
+        return config
     except Exception as e:
         log.warn(traceback.format_exc())
         return default_val
