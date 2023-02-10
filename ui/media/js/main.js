@@ -33,6 +33,7 @@ let promptStrengthField = document.querySelector('#prompt_strength')
 let samplerField = document.querySelector('#sampler_name')
 let samplerSelectionContainer = document.querySelector("#samplerSelection")
 let useFaceCorrectionField = document.querySelector("#use_face_correction")
+let gfpganModelField = document.querySelector("#gfpgan_model")
 let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
 let upscaleAmountField = document.querySelector("#upscale_amount")
@@ -66,6 +67,7 @@ let maskSetting = document.querySelector('#enable_mask')
 const processOrder = document.querySelector('#process_order_toggle')
 
 let imagePreview = document.querySelector("#preview")
+let imagePreviewContent = document.querySelector("#preview-content")
 imagePreview.addEventListener('drop', function(ev) {
     const data = ev.dataTransfer?.getData("text/plain");
     if (!data) {
@@ -277,9 +279,24 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         imageElem.setAttribute('data-guidance', imageGuidanceScale)
 
         const imageRemoveBtn = imageItemElem.querySelector('.imgPreviewItemClearBtn')
+        let parentTaskContainer = imageRemoveBtn.closest('.imageTaskContainer')
+        console.log(parentTaskContainer)
         imageRemoveBtn.addEventListener('click', (e) => {
             console.log(e)
-            shiftOrConfirm(e, "Remove the image from the results?", () => { imageItemElem.style.display = 'none' })
+            shiftOrConfirm(e, "Remove the image from the results?", () => { 
+                imageItemElem.style.display = 'none' 
+                let allHidden = true;
+                let children = parentTaskContainer.querySelectorAll('.imgItem');
+                for(let x = 0; x < children.length; x++) {
+                    let child = children[x];
+                    if(child.style.display != "none") {
+                        allHidden = false;
+                    }
+                    console.log(allHidden)
+                }
+                console.log(allHidden)
+                if(allHidden === true) {parentTaskContainer.classList.add("displayNone")}
+            })
         })
 
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
@@ -413,7 +430,7 @@ function onUpscaleClick(req, img) {
 
 function onFixFacesClick(req, img) {
     enqueueImageVariationTask(req, img, {
-        use_face_correction: 'GFPGANv1.3'
+        use_face_correction: gfpganModelField.value
     })
 }
 
@@ -706,12 +723,18 @@ async function onTaskStart(task) {
     if (task.batchCount > 1) {
         // Each output render batch needs it's own task reqBody instance to avoid altering the other runs after they are completed.
         newTaskReqBody = Object.assign({}, task.reqBody)
+        if (task.batchesDone == task.batchCount-1) { 
+            // Last batch of the task
+            // If the number of parallel jobs is no factor of the total number of images, the last batch must create less than "parallel jobs count" images
+            // E.g. with numOutputsTotal = 6 and num_outputs = 5, the last batch shall only generate 1 image.
+            newTaskReqBody.num_outputs = task.numOutputsTotal - task.reqBody.num_outputs * (task.batchCount-1)
+        }
     }
 
     const startSeed = task.seed || newTaskReqBody.seed
     const genSeeds = Boolean(typeof newTaskReqBody.seed !== 'number' || (newTaskReqBody.seed === task.seed && task.numOutputsTotal > 1))
     if (genSeeds) {
-        newTaskReqBody.seed = parseInt(startSeed) + (task.batchesDone * newTaskReqBody.num_outputs)
+        newTaskReqBody.seed = parseInt(startSeed) + (task.batchesDone * task.reqBody.num_outputs)
     }
 
     // Update the seed *before* starting the processing so it's retained if user stops the task
@@ -774,7 +797,10 @@ function createInitImageHover(taskEntry) {
     img.src = taskEntry.querySelector('div.task-initimg > img').src
     $tooltip.append(img)
     $tooltip.append(`<div class="top-right"><button>Use as Input</button></div>`)
-    $tooltip.find('button').on('click', (e) => { onUseAsInputClick(null,img) } )
+    $tooltip.find('button').on('click', (e) => {
+        e.stopPropagation()
+        onUseAsInputClick(null,img) 
+    })
 }
 
 let startX, startY;
@@ -906,7 +932,7 @@ function createTask(task) {
     })
 
     task.isProcessing = true
-    taskEntry = imagePreview.insertBefore(taskEntry, previewTools.nextSibling)
+    taskEntry = imagePreviewContent.insertBefore(taskEntry, previewTools.nextSibling)
     htmlTaskMap.set(taskEntry, task)
 
     task.previewPrompt.innerText = task.reqBody.prompt
@@ -929,6 +955,7 @@ function getCurrentUserRequest() {
 
         reqBody: {
             seed,
+            used_random_seed: randomSeedField.checked,
             negative_prompt: negativePromptField.value.trim(),
             num_outputs: numOutputsParallel,
             num_inference_steps: parseInt(numInferenceStepsField.value),
@@ -970,7 +997,7 @@ function getCurrentUserRequest() {
         newTask.reqBody.save_to_disk_path = diskPathField.value.trim()
     }
     if (useFaceCorrectionField.checked) {
-        newTask.reqBody.use_face_correction = 'GFPGANv1.3'
+        newTask.reqBody.use_face_correction = gfpganModelField.value
     }
     if (useUpscalingField.checked) {
         newTask.reqBody.use_upscale = upscaleModelField.value
@@ -1014,6 +1041,8 @@ function getPrompts(prompts) {
 
     promptsToMake = applyPermuteOperator(promptsToMake)
     promptsToMake = applySetOperator(promptsToMake)
+
+    PLUGINS['GET_PROMPTS_HOOK'].forEach(fn => { promptsToMake = fn(promptsToMake) })
 
     return promptsToMake
 }
@@ -1142,7 +1171,7 @@ widthField.addEventListener('change', onDimensionChange)
 heightField.addEventListener('change', onDimensionChange)
 
 function renameMakeImageButton() {
-    let totalImages = Math.max(parseInt(numOutputsTotalField.value), parseInt(numOutputsParallelField.value))
+    let totalImages = Math.max(parseInt(numOutputsTotalField.value), parseInt(numOutputsParallelField.value)) * getPrompts().length
     let imageLabel = 'Image'
     if (totalImages > 1) {
         imageLabel = totalImages + ' Images'
@@ -1168,6 +1197,11 @@ function onDimensionChange() {
 }
 
 diskPathField.disabled = !saveToDiskField.checked
+
+gfpganModelField.disabled = !useFaceCorrectionField.checked
+useFaceCorrectionField.addEventListener('change', function(e) {
+    gfpganModelField.disabled = !this.checked
+})
 
 upscaleModelField.disabled = !useUpscalingField.checked
 upscaleAmountField.disabled = !useUpscalingField.checked
@@ -1288,9 +1322,11 @@ async function getModels() {
         const sd_model_setting_key = "stable_diffusion_model"
         const vae_model_setting_key = "vae_model"
         const hypernetwork_model_key = "hypernetwork_model"
+        const gfpgan_model_key = "gfpgan_model"
         const selectedSDModel = SETTINGS[sd_model_setting_key].value
         const selectedVaeModel = SETTINGS[vae_model_setting_key].value
         const selectedHypernetworkModel = SETTINGS[hypernetwork_model_key].value
+        const selectedGfpganModel = SETTINGS[gfpgan_model_key].value
 
         const models = await SD.getModels()
         const modelsOptions = models['options']
@@ -1306,6 +1342,7 @@ async function getModels() {
         const stableDiffusionOptions = modelsOptions['stable-diffusion']
         const vaeOptions = modelsOptions['vae']
         const hypernetworkOptions = modelsOptions['hypernetwork']
+        const gfpganOptions = modelsOptions['gfpgan']
 
         vaeOptions.unshift('') // add a None option
         hypernetworkOptions.unshift('') // add a None option
@@ -1322,9 +1359,12 @@ async function getModels() {
                     }
                     modelField.appendChild(modelOption)
                 } else {
-                    const modelGroup = document.createElement('optgroup')
-                    modelGroup.label = path + modelName[0]
-                    modelField.appendChild(modelGroup)
+                    // Since <optgroup/>s can't be nested, don't show empty groups
+                    if (modelName[1].some(child => typeof(child) == 'string')) {
+                        const modelGroup = document.createElement('optgroup')
+                        modelGroup.label = path + modelName[0]
+                        modelField.appendChild(modelGroup)
+                    }
                     modelName[1].forEach( createModelOptions(modelField, selectedModel, path + modelName[0] + "/" ) )
                 }
             }
@@ -1333,6 +1373,8 @@ async function getModels() {
         stableDiffusionOptions.forEach(createModelOptions(stableDiffusionModelField, selectedSDModel))
         vaeOptions.forEach(createModelOptions(vaeModelField, selectedVaeModel))
         hypernetworkOptions.forEach(createModelOptions(hypernetworkModelField, selectedHypernetworkModel))
+        gfpganOptions.forEach(createModelOptions(gfpganModelField,selectedGfpganModel))
+
 
         stableDiffusionModelField.dispatchEvent(new Event('change'))
         vaeModelField.dispatchEvent(new Event('change'))
@@ -1489,6 +1531,9 @@ function resumeClient() {
         resumeBtn.addEventListener("click", playbuttonclick)
     })
 }
+
+promptField.addEventListener("input", debounce( renameMakeImageButton, 1000) )
+
 
 pauseBtn.addEventListener("click", function () {
     pauseClient = true
