@@ -292,9 +292,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                     if(child.style.display != "none") {
                         allHidden = false;
                     }
-                    console.log(allHidden)
                 }
-                console.log(allHidden)
                 if(allHidden === true) {parentTaskContainer.classList.add("displayNone")}
             })
         })
