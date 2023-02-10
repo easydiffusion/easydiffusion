@@ -1204,3 +1204,7 @@ body.wait-pause {
 .jconfirm.jconfirm-modern .jconfirm-box {
     background-color: var(--background-color1);
 }
+
+.displayNone {
+    display:none !important;
+}
