@@ -58,7 +58,7 @@ var PARAMETERS = [
         type: ParameterType.select,
         label: "Metadata format",
         note: "will be saved to disk in this format",
-        default: "none",
+        default: "txt",
         options: [
             {
                 value: "none",
