@@ -707,12 +707,18 @@ async function onTaskStart(task) {
     if (task.batchCount > 1) {
         // Each output render batch needs it's own task reqBody instance to avoid altering the other runs after they are completed.
         newTaskReqBody = Object.assign({}, task.reqBody)
+        if (task.batchesDone == task.batchCount-1) { 
+            // Last batch of the task
+            // If the number of parallel jobs is no factor of the total number of images, the last batch must create less than "parallel jobs count" images
+            // E.g. with numOutputsTotal = 6 and num_outputs = 5, the last batch shall only generate 1 image.
+            newTaskReqBody.num_outputs = task.numOutputsTotal - task.reqBody.num_outputs * (task.batchCount-1)
+        }
     }
 
     const startSeed = task.seed || newTaskReqBody.seed
     const genSeeds = Boolean(typeof newTaskReqBody.seed !== 'number' || (newTaskReqBody.seed === task.seed && task.numOutputsTotal > 1))
     if (genSeeds) {
-        newTaskReqBody.seed = parseInt(startSeed) + (task.batchesDone * newTaskReqBody.num_outputs)
+        newTaskReqBody.seed = parseInt(startSeed) + (task.batchesDone * task.reqBody.num_outputs)
     }
 
     // Update the seed *before* starting the processing so it's retained if user stops the task
@@ -1149,7 +1155,7 @@ widthField.addEventListener('change', onDimensionChange)
 heightField.addEventListener('change', onDimensionChange)
 
 function renameMakeImageButton() {
-    let totalImages = Math.max(parseInt(numOutputsTotalField.value), parseInt(numOutputsParallelField.value))
+    let totalImages = Math.max(parseInt(numOutputsTotalField.value), parseInt(numOutputsParallelField.value)) * getPrompts().length
     let imageLabel = 'Image'
     if (totalImages > 1) {
         imageLabel = totalImages + ' Images'
@@ -1506,6 +1512,9 @@ function resumeClient() {
         resumeBtn.addEventListener("click", playbuttonclick)
     })
 }
+
+promptField.addEventListener("input", debounce( renameMakeImageButton, 1000) )
+
 
 pauseBtn.addEventListener("click", function () {
     pauseClient = true
