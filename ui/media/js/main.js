@@ -1319,7 +1319,7 @@ outputFormatField.addEventListener('change', e => {
 thumbnailSizeField.addEventListener('input', () => {
     (function (s) {
         for (var j =0; j < document.styleSheets.length; j++) {
-            cssSheet = document.styleSheets[j]
+            let cssSheet = document.styleSheets[j]
             for (var i = 0; i < cssSheet.cssRules.length; i++) {
                 var rule = cssSheet.cssRules[i];
                 if (rule.selectorText == "div.img-preview img") {
