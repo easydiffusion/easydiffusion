@@ -104,51 +104,48 @@ class ModelDropdown
             this.modelFilter.select()
         }
     }
-    
+
     findPreviousSibling(elem, previous = true) {
-        let sibling = previous ? elem.previousElementSibling : elem
-        let lastSibling = elem
-        
-        while (sibling && sibling.classList.contains('model-file')) {
-            if (sibling.style.display == 'list-item') return sibling
-            lastSibling = sibling
-            sibling = sibling.previousElementSibling
+        // is there an immediate sibling?
+        let prevSibling = elem.previousElementSibling
+        if (prevSibling) {
+            // if the previous sibling is a model file, just select it
+            if (prevSibling.classList.contains('model-file')) return prevSibling
+            
+            // if the previous sibling is a model folder, select the last model file it contains
+            if (prevSibling.classList.contains('model-folder')) return prevSibling.firstElementChild.lastElementChild
         }
-        
-        // no more siblings, look for previous parent if any
-        if (sibling && sibling.classList.contains('model-folder')) {
-            return this.findPreviousSibling(sibling.firstElementChild.lastElementChild, false)
-        }
-        else if (lastSibling.parentElement.parentElement && lastSibling.parentElement.parentElement.previousElementSibling && lastSibling.parentElement.parentElement.previousElementSibling.firstElementChild && lastSibling.parentElement.parentElement.previousElementSibling.firstElementChild.lastElementChild) {
-            return this.findPreviousSibling(lastSibling.parentElement.parentElement.previousElementSibling.firstElementChild.lastElementChild, false)
-        }
-        else if (lastSibling.parentElement.parentElement.previousElementSibling) {
-            return this.findPreviousSibling(lastSibling.parentElement.parentElement.previousElementSibling, false)
+
+        // no sibling model file and no sibling model folder. look for siblings around the parent element.
+        prevSibling = elem.parentElement.parentElement.previousElementSibling
+        if (prevSibling) {
+            // if the previous entry is a model file, select it
+            if (prevSibling.classList.contains('model-file')) return prevSibling
+
+            // is there another model folder to jump to before the current one?
+            if (prevSibling.classList.contains('model-folder')) return prevSibling.firstElementChild.lastElementChild
         }
     }
     
-    findNextSibling(elem, next = true) {
-        let sibling = next ? elem.nextElementSibling : elem
-        let lastSibling = elem
-    
-        while (sibling && sibling.classList.contains('model-file')) {
-            if (sibling.style.display == 'list-item') return sibling
-            lastSibling = sibling
-            sibling = sibling.nextElementSibling
+    findNextSibling(elem) {
+        // is there an immediate sibling?
+        let nextSibling = elem.nextElementSibling
+        if (nextSibling) {
+            // if the next sibling is a model file, just select it
+            if (nextSibling.classList.contains('model-file')) return nextSibling
+            
+            // if the next sibling is a model folder, select the first model file it contains
+            if (nextSibling.classList.contains('model-folder')) return nextSibling.firstElementChild.firstElementChild
         }
-        
-        // no more siblings, look for next parent if any
-        if (lastSibling.nextElementSibling) {
-            return this.findNextSibling(lastSibling.nextElementSibling.firstElementChild.firstElementChild, false)
-        }
-        else if (lastSibling.parentElement.parentElement.nextElementSibling && lastSibling.parentElement.parentElement.nextElementSibling.firstElementChild && lastSibling.parentElement.parentElement.nextElementSibling.firstElementChild.firstElementChild) {
-            return this.findNextSibling(lastSibling.parentElement.parentElement.nextElementSibling.firstElementChild.firstElementChild, false)
-        }
-        else if (lastSibling.parentElement.parentElement.nextElementSibling && lastSibling.parentElement.parentElement.nextElementSibling.firstElementChild && lastSibling.parentElement.parentElement.nextElementSibling.firstElementChild.firstElementChild) {
-            return this.findNextSibling(lastSibling.parentElement.parentElement.nextElementSibling.firstElementChild.firstElementChild, false)
-        }
-        else if (lastSibling.parentElement.parentElement.nextElementSibling && lastSibling.parentElement.parentElement.nextElementSibling) {
-            return this.findNextSibling(lastSibling.parentElement.parentElement.nextElementSibling, false)
+
+        // no sibling model file and no sibling model folder. look for siblings around the parent element.
+        nextSibling = elem.parentElement.parentElement.nextElementSibling
+        if (nextSibling) {
+            // if the next entry is a model file, select it
+            if (nextSibling.classList.contains('model-file')) return nextSibling
+
+            // is there another model folder to jump to after the current one?
+            if (nextSibling.classList.contains('model-folder')) return nextSibling.firstElementChild.firstElementChild
         }
     }
     
