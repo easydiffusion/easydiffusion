@@ -105,7 +105,7 @@ class ModelDropdown
         }
     }
 
-    findPreviousSibling(elem, previous = true) {
+    findPreviousSibling(elem) {
         // is there an immediate sibling?
         let prevSibling = elem.previousElementSibling
         if (prevSibling) {
@@ -409,7 +409,7 @@ class ModelDropdown
         if (found) {
             this.modelResult.style.display = 'list-item'
             this.modelNoResult.style.display = 'none'
-            const elem = this.findNextSibling(this.modelList.querySelector('.model-file'), false)
+            const elem = this.findNextSibling(this.modelList.querySelector('.model-file'))
             this.highlightModel(elem)
             elem.scrollIntoView({block: 'nearest'})
         }
