@@ -61,12 +61,20 @@ var PARAMETERS = [
         default: "txt",
         options: [
             {
+                value: "none",
+                label: "none"
+            },
+            {
                 value: "txt",
                 label: "txt"
             },
             {
                 value: "json",
                 label: "json"
+            },
+            {
+                value: "embed",
+                label: "embed"
             }
         ],
     },
@@ -101,7 +109,7 @@ var PARAMETERS = [
         note: "Faster performance requires more GPU memory (VRAM)<br/><br/>" +
               "<b>Balanced:</b> nearly as fast as High, much lower VRAM usage<br/>" +
               "<b>High:</b> fastest, maximum GPU memory usage</br>" +
-              "<b>Low:</b> slowest, force-used for GPUs with 3 to 4 GB memory",
+              "<b>Low:</b> slowest, recommended for GPUs with 3 to 4 GB memory",
         icon: "fa-forward",
         default: "balanced",
         options: [
@@ -226,6 +234,7 @@ let autoPickGPUsField = document.querySelector('#auto_pick_gpus')
 let useGPUsField = document.querySelector('#use_gpus')
 let saveToDiskField = document.querySelector('#save_to_disk')
 let diskPathField = document.querySelector('#diskPath')
+let metadataOutputFormatField = document.querySelector('#metadata_output_format')
 let listenToNetworkField = document.querySelector("#listen_to_network")
 let listenPortField = document.querySelector("#listen_port")
 let useBetaChannelField = document.querySelector("#use_beta_channel")
@@ -279,6 +288,7 @@ async function getAppConfig() {
 
 saveToDiskField.addEventListener('change', function(e) {
     diskPathField.disabled = !this.checked
+    metadataOutputFormatField.disabled = !this.checked
 })
 
 function getCurrentRenderDeviceSelection() {
@@ -329,9 +339,9 @@ autoPickGPUsField.addEventListener('click', function() {
     gpuSettingEntry.style.display = (this.checked ? 'none' : '')
 })
 
-async function setDiskPath(defaultDiskPath) {
+async function setDiskPath(defaultDiskPath, force=false) {
     var diskPath = getSetting("diskPath")
-    if (diskPath == '' || diskPath == undefined || diskPath == "undefined") {
+    if (force || diskPath == '' || diskPath == undefined || diskPath == "undefined") {
         setSetting("diskPath", defaultDiskPath)
     }
 }
@@ -407,7 +417,13 @@ async function getSystemInfo() {
 
         setDeviceInfo(devices)
         setHostInfo(res['hosts'])
-        setDiskPath(res['default_output_dir'])
+        let force = false
+        if (res['enforce_output_dir'] !== undefined) {
+            force = res['enforce_output_dir']
+            saveToDiskField.disabled = force
+            diskPathField.disabled = force
+        }
+        setDiskPath(res['default_output_dir'], force)
     } catch (e) {
         console.log('error fetching devices', e)
     }

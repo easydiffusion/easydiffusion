@@ -33,6 +33,7 @@ let promptStrengthField = document.querySelector('#prompt_strength')
 let samplerField = document.querySelector('#sampler_name')
 let samplerSelectionContainer = document.querySelector("#samplerSelection")
 let useFaceCorrectionField = document.querySelector("#use_face_correction")
+let gfpganModelField = document.querySelector("#gfpgan_model")
 let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
 let upscaleAmountField = document.querySelector("#upscale_amount")
@@ -66,6 +67,7 @@ let maskSetting = document.querySelector('#enable_mask')
 const processOrder = document.querySelector('#process_order_toggle')
 
 let imagePreview = document.querySelector("#preview")
+let imagePreviewContent = document.querySelector("#preview-content")
 imagePreview.addEventListener('drop', function(ev) {
     const data = ev.dataTransfer?.getData("text/plain");
     if (!data) {
@@ -263,6 +265,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                     <div class="imgItemInfo">
                         <span class="imgSeedLabel"></span>
                     </div>
+                    <button class="imgPreviewItemClearBtn image_clear_btn"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             `
             outputContainer.appendChild(imageItemElem)
@@ -275,6 +278,23 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         imageElem.setAttribute('data-steps', imageInferenceSteps)
         imageElem.setAttribute('data-guidance', imageGuidanceScale)
 
+        const imageRemoveBtn = imageItemElem.querySelector('.imgPreviewItemClearBtn')
+        let parentTaskContainer = imageRemoveBtn.closest('.imageTaskContainer')
+        imageRemoveBtn.addEventListener('click', (e) => {
+            console.log(e)
+            shiftOrConfirm(e, "Remove the image from the results?", () => { 
+                imageItemElem.style.display = 'none' 
+                let allHidden = true;
+                let children = parentTaskContainer.querySelectorAll('.imgItem');
+                for(let x = 0; x < children.length; x++) {
+                    let child = children[x];
+                    if(child.style.display != "none") {
+                        allHidden = false;
+                    }
+                }
+                if(allHidden === true) {parentTaskContainer.classList.add("displayNone")}
+            })
+        })
 
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
         imageInfo.style.visibility = (livePreview ? 'hidden' : 'visible')
@@ -288,7 +308,6 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             imageSeedLabel.innerText = 'Seed: ' + req.seed
 
             let buttons = [
-                { text: 'Remove', on_click: onRemoveClick, class: 'secondaryButton' },
                 { text: 'Use as Input', on_click: onUseAsInputClick },
                 { text: 'Download', on_click: onDownloadImageClick },
                 { text: 'Make Similar Images', on_click: onMakeSimilarClick },
@@ -323,10 +342,6 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             })
         }
     })
-}
-
-function onRemoveClick(req, img, event) {
-    shiftOrConfirm(event, "Remove the image from the results?", () => { findClosestAncestor(img, '.imgItem').style.display='none' })
 }
 
 function onUseAsInputClick(req, img) {
@@ -412,7 +427,7 @@ function onUpscaleClick(req, img) {
 
 function onFixFacesClick(req, img) {
     enqueueImageVariationTask(req, img, {
-        use_face_correction: 'GFPGANv1.3'
+        use_face_correction: gfpganModelField.value
     })
 }
 
@@ -658,7 +673,7 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
         task.progressBar.classList.remove("active")
         setStatus('request', 'done', 'success')
     } else {
-        task.outputMsg.innerText += `Task ended after ${time}`
+        task.outputMsg.innerText += `. Task ended after ${time}`
     }
 
     if (randomSeedField.checked) {
@@ -673,6 +688,9 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
         return
     }
 
+    if (pauseClient) { 
+        resumeBtn.click() 
+    }
     renderButtons.style.display = 'none'
     renameMakeImageButton()
 
@@ -702,12 +720,18 @@ async function onTaskStart(task) {
     if (task.batchCount > 1) {
         // Each output render batch needs it's own task reqBody instance to avoid altering the other runs after they are completed.
         newTaskReqBody = Object.assign({}, task.reqBody)
+        if (task.batchesDone == task.batchCount-1) { 
+            // Last batch of the task
+            // If the number of parallel jobs is no factor of the total number of images, the last batch must create less than "parallel jobs count" images
+            // E.g. with numOutputsTotal = 6 and num_outputs = 5, the last batch shall only generate 1 image.
+            newTaskReqBody.num_outputs = task.numOutputsTotal - task.reqBody.num_outputs * (task.batchCount-1)
+        }
     }
 
     const startSeed = task.seed || newTaskReqBody.seed
     const genSeeds = Boolean(typeof newTaskReqBody.seed !== 'number' || (newTaskReqBody.seed === task.seed && task.numOutputsTotal > 1))
     if (genSeeds) {
-        newTaskReqBody.seed = parseInt(startSeed) + (task.batchesDone * newTaskReqBody.num_outputs)
+        newTaskReqBody.seed = parseInt(startSeed) + (task.batchesDone * task.reqBody.num_outputs)
     }
 
     // Update the seed *before* starting the processing so it's retained if user stops the task
@@ -770,7 +794,10 @@ function createInitImageHover(taskEntry) {
     img.src = taskEntry.querySelector('div.task-initimg > img').src
     $tooltip.append(img)
     $tooltip.append(`<div class="top-right"><button>Use as Input</button></div>`)
-    $tooltip.find('button').on('click', (e) => { onUseAsInputClick(null,img) } )
+    $tooltip.find('button').on('click', (e) => {
+        e.stopPropagation()
+        onUseAsInputClick(null,img) 
+    })
 }
 
 let startX, startY;
@@ -902,7 +929,7 @@ function createTask(task) {
     })
 
     task.isProcessing = true
-    taskEntry = imagePreview.insertBefore(taskEntry, previewTools.nextSibling)
+    taskEntry = imagePreviewContent.insertBefore(taskEntry, previewTools.nextSibling)
     htmlTaskMap.set(taskEntry, task)
 
     task.previewPrompt.innerText = task.reqBody.prompt
@@ -925,6 +952,7 @@ function getCurrentUserRequest() {
 
         reqBody: {
             seed,
+            used_random_seed: randomSeedField.checked,
             negative_prompt: negativePromptField.value.trim(),
             num_outputs: numOutputsParallel,
             num_inference_steps: parseInt(numInferenceStepsField.value),
@@ -934,14 +962,14 @@ function getCurrentUserRequest() {
             // allow_nsfw: allowNSFWField.checked,
             vram_usage_level: vramUsageLevelField.value,
             //render_device: undefined, // Set device affinity. Prefer this device, but wont activate.
-            use_stable_diffusion_model: stableDiffusionModelField.value,
+            use_stable_diffusion_ll: stableDiffusionModelField.value,
             use_vae_model: vaeModelField.value,
             stream_progress_updates: true,
             stream_image_progress: (numOutputsTotal > 50 ? false : streamImageProgressField.checked),
             show_only_filtered_image: showOnlyFilteredImageField.checked,
             output_format: outputFormatField.value,
             output_quality: parseInt(outputQualityField.value),
-            metadata_output_format: document.querySelector('#metadata_output_format').value,
+            metadata_output_format: metadataOutputFormatField.value,
             original_prompt: promptField.value,
             active_tags: (activeTags.map(x => x.name)),
             inactive_tags: (activeTags.filter(tag => tag.inactive === true).map(x => x.name))
@@ -966,7 +994,7 @@ function getCurrentUserRequest() {
         newTask.reqBody.save_to_disk_path = diskPathField.value.trim()
     }
     if (useFaceCorrectionField.checked) {
-        newTask.reqBody.use_face_correction = 'GFPGANv1.3'
+        newTask.reqBody.use_face_correction = gfpganModelField.value
     }
     if (useUpscalingField.checked) {
         newTask.reqBody.use_upscale = upscaleModelField.value
@@ -1010,6 +1038,8 @@ function getPrompts(prompts) {
 
     promptsToMake = applyPermuteOperator(promptsToMake)
     promptsToMake = applySetOperator(promptsToMake)
+
+    PLUGINS['GET_PROMPTS_HOOK'].forEach(fn => { promptsToMake = fn(promptsToMake) })
 
     return promptsToMake
 }
@@ -1138,7 +1168,7 @@ widthField.addEventListener('change', onDimensionChange)
 heightField.addEventListener('change', onDimensionChange)
 
 function renameMakeImageButton() {
-    let totalImages = Math.max(parseInt(numOutputsTotalField.value), parseInt(numOutputsParallelField.value))
+    let totalImages = Math.max(parseInt(numOutputsTotalField.value), parseInt(numOutputsParallelField.value)) * getPrompts().length
     let imageLabel = 'Image'
     if (totalImages > 1) {
         imageLabel = totalImages + ' Images'
@@ -1164,6 +1194,12 @@ function onDimensionChange() {
 }
 
 diskPathField.disabled = !saveToDiskField.checked
+metadataOutputFormatField.disabled = !saveToDiskField.checked
+
+gfpganModelField.disabled = !useFaceCorrectionField.checked
+useFaceCorrectionField.addEventListener('change', function(e) {
+    gfpganModelField.disabled = !this.checked
+})
 
 upscaleModelField.disabled = !useUpscalingField.checked
 upscaleAmountField.disabled = !useUpscalingField.checked
@@ -1380,7 +1416,7 @@ function selectTab(tab_id) {
     let tabInfo = tabElements.find(t => t.tab.id == tab_id)
     if (!tabInfo.tab.classList.contains("active")) {
         tabElements.forEach(info => {
-            if (info.tab.classList.contains("active")) {
+            if (info.tab.classList.contains("active") && info.tab.parentNode === tabInfo.tab.parentNode) {
                 info.tab.classList.toggle("active")
                 info.content.classList.toggle("active")
             }
@@ -1401,6 +1437,9 @@ function linkTabContents(tab) {
 
     tab.addEventListener("click", event => selectTab(tab.id))
 }
+function isTabActive(tab) {
+    return tab.classList.contains("active")
+}
 
 let pauseClient = false
 
@@ -1417,6 +1456,9 @@ function resumeClient() {
         resumeBtn.addEventListener("click", playbuttonclick)
     })
 }
+
+promptField.addEventListener("input", debounce( renameMakeImageButton, 1000) )
+
 
 pauseBtn.addEventListener("click", function () {
     pauseClient = true

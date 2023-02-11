@@ -4,7 +4,7 @@
 ### Major Changes
 - **Nearly twice as fast** - significantly faster speed of image generation. We're now pretty close to automatic1111's speed. Code contributions are welcome to make our project even faster: https://github.com/easydiffusion/sdkit/#is-it-fast
 - **Full support for Stable Diffusion 2.1 (including CPU)** - supports loading v1.4 or v2.0 or v2.1 models seamlessly. No need to enable "Test SD2", and no need to add `sd2_` to your SD 2.0 model file names. Works on CPU as well.
-- **Memory optimized Stable Diffusion 2.1** - you can now use 768x768 models for SD 2.1, with the same low VRAM optimizations that we've always had for SD 1.4. Please note, 4 GB graphics cards can still only support images upto 512x512 resolution.
+- **Memory optimized Stable Diffusion 2.1** - you can now use Stable Diffusion 2.1 models, with the same low VRAM optimizations that we've always had for SD 1.4. Please note, the SD 2.0 and 2.1 models require more GPU and System RAM, as compared to the SD 1.4 and 1.5 models.
 - **6 new samplers!** - explore the new samplers, some of which can generate great images in less than 10 inference steps!
 - **Model Merging** - You can now merge two models (`.ckpt` or `.safetensors`) and output `.ckpt` or `.safetensors` models, optionally in `fp16` precision. Details: https://github.com/cmdr2/stable-diffusion-ui/wiki/Model-Merging
 - **Fast loading/unloading of VAEs** - No longer needs to reload the entire Stable Diffusion model, each time you change the VAE
@@ -19,9 +19,27 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
-* 2.5.6 - 10 Jan 2022 - `Fill` tool for the Image Editor, to allow filling areas with color (or the entire image). And some bug fixes to the Image Editor. Thanks @mdiller.
-* 2.5.6 - 10 Jan 2022 - Find Stable Diffusion models in sub-folders inside `models/stable-diffusion`. This allows you to organize your models into sub-folders, instead of keeping them all in a single folder. Thanks @JeLuf.
-* 2.5.5 - 9 Jan 2022 - Lots of bug fixes. Thanks @patriceac and @JeLuf.
+* 2.5.16 - 10 Feb 2023 - Embed metadata into the JPG/PNG images, if selected in the "Settings" tab (under "Metadata format"). Thanks @patriceac.
+* 2.5.16 - 10 Feb 2023 - Sort models alphabetically in the models dropdown. Thanks @ogmaresca.
+* 2.5.16 - 10 Feb 2023 - Support multiple GFPGAN models. Download new GFPGAN models into the `models/gfpgan` folder, and refresh the UI to use it. Thanks @JeLuf.
+* 2.5.16 - 10 Feb 2023 - Allow a server to disable auto-saving images from the Settings tab. This can be set in the `config.json` file as `force_save_path: False`. Thanks @JeLuf.
+* 2.5.16 - 10 Feb 2023 - The "Make Images" button now shows the correct amount of images it'll create when using operators like `{}` or `|`. For e.g. if the prompt is `Photo of a {woman, man}`, then the button will say `Make 2 Images`. Thanks @JeLuf.
+* 2.5.16 - 10 Feb 2023 - A bunch of UI-related bug fixes. Thanks @patriceac.
+* 2.5.15 - 8 Feb 2023 - Allow using 'balanced' VRAM usage mode on GPUs with 4 GB or less of VRAM. This mode used to be called 'Turbo' in the previous version.
+* 2.5.14 - 8 Feb 2023 - Fix broken auto-save settings. We renamed `sampler` to `sampler_name`, which caused old settings to fail.
+* 2.5.14 - 6 Feb 2023 - Simplify the UI for merging models, and some other minor UI tweaks. Better error reporting if a model failed to load.
+* 2.5.14 - 3 Feb 2023 - Fix the 'Make Similar Images' button, which was producing incorrect images (weren't very similar).
+* 2.5.13 - 1 Feb 2023 - Fix the remaining GPU memory leaks, including a better fix (more comprehensive) for the change in 2.5.12 (27 Jan).
+* 2.5.12 - 27 Jan 2023 - Fix a memory leak, which made the UI unresponsive after an out-of-memory error. The allocated memory is now freed-up after an error.
+* 2.5.11 - 25 Jan 2023 - UI for Merging Models. Thanks @JeLuf. More info: https://github.com/cmdr2/stable-diffusion-ui/wiki/Model-Merging
+* 2.5.10 - 24 Jan 2023 - Reduce the VRAM usage for img2img in 'balanced' mode (without reducing the rendering speed), to make it similar to v2.4 of this UI.
+* 2.5.9 - 23 Jan 2023 - Fix a bug where img2img would produce poorer-quality images for the same settings, as compared to version 2.4 of this UI.
+* 2.5.9 - 23 Jan 2023 - Reduce the VRAM usage for 'balanced' mode (without reducing the rendering speed), to make it similar to v2.4 of the UI.
+* 2.5.8 - 17 Jan 2023 - Fix a bug where 'Low' VRAM usage would consume a LOT of VRAM (on higher-end GPUs). Also fixed a bug that caused out-of-memory errors on SD 2.1-768 models, on 'high' VRAM usage setting.
+* 2.5.7 - 16 Jan 2023 - Fix a bug where VAE files ending with .vae.pt weren't getting displayed. Thanks Madrang, rbertus2000 and JeLuf.
+* 2.5.6 - 10 Jan 2023 - `Fill` tool for the Image Editor, to allow filling areas with color (or the entire image). And some bug fixes to the Image Editor. Thanks @mdiller.
+* 2.5.6 - 10 Jan 2023 - Find Stable Diffusion models in sub-folders inside `models/stable-diffusion`. This allows you to organize your models into sub-folders, instead of keeping them all in a single folder. Thanks @JeLuf.
+* 2.5.5 - 9 Jan 2023 - Lots of bug fixes. Thanks @patriceac and @JeLuf.
 * 2.5.4 - 29 Dec 2022 - Press Esc key on the keyboard to close the Image Editor. Thanks @patriceac.
 * 2.5.4 - 29 Dec 2022 - Lots of bug fixes in the UI. Thanks @patriceac.
 * 2.5.4 - 28 Dec 2022 - Full support for running tasks in parallel on multiple GPUs. Warning: 'Euler Ancestral', 'DPM2 Ancestral' and 'DPM++ 2s Ancestral' may produce slight variations in the image (if run in parallel), so we recommend using the other samplers.

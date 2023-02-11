@@ -7,7 +7,7 @@ from easydiffusion.types import TaskData, GenerateImageRequest
 
 from sdkit.utils import save_images, save_dicts
 
-filename_regex = re.compile('[^a-zA-Z0-9]')
+filename_regex = re.compile('[^a-zA-Z0-9._-]')
 
 # keep in sync with `ui/media/js/dnd.js`
 TASK_TEXT_MAPPING = {
@@ -24,6 +24,7 @@ TASK_TEXT_MAPPING = {
     'sampler_name': 'Sampler',
     'negative_prompt': 'Negative Prompt',
     'use_stable_diffusion_model': 'Stable Diffusion model',
+    'use_vae_model': 'VAE model',
     'use_hypernetwork_model': 'Hypernetwork model',
     'hypernetwork_strength': 'Hypernetwork Strength'
 }
@@ -36,13 +37,15 @@ def save_images_to_disk(images: list, filtered_images: list, req: GenerateImageR
 
     if task_data.show_only_filtered_image or filtered_images is images:
         save_images(filtered_images, save_dir_path, file_name=make_filename, output_format=task_data.output_format, output_quality=task_data.output_quality)
-        save_dicts(metadata_entries, save_dir_path, file_name=make_filename, output_format=task_data.metadata_output_format)
+        if task_data.metadata_output_format.lower() in ['json', 'txt', 'embed']:
+            save_dicts(metadata_entries, save_dir_path, file_name=make_filename, output_format=task_data.metadata_output_format, file_format=task_data.output_format)
     else:
         make_filter_filename = make_filename_callback(req, now=now, suffix='filtered')
 
         save_images(images, save_dir_path, file_name=make_filename, output_format=task_data.output_format, output_quality=task_data.output_quality)
         save_images(filtered_images, save_dir_path, file_name=make_filter_filename, output_format=task_data.output_format, output_quality=task_data.output_quality)
-        save_dicts(metadata_entries, save_dir_path, file_name=make_filter_filename, output_format=task_data.metadata_output_format)
+        if task_data.metadata_output_format.lower() in ['json', 'txt', 'embed']:
+            save_dicts(metadata_entries, save_dir_path, file_name=make_filter_filename, output_format=task_data.metadata_output_format, file_format=task_data.output_format)
 
 def get_metadata_entries_for_request(req: GenerateImageRequest, task_data: TaskData):
     metadata = get_printable_request(req)
@@ -55,6 +58,8 @@ def get_metadata_entries_for_request(req: GenerateImageRequest, task_data: TaskD
     })
     if metadata['use_upscale'] is not None:
         metadata['upscale_amount'] = task_data.upscale_amount
+    if (task_data.use_hypernetwork_model is None):
+        del metadata['hypernetwork_strength']
 
     # if text, format it in the text format expected by the UI
     is_txt_format = (task_data.metadata_output_format.lower() == 'txt')
@@ -71,6 +76,8 @@ def get_printable_request(req: GenerateImageRequest):
     metadata = req.dict()
     del metadata['init_image']
     del metadata['init_image_mask']
+    if (req.init_image is None):
+        del metadata['prompt_strength']
     return metadata
 
 def make_filename_callback(req: GenerateImageRequest, suffix=None, now=None):

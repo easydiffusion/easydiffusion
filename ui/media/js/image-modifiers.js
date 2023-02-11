@@ -16,7 +16,7 @@ const modifierThumbnailPath = 'media/modifier-thumbnails'
 const activeCardClass = 'modifier-card-active'
 const CUSTOM_MODIFIERS_KEY = "customModifiers"
 
-function createModifierCard(name, previews) {
+function createModifierCard(name, previews, removeBy) {
     const modifierCard = document.createElement('div')
     modifierCard.className = 'modifier-card'
     modifierCard.innerHTML = `
@@ -44,10 +44,11 @@ function createModifierCard(name, previews) {
     }
 
     const maxLabelLength = 30
-    const nameWithoutBy = name.replace('by ', '')
+    const cardLabel = removeBy ? name.replace('by ', '') : name
 
-    if(nameWithoutBy.length <= maxLabelLength) {
-        label.querySelector('p').innerText = nameWithoutBy
+    if(cardLabel.length <= maxLabelLength) {
+        label.querySelector('p').innerText = cardLabel
+        label.querySelector('p').dataset.fullName = name // preserve the full name
     } else {
         const tooltipText = document.createElement('span')
         tooltipText.className = 'tooltip-text'
@@ -56,13 +57,13 @@ function createModifierCard(name, previews) {
         label.classList.add('tooltip')
         label.appendChild(tooltipText)
 
-        label.querySelector('p').innerText = nameWithoutBy.substring(0, maxLabelLength) + '...'
+        label.querySelector('p').innerText = cardLabel.substring(0, maxLabelLength) + '...'
     }
 
     return modifierCard
 }
 
-function createModifierGroup(modifierGroup, initiallyExpanded) {
+function createModifierGroup(modifierGroup, initiallyExpanded, removeBy) {
     const title = modifierGroup.category
     const modifiers = modifierGroup.modifiers
 
@@ -81,7 +82,7 @@ function createModifierGroup(modifierGroup, initiallyExpanded) {
         const modifierName = modObj.modifier
         const modifierPreviews = modObj?.previews?.map(preview => `${modifierThumbnailPath}/${preview.path}`)
 
-        const modifierCard = createModifierCard(modifierName, modifierPreviews)
+        const modifierCard = createModifierCard(modifierName, modifierPreviews, removeBy)
 
         if(typeof modifierCard == 'object') {
             modifiersEl.appendChild(modifierCard)
@@ -137,7 +138,7 @@ async function loadModifiers() {
             res.reverse()
 
             res.forEach((modifierGroup, idx) => {
-                createModifierGroup(modifierGroup, idx === res.length - 1)
+                createModifierGroup(modifierGroup, idx === res.length - 1, modifierGroup === 'Artist' ? true : false) // only remove "By " for artists
             })
 
             createCollapsibles(editorModifierEntries)
@@ -181,7 +182,7 @@ function refreshModifiersState(newTags) {
             }
         })
         if (found == false) { // custom tag went missing, create one here
-            let modifierCard = createModifierCard(tag, undefined) // create a modifier card for the missing tag, no image
+            let modifierCard = createModifierCard(tag, undefined, false) // create a modifier card for the missing tag, no image
             
             modifierCard.addEventListener('click', () => {
                 if (activeTags.map(x => x.name).includes(tag)) {

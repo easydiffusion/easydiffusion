@@ -13,7 +13,7 @@ from starlette.responses import FileResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
 from easydiffusion import app, model_manager, task_manager
-from easydiffusion.types import TaskData, GenerateImageRequest
+from easydiffusion.types import TaskData, GenerateImageRequest, MergeRequest
 from easydiffusion.utils import log
 
 log.info(f'started in {app.SD_DIR}')
@@ -60,6 +60,11 @@ def init():
     @server_api.post('/render')
     def render(req: dict):
         return render_internal(req)
+
+    @server_api.post('/model/merge')
+    def model_merge(req: dict):
+        print(req)
+        return model_merge_internal(req)
 
     @server_api.get('/image/stream/{task_id:int}')
     def stream(task_id:int):
@@ -127,10 +132,14 @@ def read_web_data_internal(key:str=None):
         return JSONResponse(app.getConfig(), headers=NOCACHE_HEADERS)
     elif key == 'system_info':
         config = app.getConfig()
+
+        output_dir = config.get('force_save_path', os.path.join(os.path.expanduser("~"), app.OUTPUT_DIRNAME))
+
         system_info = {
             'devices': task_manager.get_devices(),
             'hosts': app.getIPConfig(),
-            'default_output_dir': os.path.join(os.path.expanduser("~"), app.OUTPUT_DIRNAME),
+            'default_output_dir': output_dir,
+            'enforce_output_dir': ('force_save_path' in config),
         }
         system_info['devices']['config'] = config.get('render_devices', "auto")
         return JSONResponse(system_info, headers=NOCACHE_HEADERS)
@@ -160,6 +169,11 @@ def render_internal(req: dict):
         render_req: GenerateImageRequest = GenerateImageRequest.parse_obj(req)
         task_data: TaskData = TaskData.parse_obj(req)
 
+        # Overwrite user specified save path
+        config = app.getConfig()
+        if 'force_save_path' in config:
+            task_data.save_to_disk_path = config['force_save_path']
+
         render_req.init_image_mask = req.get('mask') # hack: will rename this in the HTTP API in a future revision
 
         app.save_to_config(task_data.use_stable_diffusion_model, task_data.use_vae_model, task_data.use_hypernetwork_model, task_data.vram_usage_level)
@@ -177,6 +191,23 @@ def render_internal(req: dict):
         raise HTTPException(status_code=500, detail=f'Rendering thread has died.') # HTTP500 Internal Server Error
     except ConnectionRefusedError as e: # Unstarted task pending limit reached, deny queueing too many.
         raise HTTPException(status_code=503, detail=str(e)) # HTTP503 Service Unavailable
+    except Exception as e:
+        log.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
+
+def model_merge_internal(req: dict):
+    try:
+        from sdkit.train import merge_models
+        from easydiffusion.utils.save_utils import filename_regex
+        mergeReq: MergeRequest = MergeRequest.parse_obj(req)
+        
+        merge_models(model_manager.resolve_model_to_use(mergeReq.model0,'stable-diffusion'), 
+           model_manager.resolve_model_to_use(mergeReq.model1,'stable-diffusion'), 
+           mergeReq.ratio, 
+           os.path.join(app.MODELS_DIR, 'stable-diffusion', filename_regex.sub('_', mergeReq.out_path)), 
+           mergeReq.use_fp16
+        )
+        return JSONResponse({'status':'OK'}, headers=NOCACHE_HEADERS)
     except Exception as e:
         log.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))

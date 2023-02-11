@@ -6,6 +6,7 @@
     <meta name="theme-color" content="#673AB6">
     <link rel="icon" type="image/png" href="/media/images/favicon-16x16.png" sizes="16x16">
     <link rel="icon" type="image/png" href="/media/images/favicon-32x32.png" sizes="32x32">
+    <link rel="stylesheet" href="/media/css/jquery-confirm.min.css">
     <link rel="stylesheet" href="/media/css/fonts.css">
     <link rel="stylesheet" href="/media/css/themes.css">
     <link rel="stylesheet" href="/media/css/main.css">
@@ -14,7 +15,6 @@
     <link rel="stylesheet" href="/media/css/fontawesome-all.min.css">
     <link rel="stylesheet" href="/media/css/image-editor.css">
     <link rel="stylesheet" href="/media/css/searchable-models.css">
-    <link rel="stylesheet" href="/media/css/jquery-confirm.min.css">
     <link rel="manifest" href="/media/manifest.webmanifest">
     <script src="/media/js/jquery-3.6.1.min.js"></script>
     <script src="/media/js/jquery-confirm.min.js"></script>
@@ -26,14 +26,14 @@
         <div id="logo">
             <h1>
                 Easy Diffusion
-                <small>v2.5.6 <span id="updateBranchLabel"></span></small>
+                <small>v2.5.16 <span id="updateBranchLabel"></span></small>
             </h1>
         </div>
         <div id="server-status">
             <div id="server-status-color">●</div>
             <span id="server-status-msg">Stable Diffusion is starting..</span>
         </div>
-        <div id="tab-container">
+        <div id="tab-container" class="tab-container">
             <span id="tab-main" class="tab active">
                 <span><i class="fa fa-image icon"></i> Generate</span>
             </span>
@@ -228,7 +228,7 @@
                     <div><ul>
                     <li><b class="settings-subheader">Render Settings</b></li>
                     <li class="pl-5"><input id="stream_image_progress" name="stream_image_progress" type="checkbox"> <label for="stream_image_progress">Show a live preview <small>(uses more VRAM, slower images)</small></label></li>
-                    <li class="pl-5"><input id="use_face_correction" name="use_face_correction" type="checkbox"> <label for="use_face_correction">Fix incorrect faces and eyes <small>(uses GFPGAN)</small></label></li>
+                    <li class="pl-5"><input id="use_face_correction" name="use_face_correction" type="checkbox"> <label for="use_face_correction">Fix incorrect faces and eyes <small><select id="gfpgan_model" name="gfpgan_model"></select></small></label></li>
                     <li class="pl-5">
                         <input id="use_upscale" name="use_upscale" type="checkbox"> <label for="use_upscale">Scale up by</label> 
                         <select id="upscale_amount" name="upscale_amount">
@@ -277,8 +277,10 @@
                 and selecting the desired modifiers.<br/><br/>
                 Click "Image Settings" for additional settings like seed, image size, number of images to generate etc.<br/><br/>Enjoy! :)
             </div>
-            <div id="preview-tools">
-                <button id="clear-all-previews" class="secondaryButton"><i class="fa-solid fa-trash-can"></i> Clear All</button>
+            <div id="preview-content">
+                <div id="preview-tools">
+                    <button id="clear-all-previews" class="secondaryButton"><i class="fa-solid fa-trash-can"></i> Clear All</button>
+                </div>
             </div>
         </div>
         </div>
