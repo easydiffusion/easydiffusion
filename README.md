@@ -66,7 +66,6 @@ The installer will take care of whatever is needed. If you face any problems, yo
 - **Prompt Matrix**: Quickly create multiple variations of your prompt, e.g. `a photograph of an astronaut riding a horse | illustration | cinematic lighting`.
 - **1-click Upscale/Face Correction**: Upscale or correct an image after it has been generated.
 - **Make Similar Images**: Click to generate multiple variations of a generated image.
-- **NSFW Setting**: A setting in the UI to control *NSFW content*.
 - **JPEG/PNG output**: Multiple file formats.
 
 ### Advanced features
