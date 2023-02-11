@@ -24,11 +24,6 @@ DEFAULT_MODELS = {
     'gfpgan': ['GFPGANv1.3'],
     'realesrgan': ['RealESRGAN_x4plus'],
 }
-VRAM_USAGE_LEVEL_TO_OPTIMIZATIONS = {
-    'balanced': {'KEEP_FS_AND_CS_IN_CPU', 'SET_ATTENTION_STEP_TO_4'},
-    'low': {'KEEP_ENTIRE_MODEL_IN_CPU'},
-    'high': {},
-}
 MODELS_TO_LOAD_ON_START = ['stable-diffusion', 'vae', 'hypernetwork']
 
 known_models = {}
@@ -48,7 +43,7 @@ def load_default_models(context: Context):
         except Exception as e:
            log.error(f'[red]Error while loading {model_type} model: {context.model_paths[model_type]}[/red]')
            log.error(f'[red]Error: {e}[/red]')
-           log.error(f'[red]Consider to remove the model from the model folder.[red]')
+           log.error(f'[red]Consider removing the model from the model folder.[red]')
 
 
 def unload_all(context: Context):
@@ -123,20 +118,10 @@ def resolve_model_paths(task_data: TaskData):
 
 def set_vram_optimizations(context: Context):
     config = app.getConfig()
-
-    max_usage_level = device_manager.get_max_vram_usage_level(context.device)
     vram_usage_level = config.get('vram_usage_level', 'balanced')
 
-    v = {'low': 0, 'balanced': 1, 'high': 2}
-    if v[vram_usage_level] > v[max_usage_level]:
-        log.error(f'Requested GPU Memory Usage level ({vram_usage_level}) is higher than what is ' + \
-                  f'possible ({max_usage_level}) on this device ({context.device}). Using "{max_usage_level}" instead')
-        vram_usage_level = max_usage_level
-
-    vram_optimizations = VRAM_USAGE_LEVEL_TO_OPTIMIZATIONS[vram_usage_level]
-
-    if vram_optimizations != context.vram_optimizations:
-        context.vram_optimizations = vram_optimizations
+    if vram_usage_level != context.vram_usage_level:
+        context.vram_usage_level = vram_usage_level
         return True
 
     return False
@@ -186,11 +171,15 @@ def getModels():
         "Raised when picklescan reports a problem with a model"
         pass
 
-    def scan_directory(directory, suffixes):
+    def scan_directory(directory, suffixes, directoriesFirst:bool=True):
         nonlocal models_scanned
         tree = []
-        for entry in os.scandir(directory):
-            if entry.is_file() and True in [entry.name.endswith(s) for s in suffixes]:
+        for entry in sorted(os.scandir(directory), key = lambda entry: (entry.is_file() == directoriesFirst, entry.name.lower())):
+            if entry.is_file():
+                matching_suffix = list(filter(lambda s: entry.name.endswith(s), suffixes))
+                if len(matching_suffix) == 0: continue
+                matching_suffix = matching_suffix[0]
+
                 mtime = entry.stat().st_mtime
                 mod_time = known_models[entry.path] if entry.path in known_models else -1
                 if mod_time != mtime:
@@ -198,9 +187,10 @@ def getModels():
                     if is_malicious_model(entry.path):
                         raise MaliciousModelException(entry.path)
                 known_models[entry.path] = mtime
-                tree.append(entry.name.rsplit('.',1)[0])
+                tree.append(entry.name[:-len(matching_suffix)])
             elif entry.is_dir():
-                scan=scan_directory(entry.path, suffixes) 
+                scan=scan_directory(entry.path, suffixes, directoriesFirst=False)
+
                 if len(scan) != 0:
                     tree.append( (entry.name, scan ) )
         return tree
@@ -222,6 +212,7 @@ def getModels():
     listModels(model_type='stable-diffusion')
     listModels(model_type='vae')
     listModels(model_type='hypernetwork')
+    listModels(model_type='gfpgan')
 
     if models_scanned > 0: log.info(f'[green]Scanned {models_scanned} models. Nothing infected[/]')
 

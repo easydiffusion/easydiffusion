@@ -2,6 +2,24 @@
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
+if [ -f "on_sd_start.bat" ]; then
+    echo ================================================================================
+    echo
+    echo !!!! WARNING !!!!
+    echo
+    echo It looks like you\'re trying to run the installation script from a source code
+    echo download. This will not work.
+    echo
+    echo Recommended: Please close this window and download the installer from
+    echo https://stable-diffusion-ui.github.io/docs/installation/
+    echo
+    echo ================================================================================
+    echo
+    read
+    exit 1
+fi
+
+
 # set legacy installer's PATH, if it exists
 if [ -e "installer" ]; then export PATH="$(pwd)/installer/bin:$PATH"; fi
 
