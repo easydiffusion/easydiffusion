@@ -39,7 +39,7 @@
 .model-list li.model-folder {
     color: var(--text-color);
     list-style: none;
-    padding: 6px 6px 0px 6px;
+    padding: 6px 6px 6px 6px;
     font-size: 9pt;
     font-weight: bold;
 }

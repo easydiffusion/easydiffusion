@@ -168,7 +168,8 @@ class ModelDropdown
         }
         else
         {
-            this.highlightedModelEntry.parentElement.parentElement.scrollIntoView({block: 'nearest'})
+            //this.highlightedModelEntry.parentElement.parentElement.scrollIntoView({block: 'nearest'})
+            this.highlightedModelEntry.closest('.model-list').scrollTop = 0
         }
         this.modelFilter.select()
     }
@@ -440,19 +441,26 @@ class ModelDropdown
     }
     
     sortModels(models) {
+        // sort the models in alphabetical order, root folder models last
+        models.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+
+        /*
+        // sort the models in alphabetical order, root folder models first
+        models = models.sort()
         let found
         do {
             found = false
             for (let i = 0; i < models.length - 1; i++) {
                 if (
-                    (this.getFolder(models[i]) == this.getFolder(models[i+1]) && models[i].toLowerCase() > models[i+1].toLowerCase()) // same folder, sort by alphabetical order
-                    || (this.getFolder(models[i]).toLowerCase() > this.getFolder(models[i+1]).toLowerCase()) // L1 folder > L2 folder
+                    (this.getFolder(models[i]) === this.getFolder(models[i+1]) && models[i].toLowerCase().localeCompare(models[i+1].toLowerCase()) > 0) // same folder, sort by alphabetical order
+                    || (this.getFolder(models[i]).toLowerCase().localeCompare(this.getFolder(models[i+1]).toLowerCase()) > 0) // L1 folder > L2 folder
                 ) {
-                    [models[i], models[i+1]] = [models[i+1], models[i]];
+                    [models[i], models[i+1]] = [models[i+1], models[i]]
                     found = true
                 }
             }
         } while (found)
+        */
     }
 
     populateModels() {
