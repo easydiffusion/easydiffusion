@@ -79,7 +79,7 @@ imagePreview.addEventListener('drop', function(ev) {
     }
     ev.preventDefault()
     let moveTarget = ev.target
-    while (moveTarget && typeof moveTarget === 'object' && moveTarget.parentNode !== imagePreview) {
+    while (moveTarget && typeof moveTarget === 'object' && moveTarget.parentNode !== imagePreviewContent) {
         moveTarget = moveTarget.parentNode
     }
     if (moveTarget === initialText || moveTarget === previewTools) {
@@ -89,17 +89,17 @@ imagePreview.addEventListener('drop', function(ev) {
         return
     }
     if (moveTarget) {
-        const childs = Array.from(imagePreview.children)
+        const childs = Array.from(imagePreviewContent.children)
         if (moveTarget.nextSibling && childs.indexOf(movedTask) < childs.indexOf(moveTarget)) {
             // Move after the target if lower than current position.
             moveTarget = moveTarget.nextSibling
         }
     }
-    const newNode = imagePreview.insertBefore(movedTask, moveTarget || previewTools.nextSibling)
+    const newNode = imagePreviewContent.insertBefore(movedTask, moveTarget || previewTools.nextSibling)
     if (newNode === movedTask) {
         return
     }
-    imagePreview.removeChild(movedTask)
+    imagePreviewContent.removeChild(movedTask)
     const task = htmlTaskMap.get(movedTask)
     if (task) {
         htmlTaskMap.delete(movedTask)
