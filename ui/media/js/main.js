@@ -962,7 +962,7 @@ function getCurrentUserRequest() {
             // allow_nsfw: allowNSFWField.checked,
             vram_usage_level: vramUsageLevelField.value,
             //render_device: undefined, // Set device affinity. Prefer this device, but wont activate.
-            use_stable_diffusion_ll: stableDiffusionModelField.value,
+            use_stable_diffusion_model: stableDiffusionModelField.value,
             use_vae_model: vaeModelField.value,
             stream_progress_updates: true,
             stream_image_progress: (numOutputsTotal > 50 ? false : streamImageProgressField.checked),
