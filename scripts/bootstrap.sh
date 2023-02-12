@@ -58,7 +58,7 @@ if [ "$PACKAGES_TO_INSTALL" != "" ]; then
         echo "Downloading micromamba from $MICROMAMBA_DOWNLOAD_URL to $MAMBA_ROOT_PREFIX/micromamba"
 
         mkdir -p "$MAMBA_ROOT_PREFIX"
-        curl -L "$MICROMAMBA_DOWNLOAD_URL" | tar -xvj bin/micromamba -O > "$MAMBA_ROOT_PREFIX/micromamba"
+        curl -L "$MICROMAMBA_DOWNLOAD_URL" | tar -xvj -O bin/micromamba > "$MAMBA_ROOT_PREFIX/micromamba"
 
         if [ "$?" != "0" ]; then
             echo
