@@ -37,9 +37,9 @@ let gfpganModelField = document.querySelector("#gfpgan_model")
 let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
 let upscaleAmountField = document.querySelector("#upscale_amount")
-let stableDiffusionModelField = document.querySelector('#stable_diffusion_model')
-let vaeModelField = document.querySelector('#vae_model')
-let hypernetworkModelField = document.querySelector('#hypernetwork_model')
+let stableDiffusionModelField = new ModelDropdown(document.querySelector('#stable_diffusion_model'), 'stable-diffusion')
+let vaeModelField = new ModelDropdown(document.querySelector('#vae_model'), 'vae', 'None')
+let hypernetworkModelField = new ModelDropdown(document.querySelector('#hypernetwork_model'), 'hypernetwork', 'None')
 let hypernetworkStrengthSlider = document.querySelector('#hypernetwork_strength_slider')
 let hypernetworkStrengthField = document.querySelector('#hypernetwork_strength')
 let outputFormatField = document.querySelector('#output_format')
@@ -962,7 +962,7 @@ function getCurrentUserRequest() {
             // allow_nsfw: allowNSFWField.checked,
             vram_usage_level: vramUsageLevelField.value,
             //render_device: undefined, // Set device affinity. Prefer this device, but wont activate.
-            use_stable_diffusion_model: stableDiffusionModelField.value,
+            use_stable_diffusion_ll: stableDiffusionModelField.value,
             use_vae_model: vaeModelField.value,
             stream_progress_updates: true,
             stream_image_progress: (numOutputsTotal > 50 ? false : streamImageProgressField.checked),
@@ -1314,79 +1314,6 @@ outputFormatField.addEventListener('change', e => {
         outputQualityRow.style.display='none'
     }
 })
-
-async function getModels() {
-    try {
-        const sd_model_setting_key = "stable_diffusion_model"
-        const vae_model_setting_key = "vae_model"
-        const hypernetwork_model_key = "hypernetwork_model"
-        const gfpgan_model_key = "gfpgan_model"
-        const selectedSDModel = SETTINGS[sd_model_setting_key].value
-        const selectedVaeModel = SETTINGS[vae_model_setting_key].value
-        const selectedHypernetworkModel = SETTINGS[hypernetwork_model_key].value
-        const selectedGfpganModel = SETTINGS[gfpgan_model_key].value
-
-        const models = await SD.getModels()
-        const modelsOptions = models['options']
-        if ("scan-error" in models) {
-            // let previewPane = document.getElementById('tab-content-wrapper')
-            let previewPane = document.getElementById('preview')
-            previewPane.style.background="red"
-            previewPane.style.textAlign="center"
-            previewPane.innerHTML = '<H1>🔥Malware alert!🔥</H1><h2>The file <i>' + models['scan-error'] + '</i> in your <tt>models/stable-diffusion</tt> folder is probably malware infected.</h2><h2>Please delete this file from the folder before proceeding!</h2>After deleting the file, reload this page.<br><br><button onClick="window.location.reload();">Reload Page</button>'
-            makeImageBtn.disabled = true
-        }
-
-        const stableDiffusionOptions = modelsOptions['stable-diffusion']
-        const vaeOptions = modelsOptions['vae']
-        const hypernetworkOptions = modelsOptions['hypernetwork']
-        const gfpganOptions = modelsOptions['gfpgan']
-
-        vaeOptions.unshift('') // add a None option
-        hypernetworkOptions.unshift('') // add a None option
-
-        function createModelOptions(modelField, selectedModel, path="") {
-            return function fn(modelName) {
-                if (typeof(modelName) == 'string') {
-                    const modelOption = document.createElement('option')
-                    modelOption.value =  path + modelName
-                    modelOption.innerHTML = modelName !== '' ? (path != "" ? "&nbsp;&nbsp;"+modelName : modelName) : 'None'
-
-                    if (path + modelName === selectedModel) {
-                        modelOption.selected = true
-                    }
-                    modelField.appendChild(modelOption)
-                } else {
-                    // Since <optgroup/>s can't be nested, don't show empty groups
-                    if (modelName[1].some(child => typeof(child) == 'string')) {
-                        const modelGroup = document.createElement('optgroup')
-                        modelGroup.label = path + modelName[0]
-                        modelField.appendChild(modelGroup)
-                    }
-                    modelName[1].forEach( createModelOptions(modelField, selectedModel, path + modelName[0] + "/" ) )
-                }
-            }
-        }
-
-        stableDiffusionOptions.forEach(createModelOptions(stableDiffusionModelField, selectedSDModel))
-        vaeOptions.forEach(createModelOptions(vaeModelField, selectedVaeModel))
-        hypernetworkOptions.forEach(createModelOptions(hypernetworkModelField, selectedHypernetworkModel))
-        gfpganOptions.forEach(createModelOptions(gfpganModelField,selectedGfpganModel))
-
-
-        stableDiffusionModelField.dispatchEvent(new Event('change'))
-        vaeModelField.dispatchEvent(new Event('change'))
-        hypernetworkModelField.dispatchEvent(new Event('change'))
-
-        // TODO: set default for model here too
-        SETTINGS[sd_model_setting_key].default = stableDiffusionOptions[0]
-        if (getSetting(sd_model_setting_key) == '' || SETTINGS[sd_model_setting_key].value == '') {
-            setSetting(sd_model_setting_key, stableDiffusionOptions[0])
-        }
-    } catch (e) {
-        console.log('get models error', e)
-    }
-}
 
 function checkRandomSeed() {
     if (randomSeedField.checked) {

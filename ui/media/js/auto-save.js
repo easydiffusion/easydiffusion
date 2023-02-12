@@ -93,6 +93,9 @@ async function initSettings() {
 }
 
 function getSetting(element) {
+    if (element.dataset && 'path' in element.dataset) {
+        return element.dataset.path
+    }
     if (typeof element === "string" || element instanceof String) {
         element = SETTINGS[element].element
     }
@@ -102,6 +105,10 @@ function getSetting(element) {
     return element.value
 }
 function setSetting(element, value) {
+    if (element.dataset && 'path' in element.dataset) {
+        element.dataset.path = value
+        return // no need to dispatch any event here because the models are not loaded yet
+    }
     if (typeof element === "string" || element instanceof String) {
         element = SETTINGS[element].element
     }
