@@ -160,6 +160,7 @@
 	padding: var(--popup-padding);
 	min-height: calc(100vh - (2 * var(--popup-margin)));
 	max-width: none;
+	min-width: fit-content;
 }
 
 .image-editor-popup h1 {
