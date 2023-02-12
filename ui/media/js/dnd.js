@@ -528,7 +528,7 @@ function dragOverHandler(ev) {
     ev.dataTransfer.dropEffect = "copy"
 
     let img = new Image()
-    img.src = location.host + '/media/images/favicon-32x32.png'
+    img.src = '//' + location.host + '/media/images/favicon-32x32.png'
     ev.dataTransfer.setDragImage(img, 16, 16)
 }
 
