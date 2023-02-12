@@ -333,19 +333,13 @@
     const tabSettingsBatch = document.querySelector('#tab-merge-opts-batch')
     linkTabContents(tabSettingsSingle)
     linkTabContents(tabSettingsBatch)
-    let mergeModelAField = new ModelDropdown(document.querySelector('#mergeModelA'), 'stable-diffusion')
-    let mergeModelBField = new ModelDropdown(document.querySelector('#mergeModelB'), 'stable-diffusion')
 
     /////////////////////// Event Listener
     document.addEventListener('tabClick', (e) => { 
         if (e.detail.name == 'merge') {
 	    console.log('Activate')
-            // let modelList = stableDiffusionModelField.cloneNode(true)
-            // modelList.id = "mergeModelA"
-            // document.querySelector("#mergeModelA").replaceWith(modelList)
-            // modelList = stableDiffusionModelField.cloneNode(true)
-            // modelList.id = "mergeModelB"
-            // document.querySelector("#mergeModelB").replaceWith(modelList)
+            let mergeModelAField = new ModelDropdown(document.querySelector('#mergeModelA'), 'stable-diffusion')
+            let mergeModelBField = new ModelDropdown(document.querySelector('#mergeModelB'), 'stable-diffusion')
             updateChart()
 	}
     })
