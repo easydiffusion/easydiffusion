@@ -241,9 +241,9 @@
     <div class="merge-container panel-box">
       <div class="merge-input">
          <p><label for="#mergeModelA">Select Model A:</label></p>
-         <input id="mergeModelA" type="text" spellcheck="false" class="model-filter" data-path="" />
+         <input id="mergeModelA" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
          <p><label for="#mergeModelB">Select Model B:</label></p>
-         <input id="mergeModelB" type="text" spellcheck="false" class="model-filter" data-path="" />
+         <input id="mergeModelB" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
          <br/><br/>
          <p id="merge-warning"><small><b>Important:</b> Please merge models of similar type.<br/>For e.g. <code>SD 1.4</code> models with only <code>SD 1.4/1.5</code> models,<br/><code>SD 2.0</code> with <code>SD 2.0</code>-type, and <code>SD 2.1</code> with <code>SD 2.1</code>-type models.</small></p>
          <br/>
