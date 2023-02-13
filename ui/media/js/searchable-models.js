@@ -85,6 +85,14 @@ class ModelDropdown
             this.inputModels = modelsOptions[this.modelKey]
             this.populateModels()
         }, this))
+        document.addEventListener("collapsibleClick", this.bind(function(e) {
+            // update the input size when the element becomes visible
+            this.updateInputSize()
+        }, this))
+        document.addEventListener("tabClick", this.bind(function(e) {
+            // update the input size when the tab changes
+            this.updateInputSize()
+        }, this))
     }
 
     saveCurrentSelection(elem, value, path) {
@@ -455,6 +463,47 @@ class ModelDropdown
     }
 
     /* MODEL LOADER */
+    getElementDimensions(element) {
+        // Clone the element
+        const clone = element.cloneNode(true)
+        
+        // Copy the styles of the original element to the cloned element
+        const originalStyles = window.getComputedStyle(element)
+        for (let i = 0; i < originalStyles.length; i++) {
+            const property = originalStyles[i]
+            clone.style[property] = originalStyles.getPropertyValue(property)
+        }
+        
+        // Set its visibility to hidden and display to inline-block
+        clone.style.visibility = "hidden"
+        clone.style.display = "inline-block"
+        
+        // Put the cloned element next to the original element
+        element.parentNode.insertBefore(clone, element.nextSibling)
+        
+        // Get its width and height
+        const width = clone.offsetWidth
+        const height = clone.offsetHeight
+        
+        // Remove it from the DOM
+        clone.remove()
+        
+        // Return its width and height
+        return { width, height }
+    }
+    
+    updateInputSize() {
+        if (this.modelList !== undefined) {
+            const dimensions = this.getElementDimensions(this.modelList)
+            this.modelFilter.style.width = dimensions.width + 'px'
+            this.modelList.style.width = dimensions.width + 'px'
+            this.modelFilterArrow.style.height = dimensions.height + 'px'
+            if (this.modelFilter.offsetLeft > 0) {
+                this.modelList.style.left = this.modelFilter.offsetLeft + 'px'
+            }
+        }
+    }
+    
     flattenModelList(models, path) {
         models.forEach(entry => {
             if (Array.isArray(entry)) {
@@ -521,10 +570,7 @@ class ModelDropdown
         this.modelList = document.querySelector(`#${this.modelFilter.id}-model-list`)
         this.modelResult = document.querySelector(`#${this.modelFilter.id}-model-result`)
         this.modelNoResult = document.querySelector(`#${this.modelFilter.id}-model-no-result`)
-        this.modelList.style.display = 'block'
-        this.modelFilter.style.width = this.modelList.offsetWidth + 'px'
-        this.modelFilterArrow.style.height = this.modelFilter.offsetHeight + 'px'
-        this.modelList.style.display = 'none'
+        this.updateInputSize()
         
         if (this.modelFilterInitialized !== true) {
             this.modelFilter.addEventListener('input', this.bind(this.filterList, this))
