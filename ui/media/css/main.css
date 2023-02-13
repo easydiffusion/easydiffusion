@@ -751,6 +751,14 @@ input::file-selector-button {
     opacity: 1;
 }
 
+.model-filter {
+	width: calc(100% - 40px);
+    padding-right: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* Small screens */
 @media screen and (max-width: 1265px) {
     #top-nav {
