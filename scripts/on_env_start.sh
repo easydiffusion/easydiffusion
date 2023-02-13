@@ -40,6 +40,6 @@ cp sd-ui-files/scripts/bootstrap.sh scripts/
 cp sd-ui-files/scripts/check_modules.py scripts/
 cp sd-ui-files/scripts/start.sh .
 cp sd-ui-files/scripts/developer_console.sh .
-cp sd-ui-files/scripts/functions.sh .
+cp sd-ui-files/scripts/functions.sh scripts/
 
 exec ./scripts/on_sd_start.sh
