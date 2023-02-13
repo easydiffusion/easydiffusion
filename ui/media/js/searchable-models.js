@@ -85,14 +85,6 @@ class ModelDropdown
             this.inputModels = modelsOptions[this.modelKey]
             this.populateModels()
         }, this))
-        document.addEventListener("collapsibleClick", this.bind(function(e) {
-            // update the input size when the element becomes visible
-            this.updateInputSize()
-        }, this))
-        document.addEventListener("tabClick", this.bind(function(e) {
-            // update the input size when the tab changes
-            this.updateInputSize()
-        }, this))
     }
 
     saveCurrentSelection(elem, value, path) {
@@ -492,18 +484,6 @@ class ModelDropdown
         return { width, height }
     }
     
-    updateInputSize() {
-        if (this.modelList !== undefined) {
-            const dimensions = this.getElementDimensions(this.modelList)
-            this.modelFilter.style.width = dimensions.width + 'px'
-            this.modelList.style.width = dimensions.width + 'px'
-            this.modelFilterArrow.style.height = dimensions.height + 'px'
-            if (this.modelFilter.offsetLeft > 0) {
-                this.modelList.style.left = this.modelFilter.offsetLeft + 'px'
-            }
-        }
-    }
-    
     flattenModelList(models, path) {
         models.forEach(entry => {
             if (Array.isArray(entry)) {
@@ -570,7 +550,6 @@ class ModelDropdown
         this.modelList = document.querySelector(`#${this.modelFilter.id}-model-list`)
         this.modelResult = document.querySelector(`#${this.modelFilter.id}-model-result`)
         this.modelNoResult = document.querySelector(`#${this.modelFilter.id}-model-no-result`)
-        this.updateInputSize()
         
         if (this.modelFilterInitialized !== true) {
             this.modelFilter.addEventListener('input', this.bind(this.filterList, this))
