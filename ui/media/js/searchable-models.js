@@ -12,7 +12,7 @@ Merely calling getModels() makes all the magic happen behind the scene to refres
 
 HOW TO CREATE A MODEL DROPDOWN:
 1) Create an input element. Make sure to add a data-path property, as this is how model dropdowns are identified in auto-save.js.
-<input id="stable_diffusion_model" type="text" spellcheck="false" class="model-filter" data-path="" />
+<input id="stable_diffusion_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
 
 2) Just declare one of these for your own dropdown (remember to change the element id, e.g. #stable_diffusion_models to your own input's id).
 let stableDiffusionModelField = new ModelDropdown(document.querySelector('#stable_diffusion_model'), 'stable-diffusion')
@@ -37,6 +37,7 @@ class ModelDropdown
     modelKey //= undefined
     flatModelList //= []
     noneEntry //= ''
+    modelFilterInitialized //= undefined
 
     /* MIMIC A REGULAR INPUT FIELD */
     get parentElement() {
@@ -105,9 +106,24 @@ class ModelDropdown
         }
     }
 
+    getPreviousVisibleSibling(elem) {
+        let prevSibling = elem.previousElementSibling
+        while (prevSibling && prevSibling.classList.contains('model-file')) {
+            if (prevSibling.style.display == 'list-item') return prevSibling
+            prevSibling = prevSibling.previousElementSibling
+        }
+        if (prevSibling && prevSibling.style.display == 'list-item') return prevSibling
+    }
+
+    getLastVisibleChild(elem) {
+        let lastElementChild = elem.lastElementChild
+        if (lastElementChild.style.display == 'list-item') return lastElementChild
+        return this.getPreviousVisibleSibling(lastElementChild)
+    }
+    
     findPreviousSibling(elem) {
         // is there an immediate sibling?
-        let prevSibling = elem.previousElementSibling
+        let prevSibling = this.getPreviousVisibleSibling(elem)
         if (prevSibling) {
             // if the previous sibling is a model file, just select it
             if (prevSibling.classList.contains('model-file')) return prevSibling
@@ -117,19 +133,34 @@ class ModelDropdown
         }
 
         // no sibling model file and no sibling model folder. look for siblings around the parent element.
-        prevSibling = elem.parentElement.parentElement.previousElementSibling
+        prevSibling = this.getPreviousVisibleSibling(elem.parentElement.parentElement)
         if (prevSibling) {
             // if the previous entry is a model file, select it
             if (prevSibling.classList.contains('model-file')) return prevSibling
 
             // is there another model folder to jump to before the current one?
-            if (prevSibling.classList.contains('model-folder')) return prevSibling.firstElementChild.lastElementChild
+            if (prevSibling.classList.contains('model-folder')) return this.getLastVisibleChild(prevSibling.firstElementChild)
         }
+    }
+    
+    getNextVisibleSibling(elem) {
+        let nextSibling = elem.nextElementSibling
+        while (nextSibling && nextSibling.classList.contains('model-file')) {
+            if (nextSibling.style.display == 'list-item') return nextSibling
+            nextSibling = nextSibling.nextElementSibling
+        }
+        if (nextSibling && nextSibling.style.display == 'list-item') return nextSibling
+    }
+    
+    getFirstVisibleChild(elem) {
+        let firstElementChild = elem.firstElementChild
+        if (firstElementChild.style.display == 'list-item') return firstElementChild
+        return this.getNextVisibleSibling(firstElementChild)
     }
     
     findNextSibling(elem) {
         // is there an immediate sibling?
-        let nextSibling = elem.nextElementSibling
+        let nextSibling = this.getNextVisibleSibling(elem)
         if (nextSibling) {
             // if the next sibling is a model file, just select it
             if (nextSibling.classList.contains('model-file')) return nextSibling
@@ -139,13 +170,13 @@ class ModelDropdown
         }
 
         // no sibling model file and no sibling model folder. look for siblings around the parent element.
-        nextSibling = elem.parentElement.parentElement.nextElementSibling
+        nextSibling = this.getNextVisibleSibling(elem.parentElement.parentElement)
         if (nextSibling) {
             // if the next entry is a model file, select it
             if (nextSibling.classList.contains('model-file')) return nextSibling
 
             // is there another model folder to jump to after the current one?
-            if (nextSibling.classList.contains('model-folder')) return nextSibling.firstElementChild.firstElementChild
+            if (nextSibling.classList.contains('model-folder')) return this.getFirstVisibleChild(nextSibling.firstElementChild)
         }
     }
     
@@ -219,6 +250,7 @@ class ModelDropdown
                     {
                         this.saveCurrentSelection(this.highlightedModelEntry, this.highlightedModelEntry.innerText, this.highlightedModelEntry.dataset.path)
                         this.hideModelList()
+                        this.showAllEntries()
                     }
                     this.modelFilter.focus()
                 }
@@ -493,12 +525,16 @@ class ModelDropdown
         this.modelFilter.style.width = this.modelList.offsetWidth + 'px'
         this.modelFilterArrow.style.height = this.modelFilter.offsetHeight + 'px'
         this.modelList.style.display = 'none'
-    
-        this.modelFilter.addEventListener('input', this.bind(this.filterList, this))
-        this.modelFilter.addEventListener('focus', this.bind(this.modelListFocus, this))
-        this.modelFilter.addEventListener('blur', this.bind(this.hideModelList, this))
-        this.modelFilter.addEventListener('click', this.bind(this.showModelList, this))
-        this.modelFilter.addEventListener('keydown', this.bind(this.processKey, this))
+        
+        if (this.modelFilterInitialized !== true) {
+            this.modelFilter.addEventListener('input', this.bind(this.filterList, this))
+            this.modelFilter.addEventListener('focus', this.bind(this.modelListFocus, this))
+            this.modelFilter.addEventListener('blur', this.bind(this.hideModelList, this))
+            this.modelFilter.addEventListener('click', this.bind(this.showModelList, this))
+            this.modelFilter.addEventListener('keydown', this.bind(this.processKey, this))
+
+            this.modelFilterInitialized = true
+        }
         this.modelFilterArrow.addEventListener('mousedown', this.bind(this.toggleModelList, this))
         this.modelList.addEventListener('mousemove', this.bind(this.highlightModelAtPosition, this))
         this.modelList.addEventListener('mousedown', this.bind(this.processClick, this))
