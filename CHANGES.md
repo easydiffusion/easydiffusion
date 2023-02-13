@@ -22,7 +22,7 @@ Our focus continues to remain on an easy installation experience, and an easy us
 * 2.5.16 - 10 Feb 2023 - Embed metadata into the JPG/PNG images, if selected in the "Settings" tab (under "Metadata format"). Thanks @patriceac.
 * 2.5.16 - 10 Feb 2023 - Sort models alphabetically in the models dropdown. Thanks @ogmaresca.
 * 2.5.16 - 10 Feb 2023 - Support multiple GFPGAN models. Download new GFPGAN models into the `models/gfpgan` folder, and refresh the UI to use it. Thanks @JeLuf.
-* 2.5.16 - 10 Feb 2023 - Allow a server to enforce a fixed directory path to save images. This is useful if the server is exposed to a lot of users. This can be set in the `config.json` file as `enforce_output_dir: "/path/to/fixed/save/dir"`. E.g. `enforce_output_dir: "D:/user_images"`. Thanks @JeLuf.
+* 2.5.16 - 10 Feb 2023 - Allow a server to enforce a fixed directory path to save images. This is useful if the server is exposed to a lot of users. This can be set in the `config.json` file as `force_save_path: "/path/to/fixed/save/dir"`. E.g. `force_save_path: "D:/user_images"`. Thanks @JeLuf.
 * 2.5.16 - 10 Feb 2023 - The "Make Images" button now shows the correct amount of images it'll create when using operators like `{}` or `|`. For e.g. if the prompt is `Photo of a {woman, man}`, then the button will say `Make 2 Images`. Thanks @JeLuf.
 * 2.5.16 - 10 Feb 2023 - A bunch of UI-related bug fixes. Thanks @patriceac.
 * 2.5.15 - 8 Feb 2023 - Allow using 'balanced' VRAM usage mode on GPUs with 4 GB or less of VRAM. This mode used to be called 'Turbo' in the previous version.
