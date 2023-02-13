@@ -127,7 +127,7 @@
                     <tr class="pl-5"><td><label for="seed">Seed:</label></td><td><input id="seed" name="seed" size="10" value="0" onkeypress="preventNonNumericalInput(event)"> <input id="random_seed" name="random_seed" type="checkbox" checked><label for="random_seed">Random</label></td></tr>
                     <tr class="pl-5"><td><label for="num_outputs_total">Number of Images:</label></td><td><input id="num_outputs_total" name="num_outputs_total" value="1" size="1" onkeypress="preventNonNumericalInput(event)"> <label><small>(total)</small></label> <input id="num_outputs_parallel" name="num_outputs_parallel" value="1" size="1" onkeypress="preventNonNumericalInput(event)"> <label for="num_outputs_parallel"><small>(in parallel)</small></label></td></tr>
                     <tr class="pl-5"><td><label for="stable_diffusion_model">Model:</label></td><td class="model-input">
-                        <input id="stable_diffusion_model" type="text" spellcheck="false" class="model-filter" data-path="" />
+                        <input id="stable_diffusion_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
                         <button id="reload-models" class="secondaryButton reloadModels"><i class='fa-solid fa-rotate'></i></button>
                         <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Custom-Models" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about custom models</span></i></a>
                     </td></tr>
@@ -136,7 +136,7 @@
                         </select>
                     </td></tr> -->
                     <tr class="pl-5"><td><label for="vae_model">Custom VAE:</i></label></td><td>
-                        <input id="vae_model" type="text" spellcheck="false" class="model-filter" data-path="" />
+                        <input id="vae_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
                         <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/VAE-Variational-Auto-Encoder" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about VAEs</span></i></a>
                     </td></tr>
                     <tr id="samplerSelection" class="pl-5"><td><label for="sampler_name">Sampler:</label></td><td>
@@ -208,7 +208,7 @@
                     <tr class="pl-5"><td><label for="guidance_scale_slider">Guidance Scale:</label></td><td> <input id="guidance_scale_slider" name="guidance_scale_slider" class="editor-slider" value="75" type="range" min="11" max="500"> <input id="guidance_scale" name="guidance_scale" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"></td></tr>
                     <tr id="prompt_strength_container" class="pl-5"><td><label for="prompt_strength_slider">Prompt Strength:</label></td><td> <input id="prompt_strength_slider" name="prompt_strength_slider" class="editor-slider" value="80" type="range" min="0" max="99"> <input id="prompt_strength" name="prompt_strength" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"><br/></td></tr>
                     <tr class="pl-5"><td><label for="hypernetwork_model">Hypernetwork:</i></label></td><td>
-                        <input id="hypernetwork_model" type="text" spellcheck="false" class="model-filter" data-path="" />
+                        <input id="hypernetwork_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
                     </td></tr>
                     <tr id="hypernetwork_strength_container" class="pl-5">
                         <td><label for="hypernetwork_strength_slider">Hypernetwork Strength:</label></td>
