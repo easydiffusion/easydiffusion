@@ -1,10 +1,11 @@
 #!/bin/bash
 
-source ./scripts/functions.sh
-
+cp sd-ui-files/scripts/functions.sh scripts/
 cp sd-ui-files/scripts/on_env_start.sh scripts/
 cp sd-ui-files/scripts/bootstrap.sh scripts/
 cp sd-ui-files/scripts/check_modules.py scripts/
+
+source ./scripts/functions.sh
 
 # activate the installer env
 CONDA_BASEPATH=$(conda info --base)
@@ -118,9 +119,9 @@ else
 fi
 
 if python ../scripts/check_modules.py uvicorn fastapi ; then
-    echo "Packages necessary for Stable Diffusion UI were already installed"
+    echo "Packages necessary for Easy Diffusion were already installed"
 else
-    printf "\n\nDownloading packages necessary for Stable Diffusion UI..\n\n"
+    printf "\n\nDownloading packages necessary for Easy Diffusion..\n\n"
 
     export PYTHONNOUSERSITE=1
     export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
@@ -280,7 +281,7 @@ if [ `grep -c sd_install_complete ../scripts/install_status.txt` -gt "0" ]; then
     echo sd_install_complete >> ../scripts/install_status.txt
 fi
 
-printf "\n\nStable Diffusion is ready!\n\n"
+printf "\n\nEasy Diffusion installation complete, starting the server!\n\n"
 
 SD_PATH=`pwd`
 
