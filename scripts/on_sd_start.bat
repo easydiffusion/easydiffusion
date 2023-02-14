@@ -26,7 +26,7 @@ if exist "%cd%\stable-diffusion\env" (
 @rem activate the installer env
 call conda activate
 @if "%ERRORLEVEL%" NEQ "0" (
-       @echo. & echo "Error activating conda for Stable Diffusion. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
+       @echo. & echo "Error activating conda for Easy Diffusion. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
        pause
        exit /b
 )
@@ -139,15 +139,15 @@ set PATH=C:\Windows\System32;%PATH%
 
 call python ..\scripts\check_modules.py uvicorn fastapi
 @if "%ERRORLEVEL%" EQU "0" (
-    echo "Packages necessary for Stable Diffusion UI were already installed"
+    echo "Packages necessary for Easy Diffusion were already installed"
 ) else (
-    @echo. & echo "Downloading packages necessary for Stable Diffusion UI.." & echo.
+    @echo. & echo "Downloading packages necessary for Easy Diffusion..." & echo.
 
     set PYTHONNOUSERSITE=1
     set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 
     @call conda install -c conda-forge -y uvicorn fastapi || (
-        echo "Error installing the packages necessary for Stable Diffusion UI. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
+        echo "Error installing the packages necessary for Easy Diffusion. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
         pause
         exit /b
     )
@@ -328,7 +328,7 @@ call WHERE uvicorn > .tmp
     @echo sd_install_complete >> ..\scripts\install_status.txt
 )
 
-@echo. & echo "Stable Diffusion is ready!" & echo.
+@echo. & echo "Easy Diffusion installation complete! Starting the server!" & echo.
 
 @set SD_DIR=%cd%
 
