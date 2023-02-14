@@ -61,6 +61,7 @@ let promptStrengthContainer = document.querySelector('#prompt_strength_container
 let initialText = document.querySelector("#initial-text")
 let previewTools = document.querySelector("#preview-tools")
 let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
+let saveAllImagesBtn = document.querySelector("#save-all-images")
 
 let maskSetting = document.querySelector('#enable_mask')
 
@@ -1159,6 +1160,21 @@ clearAllPreviewsBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Clear 
     let taskEntries = document.querySelectorAll('.imageTaskContainer')
     taskEntries.forEach(removeTask)
 })})
+
+saveAllImagesBtn.addEventListener('click', (e) => {
+    document.querySelectorAll(".imageTaskContainer").forEach(container => {
+        let req = htmlTaskMap.get(container)
+        container.querySelectorAll(".imgContainer img").forEach(img => {
+            if (img.closest('.imgItem').style.display === 'none') {
+                // console.log('skipping hidden image', img)
+                return
+            }
+
+            onDownloadImageClick(req, img)
+            // console.log(req)
+        })
+    })
+})
 
 stopImageBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Stop all the tasks?", async function(e) {
     await stopAllTasks()
