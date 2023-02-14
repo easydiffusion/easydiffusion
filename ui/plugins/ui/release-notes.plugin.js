@@ -9,7 +9,7 @@
         }
     }
 
-    document.querySelector('#tab-container')?.insertAdjacentHTML('beforeend', `
+    document.querySelector('.tab-container')?.insertAdjacentHTML('beforeend', `
         <span id="tab-news" class="tab">
             <span><i class="fa fa-bolt icon"></i> What's new?</span>
         </span>
