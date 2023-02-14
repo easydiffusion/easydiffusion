@@ -1,3 +1,11 @@
+.model-filter {
+	width: calc(100% - 40px);
+    padding-right: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .model-list {
     position: absolute;
     margin-block-start: 2px;
