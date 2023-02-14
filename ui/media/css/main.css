@@ -133,7 +133,13 @@ code {
     opacity: 1;
 }
 .imgItemInfo * {
-    margin-bottom: 7px;
+    margin-bottom: 4px;
+}
+.tasksBtns {
+    display: none;
+}
+.imgItemInfo:hover > button {
+    display: inline-block;
 }
 .imgItem .image_clear_btn {
     transform: translate(40%, -50%);
