@@ -53,6 +53,12 @@ class ModelDropdown
         this.modelFilter.dataset.path = path
         this.selectEntry(path)
     }
+    get disabled() {
+        return this.modelFilter.disabled
+    }
+    set disabled(state) {
+        this.modelFilter.disabled = state
+    }    
     addEventListener(type, listener, options) {
         return this.modelFilter.addEventListener(type, listener, options)
     }
@@ -350,13 +356,15 @@ class ModelDropdown
     
     toggleModelList(e) {
         e.preventDefault()
-        if (this.modelList.style.display != 'block') {
-            this.showModelList()
-        }
-        else
-        {
-            this.hideModelList()
-            this.modelFilter.select()
+        if (!this.modelFilter.disabled) {
+            if (this.modelList.style.display != 'block') {
+                this.showModelList()
+            }
+            else
+            {
+                this.hideModelList()
+                this.modelFilter.select()
+            }
         }
     }
     
