@@ -334,15 +334,10 @@
     linkTabContents(tabSettingsSingle)
     linkTabContents(tabSettingsBatch)
 
-    /////////////////////// Event Listener
-    document.addEventListener('tabClick', (e) => { 
-        if (e.detail.name == 'merge') {
-	    console.log('Activate')
-            let mergeModelAField = new ModelDropdown(document.querySelector('#mergeModelA'), 'stable-diffusion')
-            let mergeModelBField = new ModelDropdown(document.querySelector('#mergeModelB'), 'stable-diffusion')
-            updateChart()
-	}
-    })
+    console.log('Activate')
+    let mergeModelAField = new ModelDropdown(document.querySelector('#mergeModelA'), 'stable-diffusion')
+    let mergeModelBField = new ModelDropdown(document.querySelector('#mergeModelB'), 'stable-diffusion')
+    updateChart()
 
     // slider
     const singleMergeRatioField = document.querySelector('#single-merge-ratio')
