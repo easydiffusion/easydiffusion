@@ -41,7 +41,7 @@ class TaskData(BaseModel):
     output_format: str = "jpeg"  # or "png"
     output_quality: int = 75
     metadata_output_format: str = "txt"  # or "json"
-    stream_image_progress: bool = False
+    stream_image_progress: Any = 0
 
 
 class MergeRequest(BaseModel):
