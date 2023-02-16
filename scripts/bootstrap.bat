@@ -1,4 +1,5 @@
 @echo off
+setlocal enabledelayedexpansion
 
 @rem This script will install git and conda (if not found on the PATH variable)
 @rem  using micromamba (an 8mb static-linked single-file binary, conda replacement).
@@ -28,10 +29,10 @@ if not exist "%LEGACY_INSTALL_ENV_DIR%\etc\profile.d\conda.sh" (
 )
 
 call git --version >.tmp1 2>.tmp2
-if "%ERRORLEVEL%" NEQ "0" set PACKAGES_TO_INSTALL=%PACKAGES_TO_INSTALL% git
+if "!ERRORLEVEL!" NEQ "0" set PACKAGES_TO_INSTALL=%PACKAGES_TO_INSTALL% git
 
 call "%MAMBA_ROOT_PREFIX%\micromamba.exe" --version >.tmp1 2>.tmp2
-if "%ERRORLEVEL%" EQU "0" set umamba_exists=T
+if "!ERRORLEVEL!" EQU "0" set umamba_exists=T
 
 @rem (if necessary) install git and conda into a contained environment
 if "%PACKAGES_TO_INSTALL%" NEQ "" (
@@ -42,7 +43,7 @@ if "%PACKAGES_TO_INSTALL%" NEQ "" (
         mkdir "%MAMBA_ROOT_PREFIX%"
         call curl -Lk "%MICROMAMBA_DOWNLOAD_URL%" > "%MAMBA_ROOT_PREFIX%\micromamba.exe"
 
-        if "%ERRORLEVEL%" NEQ "0" (
+        if "!ERRORLEVEL!" NEQ "0" (
             echo "There was a problem downloading micromamba. Cannot continue."
             pause
             exit /b
