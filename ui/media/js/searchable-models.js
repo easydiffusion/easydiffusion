@@ -58,6 +58,10 @@ class ModelDropdown
     }
     set disabled(state) {
         this.modelFilter.disabled = state
+        if (this.modelFilterArrow) {
+            this.modelFilterArrow.style.color = state ? 'dimgray' : ''
+        }
+
     }    
     addEventListener(type, listener, options) {
         return this.modelFilter.addEventListener(type, listener, options)
@@ -555,6 +559,9 @@ class ModelDropdown
         this.modelFilter.insertAdjacentHTML('afterend', this.parseModels(this.flatModelList))
         this.modelFilter.classList.add('model-selector')
         this.modelFilterArrow = document.querySelector(`#${this.modelFilter.id}-model-filter-arrow`)
+        if (this.modelFilterArrow) {
+            this.modelFilterArrow.style.color = state ? 'dimgray' : ''
+        }
         this.modelList = document.querySelector(`#${this.modelFilter.id}-model-list`)
         this.modelResult = document.querySelector(`#${this.modelFilter.id}-model-result`)
         this.modelNoResult = document.querySelector(`#${this.modelFilter.id}-model-no-result`)
