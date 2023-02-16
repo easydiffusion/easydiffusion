@@ -75,6 +75,7 @@
     padding-top: 3px;
     cursor: pointer;
     font-size: 8pt;
+    transition: none;
 }
 
 .model-input {
