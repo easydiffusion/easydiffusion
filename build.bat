@@ -15,6 +15,7 @@ mkdir dist\win\stable-diffusion-ui\scripts
 
 copy scripts\on_env_start.bat dist\win\stable-diffusion-ui\scripts\
 copy scripts\bootstrap.bat dist\win\stable-diffusion-ui\scripts\
+copy scripts\config.yaml.sample dist\win\stable-diffusion-ui\scripts\config.yaml
 copy "scripts\Start Stable Diffusion UI.cmd" dist\win\stable-diffusion-ui\
 copy LICENSE dist\win\stable-diffusion-ui\
 copy "CreativeML Open RAIL-M License" dist\win\stable-diffusion-ui\

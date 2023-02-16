@@ -5,6 +5,9 @@ import json
 import traceback
 import logging
 import shlex
+from ruamel.yaml import YAML
+yaml = YAML()
+
 from rich.logging import RichHandler
 
 from sdkit.utils import log as sdkit_log # hack, so we can overwrite the log config
@@ -54,33 +57,50 @@ def init():
     update_render_threads()
 
 def getConfig(default_val=APP_CONFIG_DEFAULTS):
-    try:
-        config_json_path = os.path.join(CONFIG_DIR, 'config.json')
-        if not os.path.exists(config_json_path):
-            config = default_val
-        else:
-            with open(config_json_path, 'r', encoding='utf-8') as f:
-                config = json.load(f)
-        if 'net' not in config:
-            config['net'] = {}
-        if os.getenv('SD_UI_BIND_PORT') is not None:
-            config['net']['listen_port'] = int(os.getenv('SD_UI_BIND_PORT'))
-        else:
-            config['net']['listen_port'] = 9000
-        if os.getenv('SD_UI_BIND_IP') is not None:
-            config['net']['listen_to_network'] = (os.getenv('SD_UI_BIND_IP') == '0.0.0.0')
-        else:
-            config['net']['listen_to_network'] = True
-        return config
-    except Exception as e:
-        log.warn(traceback.format_exc())
-        return default_val
+    config_yaml_path = os.path.join(CONFIG_DIR, 'config.yaml')
+    if os.path.isfile(config_yaml_path):
+        try:
+            log.info('Loading config.yaml')
+            with open(config_yaml_path, 'r', encoding='utf-8') as f:
+                config = yaml.load(f)
+            if 'net' not in config:
+                config['net'] = {}
+                if os.getenv('SD_UI_BIND_PORT') is not None:
+                    config['net']['listen_port'] = int(os.getenv('SD_UI_BIND_PORT'))
+                else:
+                    config['net']['listen_port'] = 9000
+                if os.getenv('SD_UI_BIND_IP') is not None:
+                    config['net']['listen_to_network'] = (os.getenv('SD_UI_BIND_IP') == '0.0.0.0')
+                else:
+                    config['net']['listen_to_network'] = True
+            return config
+        except Exception as e:
+            log.warn(traceback.format_exc())
+            return default_val
+    else:
+        try:
+            config_json_path = os.path.join(CONFIG_DIR, 'config.json')
+            if not os.path.exists(config_json_path):
+                return default_val
+            else:
+                log.info('Converting old json config file to yaml')
+                with open(config_json_path, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                # Save config in new format
+                setConfig(config)
+                os.rename(config_json_path, config_json_path + '.bak')
+                log.info('Saved old config.json as config.json.bak')
+                return getConfig(default_val)
+        except Exception as e:
+            log.warn(traceback.format_exc())
+            return default_val
 
 def setConfig(config):
-    try: # config.json
-        config_json_path = os.path.join(CONFIG_DIR, 'config.json')
-        with open(config_json_path, 'w', encoding='utf-8') as f:
-            json.dump(config, f)
+    try: # config.yaml
+        config_yaml_path = os.path.join(CONFIG_DIR, 'config.yaml')
+        yaml.indent(mapping=2, sequence=4, offset=2)
+        with open(config_yaml_path, 'w', encoding='utf-8') as f:
+            yaml.dump(config, f)
     except:
         log.error(traceback.format_exc())
 
