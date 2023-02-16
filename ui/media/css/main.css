@@ -98,6 +98,27 @@ code {
     background-color: var(--background-color2);
     border-radius: 3px;
     padding: 5px;
+    display: flex;
+    position: relative;
+}
+.imgSeedLabel:after {
+    content: "";
+    margin-left: 3px;
+    width: 8px;
+    height: 2px;
+    border-top: 1px solid var(--button-text-color);
+    border-bottom: 1px solid var(--button-text-color);
+    margin-top: 3px;
+}
+.imgSeedLabel::before {
+    content: '';
+    width: 8px;
+    height: 1px;
+    border-bottom: 1px solid var(--button-text-color);
+    position: absolute;
+    right: 5px;
+    bottom: 9px;
+
 }
 .imgItem {
     display: inline-block;
