@@ -61,7 +61,6 @@ class ModelDropdown
         if (this.modelFilterArrow) {
             this.modelFilterArrow.style.color = state ? 'dimgray' : ''
         }
-
     }    
     addEventListener(type, listener, options) {
         return this.modelFilter.addEventListener(type, listener, options)
