@@ -19,6 +19,12 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.17 - 16 Feb 2023 - Experimental parser for prompts. Supports greater control over the weights assigned to prompt tokens. The experimental parser will be used only if the prompt starts with an exclamation mark, e.g. `!photo of an astronaut`. Thanks @madrang.
+* 2.5.16 - 13 Feb 2023 - Searchable dropdown for models. This is useful if you have a LOT of models. You can type part of the model name, to auto-search through your models. Thanks @patriceac for the feature, and @AssassinJN for help in UI tweaks!
+* 2.5.16 - 13 Feb 2023 - Lots of fixes and improvements to the installer. First round of changes to add Mac support. Thanks @JeLuf.
+* 2.5.16 - 13 Feb 2023 - UI bug fixes for the inpainter editor. Thanks @patriceac.
+* 2.5.16 - 13 Feb 2023 - Fix broken task reorder. Thanks @JeLuf.
+* 2.5.16 - 13 Feb 2023 - Remove a task if all the images inside it have been removed. Thanks @AssassinJN.
 * 2.5.16 - 10 Feb 2023 - Embed metadata into the JPG/PNG images, if selected in the "Settings" tab (under "Metadata format"). Thanks @patriceac.
 * 2.5.16 - 10 Feb 2023 - Sort models alphabetically in the models dropdown. Thanks @ogmaresca.
 * 2.5.16 - 10 Feb 2023 - Support multiple GFPGAN models. Download new GFPGAN models into the `models/gfpgan` folder, and refresh the UI to use it. Thanks @JeLuf.
