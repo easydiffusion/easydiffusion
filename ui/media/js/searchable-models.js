@@ -522,15 +522,15 @@ class ModelDropdown
 
     createDropdown() {
         // create dropdown entries
+        this.modelFilter.insertAdjacentElement('afterend', this.createRootModelList(this.inputModels))
         this.modelFilter.insertAdjacentElement(
             'afterend',
             this.createElement(
-                'a',
+                'i',
                 { id: `${this.modelFilter.id}-model-filter-arrow` },
-                ['models-selector-arrow', 'fa-solid', 'fa-angle-down'],
+                ['model-selector-arrow', 'fa-solid', 'fa-angle-down'],
             ),
         )
-        this.modelFilter.insertAdjacentElement('afterend', this.createRootModelList(this.inputModels))
         this.modelFilter.classList.add('model-selector')
         this.modelFilterArrow = document.querySelector(`#${this.modelFilter.id}-model-filter-arrow`)
         // if (this.modelFilterArrow) {
