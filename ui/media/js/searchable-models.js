@@ -494,10 +494,6 @@ class ModelDropdown
         // Return its width and height
         return { width, height }
     }
-
-    getFolder(model) {
-        return model.substring(0, model.lastIndexOf('/') + 1)
-    }
     
     /**
      * @param {Array<string>} models 
@@ -607,7 +603,8 @@ class ModelDropdown
                 if (isRootFolder) {
                     classes.push('in-root-folder')
                 }
-                const fullPath = `${folderName || ''}/${model}`
+                // Remove the leading slash from the model path
+                const fullPath = folderName ? `${folderName.substring(1)}/${model}` : model
                 modelsMap.set(
                     model,
                     this.createElement('li', { 'data-path': fullPath }, classes, model),
