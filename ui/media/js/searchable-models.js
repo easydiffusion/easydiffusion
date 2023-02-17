@@ -597,7 +597,7 @@ class ModelDropdown
                 foldersMap.set(
                     childFolderName,
                     this.createModelNodeList(
-                        `${folderName || '/'}${childFolderName}/`,
+                        `${folderName || ''}/${childFolderName}`,
                         childModels,
                         false,
                     ),
@@ -607,7 +607,7 @@ class ModelDropdown
                 if (isRootFolder) {
                     classes.push('in-root-folder')
                 }
-                const fullPath = `${folderName || ''}${model}`
+                const fullPath = `${folderName || ''}/${model}`
                 modelsMap.set(
                     model,
                     this.createElement('li', { 'data-path': fullPath }, classes, model),
