@@ -92,7 +92,7 @@ if "%ERRORLEVEL%" EQU "0" (
         set PYTHONNOUSERSITE=1
         set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 
-        call python -m pip install --upgrade sdkit==1.0.39 -q || (
+        call python -m pip install --upgrade sdkit==1.0.40 -q || (
             echo "Error updating sdkit"
         )
     )
