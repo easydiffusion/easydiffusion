@@ -114,7 +114,7 @@ def setConfig(config):
 
         if len(config_bat) > 0:
             with open(config_bat_path, "w", encoding="utf-8") as f:
-                f.write("\r\n".join(config_bat))
+                f.write("\n".join(config_bat))
     except:
         log.error(traceback.format_exc())
 
