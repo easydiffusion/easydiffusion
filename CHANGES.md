@@ -5,7 +5,7 @@
 - **Nearly twice as fast** - significantly faster speed of image generation. We're now pretty close to automatic1111's speed. Code contributions are welcome to make our project even faster: https://github.com/easydiffusion/sdkit/#is-it-fast
 - **Full support for Stable Diffusion 2.1 (including CPU)** - supports loading v1.4 or v2.0 or v2.1 models seamlessly. No need to enable "Test SD2", and no need to add `sd2_` to your SD 2.0 model file names. Works on CPU as well.
 - **Memory optimized Stable Diffusion 2.1** - you can now use Stable Diffusion 2.1 models, with the same low VRAM optimizations that we've always had for SD 1.4. Please note, the SD 2.0 and 2.1 models require more GPU and System RAM, as compared to the SD 1.4 and 1.5 models.
-- **6 new samplers!** - explore the new samplers, some of which can generate great images in less than 10 inference steps!
+- **11 new samplers!** - explore the new samplers, some of which can generate great images in less than 10 inference steps! We've added the Karras and UniPC samplers.
 - **Model Merging** - You can now merge two models (`.ckpt` or `.safetensors`) and output `.ckpt` or `.safetensors` models, optionally in `fp16` precision. Details: https://github.com/cmdr2/stable-diffusion-ui/wiki/Model-Merging
 - **Fast loading/unloading of VAEs** - No longer needs to reload the entire Stable Diffusion model, each time you change the VAE
 - **Database of known models** - automatically picks the right configuration for known models. E.g. we automatically detect and apply "v" parameterization (required for some SD 2.0 models), and "fp32" attention precision (required for some SD 2.1 models).
@@ -19,6 +19,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.18 - 17 Feb 2023 - 5 new samplers! UniPC samplers, some of which produce images in less than 15 steps. Thanks @Schorny.
 * 2.5.17 - 16 Feb 2023 - Experimental parser for prompts. Supports greater control over the weights assigned to prompt tokens. The experimental parser will be used only if the prompt starts with an exclamation mark, e.g. `!photo of an astronaut`. Thanks @madrang.
 * 2.5.16 - 13 Feb 2023 - Searchable dropdown for models. This is useful if you have a LOT of models. You can type part of the model name, to auto-search through your models. Thanks @patriceac for the feature, and @AssassinJN for help in UI tweaks!
 * 2.5.16 - 13 Feb 2023 - Lots of fixes and improvements to the installer. First round of changes to add Mac support. Thanks @JeLuf.
