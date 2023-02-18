@@ -102,14 +102,19 @@ def generate_images_internal(
 
 
 def filter_images(task_data: TaskData, images: list, user_stopped):
-    if user_stopped or (task_data.use_face_correction is None and task_data.use_upscale is None):
+    if user_stopped:
         return images
 
     filters_to_apply = []
+    if task_data.block_nsfw:
+        filters_to_apply.append("nsfw_checker")
     if task_data.use_face_correction and "gfpgan" in task_data.use_face_correction.lower():
         filters_to_apply.append("gfpgan")
     if task_data.use_upscale and "realesrgan" in task_data.use_upscale.lower():
         filters_to_apply.append("realesrgan")
+
+    if len(filters_to_apply) == 0:
+        return images
 
     return apply_filters(context, filters_to_apply, images, scale=task_data.upscale_amount)
 

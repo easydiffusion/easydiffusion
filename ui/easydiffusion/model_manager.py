@@ -1,12 +1,11 @@
 import os
 
-from easydiffusion import app, device_manager
+from easydiffusion import app
 from easydiffusion.types import TaskData
 from easydiffusion.utils import log
 
 from sdkit import Context
-from sdkit.models import load_model, unload_model, get_model_info_from_db, scan_model
-from sdkit.utils import hash_file_quick
+from sdkit.models import load_model, unload_model, scan_model
 
 KNOWN_MODEL_TYPES = ["stable-diffusion", "vae", "hypernetwork", "gfpgan", "realesrgan"]
 MODEL_EXTENSIONS = {
@@ -102,6 +101,7 @@ def reload_models_if_necessary(context: Context, task_data: TaskData):
         "hypernetwork": task_data.use_hypernetwork_model,
         "gfpgan": task_data.use_face_correction,
         "realesrgan": task_data.use_upscale,
+        "nsfw_checker": True if task_data.block_nsfw else None,
     }
     models_to_reload = {
         model_type: path

@@ -30,6 +30,7 @@ const SETTINGS_IDS_LIST = [
     "gfpgan_model",
     "use_upscale",
     "upscale_amount",
+    "block_nsfw",
     "show_only_filtered_image",
     "upscale_model",
     "preview-image",

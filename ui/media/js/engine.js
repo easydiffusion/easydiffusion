@@ -741,6 +741,7 @@
         "stream_progress_updates": true,
         "stream_image_progress": true,
         "show_only_filtered_image": true,
+        "block_nsfw": false,
         "output_format": "png",
         "output_quality": 75,
     }
