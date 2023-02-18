@@ -375,7 +375,7 @@ function readUI() {
 }
 function getModelPath(filename, extensions)
 {
-    if (filename === null) {
+    if (typeof filename !== "string") {
         return
     }
     
