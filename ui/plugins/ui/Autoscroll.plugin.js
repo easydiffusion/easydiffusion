@@ -39,7 +39,10 @@
 
     function Autoscroll(target) {
         if (autoScroll.checked && target !== null) {
-            target.parentElement.parentElement.parentElement.scrollIntoView();
+            const img = target.querySelector('img')
+            img.addEventListener('load', function() {
+                img.closest('.imageTaskContainer').scrollIntoView()
+            }, { once: true })
         }
     }
 })()
