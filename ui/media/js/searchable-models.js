@@ -346,7 +346,8 @@ class ModelDropdown
         this.modelList.style.display = 'block'
         this.selectEntry()
         this.showAllEntries()
-        this.modelFilter.value = ''
+        //this.modelFilter.value = ''
+        this.modelFilter.select() // preselect the entire string so user can just start typing.
         this.modelFilter.focus()
         this.modelFilter.style.cursor = 'auto'
     }
