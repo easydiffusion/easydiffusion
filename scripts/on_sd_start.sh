@@ -98,7 +98,7 @@ fi
 python -c "from importlib.metadata import version; print('sdkit version:', version('sdkit'))"
 
 # upgrade stable-diffusion-sdkit
-python -m pip install --upgrade stable-diffusion-sdkit -q
+python -m pip install --upgrade stable-diffusion-sdkit==2.1.1 -q
 python -c "from importlib.metadata import version; print('stable-diffusion version:', version('stable-diffusion-sdkit'))"
 
 # install rich
