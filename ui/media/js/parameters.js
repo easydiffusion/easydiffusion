@@ -421,7 +421,7 @@ async function getSystemInfo() {
         if (res['enforce_output_dir'] !== undefined) {
             force = res['enforce_output_dir']
             saveToDiskField.checked = true
-			metadataOutputFormatField.disabled = false
+            metadataOutputFormatField.disabled = false
             saveToDiskField.disabled = force
             diskPathField.disabled = force
         }
