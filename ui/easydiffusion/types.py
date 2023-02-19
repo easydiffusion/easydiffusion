@@ -38,7 +38,7 @@ class TaskData(BaseModel):
     use_hypernetwork_model: str = None
 
     show_only_filtered_image: bool = False
-    output_format: str = "jpeg"  # or "png"
+    output_format: str = "jpeg"  # or "png" or "webp"
     output_quality: int = 75
     metadata_output_format: str = "txt"  # or "json"
     stream_image_progress: bool = False
