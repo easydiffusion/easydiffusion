@@ -57,8 +57,8 @@ APP_CONFIG_DEFAULTS = {
 
 IMAGE_EXTENSIONS = [".png", ".apng", ".jpg", ".jpeg", ".jfif", ".pjpeg", ".pjp", ".jxl", ".gif", ".webp", ".avif", ".svg"]
 CUSTOM_MODIFIERS_DIR = os.path.join(SD_UI_DIR, "media", "modifier-thumbnails", "custom")
-CUSTOM_MODIFIERS_PORTRAIT_EXTENSIONS=[".portrait", "_portrait", " portrait"]
-CUSTOM_MODIFIERS_LANDSCAPE_EXTENSIONS=[".landscape", "_landscape", " landscape"]
+CUSTOM_MODIFIERS_PORTRAIT_EXTENSIONS=[".portrait", "_portrait", " portrait", "-portrait"]
+CUSTOM_MODIFIERS_LANDSCAPE_EXTENSIONS=[".landscape", "_landscape", " landscape", "-landscape"]
 
 def init():
     os.makedirs(USER_UI_PLUGINS_DIR, exist_ok=True)
