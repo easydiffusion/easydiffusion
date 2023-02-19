@@ -1165,12 +1165,10 @@ saveAllImagesBtn.addEventListener('click', (e) => {
         let req = htmlTaskMap.get(container)
         container.querySelectorAll(".imgContainer img").forEach(img => {
             if (img.closest('.imgItem').style.display === 'none') {
-                // console.log('skipping hidden image', img)
                 return
             }
 
-            onDownloadImageClick(req, img)
-            // console.log(req)
+            onDownloadImageClick(req.reqBody, img)
         })
     })
 })
