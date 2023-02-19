@@ -139,7 +139,18 @@ set PATH=C:\Windows\System32;%PATH%
 
 call python ..\scripts\check_modules.py uvicorn fastapi
 @if "%ERRORLEVEL%" EQU "0" (
-    echo "Packages necessary for Easy Diffusion were already installed"
+    %$set% FASTAPI_VERSION="python -c ""from importlib.metadata import version; print(version('fastapi') > '0.92.0')"")"
+    @if "%FASTAPI_VERSION%" EQU "False" {
+        echo "Upgrading fastapi"
+
+        @call conda install -c conda-forge -y --update-deps fastapi || (
+            echo "Error installing the packages necessary for Easy Diffusion. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
+            pause
+            exit /b
+        )
+    } else {
+        echo "Packages necessary for Easy Diffusion were already installed"
+    }
 ) else (
     @echo. & echo "Downloading packages necessary for Easy Diffusion..." & echo.
 

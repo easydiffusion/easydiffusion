@@ -45,7 +45,11 @@ class SetAppConfigRequest(BaseModel):
 
 
 def init():
-    server_api.mount("/media", NoCacheStaticFiles(directory=os.path.join(app.SD_UI_DIR, "media")), name="media")
+    server_api.mount(
+        "/media",
+        NoCacheStaticFiles(directory=os.path.join(app.SD_UI_DIR, "media"), follow_symlink=True),
+        name="media",
+    )
 
     for plugins_dir, dir_prefix in app.UI_PLUGINS_SOURCES:
         server_api.mount(
@@ -156,7 +160,7 @@ def read_web_data_internal(key: str = None):
     elif key == "models":
         return JSONResponse(model_manager.getModels(), headers=NOCACHE_HEADERS)
     elif key == "modifiers":
-        return FileResponse(os.path.join(app.SD_UI_DIR, "modifiers.json"), headers=NOCACHE_HEADERS)
+        return JSONResponse(app.get_image_modifiers(), headers=NOCACHE_HEADERS)
     elif key == "ui_plugins":
         return JSONResponse(app.getUIPlugins(), headers=NOCACHE_HEADERS)
     else:

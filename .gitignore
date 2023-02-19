@@ -3,3 +3,6 @@ installer
 installer.tar
 dist
 .idea/*
+ui/media/modifier-thumbnails/custom/
+ui/media/modifier-thumbnails/custom/*
+ui/media/modifier-thumbnails/custom/**/*
