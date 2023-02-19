@@ -375,6 +375,10 @@ function readUI() {
 }
 function getModelPath(filename, extensions)
 {
+    if (filename === null) {
+        return
+    }
+    
     let pathIdx
     if (filename.includes('/models/stable-diffusion/')) {
         pathIdx = filename.indexOf('/models/stable-diffusion/') + 25 // Linux, Mac paths

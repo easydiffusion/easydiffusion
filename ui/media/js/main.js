@@ -33,7 +33,7 @@ let promptStrengthField = document.querySelector('#prompt_strength')
 let samplerField = document.querySelector('#sampler_name')
 let samplerSelectionContainer = document.querySelector("#samplerSelection")
 let useFaceCorrectionField = document.querySelector("#use_face_correction")
-let gfpganModelField = new ModelDropdown(document.querySelector("#gfpgan_model"), 'gfpgan', 'None')
+let gfpganModelField = new ModelDropdown(document.querySelector("#gfpgan_model"), 'gfpgan')
 let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
 let upscaleAmountField = document.querySelector("#upscale_amount")
@@ -61,6 +61,7 @@ let promptStrengthContainer = document.querySelector('#prompt_strength_container
 let initialText = document.querySelector("#initial-text")
 let previewTools = document.querySelector("#preview-tools")
 let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
+let saveAllImagesBtn = document.querySelector("#save-all-images")
 
 let maskSetting = document.querySelector('#enable_mask')
 
@@ -269,6 +270,22 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                 </div>
             `
             outputContainer.appendChild(imageItemElem)
+            const imageRemoveBtn = imageItemElem.querySelector('.imgPreviewItemClearBtn')
+            let parentTaskContainer = imageRemoveBtn.closest('.imageTaskContainer')
+            imageRemoveBtn.addEventListener('click', (e) => {
+                shiftOrConfirm(e, "Remove the image from the results?", () => { 
+                    imageItemElem.style.display = 'none' 
+                    let allHidden = true;
+                    let children = parentTaskContainer.querySelectorAll('.imgItem');
+                    for(let x = 0; x < children.length; x++) {
+                        let child = children[x];
+                        if(child.style.display != "none") {
+                            allHidden = false;
+                        }
+                    }
+                    if(allHidden === true) {parentTaskContainer.classList.add("displayNone")}
+                })
+            })
         }
         const imageElem = imageItemElem.querySelector('img')
         imageElem.src = imageData
@@ -278,23 +295,6 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         imageElem.setAttribute('data-steps', imageInferenceSteps)
         imageElem.setAttribute('data-guidance', imageGuidanceScale)
 
-        const imageRemoveBtn = imageItemElem.querySelector('.imgPreviewItemClearBtn')
-        let parentTaskContainer = imageRemoveBtn.closest('.imageTaskContainer')
-        imageRemoveBtn.addEventListener('click', (e) => {
-            console.log(e)
-            shiftOrConfirm(e, "Remove the image from the results?", () => { 
-                imageItemElem.style.display = 'none' 
-                let allHidden = true;
-                let children = parentTaskContainer.querySelectorAll('.imgItem');
-                for(let x = 0; x < children.length; x++) {
-                    let child = children[x];
-                    if(child.style.display != "none") {
-                        allHidden = false;
-                    }
-                }
-                if(allHidden === true) {parentTaskContainer.classList.add("displayNone")}
-            })
-        })
 
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
         imageInfo.style.visibility = (livePreview ? 'hidden' : 'visible')
@@ -1159,6 +1159,21 @@ clearAllPreviewsBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Clear 
     let taskEntries = document.querySelectorAll('.imageTaskContainer')
     taskEntries.forEach(removeTask)
 })})
+
+saveAllImagesBtn.addEventListener('click', (e) => {
+    document.querySelectorAll(".imageTaskContainer").forEach(container => {
+        let req = htmlTaskMap.get(container)
+        container.querySelectorAll(".imgContainer img").forEach(img => {
+            if (img.closest('.imgItem').style.display === 'none') {
+                // console.log('skipping hidden image', img)
+                return
+            }
+
+            onDownloadImageClick(req, img)
+            // console.log(req)
+        })
+    })
+})
 
 stopImageBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Stop all the tasks?", async function(e) {
     await stopAllTasks()

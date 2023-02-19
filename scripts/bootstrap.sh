@@ -29,7 +29,9 @@ if ! which tar; then fail "'tar' not found. Please install tar."; fi
 if ! which bzip2; then fail "'bzip2' not found. Please install bzip2."; fi
 
 if pwd | grep ' '; then fail "The installation directory's path contains a space character. Conda will fail to install. Please change the directory."; fi
-if ! cat /proc/cpuinfo | grep avx | uniq; then fail "Your CPU doesn't support AVX."; fi
+if [ -f /proc/cpuinfo ]; then 
+    if ! cat /proc/cpuinfo | grep avx | uniq; then fail "Your CPU doesn't support AVX."; fi
+fi
 
 # https://mamba.readthedocs.io/en/latest/installation.html
 if [ "$OS_NAME" == "linux" ] && [ "$OS_ARCH" == "arm64" ]; then OS_ARCH="aarch64"; fi

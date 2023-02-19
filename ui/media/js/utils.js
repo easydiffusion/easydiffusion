@@ -20,19 +20,6 @@ function getNextSibling(elem, selector) {
     }
 }
 
-function findClosestAncestor(element, selector) {
-  if (!element || !element.parentNode) {
-      // reached the top of the DOM tree, return null
-      return null;
-  } else if (element.parentNode.matches(selector)) {
-      // found an ancestor that matches the selector, return it
-      return element.parentNode;
-  } else {
-      // continue searching upwards
-      return findClosestAncestor(element.parentNode, selector);
-  }
-}
-
 
 /* Panel Stuff */
 

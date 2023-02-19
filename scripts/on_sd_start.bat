@@ -92,7 +92,7 @@ if "%ERRORLEVEL%" EQU "0" (
         set PYTHONNOUSERSITE=1
         set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 
-        call python -m pip install --upgrade sdkit==1.0.36 -q || (
+        call python -m pip install --upgrade sdkit==1.0.40 -q || (
             echo "Error updating sdkit"
         )
     )
@@ -113,7 +113,7 @@ if "%ERRORLEVEL%" EQU "0" (
 call python -c "from importlib.metadata import version; print('sdkit version:', version('sdkit'))"
 
 @rem upgrade stable-diffusion-sdkit
-call python -m pip install --upgrade stable-diffusion-sdkit -q || (
+call python -m pip install --upgrade stable-diffusion-sdkit==2.1.3 -q || (
     echo "Error updating stable-diffusion-sdkit"
 )
 call python -c "from importlib.metadata import version; print('stable-diffusion version:', version('stable-diffusion-sdkit'))"

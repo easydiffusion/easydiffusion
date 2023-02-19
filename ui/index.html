@@ -26,7 +26,7 @@
         <div id="logo">
             <h1>
                 Easy Diffusion
-                <small>v2.5.16 <span id="updateBranchLabel"></span></small>
+                <small>v2.5.20 <span id="updateBranchLabel"></span></small>
             </h1>
         </div>
         <div id="server-status">
@@ -155,6 +155,11 @@
                             <option value="dpmpp_sde">DPM++ SDE</option>
                             <option value="dpm_fast">DPM Fast</option>
                             <option value="dpm_adaptive">DPM Adaptive</option>
+                            <option value="unipc_snr">UniPC SNR</option>
+                            <option value="unipc_tu">UniPC TU</option>
+                            <option value="unipc_snr_2">UniPC SNR 2</option>
+                            <option value="unipc_tu_2">UniPC TC 2</option>
+                            <option value="unipc_tq">UniPC TQ</option>
                         </select>
                         <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/How-to-Use#samplers" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about samplers</span></i></a>
                     </td></tr>
@@ -228,7 +233,7 @@
                     <div><ul>
                     <li><b class="settings-subheader">Render Settings</b></li>
                     <li class="pl-5"><input id="stream_image_progress" name="stream_image_progress" type="checkbox"> <label for="stream_image_progress">Show a live preview <small>(uses more VRAM, slower images)</small></label></li>
-                    <li class="pl-5"><input id="use_face_correction" name="use_face_correction" type="checkbox"> <label for="use_face_correction">Fix incorrect faces and eyes</label> <small><input id="gfpgan_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" /></small></li>
+                    <li class="pl-5"><input id="use_face_correction" name="use_face_correction" type="checkbox"> <label for="use_face_correction">Fix incorrect faces and eyes</label> <div style="display:inline-block;"><input id="gfpgan_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" /></div></li>
                     <li class="pl-5">
                         <input id="use_upscale" name="use_upscale" type="checkbox"> <label for="use_upscale">Scale up by</label> 
                         <select id="upscale_amount" name="upscale_amount">
@@ -277,9 +282,11 @@
                 and selecting the desired modifiers.<br/><br/>
                 Click "Image Settings" for additional settings like seed, image size, number of images to generate etc.<br/><br/>Enjoy! :)
             </div>
+
             <div id="preview-content">
                 <div id="preview-tools">
                     <button id="clear-all-previews" class="secondaryButton"><i class="fa-solid fa-trash-can"></i> Clear All</button>
+                    <button id="save-all-images" class="primaryButton"><i class="fa-solid fa-download"></i> Download All Images</button>
                 </div>
             </div>
         </div>

@@ -81,7 +81,7 @@ if python ../scripts/check_modules.py sdkit sdkit.models ldm transformers numpy 
         export PYTHONNOUSERSITE=1
         export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
 
-        python -m pip install --upgrade sdkit==1.0.36 -q
+        python -m pip install --upgrade sdkit==1.0.40 -q
     fi
 else
     echo "Installing sdkit: https://pypi.org/project/sdkit/"
@@ -99,7 +99,7 @@ fi
 python -c "from importlib.metadata import version; print('sdkit version:', version('sdkit'))"
 
 # upgrade stable-diffusion-sdkit
-python -m pip install --upgrade stable-diffusion-sdkit -q
+python -m pip install --upgrade stable-diffusion-sdkit==2.1.3 -q
 python -c "from importlib.metadata import version; print('stable-diffusion version:', version('stable-diffusion-sdkit'))"
 
 # install rich

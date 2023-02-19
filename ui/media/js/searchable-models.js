@@ -53,6 +53,15 @@ class ModelDropdown
         this.modelFilter.dataset.path = path
         this.selectEntry(path)
     }
+    get disabled() {
+        return this.modelFilter.disabled
+    }
+    set disabled(state) {
+        this.modelFilter.disabled = state
+        if (this.modelFilterArrow) {
+            this.modelFilterArrow.style.color = state ? 'dimgray' : ''
+        }
+    }    
     addEventListener(type, listener, options) {
         return this.modelFilter.addEventListener(type, listener, options)
     }
@@ -350,13 +359,15 @@ class ModelDropdown
     
     toggleModelList(e) {
         e.preventDefault()
-        if (this.modelList.style.display != 'block') {
-            this.showModelList()
-        }
-        else
-        {
-            this.hideModelList()
-            this.modelFilter.select()
+        if (!this.modelFilter.disabled) {
+            if (this.modelList.style.display != 'block') {
+                this.showModelList()
+            }
+            else
+            {
+                this.hideModelList()
+                this.modelFilter.select()
+            }
         }
     }
     
@@ -484,44 +495,11 @@ class ModelDropdown
         return { width, height }
     }
     
-    flattenModelList(models, path) {
-        models.forEach(entry => {
-            if (Array.isArray(entry)) {
-                this.flattenModelList(entry[1], path + '/' + entry[0])
-            }
-            else
-            {
-                this.flatModelList.push(path == '' ? entry : path + '/' + entry)
-            }
-        })
-    }
-
-    // sort models
-    getFolder(model) {
-        return model.substring(0, model.lastIndexOf('/') + 1)
-    }
-    
-    sortModels(models) {
-        // sort the models in alphabetical order, root folder models last
-        models.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
-
-        /*
-        // sort the models in alphabetical order, root folder models first
-        models = models.sort()
-        let found
-        do {
-            found = false
-            for (let i = 0; i < models.length - 1; i++) {
-                if (
-                    (this.getFolder(models[i]) === this.getFolder(models[i+1]) && models[i].toLowerCase().localeCompare(models[i+1].toLowerCase()) > 0) // same folder, sort by alphabetical order
-                    || (this.getFolder(models[i]).toLowerCase().localeCompare(this.getFolder(models[i+1]).toLowerCase()) > 0) // L1 folder > L2 folder
-                ) {
-                    [models[i], models[i+1]] = [models[i+1], models[i]]
-                    found = true
-                }
-            }
-        } while (found)
-        */
+    /**
+     * @param {Array<string>} models 
+     */
+    sortStringArray(models) {
+        models.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
     }
 
     populateModels() {
@@ -539,14 +517,21 @@ class ModelDropdown
     }
 
     createDropdown() {
-        // prepare to sort the models
-        this.flattenModelList(this.inputModels, '')
-        this.sortModels(this.flatModelList)
-
         // create dropdown entries
-        this.modelFilter.insertAdjacentHTML('afterend', this.parseModels(this.flatModelList))
+        this.modelFilter.insertAdjacentElement('afterend', this.createRootModelList(this.inputModels))
+        this.modelFilter.insertAdjacentElement(
+            'afterend',
+            this.createElement(
+                'i',
+                { id: `${this.modelFilter.id}-model-filter-arrow` },
+                ['model-selector-arrow', 'fa-solid', 'fa-angle-down'],
+            ),
+        )
         this.modelFilter.classList.add('model-selector')
         this.modelFilterArrow = document.querySelector(`#${this.modelFilter.id}-model-filter-arrow`)
+        if (this.modelFilterArrow) {
+            this.modelFilterArrow.style.color = this.modelFilter.disabled ? 'dimgray' : ''
+        }
         this.modelList = document.querySelector(`#${this.modelFilter.id}-model-list`)
         this.modelResult = document.querySelector(`#${this.modelFilter.id}-model-result`)
         this.modelNoResult = document.querySelector(`#${this.modelFilter.id}-model-no-result`)
@@ -567,47 +552,122 @@ class ModelDropdown
         this.selectEntry(this.activeModel)
     }
 
-    parseModels(models) {
-        let html = `<i id="${this.modelFilter.id}-model-filter-arrow" class="model-selector-arrow fa-solid fa-angle-down"></i>
-            <ul id="${this.modelFilter.id}-model-list" class="model-list">
-                <li id="${this.modelFilter.id}-model-no-result" class="model-no-result">No result</li>
-                <li id="${this.modelFilter.id}-model-result" class="model-result">
-            <ul>
-        `
-        if (this.noneEntry != '') {
-            html += `<li data-path='' class='model-file in-root-folder'>${this.noneEntry}</li>`
+    /**
+     * 
+     * @param {string} tag 
+     * @param {object} attributes
+     * @param {Array<string>} classes
+     * @returns {HTMLElement}
+     */
+    createElement(tagName, attributes, classes, text) {
+        const element = document.createElement(tagName)
+        if (attributes) {
+            Object.entries(attributes).forEach(([key, value]) => {
+                element.setAttribute(key, value)
+            })
         }
-        
-        let currentFolder = ''
-        models.forEach(entry => {
-            const folder = entry.substring(0, 1) == '/' ? entry.substring(1, entry.lastIndexOf('/')) : ''
-            if (folder !== '' && folder !== currentFolder) {
-                if (currentFolder != '') {
-                    html += '</ul></li>'
+        if (classes) {
+            classes.forEach(className => element.classList.add(className))
+        }
+        if (text) {
+            element.appendChild(document.createTextNode(text))
+        }
+        return element
+    }
+
+    /**
+     * @param {Array<string | object} modelTree
+     * @param {string} folderName 
+     * @param {boolean} isRootFolder 
+     * @returns {HTMLElement}
+     */
+    createModelNodeList(folderName, modelTree, isRootFolder) {
+        const listElement = this.createElement('ul')
+
+        const foldersMap = new Map()
+        const modelsMap = new Map()
+
+        modelTree.forEach(model => {
+            if (Array.isArray(model)) {
+                const [childFolderName, childModels] = model
+                foldersMap.set(
+                    childFolderName,
+                    this.createModelNodeList(
+                        `${folderName || ''}/${childFolderName}`,
+                        childModels,
+                        false,
+                    ),
+                )
+            } else {
+                const classes = ['model-file']
+                if (isRootFolder) {
+                    classes.push('in-root-folder')
                 }
-                html += `<li class='model-folder'>/${folder}<ul>`
-                currentFolder = folder
+                // Remove the leading slash from the model path
+                const fullPath = folderName ? `${folderName.substring(1)}/${model}` : model
+                modelsMap.set(
+                    model,
+                    this.createElement('li', { 'data-path': fullPath }, classes, model),
+                )
             }
-            else if (folder == '' && currentFolder !== '') {
-                currentFolder = ''
-                html += '</ul></li>'
-            }
-            const modelName = entry.substring(entry.lastIndexOf('/') + 1)
-            if (entry.substring(0, 1) == '/') {
-                entry = entry.substring(1)
-            }
-            html += `<li data-path='${entry}' class='model-file${currentFolder == '' ? ' in-root-folder' : ''}'>${modelName}</li>`
         })
-        if (currentFolder != '') {
-            html += '</ul></li>'
+
+        const childFolderNames = Array.from(foldersMap.keys())
+        this.sortStringArray(childFolderNames)
+        const folderElements = childFolderNames.map(name => foldersMap.get(name))
+
+        const modelNames = Array.from(modelsMap.keys())
+        this.sortStringArray(modelNames)
+        const modelElements = modelNames.map(name => modelsMap.get(name))
+
+        if (modelElements.length && folderName) {
+            listElement.appendChild(this.createElement('li', undefined, ['model-folder'], folderName))
         }
-        
-        html += `
-                    </ul>
-                </li>
-            </ul>
-            `
-        return html
+
+        const allModelElements = isRootFolder ? [...folderElements, ...modelElements] : [...modelElements, ...folderElements]
+        allModelElements.forEach(e => listElement.appendChild(e))
+        return listElement
+    }
+
+    /**
+     * @param {object} modelTree
+     * @returns {HTMLElement}
+     */
+    createRootModelList(modelTree) {
+        const rootList = this.createElement(
+            'ul',
+            { id: `${this.modelFilter.id}-model-list` },
+            ['model-list'],
+        )
+        rootList.appendChild(
+            this.createElement(
+                'li',
+                { id: `${this.modelFilter.id}-model-no-result` },
+                ['model-no-result'],
+                'No result'
+            ),
+        )
+
+        if (this.noneEntry) {
+            rootList.appendChild(
+                this.createElement(
+                    'li',
+                    { 'data-path': '' },
+                    ['model-file', 'in-root-folder'],
+                    this.noneEntry,
+                ),
+            )
+        }
+
+        const containerListItem = this.createElement(
+            'li',
+            { id: `${this.modelFilter.id}-model-result` },
+            ['model-result'],
+        )
+        containerListItem.appendChild(this.createModelNodeList(undefined, modelTree, true))
+        rootList.appendChild(containerListItem)
+
+        return rootList
     }
 }
 
