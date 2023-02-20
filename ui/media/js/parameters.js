@@ -420,8 +420,10 @@ async function getSystemInfo() {
         let force = false
         if (res['enforce_output_dir'] !== undefined) {
             force = res['enforce_output_dir']
-            saveToDiskField.checked = true
-            metadataOutputFormatField.disabled = false
+            if (force == true) {
+               saveToDiskField.checked = true
+               metadataOutputFormatField.disabled = false
+            }
             saveToDiskField.disabled = force
             diskPathField.disabled = force
         }
