@@ -1163,14 +1163,15 @@ clearAllPreviewsBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Clear 
 })})
 
 saveAllImagesBtn.addEventListener('click', (e) => {
+    let i = 0
     document.querySelectorAll(".imageTaskContainer").forEach(container => {
         let req = htmlTaskMap.get(container)
         container.querySelectorAll(".imgContainer img").forEach(img => {
             if (img.closest('.imgItem').style.display === 'none') {
                 return
             }
-
-            onDownloadImageClick(req.reqBody, img)
+            setTimeout(() => {onDownloadImageClick(req, img)}, i*200)
+            i = i+1
         })
     })
 })
