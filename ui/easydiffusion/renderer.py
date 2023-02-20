@@ -55,16 +55,9 @@ def print_task_info(req: GenerateImageRequest, task_data: TaskData):
 def make_images_internal(
     req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback
 ):
-    stream_image_progress = task_data.stream_image_progress
-    
-    if isinstance(stream_image_progress, bool) or not isinstance(stream_image_progress, int):
-        if bool(stream_image_progress):
-            stream_image_progress = 5
-        else:
-            stream_image_progress = 0
 
     images, user_stopped = generate_images_internal(
-        req, task_data, data_queue, task_temp_images, step_callback, stream_image_progress
+        req, task_data, data_queue, task_temp_images, step_callback, task_data.stream_image_progress, task_data.stream_image_progress_interval
     )
     filtered_images = filter_images(task_data, images, user_stopped)
 
@@ -84,11 +77,12 @@ def generate_images_internal(
     data_queue: queue.Queue,
     task_temp_images: list,
     step_callback,
-    stream_image_progress: int,
+    stream_image_progress: bool,
+    stream_image_progress_interval: int,
 ):
     context.temp_images.clear()
 
-    callback = make_step_callback(req, task_data, data_queue, task_temp_images, step_callback, stream_image_progress)
+    callback = make_step_callback(req, task_data, data_queue, task_temp_images, step_callback, stream_image_progress, stream_image_progress_interval)
 
     try:
         if req.init_image is not None:
@@ -138,7 +132,8 @@ def make_step_callback(
     data_queue: queue.Queue,
     task_temp_images: list,
     step_callback,
-    stream_image_progress: int,
+    stream_image_progress: bool,
+    stream_image_progress_interval: int,
 ):
     n_steps = req.num_inference_steps if req.init_image is None else int(req.num_inference_steps * req.prompt_strength)
     last_callback_time = -1
@@ -164,7 +159,7 @@ def make_step_callback(
 
         progress = {"step": i, "step_time": step_time, "total_steps": n_steps}
 
-        if stream_image_progress > 0 and i % stream_image_progress == 0:
+        if stream_image_progress and stream_image_progress_interval > 0 and i % stream_image_progress_interval == 0:
             progress["output"] = update_temp_img(x_samples, task_temp_images)
 
         data_queue.put(json.dumps(progress))
