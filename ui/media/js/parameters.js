@@ -79,6 +79,14 @@ var PARAMETERS = [
         ],
     },
     {
+        id: "block_nsfw",
+        type: ParameterType.checkbox,
+        label: "Block NSFW images",
+        note: "blurs out NSFW images",
+        icon: "fa-land-mine-on",
+        default: false,
+    },
+    {
         id: "sound_toggle",
         type: ParameterType.checkbox,
         label: "Enable Sound",
