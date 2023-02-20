@@ -1127,7 +1127,7 @@ function createFileName(prompt, seed, steps, guidance, outputFormat) {
     // fileName += `${tagString}`
 
     // add the file extension
-    fileName += '.' + (outputFormat === 'png' ? 'png' : 'jpeg')
+    fileName += '.' + outputFormat
 
     return fileName
 }
@@ -1303,7 +1303,7 @@ function updateHypernetworkStrengthContainer() {
 hypernetworkModelField.addEventListener('change', updateHypernetworkStrengthContainer)
 updateHypernetworkStrengthContainer()
 
-/********************* JPEG Quality **********************/
+/********************* JPEG/WEBP Quality **********************/
 function updateOutputQuality() {
     outputQualityField.value =  0 | outputQualitySlider.value
     outputQualityField.dispatchEvent(new Event("change"))
@@ -1325,10 +1325,10 @@ outputQualityField.addEventListener('input', debounce(updateOutputQualitySlider,
 updateOutputQuality()
 
 outputFormatField.addEventListener('change', e => {
-    if (outputFormatField.value == 'jpeg') {
-        outputQualityRow.style.display='table-row'
-    } else {
+    if (outputFormatField.value === 'png') {
         outputQualityRow.style.display='none'
+    } else {
+        outputQualityRow.style.display='table-row'
     }
 })
 

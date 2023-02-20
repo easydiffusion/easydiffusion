@@ -2,7 +2,7 @@
 
 const EXT_REGEX = /(?:\.([^.]+))?$/
 const TEXT_EXTENSIONS = ['txt', 'json']
-const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif', 'tga']
+const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif', 'tga', 'webp']
 
 function parseBoolean(stringValue) {
     if (typeof stringValue === 'boolean') {

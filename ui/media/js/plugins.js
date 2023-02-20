@@ -31,6 +31,7 @@ const PLUGINS = {
     OUTPUTS_FORMATS: new ServiceContainer(
         function png() { return (reqBody) => new SD.RenderTask(reqBody) }
         , function jpeg() { return (reqBody) => new SD.RenderTask(reqBody) }
+        , function webp() { return (reqBody) => new SD.RenderTask(reqBody) }
     ),
 }
 PLUGINS.OUTPUTS_FORMATS.register = function(...args) {
