@@ -244,8 +244,8 @@ var IMAGE_EDITOR_SECTIONS = [
 			var sub_element = document.createElement("div")
 			sub_element.style.background = `var(--background-color3)`
 			sub_element.style.filter = `blur(${blur_amount}px)`
-			sub_element.style.width = `${size - 4}px`
-			sub_element.style.height = `${size - 4}px`
+			sub_element.style.width = `${size - 2}px`
+			sub_element.style.height = `${size - 2}px`
 			sub_element.style['border-radius'] = `${size}px`
 			element.style.background = "none"
 			element.appendChild(sub_element)
