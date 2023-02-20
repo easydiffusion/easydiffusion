@@ -40,7 +40,7 @@
                 // refresh activeTags
                 let modifierName = i.parentElement.getElementsByClassName('modifier-card-label')[0].getElementsByTagName("p")[0].dataset.fullName
                 activeTags = activeTags.map(obj => {
-                    if (obj.name === modifierName) {
+                    if (trimModifiers(obj.name) === trimModifiers(modifierName)) {
                         return {...obj, inactive: (obj.element.classList.contains('modifier-toggle-inactive'))};
                     }
                     
