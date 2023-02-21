@@ -31,7 +31,7 @@
 }
 
 .editor-options-container > * > *.active {
-	border: 2px solid #3584e4;
+	border: 1px solid #3584e4;
 }
 
 .image_editor_opacity .editor-options-container > * > *:not(.active) {
