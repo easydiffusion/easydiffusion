@@ -287,7 +287,13 @@
             <div id="preview-content">
                 <div id="preview-tools">
                     <button id="clear-all-previews" class="secondaryButton"><i class="fa-solid fa-trash-can"></i> Clear All</button>
-                    <button id="save-all-images" class="primaryButton"><i class="fa-solid fa-download"></i> Download All Images</button>
+                    <span class="dropdown">
+                        <button class="dropbtn primaryButton"><i class="fa-solid fa-download"></i> Download</button>
+                        <div class="dropdown-content">
+                            <div><button id="save-all-images" class="primaryButton"><i class="fa-solid fa-images"></i> Download All Images</button></div><br/>
+                            <div><button id="save-all-images-json" class="primaryButton"><i class="fa-solid fa-tags"></i> Download All Images<br/>and their metadata</button></div>
+                        </div>
+                    </span>
                 </div>
             </div>
         </div>

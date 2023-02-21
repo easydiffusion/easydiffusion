@@ -63,6 +63,7 @@ let initialText = document.querySelector("#initial-text")
 let previewTools = document.querySelector("#preview-tools")
 let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
 let saveAllImagesBtn = document.querySelector("#save-all-images")
+let saveAllImagesAndJSONBtn = document.querySelector("#save-all-images-json")
 
 let maskSetting = document.querySelector('#enable_mask')
 
@@ -310,7 +311,8 @@ function showImages(reqBody, res, outputContainer, livePreview) {
 
             let buttons = [
                 { text: 'Use as Input', on_click: onUseAsInputClick },
-                { text: 'Download', on_click: onDownloadImageClick },
+                { text: 'Download', on_click: onDownloadImageClick, class: "download-img" },
+                { text: 'Download JSON', on_click: onDownloadJSONClick, class: "download-json" },
                 { text: 'Make Similar Images', on_click: onMakeSimilarClick },
                 { text: 'Draw another 25 steps', on_click: onContinueDrawingClick },
                 { text: 'Upscale', on_click: onUpscaleClick, filter: (req, img) => !req.use_upscale },
@@ -354,15 +356,27 @@ function onUseAsInputClick(req, img) {
     maskSetting.checked = false
 }
 
-function onDownloadImageClick(req, img) {
-    const imgData = img.src
+function getDownloadFilename(img, suffix) {
     const imageSeed = img.getAttribute('data-seed')
     const imagePrompt = img.getAttribute('data-prompt')
     const imageInferenceSteps = img.getAttribute('data-steps')
     const imageGuidanceScale = img.getAttribute('data-guidance')
+    
+    return createFileName(imagePrompt, imageSeed, imageInferenceSteps, imageGuidanceScale, suffix)
+}
+
+function onDownloadJSONClick(req, img) {
+    const jsonDownload = document.createElement('a')
+    jsonDownload.download = getDownloadFilename(img, 'json')
+    jsonDownload.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(req, null, " ")))
+    jsonDownload.click()
+}
+
+function onDownloadImageClick(req, img) {
+    const imgData = img.src
 
     const imgDownload = document.createElement('a')
-    imgDownload.download = createFileName(imagePrompt, imageSeed, imageInferenceSteps, imageGuidanceScale, req['output_format'])
+    imgDownload.download = getDownloadFilename(img, req['output_format'])
     imgDownload.href = imgData
     imgDownload.click()
 }
@@ -1162,19 +1176,26 @@ clearAllPreviewsBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Clear 
     taskEntries.forEach(removeTask)
 })})
 
-saveAllImagesBtn.addEventListener('click', (e) => {
+function downloadAllImages(json=false) {
     let i = 0
     document.querySelectorAll(".imageTaskContainer").forEach(container => {
-        let req = htmlTaskMap.get(container)
         container.querySelectorAll(".imgContainer img").forEach(img => {
-            if (img.closest('.imgItem').style.display === 'none') {
+            let imgItem = img.closest('.imgItem')
+            if (imgItem.style.display === 'none') {
                 return
             }
-            setTimeout(() => {onDownloadImageClick(req, img)}, i*200)
+            setTimeout(() => {imgItem.querySelector('.download-img').click()}, i*200)
             i = i+1
+            if (json) {
+                setTimeout(() => {imgItem.querySelector('.download-json').click()}, i*200)
+                i = i+1
+            }
         })
     })
-})
+}    
+
+saveAllImagesBtn.addEventListener('click', (e) => { downloadAllImages() })
+saveAllImagesAndJSONBtn.addEventListener('click', (e) => { downloadAllImages(true) })
 
 stopImageBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Stop all the tasks?", async function(e) {
     await stopAllTasks()
