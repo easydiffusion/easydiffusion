@@ -61,6 +61,9 @@ if exist "GFPGANv1.3.pth" move GFPGANv1.3.pth ..\models\gfpgan\
 if exist "RealESRGAN_x4plus.pth" move RealESRGAN_x4plus.pth ..\models\realesrgan\
 if exist "RealESRGAN_x4plus_anime_6B.pth" move RealESRGAN_x4plus_anime_6B.pth ..\models\realesrgan\
 
+if not exist "%INSTALL_ENV_DIR%\DLLs\libssl-1_1-x64.dll"    copy "%INSTALL_ENV_DIR%\Library\bin\libssl-1_1-x64.dll"    "%INSTALL_ENV_DIR%\DLLs\"
+if not exist "%INSTALL_ENV_DIR%\DLLs\libcrypto-1_1-x64.dll" copy "%INSTALL_ENV_DIR%\Library\bin\libcrypto-1_1-x64.dll" "%INSTALL_ENV_DIR%\DLLs\"
+
 @rem install torch and torchvision
 call python ..\scripts\check_modules.py torch torchvision
 if "%ERRORLEVEL%" EQU "0" (
