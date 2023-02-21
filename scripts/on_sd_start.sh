@@ -88,7 +88,7 @@ else
     export PYTHONNOUSERSITE=1
     export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
 
-    if python -m pip install sdkit ; then
+    if python -m pip install sdkit==1.0.35 ; then
         echo "Installed."
     else
         fail "sdkit install failed"
