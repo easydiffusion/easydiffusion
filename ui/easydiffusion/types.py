@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Any
 
+
 class GenerateImageRequest(BaseModel):
     prompt: str = ""
     negative_prompt: str = ""
@@ -18,28 +19,32 @@ class GenerateImageRequest(BaseModel):
     prompt_strength: float = 0.8
     preserve_init_image_color_profile = False
 
-    sampler_name: str = None # "ddim", "plms", "heun", "euler", "euler_a", "dpm2", "dpm2_a", "lms"
+    sampler_name: str = None  # "ddim", "plms", "heun", "euler", "euler_a", "dpm2", "dpm2_a", "lms"
     hypernetwork_strength: float = 0
+
 
 class TaskData(BaseModel):
     request_id: str = None
     session_id: str = "session"
     save_to_disk_path: str = None
-    vram_usage_level: str = "balanced" # or "low" or "medium"
+    vram_usage_level: str = "balanced"  # or "low" or "medium"
 
-    use_face_correction: str = None # or "GFPGANv1.3"
-    use_upscale: str = None # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
-    upscale_amount: int = 4 # or 2
+    use_face_correction: str = None  # or "GFPGANv1.3"
+    use_upscale: str = None  # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
+    upscale_amount: int = 4  # or 2
     use_stable_diffusion_model: str = "sd-v1-4"
     # use_stable_diffusion_config: str = "v1-inference"
     use_vae_model: str = None
     use_hypernetwork_model: str = None
 
     show_only_filtered_image: bool = False
-    output_format: str = "jpeg" # or "png"
+    block_nsfw: bool = False
+    output_format: str = "jpeg"  # or "png" or "webp"
     output_quality: int = 75
-    metadata_output_format: str = "txt" # or "json"
+    metadata_output_format: str = "txt"  # or "json"
     stream_image_progress: bool = False
+    stream_image_progress_interval: int = 5
+
 
 class MergeRequest(BaseModel):
     model0: str = None
@@ -48,8 +53,9 @@ class MergeRequest(BaseModel):
     out_path: str = "mix"
     use_fp16 = True
 
+
 class Image:
-    data: str # base64
+    data: str  # base64
     seed: int
     is_nsfw: bool
     path_abs: str = None
@@ -64,6 +70,7 @@ class Image:
             "seed": self.seed,
             "path_abs": self.path_abs,
         }
+
 
 class Response:
     render_request: GenerateImageRequest
@@ -80,7 +87,7 @@ class Response:
         del self.render_request.init_image_mask
 
         res = {
-            "status": 'succeeded',
+            "status": "succeeded",
             "render_request": self.render_request.dict(),
             "task_data": self.task_data.dict(),
             "output": [],
@@ -90,6 +97,7 @@ class Response:
             res["output"].append(image.json())
 
         return res
+
 
 class UserInitiatedStop(Exception):
     pass

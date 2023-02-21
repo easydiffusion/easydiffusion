@@ -1,0 +1,93 @@
+.model-list {
+    position: absolute;
+    margin-block-start: 2px;
+    display: none;
+    padding-inline-start: 0;
+    max-height: 200px;
+    overflow: auto;
+    background: var(--input-background-color);
+    border: var(--input-border-size) solid var(--input-border-color);
+    border-radius: var(--input-border-radius);
+    color: var(--input-text-color);
+    z-index: 1;
+    line-height: normal;
+}
+
+.model-list ul {
+    padding-right: 20px;
+    padding-inline-start: 0;
+    padding-bottom: 0px;
+}
+
+.model-list li {
+    padding-bottom: 0px;
+}
+
+.model-result {
+    list-style: none;
+}
+
+.model-no-result {
+    color: var(--text-color);
+    list-style: none;
+    padding: 3px 6px 3px 6px;
+    font-size: 10pt;
+    font-style: italic;
+    display: none;
+}
+
+.model-list li.model-folder {
+    color: var(--text-color);
+    list-style: none;
+    padding: 6px 6px 6px 6px;
+    font-size: 9pt;
+    font-weight: bold;
+}
+
+.model-list li.model-file {
+    color: var(--input-text-color);
+    list-style: none;
+    padding-left: 12px;
+    padding-right:20px;
+    font-size: 9pt;
+    font-weight: normal;
+    transition: none;
+    transition:property: none;
+    cursor: default;
+}
+
+.model-list li.model-file.in-root-folder {
+    padding-left: 6px;
+}
+
+.model-list li.model-file.selected {
+    background: grey;
+}
+
+.model-selector {
+    cursor: pointer;
+}
+
+.model-selector-arrow {
+    position: absolute;
+    width: 17px;
+    margin: 5px -17px;
+    padding-top: 3px;
+    cursor: pointer;
+    font-size: 8pt;
+    transition: none;
+}
+
+.model-input {
+    white-space: nowrap;
+}
+
+.reloadModels {
+    background: var(--background-color2);
+    border: none;
+    padding: 0px 0px;
+}
+
+#reload-models.secondaryButton:hover {
+    background: var(--background-color2);
+}

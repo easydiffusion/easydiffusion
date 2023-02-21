@@ -26,7 +26,7 @@ if exist "%cd%\stable-diffusion\env" (
 @rem activate the installer env
 call conda activate
 @if "%ERRORLEVEL%" NEQ "0" (
-       @echo. & echo "Error activating conda for Stable Diffusion. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
+       @echo. & echo "Error activating conda for Easy Diffusion. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
        pause
        exit /b
 )
@@ -61,6 +61,9 @@ if exist "GFPGANv1.3.pth" move GFPGANv1.3.pth ..\models\gfpgan\
 if exist "RealESRGAN_x4plus.pth" move RealESRGAN_x4plus.pth ..\models\realesrgan\
 if exist "RealESRGAN_x4plus_anime_6B.pth" move RealESRGAN_x4plus_anime_6B.pth ..\models\realesrgan\
 
+if not exist "%INSTALL_ENV_DIR%\DLLs\libssl-1_1-x64.dll"    copy "%INSTALL_ENV_DIR%\Library\bin\libssl-1_1-x64.dll"    "%INSTALL_ENV_DIR%\DLLs\"
+if not exist "%INSTALL_ENV_DIR%\DLLs\libcrypto-1_1-x64.dll" copy "%INSTALL_ENV_DIR%\Library\bin\libcrypto-1_1-x64.dll" "%INSTALL_ENV_DIR%\DLLs\"
+
 @rem install torch and torchvision
 call python ..\scripts\check_modules.py torch torchvision
 if "%ERRORLEVEL%" EQU "0" (
@@ -92,7 +95,7 @@ if "%ERRORLEVEL%" EQU "0" (
         set PYTHONNOUSERSITE=1
         set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 
-        call python -m pip install --upgrade sdkit==1.0.36 -q || (
+        call python -m pip install --upgrade sdkit==1.0.43 -q || (
             echo "Error updating sdkit"
         )
     )
@@ -113,7 +116,7 @@ if "%ERRORLEVEL%" EQU "0" (
 call python -c "from importlib.metadata import version; print('sdkit version:', version('sdkit'))"
 
 @rem upgrade stable-diffusion-sdkit
-call python -m pip install --upgrade stable-diffusion-sdkit -q || (
+call python -m pip install --upgrade stable-diffusion-sdkit==2.1.3 -q || (
     echo "Error updating stable-diffusion-sdkit"
 )
 call python -c "from importlib.metadata import version; print('stable-diffusion version:', version('stable-diffusion-sdkit'))"
@@ -139,15 +142,15 @@ set PATH=C:\Windows\System32;%PATH%
 
 call python ..\scripts\check_modules.py uvicorn fastapi
 @if "%ERRORLEVEL%" EQU "0" (
-    echo "Packages necessary for Stable Diffusion UI were already installed"
+    echo "Packages necessary for Easy Diffusion were already installed"
 ) else (
-    @echo. & echo "Downloading packages necessary for Stable Diffusion UI.." & echo.
+    @echo. & echo "Downloading packages necessary for Easy Diffusion..." & echo.
 
     set PYTHONNOUSERSITE=1
     set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 
     @call conda install -c conda-forge -y uvicorn fastapi || (
-        echo "Error installing the packages necessary for Stable Diffusion UI. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
+        echo "Error installing the packages necessary for Easy Diffusion. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
         pause
         exit /b
     )
@@ -279,7 +282,7 @@ call WHERE uvicorn > .tmp
     @call curl -L -k https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth > ..\models\realesrgan\RealESRGAN_x4plus_anime_6B.pth
 
     @if exist "..\models\realesrgan\RealESRGAN_x4plus_anime_6B.pth" (
-        for %%I in ("RealESRGAN_x4plus_anime_6B.pth") do if "%%~zI" NEQ "17938799" (
+        for %%I in ("..\models\realesrgan\RealESRGAN_x4plus_anime_6B.pth") do if "%%~zI" NEQ "17938799" (
             echo. & echo "Error: The downloaded ESRGAN x4plus_anime model file was invalid! Bytes downloaded: %%~zI" & echo.
             echo. & echo "Error downloading the data files (weights) for ESRGAN (Resolution Upscaling) x4plus_anime. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
             pause
@@ -328,7 +331,7 @@ call WHERE uvicorn > .tmp
     @echo sd_install_complete >> ..\scripts\install_status.txt
 )
 
-@echo. & echo "Stable Diffusion is ready!" & echo.
+@echo. & echo "Easy Diffusion installation complete! Starting the server!" & echo.
 
 @set SD_DIR=%cd%
 

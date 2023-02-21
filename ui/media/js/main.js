@@ -33,16 +33,17 @@ let promptStrengthField = document.querySelector('#prompt_strength')
 let samplerField = document.querySelector('#sampler_name')
 let samplerSelectionContainer = document.querySelector("#samplerSelection")
 let useFaceCorrectionField = document.querySelector("#use_face_correction")
-let gfpganModelField = document.querySelector("#gfpgan_model")
+let gfpganModelField = new ModelDropdown(document.querySelector("#gfpgan_model"), 'gfpgan')
 let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
 let upscaleAmountField = document.querySelector("#upscale_amount")
-let stableDiffusionModelField = document.querySelector('#stable_diffusion_model')
-let vaeModelField = document.querySelector('#vae_model')
-let hypernetworkModelField = document.querySelector('#hypernetwork_model')
+let stableDiffusionModelField = new ModelDropdown(document.querySelector('#stable_diffusion_model'), 'stable-diffusion')
+let vaeModelField = new ModelDropdown(document.querySelector('#vae_model'), 'vae', 'None')
+let hypernetworkModelField = new ModelDropdown(document.querySelector('#hypernetwork_model'), 'hypernetwork', 'None')
 let hypernetworkStrengthSlider = document.querySelector('#hypernetwork_strength_slider')
 let hypernetworkStrengthField = document.querySelector('#hypernetwork_strength')
 let outputFormatField = document.querySelector('#output_format')
+let blockNSFWField = document.querySelector('#block_nsfw')
 let showOnlyFilteredImageField = document.querySelector("#show_only_filtered_image")
 let updateBranchLabel = document.querySelector("#updateBranchLabel")
 let streamImageProgressField = document.querySelector("#stream_image_progress")
@@ -62,6 +63,7 @@ let promptStrengthContainer = document.querySelector('#prompt_strength_container
 let initialText = document.querySelector("#initial-text")
 let previewTools = document.querySelector("#preview-tools")
 let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
+let saveAllImagesBtn = document.querySelector("#save-all-images")
 
 let maskSetting = document.querySelector('#enable_mask')
 
@@ -80,7 +82,7 @@ imagePreview.addEventListener('drop', function(ev) {
     }
     ev.preventDefault()
     let moveTarget = ev.target
-    while (moveTarget && typeof moveTarget === 'object' && moveTarget.parentNode !== imagePreview) {
+    while (moveTarget && typeof moveTarget === 'object' && moveTarget.parentNode !== imagePreviewContent) {
         moveTarget = moveTarget.parentNode
     }
     if (moveTarget === initialText || moveTarget === previewTools) {
@@ -90,17 +92,17 @@ imagePreview.addEventListener('drop', function(ev) {
         return
     }
     if (moveTarget) {
-        const childs = Array.from(imagePreview.children)
+        const childs = Array.from(imagePreviewContent.children)
         if (moveTarget.nextSibling && childs.indexOf(movedTask) < childs.indexOf(moveTarget)) {
             // Move after the target if lower than current position.
             moveTarget = moveTarget.nextSibling
         }
     }
-    const newNode = imagePreview.insertBefore(movedTask, moveTarget || previewTools.nextSibling)
+    const newNode = imagePreviewContent.insertBefore(movedTask, moveTarget || previewTools.nextSibling)
     if (newNode === movedTask) {
         return
     }
-    imagePreview.removeChild(movedTask)
+    imagePreviewContent.removeChild(movedTask)
     const task = htmlTaskMap.get(movedTask)
     if (task) {
         htmlTaskMap.delete(movedTask)
@@ -270,6 +272,22 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                 </div>
             `
             outputContainer.appendChild(imageItemElem)
+            const imageRemoveBtn = imageItemElem.querySelector('.imgPreviewItemClearBtn')
+            let parentTaskContainer = imageRemoveBtn.closest('.imageTaskContainer')
+            imageRemoveBtn.addEventListener('click', (e) => {
+                shiftOrConfirm(e, "Remove the image from the results?", () => { 
+                    imageItemElem.style.display = 'none' 
+                    let allHidden = true;
+                    let children = parentTaskContainer.querySelectorAll('.imgItem');
+                    for(let x = 0; x < children.length; x++) {
+                        let child = children[x];
+                        if(child.style.display != "none") {
+                            allHidden = false;
+                        }
+                    }
+                    if(allHidden === true) {parentTaskContainer.classList.add("displayNone")}
+                })
+            })
         }
         const imageElem = imageItemElem.querySelector('img')
         imageElem.src = imageData
@@ -279,23 +297,6 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         imageElem.setAttribute('data-steps', imageInferenceSteps)
         imageElem.setAttribute('data-guidance', imageGuidanceScale)
 
-        const imageRemoveBtn = imageItemElem.querySelector('.imgPreviewItemClearBtn')
-        let parentTaskContainer = imageRemoveBtn.closest('.imageTaskContainer')
-        imageRemoveBtn.addEventListener('click', (e) => {
-            console.log(e)
-            shiftOrConfirm(e, "Remove the image from the results?", () => { 
-                imageItemElem.style.display = 'none' 
-                let allHidden = true;
-                let children = parentTaskContainer.querySelectorAll('.imgItem');
-                for(let x = 0; x < children.length; x++) {
-                    let child = children[x];
-                    if(child.style.display != "none") {
-                        allHidden = false;
-                    }
-                }
-                if(allHidden === true) {parentTaskContainer.classList.add("displayNone")}
-            })
-        })
 
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
         imageInfo.style.visibility = (livePreview ? 'hidden' : 'visible')
@@ -968,6 +969,7 @@ function getCurrentUserRequest() {
             stream_progress_updates: true,
             stream_image_progress: (numOutputsTotal > 50 ? false : streamImageProgressField.checked),
             show_only_filtered_image: showOnlyFilteredImageField.checked,
+            block_nsfw: blockNSFWField.checked,
             output_format: outputFormatField.value,
             output_quality: parseInt(outputQualityField.value),
             metadata_output_format: metadataOutputFormatField.value,
@@ -1126,7 +1128,7 @@ function createFileName(prompt, seed, steps, guidance, outputFormat) {
     // fileName += `${tagString}`
 
     // add the file extension
-    fileName += '.' + (outputFormat === 'png' ? 'png' : 'jpeg')
+    fileName += '.' + outputFormat
 
     return fileName
 }
@@ -1160,6 +1162,20 @@ clearAllPreviewsBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Clear 
     let taskEntries = document.querySelectorAll('.imageTaskContainer')
     taskEntries.forEach(removeTask)
 })})
+
+saveAllImagesBtn.addEventListener('click', (e) => {
+    let i = 0
+    document.querySelectorAll(".imageTaskContainer").forEach(container => {
+        let req = htmlTaskMap.get(container)
+        container.querySelectorAll(".imgContainer img").forEach(img => {
+            if (img.closest('.imgItem').style.display === 'none') {
+                return
+            }
+            setTimeout(() => {onDownloadImageClick(req, img)}, i*200)
+            i = i+1
+        })
+    })
+})
 
 stopImageBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Stop all the tasks?", async function(e) {
     await stopAllTasks()
@@ -1287,7 +1303,7 @@ function updateHypernetworkStrengthContainer() {
 hypernetworkModelField.addEventListener('change', updateHypernetworkStrengthContainer)
 updateHypernetworkStrengthContainer()
 
-/********************* JPEG Quality **********************/
+/********************* JPEG/WEBP Quality **********************/
 function updateOutputQuality() {
     outputQualityField.value =  0 | outputQualitySlider.value
     outputQualityField.dispatchEvent(new Event("change"))
@@ -1309,10 +1325,10 @@ outputQualityField.addEventListener('input', debounce(updateOutputQualitySlider,
 updateOutputQuality()
 
 outputFormatField.addEventListener('change', e => {
-    if (outputFormatField.value == 'jpeg') {
-        outputQualityRow.style.display='table-row'
-    } else {
+    if (outputFormatField.value === 'png') {
         outputQualityRow.style.display='none'
+    } else {
+        outputQualityRow.style.display='table-row'
     }
 })
 /********************* Zoom Slider **********************/
@@ -1333,79 +1349,6 @@ thumbnailSizeField.addEventListener('input', () => {
 })
 
 
-
-async function getModels() {
-    try {
-        const sd_model_setting_key = "stable_diffusion_model"
-        const vae_model_setting_key = "vae_model"
-        const hypernetwork_model_key = "hypernetwork_model"
-        const gfpgan_model_key = "gfpgan_model"
-        const selectedSDModel = SETTINGS[sd_model_setting_key].value
-        const selectedVaeModel = SETTINGS[vae_model_setting_key].value
-        const selectedHypernetworkModel = SETTINGS[hypernetwork_model_key].value
-        const selectedGfpganModel = SETTINGS[gfpgan_model_key].value
-
-        const models = await SD.getModels()
-        const modelsOptions = models['options']
-        if ("scan-error" in models) {
-            // let previewPane = document.getElementById('tab-content-wrapper')
-            let previewPane = document.getElementById('preview')
-            previewPane.style.background="red"
-            previewPane.style.textAlign="center"
-            previewPane.innerHTML = '<H1>🔥Malware alert!🔥</H1><h2>The file <i>' + models['scan-error'] + '</i> in your <tt>models/stable-diffusion</tt> folder is probably malware infected.</h2><h2>Please delete this file from the folder before proceeding!</h2>After deleting the file, reload this page.<br><br><button onClick="window.location.reload();">Reload Page</button>'
-            makeImageBtn.disabled = true
-        }
-
-        const stableDiffusionOptions = modelsOptions['stable-diffusion']
-        const vaeOptions = modelsOptions['vae']
-        const hypernetworkOptions = modelsOptions['hypernetwork']
-        const gfpganOptions = modelsOptions['gfpgan']
-
-        vaeOptions.unshift('') // add a None option
-        hypernetworkOptions.unshift('') // add a None option
-
-        function createModelOptions(modelField, selectedModel, path="") {
-            return function fn(modelName) {
-                if (typeof(modelName) == 'string') {
-                    const modelOption = document.createElement('option')
-                    modelOption.value =  path + modelName
-                    modelOption.innerHTML = modelName !== '' ? (path != "" ? "&nbsp;&nbsp;"+modelName : modelName) : 'None'
-
-                    if (path + modelName === selectedModel) {
-                        modelOption.selected = true
-                    }
-                    modelField.appendChild(modelOption)
-                } else {
-                    // Since <optgroup/>s can't be nested, don't show empty groups
-                    if (modelName[1].some(child => typeof(child) == 'string')) {
-                        const modelGroup = document.createElement('optgroup')
-                        modelGroup.label = path + modelName[0]
-                        modelField.appendChild(modelGroup)
-                    }
-                    modelName[1].forEach( createModelOptions(modelField, selectedModel, path + modelName[0] + "/" ) )
-                }
-            }
-        }
-
-        stableDiffusionOptions.forEach(createModelOptions(stableDiffusionModelField, selectedSDModel))
-        vaeOptions.forEach(createModelOptions(vaeModelField, selectedVaeModel))
-        hypernetworkOptions.forEach(createModelOptions(hypernetworkModelField, selectedHypernetworkModel))
-        gfpganOptions.forEach(createModelOptions(gfpganModelField,selectedGfpganModel))
-
-
-        stableDiffusionModelField.dispatchEvent(new Event('change'))
-        vaeModelField.dispatchEvent(new Event('change'))
-        hypernetworkModelField.dispatchEvent(new Event('change'))
-
-        // TODO: set default for model here too
-        SETTINGS[sd_model_setting_key].default = stableDiffusionOptions[0]
-        if (getSetting(sd_model_setting_key) == '' || SETTINGS[sd_model_setting_key].value == '') {
-            setSetting(sd_model_setting_key, stableDiffusionOptions[0])
-        }
-    } catch (e) {
-        console.log('get models error', e)
-    }
-}
 
 function checkRandomSeed() {
     if (randomSeedField.checked) {

@@ -2,7 +2,7 @@
 
 const EXT_REGEX = /(?:\.([^.]+))?$/
 const TEXT_EXTENSIONS = ['txt', 'json']
-const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif', 'tga']
+const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif', 'tga', 'webp']
 
 function parseBoolean(stringValue) {
     if (typeof stringValue === 'boolean') {
@@ -375,6 +375,10 @@ function readUI() {
 }
 function getModelPath(filename, extensions)
 {
+    if (typeof filename !== "string") {
+        return
+    }
+    
     let pathIdx
     if (filename.includes('/models/stable-diffusion/')) {
         pathIdx = filename.indexOf('/models/stable-diffusion/') + 25 // Linux, Mac paths
@@ -528,7 +532,7 @@ function dragOverHandler(ev) {
     ev.dataTransfer.dropEffect = "copy"
 
     let img = new Image()
-    img.src = location.host + '/media/images/favicon-32x32.png'
+    img.src = '//' + location.host + '/media/images/favicon-32x32.png'
     ev.dataTransfer.setDragImage(img, 16, 16)
 }
 

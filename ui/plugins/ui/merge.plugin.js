@@ -241,13 +241,9 @@
     <div class="merge-container panel-box">
       <div class="merge-input">
          <p><label for="#mergeModelA">Select Model A:</label></p>
-         <select id="mergeModelA">
-             <option>A</option>
-         </select>
+         <input id="mergeModelA" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
          <p><label for="#mergeModelB">Select Model B:</label></p>
-         <select id="mergeModelB">
-             <option>A</option>
-         </select>
+         <input id="mergeModelB" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
          <br/><br/>
          <p id="merge-warning"><small><b>Important:</b> Please merge models of similar type.<br/>For e.g. <code>SD 1.4</code> models with only <code>SD 1.4/1.5</code> models,<br/><code>SD 2.0</code> with <code>SD 2.0</code>-type, and <code>SD 2.1</code> with <code>SD 2.1</code>-type models.</small></p>
          <br/>
@@ -338,19 +334,10 @@
     linkTabContents(tabSettingsSingle)
     linkTabContents(tabSettingsBatch)
 
-    /////////////////////// Event Listener
-    document.addEventListener('tabClick', (e) => { 
-        if (e.detail.name == 'merge') {
-	    console.log('Activate')
-            let modelList = stableDiffusionModelField.cloneNode(true)
-            modelList.id = "mergeModelA"
-            document.querySelector("#mergeModelA").replaceWith(modelList)
-            modelList = stableDiffusionModelField.cloneNode(true)
-            modelList.id = "mergeModelB"
-            document.querySelector("#mergeModelB").replaceWith(modelList)
-            updateChart()
-	}
-    })
+    console.log('Activate')
+    let mergeModelAField = new ModelDropdown(document.querySelector('#mergeModelA'), 'stable-diffusion')
+    let mergeModelBField = new ModelDropdown(document.querySelector('#mergeModelB'), 'stable-diffusion')
+    updateChart()
 
     // slider
     const singleMergeRatioField = document.querySelector('#single-merge-ratio')

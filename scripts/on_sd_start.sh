@@ -1,10 +1,11 @@
 #!/bin/bash
 
-source ./scripts/functions.sh
-
+cp sd-ui-files/scripts/functions.sh scripts/
 cp sd-ui-files/scripts/on_env_start.sh scripts/
 cp sd-ui-files/scripts/bootstrap.sh scripts/
 cp sd-ui-files/scripts/check_modules.py scripts/
+
+source ./scripts/functions.sh
 
 # activate the installer env
 CONDA_BASEPATH=$(conda info --base)
@@ -80,7 +81,7 @@ if python ../scripts/check_modules.py sdkit sdkit.models ldm transformers numpy 
         export PYTHONNOUSERSITE=1
         export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
 
-        python -m pip install --upgrade sdkit==1.0.36 -q
+        python -m pip install --upgrade sdkit==1.0.43 -q
     fi
 else
     echo "Installing sdkit: https://pypi.org/project/sdkit/"
@@ -98,7 +99,7 @@ fi
 python -c "from importlib.metadata import version; print('sdkit version:', version('sdkit'))"
 
 # upgrade stable-diffusion-sdkit
-python -m pip install --upgrade stable-diffusion-sdkit -q
+python -m pip install --upgrade stable-diffusion-sdkit==2.1.3 -q
 python -c "from importlib.metadata import version; print('stable-diffusion version:', version('stable-diffusion-sdkit'))"
 
 # install rich
@@ -118,9 +119,9 @@ else
 fi
 
 if python ../scripts/check_modules.py uvicorn fastapi ; then
-    echo "Packages necessary for Stable Diffusion UI were already installed"
+    echo "Packages necessary for Easy Diffusion were already installed"
 else
-    printf "\n\nDownloading packages necessary for Stable Diffusion UI..\n\n"
+    printf "\n\nDownloading packages necessary for Easy Diffusion..\n\n"
 
     export PYTHONNOUSERSITE=1
     export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
@@ -137,7 +138,7 @@ else
 fi
 
 if [ -f "../models/stable-diffusion/sd-v1-4.ckpt" ]; then
-    model_size=`find "../models/stable-diffusion/sd-v1-4.ckpt" -printf "%s"`
+    model_size=`filesize "../models/stable-diffusion/sd-v1-4.ckpt"`
 
     if [ "$model_size" -eq "4265380512" ] || [ "$model_size" -eq "7703807346" ] || [ "$model_size" -eq "7703810927" ]; then
         echo "Data files (weights) necessary for Stable Diffusion were already downloaded"
@@ -153,7 +154,7 @@ if [ ! -f "../models/stable-diffusion/sd-v1-4.ckpt" ]; then
     curl -L -k https://huggingface.co/CompVis/stable-diffusion-v-1-4-original/resolve/main/sd-v1-4.ckpt > ../models/stable-diffusion/sd-v1-4.ckpt
 
     if [ -f "../models/stable-diffusion/sd-v1-4.ckpt" ]; then
-        model_size=`find "../models/stable-diffusion/sd-v1-4.ckpt" -printf "%s"`
+        model_size=`filesize "../models/stable-diffusion/sd-v1-4.ckpt"`
         if [ ! "$model_size" == "4265380512" ]; then
 	    fail "The downloaded model file was invalid! Bytes downloaded: $model_size"
         fi
@@ -164,7 +165,7 @@ fi
 
 
 if [ -f "../models/gfpgan/GFPGANv1.3.pth" ]; then
-    model_size=`find "../models/gfpgan/GFPGANv1.3.pth" -printf "%s"`
+    model_size=`filesize "../models/gfpgan/GFPGANv1.3.pth"`
 
     if [ "$model_size" -eq "348632874" ]; then
         echo "Data files (weights) necessary for GFPGAN (Face Correction) were already downloaded"
@@ -180,7 +181,7 @@ if [ ! -f "../models/gfpgan/GFPGANv1.3.pth" ]; then
     curl -L -k https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.3.pth > ../models/gfpgan/GFPGANv1.3.pth
 
     if [ -f "../models/gfpgan/GFPGANv1.3.pth" ]; then
-        model_size=`find "../models/gfpgan/GFPGANv1.3.pth" -printf "%s"`
+        model_size=`filesize "../models/gfpgan/GFPGANv1.3.pth"`
         if [ ! "$model_size" -eq "348632874" ]; then
             fail "The downloaded GFPGAN model file was invalid! Bytes downloaded: $model_size"
         fi
@@ -191,7 +192,7 @@ fi
 
 
 if [ -f "../models/realesrgan/RealESRGAN_x4plus.pth" ]; then
-    model_size=`find "../models/realesrgan/RealESRGAN_x4plus.pth" -printf "%s"`
+    model_size=`filesize "../models/realesrgan/RealESRGAN_x4plus.pth"`
 
     if [ "$model_size" -eq "67040989" ]; then
         echo "Data files (weights) necessary for ESRGAN (Resolution Upscaling) x4plus were already downloaded"
@@ -207,7 +208,7 @@ if [ ! -f "../models/realesrgan/RealESRGAN_x4plus.pth" ]; then
     curl -L -k https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth > ../models/realesrgan/RealESRGAN_x4plus.pth
 
     if [ -f "../models/realesrgan/RealESRGAN_x4plus.pth" ]; then
-        model_size=`find "../models/realesrgan/RealESRGAN_x4plus.pth" -printf "%s"`
+        model_size=`filesize "../models/realesrgan/RealESRGAN_x4plus.pth"`
         if [ ! "$model_size" -eq "67040989" ]; then
             fail "The downloaded ESRGAN x4plus model file was invalid! Bytes downloaded: $model_size"
         fi
@@ -218,7 +219,7 @@ fi
 
 
 if [ -f "../models/realesrgan/RealESRGAN_x4plus_anime_6B.pth" ]; then
-    model_size=`find "../models/realesrgan/RealESRGAN_x4plus_anime_6B.pth" -printf "%s"`
+    model_size=`filesize "../models/realesrgan/RealESRGAN_x4plus_anime_6B.pth"`
 
     if [ "$model_size" -eq "17938799" ]; then
         echo "Data files (weights) necessary for ESRGAN (Resolution Upscaling) x4plus_anime were already downloaded"
@@ -234,7 +235,7 @@ if [ ! -f "../models/realesrgan/RealESRGAN_x4plus_anime_6B.pth" ]; then
     curl -L -k https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth > ../models/realesrgan/RealESRGAN_x4plus_anime_6B.pth
 
     if [ -f "../models/realesrgan/RealESRGAN_x4plus_anime_6B.pth" ]; then
-        model_size=`find "../models/realesrgan/RealESRGAN_x4plus_anime_6B.pth" -printf "%s"`
+        model_size=`filesize "../models/realesrgan/RealESRGAN_x4plus_anime_6B.pth"`
         if [ ! "$model_size" -eq "17938799" ]; then
             fail "The downloaded ESRGAN x4plus_anime model file was invalid! Bytes downloaded: $model_size"
         fi
@@ -245,7 +246,7 @@ fi
 
 
 if [ -f "../models/vae/vae-ft-mse-840000-ema-pruned.ckpt" ]; then
-    model_size=`find ../models/vae/vae-ft-mse-840000-ema-pruned.ckpt -printf "%s"`
+    model_size=`filesize "../models/vae/vae-ft-mse-840000-ema-pruned.ckpt"`
 
     if [ "$model_size" -eq "334695179" ]; then
         echo "Data files (weights) necessary for the default VAE (sd-vae-ft-mse-original) were already downloaded"
@@ -261,7 +262,7 @@ if [ ! -f "../models/vae/vae-ft-mse-840000-ema-pruned.ckpt" ]; then
     curl -L -k https://huggingface.co/stabilityai/sd-vae-ft-mse-original/resolve/main/vae-ft-mse-840000-ema-pruned.ckpt > ../models/vae/vae-ft-mse-840000-ema-pruned.ckpt
 
     if [ -f "../models/vae/vae-ft-mse-840000-ema-pruned.ckpt" ]; then
-        model_size=`find ../models/vae/vae-ft-mse-840000-ema-pruned.ckpt -printf "%s"`
+        model_size=`filesize "../models/vae/vae-ft-mse-840000-ema-pruned.ckpt"`
         if [ ! "$model_size" -eq "334695179" ]; then
             printf "\n\nError: The downloaded default VAE (sd-vae-ft-mse-original) file was invalid! Bytes downloaded: $model_size\n\n"
             printf "\n\nError downloading the data files (weights) for the default VAE (sd-vae-ft-mse-original). Sorry about that, please try to:\n  1. Run this installer again.\n  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting\n  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB\n  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues\nThanks!\n\n"
@@ -280,7 +281,7 @@ if [ `grep -c sd_install_complete ../scripts/install_status.txt` -gt "0" ]; then
     echo sd_install_complete >> ../scripts/install_status.txt
 fi
 
-printf "\n\nStable Diffusion is ready!\n\n"
+printf "\n\nEasy Diffusion installation complete, starting the server!\n\n"
 
 SD_PATH=`pwd`
 

@@ -80,6 +80,14 @@ var PARAMETERS = [
         ],
     },
     {
+        id: "block_nsfw",
+        type: ParameterType.checkbox,
+        label: "Block NSFW images",
+        note: "blurs out NSFW images",
+        icon: "fa-land-mine-on",
+        default: false,
+    },
+    {
         id: "sound_toggle",
         type: ParameterType.checkbox,
         label: "Enable Sound",
@@ -444,6 +452,10 @@ async function getSystemInfo() {
         let force = false
         if (res['enforce_output_dir'] !== undefined) {
             force = res['enforce_output_dir']
+            if (force == true) {
+               saveToDiskField.checked = true
+               metadataOutputFormatField.disabled = false
+            }
             saveToDiskField.disabled = force
             diskPathField.disabled = force
         }

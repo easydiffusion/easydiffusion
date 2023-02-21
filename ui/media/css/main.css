@@ -468,6 +468,7 @@ div.img-preview img {
     background: var(--accent-color);
     border: var(--primary-button-border);
     color: rgb(255, 221, 255);
+    padding: 3pt 6pt;
 }
 .secondaryButton {
     background: rgb(132, 8, 0);
@@ -749,6 +750,13 @@ input::file-selector-button {
 .input-toggle > input:checked + label:before {
     right: calc(var(--input-border-size) + var(--input-switch-padding));
     opacity: 1;
+}
+.model-filter {
+    width: calc(100% - 20px);
+    padding-right: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Small screens */
