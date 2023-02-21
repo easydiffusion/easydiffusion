@@ -284,13 +284,22 @@
             <div id="preview-content">
                 <div id="preview-tools">
                     <button id="clear-all-previews" class="secondaryButton"><i class="fa-solid fa-trash-can"></i> Clear All</button>
+                    <div class="dropdown view-settings" style="float:right;">
+                        <button class="dropbtn primaryButton" style="padding:6px;">Display settings</button>
+                        <div class="dropdown-content" style="right:1em;">
+                            <div class="auto-scroll">
+                                <div class="input-toggle"><input id="auto_scroll" name="auto_scroll" type="checkbox"><label for="auto_scroll"></label></div>
+                                <label for="auto_scroll">Scroll to generated image</label>
+                            </div>
+                            <div style="padding:4px;margin-top:1em;">
+                                Preview image size limit:<br/>
+                                <input id="thumbnail_size" name="thumbnail_size" class="editor-slider" type="range" value="70" min="5" max="200" oninput="sliderUpdate(event)"> 
+                                <input id="thumbnail_size-input" name="thumbnail_size-input" size="3" value="70" pattern="^[0-9.]+$" onkeypress="preventNonNumericalInput(event)" oninput="sliderUpdate(event)">&nbsp;%
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div style="position:fixed;right:0px;bottom:0px;border-radius:4px 0px 0px 0px;background:rgba(0,0,0,0.5);padding-left:8px;padding-left:4px;">
-            <i class="fa-solid fa-expand"></i>
-            <input id="thumbnail_size" name="thumbnail_size" class="editor-slider" type="range" value="70" min="5" max="200" oninput="sliderUpdate(event)"> 
-            <input id="thumbnail_size-input" name="thumbnail_size-input" size="3" value="70" pattern="^[0-9.]+$" onkeypress="preventNonNumericalInput(event)" oninput="sliderUpdate(event)">&nbsp;%
         </div>
         </div>
 
