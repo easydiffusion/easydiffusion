@@ -403,15 +403,34 @@ div.img-preview img {
     position: absolute;
     z-index: 2;
 
-    background: var(--background-color4);
-    border: 2px solid var(--background-color2);
-    border-radius: 7px;
     padding: 5px;
     margin-bottom: 15px;
     box-shadow: 0 20px 28px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
 }
 .dropdown:hover .dropdown-content {
     display: block;
+}
+
+.display-settings {
+    float: right;
+}
+
+.display-settings .dropdown-content {
+    right: 12px;
+}
+
+.dropdown-item {
+    padding: 4px;
+    background: var(--background-color4);
+    border: 2px solid var(--background-color2);
+}
+
+.dropdown-item:first-child {
+    border-radius: 7px 7px 0px 0px;
+}
+
+.dropdown-item:last-child {
+    border-radius: 0px 0px 7px 7px;
 }
 
 .imageTaskContainer {
