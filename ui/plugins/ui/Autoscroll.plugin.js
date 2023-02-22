@@ -1,20 +1,6 @@
 (function () {
     "use strict"
 
-    var styleSheet = document.createElement("style");
-    styleSheet.textContent = `
-        .auto-scroll {
-            float: right;
-        }
-    `;
-    document.head.appendChild(styleSheet);
-    
-    const autoScrollControl = document.createElement('div');
-    autoScrollControl.innerHTML = `<input id="auto_scroll" name="auto_scroll" type="checkbox">
-                            <label for="auto_scroll">Scroll to generated image</label>`
-    autoScrollControl.className = "auto-scroll"
-    clearAllPreviewsBtn.parentNode.insertBefore(autoScrollControl, clearAllPreviewsBtn.nextSibling)
-    prettifyInputs(document);
     let autoScroll = document.querySelector("#auto_scroll")
     
     // save/restore the toggle state

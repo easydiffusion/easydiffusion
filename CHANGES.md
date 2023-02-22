@@ -19,6 +19,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.21 - 22 Feb 2023 - An option to control the size of the image thumbnails. You can use the `Display options` in the top-right corner to change this. Thanks @JeLuf.
 * 2.5.20 - 20 Feb 2023 - Support saving images in WEBP format (which consumes less disk space, with similar quality). Thanks @ogmaresca.
 * 2.5.20 - 18 Feb 2023 - A setting to block NSFW images from being generated. You can enable this setting in the Settings tab.
 * 2.5.19 - 17 Feb 2023 - Initial support for server-side plugins. Currently supports overriding the `get_cond_and_uncond()` function.

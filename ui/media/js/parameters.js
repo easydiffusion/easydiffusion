@@ -7,6 +7,7 @@
     checkbox: "checkbox",
     select: "select",
     select_multiple: "select_multiple",
+    slider: "slider",
     custom: "custom",
 };
 
@@ -199,6 +200,18 @@ function getParameterSettingsEntry(id) {
     return parameter[0].settingsEntry
 }
 
+function sliderUpdate(event) {
+    if (event.srcElement.id.endsWith('-input')) {
+        let slider = document.getElementById(event.srcElement.id.slice(0,-6))
+        slider.value = event.srcElement.value
+        slider.dispatchEvent(new Event("change"))
+    } else {
+        let field = document.getElementById(event.srcElement.id+'-input')
+        field.value = event.srcElement.value
+        field.dispatchEvent(new Event("change"))
+    }
+}
+
 function getParameterElement(parameter) {
     switch (parameter.type) {
         case ParameterType.checkbox:
@@ -209,6 +222,8 @@ function getParameterElement(parameter) {
             var options = (parameter.options || []).map(option => `<option value="${option.value}">${option.label}</option>`).join("")
             var multiple = (parameter.type == ParameterType.select_multiple ? 'multiple' : '')
             return `<select id="${parameter.id}" name="${parameter.id}" ${multiple}>${options}</select>`
+        case ParameterType.slider:
+            return `<input id="${parameter.id}" name="${parameter.id}" class="editor-slider" type="range" value="${parameter.default}" min="${parameter.slider_min}" max="${parameter.slider_max}" oninput="sliderUpdate(event)"> <input id="${parameter.id}-input" name="${parameter.id}-input" size="4" value="${parameter.default}" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" oninput="sliderUpdate(event)">&nbsp;${parameter.slider_unit}`
         case ParameterType.custom:
             return parameter.render(parameter)
         default:
@@ -461,3 +476,4 @@ saveSettingsBtn.addEventListener('click', function() {
     saveSettingsBtn.classList.add('active')
     asyncDelay(300).then(() => saveSettingsBtn.classList.remove('active'))
 })
+

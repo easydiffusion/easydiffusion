@@ -47,6 +47,7 @@ let blockNSFWField = document.querySelector('#block_nsfw')
 let showOnlyFilteredImageField = document.querySelector("#show_only_filtered_image")
 let updateBranchLabel = document.querySelector("#updateBranchLabel")
 let streamImageProgressField = document.querySelector("#stream_image_progress")
+let thumbnailSizeField = document.querySelector("#thumbnail_size")
 
 let makeImageBtn = document.querySelector('#makeImage')
 let stopImageBtn = document.querySelector('#stopImage')
@@ -1351,6 +1352,24 @@ outputFormatField.addEventListener('change', e => {
         outputQualityRow.style.display='table-row'
     }
 })
+/********************* Zoom Slider **********************/
+thumbnailSizeField.addEventListener('change', () => {
+    (function (s) {
+        for (var j =0; j < document.styleSheets.length; j++) {
+            let cssSheet = document.styleSheets[j]
+            for (var i = 0; i < cssSheet.cssRules.length; i++) {
+                var rule = cssSheet.cssRules[i];
+                if (rule.selectorText == "div.img-preview img") {
+                  rule.style['max-height'] = s+'vh';
+                  rule.style['max-width'] = s+'vw';
+                  return;
+                }
+            }
+        }
+    })(thumbnailSizeField.value)
+})
+
+
 
 function checkRandomSeed() {
     if (randomSeedField.checked) {
@@ -1529,3 +1548,7 @@ window.addEventListener("beforeunload", function(e) {
 
 createCollapsibles()
 prettifyInputs(document);
+
+// set the textbox as focused on start
+promptField.focus()
+promptField.selectionStart = promptField.value.length

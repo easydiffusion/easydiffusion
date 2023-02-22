@@ -26,7 +26,7 @@
         <div id="logo">
             <h1>
                 Easy Diffusion
-                <small>v2.5.20 <span id="updateBranchLabel"></span></small>
+                <small>v2.5.21 <span id="updateBranchLabel"></span></small>
             </h1>
         </div>
         <div id="server-status">
@@ -288,12 +288,34 @@
                 <div id="preview-tools">
                     <button id="clear-all-previews" class="secondaryButton"><i class="fa-solid fa-trash-can"></i> Clear All</button>
                     <span class="dropdown">
-                        <button class="dropbtn primaryButton"><i class="fa-solid fa-download"></i> Download</button>
+                        <button class="dropbtn primaryButton"><i class="fa-solid fa-download"></i> Download <i class="fa-solid fa-angle-down"></i></button>
                         <div class="dropdown-content">
-                            <div><button id="save-all-images" class="primaryButton"><i class="fa-solid fa-images"></i> Download all images</button></div><br/>
-                            <div><button id="save-all-images-json" class="primaryButton"><i class="fa-solid fa-tags"></i> Download all images<br/>and their metadata</button></div>
+                            <div class="dropdown-item">
+                                <button id="save-all-images" class="primaryButton"><i class="fa-solid fa-images"></i> Download all images</button>
+                            </div>
+                            <div class="dropdown-item">
+                                <button id="save-all-images-json" class="primaryButton"><i class="fa-solid fa-tags"></i> Download all images<br/>and their metadata</button>
+                            </div>
                         </div>
                     </span>
+                    <div class="dropdown display-settings">
+                        <button class="dropbtn primaryButton">
+                            <i class="fa-solid fa-bars"></i>
+                            Preview options
+                            <i class="fa-solid fa-angle-down"></i>
+                        </button>
+                        <div class="dropdown-content">
+                            <div class="auto-scroll dropdown-item">
+                                <div class="input-toggle"><input id="auto_scroll" name="auto_scroll" type="checkbox"><label for="auto_scroll"></label></div>
+                                <label for="auto_scroll">Scroll to generated image</label>
+                            </div>
+                            <div class="dropdown-item">
+                                <label>Preview image size limit:</label><br/>
+                                <input id="thumbnail_size" name="thumbnail_size" class="editor-slider" type="range" value="70" min="5" max="200" oninput="sliderUpdate(event)"> 
+                                <input id="thumbnail_size-input" name="thumbnail_size-input" size="3" value="70" pattern="^[0-9.]+$" onkeypress="preventNonNumericalInput(event)" oninput="sliderUpdate(event)">&nbsp;%
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
