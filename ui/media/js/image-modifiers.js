@@ -167,12 +167,14 @@ function refreshModifiersState(newTags) {
         let found = false
         document.querySelector('#editor-modifiers').querySelectorAll('.modifier-card').forEach(modifierCard => {
             const modifierName = modifierCard.querySelector('.modifier-card-label').innerText
-            if (tag == modifierName) {
+            if (trimModifiers(tag) == trimModifiers(modifierName)) {
                 // add modifier to active array
                 if (!activeTags.map(x => x.name).includes(tag)) { // only add each tag once even if several custom modifier cards share the same tag
+                    const imageModifierCard = modifierCard.cloneNode(true)
+                    imageModifierCard.querySelector('.modifier-card-label p').innerText = tag
                     activeTags.push({
                         'name': modifierName,
-                        'element': modifierCard.cloneNode(true),
+                        'element': imageModifierCard,
                         'originElement': modifierCard
                     })
                 }
