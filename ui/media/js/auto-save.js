@@ -44,7 +44,8 @@ const SETTINGS_IDS_LIST = [
     "metadata_output_format",
     "auto_save_settings",
     "apply_color_correction",
-    "process_order_toggle"
+    "process_order_toggle",
+    "thumbnail_size"
 ]
 
 const IGNORE_BY_DEFAULT = [

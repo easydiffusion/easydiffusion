@@ -288,6 +288,20 @@
                 <div id="preview-tools">
                     <button id="clear-all-previews" class="secondaryButton"><i class="fa-solid fa-trash-can"></i> Clear All</button>
                     <button id="save-all-images" class="primaryButton"><i class="fa-solid fa-download"></i> Download All Images</button>
+                    <div class="dropdown display-settings">
+                        <button class="dropbtn primaryButton">Display settings</button>
+                        <div class="dropdown-content">
+                            <div class="auto-scroll dropdown-item">
+                                <div class="input-toggle"><input id="auto_scroll" name="auto_scroll" type="checkbox"><label for="auto_scroll"></label></div>
+                                <label for="auto_scroll">Scroll to generated image</label>
+                            </div>
+                            <div class="dropdown-item">
+                                Preview image size limit:<br/>
+                                <input id="thumbnail_size" name="thumbnail_size" class="editor-slider" type="range" value="70" min="5" max="200" oninput="sliderUpdate(event)"> 
+                                <input id="thumbnail_size-input" name="thumbnail_size-input" size="3" value="70" pattern="^[0-9.]+$" onkeypress="preventNonNumericalInput(event)" oninput="sliderUpdate(event)">&nbsp;%
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
