@@ -1527,3 +1527,7 @@ window.addEventListener("beforeunload", function(e) {
 
 createCollapsibles()
 prettifyInputs(document);
+
+// set the textbox as focused on start
+promptField.focus()
+promptField.selectionStart = promptField.value.length
