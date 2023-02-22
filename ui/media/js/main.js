@@ -1332,7 +1332,7 @@ outputFormatField.addEventListener('change', e => {
     }
 })
 /********************* Zoom Slider **********************/
-thumbnailSizeField.addEventListener('input', () => {
+thumbnailSizeField.addEventListener('change', () => {
     (function (s) {
         for (var j =0; j < document.styleSheets.length; j++) {
             let cssSheet = document.styleSheets[j]

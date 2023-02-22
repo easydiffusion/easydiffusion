@@ -156,17 +156,6 @@ var PARAMETERS = [
         icon: "fa-gear",
         default: true,
     },
-    /* {
-        id: "thumbnail_size",
-        type: ParameterType.slider,
-        label: "Maximum image display size",
-        note: "Downscale large images to keep a better overview",
-        icon: "fa-compress",
-        slider_min: 1,
-        slider_max: 100,
-        slider_unit: "%",
-        default: 70
-    }, */
     {
         id: "confirm_dangerous_actions",
         type: ParameterType.checkbox,
@@ -213,11 +202,13 @@ function getParameterSettingsEntry(id) {
 
 function sliderUpdate(event) {
     if (event.srcElement.id.endsWith('-input')) {
-        console.log(event.srcElement.value)
-        document.getElementById(event.srcElement.id.slice(0,-6)).value = event.srcElement.value
+        let slider = document.getElementById(event.srcElement.id.slice(0,-6))
+        slider.value = event.srcElement.value
+        slider.dispatchEvent(new Event("change"))
     } else {
-        console.log(event.srcElement.value)
-        document.getElementById(event.srcElement.id+'-input').value = event.srcElement.value
+        let field = document.getElementById(event.srcElement.id+'-input')
+        field.value = event.srcElement.value
+        field.dispatchEvent(new Event("change"))
     }
 }
 
