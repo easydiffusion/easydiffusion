@@ -80,7 +80,7 @@ function createModifierGroup(modifierGroup, initiallyExpanded, removeBy) {
 
     modifiers.forEach(modObj => {
         const modifierName = modObj.modifier
-        const modifierPreviews = modObj?.previews?.map(preview => `${modifierThumbnailPath}/${preview.path}`)
+        const modifierPreviews = modObj?.previews?.map(preview => `${IMAGE_REGEX.test(preview.image) ? preview.image : modifierThumbnailPath + '/' + preview.path}`)
 
         const modifierCard = createModifierCard(modifierName, modifierPreviews, removeBy)
 
