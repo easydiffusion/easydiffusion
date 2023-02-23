@@ -61,7 +61,10 @@ class ModelDropdown
         if (this.modelFilterArrow) {
             this.modelFilterArrow.style.color = state ? 'dimgray' : ''
         }
-    }    
+    }
+    get modelElements() {
+        return this.modelList.querySelectorAll('.model-file')
+    }
     addEventListener(type, listener, options) {
         return this.modelFilter.addEventListener(type, listener, options)
     }
@@ -116,12 +119,13 @@ class ModelDropdown
     }
 
     getPreviousVisibleSibling(elem) {
-        let prevSibling = elem.previousElementSibling
-        while (prevSibling && prevSibling.classList.contains('model-file')) {
-            if (prevSibling.style.display == 'list-item') return prevSibling
-            prevSibling = prevSibling.previousElementSibling
+        const modelElements = Array.from(this.modelElements)
+        const index = modelElements.indexOf(elem)
+        if (index <= 0) {
+            return undefined
         }
-        if (prevSibling && prevSibling.style.display == 'list-item') return prevSibling
+
+        return modelElements.slice(0, index).reverse().find(e => e.style.display === 'list-item')
     }
 
     getLastVisibleChild(elem) {
@@ -130,63 +134,16 @@ class ModelDropdown
         return this.getPreviousVisibleSibling(lastElementChild)
     }
     
-    findPreviousSibling(elem) {
-        // is there an immediate sibling?
-        let prevSibling = this.getPreviousVisibleSibling(elem)
-        if (prevSibling) {
-            // if the previous sibling is a model file, just select it
-            if (prevSibling.classList.contains('model-file')) return prevSibling
-            
-            // if the previous sibling is a model folder, select the last model file it contains
-            if (prevSibling.classList.contains('model-folder')) return prevSibling.firstElementChild.lastElementChild
-        }
-
-        // no sibling model file and no sibling model folder. look for siblings around the parent element.
-        prevSibling = this.getPreviousVisibleSibling(elem.parentElement.parentElement)
-        if (prevSibling) {
-            // if the previous entry is a model file, select it
-            if (prevSibling.classList.contains('model-file')) return prevSibling
-
-            // is there another model folder to jump to before the current one?
-            if (prevSibling.classList.contains('model-folder')) return this.getLastVisibleChild(prevSibling.firstElementChild)
-        }
-    }
-    
     getNextVisibleSibling(elem) {
-        let nextSibling = elem.nextElementSibling
-        while (nextSibling && nextSibling.classList.contains('model-file')) {
-            if (nextSibling.style.display == 'list-item') return nextSibling
-            nextSibling = nextSibling.nextElementSibling
-        }
-        if (nextSibling && nextSibling.style.display == 'list-item') return nextSibling
+        const modelElements = Array.from(this.modelElements)
+        const index = modelElements.indexOf(elem)
+        return modelElements.slice(index + 1).find(e => e.style.display === 'list-item')
     }
     
     getFirstVisibleChild(elem) {
         let firstElementChild = elem.firstElementChild
         if (firstElementChild.style.display == 'list-item') return firstElementChild
         return this.getNextVisibleSibling(firstElementChild)
-    }
-    
-    findNextSibling(elem) {
-        // is there an immediate sibling?
-        let nextSibling = this.getNextVisibleSibling(elem)
-        if (nextSibling) {
-            // if the next sibling is a model file, just select it
-            if (nextSibling.classList.contains('model-file')) return nextSibling
-            
-            // if the next sibling is a model folder, select the first model file it contains
-            if (nextSibling.classList.contains('model-folder')) return nextSibling.firstElementChild.firstElementChild
-        }
-
-        // no sibling model file and no sibling model folder. look for siblings around the parent element.
-        nextSibling = this.getNextVisibleSibling(elem.parentElement.parentElement)
-        if (nextSibling) {
-            // if the next entry is a model file, select it
-            if (nextSibling.classList.contains('model-file')) return nextSibling
-
-            // is there another model folder to jump to after the current one?
-            if (nextSibling.classList.contains('model-folder')) return this.getFirstVisibleChild(nextSibling.firstElementChild)
-        }
     }
     
     selectModelEntry(elem) {
@@ -202,7 +159,7 @@ class ModelDropdown
     }
     
     selectPreviousFile() {
-        const elem = this.findPreviousSibling(this.highlightedModelEntry)
+        const elem = this.getPreviousVisibleSibling(this.highlightedModelEntry)
         if (elem) {
             this.selectModelEntry(elem)
         }
@@ -215,7 +172,7 @@ class ModelDropdown
     }
     
     selectNextFile() {
-        this.selectModelEntry(this.findNextSibling(this.highlightedModelEntry))
+        this.selectModelEntry(this.getNextVisibleSibling(this.highlightedModelEntry))
         this.modelFilter.select()
     }
     
@@ -374,13 +331,13 @@ class ModelDropdown
     
     selectEntry(path) {
         if (path !== undefined) {
-            const entries = this.modelList.querySelectorAll('.model-file');
+            const entries = this.modelElements;
 
-            for (let i = 0; i < entries.length; i++) {
-                if (entries[i].dataset.path == path) {
-                    this.saveCurrentSelection(entries[i], entries[i].innerText, entries[i].dataset.path)
-                    this.highlightedModelEntry = entries[i]
-                    entries[i].scrollIntoView({block: 'nearest'})
+            for (const elem of entries) {
+                if (elem.dataset.path == path) {
+                    this.saveCurrentSelection(elem, elem.innerText, elem.dataset.path)
+                    this.highlightedModelEntry = elem
+                    elem.scrollIntoView({block: 'nearest'})
                     break
                 }
             }
@@ -454,7 +411,7 @@ class ModelDropdown
         if (found) {
             this.modelResult.style.display = 'list-item'
             this.modelNoResult.style.display = 'none'
-            const elem = this.findNextSibling(this.modelList.querySelector('.model-file'))
+            const elem = this.getNextVisibleSibling(this.modelList.querySelector('.model-file'))
             this.highlightModel(elem)
             elem.scrollIntoView({block: 'nearest'})
         }
