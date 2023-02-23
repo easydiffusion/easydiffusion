@@ -357,6 +357,7 @@ function restoreTaskToUI(task, fieldsToSkip) {
         initImagePreview.addEventListener('load', function() {
             if (Boolean(task.reqBody.mask)) {
                 imageInpainter.setImg(task.reqBody.mask)
+                maskSetting.checked = true
             }
         }, { once: true })
         initImagePreview.src = task.reqBody.init_image
