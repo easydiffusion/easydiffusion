@@ -16,11 +16,16 @@
 .model-list ul {
     padding-right: 20px;
     padding-inline-start: 0;
-    padding-bottom: 0px;
+    margin-top: 6pt;
 }
 
 .model-list li {
-    padding-bottom: 0px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+.model-list .icon {
+    padding-right: 3pt;
 }
 
 .model-result {
@@ -31,7 +36,7 @@
     color: var(--text-color);
     list-style: none;
     padding: 3px 6px 3px 6px;
-    font-size: 10pt;
+    font-size: 9pt;
     font-style: italic;
     display: none;
 }
@@ -42,6 +47,7 @@
     padding: 6px 6px 6px 6px;
     font-size: 9pt;
     font-weight: bold;
+    border-top: 1px solid var(--background-color1);
 }
 
 .model-list li.model-file {
@@ -49,7 +55,7 @@
     list-style: none;
     padding-left: 12px;
     padding-right:20px;
-    font-size: 9pt;
+    font-size: 10pt;
     font-weight: normal;
     transition: none;
     transition:property: none;

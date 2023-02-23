@@ -517,7 +517,7 @@ class ModelDropdown
      * @param {Array<string>} classes
      * @returns {HTMLElement}
      */
-    createElement(tagName, attributes, classes, text) {
+    createElement(tagName, attributes, classes, text, icon) {
         const element = document.createElement(tagName)
         if (attributes) {
             Object.entries(attributes).forEach(([key, value]) => {
@@ -526,6 +526,11 @@ class ModelDropdown
         }
         if (classes) {
             classes.forEach(className => element.classList.add(className))
+        }
+        if (icon) {
+            let iconEl = document.createElement('i')
+            iconEl.className = icon + ' icon'
+            element.appendChild(iconEl)
         }
         if (text) {
             element.appendChild(document.createTextNode(text))
@@ -565,7 +570,7 @@ class ModelDropdown
                 const fullPath = folderName ? `${folderName.substring(1)}/${model}` : model
                 modelsMap.set(
                     model,
-                    this.createElement('li', { 'data-path': fullPath }, classes, model),
+                    this.createElement('li', { 'data-path': fullPath }, classes, model, 'fa-regular fa-file'),
                 )
             }
         })
@@ -579,7 +584,7 @@ class ModelDropdown
         const modelElements = modelNames.map(name => modelsMap.get(name))
 
         if (modelElements.length && folderName) {
-            listElement.appendChild(this.createElement('li', undefined, ['model-folder'], folderName))
+            listElement.appendChild(this.createElement('li', undefined, ['model-folder'], folderName.substring(1), 'fa-solid fa-folder-open'))
         }
 
         const allModelElements = isRootFolder ? [...folderElements, ...modelElements] : [...modelElements, ...folderElements]
