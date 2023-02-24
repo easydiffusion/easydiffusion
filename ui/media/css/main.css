@@ -851,6 +851,12 @@ input::file-selector-button {
     .simple-tooltip {
         display: none;
     }
+    #preview-tools button {
+        font-size: 0px;
+    }
+    #preview-tools button .icon {
+        font-size: 12pt;
+    }
 }
 
 @media screen and (max-width: 500px) {
