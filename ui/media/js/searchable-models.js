@@ -623,13 +623,16 @@ class ModelDropdown
             )
         }
 
-        const containerListItem = this.createElement(
-            'li',
-            { id: `${this.modelFilter.id}-model-result` },
-            ['model-result'],
-        )
-        containerListItem.appendChild(this.createModelNodeList(undefined, modelTree, true))
-        rootList.appendChild(containerListItem)
+        if (modelTree.length > 0) {
+            const containerListItem = this.createElement(
+                'li',
+                { id: `${this.modelFilter.id}-model-result` },
+                ['model-result'],
+            )
+            console.log(containerListItem)
+            containerListItem.appendChild(this.createModelNodeList(undefined, modelTree, true))
+            rootList.appendChild(containerListItem)
+        }
 
         return rootList
     }
