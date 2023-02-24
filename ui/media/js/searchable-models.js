@@ -476,7 +476,8 @@ class ModelDropdown
 
     createDropdown() {
         // create dropdown entries
-        this.modelFilter.insertAdjacentElement('afterend', this.createRootModelList(this.inputModels))
+        let rootModelList = this.createRootModelList(this.inputModels)
+        this.modelFilter.insertAdjacentElement('afterend', rootModelList)
         this.modelFilter.insertAdjacentElement(
             'afterend',
             this.createElement(
@@ -506,6 +507,9 @@ class ModelDropdown
         this.modelFilterArrow.addEventListener('mousedown', this.bind(this.toggleModelList, this))
         this.modelList.addEventListener('mousemove', this.bind(this.highlightModelAtPosition, this))
         this.modelList.addEventListener('mousedown', this.bind(this.processClick, this))
+
+        let modelFilterStyle = window.getComputedStyle(this.modelFilter)
+        rootModelList.style.minWidth = modelFilterStyle.width
 
         this.selectEntry(this.activeModel)
     }
