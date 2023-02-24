@@ -41,8 +41,5 @@ cp sd-ui-files/scripts/check_modules.py scripts/
 cp sd-ui-files/scripts/start.sh .
 cp sd-ui-files/scripts/developer_console.sh .
 cp sd-ui-files/scripts/functions.sh scripts/
-if [ -d modifiers ]; then
-    ln -s "$(pwd)/modifiers" ui/media/modifier-thumbnails/custom
-fi
 
 exec ./scripts/on_sd_start.sh

@@ -119,28 +119,17 @@ else
 fi
 
 if python ../scripts/check_modules.py uvicorn fastapi ; then
-    FASTAPI_VERSION=$(python -c "from importlib.metadata import version; print(version('fastapi'))")
-    if [[ "$FASTAPI_VERSION" < "0.92.0" ]]; then
-        echo "Upgrading fastapi"
-
-        if conda install -c conda-forge -y --update-deps fastapi ; then
-            echo "Upgraded."
-        else
-            fail "'conda install --update-deps fastapi' failed" 
-        fi
-    else
-        echo "Packages necessary for Easy Diffusion were already installed"
-    fi
+    echo "Packages necessary for Easy Diffusion were already installed"
 else
     printf "\n\nDownloading packages necessary for Easy Diffusion..\n\n"
 
     export PYTHONNOUSERSITE=1
     export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
 
-    if conda install -c conda-forge -y --update-deps uvicorn fastapi ; then
+    if conda install -c conda-forge -y uvicorn fastapi ; then
         echo "Installed. Testing.."
     else
-        fail "'conda install uvicorn fastapi' failed" 
+        fail "'conda install uvicorn' failed" 
     fi
 
     if ! command -v uvicorn &> /dev/null; then

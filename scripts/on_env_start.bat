@@ -56,10 +56,6 @@ if "%update_branch%"=="" (
 @copy sd-ui-files\scripts\check_modules.py scripts\ /Y
 @copy "sd-ui-files\scripts\Start Stable Diffusion UI.cmd" . /Y
 @copy "sd-ui-files\scripts\Developer Console.cmd" . /Y
-if exist modifiers\ {
-    mklink ui\media\modifier-thumbnails\custom modifiers
-}
-
 
 @call scripts\on_sd_start.bat
 

@@ -56,7 +56,7 @@ APP_CONFIG_DEFAULTS = {
 }
 
 IMAGE_EXTENSIONS = [".png", ".apng", ".jpg", ".jpeg", ".jfif", ".pjpeg", ".pjp", ".jxl", ".gif", ".webp", ".avif", ".svg"]
-CUSTOM_MODIFIERS_DIR = os.path.join(SD_UI_DIR, "media", "modifier-thumbnails", "custom")
+CUSTOM_MODIFIERS_DIR = os.path.abspath(os.path.join(SD_DIR, "..", "modifiers"))
 CUSTOM_MODIFIERS_PORTRAIT_EXTENSIONS=[".portrait", "_portrait", " portrait", "-portrait"]
 CUSTOM_MODIFIERS_LANDSCAPE_EXTENSIONS=[".landscape", "_landscape", " landscape", "-landscape"]
 
@@ -264,7 +264,7 @@ def get_image_modifiers():
                 category[modifier_item['modifier']] = modifier
             modifier_categories[category_name] = category
 
-    def scan_directory(directory_path, category_name="Modifiers"):
+    def scan_directory(directory_path: str, category_name="Modifiers"):
         for entry in os.scandir(directory_path):
             if entry.is_file():
                 file_extension = list(filter(lambda e: entry.name.endswith(e), IMAGE_EXTENSIONS))
@@ -272,7 +272,7 @@ def get_image_modifiers():
                     continue
 
                 modifier_name = entry.name[: -len(file_extension[0])]
-                modifier_path = entry.path[len(CUSTOM_MODIFIERS_DIR) - len("custom/") :]
+                modifier_path = f"custom/{entry.path[len(CUSTOM_MODIFIERS_DIR) + 1:]}"
                 # URL encode path segments
                 modifier_path = "/".join(map(lambda segment: urllib.parse.quote(segment), modifier_path.split("/")))
                 is_portrait = True

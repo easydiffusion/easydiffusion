@@ -25,6 +25,13 @@ NOCACHE_HEADERS = {"Cache-Control": "no-cache, no-store, must-revalidate", "Prag
 
 
 class NoCacheStaticFiles(StaticFiles):
+    def __init__(self, directory: str):
+        # follow_symlink is only available on fastapi >= 0.92.0
+        if (os.path.islink(directory)):
+            super().__init__(directory = os.path.realpath(directory))
+        else:
+            super().__init__(directory = directory)
+
     def is_not_modified(self, response_headers, request_headers) -> bool:
         if "content-type" in response_headers and (
             "javascript" in response_headers["content-type"] or "css" in response_headers["content-type"]
@@ -45,11 +52,14 @@ class SetAppConfigRequest(BaseModel):
 
 
 def init():
-    server_api.mount(
-        "/media",
-        NoCacheStaticFiles(directory=os.path.join(app.SD_UI_DIR, "media"), follow_symlink=True),
-        name="media",
-    )
+    if os.path.isdir(app.CUSTOM_MODIFIERS_DIR):
+        server_api.mount(
+            "/media/modifier-thumbnails/custom",
+            NoCacheStaticFiles(directory=app.CUSTOM_MODIFIERS_DIR),
+            name="custom-thumbnails",
+        )
+
+    server_api.mount("/media", NoCacheStaticFiles(directory=os.path.join(app.SD_UI_DIR, "media")), name="media")
 
     for plugins_dir, dir_prefix in app.UI_PLUGINS_SOURCES:
         server_api.mount(
