@@ -587,7 +587,8 @@ class ModelDropdown
             listElement.appendChild(this.createElement('li', undefined, ['model-folder'], folderName.substring(1), 'fa-solid fa-folder-open'))
         }
 
-        const allModelElements = isRootFolder ? [...folderElements, ...modelElements] : [...modelElements, ...folderElements]
+        // const allModelElements = isRootFolder ? [...folderElements, ...modelElements] : [...modelElements, ...folderElements]
+        const allModelElements = [...modelElements, ...folderElements]
         allModelElements.forEach(e => listElement.appendChild(e))
         return listElement
     }
