@@ -633,7 +633,7 @@ class ModelDropdown
                 { id: `${this.modelFilter.id}-model-result` },
                 ['model-result'],
             )
-            console.log(containerListItem)
+            //console.log(containerListItem)
             containerListItem.appendChild(this.createModelNodeList(undefined, modelTree, true))
             rootList.appendChild(containerListItem)
         }
