@@ -1197,7 +1197,9 @@ function renameMakeImageButton() {
     }
 }
 numOutputsTotalField.addEventListener('change', renameMakeImageButton)
+numOutputsTotalField.addEventListener('keyup', renameMakeImageButton)
 numOutputsParallelField.addEventListener('change', renameMakeImageButton)
+numOutputsParallelField.addEventListener('keyup', renameMakeImageButton)
 
 function onDimensionChange() {
     let widthValue = parseInt(widthField.value)
