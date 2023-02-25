@@ -342,7 +342,16 @@ previewImageField.onchange = () => changePreviewImages(previewImageField.value)
 
 modifierSettingsBtn.addEventListener('click', function(e) {
     modifierSettingsOverlay.classList.add("active")
+    customModifiersTextBox.setSelectionRange(0, 0)
+    customModifiersTextBox.focus()
     e.stopPropagation()
+})
+            
+modifierSettingsOverlay.addEventListener('keydown', function(e) {
+    if (e.key === "Escape") {
+        modifierSettingsOverlay.classList.remove("active")
+        e.stopPropagation()
+    }
 })
 
 function saveCustomModifiers() {
