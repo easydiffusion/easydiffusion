@@ -1,6 +1,7 @@
 let activeTags = []
 let modifiers = []
 let customModifiersGroupElement = undefined
+let customModifiersInitialContent
 
 let editorModifierEntries = document.querySelector('#editor-modifiers-entries')
 let editorModifierTagsList = document.querySelector('#editor-inputs-tags-list')
@@ -344,13 +345,23 @@ modifierSettingsBtn.addEventListener('click', function(e) {
     modifierSettingsOverlay.classList.add("active")
     customModifiersTextBox.setSelectionRange(0, 0)
     customModifiersTextBox.focus()
+    customModifiersInitialContent = customModifiersTextBox.value // preserve the initial content
     e.stopPropagation()
 })
-            
+
 modifierSettingsOverlay.addEventListener('keydown', function(e) {
-    if (e.key === "Escape") {
-        modifierSettingsOverlay.classList.remove("active")
-        e.stopPropagation()
+    switch (e.key) {
+        case "Escape": // Escape to cancel
+            customModifiersTextBox.value = customModifiersInitialContent // undo the changes
+            modifierSettingsOverlay.classList.remove("active")
+            e.stopPropagation()
+            break
+        case "Enter":
+            if (e.ctrlKey) { // Ctrl+Enter to confirm
+                modifierSettingsOverlay.classList.remove("active")
+                e.stopPropagation()
+                break
+            }
     }
 })
 
