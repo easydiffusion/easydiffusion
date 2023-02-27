@@ -47,7 +47,7 @@ let blockNSFWField = document.querySelector('#block_nsfw')
 let showOnlyFilteredImageField = document.querySelector("#show_only_filtered_image")
 let updateBranchLabel = document.querySelector("#updateBranchLabel")
 let streamImageProgressField = document.querySelector("#stream_image_progress")
-let thumbnailSizeField = document.querySelector("#thumbnail_size")
+let thumbnailSizeField = document.querySelector("#thumbnail_size-input")
 
 let makeImageBtn = document.querySelector('#makeImage')
 let stopImageBtn = document.querySelector('#stopImage')

@@ -623,7 +623,6 @@ div.img-preview img {
 }
 
 #editor-settings-entries ul {
-    margin: 0px;
     padding: 0px;
 }
 
@@ -771,7 +770,7 @@ input::file-selector-button {
     opacity: 1;
 }
 .model-filter {
-    width: calc(100% - 20px);
+    width: 90%;
     padding-right: 20px;
     white-space: nowrap;
     overflow: hidden;
@@ -851,6 +850,12 @@ input::file-selector-button {
     }
     .simple-tooltip {
         display: none;
+    }
+    #preview-tools button {
+        font-size: 0px;
+    }
+    #preview-tools button .icon {
+        font-size: 12pt;
     }
 }
 
