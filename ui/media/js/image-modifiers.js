@@ -48,7 +48,6 @@ function createModifierCard(name, previews, removeBy) {
 
     if(cardLabel.length <= maxLabelLength) {
         label.querySelector('p').innerText = cardLabel
-        label.querySelector('p').dataset.fullName = name // preserve the full name
     } else {
         const tooltipText = document.createElement('span')
         tooltipText.className = 'tooltip-text'
@@ -59,6 +58,7 @@ function createModifierCard(name, previews, removeBy) {
 
         label.querySelector('p').innerText = cardLabel.substring(0, maxLabelLength) + '...'
     }
+    label.querySelector('p').dataset.fullName = name // preserve the full name
 
     return modifierCard
 }
@@ -155,7 +155,7 @@ async function loadModifiers() {
 function refreshModifiersState(newTags) {
     // clear existing modifiers
     document.querySelector('#editor-modifiers').querySelectorAll('.modifier-card').forEach(modifierCard => {
-        const modifierName = modifierCard.querySelector('.modifier-card-label').innerText
+        const modifierName = modifierCard.querySelector('.modifier-card-label p').dataset.fullName // pick the full modifier name
         if (activeTags.map(x => x.name).includes(modifierName)) {
             modifierCard.classList.remove(activeCardClass)
             modifierCard.querySelector('.modifier-card-image-overlay').innerText = '+'
@@ -167,12 +167,13 @@ function refreshModifiersState(newTags) {
     newTags.forEach(tag => {
         let found = false
         document.querySelector('#editor-modifiers').querySelectorAll('.modifier-card').forEach(modifierCard => {
-            const modifierName = modifierCard.querySelector('.modifier-card-label').innerText
+            const modifierName = modifierCard.querySelector('.modifier-card-label p').dataset.fullName
+            const shortModifierName = modifierCard.querySelector('.modifier-card-label p').innerText
             if (trimModifiers(tag) == trimModifiers(modifierName)) {
                 // add modifier to active array
                 if (!activeTags.map(x => x.name).includes(tag)) { // only add each tag once even if several custom modifier cards share the same tag
                     const imageModifierCard = modifierCard.cloneNode(true)
-                    imageModifierCard.querySelector('.modifier-card-label p').innerText = tag
+                    imageModifierCard.querySelector('.modifier-card-label p').innerText = shortModifierName
                     activeTags.push({
                         'name': modifierName,
                         'element': imageModifierCard,
