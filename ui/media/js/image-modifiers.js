@@ -154,7 +154,7 @@ async function loadModifiers() {
 function refreshModifiersState(newTags) {
     // clear existing modifiers
     document.querySelector('#editor-modifiers').querySelectorAll('.modifier-card').forEach(modifierCard => {
-        const modifierName = modifierCard.querySelector('.modifier-card-label').innerText
+        const modifierName = modifierCard.querySelector('.modifier-card-label p').dataset.fullName // pick the full modifier name
         if (activeTags.map(x => x.name).includes(modifierName)) {
             modifierCard.classList.remove(activeCardClass)
             modifierCard.querySelector('.modifier-card-image-overlay').innerText = '+'
