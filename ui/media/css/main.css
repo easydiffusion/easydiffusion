@@ -193,7 +193,7 @@ code {
     flex: 0 0 70px;
     background: var(--accent-color);
     border: var(--primary-button-border);
-    color: rgb(255, 221, 255);
+    color: var(--accent-text-color);
     width: 100%;
     height: 30pt;
 }
@@ -499,16 +499,20 @@ div.img-preview img {
 .secondaryButton:hover {
     background: rgb(177, 27, 0);
 }
-.useSettings {
-    background: var(--accent-color);
-    border: 1px solid var(--accent-color);
-    color: rgb(255, 221, 255);
+.tertiaryButton {
+    background: var(--tertiary-background-color);
+    color: var(--tertiary-color);
+    border: 1px solid var(--tertiary-border-color);
     padding: 3pt 6pt;
+    border-radius: 5px;
+}
+.tertiaryButton:hover {
+    background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
+    color: var(--accent-text-color);
+}
+.useSettings {
     margin-right: 6pt;
     float: right;
-}
-.useSettings:hover {
-    background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
 }
 .stopTask {
     float: right;
@@ -889,7 +893,7 @@ input::file-selector-button {
 #promptsFromFileBtn {
     font-size: 9pt;
     display: inline;
-    background-color: var(--accent-color);
+    padding: 2pt;
 }
 
 .section-button {

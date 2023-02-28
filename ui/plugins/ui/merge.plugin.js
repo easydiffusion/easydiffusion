@@ -239,7 +239,7 @@
 
     merge.innerHTML = `
     <div class="merge-container panel-box">
-      <div class="merge-input" style="position: relative">
+      <div class="merge-input">
          <p><label for="#mergeModelA">Select Model A:</label></p>
          <input id="mergeModelA" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
          <p><label for="#mergeModelB">Select Model B:</label></p>
