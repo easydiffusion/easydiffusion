@@ -110,8 +110,9 @@ class ModelDropdown
     
     processClick(e) {
         e.preventDefault()
-        if (e.srcElement.classList.contains('model-file')) {
-            this.saveCurrentSelection(e.srcElement, e.srcElement.innerText, e.srcElement.dataset.path)
+        if (e.srcElement.classList.contains('model-file') || e.srcElement.classList.contains('fa-file')) {
+            const elem = e.srcElement.classList.contains('model-file') ? e.srcElement : e.srcElement.parentElement
+            this.saveCurrentSelection(elem, elem.innerText, elem.dataset.path)
             this.hideModelList()
             this.modelFilter.focus()
             this.modelFilter.select()
