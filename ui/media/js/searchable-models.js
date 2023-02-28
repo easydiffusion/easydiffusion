@@ -509,8 +509,11 @@ class ModelDropdown
         this.modelList.addEventListener('mousemove', this.bind(this.highlightModelAtPosition, this))
         this.modelList.addEventListener('mousedown', this.bind(this.processClick, this))
 
-        let modelFilterStyle = window.getComputedStyle(this.modelFilter)
-        rootModelList.style.minWidth = modelFilterStyle.width
+        let mf = this.modelFilter
+        this.modelFilter.addEventListener('focus', function() {
+            let modelFilterStyle = window.getComputedStyle(mf)
+            rootModelList.style.minWidth = modelFilterStyle.width
+        })
 
         this.selectEntry(this.activeModel)
     }
