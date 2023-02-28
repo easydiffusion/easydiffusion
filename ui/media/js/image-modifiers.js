@@ -48,7 +48,6 @@ function createModifierCard(name, previews, removeBy) {
 
     if(cardLabel.length <= maxLabelLength) {
         label.querySelector('p').innerText = cardLabel
-        label.querySelector('p').dataset.fullName = name // preserve the full name
     } else {
         const tooltipText = document.createElement('span')
         tooltipText.className = 'tooltip-text'
@@ -59,6 +58,7 @@ function createModifierCard(name, previews, removeBy) {
 
         label.querySelector('p').innerText = cardLabel.substring(0, maxLabelLength) + '...'
     }
+    label.querySelector('p').dataset.fullName = name // preserve the full name
 
     return modifierCard
 }
