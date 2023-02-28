@@ -115,6 +115,7 @@ function createModifierGroup(modifierGroup, initiallyExpanded, removeBy) {
     modifiersEl.appendChild(brk)
 
     let e = document.createElement('div')
+    e.className = 'modifier-category'
     e.appendChild(titleEl)
     e.appendChild(modifiersEl)
 
