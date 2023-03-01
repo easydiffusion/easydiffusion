@@ -431,6 +431,7 @@ div.img-preview img {
 
 .display-settings .dropdown-content {
     right: 0px;
+    top: 12pt;
 }
 
 .dropdown-item {
