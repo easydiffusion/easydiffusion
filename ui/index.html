@@ -26,7 +26,7 @@
         <div id="logo">
             <h1>
                 Easy Diffusion
-                <small>v2.5.21 <span id="updateBranchLabel"></span></small>
+                <small>v2.5.22 <span id="updateBranchLabel"></span></small>
             </h1>
         </div>
         <div id="server-status">
@@ -51,7 +51,7 @@
         <div id="editor">
             <div id="editor-inputs">
                 <div id="editor-inputs-prompt" class="row">
-                    <label for="prompt"><b>Enter Prompt</b></label> <small>or</small> <button id="promptsFromFileBtn">Load from a file</button>
+                    <label for="prompt"><b>Enter Prompt</b></label> <small>or</small> <button id="promptsFromFileBtn" class="tertiaryButton">Load from a file</button>
                     <textarea id="prompt" class="col-free">a photograph of an astronaut riding a horse</textarea>
                     <input id="prompt_from_file" name="prompt_from_file" type="file" /> <!-- hidden -->
                     <label for="negative_prompt" class="collapsible" id="negative_prompt_handle">
@@ -298,8 +298,9 @@
                             </div>
                         </div>
                     </span>
+
                     <div class="dropdown display-settings">
-                        <button class="dropbtn primaryButton">
+                        <button class="dropbtn tertiaryButton">
                             <i class="fa-solid fa-bars icon"></i>
                             Preview settings
                             <i class="fa-solid fa-angle-down icon"></i>

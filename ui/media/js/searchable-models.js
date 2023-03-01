@@ -110,8 +110,9 @@ class ModelDropdown
     
     processClick(e) {
         e.preventDefault()
-        if (e.srcElement.classList.contains('model-file')) {
-            this.saveCurrentSelection(e.srcElement, e.srcElement.innerText, e.srcElement.dataset.path)
+        if (e.srcElement.classList.contains('model-file') || e.srcElement.classList.contains('fa-file')) {
+            const elem = e.srcElement.classList.contains('model-file') ? e.srcElement : e.srcElement.parentElement
+            this.saveCurrentSelection(elem, elem.innerText, elem.dataset.path)
             this.hideModelList()
             this.modelFilter.focus()
             this.modelFilter.select()
@@ -508,8 +509,11 @@ class ModelDropdown
         this.modelList.addEventListener('mousemove', this.bind(this.highlightModelAtPosition, this))
         this.modelList.addEventListener('mousedown', this.bind(this.processClick, this))
 
-        let modelFilterStyle = window.getComputedStyle(this.modelFilter)
-        rootModelList.style.minWidth = modelFilterStyle.width
+        let mf = this.modelFilter
+        this.modelFilter.addEventListener('focus', function() {
+            let modelFilterStyle = window.getComputedStyle(mf)
+            rootModelList.style.minWidth = modelFilterStyle.width
+        })
 
         this.selectEntry(this.activeModel)
     }
@@ -633,7 +637,7 @@ class ModelDropdown
                 { id: `${this.modelFilter.id}-model-result` },
                 ['model-result'],
             )
-            console.log(containerListItem)
+            //console.log(containerListItem)
             containerListItem.appendChild(this.createModelNodeList(undefined, modelTree, true))
             rootList.appendChild(containerListItem)
         }

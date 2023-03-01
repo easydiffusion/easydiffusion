@@ -878,7 +878,7 @@ function createTask(task) {
                                 <i class="drag-handle fa-solid fa-grip"></i>
                                 <div class="taskStatusLabel">Enqueued</div>
                                 <button class="secondaryButton stopTask"><i class="fa-solid fa-trash-can"></i> Remove</button>
-                                <button class="secondaryButton useSettings"><i class="fa-solid fa-redo"></i> Use these settings</button>
+                                <button class="tertiaryButton useSettings"><i class="fa-solid fa-redo"></i> Use these settings</button>
                                 <div class="preview-prompt"></div>
                                 <div class="taskConfig">${taskConfig}</div>
                                 <div class="outputMsg"></div>
