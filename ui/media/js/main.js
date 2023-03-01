@@ -269,6 +269,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                         <span class="imgSeedLabel"></span>
                     </div>
                     <button class="imgPreviewItemClearBtn image_clear_btn"><i class="fa-solid fa-xmark"></i></button>
+                    <span class="img_bottom_label">${imageWidth} x ${imageHeight}</span>
                 </div>
             `
             outputContainer.appendChild(imageItemElem)

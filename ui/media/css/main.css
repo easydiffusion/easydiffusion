@@ -123,6 +123,9 @@ code {
 .imgPreviewItemClearBtn {
     opacity: 0;
 }
+.imgContainer .img_bottom_label {
+    opacity: 0;
+}
 .imgPreviewItemClearBtn:hover {
     background: rgb(177, 27, 0);
 }
@@ -131,6 +134,9 @@ code {
 }
 .imgContainer:hover > .imgPreviewItemClearBtn {
     opacity: 1;
+}
+.imgContainer:hover > .img_bottom_label {
+    opacity: 60%;
 }
 .imgItemInfo * {
     margin-bottom: 7px;
@@ -601,6 +607,9 @@ div.img-preview img {
 } */
 
 #init_image_size_box {
+    border-radius: 6px 0px;
+}
+.img_bottom_label {
     position: absolute;
     right: 0px;
     bottom: 0px;
@@ -610,7 +619,6 @@ div.img-preview img {
     text-shadow: 0px 0px 4px black;
     opacity: 60%;
     font-size: 12px;
-    border-radius: 6px 0px;
 }
 
 #editor-settings {
