@@ -2,12 +2,6 @@
     "use strict"
 
     let autoScroll = document.querySelector("#auto_scroll")
-    
-    // save/restore the toggle state
-    autoScroll.addEventListener('click', (e) => {
-        localStorage.setItem('auto_scroll', autoScroll.checked)
-    })
-    autoScroll.checked = localStorage.getItem('auto_scroll') == "true"
 
     // observe for changes in the preview pane
     var observer = new MutationObserver(function (mutations) {

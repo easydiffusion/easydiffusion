@@ -408,6 +408,7 @@ div.img-preview img {
     display: none;
     position: absolute;
     z-index: 2;
+    width: max-content;
 
     padding: 5px;
     margin-bottom: 15px;
@@ -416,13 +417,20 @@ div.img-preview img {
 .dropdown:hover .dropdown-content {
     display: block;
 }
+.dropdown:hover + .dropdown-content {
+    display: block;
+}
+.dropdown-content:hover {
+    display: block;
+}
 
 .display-settings {
     float: right;
+    position: relative;
 }
 
 .display-settings .dropdown-content {
-    right: 12px;
+    right: 0px;
 }
 
 .dropdown-item {
@@ -513,6 +521,11 @@ div.img-preview img {
     border-radius: 5px;
 }
 .tertiaryButton:hover {
+    background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
+    color: var(--accent-text-color);
+}
+.tertiaryButton.pressed {
+    border-style: inset;
     background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
     color: var(--accent-text-color);
 }
@@ -824,12 +837,6 @@ input::file-selector-button {
         height: 100%;
         width: 100%;
         object-fit: contain;
-    }
-    .dropdown-content {
-        width: auto !important;
-        transform: none !important;
-        left: 0px;
-        right: 0px;
     }
     #editor {
         padding: 16px 8px;

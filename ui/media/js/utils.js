@@ -509,6 +509,9 @@ function makeQuerablePromise(promise) {
 /* inserts custom html to allow prettifying of inputs */
 function prettifyInputs(root_element) {
     root_element.querySelectorAll(`input[type="checkbox"]`).forEach(element => {
+        if (element.style.display === "none") {
+            return
+        }
         var parent = element.parentNode;
         if (!parent.classList.contains("input-toggle")) {
             var wrapper = document.createElement("div");

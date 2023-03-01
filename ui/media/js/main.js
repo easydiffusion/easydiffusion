@@ -48,6 +48,8 @@ let showOnlyFilteredImageField = document.querySelector("#show_only_filtered_ima
 let updateBranchLabel = document.querySelector("#updateBranchLabel")
 let streamImageProgressField = document.querySelector("#stream_image_progress")
 let thumbnailSizeField = document.querySelector("#thumbnail_size-input")
+let autoscrollBtn = document.querySelector("#auto_scroll_btn")
+let autoScroll = document.querySelector("#auto_scroll")
 
 let makeImageBtn = document.querySelector('#makeImage')
 let stopImageBtn = document.querySelector('#stopImage')
@@ -1353,7 +1355,20 @@ thumbnailSizeField.addEventListener('change', () => {
     })(thumbnailSizeField.value)
 })
 
-
+function onAutoScrollUpdate() {
+    if (autoScroll.checked) {
+        autoscrollBtn.classList.add('pressed')
+    } else {
+        autoscrollBtn.classList.remove('pressed')
+    }
+    autoscrollBtn.querySelector(".state").innerHTML = (autoScroll.checked ? "ON" : "OFF")
+}
+autoscrollBtn.addEventListener('click', function() {
+    autoScroll.checked = !autoScroll.checked
+    autoScroll.dispatchEvent(new Event("change"))
+    onAutoScrollUpdate()
+})
+autoScroll.addEventListener('change', onAutoScrollUpdate)
 
 function checkRandomSeed() {
     if (randomSeedField.checked) {

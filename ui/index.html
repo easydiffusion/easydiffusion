@@ -288,19 +288,22 @@
                 <div id="preview-tools">
                     <button id="clear-all-previews" class="secondaryButton"><i class="fa-solid fa-trash-can icon"></i> Clear All</button>
                     <button id="save-all-images" class="tertiaryButton"><i class="fa-solid fa-download icon"></i> Download All Images</button>
-                    <div class="dropdown display-settings">
-                        <button class="dropbtn tertiaryButton">
-                            <i class="fa-solid fa-bars icon"></i>
-                            Preview settings
-                            <i class="fa-solid fa-angle-down icon"></i>
+                    <div class="display-settings">
+                        <button id="auto_scroll_btn" class="tertiaryButton">
+                            <i class="fa-solid fa-arrows-up-to-line icon"></i>
+                            <input id="auto_scroll" name="auto_scroll" type="checkbox" style="display: none">
+                            <span class="simple-tooltip left">
+                                Scroll to generated image (<span class="state">OFF</span>)
+                            </span>
+                        </button>
+                        <button class="dropdown tertiaryButton">
+                            <i class="fa-solid fa-magnifying-glass-plus icon dropbtn"></i>
+                            <span class="simple-tooltip left">
+                                Zoom
+                            </span>
                         </button>
                         <div class="dropdown-content">
-                            <div class="auto-scroll dropdown-item">
-                                <div class="input-toggle"><input id="auto_scroll" name="auto_scroll" type="checkbox"><label for="auto_scroll"></label></div>
-                                <label for="auto_scroll">Scroll to generated image</label>
-                            </div>
                             <div class="dropdown-item">
-                                <label>Preview image size limit:</label><br/>
                                 <input id="thumbnail_size" name="thumbnail_size" class="editor-slider" type="range" value="70" min="5" max="200" oninput="sliderUpdate(event)"> 
                                 <input id="thumbnail_size-input" name="thumbnail_size-input" size="3" value="70" pattern="^[0-9.]+$" onkeypress="preventNonNumericalInput(event)" oninput="sliderUpdate(event)">&nbsp;%
                             </div>
