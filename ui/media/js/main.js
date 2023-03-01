@@ -269,7 +269,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                         <span class="imgSeedLabel"></span>
                     </div>
                     <button class="imgPreviewItemClearBtn image_clear_btn"><i class="fa-solid fa-xmark"></i></button>
-                    <span class="img_bottom_label">${imageWidth} x ${imageHeight}</span>
+                    <span class="img_bottom_label"></span>
                 </div>
             `
             outputContainer.appendChild(imageItemElem)
@@ -297,6 +297,10 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         imageElem.setAttribute('data-prompt', imagePrompt)
         imageElem.setAttribute('data-steps', imageInferenceSteps)
         imageElem.setAttribute('data-guidance', imageGuidanceScale)
+
+        imageElem.addEventListener('load', function() {
+            imageItemElem.querySelector('.img_bottom_label').innerText = `${this.naturalWidth} x ${this.naturalHeight}`
+        })
 
 
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
