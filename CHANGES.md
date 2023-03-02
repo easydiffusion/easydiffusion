@@ -5,7 +5,7 @@
 - **Nearly twice as fast** - significantly faster speed of image generation. We're now pretty close to automatic1111's speed. Code contributions are welcome to make our project even faster: https://github.com/easydiffusion/sdkit/#is-it-fast
 - **Full support for Stable Diffusion 2.1 (including CPU)** - supports loading v1.4 or v2.0 or v2.1 models seamlessly. No need to enable "Test SD2", and no need to add `sd2_` to your SD 2.0 model file names. Works on CPU as well.
 - **Memory optimized Stable Diffusion 2.1** - you can now use Stable Diffusion 2.1 models, with the same low VRAM optimizations that we've always had for SD 1.4. Please note, the SD 2.0 and 2.1 models require more GPU and System RAM, as compared to the SD 1.4 and 1.5 models.
-- **6 new samplers!** - explore the new samplers, some of which can generate great images in less than 10 inference steps!
+- **11 new samplers!** - explore the new samplers, some of which can generate great images in less than 10 inference steps! We've added the Karras and UniPC samplers.
 - **Model Merging** - You can now merge two models (`.ckpt` or `.safetensors`) and output `.ckpt` or `.safetensors` models, optionally in `fp16` precision. Details: https://github.com/cmdr2/stable-diffusion-ui/wiki/Model-Merging
 - **Fast loading/unloading of VAEs** - No longer needs to reload the entire Stable Diffusion model, each time you change the VAE
 - **Database of known models** - automatically picks the right configuration for known models. E.g. we automatically detect and apply "v" parameterization (required for some SD 2.0 models), and "fp32" attention precision (required for some SD 2.1 models).
@@ -19,6 +19,24 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.22 - 28 Feb 2023 - Minor styling changes to UI buttons, and the models dropdown.
+* 2.5.22 - 28 Feb 2023 - Lots of UI-related bug fixes. Thanks @patriceac.
+* 2.5.21 - 22 Feb 2023 - An option to control the size of the image thumbnails. You can use the `Display options` in the top-right corner to change this. Thanks @JeLuf.
+* 2.5.20 - 20 Feb 2023 - Support saving images in WEBP format (which consumes less disk space, with similar quality). Thanks @ogmaresca.
+* 2.5.20 - 18 Feb 2023 - A setting to block NSFW images from being generated. You can enable this setting in the Settings tab.
+* 2.5.19 - 17 Feb 2023 - Initial support for server-side plugins. Currently supports overriding the `get_cond_and_uncond()` function.
+* 2.5.18 - 17 Feb 2023 - 5 new samplers! UniPC samplers, some of which produce images in less than 15 steps. Thanks @Schorny.
+* 2.5.16 - 13 Feb 2023 - Searchable dropdown for models. This is useful if you have a LOT of models. You can type part of the model name, to auto-search through your models. Thanks @patriceac for the feature, and @AssassinJN for help in UI tweaks!
+* 2.5.16 - 13 Feb 2023 - Lots of fixes and improvements to the installer. First round of changes to add Mac support. Thanks @JeLuf.
+* 2.5.16 - 13 Feb 2023 - UI bug fixes for the inpainter editor. Thanks @patriceac.
+* 2.5.16 - 13 Feb 2023 - Fix broken task reorder. Thanks @JeLuf.
+* 2.5.16 - 13 Feb 2023 - Remove a task if all the images inside it have been removed. Thanks @AssassinJN.
+* 2.5.16 - 10 Feb 2023 - Embed metadata into the JPG/PNG images, if selected in the "Settings" tab (under "Metadata format"). Thanks @patriceac.
+* 2.5.16 - 10 Feb 2023 - Sort models alphabetically in the models dropdown. Thanks @ogmaresca.
+* 2.5.16 - 10 Feb 2023 - Support multiple GFPGAN models. Download new GFPGAN models into the `models/gfpgan` folder, and refresh the UI to use it. Thanks @JeLuf.
+* 2.5.16 - 10 Feb 2023 - Allow a server to enforce a fixed directory path to save images. This is useful if the server is exposed to a lot of users. This can be set in the `config.json` file as `force_save_path: "/path/to/fixed/save/dir"`. E.g. `force_save_path: "D:/user_images"`. Thanks @JeLuf.
+* 2.5.16 - 10 Feb 2023 - The "Make Images" button now shows the correct amount of images it'll create when using operators like `{}` or `|`. For e.g. if the prompt is `Photo of a {woman, man}`, then the button will say `Make 2 Images`. Thanks @JeLuf.
+* 2.5.16 - 10 Feb 2023 - A bunch of UI-related bug fixes. Thanks @patriceac.
 * 2.5.15 - 8 Feb 2023 - Allow using 'balanced' VRAM usage mode on GPUs with 4 GB or less of VRAM. This mode used to be called 'Turbo' in the previous version.
 * 2.5.14 - 8 Feb 2023 - Fix broken auto-save settings. We renamed `sampler` to `sampler_name`, which caused old settings to fail.
 * 2.5.14 - 6 Feb 2023 - Simplify the UI for merging models, and some other minor UI tweaks. Better error reporting if a model failed to load.

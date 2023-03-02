@@ -27,8 +27,10 @@ const SETTINGS_IDS_LIST = [
     "negative_prompt",
     "stream_image_progress",
     "use_face_correction",
+    "gfpgan_model",
     "use_upscale",
     "upscale_amount",
+    "block_nsfw",
     "show_only_filtered_image",
     "upscale_model",
     "preview-image",
@@ -42,7 +44,9 @@ const SETTINGS_IDS_LIST = [
     "metadata_output_format",
     "auto_save_settings",
     "apply_color_correction",
-    "process_order_toggle"
+    "process_order_toggle",
+    "thumbnail_size",
+    "auto_scroll"
 ]
 
 const IGNORE_BY_DEFAULT = [
@@ -92,6 +96,9 @@ async function initSettings() {
 }
 
 function getSetting(element) {
+    if (element.dataset && 'path' in element.dataset) {
+        return element.dataset.path
+    }
     if (typeof element === "string" || element instanceof String) {
         element = SETTINGS[element].element
     }
@@ -101,6 +108,10 @@ function getSetting(element) {
     return element.value
 }
 function setSetting(element, value) {
+    if (element.dataset && 'path' in element.dataset) {
+        element.dataset.path = value
+        return // no need to dispatch any event here because the models are not loaded yet
+    }
     if (typeof element === "string" || element instanceof String) {
         element = SETTINGS[element].element
     }

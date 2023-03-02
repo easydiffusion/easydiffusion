@@ -25,6 +25,15 @@ case "${OS_ARCH}" in
     *)          echo "Unknown system architecture: $OS_ARCH! This script runs only on x86_64 or arm64" && exit
 esac
 
+if ! which curl; then fail "'curl' not found. Please install curl."; fi
+if ! which tar; then fail "'tar' not found. Please install tar."; fi
+if ! which bzip2; then fail "'bzip2' not found. Please install bzip2."; fi
+
+if pwd | grep ' '; then fail "The installation directory's path contains a space character. Conda will fail to install. Please change the directory."; fi
+if [ -f /proc/cpuinfo ]; then 
+    if ! cat /proc/cpuinfo | grep avx | uniq; then fail "Your CPU doesn't support AVX."; fi
+fi
+
 # https://mamba.readthedocs.io/en/latest/installation.html
 if [ "$OS_NAME" == "linux" ] && [ "$OS_ARCH" == "arm64" ]; then OS_ARCH="aarch64"; fi
 
@@ -52,7 +61,7 @@ if [ "$PACKAGES_TO_INSTALL" != "" ]; then
         echo "Downloading micromamba from $MICROMAMBA_DOWNLOAD_URL to $MAMBA_ROOT_PREFIX/micromamba"
 
         mkdir -p "$MAMBA_ROOT_PREFIX"
-        curl -L "$MICROMAMBA_DOWNLOAD_URL" | tar -xvj bin/micromamba -O > "$MAMBA_ROOT_PREFIX/micromamba"
+        curl -L "$MICROMAMBA_DOWNLOAD_URL" | tar -xvj -O bin/micromamba > "$MAMBA_ROOT_PREFIX/micromamba"
 
         if [ "$?" != "0" ]; then
             echo

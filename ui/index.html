@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="/media/css/modifier-thumbnails.css">
     <link rel="stylesheet" href="/media/css/fontawesome-all.min.css">
     <link rel="stylesheet" href="/media/css/image-editor.css">
+    <link rel="stylesheet" href="/media/css/searchable-models.css">
     <link rel="manifest" href="/media/manifest.webmanifest">
     <script src="/media/js/jquery-3.6.1.min.js"></script>
     <script src="/media/js/jquery-confirm.min.js"></script>
@@ -25,7 +26,7 @@
         <div id="logo">
             <h1>
                 Easy Diffusion
-                <small>v2.5.15 <span id="updateBranchLabel"></span></small>
+                <small>v2.5.22 <span id="updateBranchLabel"></span></small>
             </h1>
         </div>
         <div id="server-status">
@@ -50,7 +51,7 @@
         <div id="editor">
             <div id="editor-inputs">
                 <div id="editor-inputs-prompt" class="row">
-                    <label for="prompt"><b>Enter Prompt</b></label> <small>or</small> <button id="promptsFromFileBtn">Load from a file</button>
+                    <label for="prompt"><b>Enter Prompt</b></label> <small>or</small> <button id="promptsFromFileBtn" class="tertiaryButton">Load from a file</button>
                     <textarea id="prompt" class="col-free">a photograph of an astronaut riding a horse</textarea>
                     <input id="prompt_from_file" name="prompt_from_file" type="file" /> <!-- hidden -->
                     <label for="negative_prompt" class="collapsible" id="negative_prompt_handle">
@@ -69,7 +70,7 @@
                     <div id="init_image_preview_container" class="image_preview_container">
                         <div id="init_image_wrapper">
                             <img id="init_image_preview" src="" />
-                            <span id="init_image_size_box"></span>
+                            <span id="init_image_size_box" class="img_bottom_label"></span>
                             <button class="init_image_clear image_clear_btn"><i class="fa-solid fa-xmark"></i></button>
                         </div>
                         <div id="init_image_buttons">
@@ -125,10 +126,9 @@
                     <tr><b class="settings-subheader">Image Settings</b></tr>
                     <tr class="pl-5"><td><label for="seed">Seed:</label></td><td><input id="seed" name="seed" size="10" value="0" onkeypress="preventNonNumericalInput(event)"> <input id="random_seed" name="random_seed" type="checkbox" checked><label for="random_seed">Random</label></td></tr>
                     <tr class="pl-5"><td><label for="num_outputs_total">Number of Images:</label></td><td><input id="num_outputs_total" name="num_outputs_total" value="1" size="1" onkeypress="preventNonNumericalInput(event)"> <label><small>(total)</small></label> <input id="num_outputs_parallel" name="num_outputs_parallel" value="1" size="1" onkeypress="preventNonNumericalInput(event)"> <label for="num_outputs_parallel"><small>(in parallel)</small></label></td></tr>
-                    <tr class="pl-5"><td><label for="stable_diffusion_model">Model:</label></td><td>
-                        <select id="stable_diffusion_model" name="stable_diffusion_model">
-                            <!-- <option value="sd-v1-4" selected>sd-v1-4</option> -->
-                        </select>
+                    <tr class="pl-5"><td><label for="stable_diffusion_model">Model:</label></td><td class="model-input">
+                        <input id="stable_diffusion_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
+                        <button id="reload-models" class="secondaryButton reloadModels"><i class='fa-solid fa-rotate'></i></button>
                         <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Custom-Models" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about custom models</span></i></a>
                     </td></tr>
                     <!-- <tr id="modelConfigSelection" class="pl-5"><td><label for="model_config">Model Config:</i></label></td><td>
@@ -136,9 +136,7 @@
                         </select>
                     </td></tr> -->
                     <tr class="pl-5"><td><label for="vae_model">Custom VAE:</i></label></td><td>
-                        <select id="vae_model" name="vae_model">
-                            <!-- <option value="" selected>None</option> -->
-                        </select>
+                        <input id="vae_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
                         <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/VAE-Variational-Auto-Encoder" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about VAEs</span></i></a>
                     </td></tr>
                     <tr id="samplerSelection" class="pl-5"><td><label for="sampler_name">Sampler:</label></td><td>
@@ -157,6 +155,11 @@
                             <option value="dpmpp_sde">DPM++ SDE</option>
                             <option value="dpm_fast">DPM Fast</option>
                             <option value="dpm_adaptive">DPM Adaptive</option>
+                            <option value="unipc_snr">UniPC SNR</option>
+                            <option value="unipc_tu">UniPC TU</option>
+                            <option value="unipc_snr_2">UniPC SNR 2</option>
+                            <option value="unipc_tu_2">UniPC TC 2</option>
+                            <option value="unipc_tq">UniPC TQ</option>
                         </select>
                         <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/How-to-Use#samplers" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about samplers</span></i></a>
                     </td></tr>
@@ -210,9 +213,7 @@
                     <tr class="pl-5"><td><label for="guidance_scale_slider">Guidance Scale:</label></td><td> <input id="guidance_scale_slider" name="guidance_scale_slider" class="editor-slider" value="75" type="range" min="11" max="500"> <input id="guidance_scale" name="guidance_scale" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"></td></tr>
                     <tr id="prompt_strength_container" class="pl-5"><td><label for="prompt_strength_slider">Prompt Strength:</label></td><td> <input id="prompt_strength_slider" name="prompt_strength_slider" class="editor-slider" value="80" type="range" min="0" max="99"> <input id="prompt_strength" name="prompt_strength" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"><br/></td></tr>
                     <tr class="pl-5"><td><label for="hypernetwork_model">Hypernetwork:</i></label></td><td>
-                        <select id="hypernetwork_model" name="hypernetwork_model">
-                            <!-- <option value="" selected>None</option> -->
-                        </select>
+                        <input id="hypernetwork_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
                     </td></tr>
                     <tr id="hypernetwork_strength_container" class="pl-5">
                         <td><label for="hypernetwork_strength_slider">Hypernetwork Strength:</label></td>
@@ -222,9 +223,10 @@
                         <select id="output_format" name="output_format">
                             <option value="jpeg" selected>jpeg</option>
                             <option value="png">png</option>
+                            <option value="webp">webp</option>
                         </select>
                     </td></tr>
-                    <tr class="pl-5" id="output_quality_row"><td><label for="output_quality">JPEG Quality:</label></td><td>
+                    <tr class="pl-5" id="output_quality_row"><td><label for="output_quality">Image Quality:</label></td><td>
                     <input id="output_quality_slider" name="output_quality" class="editor-slider" value="75" type="range" min="10" max="95"> <input id="output_quality" name="output_quality" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)">
                     </td></tr>
                     </table></div>
@@ -232,7 +234,7 @@
                     <div><ul>
                     <li><b class="settings-subheader">Render Settings</b></li>
                     <li class="pl-5"><input id="stream_image_progress" name="stream_image_progress" type="checkbox"> <label for="stream_image_progress">Show a live preview <small>(uses more VRAM, slower images)</small></label></li>
-                    <li class="pl-5"><input id="use_face_correction" name="use_face_correction" type="checkbox"> <label for="use_face_correction">Fix incorrect faces and eyes <small>(uses GFPGAN)</small></label></li>
+                    <li class="pl-5"><input id="use_face_correction" name="use_face_correction" type="checkbox"> <label for="use_face_correction">Fix incorrect faces and eyes</label> <div style="display:inline-block;"><input id="gfpgan_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" /></div></li>
                     <li class="pl-5">
                         <input id="use_upscale" name="use_upscale" type="checkbox"> <label for="use_upscale">Scale up by</label> 
                         <select id="upscale_amount" name="upscale_amount">
@@ -281,8 +283,34 @@
                 and selecting the desired modifiers.<br/><br/>
                 Click "Image Settings" for additional settings like seed, image size, number of images to generate etc.<br/><br/>Enjoy! :)
             </div>
-            <div id="preview-tools">
-                <button id="clear-all-previews" class="secondaryButton"><i class="fa-solid fa-trash-can"></i> Clear All</button>
+
+            <div id="preview-content">
+                <div id="preview-tools">
+                    <button id="clear-all-previews" class="secondaryButton"><i class="fa-solid fa-trash-can icon"></i> Clear All</button>
+                    <button id="save-all-images" class="tertiaryButton"><i class="fa-solid fa-download icon"></i> Download All Images</button>
+                    <div class="display-settings">
+                        <button id="auto_scroll_btn" class="tertiaryButton">
+                            <i class="fa-solid fa-arrows-up-to-line icon"></i>
+                            <input id="auto_scroll" name="auto_scroll" type="checkbox" style="display: none">
+                            <span class="simple-tooltip left">
+                                Scroll to generated image (<span class="state">OFF</span>)
+                            </span>
+                        </button>
+                        <button class="dropdown tertiaryButton">
+                            <i class="fa-solid fa-magnifying-glass-plus icon dropbtn"></i>
+                            <span class="simple-tooltip left">
+                                Image Size
+                            </span>
+                        </button>
+                        <div class="dropdown-content">
+                            <div class="dropdown-item">
+                                <input id="thumbnail_size" name="thumbnail_size" class="editor-slider" type="range" value="70" min="5" max="200" oninput="sliderUpdate(event)"> 
+                                <input id="thumbnail_size-input" name="thumbnail_size-input" size="3" value="70" pattern="^[0-9.]+$" onkeypress="preventNonNumericalInput(event)" oninput="sliderUpdate(event)">&nbsp;%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="clearfix" style="clear: both;"></div>
+                </div>
             </div>
         </div>
         </div>
@@ -425,6 +453,7 @@
 <script src="media/js/image-modifiers.js"></script>
 <script src="media/js/auto-save.js"></script>
 
+<script src="media/js/searchable-models.js"></script>
 <script src="media/js/main.js"></script>
 <script src="media/js/themes.js"></script>
 <script src="media/js/dnd.js"></script>
