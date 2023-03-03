@@ -267,11 +267,9 @@ function BraceExpander() {
         };
     
         return str.split(/(\\\\)/).filter(toS).reduce(function (a, s) {
-            return a.concat(s.charAt(0) === '\\' ? s.trim() : s.split(
+            return a.concat(s.charAt(0) === '\\' ? s : s.split(
                 /(\\*[{,}])/
-            ).filter(toS).map(function (x) {
-                return x.trim();
-            }));
+            ).filter(toS));
         }, []);
     }
 
