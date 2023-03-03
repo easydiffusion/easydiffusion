@@ -149,6 +149,21 @@
             z-index: 2;
         }
         
+        .saveTemplate {
+            background: none;
+            border: none;
+            padding: 10px 6px 10px 6px;
+        }
+        
+        .saveTemplate:hover {
+            color: darkslateblue;
+            background: var(--background-color1);
+        }
+
+        #saveTemplate i:hover {
+            transition: 0.1s all;        
+        }
+        
         .editTemplate {
             background: none;
             border: none;
@@ -288,16 +303,6 @@
                 event.preventDefault()
                 downloadJSON(taskTemplates, "Templates backup.json")
             })
-                                          
-            function downloadJSON(jsonData, fileName) {
-                var file = new Blob([JSON.stringify(jsonData, null, 2)], { type: "application/json" })
-                var fileUrl = URL.createObjectURL(file)
-                var downloadLink = document.createElement("a")
-                downloadLink.href = fileUrl
-                downloadLink.download = fileName
-                downloadLink.click()
-                URL.revokeObjectURL(fileUrl)
-            }
             
             // import link
             let input = document.createElement("input")
@@ -321,15 +326,28 @@
                 
                 reader.onload = function(event) {
                     let fileData = JSON.parse(event.target.result)
-                    taskTemplates = fileData
+                    taskTemplates = mergeArrays(taskTemplates, fileData)
                     // save the updated template list to persistent storage
                     saveTemplates()
-                    // refreh the templates list
+                    // refresh the templates list
                     loadTemplateList()
                     input.value = ''
                 }
                 reader.readAsText(selectedFile)
             })
+
+            function mergeArrays(originalArray, importedArray) {
+                const mergedArray = [...originalArray]
+                importedArray.forEach(importedTask => {
+                    const foundIndex = mergedArray.findIndex(originalTask => originalTask.name === importedTask.name)
+                    if (foundIndex === -1) {
+                        mergedArray.push(importedTask)
+                    } else {
+                        mergedArray[foundIndex] = { ...mergedArray[foundIndex], ...importedTask }
+                    }
+                })
+                return mergedArray
+            }
 
             // event handlers
             templateFilter = document.getElementById("template-filter") // search box
@@ -402,13 +420,14 @@
             noTemplateView.style.display = 'none'
             templateView.style.display = ''
             
-            taskTemplates.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
+            taskTemplates.sort((a, b) => a.name?.toLowerCase().localeCompare(b.name?.toLowerCase()))
             taskTemplates.forEach(function(template, index) {
                 const l = document.createElement("li")
                 const templateName = document.createElement("div")
                 const inputTemplateName = document.createElement("input")
                 const generateButton = document.createElement("button")
                 const generateMoreButton = document.createElement("button")
+                const saveButton = document.createElement("button")
                 const editButton = document.createElement("button")
                 const deleteButton = document.createElement("button")
                 templateName.classList.add("templateName")
@@ -421,6 +440,9 @@
                 generateMoreButton.id = "generateMoreFromTemplate"
                 generateMoreButton.classList.add("secondaryButton", "generateFromTemplate")
                 generateMoreButton.innerHTML = `<i class='fa-solid fa-images'></i>`
+                saveButton.id = "saveTemplate"
+                saveButton.classList.add("secondaryButton", "saveTemplate")
+                saveButton.innerHTML = `<i class='fa-solid fa-floppy-disk'></i>`
                 editButton.id = "editTemplate"
                 editButton.classList.add("secondaryButton", "editTemplate")
                 editButton.innerHTML = `<i class='fa-solid fa-pen-to-square'></i>`
@@ -432,6 +454,7 @@
                 l.appendChild(inputTemplateName)
                 l.appendChild(generateButton)
                 l.appendChild(generateMoreButton)
+                l.appendChild(saveButton)
                 l.appendChild(editButton)
                 l.appendChild(deleteButton)
                 templateList.appendChild(l)
@@ -482,6 +505,19 @@
                     document.querySelector('#task-templates-editor.popup').classList.remove("active")
                     event.stopPropagation()
                     lastTemplateName = template.name
+                })
+    
+                // save template button
+                saveButton.addEventListener("click", (event) => {
+                    const filename = shortenFileName(template.name, 128)
+                    if (filename !== '') {
+                        downloadJSON([template], template.name + ".json")
+                        event.stopPropagation()
+                    }
+                    else
+                    {
+                        console.log(`Couldn't save file: ${filename}`)
+                    }
                 })
     
                 // edit template button
@@ -587,6 +623,54 @@
             delete task.reqBody.seed
         }
         restoreTaskToUI(task, TASK_REQ_NO_EXPORT)
+    }
+                                          
+    function downloadJSON(jsonData, fileName) {
+        var file = new Blob([JSON.stringify(jsonData, null, 2)], { type: "application/json" })
+        var fileUrl = URL.createObjectURL(file)
+        var downloadLink = document.createElement("a")
+        downloadLink.href = fileUrl
+        downloadLink.download = fileName
+        downloadLink.click()
+        URL.revokeObjectURL(fileUrl)
+    }
+
+    function shortenFileName(fileName, maxLength) {
+        // Define an object that maps invalid characters to their escaped equivalents
+        const escapeChars = {
+            '\\': '-',
+            '/': '-',
+            ':': '-',
+            '*': '-',
+            '?': '-',
+            '"': '',
+            '<': '',
+            '>': '',
+            '|': ''
+        };
+    
+        // Replace any invalid characters with their escaped equivalents
+        let escapedFileName = fileName;
+        for (const [char, escapedChar] of Object.entries(escapeChars)) {
+            escapedFileName = escapedFileName.split(char).join(escapedChar);
+        }
+    
+        // Shorten the escaped file name
+        if (escapedFileName.length <= maxLength) {
+            return escapedFileName; // File name is already short enough
+        }
+    
+        const extension = escapedFileName.slice(escapedFileName.lastIndexOf('.'));
+        const fileNameWithoutExtension = escapedFileName.slice(0, escapedFileName.lastIndexOf('.'));
+        const maxFileNameLength = maxLength - extension.length;
+    
+        if (maxFileNameLength <= 0) {
+            return ''; // Max length is too short to include the extension
+        }
+    
+        const truncatedFileName = fileNameWithoutExtension.slice(0, maxFileNameLength).trim();
+    
+        return truncatedFileName + '...' + extension;
     }
 
     async function saveTemplates() {
