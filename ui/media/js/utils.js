@@ -265,11 +265,13 @@ function BraceExpander() {
         let toS = function (x) {
             return x.toString();
         };
-
+    
         return str.split(/(\\\\)/).filter(toS).reduce(function (a, s) {
-            return a.concat(s.charAt(0) === '\\' ? s : s.split(
+            return a.concat(s.charAt(0) === '\\' ? s.trim() : s.split(
                 /(\\*[{,}])/
-            ).filter(toS));
+            ).filter(toS).map(function (x) {
+                return x.trim();
+            }));
         }, []);
     }
 
