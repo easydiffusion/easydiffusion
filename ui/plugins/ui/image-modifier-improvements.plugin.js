@@ -192,6 +192,10 @@
                 }
                 // Call debounce function on filterImageModifierList function with 200ms wait time. Thanks JeLuf!
                 const debouncedFilterImageModifierList = debounce(filterImageModifierList, 200);
+
+                // add the searchbox
+                customModifierEntriesToolbar.insertAdjacentHTML('afterend', `<input type="text" id="image-modifier-filter" placeholder="Search for..." autocomplete="off"/>`)
+                imageModifierFilter = document.getElementById("image-modifier-filter") // search box
                 
                 // Add the debounced function to the keyup event listener
                 imageModifierFilter.addEventListener('keyup', debouncedFilterImageModifierList);
@@ -249,11 +253,6 @@
                     if (imageModifierFilter !== null) {
                         customModifierEntriesToolbar.insertAdjacentElement('afterend', imageModifierFilter);
                     }
-                    else
-                    {
-                        customModifierEntriesToolbar.insertAdjacentHTML('afterend', `<input type="text" id="image-modifier-filter" placeholder="Search for..." autocomplete="off"/>`)
-                        imageModifierFilter = document.getElementById("image-modifier-filter") // search box
-                    }
                 }
             }
 
@@ -261,7 +260,7 @@
             function importCustomModifiers(input) {
                 let res = []
                 let lines = input.split("\n")
-                let currentCategory = "(Unnamed Section)"
+                let currentCategory = "Custom Modifiers"
                 let currentModifiers = []
                 for (let line of lines) {
                     if (line.startsWith("#")) {
