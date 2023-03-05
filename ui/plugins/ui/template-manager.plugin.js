@@ -369,7 +369,13 @@
             
             templateEditorOverlay.addEventListener('keydown', function(e) {
                 if (editingTemplate === false && e.key === "Escape") {
-                    hideTemplateDialog()
+                    if (templateFilter.value !== '') {
+                        templateFilter.value = ''
+                    }
+                    else
+                    {
+                        hideTemplateDialog()
+                    }
                     e.stopPropagation()
                 }
             })
