@@ -49,10 +49,26 @@
                 #modifier-settings-config {
                     transition: none;
                 }
+        
+                #image-modifier-filter {
+                    box-sizing: border-box;
+                    width: 98%;
+                    margin-top: 4px;
+                    padding: 10px;
+                }
+
+                div.modifier-card.hide {
+                    display: none;
+                }
+
+                div.modifier-category.hide {
+                    display: none;
+                }
             `;
             document.head.appendChild(styleSheet)
 
             let customModifiers
+            let imageModifierFilter
             let customSection = false
 
             // pull custom modifiers from legacy storage
@@ -88,14 +104,14 @@
             // collapse the first preset section
             let preset = editorModifierEntries.getElementsByClassName('collapsible active')[0]
             if (preset !==  undefined) {
-                toggleCollapsible(preset.parentElement) // toggle first preset section
+                closeCollapsible(preset.parentElement) // toggle first preset section
             }
             // set up categories auto-collapse
             autoCollapseCategories()
 
             // add the export and import links to the custom modifiers dialog
             const imageModifierDialog = customModifiersTextBox.parentElement
-            if (imageModifierDialog.querySelector('#modifierBackupLinks') === null) {               
+            if (imageModifierDialog.querySelector('#modifierBackupLinks') === null) {
                 imageModifierDialog.insertAdjacentHTML('beforeend', `<p><small>Use the below links to export and import custom image modifiers.<br />
                                                                     (if you have set any visuals, these will be saved/restored too)</small></p><p id="modifierBackupLinks">
                                                                     <small><a id="exportModifiers">Export modifers</a> - <a id="importModifiers">Import modifiers</a></small></p>`)
@@ -145,43 +161,98 @@
                     }
                     reader.readAsText(selectedFile)
                 })
+
+                function filterImageModifierList() {
+                    let search = imageModifierFilter.value.toLowerCase();
+                    for (let category of document.querySelectorAll(".modifier-category")) {
+                      let categoryVisible = false;
+                      for (let card of category.querySelectorAll(".modifier-card")) {
+                        let label = card.querySelector(".modifier-card-label p").innerText.toLowerCase();
+                        if (label.indexOf(search) == -1) {
+                          card.classList.add("hide");
+                        } else {
+                          card.classList.remove("hide");
+                          categoryVisible = true;
+                        }
+                      }
+                      if (categoryVisible && search !== "") {
+                        openCollapsible(category);
+                        category.classList.remove("hide");
+                      } else {
+                        closeCollapsible(category);
+                        if (search !== "") {
+                            category.classList.add("hide");
+                        }
+                        else
+                        {
+                            category.classList.remove("hide");
+                        }
+                      }
+                    }
+                }
+                // Call debounce function on filterImageModifierList function with 200ms wait time. Thanks JeLuf!
+                const debouncedFilterImageModifierList = debounce(filterImageModifierList, 200);
                 
+                // Add the debounced function to the keyup event listener
+                imageModifierFilter.addEventListener('keyup', debouncedFilterImageModifierList);
+
+                // select the text on focus
+                imageModifierFilter.addEventListener('focus', function(event) {
+                    imageModifierFilter.select()
+                });
+
+                // empty the searchbox on escape                
+                imageModifierFilter.addEventListener('keydown', function(event) {
+                  if (event.keyCode === 'Escape') {
+                    imageModifierFilter.value = '';
+                    filterImageModifierList();
+                  }
+                });
+
+                // update the custom modifiers textbox's default string
                 customModifiersTextBox.placeholder = 'Enter your custom modifiers, one-per-line. Start a line with # to create custom categories.'
             }
 
             // refresh modifiers in the UI
             function loadModifierList() {
-                if (Array.isArray(customModifiersGroupElement)) {
-                    customModifiersGroupElement.forEach(div => div.remove())
+                let customModifiersGroupElementArray = Array.from(editorModifierEntries.querySelectorAll('.custom-modifier-category'));
+                if (Array.isArray(customModifiersGroupElementArray)) {
+                    customModifiersGroupElementArray.forEach(div => div.remove())
                 }
-                else
-                {
-                    if (customModifiersGroupElement !== undefined) {
-                        customModifiersGroupElement.remove()
-                        customModifiersGroupElement = undefined
-                    }
+                if (customModifiersGroupElement !== undefined) {
+                    customModifiersGroupElement.remove()
+                    customModifiersGroupElement = undefined
                 }
-                customModifiersGroupElement = []
-            
+                customModifiersGroupElementArray = []
+
                 if (customModifiers && customModifiers.length > 0) {
                     let category = 'Custom Modifiers'
                     let modifiers = []
                     Object.keys(customModifiers).reverse().forEach(item => {
                         // new custom category
                         const elem = createModifierGroup(customModifiers[item], false, false)
-                        customModifiersGroupElement.push(elem)
+                        elem.classList.add('custom-modifier-category')
+                        customModifiersGroupElementArray.push(elem)
                         createCollapsibles(elem)
                         makeModifierCardDropAreas(elem)
                         customSection = true
                     })
+                    if (Array.isArray(customModifiersGroupElementArray)) {
+                        customModifiersGroupElementArray[0].classList.add('modifier-separator')
+                    }
                     if (customModifiersGroupElement !== undefined) {
-                        if (Array.isArray(customModifiersGroupElement)) {
-                            customModifiersGroupElement[0].classList.add('modifier-separator')
-                        }
-                        else
-                        {
-                            customModifiersGroupElement.classList.add('modifier-separator')
-                        }
+                        customModifiersGroupElement.classList.add('modifier-separator')
+                    }
+
+                    // move the searchbox atop of the image modifiers list. create it if needed.
+                    imageModifierFilter = document.getElementById("image-modifier-filter") // search box
+                    if (imageModifierFilter !== null) {
+                        customModifierEntriesToolbar.insertAdjacentElement('afterend', imageModifierFilter);
+                    }
+                    else
+                    {
+                        customModifierEntriesToolbar.insertAdjacentHTML('afterend', `<input type="text" id="image-modifier-filter" placeholder="Search for..." autocomplete="off"/>`)
+                        imageModifierFilter = document.getElementById("image-modifier-filter") // search box
                     }
                 }
             }
@@ -394,6 +465,20 @@
             }
 
             // collapsing other categories
+            function openCollapsible(element) {
+                const collapsibleHeader = element.querySelector(".collapsible");
+                const handle = element.querySelector(".collapsible-handle");
+                collapsibleHeader.classList.add("active")
+                let content = getNextSibling(collapsibleHeader, '.collapsible-content')
+                if (collapsibleHeader.classList.contains("active")) {
+                    content.style.display = "block"
+                    if (handle != null) {  // render results don't have a handle
+                        handle.innerHTML = '&#x2796;' // minus
+                    }
+                }
+                document.dispatchEvent(new CustomEvent('collapsibleClick', { detail: collapsibleHeader }))
+            }
+            
             function closeCollapsible(element) {
                 const collapsibleHeader = element.querySelector(".collapsible");
                 const handle = element.querySelector(".collapsible-handle");
