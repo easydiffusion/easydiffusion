@@ -16,7 +16,7 @@ const modifierThumbnailPath = 'media/modifier-thumbnails'
 const activeCardClass = 'modifier-card-active'
 const CUSTOM_MODIFIERS_KEY = "customModifiers"
 
-function createModifierCard(name, previews) {
+function createModifierCard(name, previews, removeBy) {
     const modifierCard = document.createElement('div')
     modifierCard.className = 'modifier-card'
     modifierCard.innerHTML = `
@@ -44,10 +44,10 @@ function createModifierCard(name, previews) {
     }
 
     const maxLabelLength = 30
-    const nameWithoutBy = name.replace('by ', '')
+    const cardLabel = removeBy ? name.replace('by ', '') : name
 
-    if(nameWithoutBy.length <= maxLabelLength) {
-        label.querySelector('p').innerText = nameWithoutBy
+    if(cardLabel.length <= maxLabelLength) {
+        label.querySelector('p').innerText = cardLabel
     } else {
         const tooltipText = document.createElement('span')
         tooltipText.className = 'tooltip-text'
@@ -56,13 +56,14 @@ function createModifierCard(name, previews) {
         label.classList.add('tooltip')
         label.appendChild(tooltipText)
 
-        label.querySelector('p').innerText = nameWithoutBy.substring(0, maxLabelLength) + '...'
+        label.querySelector('p').innerText = cardLabel.substring(0, maxLabelLength) + '...'
     }
+    label.querySelector('p').dataset.fullName = name // preserve the full name
 
     return modifierCard
 }
 
-function createModifierGroup(modifierGroup, initiallyExpanded) {
+function createModifierGroup(modifierGroup, initiallyExpanded, removeBy) {
     const title = modifierGroup.category
     const modifiers = modifierGroup.modifiers
 
@@ -79,9 +80,9 @@ function createModifierGroup(modifierGroup, initiallyExpanded) {
 
     modifiers.forEach(modObj => {
         const modifierName = modObj.modifier
-        const modifierPreviews = modObj?.previews?.map(preview => `${modifierThumbnailPath}/${preview.path}`)
+        const modifierPreviews = modObj?.previews?.map(preview => `${IMAGE_REGEX.test(preview.image) ? preview.image : modifierThumbnailPath + '/' + preview.path}`)
 
-        const modifierCard = createModifierCard(modifierName, modifierPreviews)
+        const modifierCard = createModifierCard(modifierName, modifierPreviews, removeBy)
 
         if(typeof modifierCard == 'object') {
             modifiersEl.appendChild(modifierCard)
@@ -114,6 +115,7 @@ function createModifierGroup(modifierGroup, initiallyExpanded) {
     modifiersEl.appendChild(brk)
 
     let e = document.createElement('div')
+    e.className = 'modifier-category'
     e.appendChild(titleEl)
     e.appendChild(modifiersEl)
 
@@ -137,7 +139,7 @@ async function loadModifiers() {
             res.reverse()
 
             res.forEach((modifierGroup, idx) => {
-                createModifierGroup(modifierGroup, idx === res.length - 1)
+                createModifierGroup(modifierGroup, idx === res.length - 1, modifierGroup === 'Artist' ? true : false) // only remove "By " for artists
             })
 
             createCollapsibles(editorModifierEntries)
@@ -153,7 +155,7 @@ async function loadModifiers() {
 function refreshModifiersState(newTags) {
     // clear existing modifiers
     document.querySelector('#editor-modifiers').querySelectorAll('.modifier-card').forEach(modifierCard => {
-        const modifierName = modifierCard.querySelector('.modifier-card-label').innerText
+        const modifierName = modifierCard.querySelector('.modifier-card-label p').dataset.fullName // pick the full modifier name
         if (activeTags.map(x => x.name).includes(modifierName)) {
             modifierCard.classList.remove(activeCardClass)
             modifierCard.querySelector('.modifier-card-image-overlay').innerText = '+'
@@ -165,13 +167,16 @@ function refreshModifiersState(newTags) {
     newTags.forEach(tag => {
         let found = false
         document.querySelector('#editor-modifiers').querySelectorAll('.modifier-card').forEach(modifierCard => {
-            const modifierName = modifierCard.querySelector('.modifier-card-label').innerText
-            if (tag == modifierName) {
+            const modifierName = modifierCard.querySelector('.modifier-card-label p').dataset.fullName
+            const shortModifierName = modifierCard.querySelector('.modifier-card-label p').innerText
+            if (trimModifiers(tag) == trimModifiers(modifierName)) {
                 // add modifier to active array
                 if (!activeTags.map(x => x.name).includes(tag)) { // only add each tag once even if several custom modifier cards share the same tag
+                    const imageModifierCard = modifierCard.cloneNode(true)
+                    imageModifierCard.querySelector('.modifier-card-label p').innerText = shortModifierName
                     activeTags.push({
                         'name': modifierName,
-                        'element': modifierCard.cloneNode(true),
+                        'element': imageModifierCard,
                         'originElement': modifierCard
                     })
                 }
@@ -181,7 +186,7 @@ function refreshModifiersState(newTags) {
             }
         })
         if (found == false) { // custom tag went missing, create one here
-            let modifierCard = createModifierCard(tag, undefined) // create a modifier card for the missing tag, no image
+            let modifierCard = createModifierCard(tag, undefined, false) // create a modifier card for the missing tag, no image
             
             modifierCard.addEventListener('click', () => {
                 if (activeTags.map(x => x.name).includes(tag)) {

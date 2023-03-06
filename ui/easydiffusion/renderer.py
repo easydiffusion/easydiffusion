@@ -12,22 +12,26 @@ from sdkit.generate import generate_images
 from sdkit.filter import apply_filters
 from sdkit.utils import img_to_buffer, img_to_base64_str, latent_samples_to_images, gc
 
-context = Context() # thread-local
-'''
+context = Context()  # thread-local
+"""
 runtime data (bound locally to this thread), for e.g. device, references to loaded models, optimization flags etc
-'''
+"""
+
 
 def init(device):
-    '''
+    """
     Initializes the fields that will be bound to this runtime's context, and sets the current torch device
-    '''
+    """
     context.stop_processing = False
     context.temp_images = {}
     context.partial_x_samples = None
 
     device_manager.device_init(context, device)
 
-def make_images(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback):
+
+def make_images(
+    req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback
+):
     context.stop_processing = False
     print_task_info(req, task_data)
 
@@ -36,18 +40,25 @@ def make_images(req: GenerateImageRequest, task_data: TaskData, data_queue: queu
     res = Response(req, task_data, images=construct_response(images, seeds, task_data, base_seed=req.seed))
     res = res.json()
     data_queue.put(json.dumps(res))
-    log.info('Task completed')
+    log.info("Task completed")
 
     return res
 
-def print_task_info(req: GenerateImageRequest, task_data: TaskData):
-    req_str = pprint.pformat(get_printable_request(req)).replace("[","\[")
-    task_str = pprint.pformat(task_data.dict()).replace("[","\[")
-    log.info(f'request: {req_str}')
-    log.info(f'task data: {task_str}')
 
-def make_images_internal(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback):
-    images, user_stopped = generate_images_internal(req, task_data, data_queue, task_temp_images, step_callback, task_data.stream_image_progress)
+def print_task_info(req: GenerateImageRequest, task_data: TaskData):
+    req_str = pprint.pformat(get_printable_request(req)).replace("[", "\[")
+    task_str = pprint.pformat(task_data.dict()).replace("[", "\[")
+    log.info(f"request: {req_str}")
+    log.info(f"task data: {task_str}")
+
+
+def make_images_internal(
+    req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback
+):
+
+    images, user_stopped = generate_images_internal(
+        req, task_data, data_queue, task_temp_images, step_callback, task_data.stream_image_progress, task_data.stream_image_progress_interval
+    )
     filtered_images = filter_images(task_data, images, user_stopped)
 
     if task_data.save_to_disk_path is not None:
@@ -59,13 +70,23 @@ def make_images_internal(req: GenerateImageRequest, task_data: TaskData, data_qu
     else:
         return images + filtered_images, seeds + seeds
 
-def generate_images_internal(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback, stream_image_progress: bool):
+
+def generate_images_internal(
+    req: GenerateImageRequest,
+    task_data: TaskData,
+    data_queue: queue.Queue,
+    task_temp_images: list,
+    step_callback,
+    stream_image_progress: bool,
+    stream_image_progress_interval: int,
+):
     context.temp_images.clear()
 
-    callback = make_step_callback(req, task_data, data_queue, task_temp_images, step_callback, stream_image_progress)
+    callback = make_step_callback(req, task_data, data_queue, task_temp_images, step_callback, stream_image_progress, stream_image_progress_interval)
 
     try:
-        if req.init_image is not None: req.sampler_name = 'ddim'
+        if req.init_image is not None:
+            req.sampler_name = "ddim"
 
         images = generate_images(context, callback=callback, **req.dict())
         user_stopped = False
@@ -75,31 +96,50 @@ def generate_images_internal(req: GenerateImageRequest, task_data: TaskData, dat
         if context.partial_x_samples is not None:
             images = latent_samples_to_images(context, context.partial_x_samples)
     finally:
-        if hasattr(context, 'partial_x_samples') and context.partial_x_samples is not None:
+        if hasattr(context, "partial_x_samples") and context.partial_x_samples is not None:
             del context.partial_x_samples
             context.partial_x_samples = None
 
     return images, user_stopped
 
+
 def filter_images(task_data: TaskData, images: list, user_stopped):
-    if user_stopped or (task_data.use_face_correction is None and task_data.use_upscale is None):
+    if user_stopped:
         return images
 
     filters_to_apply = []
-    if task_data.use_face_correction and 'gfpgan' in task_data.use_face_correction.lower(): filters_to_apply.append('gfpgan')
-    if task_data.use_upscale and 'realesrgan' in task_data.use_upscale.lower(): filters_to_apply.append('realesrgan')
+    if task_data.block_nsfw:
+        filters_to_apply.append("nsfw_checker")
+    if task_data.use_face_correction and "gfpgan" in task_data.use_face_correction.lower():
+        filters_to_apply.append("gfpgan")
+    if task_data.use_upscale and "realesrgan" in task_data.use_upscale.lower():
+        filters_to_apply.append("realesrgan")
+
+    if len(filters_to_apply) == 0:
+        return images
 
     return apply_filters(context, filters_to_apply, images, scale=task_data.upscale_amount)
+
 
 def construct_response(images: list, seeds: list, task_data: TaskData, base_seed: int):
     return [
         ResponseImage(
             data=img_to_base64_str(img, task_data.output_format, task_data.output_quality),
             seed=seed,
-        ) for img, seed in zip(images, seeds)
+        )
+        for img, seed in zip(images, seeds)
     ]
 
-def make_step_callback(req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback, stream_image_progress: bool):
+
+def make_step_callback(
+    req: GenerateImageRequest,
+    task_data: TaskData,
+    data_queue: queue.Queue,
+    task_temp_images: list,
+    step_callback,
+    stream_image_progress: bool,
+    stream_image_progress_interval: int,
+):
     n_steps = req.num_inference_steps if req.init_image is None else int(req.num_inference_steps * req.prompt_strength)
     last_callback_time = -1
 
@@ -107,11 +147,11 @@ def make_step_callback(req: GenerateImageRequest, task_data: TaskData, data_queu
         partial_images = []
         images = latent_samples_to_images(context, x_samples)
         for i, img in enumerate(images):
-            buf = img_to_buffer(img, output_format='JPEG')
+            buf = img_to_buffer(img, output_format="JPEG")
 
             context.temp_images[f"{task_data.request_id}/{i}"] = buf
             task_temp_images[i] = buf
-            partial_images.append({'path': f"/image/tmp/{task_data.request_id}/{i}"})
+            partial_images.append({"path": f"/image/tmp/{task_data.request_id}/{i}"})
         del images
         return partial_images
 
@@ -124,8 +164,8 @@ def make_step_callback(req: GenerateImageRequest, task_data: TaskData, data_queu
 
         progress = {"step": i, "step_time": step_time, "total_steps": n_steps}
 
-        if stream_image_progress and i % 5 == 0:
-            progress['output'] = update_temp_img(x_samples, task_temp_images)
+        if stream_image_progress and stream_image_progress_interval > 0 and i % stream_image_progress_interval == 0:
+            progress["output"] = update_temp_img(x_samples, task_temp_images)
 
         data_queue.put(json.dumps(progress))
 

@@ -20,19 +20,6 @@ function getNextSibling(elem, selector) {
     }
 }
 
-function findClosestAncestor(element, selector) {
-  if (!element || !element.parentNode) {
-      // reached the top of the DOM tree, return null
-      return null;
-  } else if (element.parentNode.matches(selector)) {
-      // found an ancestor that matches the selector, return it
-      return element.parentNode;
-  } else {
-      // continue searching upwards
-      return findClosestAncestor(element.parentNode, selector);
-  }
-}
-
 
 /* Panel Stuff */
 
@@ -522,6 +509,9 @@ function makeQuerablePromise(promise) {
 /* inserts custom html to allow prettifying of inputs */
 function prettifyInputs(root_element) {
     root_element.querySelectorAll(`input[type="checkbox"]`).forEach(element => {
+        if (element.style.display === "none") {
+            return
+        }
         var parent = element.parentNode;
         if (!parent.classList.contains("input-toggle")) {
             var wrapper = document.createElement("div");

@@ -25,11 +25,13 @@ const PLUGINS = {
      * })
      */
     IMAGE_INFO_BUTTONS: [],
+    GET_PROMPTS_HOOK: [],
     MODIFIERS_LOAD: [],
     TASK_CREATE: [],
     OUTPUTS_FORMATS: new ServiceContainer(
         function png() { return (reqBody) => new SD.RenderTask(reqBody) }
         , function jpeg() { return (reqBody) => new SD.RenderTask(reqBody) }
+        , function webp() { return (reqBody) => new SD.RenderTask(reqBody) }
     ),
 }
 PLUGINS.OUTPUTS_FORMATS.register = function(...args) {
