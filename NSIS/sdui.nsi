@@ -2,7 +2,7 @@
 
 Target amd64-unicode
 Unicode True
-SetCompressor /SOLID /FINAL lzma
+SetCompressor /FINAL lzma
 RequestExecutionLevel user
 !AddPluginDir /amd64-unicode "."
 ; HM NIS Edit Wizard helper defines
@@ -144,7 +144,7 @@ Function MediaPackDialog
 	Abort
     ${EndIf}
 
-    ${NSD_CreateLabel} 0 0 100% 48u "The Windows Media Feature Pack is missing on this computer. It is required for the Stable Diffusion UI.$\nYou can continue the installation after installing the Windows Media Feature Pack."
+    ${NSD_CreateLabel} 0 0 100% 48u "The Windows Media Feature Pack is missing on this computer. It is required for Easy Diffusion.$\nYou can continue the installation after installing the Windows Media Feature Pack."
     Pop $Label
  	
     ${NSD_CreateButton} 10% 49u 80% 12u "Download Meda Feature Pack from Microsoft"
@@ -166,7 +166,7 @@ FunctionEnd
 !define MUI_WELCOMEFINISHPAGE_BITMAP "astro.bmp"
 
 ; Welcome page
-!define MUI_WELCOMEPAGE_TEXT "This installer will guide you through the installation of Stable Diffusion UI.$\n$\n\
+!define MUI_WELCOMEPAGE_TEXT "This installer will guide you through the installation of Easy Diffusion.$\n$\n\
 Click Next to continue."
 !insertmacro MUI_PAGE_WELCOME
 Page custom MediaPackDialog
@@ -284,7 +284,7 @@ Function .onInit
 
    ${If} $4 < "8000"
       MessageBox MB_OK|MB_ICONEXCLAMATION "Warning!$\n$\nYour system has less than 8GB of memory (RAM).$\n$\n\
-You can still try to install Stable Diffusion UI,$\nbut it might have problems to start, or run$\nvery slowly."
+You can still try to install Easy Diffusion,$\nbut it might have problems to start, or run$\nvery slowly."
    ${EndIf}
   
 FunctionEnd
