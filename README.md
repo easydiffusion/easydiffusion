@@ -50,11 +50,11 @@ The installer will take care of whatever is needed. If you face any problems, yo
 - **Multiple Prompts File**: Queue multiple prompts by entering one prompt per line, or by running a text file.
 - **Save generated images to disk**: Save your images to your PC!
 - **UI Themes**: Customize the program to your liking.
-- **Organize your models into sub-folders**
+- **Searchable models dropdown**: organize your models into sub-folders, and search through them in the UI.
 
 ### Image generation
 - **Supports**: "*Text to Image*" and "*Image to Image*".
-- **14 Samplers**: `ddim`, `plms`, `heun`, `euler`, `euler_a`, `dpm2`, `dpm2_a`, `lms`, `dpm_solver_stability`, `dpmpp_2s_a`, `dpmpp_2m`, `dpmpp_sde`, `dpm_fast`, `dpm_adaptive`
+- **19 Samplers**: `ddim`, `plms`, `heun`, `euler`, `euler_a`, `dpm2`, `dpm2_a`, `lms`, `dpm_solver_stability`, `dpmpp_2s_a`, `dpmpp_2m`, `dpmpp_sde`, `dpm_fast`, `dpm_adaptive`, `unipc_snr`, `unipc_tu`, `unipc_tq`, `unipc_snr_2`, `unipc_tu_2`.
 - **In-Painting**: Specify areas of your image to paint into.
 - **Simple Drawing Tool**: Draw basic images to guide the AI, without needing an external drawing program.
 - **Face Correction (GFPGAN)**
@@ -67,7 +67,7 @@ The installer will take care of whatever is needed. If you face any problems, yo
 - **1-click Upscale/Face Correction**: Upscale or correct an image after it has been generated.
 - **Make Similar Images**: Click to generate multiple variations of a generated image.
 - **NSFW Setting**: A setting in the UI to control *NSFW content*.
-- **JPEG/PNG output**: Multiple file formats.
+- **JPEG/PNG/WEBP output**: Multiple file formats.
 
 ### Advanced features
 - **Custom Models**: Use your own `.ckpt` or `.safetensors` file, by placing it inside the `models/stable-diffusion` folder!
@@ -75,6 +75,7 @@ The installer will take care of whatever is needed. If you face any problems, yo
 - **Merge Models**
 - **Use custom VAE models**
 - **Use pre-trained Hypernetworks**
+- **Use custom GFPGAN models**
 - **UI Plugins**: Choose from a growing list of [community-generated UI plugins](https://github.com/cmdr2/stable-diffusion-ui/wiki/UI-Plugins), or write your own plugin to add features to the project!
 
 ### Performance and security
