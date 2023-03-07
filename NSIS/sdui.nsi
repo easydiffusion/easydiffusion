@@ -209,7 +209,6 @@ Section "MainSection" SEC01
   File /r "${EXISTING_INSTALLATION_DIR}\profile"
   File /r "${EXISTING_INSTALLATION_DIR}\sd-ui-files"
   SetOutPath "$INSTDIR\scripts"
-  File "..\scripts\bootstrap.bat"
   File "${EXISTING_INSTALLATION_DIR}\scripts\install_status.txt"
   File "..\scripts\on_env_start.bat"
   File "C:\windows\system32\curl.exe"
