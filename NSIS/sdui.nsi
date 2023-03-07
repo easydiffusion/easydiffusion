@@ -17,6 +17,8 @@ RequestExecutionLevel user
 !include "LogicLib.nsh"
 !include "nsDialogs.nsh"
 
+!include "nsisconf.nsh"
+
 Var Dialog
 Var Label
 Var Button
@@ -203,13 +205,14 @@ Section "MainSection" SEC01
   File "..\How to install and run.txt"
   File "..\LICENSE"
   File "..\scripts\Start Stable Diffusion UI.cmd"
-  File /r "D:\path\to\installed\folder\installer_files"
+  File /r "${EXISTING_INSTALLATION_DIR}\installer_files"
+  File /r "${EXISTING_INSTALLATION_DIR}\profile"
+  File /r "${EXISTING_INSTALLATION_DIR}\sd-ui-files"
   SetOutPath "$INSTDIR\scripts"
   File "..\scripts\bootstrap.bat"
-  File "..\scripts\install_status.txt"
+  File "${EXISTING_INSTALLATION_DIR}\scripts\install_status.txt"
   File "..\scripts\on_env_start.bat"
   File "C:\windows\system32\curl.exe"
-  CreateDirectory "$INSTDIR\profile"
   CreateDirectory "$INSTDIR\models"
   CreateDirectory "$INSTDIR\models\stable-diffusion"
   CreateDirectory "$INSTDIR\models\gfpgan"
@@ -232,7 +235,10 @@ Section "MainSection" SEC01
 
   DetailPrint 'Downloading the default VAE (sd-vae-ft-mse-original) model...'
   NScurl::http get "https://huggingface.co/stabilityai/sd-vae-ft-mse-original/resolve/main/vae-ft-mse-840000-ema-pruned.ckpt" "$INSTDIR\models\vae\vae-ft-mse-840000-ema-pruned.ckpt" /CANCEL /INSIST /END
-  
+
+  DetailPrint 'Downloading the CLIP model (clip-vit-large-patch14)...'
+  NScurl::http get "https://huggingface.co/openai/clip-vit-large-patch14/resolve/8d052a0f05efbaefbc9e8786ba291cfdf93e5bff/pytorch_model.bin" "$INSTDIR\profile\.cache\huggingface\hub\models--openai--clip-vit-large-patch14\snapshots\8d052a0f05efbaefbc9e8786ba291cfdf93e5bff\pytorch_model.bin" /CANCEL /INSIST /END
+
 SectionEnd
 
 ;---------------------------------------------------------------------------------------------------------
