@@ -3,23 +3,26 @@
 ## v2.5
 ### Major Changes
 - **Nearly twice as fast** - significantly faster speed of image generation. We're now pretty close to automatic1111's speed. Code contributions are welcome to make our project even faster: https://github.com/easydiffusion/sdkit/#is-it-fast
+- **Mac M1/M2 support** - Experimental support for Mac M1/M2. Thanks @michaelgallacher, @JeLuf and vishae.
 - **Full support for Stable Diffusion 2.1 (including CPU)** - supports loading v1.4 or v2.0 or v2.1 models seamlessly. No need to enable "Test SD2", and no need to add `sd2_` to your SD 2.0 model file names. Works on CPU as well.
 - **Memory optimized Stable Diffusion 2.1** - you can now use Stable Diffusion 2.1 models, with the same low VRAM optimizations that we've always had for SD 1.4. Please note, the SD 2.0 and 2.1 models require more GPU and System RAM, as compared to the SD 1.4 and 1.5 models.
-- **11 new samplers!** - explore the new samplers, some of which can generate great images in less than 10 inference steps! We've added the Karras and UniPC samplers.
-- **Model Merging** - You can now merge two models (`.ckpt` or `.safetensors`) and output `.ckpt` or `.safetensors` models, optionally in `fp16` precision. Details: https://github.com/cmdr2/stable-diffusion-ui/wiki/Model-Merging
+- **11 new samplers!** - explore the new samplers, some of which can generate great images in less than 10 inference steps! We've added the Karras and UniPC samplers. Thanks @Schorny for the UniPC samplers.
+- **Model Merging** - You can now merge two models (`.ckpt` or `.safetensors`) and output `.ckpt` or `.safetensors` models, optionally in `fp16` precision. Details: https://github.com/cmdr2/stable-diffusion-ui/wiki/Model-Merging . Thanks @JeLuf.
 - **Fast loading/unloading of VAEs** - No longer needs to reload the entire Stable Diffusion model, each time you change the VAE
 - **Database of known models** - automatically picks the right configuration for known models. E.g. we automatically detect and apply "v" parameterization (required for some SD 2.0 models), and "fp32" attention precision (required for some SD 2.1 models).
 - **Color correction for img2img** - an option to preserve the color profile (histogram) of the initial image. This is especially useful if you're getting red-tinted images after inpainting/masking.
 - **Three GPU Memory Usage Settings** - `High` (fastest, maximum VRAM usage), `Balanced` (default - almost as fast, significantly lower VRAM usage), `Low` (slowest, very low VRAM usage). The `Low` setting is applied automatically for GPUs with less than 4 GB of VRAM.
-- **Find models in sub-folders** - This allows you to organize your models into sub-folders inside `models/stable-diffusion`, instead of keeping them all in a single folder.
-- **Save metadata as JSON** - You can now save the metadata files as either text or json files (choose in the Settings tab).
+- **Find models in sub-folders** - This allows you to organize your models into sub-folders inside `models/stable-diffusion`, instead of keeping them all in a single folder. Thanks @patriceac and @ogmaresca.
+- **Custom Modifier Categories** - Ability to create custom modifiers with thumbnails, and custom categories (and hierarchy of categories). Details: https://github.com/cmdr2/stable-diffusion-ui/wiki/Custom-Modifiers . Thanks @ogmaresca.
+- **Embed metadata, or save as TXT/JSON** - You can now embed the metadata directly into the images, or save them as text or json files (choose in the Settings tab). Thanks @patriceac.
 - **Major rewrite of the code** - Most of the codebase has been reorganized and rewritten, to make it more manageable and easier for new developers to contribute features. We've separated our core engine into a new project called `sdkit`, which allows anyone to easily integrate Stable Diffusion (and related modules like GFPGAN etc) into their programming projects (via a simple `pip install sdkit`): https://github.com/easydiffusion/sdkit/
 - **Name change** - Last, and probably the least, the UI is now called "Easy Diffusion". It indicates the focus of this project - an easy way for people to play with Stable Diffusion.
 
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
-* 2.5.23 - 8 Mar 2023 - Experimental support for mac.
+* 2.5.23 - 8 Mar 2023 - Experimental support for Mac M1/M2. Thanks @michaelgallacher, @JeLuf and vishae!
+* 2.5.23 - 8 Mar 2023 - Ability to create custom modifiers with thumbnails, and custom categories (and hierarchy of categories). More details - https://github.com/cmdr2/stable-diffusion-ui/wiki/Custom-Modifiers . Thanks @ogmaresca.
 * 2.5.22 - 28 Feb 2023 - Minor styling changes to UI buttons, and the models dropdown.
 * 2.5.22 - 28 Feb 2023 - Lots of UI-related bug fixes. Thanks @patriceac.
 * 2.5.21 - 22 Feb 2023 - An option to control the size of the image thumbnails. You can use the `Display options` in the top-right corner to change this. Thanks @JeLuf.
