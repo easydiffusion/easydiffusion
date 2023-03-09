@@ -414,7 +414,7 @@ def get_devices():
 
         devices["all"].update({device: get_device_info(device)})
 
-    if torch.backends.mps.is_available() and torch.backends.mps.is_built():
+    if hasattr(torch.backends, 'mps') and torch.backends.mps.is_available() and torch.backends.mps.is_built():
         devices["all"].update({"mps": get_device_info("mps")})
 
     devices["all"].update({"cpu": get_device_info("cpu")})
