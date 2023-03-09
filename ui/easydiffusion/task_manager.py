@@ -385,7 +385,7 @@ def get_devices():
     }
 
     def get_device_info(device):
-        if device == "cpu":
+        if "cuda" not in device:
             return {"name": device_manager.get_processor_name()}
 
         mem_free, mem_total = torch.cuda.mem_get_info(device)
