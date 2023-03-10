@@ -65,10 +65,12 @@ def get_device_delta(render_devices, active_devices):
 
 
 def is_mps_available():
-    return platform.system() == "Darwin" and \
-        hasattr(torch.backends, 'mps') and \
-        torch.backends.mps.is_available() and \
-        torch.backends.mps.is_built()
+    return (
+        platform.system() == "Darwin"
+        and hasattr(torch.backends, "mps")
+        and torch.backends.mps.is_available()
+        and torch.backends.mps.is_built()
+    )
 
 
 def is_cuda_available():
@@ -213,7 +215,7 @@ def is_device_compatible(device):
         log.error(str(e))
         return False
 
-    if not is_cuda_available():
+    if device in ("cpu", "mps"):
         return True
     # Memory check
     try:
