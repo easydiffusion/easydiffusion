@@ -18,6 +18,9 @@ const CUSTOM_MODIFIERS_KEY = "customModifiers"
 
 function createModifierCard(name, previews, removeBy) {
     const modifierCard = document.createElement('div')
+    let style = previewImageField.value
+    let styleIndex = (style=='portrait') ? 0 : 1
+
     modifierCard.className = 'modifier-card'
     modifierCard.innerHTML = `
     <div class="modifier-card-overlay"></div>
@@ -37,8 +40,8 @@ function createModifierCard(name, previews, removeBy) {
     errorText.innerText = 'No Image'
 
     if (typeof previews == 'object') {
-        image.src = previews[0]; // portrait
-        image.setAttribute('preview-type', 'portrait')
+        image.src = previews[styleIndex]; // portrait
+        image.setAttribute('preview-type', style)
     } else {
         image.remove()
     }
