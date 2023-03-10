@@ -65,6 +65,8 @@ let promptStrengthContainer = document.querySelector('#prompt_strength_container
 let initialText = document.querySelector("#initial-text")
 let previewTools = document.querySelector("#preview-tools")
 let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
+let showDownloadPopupBtn = document.querySelector("#show-download-popup")
+let saveAllImagesPopup = document.querySelector("#download-images-popup")
 let saveAllImagesBtn = document.querySelector("#save-all-images")
 let saveAllImagesAndJSONBtn = document.querySelector("#save-all-images-json")
 
@@ -1550,6 +1552,9 @@ resumeBtn.addEventListener("click", function () {
     document.body.classList.remove('pause')
     document.body.classList.remove('wait-pause')
 })
+
+
+showDownloadPopupBtn.addEventListener("click", (e) => { saveAllImagesPopup.classList.add("active") })
 
 document.querySelectorAll(".tab").forEach(linkTabContents)
 

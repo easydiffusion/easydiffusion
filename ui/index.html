@@ -287,17 +287,7 @@
             <div id="preview-content">
                 <div id="preview-tools">
                     <button id="clear-all-previews" class="secondaryButton"><i class="fa-solid fa-trash-can icon"></i> Clear All</button>
-                    <span class="dropdown">
-                        <button class="dropbtn primaryButton"><i class="fa-solid fa-download"></i> Download <i class="fa-solid fa-angle-down"></i></button>
-                        <div class="dropdown-content">
-                            <div class="dropdown-item">
-                                <button id="save-all-images" class="primaryButton"><i class="fa-solid fa-images"></i> Download all images</button>
-                            </div>
-                            <div class="dropdown-item">
-                                <button id="save-all-images-json" class="primaryButton"><i class="fa-solid fa-tags"></i> Download all images<br/>and their metadata</button>
-                            </div>
-                        </div>
-                    </span>
+                    <button class="dropbtn primaryButton" id="show-download-popup"><i class="fa-solid fa-download"></i> Download images</button>
                     <div class="display-settings">
                         <span class="auto-scroll"></span> <!-- hack for Rabbit Hole update -->
                         <button id="auto_scroll_btn" class="tertiaryButton">
@@ -391,6 +381,14 @@
     </div>
     
 
+    <div class="popup" id="download-images-popup">
+        <div>
+            <i class="close-button fa-solid fa-xmark"></i>
+            <h1>Download all images</h1>
+            <button id="save-all-images" class="primaryButton"><i class="fa-solid fa-images"></i> Download all images</button>
+            <button id="save-all-images-json" class="primaryButton"><i class="fa-solid fa-tags"></i> Download all images<br/>and their metadata</button>
+        </div>
+    </div>
     <div id="save-settings-config" class="popup">
         <div>
             <i class="close-button fa-solid fa-xmark"></i>
