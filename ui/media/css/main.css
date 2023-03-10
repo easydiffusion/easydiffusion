@@ -123,6 +123,9 @@ code {
 .imgPreviewItemClearBtn {
     opacity: 0;
 }
+.imgContainer .img_bottom_label {
+    opacity: 0;
+}
 .imgPreviewItemClearBtn:hover {
     background: rgb(177, 27, 0);
 }
@@ -131,6 +134,9 @@ code {
 }
 .imgContainer:hover > .imgPreviewItemClearBtn {
     opacity: 1;
+}
+.imgContainer:hover > .img_bottom_label {
+    opacity: 60%;
 }
 .imgItemInfo * {
     margin-bottom: 7px;
@@ -410,13 +416,21 @@ div.img-preview img {
 .dropdown:hover .dropdown-content {
     display: block;
 }
+.dropdown:hover + .dropdown-content {
+    display: block;
+}
+.dropdown-content:hover {
+    display: block;
+}
 
 .display-settings {
     float: right;
+    position: relative;
 }
 
 .display-settings .dropdown-content {
-    right: 12px;
+    right: 0px;
+    top: 12pt;
 }
 
 .dropdown-item {
@@ -507,6 +521,11 @@ div.img-preview img {
     border-radius: 5px;
 }
 .tertiaryButton:hover {
+    background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
+    color: var(--accent-text-color);
+}
+.tertiaryButton.pressed {
+    border-style: inset;
     background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
     color: var(--accent-text-color);
 }
@@ -601,6 +620,9 @@ div.img-preview img {
 } */
 
 #init_image_size_box {
+    border-radius: 6px 0px;
+}
+.img_bottom_label {
     position: absolute;
     right: 0px;
     bottom: 0px;
@@ -610,7 +632,6 @@ div.img-preview img {
     text-shadow: 0px 0px 4px black;
     opacity: 60%;
     font-size: 12px;
-    border-radius: 6px 0px;
 }
 
 #editor-settings {
@@ -816,12 +837,6 @@ input::file-selector-button {
         height: 100%;
         width: 100%;
         object-fit: contain;
-    }
-    .dropdown-content {
-        width: auto !important;
-        transform: none !important;
-        left: 0px;
-        right: 0px;
     }
     #editor {
         padding: 16px 8px;

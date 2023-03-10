@@ -1,4 +1,5 @@
 import os
+import platform
 import torch
 import traceback
 import re
@@ -21,20 +22,20 @@ mem_free_threshold = 0
 
 def get_device_delta(render_devices, active_devices):
     """
-    render_devices: 'cpu', or 'auto' or ['cuda:N'...]
-    active_devices: ['cpu', 'cuda:N'...]
+    render_devices: 'cpu', or 'auto', or 'mps' or ['cuda:N'...]
+    active_devices: ['cpu', 'mps', 'cuda:N'...]
     """
 
-    if render_devices in ("cpu", "auto"):
+    if render_devices in ("cpu", "auto", "mps"):
         render_devices = [render_devices]
     elif render_devices is not None:
         if isinstance(render_devices, str):
             render_devices = [render_devices]
         if isinstance(render_devices, list) and len(render_devices) > 0:
-            render_devices = list(filter(lambda x: x.startswith("cuda:"), render_devices))
+            render_devices = list(filter(lambda x: x.startswith("cuda:") or x == "mps", render_devices))
             if len(render_devices) == 0:
                 raise Exception(
-                    'Invalid render_devices value in config.json. Valid: {"render_devices": ["cuda:0", "cuda:1"...]}, or {"render_devices": "cpu"} or {"render_devices": "auto"}'
+                    'Invalid render_devices value in config.json. Valid: {"render_devices": ["cuda:0", "cuda:1"...]}, or {"render_devices": "cpu"} or {"render_devices": "mps"} or {"render_devices": "auto"}'
                 )
 
             render_devices = list(filter(lambda x: is_device_compatible(x), render_devices))
@@ -63,10 +64,26 @@ def get_device_delta(render_devices, active_devices):
     return devices_to_start, devices_to_stop
 
 
+def is_mps_available():
+    return (
+        platform.system() == "Darwin"
+        and hasattr(torch.backends, "mps")
+        and torch.backends.mps.is_available()
+        and torch.backends.mps.is_built()
+    )
+
+
+def is_cuda_available():
+    return torch.cuda.is_available()
+
+
 def auto_pick_devices(currently_active_devices):
     global mem_free_threshold
 
-    if not torch.cuda.is_available():
+    if is_mps_available():
+        return ["mps"]
+
+    if not is_cuda_available():
         return ["cpu"]
 
     device_count = torch.cuda.device_count()
@@ -115,11 +132,11 @@ def device_init(context, device):
 
     validate_device_id(device, log_prefix="device_init")
 
-    if device == "cpu":
-        context.device = "cpu"
+    if "cuda" not in device:
+        context.device = device
         context.device_name = get_processor_name()
         context.half_precision = False
-        log.debug(f"Render device CPU available as {context.device_name}")
+        log.debug(f"Render device available as {context.device_name}")
         return
 
     context.device_name = torch.cuda.get_device_name(device)
@@ -134,35 +151,38 @@ def device_init(context, device):
     log.info(f'Setting {device} as active, with precision: {"half" if context.half_precision else "full"}')
     torch.cuda.device(device)
 
-    return
-
 
 def needs_to_force_full_precision(context):
     if "FORCE_FULL_PRECISION" in os.environ:
         return True
 
     device_name = context.device_name.lower()
-    return ("nvidia" in device_name or "geforce" in device_name or "quadro" in device_name) and (
-        " 1660" in device_name
-        or " 1650" in device_name
-        or " t400" in device_name
-        or " t550" in device_name
-        or " t600" in device_name
-        or " t1000" in device_name
-        or " t1200" in device_name
-        or " t2000" in device_name
-    )
+    return (
+        ("nvidia" in device_name or "geforce" in device_name or "quadro" in device_name)
+        and (
+            " 1660" in device_name
+            or " 1650" in device_name
+            or " t400" in device_name
+            or " t550" in device_name
+            or " t600" in device_name
+            or " t1000" in device_name
+            or " t1200" in device_name
+            or " t2000" in device_name
+        )
+    ) or ("tesla k40m" in device_name)
 
 
 def get_max_vram_usage_level(device):
-    if device != "cpu":
+    if "cuda" in device:
         _, mem_total = torch.cuda.mem_get_info(device)
-        mem_total /= float(10**9)
+    else:
+        return "high"
 
-        if mem_total < 4.5:
-            return "low"
-        elif mem_total < 6.5:
-            return "balanced"
+    mem_total /= float(10**9)
+    if mem_total < 4.5:
+        return "low"
+    elif mem_total < 6.5:
+        return "balanced"
 
     return "high"
 
@@ -171,7 +191,7 @@ def validate_device_id(device, log_prefix=""):
     def is_valid():
         if not isinstance(device, str):
             return False
-        if device == "cpu":
+        if device == "cpu" or device == "mps":
             return True
         if not device.startswith("cuda:") or not device[5:].isnumeric():
             return False
@@ -179,7 +199,7 @@ def validate_device_id(device, log_prefix=""):
 
     if not is_valid():
         raise EnvironmentError(
-            f"{log_prefix}: device id should be 'cpu', or 'cuda:N' (where N is an integer index for the GPU). Got: {device}"
+            f"{log_prefix}: device id should be 'cpu', 'mps', or 'cuda:N' (where N is an integer index for the GPU). Got: {device}"
         )
 
 
@@ -195,7 +215,7 @@ def is_device_compatible(device):
         log.error(str(e))
         return False
 
-    if device == "cpu":
+    if device in ("cpu", "mps"):
         return True
     # Memory check
     try:
@@ -214,14 +234,14 @@ def is_device_compatible(device):
 
 def get_processor_name():
     try:
-        import platform, subprocess
+        import subprocess
 
         if platform.system() == "Windows":
             return platform.processor()
         elif platform.system() == "Darwin":
             os.environ["PATH"] = os.environ["PATH"] + os.pathsep + "/usr/sbin"
             command = "sysctl -n machdep.cpu.brand_string"
-            return subprocess.check_output(command).strip()
+            return subprocess.check_output(command, shell=True).decode().strip()
         elif platform.system() == "Linux":
             command = "cat /proc/cpuinfo"
             all_info = subprocess.check_output(command, shell=True).decode().strip()

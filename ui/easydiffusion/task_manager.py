@@ -385,7 +385,7 @@ def get_devices():
     }
 
     def get_device_info(device):
-        if device == "cpu":
+        if device in ("cpu", "mps"):
             return {"name": device_manager.get_processor_name()}
 
         mem_free, mem_total = torch.cuda.mem_get_info(device)
@@ -400,13 +400,16 @@ def get_devices():
         }
 
     # list the compatible devices
-    gpu_count = torch.cuda.device_count()
-    for device in range(gpu_count):
+    cuda_count = torch.cuda.device_count()
+    for device in range(cuda_count):
         device = f"cuda:{device}"
         if not device_manager.is_device_compatible(device):
             continue
 
         devices["all"].update({device: get_device_info(device)})
+
+    if device_manager.is_mps_available():
+        devices["all"].update({"mps": get_device_info("mps")})
 
     devices["all"].update({"cpu": get_device_info("cpu")})
 

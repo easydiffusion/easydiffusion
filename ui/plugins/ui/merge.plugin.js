@@ -134,7 +134,7 @@
     /////////////////////// Tab implementation
     document.querySelector('.tab-container')?.insertAdjacentHTML('beforeend', `
         <span id="tab-merge" class="tab">
-            <span><i class="fa fa-code-merge icon"></i> Merge models <small>(beta)</small></span>
+            <span><i class="fa fa-code-merge icon"></i> Merge models</span>
         </span>
     `)
 

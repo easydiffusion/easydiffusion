@@ -26,7 +26,7 @@
         <div id="logo">
             <h1>
                 Easy Diffusion
-                <small>v2.5.22 <span id="updateBranchLabel"></span></small>
+                <small>v2.5.23 <span id="updateBranchLabel"></span></small>
             </h1>
         </div>
         <div id="server-status">
@@ -70,7 +70,7 @@
                     <div id="init_image_preview_container" class="image_preview_container">
                         <div id="init_image_wrapper">
                             <img id="init_image_preview" src="" />
-                            <span id="init_image_size_box"></span>
+                            <span id="init_image_size_box" class="img_bottom_label"></span>
                             <button class="init_image_clear image_clear_btn"><i class="fa-solid fa-xmark"></i></button>
                         </div>
                         <div id="init_image_buttons">
@@ -98,7 +98,7 @@
                 </div>
 
                 <div id="editor-inputs-tags-container" class="row">
-                    <label>Image Modifiers <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">click an Image Modifier to remove it, right-click to temporarily disable it, use Ctrl+Mouse Wheel to adjust its weight</span></i>:</label>
+                    <label>Image Modifiers <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">click an Image Modifier to remove it, right-click to temporarily disable it, use Ctrl+Mouse Wheel to adjust its weight</span></i></label>
                     <div id="editor-inputs-tags-list"></div>
                 </div>
 
@@ -286,7 +286,7 @@
 
             <div id="preview-content">
                 <div id="preview-tools">
-                    <button id="clear-all-previews" class="secondaryButton"><i class="fa-solid fa-trash-can"></i> Clear All</button>
+                    <button id="clear-all-previews" class="secondaryButton"><i class="fa-solid fa-trash-can icon"></i> Clear All</button>
                     <span class="dropdown">
                         <button class="dropbtn primaryButton"><i class="fa-solid fa-download"></i> Download <i class="fa-solid fa-angle-down"></i></button>
                         <div class="dropdown-content">
@@ -298,20 +298,23 @@
                             </div>
                         </div>
                     </span>
-
-                    <div class="dropdown display-settings">
-                        <button class="dropbtn tertiaryButton">
-                            <i class="fa-solid fa-bars icon"></i>
-                            Preview settings
-                            <i class="fa-solid fa-angle-down icon"></i>
+                    <div class="display-settings">
+                        <span class="auto-scroll"></span> <!-- hack for Rabbit Hole update -->
+                        <button id="auto_scroll_btn" class="tertiaryButton">
+                            <i class="fa-solid fa-arrows-up-to-line icon"></i>
+                            <input id="auto_scroll" name="auto_scroll" type="checkbox" style="display: none">
+                            <span class="simple-tooltip left">
+                                Scroll to generated image (<span class="state">OFF</span>)
+                            </span>
+                        </button>
+                        <button class="dropdown tertiaryButton">
+                            <i class="fa-solid fa-magnifying-glass-plus icon dropbtn"></i>
+                            <span class="simple-tooltip left">
+                                Image Size
+                            </span>
                         </button>
                         <div class="dropdown-content">
-                            <div class="auto-scroll dropdown-item">
-                                <div class="input-toggle"><input id="auto_scroll" name="auto_scroll" type="checkbox"><label for="auto_scroll"></label></div>
-                                <label for="auto_scroll">Scroll to generated image</label>
-                            </div>
                             <div class="dropdown-item">
-                                <label>Preview image size limit:</label><br/>
                                 <input id="thumbnail_size" name="thumbnail_size" class="editor-slider" type="range" value="70" min="5" max="200" oninput="sliderUpdate(event)"> 
                                 <input id="thumbnail_size-input" name="thumbnail_size-input" size="3" value="70" pattern="^[0-9.]+$" onkeypress="preventNonNumericalInput(event)" oninput="sliderUpdate(event)">&nbsp;%
                             </div>

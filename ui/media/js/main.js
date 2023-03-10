@@ -48,6 +48,8 @@ let showOnlyFilteredImageField = document.querySelector("#show_only_filtered_ima
 let updateBranchLabel = document.querySelector("#updateBranchLabel")
 let streamImageProgressField = document.querySelector("#stream_image_progress")
 let thumbnailSizeField = document.querySelector("#thumbnail_size-input")
+let autoscrollBtn = document.querySelector("#auto_scroll_btn")
+let autoScroll = document.querySelector("#auto_scroll")
 
 let makeImageBtn = document.querySelector('#makeImage')
 let stopImageBtn = document.querySelector('#stopImage')
@@ -270,6 +272,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                         <span class="imgSeedLabel"></span>
                     </div>
                     <button class="imgPreviewItemClearBtn image_clear_btn"><i class="fa-solid fa-xmark"></i></button>
+                    <span class="img_bottom_label"></span>
                 </div>
             `
             outputContainer.appendChild(imageItemElem)
@@ -297,6 +300,10 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         imageElem.setAttribute('data-prompt', imagePrompt)
         imageElem.setAttribute('data-steps', imageInferenceSteps)
         imageElem.setAttribute('data-guidance', imageGuidanceScale)
+
+        imageElem.addEventListener('load', function() {
+            imageItemElem.querySelector('.img_bottom_label').innerText = `${this.naturalWidth} x ${this.naturalHeight}`
+        })
 
 
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
@@ -1369,7 +1376,20 @@ thumbnailSizeField.addEventListener('change', () => {
     })(thumbnailSizeField.value)
 })
 
-
+function onAutoScrollUpdate() {
+    if (autoScroll.checked) {
+        autoscrollBtn.classList.add('pressed')
+    } else {
+        autoscrollBtn.classList.remove('pressed')
+    }
+    autoscrollBtn.querySelector(".state").innerHTML = (autoScroll.checked ? "ON" : "OFF")
+}
+autoscrollBtn.addEventListener('click', function() {
+    autoScroll.checked = !autoScroll.checked
+    autoScroll.dispatchEvent(new Event("change"))
+    onAutoScrollUpdate()
+})
+autoScroll.addEventListener('change', onAutoScrollUpdate)
 
 function checkRandomSeed() {
     if (randomSeedField.checked) {
