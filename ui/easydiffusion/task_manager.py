@@ -385,16 +385,10 @@ def get_devices():
     }
 
     def get_device_info(device):
-        if device == "cpu":
+        if not device_manager.is_cuda_available():
             return {"name": device_manager.get_processor_name()}
 
-        if device == "mps":
-            mem_used = torch.mps.current_allocated_memory()
-            mem_total = torch.mps.driver_allocated_memory()
-            mem_free = mem_total - mem_used
-        else:
-            mem_free, mem_total = torch.cuda.mem_get_info(device)
-
+        mem_free, mem_total = torch.cuda.mem_get_info(device)
         mem_free /= float(10**9)
         mem_total /= float(10**9)
 
@@ -414,7 +408,7 @@ def get_devices():
 
         devices["all"].update({device: get_device_info(device)})
 
-    if torch.backends.mps.is_available() and torch.backends.mps.is_built():
+    if device_manager.is_mps_available():
         devices["all"].update({"mps": get_device_info("mps")})
 
     devices["all"].update({"cpu": get_device_info("cpu")})
