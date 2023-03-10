@@ -10,7 +10,8 @@ from rich.logging import RichHandler
 
 from sdkit.utils import log as sdkit_log  # hack, so we can overwrite the log config
 
-from easydiffusion import task_manager
+# import ldm_hijack to load the module
+from easydiffusion import task_manager, ldm_hijack
 from easydiffusion.utils import log
 
 # Remove all handlers associated with the root logger object.
