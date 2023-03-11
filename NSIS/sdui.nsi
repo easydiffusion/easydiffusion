@@ -161,9 +161,9 @@ FunctionEnd
 ; MUI Settings
 ;---------------------------------------------------------------------------------------------------------
 !define MUI_ABORTWARNING
-!define MUI_ICON "sd.ico"
+!define MUI_ICON "cyborg_flower_girl.ico"
 
-!define MUI_WELCOMEFINISHPAGE_BITMAP "astro.bmp"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "cyborg_flower_girl.bmp"
 
 ; Welcome page
 !define MUI_WELCOMEPAGE_TEXT "This installer will guide you through the installation of Easy Diffusion.$\n$\n\

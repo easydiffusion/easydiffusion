@@ -27,6 +27,11 @@ code {
     padding: 2px 4px;
     border-radius: 4px;
 }
+#logo_img {
+    width: 32px;
+    height: 32px;
+    transform: translateY(4px);
+}
 #prompt {
     width: 100%;
     height: 65pt;
@@ -324,6 +329,7 @@ div.img-preview img {
 #logo {
     display: inline;
     padding: 12px;
+    padding-top: 8px;
     white-space: nowrap;
 }
 #logo h1 {
