@@ -214,3 +214,10 @@
 .image-editor-popup h4 {
 	text-align: left;
 }
+
+.image-editor-popup .load_mask {
+	display: none;
+}
+.inpainter .load_mask {
+	display: flex;
+}
