@@ -21,6 +21,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.24 - 11 Mar 2023 - Button to load an image mask from a file.
 * 2.5.24 - 10 Mar 2023 - Logo change. Image credit: @lazlo_vii.
 * 2.5.23 - 8 Mar 2023 - Experimental support for Mac M1/M2. Thanks @michaelgallacher, @JeLuf and vishae!
 * 2.5.23 - 8 Mar 2023 - Ability to create custom modifiers with thumbnails, and custom categories (and hierarchy of categories). More details - https://github.com/cmdr2/stable-diffusion-ui/wiki/Custom-Modifiers . Thanks @ogmaresca.
