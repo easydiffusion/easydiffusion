@@ -1234,7 +1234,6 @@ function downloadAllImages() {
     let folder = zip
 
     document.querySelectorAll(".imageTaskContainer").forEach(container => {
-        console.log(container)
         if (optTree) {
             let name = ++i + '-' + container.querySelector('.preview-prompt').textContent.replace(/[^a-zA-Z0-9]/g, '_') 
             folder = zip.folder(name)
