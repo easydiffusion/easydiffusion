@@ -331,23 +331,27 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             const imgItemInfo = imageItemElem.querySelector('.imgItemInfo')
             const img = imageItemElem.querySelector('img')
             const createButton = function(btnInfo) {
+                if (btnInfo.elem) {
+                    return btnInfo.elem({ createButton, req, img })
+                }
+
                 const newButton = document.createElement('button')
                 newButton.classList.add('tasksBtns')
-                newButton.innerText = btnInfo.text
+                newButton.appendChild(typeof btnInfo.text === 'function' ? btnInfo.text() : document.createTextNode(btnInfo.text))
                 newButton.addEventListener('click', function(event) {
                     btnInfo.on_click(req, img, event)
                 })
                 if (btnInfo.class !== undefined) {
                    newButton.classList.add(btnInfo.class)
                 }
-                imgItemInfo.appendChild(newButton)
+                return newButton
             }
             buttons.forEach(btn => {
                 if (btn.filter && btn.filter(req, img) === false) {
                     return
                 }
 
-                createButton(btn)
+                imgItemInfo.appendChild(createButton(btn))
             })
         }
     })
