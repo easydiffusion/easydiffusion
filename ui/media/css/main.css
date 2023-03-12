@@ -1193,6 +1193,11 @@ div.top-right {
     right: 8px;
 }
 
+#small_image_warning {
+     font-size: smaller;
+     color: var(--status-orange);
+}
+
 button#save-system-settings-btn {
     padding: 4pt 8pt;
 }

@@ -21,6 +21,7 @@ let randomSeedField = document.querySelector("#random_seed")
 let seedField = document.querySelector('#seed')
 let widthField = document.querySelector('#width')
 let heightField = document.querySelector('#height')
+let smallImageWarning = document.querySelector('#small_image_warning')
 let initImageSelector = document.querySelector("#init_image")
 let initImagePreview = document.querySelector("#init_image_preview")
 let initImageSizeBox = document.querySelector("#init_image_size_box")
@@ -160,18 +161,18 @@ function setStatus(statusType, msg, msgType) {
 function setServerStatus(event) {
     switch(event.type) {
         case 'online':
-            serverStatusColor.style.color = 'green'
-            serverStatusMsg.style.color = 'green'
+            serverStatusColor.style.color = 'var(--status-green)'
+            serverStatusMsg.style.color = 'var(--status-green)'
             serverStatusMsg.innerText = 'Stable Diffusion is ' + event.message
             break
         case 'busy':
-            serverStatusColor.style.color = 'rgb(200, 139, 0)'
-            serverStatusMsg.style.color = 'rgb(200, 139, 0)'
+            serverStatusColor.style.color = 'var(--status-orange)'
+            serverStatusMsg.style.color = 'var(--status-orange)'
             serverStatusMsg.innerText = 'Stable Diffusion is ' + event.message
             break
         case 'error':
-            serverStatusColor.style.color = 'red'
-            serverStatusMsg.style.color = 'red'
+            serverStatusColor.style.color = 'var(--status-red)'
+            serverStatusMsg.style.color = 'var(--status-red)'
             serverStatusMsg.innerText = 'Stable Diffusion has stopped'
             break
     }
@@ -1214,6 +1215,11 @@ function onDimensionChange() {
     }
     else {
         imageInpainter.setImage(initImagePreview.src, widthValue, heightValue)
+    }
+    if ( widthValue < 512 && heightValue < 512 ) {
+        smallImageWarning.classList.remove('displayNone')
+    } else {
+        smallImageWarning.classList.add('displayNone')
     }
 }
 
