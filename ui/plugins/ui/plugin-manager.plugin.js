@@ -189,23 +189,35 @@
         }, duration);
     }
 
+    function matchPluginFileNames(fileName1, fileName2) {
+        const regex = /^(.+?)(?:-\d+(\.\d+)*)?\.plugin\.js$/;
+        const match1 = fileName1.match(regex);
+        const match2 = fileName2.match(regex);
+
+        if (match1 && match2 && match1[1] === match2[1]) {
+            return true; // the two file names match
+        } else {
+            return false; // the two file names do not match
+        }
+    }
+
     function checkFileNameInArray(paths, filePath) {
-        // Normalize the path separators to forward slashes
-        const normalizedFilePath = filePath.replace(/\\/g, "/");
-        
+        // Normalize the path separators to forward slashes and make the file names lowercase
+        const normalizedFilePath = filePath.replace(/\\/g, "/").toLowerCase();
+    
         // Strip off the path from the file name
         const fileName = normalizedFilePath.substring(normalizedFilePath.lastIndexOf("/") + 1);
-        
+    
         // Check if the file name exists in the array of paths
         return paths.some(path => {
-            // Normalize the path separators to forward slashes
-            const normalizedPath = path.replace(/\\/g, "/");
-            
+            // Normalize the path separators to forward slashes and make the file names lowercase
+            const normalizedPath = path.replace(/\\/g, "/").toLowerCase();
+    
             // Strip off the path from the file name
             const baseName = normalizedPath.substring(normalizedPath.lastIndexOf("/") + 1);
-            
-            // Compare the file names and return the result as a boolean
-            return fileName === baseName;
+    
+            // Check if the file names match and return the result as a boolean
+            return matchPluginFileNames(fileName, baseName);
         });
     }
 
