@@ -164,7 +164,14 @@
             filterPlugins();
         }
     });
-    
+
+    // focus on the search box upon tab selection
+    document.addEventListener("tabClick", (e) => {
+        if (e.detail.name == 'plugin') {
+            pluginFilter.focus()
+        }
+    })
+
     // refresh link
     pluginsTable.insertAdjacentHTML('afterend', `<p id="refresh-plugins"><small><a id="refresh-plugins-link">Refresh plugins</a></small></p>
         <p><small>(Plugin developers, add your plugins to <a href='https://github.com/patriceac/Easy-Diffusion-Plugins' target='_blank'>Easy-Diffusion-Plugins</a>)</small></p>`)
