@@ -5,6 +5,9 @@ const MIN_GPUS_TO_SHOW_SELECTION = 2
 const IMAGE_REGEX = new RegExp('data:image/[A-Za-z]+;base64')
 const htmlTaskMap = new WeakMap()
 
+let imageCounter = 0
+let imageRequest = []
+
 let promptField = document.querySelector('#prompt')
 let promptsFromFileSelector = document.querySelector('#prompt_from_file')
 let promptsFromFileBtn = document.querySelector('#promptsFromFileBtn')
@@ -68,7 +71,10 @@ let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
 let showDownloadPopupBtn = document.querySelector("#show-download-popup")
 let saveAllImagesPopup = document.querySelector("#download-images-popup")
 let saveAllImagesBtn = document.querySelector("#save-all-images")
-let saveAllImagesAndJSONBtn = document.querySelector("#save-all-images-json")
+let saveAllZipToggle = document.querySelector("#zip_toggle")
+let saveAllTreeToggle = document.querySelector("#tree_toggle")
+let saveAllJSONToggle = document.querySelector("#json_toggle")
+let saveAllFoldersOption = document.querySelector("#download-add-folders")
 
 let maskSetting = document.querySelector('#enable_mask')
 
@@ -316,6 +322,8 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                 seed: result?.seed || reqBody.seed
             })
             imageElem.setAttribute('data-seed', req.seed)
+            imageElem.setAttribute('data-imagecounter', ++imageCounter)
+            imageRequest[imageCounter] = req
             const imageSeedLabel = imageItemElem.querySelector('.imgSeedLabel')
             imageSeedLabel.innerText = 'Seed: ' + req.seed
 
@@ -376,19 +384,15 @@ function getDownloadFilename(img, suffix) {
 }
 
 function onDownloadJSONClick(req, img) {
-    const jsonDownload = document.createElement('a')
-    jsonDownload.download = getDownloadFilename(img, 'json')
-    jsonDownload.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(req, null, " ")))
-    jsonDownload.click()
+    const name = getDownloadFilename(img, 'json')
+    const blob = new Blob([JSON.stringify(req, null, 2)], { type: 'text/plain' })
+    saveAs(blob, name)
 }
 
 function onDownloadImageClick(req, img) {
-    const imgData = img.src
-
-    const imgDownload = document.createElement('a')
-    imgDownload.download = getDownloadFilename(img, req['output_format'])
-    imgDownload.href = imgData
-    imgDownload.click()
+    const name = getDownloadFilename(img, req['output_format'])
+    const blob = dataURItoBlob(img.src)
+    saveAs(blob, name)
 }
 
 function modifyCurrentRequest(...reqDiff) {
@@ -1186,26 +1190,90 @@ clearAllPreviewsBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Clear 
     taskEntries.forEach(removeTask)
 })})
 
-function downloadAllImages(json=false) {
+/* Download images popup */
+showDownloadPopupBtn.addEventListener("click", (e) => { saveAllImagesPopup.classList.add("active") })
+
+saveAllZipToggle.addEventListener('change', (e) => {
+    if (saveAllZipToggle.checked) {
+        saveAllFoldersOption.classList.remove('displayNone')
+    } else {
+        saveAllFoldersOption.classList.add('displayNone')
+    }
+})
+
+// convert base64 to raw binary data held in a string
+function dataURItoBlob(dataURI) {
+    var byteString = atob(dataURI.split(',')[1])
+
+    // separate out the mime component
+    var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0]
+
+    // write the bytes of the string to an ArrayBuffer
+    var ab = new ArrayBuffer(byteString.length)
+
+    // create a view into the buffer
+    var ia = new Uint8Array(ab)
+
+    // set the bytes of the buffer to the correct values
+    for (var i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i)
+    }
+
+    // write the ArrayBuffer to a blob, and you're done
+    return new Blob([ab], {type: mimeString})
+}
+
+function downloadAllImages() {
     let i = 0
+
+    let optZIP  = saveAllZipToggle.checked
+    let optTree = optZIP && saveAllTreeToggle.checked
+    let optJSON = saveAllJSONToggle.checked
+    
+    let zip = new JSZip()
+    let folder = zip
+
     document.querySelectorAll(".imageTaskContainer").forEach(container => {
+        console.log(container)
+        if (optTree) {
+            let name = ++i + '-' + container.querySelector('.preview-prompt').textContent.replace(/[^a-zA-Z0-9]/g, '_') 
+            folder = zip.folder(name)
+        }
         container.querySelectorAll(".imgContainer img").forEach(img => {
             let imgItem = img.closest('.imgItem')
+
             if (imgItem.style.display === 'none') {
                 return
             }
-            setTimeout(() => {imgItem.querySelector('.download-img').click()}, i*200)
-            i = i+1
-            if (json) {
-                setTimeout(() => {imgItem.querySelector('.download-json').click()}, i*200)
+
+            let req = imageRequest[img.dataset['imagecounter']]
+            if (optZIP) {
+                let suffix = img.dataset['imagecounter'] + '.' + req['output_format']
+                folder.file(getDownloadFilename(img, suffix), dataURItoBlob(img.src))
+                if (optJSON) {
+                    suffix = img.dataset['imagecounter'] + '.json'
+                    folder.file(getDownloadFilename(img, suffix), JSON.stringify(req, null, 2))
+                }
+            } else {
+                setTimeout(() => {imgItem.querySelector('.download-img').click()}, i*200)
                 i = i+1
+                if (optJSON) {
+                    setTimeout(() => {imgItem.querySelector('.download-json').click()}, i*200)
+                    i = i+1
+                }
             }
         })
     })
+    if (optZIP) {
+        let now = new Date()
+        zip.generateAsync({type:"blob"}).then(function (blob) { 
+            saveAs(blob, `EasyDiffusion-Images-${now.toISOString()}.zip`);
+        })
+    }
+
 }    
 
 saveAllImagesBtn.addEventListener('click', (e) => { downloadAllImages() })
-saveAllImagesAndJSONBtn.addEventListener('click', (e) => { downloadAllImages(true) })
 
 stopImageBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Stop all the tasks?", async function(e) {
     await stopAllTasks()
@@ -1553,9 +1621,7 @@ resumeBtn.addEventListener("click", function () {
     document.body.classList.remove('wait-pause')
 })
 
-
-showDownloadPopupBtn.addEventListener("click", (e) => { saveAllImagesPopup.classList.add("active") })
-
+/* Pause function */
 document.querySelectorAll(".tab").forEach(linkTabContents)
 
 window.addEventListener("beforeunload", function(e) {

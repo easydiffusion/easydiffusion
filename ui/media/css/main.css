@@ -1202,6 +1202,10 @@ button#save-system-settings-btn {
     line-height: 200%;
 }
 
+#download-images-popup .parameters-table > div {
+    background: var(--background-color1);
+}
+
 /* SCROLLBARS */
 :root {
     --scrollbar-width: 14px;
