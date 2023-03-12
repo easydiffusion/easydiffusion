@@ -118,6 +118,42 @@ const IMAGE_EDITOR_TOOLS = [
 
 const IMAGE_EDITOR_ACTIONS = [
 	{
+		id: "load_mask",
+		name: "Load mask from file",
+		className: "load_mask",
+		icon: "fa-regular fa-folder-open",
+		handler: (editor) => {
+			let el = document.createElement('input')
+			el.setAttribute("type", "file")
+			el.addEventListener("change", function() {
+				if (this.files.length === 0) {
+					return
+				}
+
+				let reader = new FileReader()
+				let file = this.files[0]
+
+				reader.addEventListener('load', function(event) {
+					let maskData = reader.result
+
+					editor.layers.drawing.ctx.clearRect(0, 0, editor.width, editor.height)
+					var image = new Image()
+					image.onload = () => {
+						editor.layers.drawing.ctx.drawImage(image, 0, 0, editor.width, editor.height)
+					}
+					image.src = maskData
+				})
+
+				if (file) {
+					reader.readAsDataURL(file)
+				}
+			})
+
+			el.click()
+		},
+		trackHistory: true
+	},
+	{
 		id: "fill_all",
 		name: "Fill all",
 		icon: "fa-solid fa-paint-roller",
@@ -457,6 +493,9 @@ class ImageEditor {
 			var element = document.createElement("div")
 			var icon = document.createElement("i")
 			element.className = "image-editor-button button"
+			if (action.className) {
+				element.className += " " + action.className
+			}
 			icon.className = action.icon
 			element.appendChild(icon)
 			element.append(action.name)
