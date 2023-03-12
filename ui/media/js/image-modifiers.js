@@ -261,6 +261,7 @@ function refreshTagsList() {
     let brk = document.createElement('br')
     brk.style.clear = 'both'
     editorModifierTagsList.appendChild(brk)
+    document.dispatchEvent(new Event('refreshImageModifiers')) // notify plugins that the image tags have been refreshed 
 }
 
 function toggleCardState(modifierName, makeActive) {
