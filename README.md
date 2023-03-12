@@ -11,21 +11,25 @@ Does not require technical knowledge, does not require pre-installed software. 1
 Click the download button for your operating system:
 
 <p float="left">
-  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.15/stable-diffusion-ui-windows.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-win.png" width="200" /></a>
-  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.15/stable-diffusion-ui-linux.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-linux.png" width="200" /></a>
+  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.24/Easy-Diffusion-Windows.exe"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-win.png" width="200" /></a>
+  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.24/Easy-Diffusion-Linux.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-linux.png" width="200" /></a>
 </p>
 
 ## On Windows:
-1. Unzip/extract the folder `stable-diffusion-ui` which should be in your downloads folder, unless you changed your default downloads destination.
-2. Move the `stable-diffusion-ui` folder to your `C:` drive (or any other drive like `D:`, at the top root level). `C:\stable-diffusion-ui` or `D:\stable-diffusion-ui` as examples. This will avoid a common problem with Windows (file path length limits).
+1. Run the downloaded `Easy-Diffusion-Windows.exe` file.
+
+**Tip:** On Windows 10, please install at the top level in your drive, e.g. `C:\EasyDiffusion` or `D:\EasyDiffusion`. This will avoid a common problem with Windows 10 (file path length limits).
+
 ## On Linux:
 1. Unzip/extract the folder `stable-diffusion-ui` which should be in your downloads folder, unless you changed your default downloads destination.
 2. Open a terminal window, and navigate to the `stable-diffusion-ui` directory.
 
 # Step 2: Run the program
 ## On Windows: 
-Double-click `Start Stable Diffusion UI.cmd`.
-If Windows SmartScreen prevents you from running the program click `More info` and then `Run anyway`.
+Run `Easy Diffusion` once the installation finishes. You can also start from your Start Menu, or from your desktop (if you created a shortcut).
+
+**Tip:** If Windows SmartScreen prevents you from running the program click `More info` and then `Run anyway`.
+
 ## On Linux: 
 Run `./start.sh` (or `bash start.sh`) in a terminal.
 
