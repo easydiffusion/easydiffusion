@@ -13,6 +13,7 @@ Click the download button for your operating system:
 <p float="left">
   <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.24/Easy-Diffusion-Windows.exe"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-win.png" width="200" /></a>
   <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.24/Easy-Diffusion-Linux.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-linux.png" width="200" /></a>
+  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.24/Easy-Diffusion-Mac.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-mac.png" width="200" /></a>
 </p>
 
 ## On Windows:
@@ -20,7 +21,7 @@ Click the download button for your operating system:
 
 **Tip:** On Windows 10, please install at the top level in your drive, e.g. `C:\EasyDiffusion` or `D:\EasyDiffusion`. This will avoid a common problem with Windows 10 (file path length limits).
 
-## On Linux:
+## On Linux/Mac:
 1. Unzip/extract the folder `stable-diffusion-ui` which should be in your downloads folder, unless you changed your default downloads destination.
 2. Open a terminal window, and navigate to the `stable-diffusion-ui` directory.
 
@@ -30,7 +31,7 @@ Run `Easy Diffusion` once the installation finishes. You can also start from you
 
 **Tip:** If Windows SmartScreen prevents you from running the program click `More info` and then `Run anyway`.
 
-## On Linux: 
+## On Linux/Mac:
 Run `./start.sh` (or `bash start.sh`) in a terminal.
 
 The installer will take care of whatever is needed. If you face any problems, you can join the friendly [Discord community](https://discord.com/invite/u9yhsFmEkB) and ask for assistance.

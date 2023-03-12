@@ -157,6 +157,10 @@ Function MediaPackDialog
     nsDialogs::Show
 FunctionEnd
 
+Function FinishPageAction
+CreateShortCut "$DESKTOP\Easy Diffusion.lnk" "$INSTDIR\Start Stable Diffusion UI.cmd" "" "$INSTDIR\installer_files\cyborg_flower_girl.ico"
+FunctionEnd
+
 ;---------------------------------------------------------------------------------------------------------
 ; MUI Settings
 ;---------------------------------------------------------------------------------------------------------
@@ -182,6 +186,11 @@ Page custom MediaPackDialog
 !insertmacro MUI_PAGE_INSTFILES 
 
 ; Finish page
+!define MUI_FINISHPAGE_SHOWREADME ""
+!define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
+!define MUI_FINISHPAGE_SHOWREADME_TEXT "Create Desktop Shortcut"
+!define MUI_FINISHPAGE_SHOWREADME_FUNCTION FinishPageAction
+
 !define MUI_FINISHPAGE_RUN "$INSTDIR\Start Stable Diffusion UI.cmd"
 !insertmacro MUI_PAGE_FINISH
 
@@ -208,6 +217,8 @@ Section "MainSection" SEC01
   File /r "${EXISTING_INSTALLATION_DIR}\installer_files"
   File /r "${EXISTING_INSTALLATION_DIR}\profile"
   File /r "${EXISTING_INSTALLATION_DIR}\sd-ui-files"
+  SetOutPath "$INSTDIR\installer_files"
+  File "cyborg_flower_girl.ico"
   SetOutPath "$INSTDIR\scripts"
   File "${EXISTING_INSTALLATION_DIR}\scripts\install_status.txt"
   File "..\scripts\on_env_start.bat"
@@ -218,7 +229,7 @@ Section "MainSection" SEC01
   CreateDirectory "$INSTDIR\models\realesrgan"
   CreateDirectory "$INSTDIR\models\vae"
   CreateDirectory "$SMPROGRAMS\Easy Diffusion"
-  CreateShortCut "$SMPROGRAMS\Easy Diffusion\Easy Diffusion.lnk" "$INSTDIR\Start Stable Diffusion UI.cmd"
+  CreateShortCut "$SMPROGRAMS\Easy Diffusion\Easy Diffusion.lnk" "$INSTDIR\Start Stable Diffusion UI.cmd" "" "$INSTDIR\installer_files\cyborg_flower_girl.ico"
 
   DetailPrint 'Downloading the Stable Diffusion 1.4 model...'
   NScurl::http get "https://huggingface.co/CompVis/stable-diffusion-v-1-4-original/resolve/main/sd-v1-4.ckpt" "$INSTDIR\models\stable-diffusion\sd-v1-4.ckpt" /CANCEL /INSIST /END
