@@ -477,7 +477,7 @@
             if (existingPlugin?.enabled === true) {
                 sha = await getFileHash(plugin.url)
             }
-            if (refreshPlugins || (existingPlugin?.enabled === true && (existingPlugin?.sha !== sha || existingPlugin?.code === undefined))) {
+            if ((existingPlugin?.enabled === true && (refreshPlugins || existingPlugin?.sha !== sha || existingPlugin?.code === undefined))) {
                 const pluginSource = await getDocument(plugin.url);
                 if (pluginSource !== null) {
                     console.log(`Plugin ${plugin.name} downloaded`);
