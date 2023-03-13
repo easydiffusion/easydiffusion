@@ -288,7 +288,10 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                             allHidden = false;
                         }
                     }
-                    if(allHidden === true) {parentTaskContainer.classList.add("displayNone")}
+                    if(allHidden === true) {
+                        const req = htmlTaskMap.get(parentTaskContainer)
+                        if(!req.isProcessing || req.batchesDone == req.batchCount) {parentTaskContainer.classList.add("displayNone")}
+                    }
                 })
             })
         }
