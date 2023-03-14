@@ -547,6 +547,11 @@ div.img-preview img {
     display: none;
     padding: 4pt;
 }
+#preview-tools .display-settings .dropdown-content {
+    right: -6px;
+    top: 20px;
+    box-shadow: none;
+}
 .taskConfig {
     font-size: 10pt;
     color: #aaa;
