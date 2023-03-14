@@ -550,6 +550,7 @@ div.img-preview img {
     right: -6px;
     top: 20px;
     box-shadow: none;
+    width: max-content;
 }
 .taskConfig {
     font-size: 10pt;
