@@ -5,6 +5,9 @@ const MIN_GPUS_TO_SHOW_SELECTION = 2
 const IMAGE_REGEX = new RegExp('data:image/[A-Za-z]+;base64')
 const htmlTaskMap = new WeakMap()
 
+let imageCounter = 0
+let imageRequest = []
+
 let promptField = document.querySelector('#prompt')
 let promptsFromFileSelector = document.querySelector('#prompt_from_file')
 let promptsFromFileBtn = document.querySelector('#promptsFromFileBtn')
@@ -65,7 +68,13 @@ let promptStrengthContainer = document.querySelector('#prompt_strength_container
 let initialText = document.querySelector("#initial-text")
 let previewTools = document.querySelector("#preview-tools")
 let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
+let showDownloadPopupBtn = document.querySelector("#show-download-popup")
+let saveAllImagesPopup = document.querySelector("#download-images-popup")
 let saveAllImagesBtn = document.querySelector("#save-all-images")
+let saveAllZipToggle = document.querySelector("#zip_toggle")
+let saveAllTreeToggle = document.querySelector("#tree_toggle")
+let saveAllJSONToggle = document.querySelector("#json_toggle")
+let saveAllFoldersOption = document.querySelector("#download-add-folders")
 
 let maskSetting = document.querySelector('#enable_mask')
 
@@ -313,12 +322,15 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                 seed: result?.seed || reqBody.seed
             })
             imageElem.setAttribute('data-seed', req.seed)
+            imageElem.setAttribute('data-imagecounter', ++imageCounter)
+            imageRequest[imageCounter] = req
             const imageSeedLabel = imageItemElem.querySelector('.imgSeedLabel')
             imageSeedLabel.innerText = 'Seed: ' + req.seed
 
             let buttons = [
                 { text: 'Use as Input', on_click: onUseAsInputClick },
-                { text: 'Download', on_click: onDownloadImageClick },
+                { text: 'Download', on_click: onDownloadImageClick, class: "download-img" },
+                { text: 'Download JSON', on_click: onDownloadJSONClick, class: "download-json" },
                 { text: 'Make Similar Images', on_click: onMakeSimilarClick },
                 { text: 'Draw another 25 steps', on_click: onContinueDrawingClick },
                 { text: 'Upscale', on_click: onUpscaleClick, filter: (req, img) => !req.use_upscale },
@@ -362,17 +374,25 @@ function onUseAsInputClick(req, img) {
     maskSetting.checked = false
 }
 
-function onDownloadImageClick(req, img) {
-    const imgData = img.src
+function getDownloadFilename(img, suffix) {
     const imageSeed = img.getAttribute('data-seed')
     const imagePrompt = img.getAttribute('data-prompt')
     const imageInferenceSteps = img.getAttribute('data-steps')
     const imageGuidanceScale = img.getAttribute('data-guidance')
+    
+    return createFileName(imagePrompt, imageSeed, imageInferenceSteps, imageGuidanceScale, suffix)
+}
 
-    const imgDownload = document.createElement('a')
-    imgDownload.download = createFileName(imagePrompt, imageSeed, imageInferenceSteps, imageGuidanceScale, req['output_format'])
-    imgDownload.href = imgData
-    imgDownload.click()
+function onDownloadJSONClick(req, img) {
+    const name = getDownloadFilename(img, 'json')
+    const blob = new Blob([JSON.stringify(req, null, 2)], { type: 'text/plain' })
+    saveAs(blob, name)
+}
+
+function onDownloadImageClick(req, img) {
+    const name = getDownloadFilename(img, req['output_format'])
+    const blob = dataURItoBlob(img.src)
+    saveAs(blob, name)
 }
 
 function modifyCurrentRequest(...reqDiff) {
@@ -1170,19 +1190,89 @@ clearAllPreviewsBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Clear 
     taskEntries.forEach(removeTask)
 })})
 
-saveAllImagesBtn.addEventListener('click', (e) => {
+/* Download images popup */
+showDownloadPopupBtn.addEventListener("click", (e) => { saveAllImagesPopup.classList.add("active") })
+
+saveAllZipToggle.addEventListener('change', (e) => {
+    if (saveAllZipToggle.checked) {
+        saveAllFoldersOption.classList.remove('displayNone')
+    } else {
+        saveAllFoldersOption.classList.add('displayNone')
+    }
+})
+
+// convert base64 to raw binary data held in a string
+function dataURItoBlob(dataURI) {
+    var byteString = atob(dataURI.split(',')[1])
+
+    // separate out the mime component
+    var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0]
+
+    // write the bytes of the string to an ArrayBuffer
+    var ab = new ArrayBuffer(byteString.length)
+
+    // create a view into the buffer
+    var ia = new Uint8Array(ab)
+
+    // set the bytes of the buffer to the correct values
+    for (var i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i)
+    }
+
+    // write the ArrayBuffer to a blob, and you're done
+    return new Blob([ab], {type: mimeString})
+}
+
+function downloadAllImages() {
     let i = 0
+
+    let optZIP  = saveAllZipToggle.checked
+    let optTree = optZIP && saveAllTreeToggle.checked
+    let optJSON = saveAllJSONToggle.checked
+    
+    let zip = new JSZip()
+    let folder = zip
+
     document.querySelectorAll(".imageTaskContainer").forEach(container => {
-        let req = htmlTaskMap.get(container)
+        if (optTree) {
+            let name = ++i + '-' + container.querySelector('.preview-prompt').textContent.replace(/[^a-zA-Z0-9]/g, '_') 
+            folder = zip.folder(name)
+        }
         container.querySelectorAll(".imgContainer img").forEach(img => {
-            if (img.closest('.imgItem').style.display === 'none') {
+            let imgItem = img.closest('.imgItem')
+
+            if (imgItem.style.display === 'none') {
                 return
             }
-            setTimeout(() => {onDownloadImageClick(req, img)}, i*200)
-            i = i+1
+
+            let req = imageRequest[img.dataset['imagecounter']]
+            if (optZIP) {
+                let suffix = img.dataset['imagecounter'] + '.' + req['output_format']
+                folder.file(getDownloadFilename(img, suffix), dataURItoBlob(img.src))
+                if (optJSON) {
+                    suffix = img.dataset['imagecounter'] + '.json'
+                    folder.file(getDownloadFilename(img, suffix), JSON.stringify(req, null, 2))
+                }
+            } else {
+                setTimeout(() => {imgItem.querySelector('.download-img').click()}, i*200)
+                i = i+1
+                if (optJSON) {
+                    setTimeout(() => {imgItem.querySelector('.download-json').click()}, i*200)
+                    i = i+1
+                }
+            }
         })
     })
-})
+    if (optZIP) {
+        let now = new Date()
+        zip.generateAsync({type:"blob"}).then(function (blob) { 
+            saveAs(blob, `EasyDiffusion-Images-${now.toISOString()}.zip`);
+        })
+    }
+
+}    
+
+saveAllImagesBtn.addEventListener('click', (e) => { downloadAllImages() })
 
 stopImageBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Stop all the tasks?", async function(e) {
     await stopAllTasks()
@@ -1532,6 +1622,7 @@ resumeBtn.addEventListener("click", function () {
     document.body.classList.remove('wait-pause')
 })
 
+/* Pause function */
 document.querySelectorAll(".tab").forEach(linkTabContents)
 
 window.addEventListener("beforeunload", function(e) {

@@ -18,6 +18,8 @@
     <link rel="manifest" href="/media/manifest.webmanifest">
     <script src="/media/js/jquery-3.6.1.min.js"></script>
     <script src="/media/js/jquery-confirm.min.js"></script>
+    <script src="/media/js/jszip.min.js"></script>
+    <script src="/media/js/FileSaver.min.js"></script>
     <script src="/media/js/marked.min.js"></script>
 </head>
 <body>
@@ -288,7 +290,7 @@
             <div id="preview-content">
                 <div id="preview-tools">
                     <button id="clear-all-previews" class="secondaryButton"><i class="fa-solid fa-trash-can icon"></i> Clear All</button>
-                    <button id="save-all-images" class="tertiaryButton"><i class="fa-solid fa-download icon"></i> Download All Images</button>
+                    <button class="tertiaryButton" id="show-download-popup"><i class="fa-solid fa-download"></i> Download images</button>
                     <div class="display-settings">
                         <span class="auto-scroll"></span> <!-- hack for Rabbit Hole update -->
                         <button id="auto_scroll_btn" class="tertiaryButton">
@@ -382,6 +384,31 @@
     </div>
     
 
+    <div class="popup" id="download-images-popup">
+        <div>
+            <i class="close-button fa-solid fa-xmark"></i>
+            <h1>Download all images</h1>
+            <div class="parameters-table">
+                <div>
+                    <div><i class="fa fa-file-zipper"></i></div>
+                    <div><label for="theme">Download as a ZIP file</label><small>Instead of downloading individual files, generate one zip file with all images</small></div>
+                    <div><div class="input-toggle"><input id="zip_toggle" name="zip_toggle" checked="" type="checkbox"><label for="zip_toggle"></label></div></div>
+                </div>
+                <div id="download-add-folders">
+                    <div><i class="fa fa-folder-tree"></i></div>
+                    <div><label for="theme">Add per-job folders</label><small>Place images into job folders</small></div>
+                    <div><div class="input-toggle"><input id="tree_toggle" name="tree_toggle" checked="" type="checkbox"><label for="tree_toggle"></label></div></div>
+                </div>
+                <div>
+                    <div><i class="fa fa-sliders"></i></div>
+                    <div><label for="theme">Add metadata files</label><small>For each image, also download a JSON file with all the settings used to generate the image</small></div>
+                    <div><div class="input-toggle"><input id="json_toggle" name="json_toggle" checked="" type="checkbox"><label for="json_toggle"></label></div></div>
+                </div>
+            </div>
+            <br/>
+            <button id="save-all-images" class="primaryButton"><i class="fa-solid fa-images"></i> Start download</button>
+        </div>
+    </div>
     <div id="save-settings-config" class="popup">
         <div>
             <i class="close-button fa-solid fa-xmark"></i>

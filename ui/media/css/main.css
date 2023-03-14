@@ -414,11 +414,10 @@ div.img-preview img {
     display: none;
     position: absolute;
     z-index: 2;
-    width: max-content;
-
-    padding: 5px;
+    border-radius: 7px;
+    padding: 0px;
     margin-bottom: 15px;
-    box-shadow: 0 20px 28px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
+    box-shadow: 0 20px 28px 0 rgba(0, 0, 0, 0.75), 0 6px 20px 0 rgba(0, 0, 0, 0.75);
 }
 .dropdown:hover .dropdown-content {
     display: block;
@@ -442,8 +441,8 @@ div.img-preview img {
 
 .dropdown-item {
     padding: 4px;
-    background: var(--background-color4);
-    border: 2px solid var(--background-color2);
+    background: var(--background-color1);
+    border: 2px solid var(--background-color4);
 }
 
 .dropdown-item:first-child {
@@ -1212,6 +1211,10 @@ button#save-system-settings-btn {
 }
 #ip-info div {
     line-height: 200%;
+}
+
+#download-images-popup .parameters-table > div {
+    background: var(--background-color1);
 }
 
 /* SCROLLBARS */
