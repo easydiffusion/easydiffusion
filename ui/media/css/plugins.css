@@ -1,0 +1,67 @@
+.plugin-manager-intro {
+    margin: 0 0 16px 0;
+}
+
+#plugin-filter {
+    box-sizing: border-box;
+    width: 100%;
+    margin: 4px 0 6px 0;
+    padding: 10px;
+}
+
+#refresh-plugins {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0px;
+}
+
+#refresh-plugins a {
+    cursor: pointer;
+}
+
+#refresh-plugins a:active {
+    transition-duration: 0.1s;
+    position: relative;
+    top: 1px;
+    left: 1px;
+}
+
+.plugin-installed-locally {
+    font-style: italic;
+    font-size: small;
+}
+
+.plugin-toast {
+    position: fixed;
+    bottom: 10px;
+    right: -300px;
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    animation: slideInRight 0.5s ease forwards;
+}
+
+@keyframes slideInRight {
+    from {
+        right: -300px;
+    }
+    to {
+        right: 10px;
+    }
+}
+
+.plugin-toast.hide {
+    animation: slideOutRight 0.5s ease forwards;
+}
+
+@keyframes slideOutRight {
+    from {
+        right: 10px;
+    }
+    to {
+        right: -300px;
+    }
+}
