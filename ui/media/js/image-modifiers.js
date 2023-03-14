@@ -176,9 +176,9 @@ function refreshModifiersState(newTags) {
                 // add modifier to active array
                 if (!activeTags.map(x => x.name).includes(tag)) { // only add each tag once even if several custom modifier cards share the same tag
                     const imageModifierCard = modifierCard.cloneNode(true)
-                    imageModifierCard.querySelector('.modifier-card-label p').innerText = shortModifierName
+                    imageModifierCard.querySelector('.modifier-card-label p').innerText = tag.replace(modifierName, shortModifierName)
                     activeTags.push({
-                        'name': modifierName,
+                        'name': tag,
                         'element': imageModifierCard,
                         'originElement': modifierCard
                     })
