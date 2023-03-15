@@ -302,7 +302,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                     }
                     if(allHidden === true) {
                         const req = htmlTaskMap.get(parentTaskContainer)
-                        if(!req.isProcessing || req.batchesDone == req.batchCount) {parentTaskContainer.classList.add("displayNone")}
+                        if(!req.isProcessing || req.batchesDone == req.batchCount) {parentTaskContainer.parentNode.removeChild(parentTaskContainer)}
                     }
                 })
             })
