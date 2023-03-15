@@ -278,7 +278,9 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                 <div class="imgContainer">
                     <img/>
                     <div class="imgItemInfo">
-                        <span class="imgSeedLabel"></span>
+                        <div>
+                            <span class="imgInfoLabel imgExpandBtn"><i class="fa-solid fa-expand"></i></span><span class="imgInfoLabel imgSeedLabel"></span>
+                        </div>
                     </div>
                     <button class="imgPreviewItemClearBtn image_clear_btn"><i class="fa-solid fa-xmark"></i></button>
                     <span class="img_bottom_label"></span>
@@ -316,7 +318,14 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         imageElem.addEventListener('load', function() {
             imageItemElem.querySelector('.img_bottom_label').innerText = `${this.naturalWidth} x ${this.naturalHeight}`
         })
+        imageElem.addEventListener('click', function() {
+            imageModal(this.src)
+        })
 
+        const imageExpandBtn = imageItemElem.querySelector('.imgExpandBtn')
+        imageExpandBtn.addEventListener('click', function() {
+            imageModal(imageElem.src)
+        })
 
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
         imageInfo.style.visibility = (livePreview ? 'hidden' : 'visible')
