@@ -155,11 +155,11 @@ code {
 .imgContainer:hover > .img_bottom_label {
     opacity: 60%;
 }
-.imgItemInfo * {
+.imgItemInfo > * {
     margin-bottom: 7px;
 }
 .imgItemInfo .tasksBtns {
-    margin-left: 1em;
+    margin-left: 5pt;
 }
 .imgItem .image_clear_btn {
     transform: translate(40%, -50%);
