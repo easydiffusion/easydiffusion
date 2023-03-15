@@ -401,7 +401,8 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             }
             buttons.forEach(btn => {
                 if (Array.isArray(btn)) {
-                    if (btn.find(btnInfo => btnInfo.filter && btnInfo.filter(req, img) === false)) {
+                    btn = btn.filter(btnInfo => !btnInfo.filter || btnInfo.filter(req, img) === true)
+                    if (btn.length === 0) {
                         return
                     }
                 } else if (btn.filter && btn.filter(req, img) === false) {
