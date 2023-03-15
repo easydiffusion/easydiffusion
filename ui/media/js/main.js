@@ -318,9 +318,6 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         imageElem.addEventListener('load', function() {
             imageItemElem.querySelector('.img_bottom_label').innerText = `${this.naturalWidth} x ${this.naturalHeight}`
         })
-        imageElem.addEventListener('click', function() {
-            imageModal(this.src)
-        })
 
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
         imageInfo.style.visibility = (livePreview ? 'hidden' : 'visible')
@@ -329,6 +326,9 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             const imageExpandBtn = imageItemElem.querySelector('.imgExpandBtn')
             imageExpandBtn.addEventListener('click', function() {
                 imageModal(imageElem.src)
+            })
+            imageElem.addEventListener('click', function() {
+                imageModal(this.src)
             })
 
             const req = Object.assign({}, reqBody, {
