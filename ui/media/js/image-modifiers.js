@@ -149,10 +149,11 @@ async function loadModifiers() {
             createCollapsibles(editorModifierEntries)
         }
     } catch (e) {
-        console.log('error fetching modifiers', e)
+        console.error('error fetching modifiers', e)
     }
 
     loadCustomModifiers()
+    resizeModifierCards(modifierCardSizeSlider.value)
     document.dispatchEvent(new Event('loadImageModifiers'))
 }
 
