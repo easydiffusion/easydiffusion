@@ -322,15 +322,15 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             imageModal(this.src)
         })
 
-        const imageExpandBtn = imageItemElem.querySelector('.imgExpandBtn')
-        imageExpandBtn.addEventListener('click', function() {
-            imageModal(imageElem.src)
-        })
-
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
         imageInfo.style.visibility = (livePreview ? 'hidden' : 'visible')
 
         if ('seed' in result && !imageElem.hasAttribute('data-seed')) {
+            const imageExpandBtn = imageItemElem.querySelector('.imgExpandBtn')
+            imageExpandBtn.addEventListener('click', function() {
+                imageModal(imageElem.src)
+            })
+
             const req = Object.assign({}, reqBody, {
                 seed: result?.seed || reqBody.seed
             })
