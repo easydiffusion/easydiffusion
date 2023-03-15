@@ -347,23 +347,59 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             const imgItemInfo = imageItemElem.querySelector('.imgItemInfo')
             const img = imageItemElem.querySelector('img')
             const createButton = function(btnInfo) {
-                const newButton = document.createElement('button')
-                newButton.classList.add('tasksBtns')
-                newButton.innerText = btnInfo.text
-                newButton.addEventListener('click', function(event) {
-                    btnInfo.on_click(req, img, event)
-                })
-                if (btnInfo.class !== undefined) {
-                   newButton.classList.add(btnInfo.class)
+                if (Array.isArray(btnInfo)) {
+                    const wrapper = document.createElement('div');
+                    btnInfo
+                        .map(createButton)
+                        .forEach(buttonElement => wrapper.appendChild(buttonElement))
+                    return wrapper
                 }
-                imgItemInfo.appendChild(newButton)
+
+                const isLabel = btnInfo.type === 'label'
+
+                const newButton = document.createElement(isLabel ? 'span' : 'button')
+                newButton.classList.add('tasksBtns')
+
+                if (btnInfo.html) {
+                    const html = typeof btnInfo.html === 'function' ? btnInfo.html() : btnInfo.html
+                    if (html instanceof HTMLElement) {
+                        newButton.appendChild(html)
+                    } else {
+                        newButton.innerHTML = html
+                    }
+                } else {
+                    newButton.innerText = typeof btnInfo.text === 'function' ? btnInfo.text() : btnInfo.text
+                }
+
+                if (btnInfo.on_click || !isLabel) {
+                    newButton.addEventListener('click', function(event) {
+                        btnInfo.on_click(req, img, event)
+                    })
+                }
+                
+                if (btnInfo.class !== undefined) {
+                    if (Array.isArray(btnInfo.class)) {
+                        newButton.classList.add(...btnInfo.class)
+                    } else {
+                        newButton.classList.add(btnInfo.class)
+                    }
+                }
+                return newButton
             }
             buttons.forEach(btn => {
-                if (btn.filter && btn.filter(req, img) === false) {
+                if (Array.isArray(btn)) {
+                    if (btn.find(btnInfo => btnInfo.filter && btnInfo.filter(req, img) === false)) {
+                        return
+                    }
+                } else if (btn.filter && btn.filter(req, img) === false) {
                     return
                 }
 
-                createButton(btn)
+                try {
+                    imgItemInfo.appendChild(createButton(btn))
+                } catch (err) {
+                    console.error('Error creating image info button from plugin: ', btn, err)
+                }
             })
         }
     })

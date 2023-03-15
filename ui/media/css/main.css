@@ -146,6 +146,9 @@ code {
 .imgItemInfo * {
     margin-bottom: 7px;
 }
+.imgItemInfo .tasksBtns {
+    margin-left: 1em;
+}
 .imgItem .image_clear_btn {
     transform: translate(40%, -50%);
 }
