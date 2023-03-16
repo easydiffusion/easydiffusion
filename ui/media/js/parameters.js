@@ -460,7 +460,7 @@ function initParameters() {
         if (note instanceof HTMLElement) {
             noteElement.appendChild(note)
         } else {
-            noteElement.innerHTML = note
+            noteElement.innerHTML = note || ''
         }
 
         const icon = parameter.icon ? [createElement('i', undefined, ['fa', parameter.icon])] : []
