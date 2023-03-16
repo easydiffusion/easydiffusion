@@ -302,7 +302,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                     }
                     if(allHidden === true) {
                         const req = htmlTaskMap.get(parentTaskContainer)
-                        if(!req.isProcessing || req.batchesDone == req.batchCount) {parentTaskContainer.classList.add("displayNone")}
+                        if(!req.isProcessing || req.batchesDone == req.batchCount) {parentTaskContainer.parentNode.removeChild(parentTaskContainer)}
                     }
                 })
             })
@@ -326,9 +326,6 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             const imageExpandBtn = imageItemElem.querySelector('.imgExpandBtn')
             imageExpandBtn.addEventListener('click', function() {
                 imageModal(imageElem.src)
-            })
-            imageElem.addEventListener('click', function() {
-                imageModal(this.src)
             })
 
             const req = Object.assign({}, reqBody, {
