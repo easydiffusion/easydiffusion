@@ -49,7 +49,9 @@ const SETTINGS_IDS_LIST = [
     "auto_scroll",
     "zip_toggle",
     "tree_toggle",
-    "json_toggle"
+    "json_toggle",
+    "folder_format",
+    "filename_format",
 ]
 
 const IGNORE_BY_DEFAULT = [

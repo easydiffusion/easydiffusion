@@ -744,6 +744,9 @@
         "block_nsfw": false,
         "output_format": "png",
         "output_quality": 75,
+
+        "folder_format": '$id',
+        "filename_format": '$p_$tsb64',
     }
     const TASK_OPTIONAL = {
         "device": 'string',

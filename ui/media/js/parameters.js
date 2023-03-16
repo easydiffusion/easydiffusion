@@ -15,11 +15,22 @@
  * JSDoc style
  * @typedef {object} Parameter
  * @property {string} id
- * @property {ParameterType} type
- * @property {string} label
- * @property {?string} note
+ * @property {keyof ParameterType} type
+ * @property {string | (parameter: Parameter) => string | (parameter: Parameter) => HTMLElement} label
+ * @property {string | (parameter: Parameter) => string | (parameter: Parameter) => HTMLElement | undefined} note
+ * @property {(parameter: Parameter) => string | (parameter: Parameter) => HTMLElement | undefined} render
+ * @property {string | undefined} icon
  * @property {number|boolean|string} default
  */
+
+/** @type {HTMLInputElement} */
+let filenameFormatField
+/** @type {Array<HTMLInputElement>} */
+const filenameFormatRadioFields = []
+/** @type {HTMLInputElement} */
+let folderFormatField
+/** @type {Array<HTMLInputElement>} */
+const folderFormatRadioFields = []
 
 
 /** @type {Array.<Parameter>} */
@@ -53,6 +64,202 @@ var PARAMETERS = [
         render: (parameter) => {
             return `<input id="${parameter.id}" name="${parameter.id}" size="30" disabled>`
         }
+    },
+    {
+        id: "folder_format",
+        type: ParameterType.custom,
+        label: "Folder format",
+        note: (parameter) => `The format of the folders to save images in<br /><br />
+        <div id="${parameter.id}-placeholders" style="display:none;">
+            <strong>Placeholders:</strong><br />
+            <strong>$id:</strong> The session ID (currently <strong>${sessionId?.toString()?.replaceAll('&', '&amp;')?.replaceAll('<', '&lt;')?.replaceAll('>', '&gt;')}</strong>)<br />
+            <strong>$p:</strong> The prompt<br />
+            <strong>$yyyy:</strong> Current year<br />
+            <strong>$MM:</strong> Current month<br />
+            <strong>$dd:</strong> Current day of the month<br />
+            <strong>$HH:</strong> Current hour of the day (24 hour time)
+        </div>`,
+        render: (parameter) => {
+            const defaultValue = '$id'
+
+            folderFormatField = createElement(
+                'input',
+                { id: parameter.id, name: parameter.id, value: defaultValue },
+            )
+
+            const folderFormatWrapper = createElement(
+                'div',
+                { id: `${parameter.id}-input-wrapper`, style: 'display: none;' },
+                undefined,
+                [createElement('br'), folderFormatField],
+            )
+
+            const defaultRadio = createElement(
+                'input',
+                { type: 'radio', id: `${parameter.id}-default`, name: `${parameter.id}-radio`, checked: true },
+                undefined,
+            )
+            folderFormatRadioFields.push(defaultRadio)
+
+            const customRadio = createElement(
+                'input',
+                { type: 'radio', id: `${parameter.id}-custom`, name: `${parameter.id}-radio` },
+                undefined,
+            )
+            folderFormatRadioFields.push(customRadio)
+
+            const toggleVisibility = (isCustom) => {
+                const display = isCustom ? 'block' : 'none'
+                folderFormatWrapper.style.display = display
+                document.getElementById(`${parameter.id}-placeholders`).style.display = display
+
+                if (!isCustom && !CURRENTLY_LOADING_SETTINGS) {
+                    folderFormatField.value = defaultValue
+                    folderFormatField.dispatchEvent(new Event('change'));
+                }
+            }
+
+            folderFormatField.addEventListener('change', () => {
+                if (CURRENTLY_LOADING_SETTINGS) {
+                    const isCustom = folderFormatField.value !== defaultValue
+                    toggleVisibility(isCustom)
+                    defaultRadio.checked = !isCustom
+                    customRadio.checked = isCustom
+                }
+            })
+            defaultRadio.addEventListener('change', () => {
+                toggleVisibility(!defaultRadio.checked)
+            })
+            customRadio.addEventListener('change', () => {
+                toggleVisibility(customRadio.checked)
+            })
+
+            return createElement(
+                'fieldset',
+                undefined,
+                undefined,
+                [
+                    createElement('legend', undefined, undefined, 'Select a folder format:'),
+                    createElement(
+                        'label',
+                        { for: `${parameter.id}-default` },
+                        undefined,
+                        'Session ID (default)',
+                    ),
+                    defaultRadio,
+                    createElement('br'),
+                    createElement('br'),
+                    createElement(
+                        'label',
+                        { for: `${parameter.id}-custom` },
+                        undefined,
+                        'Custom',
+                    ),
+                    customRadio,
+                    folderFormatWrapper,
+                ]
+            )
+        },
+    },
+    {
+        id: "filename_format",
+        type: ParameterType.custom,
+        label: "Filename format",
+        note: (parameter) => `The format of the image and metadata filenames to save<br /><br />
+        <div id="${parameter.id}-placeholders" style="display: none;">
+            <strong>Placeholders:</strong><br />
+            <strong>$p:</strong> Prompt<br />
+            <strong>$n:</strong> The image number in the current session<br />
+            <strong>$s:</strong> Seed<br />
+            <strong>$ts:</strong> Current UNIX timestamp (ex: <strong>${new Date().getTime()}</strong><br />
+            <strong>$tsb64:</strong> A base64 encoded timestamp (ex: <strong>AAGQQ9U0</strong>)<br />
+            <strong>$yyyy:</strong> Current year<br />
+            <strong>$MM:</strong> Current month<br />
+            <strong>$dd:</strong> Current day of the month<br />
+            <strong>$HH:</strong> Current hour of the day (24 hour time)<br />
+            <strong>$mm:</strong> Current minute<br />
+            <strong>$ss:</strong> Current second
+        </div>`,
+        render: (parameter) => {
+            const defaultValue = '$p_$tsb64'
+
+            filenameFormatField = createElement(
+                'input',
+                { id: parameter.id, name: parameter.id, value: defaultValue },
+            )
+
+            const folderFormatWrapper = createElement(
+                'div',
+                { id: `${parameter.id}-input-wrapper`, style: 'display: none;' },
+                undefined,
+                [createElement('br'), filenameFormatField],
+            )
+
+            const defaultRadio = createElement(
+                'input',
+                { type: 'radio', id: `${parameter.id}-default`, name: `${parameter.id}-radio`, checked: true },
+                undefined,
+            )
+            filenameFormatRadioFields.push(defaultRadio)
+
+            const customRadio = createElement(
+                'input',
+                { type: 'radio', id: `${parameter.id}-custom`, name: `${parameter.id}-radio` },
+                undefined,
+            )
+            filenameFormatRadioFields.push(customRadio)
+
+            const toggleVisibility = (isCustom) => {
+                const display = isCustom ? 'block' : 'none'
+                folderFormatWrapper.style.display = display
+                document.getElementById(`${parameter.id}-placeholders`).style.display = display
+
+                if (!isCustom && !CURRENTLY_LOADING_SETTINGS) {
+                    filenameFormatField.value = defaultValue
+                    filenameFormatField.dispatchEvent(new Event('change'));
+                }
+            }
+
+            filenameFormatField.addEventListener('change', () => {
+                if (CURRENTLY_LOADING_SETTINGS) {
+                    const isCustom = folderFormatField.value !== defaultValue
+                    toggleVisibility(isCustom)
+                    defaultRadio.checked = !isCustom
+                    customRadio.checked = isCustom
+                }
+            })
+            defaultRadio.addEventListener('change', () => {
+                toggleVisibility(!defaultRadio.checked)
+            })
+            customRadio.addEventListener('change', () => {
+                toggleVisibility(customRadio.checked)
+            })
+
+            return createElement(
+                'fieldset',
+                undefined,
+                undefined,
+                [
+                    createElement('legend', undefined, undefined, 'Select a file format:'),createElement(
+                        'label',
+                        { for: `${parameter.id}-default` },
+                        undefined,
+                        'Prompt and timestamp (default)',
+                    ),
+                    defaultRadio,
+                    createElement('br'),
+                    createElement('br'),
+                    createElement(
+                        'label',
+                        { for: `${parameter.id}-custom` },
+                        undefined,
+                        'Custom',
+                    ),
+                    customRadio,
+                    folderFormatWrapper,
+                ]
+            )
+        },
     },
     {
         id: "metadata_output_format",
@@ -212,6 +419,10 @@ function sliderUpdate(event) {
     }
 }
 
+/**
+ * @param {Parameter} parameter 
+ * @returns {string | HTMLElement}
+ */
 function getParameterElement(parameter) {
     switch (parameter.type) {
         case ParameterType.checkbox:
@@ -236,14 +447,42 @@ let parametersTable = document.querySelector("#system-settings .parameters-table
 /* fill in the system settings popup table */
 function initParameters() {
     PARAMETERS.forEach(parameter => {
-        var element = getParameterElement(parameter)
-        var note = parameter.note ? `<small>${parameter.note}</small>` : "";
-        var icon = parameter.icon ? `<i class="fa ${parameter.icon}"></i>` : "";
-        var newrow = document.createElement('div')
-        newrow.innerHTML = `
-            <div>${icon}</div>
-            <div><label for="${parameter.id}">${parameter.label}</label>${note}</div>
-            <div>${element}</div>`
+        const element = getParameterElement(parameter)
+        const elementWrapper = createElement('div')
+        if (element instanceof HTMLElement) {
+            elementWrapper.appendChild(element)
+        } else {
+            elementWrapper.innerHTML = element
+        }
+
+        const note = typeof parameter.note === 'function' ? parameter.note(parameter) : parameter.note
+        const noteElement = createElement('small')
+        if (note instanceof HTMLElement) {
+            noteElement.appendChild(note)
+        } else {
+            noteElement.innerHTML = note
+        }
+
+        const icon = parameter.icon ? [createElement('i', undefined, ['fa', parameter.icon])] : []
+
+        const label = typeof parameter.label === 'function' ? parameter.label(parameter) : parameter.label
+        const labelElement = createElement('label')
+        if (label instanceof HTMLElement) {
+            labelElement.appendChild(label)
+        } else {
+            labelElement.innerHTML = label
+        }
+
+        const newrow = createElement(
+            'div',
+            undefined,
+            undefined,
+            [
+                createElement('div', undefined, undefined, icon),
+                createElement('div', undefined, undefined, [labelElement, noteElement]),
+                elementWrapper,
+            ]
+        )
         parametersTable.appendChild(newrow)
         parameter.settingsEntry = newrow
     })
@@ -312,6 +551,10 @@ async function getAppConfig() {
 saveToDiskField.addEventListener('change', function(e) {
     diskPathField.disabled = !this.checked
     metadataOutputFormatField.disabled = !this.checked
+    folderFormatField.disabled = !this.checked
+    folderFormatRadioFields.forEach(elem => elem.disabled = !this.checked)
+    filenameFormatField.disabled = !this.checked
+    filenameFormatRadioFields.forEach(elem => elem.disabled = !this.checked)
 })
 
 function getCurrentRenderDeviceSelection() {
@@ -476,4 +719,3 @@ saveSettingsBtn.addEventListener('click', function() {
     saveSettingsBtn.classList.add('active')
     asyncDelay(300).then(() => saveSettingsBtn.classList.remove('active'))
 })
-

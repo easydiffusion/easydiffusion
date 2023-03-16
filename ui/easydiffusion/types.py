@@ -45,6 +45,9 @@ class TaskData(BaseModel):
     stream_image_progress: bool = False
     stream_image_progress_interval: int = 5
 
+    folder_format: str = "$id"
+    filename_format: str = "$p_$tsb64"
+
 
 class MergeRequest(BaseModel):
     model0: str = None
