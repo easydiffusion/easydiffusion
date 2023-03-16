@@ -318,9 +318,6 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         imageElem.addEventListener('load', function() {
             imageItemElem.querySelector('.img_bottom_label').innerText = `${this.naturalWidth} x ${this.naturalHeight}`
         })
-        imageElem.addEventListener('click', function() {
-            imageModal(this.src)
-        })
 
         const imageExpandBtn = imageItemElem.querySelector('.imgExpandBtn')
         imageExpandBtn.addEventListener('click', function() {
