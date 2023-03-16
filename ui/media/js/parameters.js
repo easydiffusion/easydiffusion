@@ -171,7 +171,7 @@ var PARAMETERS = [
             <strong>$p:</strong> Prompt<br />
             <strong>$n:</strong> The image number in the current session<br />
             <strong>$s:</strong> Seed<br />
-            <strong>$ts:</strong> Current UNIX timestamp (ex: <strong>${new Date().getTime()}</strong><br />
+            <strong>$ts:</strong> Current UNIX timestamp (ex: <strong>${new Date().getTime()}</strong>)<br />
             <strong>$tsb64:</strong> A base64 encoded timestamp (ex: <strong>AAGQQ9U0</strong>)<br />
             <strong>$yyyy:</strong> Current year<br />
             <strong>$MM:</strong> Current month<br />
