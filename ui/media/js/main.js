@@ -319,15 +319,15 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             imageItemElem.querySelector('.img_bottom_label').innerText = `${this.naturalWidth} x ${this.naturalHeight}`
         })
 
-        const imageExpandBtn = imageItemElem.querySelector('.imgExpandBtn')
-        imageExpandBtn.addEventListener('click', function() {
-            imageModal(imageElem.src)
-        })
-
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
         imageInfo.style.visibility = (livePreview ? 'hidden' : 'visible')
 
         if ('seed' in result && !imageElem.hasAttribute('data-seed')) {
+            const imageExpandBtn = imageItemElem.querySelector('.imgExpandBtn')
+            imageExpandBtn.addEventListener('click', function() {
+                imageModal(imageElem.src)
+            })
+
             const req = Object.assign({}, reqBody, {
                 seed: result?.seed || reqBody.seed
             })
