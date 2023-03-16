@@ -16,6 +16,8 @@ from easydiffusion import app, model_manager, task_manager
 from easydiffusion.types import TaskData, GenerateImageRequest, MergeRequest
 from easydiffusion.utils import log
 
+import mimetypes
+
 log.info(f"started in {app.SD_DIR}")
 log.info(f"started at {datetime.datetime.now():%x %X}")
 
@@ -52,6 +54,9 @@ class SetAppConfigRequest(BaseModel):
 
 
 def init():
+    mimetypes.init()
+    mimetypes.add_type('text/css', '.css')
+
     if os.path.isdir(app.CUSTOM_MODIFIERS_DIR):
         server_api.mount(
             "/media/modifier-thumbnails/custom",
