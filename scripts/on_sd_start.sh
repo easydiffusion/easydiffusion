@@ -65,8 +65,10 @@ esac
 
 # install torch and torchvision
 if python ../scripts/check_modules.py torch torchvision; then
-    # temp fix for macOS installations that installed torch 2.0 by mistake
-    if [ "$OS_NAME" == "macos" ]; then
+    # temp fix for installations that installed torch 2.0 by mistake
+    if [ "$OS_NAME" == "linux" ]; then
+        python -m pip install --upgrade torch==1.13.1+cu116 torchvision==0.14.1+cu116 --extra-index-url https://download.pytorch.org/whl/cu116 -q
+    elif [ "$OS_NAME" == "macos" ]; then
         python -m pip install --upgrade torch==1.13.1 torchvision==0.14.1 -q
     fi
 
