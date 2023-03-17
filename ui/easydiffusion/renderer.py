@@ -146,6 +146,9 @@ def make_step_callback(
     def update_temp_img(x_samples, task_temp_images: list):
         partial_images = []
         images = latent_samples_to_images(context, x_samples)
+        if task_data.block_nsfw:
+            images = apply_filters(context, "nsfw_checker", images)
+
         for i, img in enumerate(images):
             buf = img_to_buffer(img, output_format="JPEG")
 

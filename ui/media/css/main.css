@@ -98,11 +98,23 @@ code {
 #footer-spacer {
     flex: 0.7
 }
-.imgSeedLabel {
+.imgInfoLabel {
     font-size: 0.8em;
     background-color: var(--background-color2);
-    border-radius: 3px;
+}
+.imgSeedLabel {
     padding: 5px;
+    border-radius: 0px 3px 3px 0px;
+}
+.imgExpandBtn {
+    border-radius: 3px 0px 0px 3px;
+    border-right: 1px solid var(--tertiary-border-color);
+    padding: 5px 5px 5px;
+    padding-left: 7px;
+    cursor: pointer;
+}
+.imgExpandBtn:hover {
+    background-color: var(--accent-color);
 }
 .imgItem {
     display: inline-block;
@@ -143,8 +155,11 @@ code {
 .imgContainer:hover > .img_bottom_label {
     opacity: 60%;
 }
-.imgItemInfo * {
+.imgItemInfo > * {
     margin-bottom: 7px;
+}
+.imgItemInfo .tasksBtns {
+    margin-left: 5pt;
 }
 .imgItem .image_clear_btn {
     transform: translate(40%, -50%);
@@ -280,6 +295,7 @@ div.img-preview img {
     width:100%;
     height: 100%;
     max-height: 70vh;
+    cursor: pointer;
 }
 .line-separator {
     background: var(--background-color3);
@@ -414,11 +430,10 @@ div.img-preview img {
     display: none;
     position: absolute;
     z-index: 2;
-    width: max-content;
-
-    padding: 5px;
+    border-radius: 7px;
+    padding: 0px;
     margin-bottom: 15px;
-    box-shadow: 0 20px 28px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
+    box-shadow: 0 20px 28px 0 rgba(0, 0, 0, 0.75), 0 6px 20px 0 rgba(0, 0, 0, 0.75);
 }
 .dropdown:hover .dropdown-content {
     display: block;
@@ -442,8 +457,8 @@ div.img-preview img {
 
 .dropdown-item {
     padding: 4px;
-    background: var(--background-color4);
-    border: 2px solid var(--background-color2);
+    background: var(--background-color1);
+    border: 2px solid var(--background-color4);
 }
 
 .dropdown-item:first-child {
@@ -546,6 +561,12 @@ div.img-preview img {
 #preview-tools {
     display: none;
     padding: 4pt;
+}
+#preview-tools .display-settings .dropdown-content {
+    right: -6px;
+    top: 20px;
+    box-shadow: none;
+    width: max-content;
 }
 .taskConfig {
     font-size: 10pt;
@@ -1199,6 +1220,11 @@ div.top-right {
     right: 8px;
 }
 
+#small_image_warning {
+     font-size: smaller;
+     color: var(--status-orange);
+}
+
 button#save-system-settings-btn {
     padding: 4pt 8pt;
 }
@@ -1207,6 +1233,10 @@ button#save-system-settings-btn {
 }
 #ip-info div {
     line-height: 200%;
+}
+
+#download-images-popup .parameters-table > div {
+    background: var(--background-color1);
 }
 
 /* SCROLLBARS */

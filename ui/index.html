@@ -15,9 +15,12 @@
     <link rel="stylesheet" href="/media/css/fontawesome-all.min.css">
     <link rel="stylesheet" href="/media/css/image-editor.css">
     <link rel="stylesheet" href="/media/css/searchable-models.css">
+    <link rel="stylesheet" href="/media/css/image-modal.css">
     <link rel="manifest" href="/media/manifest.webmanifest">
     <script src="/media/js/jquery-3.6.1.min.js"></script>
     <script src="/media/js/jquery-confirm.min.js"></script>
+    <script src="/media/js/jszip.min.js"></script>
+    <script src="/media/js/FileSaver.min.js"></script>
     <script src="/media/js/marked.min.js"></script>
 </head>
 <body>
@@ -27,7 +30,7 @@
             <h1>
                 <img id="logo_img" src="/media/images/icon-512x512.png" >
                 Easy Diffusion
-                <small>v2.5.24 <span id="updateBranchLabel"></span></small>
+                <small>v2.5.26 <span id="updateBranchLabel"></span></small>
             </h1>
         </div>
         <div id="server-status">
@@ -209,6 +212,7 @@
                             <option value="2048">2048</option>
                         </select>
                         <label for="height"><small>(height)</small></label>
+                        <div id="small_image_warning" class="displayNone">Small image sizes can cause bad image quality</div>
                     </td></tr>
                     <tr class="pl-5"><td><label for="num_inference_steps">Inference Steps:</label></td><td> <input id="num_inference_steps" name="num_inference_steps" size="4" value="25" onkeypress="preventNonNumericalInput(event)"></td></tr>
                     <tr class="pl-5"><td><label for="guidance_scale_slider">Guidance Scale:</label></td><td> <input id="guidance_scale_slider" name="guidance_scale_slider" class="editor-slider" value="75" type="range" min="11" max="500"> <input id="guidance_scale" name="guidance_scale" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"></td></tr>
@@ -288,7 +292,7 @@
             <div id="preview-content">
                 <div id="preview-tools">
                     <button id="clear-all-previews" class="secondaryButton"><i class="fa-solid fa-trash-can icon"></i> Clear All</button>
-                    <button id="save-all-images" class="tertiaryButton"><i class="fa-solid fa-download icon"></i> Download All Images</button>
+                    <button class="tertiaryButton" id="show-download-popup"><i class="fa-solid fa-download"></i> Download images</button>
                     <div class="display-settings">
                         <span class="auto-scroll"></span> <!-- hack for Rabbit Hole update -->
                         <button id="auto_scroll_btn" class="tertiaryButton">
@@ -382,6 +386,31 @@
     </div>
     
 
+    <div class="popup" id="download-images-popup">
+        <div>
+            <i class="close-button fa-solid fa-xmark"></i>
+            <h1>Download all images</h1>
+            <div class="parameters-table">
+                <div>
+                    <div><i class="fa fa-file-zipper"></i></div>
+                    <div><label for="theme">Download as a ZIP file</label><small>Instead of downloading individual files, generate one zip file with all images</small></div>
+                    <div><div class="input-toggle"><input id="zip_toggle" name="zip_toggle" checked="" type="checkbox"><label for="zip_toggle"></label></div></div>
+                </div>
+                <div id="download-add-folders">
+                    <div><i class="fa fa-folder-tree"></i></div>
+                    <div><label for="theme">Add per-job folders</label><small>Place images into job folders</small></div>
+                    <div><div class="input-toggle"><input id="tree_toggle" name="tree_toggle" checked="" type="checkbox"><label for="tree_toggle"></label></div></div>
+                </div>
+                <div>
+                    <div><i class="fa fa-sliders"></i></div>
+                    <div><label for="theme">Add metadata files</label><small>For each image, also download a JSON file with all the settings used to generate the image</small></div>
+                    <div><div class="input-toggle"><input id="json_toggle" name="json_toggle" checked="" type="checkbox"><label for="json_toggle"></label></div></div>
+                </div>
+            </div>
+            <br/>
+            <button id="save-all-images" class="primaryButton"><i class="fa-solid fa-images"></i> Start download</button>
+        </div>
+    </div>
     <div id="save-settings-config" class="popup">
         <div>
             <i class="close-button fa-solid fa-xmark"></i>
@@ -392,12 +421,12 @@
         </div>
     </div>
 
-    <div id="modifier-settings-config" class="popup">
+    <div id="modifier-settings-config" class="popup" tabindex="0">
         <div>
             <i class="close-button fa-solid fa-xmark"></i>
             <h1>Modifier Settings</h1>
             <p>Set your custom modifiers (one per line)</p>
-            <textarea id="custom-modifiers-input" placeholder="Enter your custom modifiers, one-per-line"></textarea>
+            <textarea id="custom-modifiers-input" placeholder="Enter your custom modifiers, one-per-line" spellcheck="false"></textarea>
             <p><small><b>Tip:</b> You can include special characters like {} () [] and |. You can also put multiple comma-separated phrases in a single line, to make a single modifier that combines all of those.</small></p>
         </div>
     </div>
@@ -460,6 +489,7 @@
 <script src="media/js/themes.js"></script>
 <script src="media/js/dnd.js"></script>
 <script src="media/js/image-editor.js"></script>
+<script src="media/js/image-modal.js"></script>
 <script>
 async function init() {
     await initSettings()
@@ -471,8 +501,8 @@ async function init() {
 
     SD.init({
         events: {
-            statusChange: setServerStatus
-            , idle: onIdle
+            statusChange: setServerStatus,
+            idle: onIdle
         }
     })
 
