@@ -302,7 +302,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                     }
                     if(allHidden === true) {
                         const req = htmlTaskMap.get(parentTaskContainer)
-                        if(!req.isProcessing || req.batchesDone == req.batchCount) {parentTaskContainer.classList.add("displayNone")}
+                        if(!req.isProcessing || req.batchesDone == req.batchCount) {parentTaskContainer.parentNode.removeChild(parentTaskContainer)}
                     }
                 })
             })
@@ -318,19 +318,16 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         imageElem.addEventListener('load', function() {
             imageItemElem.querySelector('.img_bottom_label').innerText = `${this.naturalWidth} x ${this.naturalHeight}`
         })
-        imageElem.addEventListener('click', function() {
-            imageModal(this.src)
-        })
-
-        const imageExpandBtn = imageItemElem.querySelector('.imgExpandBtn')
-        imageExpandBtn.addEventListener('click', function() {
-            imageModal(imageElem.src)
-        })
 
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
         imageInfo.style.visibility = (livePreview ? 'hidden' : 'visible')
 
         if ('seed' in result && !imageElem.hasAttribute('data-seed')) {
+            const imageExpandBtn = imageItemElem.querySelector('.imgExpandBtn')
+            imageExpandBtn.addEventListener('click', function() {
+                imageModal(imageElem.src)
+            })
+
             const req = Object.assign({}, reqBody, {
                 seed: result?.seed || reqBody.seed
             })

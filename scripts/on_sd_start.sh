@@ -56,8 +56,22 @@ if [ -e "GFPGANv1.3.pth" ]; then mv GFPGANv1.3.pth ../models/gfpgan/; fi
 if [ -e "RealESRGAN_x4plus.pth" ]; then mv RealESRGAN_x4plus.pth ../models/realesrgan/; fi
 if [ -e "RealESRGAN_x4plus_anime_6B.pth" ]; then mv RealESRGAN_x4plus_anime_6B.pth ../models/realesrgan/; fi
 
+OS_NAME=$(uname -s)
+case "${OS_NAME}" in
+    Linux*)     OS_NAME="linux";;
+    Darwin*)    OS_NAME="macos";;
+    *)          echo "Unknown OS: $OS_NAME! This script runs only on Linux or Mac" && exit
+esac
+
 # install torch and torchvision
 if python ../scripts/check_modules.py torch torchvision; then
+    # temp fix for installations that installed torch 2.0 by mistake
+    if [ "$OS_NAME" == "linux" ]; then
+        python -m pip install --upgrade torch==1.13.1+cu116 torchvision==0.14.1+cu116 --extra-index-url https://download.pytorch.org/whl/cu116 -q
+    elif [ "$OS_NAME" == "macos" ]; then
+        python -m pip install --upgrade torch==1.13.1 torchvision==0.14.1 -q
+    fi
+
     echo "torch and torchvision have already been installed."
 else
     echo "Installing torch and torchvision.."
@@ -65,10 +79,18 @@ else
     export PYTHONNOUSERSITE=1
     export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
 
-    if python -m pip install --upgrade torch torchvision --extra-index-url https://download.pytorch.org/whl/cu116 ; then
-        echo "Installed."
-    else
-        fail "torch install failed" 
+    if [ "$OS_NAME" == "linux" ]; then
+        if python -m pip install --upgrade torch==1.13.1+cu116 torchvision==0.14.1+cu116 --extra-index-url https://download.pytorch.org/whl/cu116 ; then
+            echo "Installed."
+        else
+            fail "torch install failed"
+        fi
+    elif [ "$OS_NAME" == "macos" ]; then
+        if python -m pip install --upgrade torch==1.13.1 torchvision==0.14.1 ; then
+            echo "Installed."
+        else
+            fail "torch install failed"
+        fi
     fi
 fi
 
@@ -81,7 +103,7 @@ if python ../scripts/check_modules.py sdkit sdkit.models ldm transformers numpy 
         export PYTHONNOUSERSITE=1
         export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
 
-        python -m pip install --upgrade sdkit==1.0.47 -q
+        python -m pip install --upgrade sdkit==1.0.48 -q
     fi
 else
     echo "Installing sdkit: https://pypi.org/project/sdkit/"
@@ -89,7 +111,7 @@ else
     export PYTHONNOUSERSITE=1
     export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
 
-    if python -m pip install sdkit==1.0.47 ; then
+    if python -m pip install sdkit==1.0.48 ; then
         echo "Installed."
     else
         fail "sdkit install failed"
@@ -99,7 +121,7 @@ fi
 python -c "from importlib.metadata import version; print('sdkit version:', version('sdkit'))"
 
 # upgrade stable-diffusion-sdkit
-python -m pip install --upgrade stable-diffusion-sdkit==2.1.3 -q
+python -m pip install --upgrade stable-diffusion-sdkit==2.1.4 -q
 python -c "from importlib.metadata import version; print('stable-diffusion version:', version('stable-diffusion-sdkit'))"
 
 # install rich
