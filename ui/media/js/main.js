@@ -1182,31 +1182,10 @@ function createFileName(prompt, seed, steps, guidance, outputFormat) {
 
     // Most important information is the prompt
     let underscoreName = prompt.replace(/[^a-zA-Z0-9]/g, '_')
-    underscoreName = underscoreName.substring(0, 100)
-    //const steps = numInferenceStepsField.value
-    //const guidance =  guidanceScaleField.value
+    underscoreName = underscoreName.substring(0, 70)
 
     // name and the top level metadata
-    let fileName = `${underscoreName}_Seed-${seed}_Steps-${steps}_Guidance-${guidance}`
-
-    // add the tags
-    // let tags = []
-    // let tagString = ''
-    // document.querySelectorAll(modifyTagsSelector).forEach(function(tag) {
-    //     tags.push(tag.innerHTML)
-    // })
-
-    // join the tags with a pipe
-    // if (activeTags.length > 0) {
-    //     tagString = '_Tags-'
-    //     tagString += tags.join('|')
-    // }
-
-    // // append empty or populated tags
-    // fileName += `${tagString}`
-
-    // add the file extension
-    fileName += '.' + outputFormat
+    let fileName = `${underscoreName}_S${seed}_St${steps}_G${guidance}.${outputFormat}`
 
     return fileName
 }
@@ -1286,7 +1265,7 @@ function downloadAllImages() {
 
     document.querySelectorAll(".imageTaskContainer").forEach(container => {
         if (optTree) {
-            let name = ++i + '-' + container.querySelector('.preview-prompt').textContent.replace(/[^a-zA-Z0-9]/g, '_') 
+            let name = ++i + '-' + container.querySelector('.preview-prompt').textContent.replace(/[^a-zA-Z0-9]/g, '_').substring(0,25)
             folder = zip.folder(name)
         }
         container.querySelectorAll(".imgContainer img").forEach(img => {
@@ -1315,9 +1294,9 @@ function downloadAllImages() {
         })
     })
     if (optZIP) {
-        let now = new Date()
+        let now = Date.now().toString(36).toUpperCase()
         zip.generateAsync({type:"blob"}).then(function (blob) { 
-            saveAs(blob, `EasyDiffusion-Images-${now.toISOString()}.zip`);
+            saveAs(blob, `EasyDiffusion-Images-${now}.zip`);
         })
     }
 
