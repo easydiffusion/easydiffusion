@@ -1582,7 +1582,7 @@ promptsFromFileBtn.addEventListener('click', function() {
     promptsFromFileSelector.click()
 })
 
-promptsFromFileSelector.addEventListener('change', function() {
+promptsFromFileSelector.addEventListener('change', async function() {
     if (promptsFromFileSelector.files.length === 0) {
         return
     }
@@ -1590,8 +1590,8 @@ promptsFromFileSelector.addEventListener('change', function() {
     let reader = new FileReader()
     let file = promptsFromFileSelector.files[0]
 
-    reader.addEventListener('load', function() {
-        promptField.value = reader.result
+    reader.addEventListener('load', async function() {
+        await parseContent(reader.result)
     })
 
     if (file) {
