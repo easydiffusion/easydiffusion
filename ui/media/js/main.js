@@ -291,16 +291,10 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             let parentTaskContainer = imageRemoveBtn.closest('.imageTaskContainer')
             imageRemoveBtn.addEventListener('click', (e) => {
                 shiftOrConfirm(e, "Remove the image from the results?", () => { 
-                    imageItemElem.style.display = 'none' 
-                    let allHidden = true;
+                    imageItemElem.closest('.img-batch').remove()
                     let children = parentTaskContainer.querySelectorAll('.imgItem');
-                    for(let x = 0; x < children.length; x++) {
-                        let child = children[x];
-                        if(child.style.display != "none") {
-                            allHidden = false;
-                        }
-                    }
-                    if(allHidden === true) {
+                    console.log(children)
+                    if(children.length == 0) {
                         const req = htmlTaskMap.get(parentTaskContainer)
                         if(!req.isProcessing || req.batchesDone == req.batchCount) {parentTaskContainer.parentNode.removeChild(parentTaskContainer)}
                     }
