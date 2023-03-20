@@ -1,13 +1,15 @@
 [
     {
-        "id": "acessibility-improvements",
+        "id": "accessibility-improvements",
         "icon": "fa-computer-mouse",
         "name": "Accessibility Improvements",
         "author": "Patrice",
         "description": "Adds a system setting to allow the user to change the action to display the buttons on an image (rather than just hovering over it). Default is set to hover (current UI behavior), can be changed to use mouse buttons in the system settings.\nAlso adds an option to disable the right-click contextual menu on most elements of the page (still allowed in input and text boxes)",
         "url": "https://raw.githubusercontent.com/patriceac/Easy-Diffusion-Plugins/main/plugins/Patrice/accessibility-improvements.plugin.js",
-        "version": "1.2",
-        "minEDVersion": "2.0"
+        "localInstallOnly": false,
+        "version": "1.3",
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
     },
     {
         "id": "disable-source-image-zoom",
@@ -16,8 +18,10 @@
         "author": "Patrice",
         "description": "Adds a system setting to disable the source image zoom on hover in the task list.",
         "url": "https://raw.githubusercontent.com/patriceac/Easy-Diffusion-Plugins/main/plugins/Patrice/disable-source-image-zoom.plugin.js",
+        "localInstallOnly": false,
         "version": "1.1",
-        "minEDVersion": "2.0"
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
     },
     {
         "id": "image-editor-improvements",
@@ -26,8 +30,10 @@
         "author": "Patrice",
         "description": "Features:\n- Shows the actual brush in the image editor for increased precision.\n- Add img2img source image via drag & drop from external file or browser image (incl. rendered image). Just drop the image in the editor pane.\n- Add img2img source image by pasting an image from the clipboard\n- Integrates seamlessly with Scrolling Panes 1.8+\n- Adds support for reloading task from metadata embedded in PNG and JPEG images (use Ctrl+Drop image in the editor pane)\n- Automatically sets the size of the output image to the size of the image used for img2img if its dimensions are both valid options (works with both copy/paste and drag & drop).\n- makes the brushes more visible in the image/inpainting editor.",
         "url": "https://raw.githubusercontent.com/patriceac/Easy-Diffusion-Plugins/main/plugins/Patrice/image-editor-improvements.plugin.js",
+        "localInstallOnly": false,
         "version": "1.9",
-        "minEDVersion": "2.0"
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
     },
     {
         "id": "image-modifier-improvements",
@@ -36,8 +42,10 @@
         "author": "Patrice",
         "description": "Features:\n- Allows for multiple custom modifier categories (use # to name your categories)\n- Restores the image modifier cards upon reloading the page.\n- Adds a Clear All button on top of the task's image modifiers.\n- Drop images on the modifier cards to set a custom visual (square pictures work best, e.g. 512x512).\n- Adds import/export capabilities to the custom category editor (also exports/imports custom visuals).\n- Collapses other categories when selecting a new one.\n- Search box for quick search through custom and predefined modifiers.",
         "url": "https://raw.githubusercontent.com/patriceac/Easy-Diffusion-Plugins/main/plugins/Patrice/image-modifier-improvements.plugin.js",
+        "localInstallOnly": false,
         "version": "1.8",
-        "minEDVersion": "2.0"
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
     },
     {
         "id": "make-image-always-visible",
@@ -46,8 +54,10 @@
         "author": "Patrice",
         "description": "Makes the Make Image button always visible.",
         "url": "https://raw.githubusercontent.com/patriceac/Easy-Diffusion-Plugins/main/plugins/Patrice/make-image-button-always-visible.plugin.js",
+        "localInstallOnly": false,
         "version": "1.2",
-        "minEDVersion": "2.0"
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
     },
     {
         "id": "processing-order-quick-toggle",
@@ -56,8 +66,10 @@
         "author": "Patrice",
         "description": "Adds a toggle to the preview toolbar to quickly switch the queue processing order. Also fixes the display of the autoscroll toggle.",
         "url": "https://raw.githubusercontent.com/patriceac/Easy-Diffusion-Plugins/main/plugins/Patrice/processing-order-quick-toggle.plugin.js",
+        "localInstallOnly": false,
         "version": "1.1",
-        "minEDVersion": "2.0"
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
     },
     {
         "id": "prompt-diff",
@@ -66,8 +78,10 @@
         "author": "Patrice",
         "description": "Shows what text was added/removed between two consecutive prompts.",
         "url": "https://raw.githubusercontent.com/patriceac/Easy-Diffusion-Plugins/main/plugins/Patrice/prompt-diff.plugin.js",
+        "localInstallOnly": false,
         "version": "1.1",
-        "minEDVersion": "2.0"
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
     },
     {
         "id": "prompt-translator",
@@ -76,8 +90,10 @@
         "author": "Patrice",
         "description": "PLEASE NOTE YOUR PROMPTS WILL BE SENT TO GOOGLE TRANSLATE.\n\nEnter prompts in your native language, e.g. in French, <i>une mystérieuse porte dans la forêt</i>. Prompts are seamlessly translated to English before being rendered.\nDefault language is set to English (no translation), can be changed in the dropdown in the Settings pane.",
         "url": "https://raw.githubusercontent.com/patriceac/Easy-Diffusion-Plugins/main/plugins/Patrice/prompt-translator.plugin.js",
+        "localInstallOnly": false,
         "version": "1.2",
-        "minEDVersion": "2.0"
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
     },
     {
         "id": "queue-size",
@@ -86,8 +102,10 @@
         "author": "Patrice",
         "description": "Shows the count of active tasks and outstanding images in the Easy Diffusion status.",
         "url": "https://raw.githubusercontent.com/patriceac/Easy-Diffusion-Plugins/main/plugins/Patrice/queue-size.plugin.js",
+        "localInstallOnly": false,
         "version": "1.0",
-        "minEDVersion": "2.0"
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
     },
     {
         "id": "scrolling-panes",
@@ -96,8 +114,10 @@
         "author": "Patrice",
         "description": "Allows editor and preview panes to scroll independently and adds a toggle to hide the editor pane.",
         "url": "https://raw.githubusercontent.com/patriceac/Easy-Diffusion-Plugins/main/plugins/Patrice/scrolling-panes.plugin.js",
+        "localInstallOnly": false,
         "version": "2.4",
-        "minEDVersion": "2.0"
+        "minEDVersion": "2.0",
+        "compatIssueIds": ["new_ui"]
     },
     {
         "id": "seed-randomizer",
@@ -106,8 +126,10 @@
         "author": "Patrice",
         "description": "Adds a new system setting to randomize, thus increasing the variability of images ran in batches. E.g. can run \"A pug wearing a {red, blue, green} hat\" as 3 tasks with different seeds, thus yielding more variety in the results.",
         "url": "https://raw.githubusercontent.com/patriceac/Easy-Diffusion-Plugins/main/plugins/Patrice/seed-randomizer.plugin.js",
+        "localInstallOnly": false,
         "version": "1.2",
-        "minEDVersion": "2.0"
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
     },
     {
         "id": "template-manager",
@@ -116,7 +138,189 @@
         "author": "Patrice",
         "description": "A simple template library manager. Save/restore metadata as templates without having to mess with .txt or .json files. If you found a prompt/model/sampler/etc. combination that you really like, this is an easy way to save it so you can create more of the same later.\n\nFeatures:\n- Save/reload task *templates*\n- Search box for easy access\n- Supports template renaming and deletion\n- Export/import function to back up and restore your templates\n- Can restore seeds (optional)",
         "url": "https://raw.githubusercontent.com/patriceac/Easy-Diffusion-Plugins/main/plugins/Patrice/template-manager.plugin.js",
+        "localInstallOnly": false,
         "version": "1.7",
-        "minEDVersion": "2.0"
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
+    },
+    {
+        "id": "new_ui",
+        "icon": "",
+        "name": "Rabbit Hole UI",
+        "author": "AssassinJN",
+        "description": "Generates a grid of prompts to run against. Can be used to step through Inference Steps, samplers, Guidance Scales or all modifiers.",
+        "url": "https://raw.githubusercontent.com/AssassinJN/Rabbit-Hole-UI/master/new_ui.plugin.js",
+        "localInstallOnly": false,
+        "version": "",
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
+    },
+    {
+        "id": "OutpaintIt",
+        "icon": "",
+        "name": "OutpaintUp, OutpaintLeft...",
+        "author": "Avidgamefan",
+        "description": "Plugins that do a simple \"outpaint\" operation, where it just adds-on to your image with one click.  For example, OutpaintUp will add to the top and paint in more of the scene.\n\nCurrently, it will limit itself to the maximum capacity of an 8GB VRAM video card.  If you need to change the limits higher or lower, you will need to edit the files.",
+        "url": "https://raw.githubusercontent.com/AvidGameFan/ed-plugins/master/OutpaintIt.plugin.js",
+        "localInstallOnly": false,
+        "version": "",
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
+    },
+    {
+        "id": "history",
+        "icon": "",
+        "name": "History",
+        "author": "rbertus2000",
+        "description": "Adds a new column to keep a history of all prompts/settings that were used in this session.",
+        "url": "https://raw.githubusercontent.com/rbertus2000/sd-ui-plugins/main/history.plugin.js",
+        "localInstallOnly": false,
+        "version": "",
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
+    },
+    {
+        "id": "switch-height-width",
+        "icon": "",
+        "name": "Switch Width & Height Settings",
+        "author": "ogmaresca",
+        "description": "Adds a button to switch the width and height values.",
+        "url": "https://raw.githubusercontent.com/ogmaresca/easydiffusion-plugins/main/ui/switch-height-width.plugin.js",
+        "localInstallOnly": false,
+        "version": "",
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
+    },
+    {
+        "id": "AdvancedPrompt",
+        "icon": "",
+        "name": "Advanced Prompt Plugin",
+        "author": "3V1LXD",
+        "description": "Adds an optional collapsible advanced prompt table below the prompt field.\nAllows you to specify the emphasis for each prompt.\nEmphasis can be changed by hovering over it in the first cell of a row and scrolling with the alt key held.\nCan be reordered by dragging a row by its emphasis.\nDelete prompts by clearing the advanced prompt fields.\nAdd prompts by typing a comma at the beginning or end of the advanced prompt fields.",
+        "url": "https://raw.githubusercontent.com/3V1LXD/sd-ui-plugin-advanced-prompt/main/AdvancedPrompt.plugin.js",
+        "localInstallOnly": false,
+        "version": "",
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
+    },
+    {
+        "id": "mads-grid",
+        "icon": "",
+        "name": "Grid Renders (Beta)",
+        "author": "Madrang",
+        "description": "First ever version, if anyone want's to try it.\nWork only on the Beta version of the UI for now.\n\nStart with low amount of steps and guidance as the plugin will increase it.",
+        "url": "https://raw.githubusercontent.com/madrang/sd-ui-plugins/beta/mads-grid.plugin.js",
+        "localInstallOnly": false,
+        "version": "",
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
+    },
+    {
+        "id": "clearAllEmpty",
+        "icon": "",
+        "name": "clearAllEmpty",
+        "author": "Schorny",
+        "description": "adds a button to clear all empty requests if you queued a lot and then pressed Stop All, this removes all the not done tasks",
+        "url": "https://raw.githubusercontent.com/Schorny/easy-diffusion-ui-plugins/main/clearAllEmpty.plugin.js",
+        "localInstallOnly": false,
+        "version": "",
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
+    },
+    {
+        "id": "CopySeed",
+        "icon": "",
+        "name": "CopySeed",
+        "author": "Schorny",
+        "description": "if you hover over an image and double click the seed info, the seed will be copied to the image settings",
+        "url": "https://raw.githubusercontent.com/Schorny/easy-diffusion-ui-plugins/main/copyseed.plugin.js",
+        "localInstallOnly": false,
+        "version": "",
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
+    },
+    {
+        "id": "rename_session",
+        "icon": "",
+        "name": "rename_session",
+        "author": "Schorny",
+        "description": "this allows you to rename the current session and change the output folder name for the created images",
+        "url": "https://raw.githubusercontent.com/Schorny/easy-diffusion-ui-plugins/main/rename_session.plugin.js",
+        "localInstallOnly": false,
+        "version": "",
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
+    },
+    {
+        "id": "autoscroll_rename",
+        "icon": "",
+        "name": "autoscroll_rename",
+        "author": "Schorny",
+        "description": "this changes the text from \"Scroll to generated images\" which is pretty long to \"autoscroll\" to save space",
+        "url": "https://raw.githubusercontent.com/Schorny/easy-diffusion-ui-plugins/main/autoscroll_renamer.plugin.js",
+        "localInstallOnly": false,
+        "version": "",
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
+    },
+    {
+        "id": "mads-gifs",
+        "icon": "",
+        "name": "GIFs Plugin (Beta)",
+        "author": "Madrang",
+        "description": "Here's the first test version for making GIFs\nUsing the Beta version of the UI is required for now.\n\nAfter installing, you will have new Output Format\nWhile stepAnim display in the normal place, gif needs popup permissions as it will create a new tab/window when completing a render.\n\nMaking a popup UI with more options is still on the To-Do list...\nTo edit the options the code has to be changed until the UI part is done.\n\nGoing above 100 inferences steps with stepAnim is risky on SD1.# as some of those values will fail but it works perfectly with SD2.# models.",
+        "url": "https://discord.com/channels/1014774730907209781/1051459256769073193/1051459256769073193",
+        "localInstallOnly": true,
+        "version": "",
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
+    },
+    {
+        "id": "animate",
+        "icon": "",
+        "name": "Animate",
+        "author": "FairytaleArtist",
+        "description": "Allows you to upload a series of images and render them in SD UI. Basically, you can create animations with it or apply the same effect to multiple images.\n*To use click browse and select a sequence of images. Then click the Animate button (under Make Images button) and the plugin will output a modified version of each frame.\nFor example: load a sequence of images of a wolf walking->write in the prompt area \"tiger walking\"-> click Animate butto->watch the magic happen",
+        "url": "https://discord.com/channels/1014774730907209781/1053138781684891708/1053138781684891708",
+        "localInstallOnly": true,
+        "version": "1.1",
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
+    },
+    {
+        "id": "queue-counter",
+        "icon": "",
+        "name": "Queue-Counter",
+        "author": "FairytaleArtist",
+        "description": "Shows in the tab title how many tasks are left to process.\nThis is useful if you render a lot of images and want to browse the internet without needing to check the tab if it's finished.",
+        "url": "https://discord.com/channels/1014774730907209781/1053139194396020826/1053139194396020826",
+        "localInstallOnly": true,
+        "version": "1.0",
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
+    },
+    {
+        "id": "spell-tokenizer",
+        "icon": "",
+        "name": "Spell Tokenizer",
+        "author": "Solid Dissipation",
+        "description": "Script to help with spell (prompt) building\n-create individual spell tokens to rearrange and modulate by using commas\n-drag and drop tokens to rearrange order\n-hold ALT+scroll over a token to emphasize or de-emphasize\n-right click to delete a token\n-see a rough estimate for token count\n-enter link to a booru page to extract all tags from it, precede link with _ to replaces spaces with underscores in tags\n-recognize duplicate tags.",
+        "url": "https://gitlab.com/SoliDissipation/sd-ui-plugins/-/raw/main/spell-tokenizer.plugin.js",
+        "localInstallOnly": false,
+        "version": "",
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
+    },
+    {
+        "id": "EasyDiffusion-parser",
+        "icon": "",
+        "name": "Easy Diffusion Parser",
+        "author": "Madrang",
+        "description": "An advanced parser for Easy Diffusion with support for blending and weights.\n\nYou'll need to start your prompts with an exclamation mark, e.g. !photo of an (astronaut) to use the advanced syntax. Without ! it will send the text literally to the model.",
+        "url": "https://discord.com/channels/1014774730907209781/1079856801304023061/1079856801304023061",
+        "localInstallOnly": true,
+        "version": "",
+        "minEDVersion": "2.0",
+        "compatIssueIds": []
     }
 ]
