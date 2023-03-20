@@ -559,7 +559,6 @@ div.img-preview img {
     float: right;
 }
 #preview-tools {
-    display: none;
     padding: 4pt;
 }
 #preview-tools .display-settings .dropdown-content {
