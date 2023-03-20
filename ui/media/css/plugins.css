@@ -1,3 +1,52 @@
+.plugins-table {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.plugins-table > div {
+    background: var(--background-color2);
+    display: flex;
+    padding: 0px 4px;
+}
+
+.plugins-table > div > div {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.plugins-table small {
+    color: rgb(153, 153, 153);
+}
+
+.plugins-table > div > div:nth-child(1) {
+    font-size: 20px;
+    width: 45px;
+}
+
+.plugins-table > div > div:nth-child(2) {
+    flex: 1;
+    flex-direction: column;
+    text-align: left;
+    justify-content: center;
+    align-items: start;
+    gap: 4px;
+}
+
+.plugins-table > div > div:nth-child(3) {
+    text-align: right;
+}
+
+.plugins-table > div:first-child {
+    border-radius: 12px 12px 0px 0px;
+}
+
+.plugins-table > div:last-child {
+    border-radius: 0px 0px 12px 12px;
+}
+
 .plugin-manager-intro {
     margin: 0 0 16px 0;
 }
@@ -31,10 +80,36 @@
     font-size: small;
 }
 
+.plugin-source {
+    font-size: x-small;
+}
+
+.plugin-warning {
+    color: orange;
+    font-size: smaller;
+}
+
+.plugin-warning.hide {
+    display: none;
+}
+
+.plugin-warning ul {
+    list-style: square;
+    margin: 0 0 8px 16px;
+    padding: 0;
+}
+
+.plugin-warning li {
+    margin-left: 8px;
+    padding: 0;
+}
+
+/* TOASTS */
 .plugin-toast {
     position: fixed;
     bottom: 10px;
     right: -300px;
+    max-width: 300px;
     background-color: #333;
     color: #fff;
     padding: 10px 20px;
@@ -42,6 +117,11 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     z-index: 9999;
     animation: slideInRight 0.5s ease forwards;
+    transition: bottom 0.5s ease; // Add a transition to smoothly reposition the toasts
+}
+
+.plugin-toast-error {
+    color: red;
 }
 
 @keyframes slideInRight {
@@ -64,4 +144,111 @@
     to {
         right: -300px;
     }
+}
+
+@keyframes slideDown {
+    from {
+        bottom: 10px;
+    }
+    to {
+        bottom: 0;
+    }
+}
+
+/* MODAL DIALOG */
+#pluginDialog-input-dialog {
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+
+.pluginDialog-dialog-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(32, 33, 36, 50%);
+}
+
+.pluginDialog-dialog-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 600px;
+    background: var(--background-color2);
+    border: solid 1px var(--background-color3);
+    border-radius: 6px;
+    box-shadow: 0px 0px 30px black;
+}
+
+.pluginDialog-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+}
+
+.pluginDialog-dialog-header h2 {
+    margin: 0;
+}
+
+.pluginDialog-dialog-close-button {
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 1;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.pluginDialog-dialog-close-button:hover {
+    color: #555;
+}
+
+.pluginDialog-dialog-content {
+    padding: 0 16px 0 16px;
+}
+
+.pluginDialog-dialog-content textarea {
+    width: 100%;
+    height: 300px;
+    border-radius: var(--input-border-radius);
+    padding: 4px;
+    accent-color: var(--accent-color);
+    background: var(--input-background-color);
+    border: var(--input-border-size) solid var(--input-border-color);
+    color: var(--input-text-color);
+    font-size: 9pt;
+    resize: none;
+}
+
+.pluginDialog-dialog-buttons {
+    display: flex;
+    justify-content: flex-end;
+    padding: 16px;
+}
+
+.pluginDialog-dialog-buttons button {
+    margin-left: 8px;
+    padding: 8px 16px;
+    font-size: 16px;
+    border-radius: 4px;
+    /*background: var(--accent-color);*/
+    /*border: var(--primary-button-border);*/
+    /*color: rgb(255, 221, 255);*/
+    background-color: #3071a9;
+    border: none;
+    cursor: pointer;
+}
+
+.pluginDialog-dialog-buttons button:hover {
+    /*background: hsl(var(--accent-hue), 100%, 50%);*/
+    background-color: #428bca;
 }

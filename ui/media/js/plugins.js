@@ -1,5 +1,8 @@
 const PLUGIN_API_VERSION = "1.0"
-const PLUGIN_CATALOG = 'https://raw.githubusercontent.com/cmdr2/stable-diffusion-ui/beta/ui/plugins/plugins.json'
+//const PLUGIN_CATALOG = 'https://raw.githubusercontent.com/cmdr2/stable-diffusion-ui/beta/ui/plugins/plugins.json'
+//const PLUGIN_CATALOG_GITHUB = 'https://github.com/cmdr2/stable-diffusion-ui/blob/beta/ui/plugins/plugins.json'
+const PLUGIN_CATALOG = 'https://raw.githubusercontent.com/patriceac/Easy-Diffusion-Plugins/main/plugins.json'
+const PLUGIN_CATALOG_GITHUB = 'https://github.com/patriceac/Easy-Diffusion-Plugins/blob/main/plugins.json'
 
 const PLUGINS = {
     /**
@@ -163,25 +166,74 @@ document.addEventListener("tabClick", (e) => {
 
 // refresh link
 pluginsTable.insertAdjacentHTML('afterend', `<p id="refresh-plugins"><small><a id="refresh-plugins-link">Refresh plugins</a></small></p>
-    <p><small>(Plugin developers, add your plugins to <a href='https://github.com/patriceac/Easy-Diffusion-Plugins' target='_blank'>Easy-Diffusion-Plugins</a>)</small></p>`)
+    <p><small>(Plugin developers, add your plugins to <a href='${PLUGIN_CATALOG_GITHUB}' target='_blank'>plugins.json</a>)</small></p>`)
 const refreshPlugins = document.getElementById("refresh-plugins")
 refreshPlugins.addEventListener("click", async function(event) {
     event.preventDefault()
     await initPlugins(true)
-    debounce(showToast('Plugins refreshed', 3000), 3000)
+    showToast('Plugins refreshed')
 })
 
-function showToast(message, duration) {
+function showToast(message, duration = 5000, error = false) {
+    if (duration === null || duration === undefined) {
+        duration = 5000
+    }
+    
     const toast = document.createElement("div");
     toast.classList.add("plugin-toast");
-    toast.textContent = message;
+    if (error === true) {
+        toast.classList.add("plugin-toast-error");
+    }
+    toast.innerHTML = message;
     document.body.appendChild(toast);
 
-    setTimeout(() => {
+    // Set the position of the toast on the screen
+    const toastCount = document.querySelectorAll(".plugin-toast").length;
+    const toastHeight = toast.offsetHeight;
+    const previousToastsHeight = Array.from(document.querySelectorAll(".plugin-toast"))
+        .slice(0, -1) // exclude current toast
+        .reduce((totalHeight, toast) => totalHeight + toast.offsetHeight + 10, 0); // add 10 pixels for spacing
+    toast.style.bottom = `${10 + previousToastsHeight}px`;
+    toast.style.right = "10px";
+
+    // Delay the removal of the toast until animation has completed
+    let removeTimeoutId = null;
+    const removeToast = () => {
         toast.classList.add("hide");
-        setTimeout(() => {
+        removeTimeoutId = setTimeout(() => {
             toast.remove();
+            // Adjust the position of remaining toasts
+            const remainingToasts = document.querySelectorAll(".plugin-toast");
+            const removedToastBottom = toast.getBoundingClientRect().bottom;
+        
+            remainingToasts.forEach((toast) => {
+                if (toast.getBoundingClientRect().bottom < removedToastBottom) {
+                    toast.classList.add("slide-down");
+                }
+            });
+        
+            // Wait for the slide-down animation to complete
+            setTimeout(() => {
+                // Remove the slide-down class after the animation has completed
+                const slidingToasts = document.querySelectorAll(".slide-down");
+                slidingToasts.forEach((toast) => {
+                    toast.classList.remove("slide-down");
+                });
+        
+                // Adjust the position of remaining toasts again, in case there are multiple toasts being removed at once
+                const remainingToastsDown = document.querySelectorAll(".plugin-toast");
+                let heightSoFar = 0;
+                remainingToastsDown.forEach((toast) => {
+                    toast.style.bottom = `${10 + heightSoFar}px`;
+                    heightSoFar += toast.offsetHeight + 10; // add 10 pixels for spacing
+                });
+            }, 0); // The duration of the slide-down animation (in milliseconds)
         }, 500);
+    };
+
+    // Remove the toast after specified duration
+    setTimeout(() => {
+        removeToast();
     }, duration);
 }
 
@@ -197,60 +249,150 @@ function matchPluginFileNames(fileName1, fileName2) {
     }
 }
 
-function checkFileNameInArray(paths, filePath) {
+function extractFilename(filepath) {
     // Normalize the path separators to forward slashes and make the file names lowercase
-    const normalizedFilePath = filePath.replace(/\\/g, "/").toLowerCase();
+    const normalizedFilePath = filepath.replace(/\\/g, "/").toLowerCase();
 
     // Strip off the path from the file name
-    const fileName = normalizedFilePath.substring(normalizedFilePath.lastIndexOf("/") + 1);
+    const fileName = normalizedFilePath.substring(normalizedFilePath.lastIndexOf("/") + 1);    
+
+    return fileName
+}
+
+function checkFileNameInArray(paths, filePath) {
+    // Strip off the path from the file name
+    const fileName = extractFilename(filePath);
 
     // Check if the file name exists in the array of paths
     return paths.some(path => {
-        // Normalize the path separators to forward slashes and make the file names lowercase
-        const normalizedPath = path.replace(/\\/g, "/").toLowerCase();
-
         // Strip off the path from the file name
-        const baseName = normalizedPath.substring(normalizedPath.lastIndexOf("/") + 1);
+        const baseName = extractFilename(path);
 
         // Check if the file names match and return the result as a boolean
         return matchPluginFileNames(fileName, baseName);
     });
 }
 
+function isGitHub(url) {
+    return url.startsWith("https://raw.githubusercontent.com/") === true
+}
+
 /* fill in the plugins table */
+function getIncompatiblePlugins(pluginId) {
+    const enabledPlugins = plugins.filter(plugin => plugin.enabled && plugin.id !== pluginId);
+    const incompatiblePlugins = enabledPlugins.filter(plugin => plugin.compatIssueIds?.includes(pluginId));
+    const pluginNames = incompatiblePlugins.map(plugin => plugin.name);
+    if (pluginNames.length === 0) {
+        return null;
+    }
+    const pluginNamesList = pluginNames.map(name => `<li>${name}</li>`).join('');
+    return `<ul>${pluginNamesList}</ul>`;
+}
+
 async function initPluginTable(plugins) {
+    pluginsTable.innerHTML = ''
     plugins.sort((a, b) => a.name.localeCompare(b.name, undefined, {sensitivity: 'base'}))
     plugins.forEach(plugin => {
         const name = plugin.name
         const author = plugin.author ? ', by ' + plugin.author : ''
         const version = plugin.version ? ' (version: ' + plugin.version + ')' : ''
+        const warning = getIncompatiblePlugins(plugin.id) ? `<span class="plugin-warning${plugin.enabled ? '' : ' hide'}">This plugin might conflict with:${getIncompatiblePlugins(plugin.id)}</span>` : ''
         const note = plugin.description ? `<small>${plugin.description.replaceAll('\n', '<br>')}</small>` : `<small>No description</small>`;
         const icon = plugin.icon ? `<i class="fa ${plugin.icon}"></i>` : '<i class="fa fa-puzzle-piece"></i>';
-        const newrow = document.createElement('div')
+        const newRow = document.createElement('div')
         const localPluginFound = checkFileNameInArray(localPlugins, plugin.url)
-        newrow.innerHTML = `
+        
+        newRow.innerHTML = `
             <div>${icon}</div>
-            <div><label class="plugin-name">${name}${author}${version}</label>${note}</div>
-            <div>${localPluginFound ? "<span class='plugin-installed-locally'>Installed locally</span>" : '<input id="plugin-' + plugin.id + '" name="plugin-' + plugin.id + '" type="checkbox"'}</div>`
-        pluginsTable.appendChild(newrow)
+            <div><label class="plugin-name">${name}${author}${version}</label>${warning}${note}<span class='plugin-source'>Source: <a href="${plugin.url}" target="_blank">${extractFilename(plugin.url)}</a><span></div>
+            <div>
+                ${localPluginFound ? "<span class='plugin-installed-locally'>Installed locally</span>" :
+                    (plugin.localInstallOnly ? '<span class="plugin-installed-locally">Download and<br />install manually</span>' :
+                        (isGitHub(plugin.url) ?
+                            '<input id="plugin-' + plugin.id + '" name="plugin-' + plugin.id + '" type="checkbox">' :
+                            '<button id="plugin-' + plugin.id + '-install" class="tertiaryButton"></button>'
+                        )
+                    )
+                }
+            </div>`;
+        newRow.classList.add('plugin-container')
+        //console.log(plugin.id, plugin.localInstallOnly)
+        pluginsTable.appendChild(newRow)
+        const pluginManualInstall = pluginsTable.querySelector('#plugin-' + plugin.id + '-install')
+        updateManualInstallButtonCaption()
+        
+        // checkbox event handler
         const pluginToggle = pluginsTable.querySelector('#plugin-' + plugin.id)
         if (pluginToggle !== null) {
             pluginToggle.checked = plugin.enabled // set initial state of checkbox
-            pluginToggle.addEventListener('click', async () => {
-                plugin.enabled = pluginToggle.checked
+            pluginToggle.addEventListener('change', async () => {
+                const container = pluginToggle.closest(".plugin-container");
+                const warningElement = container.querySelector(".plugin-warning");
+                
                 // if the plugin got enabled, download the plugin's code
+                plugin.enabled = pluginToggle.checked
                 if (plugin.enabled) {
                     const pluginSource = await getDocument(plugin.url);
                     if (pluginSource !== null) {
+                        warningElement?.classList.remove("hide");
+                        initPluginTable(plugins)
                         plugin.code = pluginSource
+                        console.log(`Plugin ${plugin.name} installed`);
+                        showToast("Plugin " + plugin.name + " installed");
                     }
                     else
                     {
                         plugin.enabled = false
+                        pluginToggle.checked = false
+                        console.error(`Couldn't download plugin ${plugin.name}`);
+                        showToast("Failed to install " + plugin.name + " (Couldn't fetch " + extractFilename(plugin.url) + ")", 5000, true);
                     }
+                } else {
+                    warningElement?.classList.add("hide");
+                    initPluginTable(plugins)
                 }
-                setStorageData('plugins', JSON.stringify(plugins))                    
+                await setStorageData('plugins', JSON.stringify(plugins))
             })
+        }
+        
+        // manual install event handler
+        if (pluginManualInstall !== null) {
+            pluginManualInstall.addEventListener('click', async () => {
+                pluginDialogOpenDialog(inputOK, inputCancel)
+                pluginDialogTextarea.value = plugin.code ? plugin.code : ''
+                pluginDialogTextarea.select()
+                pluginDialogTextarea.focus()
+            })
+        }
+        // Dialog OK
+        async function inputOK() {
+            let pluginSource = pluginDialogTextarea.value
+            // remove empty lines and trim existing lines
+            plugin.code = pluginSource
+            if (pluginSource.trim() !== '') {
+                plugin.enabled = true
+                console.log(`Plugin ${plugin.name} installed`);
+                showToast("Plugin " + plugin.name + " installed");
+            }
+            else
+            {
+                plugin.enabled = false
+                console.log(`No code provided for plugin ${plugin.name}`);
+            }
+            updateManualInstallButtonCaption()
+            await setStorageData('plugins', JSON.stringify(plugins))                    
+        }
+        // Dialog Cancel
+        async function inputCancel() {
+            plugin.enabled = false
+            console.log(`Installation of plugin ${plugin.name} cancelled`);
+            showToast("Cancelled installation of " + plugin.name);
+        }
+        // update button caption
+        function updateManualInstallButtonCaption() {
+            if (pluginManualInstall !== null) {
+                pluginManualInstall.innerHTML = plugin.code === undefined || plugin.code.trim() === '' ? 'Install' : 'Edit'
+            }
         }
     })
     prettifyInputs(pluginsTable)
@@ -367,9 +509,15 @@ const EasyDiffusionVersion = extractVersionNumber(document.querySelector('#top-n
 /* PLUGIN MANAGEMENT */
 let plugins
 let localPlugins
+let initPluginsInProgress = false
 
 async function initPlugins(refreshPlugins = false) {
     let pluginsLoaded
+
+    if(initPluginsInProgress === true) {
+        return
+    }
+    initPluginsInProgress = true
     
     const res = await fetch('/get/ui_plugins')
     if (!res.ok) {
@@ -385,8 +533,17 @@ async function initPlugins(refreshPlugins = false) {
         plugins = await getStorageData('plugins')
         if (plugins !== undefined) {
             plugins = JSON.parse(await getStorageData('plugins'))
-            plugins = filterPluginsByMinEDVersion(plugins, EasyDiffusionVersion) // remove plugins that don't meet the min ED version requirement
-            pluginsTable.innerHTML = ''
+
+            // remove duplicate entries if any (should not happen)
+            plugins = deduplicatePluginsById(plugins)
+            
+            // remove plugins that don't meet the min ED version requirement
+            plugins = filterPluginsByMinEDVersion(plugins, EasyDiffusionVersion)
+            
+            // remove from plugins the entries that don't have mandatory fields (id, name, url)
+            plugins = plugins.filter((plugin) => { return plugin.id !== '' && plugin.name !== '' && plugin.url !== ''; });
+
+            // populate the table
             initPluginTable(plugins)
             await loadPlugins(plugins)
             pluginsLoaded = true
@@ -401,24 +558,31 @@ async function initPlugins(refreshPlugins = false) {
     // update plugins asynchronously (updated versions will be available next time the UI is loaded)
     let pluginCatalog = await getDocument(PLUGIN_CATALOG)
     if (pluginCatalog !== null) {
-        console.log('Plugin catalog successfully downloaded')
-        pluginCatalog = JSON.parse(pluginCatalog)
+        try {
+            pluginCatalog = JSON.parse(pluginCatalog);
+            console.log('Plugin catalog successfully downloaded');
+        } catch (error) {
+            console.error('Error parsing plugin catalog:', error);
+        }
         
-        // remove from plugins the entries that don't have mandatory fields (id, name, url)
-        plugins = plugins.filter((plugin) => { return plugin.id && plugin.name && plugin.url; });
         await downloadPlugins(pluginCatalog, plugins, refreshPlugins)
-        
-        // remove from plugins the entries that no longer exist in the catalog
-        plugins = plugins.filter((plugin) => { return pluginCatalog.find((p) => p.id === plugin.id) });
+
+        // update compatIssueIds
+        updateCompatIssueIds()
         
         // remove plugins that don't meet the min ED version requirement
         plugins = filterPluginsByMinEDVersion(plugins, EasyDiffusionVersion)
         
+        // remove from plugins the entries that don't have mandatory fields (id, name, url)
+        plugins = plugins.filter((plugin) => { return plugin.id !== '' && plugin.name !== '' && plugin.url !== ''; });
+        
+        // remove from plugins the entries that no longer exist in the catalog
+        plugins = plugins.filter((plugin) => { return pluginCatalog.find((p) => p.id === plugin.id) });
+        
         // save the remaining plugins            
-        setStorageData('plugins', JSON.stringify(plugins))
+        await setStorageData('plugins', JSON.stringify(plugins))
 
         // refresh the display of the plugins table
-        pluginsTable.innerHTML = ''
         initPluginTable(plugins)
         if (pluginsLoaded && pluginsLoaded === false) {
             loadPlugins(plugins)
@@ -426,20 +590,74 @@ async function initPlugins(refreshPlugins = false) {
     }
     else
     {
-        console.log('Could not download the plugin catalog')
+        console.error('Could not download the plugin catalog from ' + PLUGIN_CATALOG)
     }
+    
+    initPluginsInProgress = false
 }
 initPlugins()
 
+function updateCompatIssueIds() {
+    // Loop through each plugin
+    plugins.forEach(plugin => {
+        // Check if the plugin has `compatIssueIds` property
+        if (plugin.compatIssueIds !== undefined) {
+            // Loop through each of the `compatIssueIds`
+            plugin.compatIssueIds.forEach(issueId => {
+                // Find the plugin with the corresponding `issueId`
+                const issuePlugin = plugins.find(p => p.id === issueId);
+                // If the corresponding plugin is found, initialize its `compatIssueIds` property with an empty array if it's undefined
+                if (issuePlugin) {
+                    if (issuePlugin.compatIssueIds === undefined) {
+                        issuePlugin.compatIssueIds = [];
+                    }
+                    // If the current plugin's ID is not already in the `compatIssueIds` array, add it
+                    if (!issuePlugin.compatIssueIds.includes(plugin.id)) {
+                        issuePlugin.compatIssueIds.push(plugin.id);
+                    }
+                }
+            });
+        } else {
+            // If the plugin doesn't have `compatIssueIds` property, initialize it with an empty array
+            plugin.compatIssueIds = [];
+        }
+    });
+}
+
+function deduplicatePluginsById(plugins) {
+    const seenIds = new Set();
+    const deduplicatedPlugins = [];
+
+    for (const plugin of plugins) {
+        if (!seenIds.has(plugin.id)) {
+            seenIds.add(plugin.id);
+            deduplicatedPlugins.push(plugin);
+        } else {
+            // favor dupes that have enabled == true
+            const index = deduplicatedPlugins.findIndex(p => p.id === plugin.id);
+            if (index >= 0) {
+                if (plugin.enabled) {
+                    deduplicatedPlugins[index] = plugin;
+                }
+            }
+        }
+    }
+
+    return deduplicatedPlugins;
+}
+
 async function loadPlugins(plugins) {
     plugins.forEach((plugin) => {
-        if (plugin.enabled === true) {
+        if (plugin.enabled === true && plugin.localInstallOnly !== true) {
             const localPluginFound = checkFileNameInArray(localPlugins, plugin.url);
             if (!localPluginFound) {
                 try {
-                    eval(plugin.code);
+                    // Indirect eval to work around sloppy plugin implementations
+                    const indirectEval = { eval };
+                    indirectEval.eval(plugin.code)
                     console.log("Plugin " + plugin.name + " loaded");
                 } catch (err) {
+                    showToast("Error loading plugin " + plugin.name + " (" + err.message + ")", null, true)
                     console.error("Error loading plugin " + plugin.name + ": " + err.message);
                 }
             } else {
@@ -472,15 +690,16 @@ async function getFileHash(url) {
 async function downloadPlugins(pluginCatalog, plugins, refreshPlugins) {
     // download the plugins as needed
     for (const plugin of pluginCatalog) {
+        //console.log(plugin.id, plugin.url)
         const existingPlugin = plugins.find(p => p.id === plugin.id);
         // get the file hash in the GitHub repo
         let sha
-        if (existingPlugin?.enabled === true) {
+        if (isGitHub(plugin.url) && existingPlugin?.enabled === true) {
             sha = await getFileHash(plugin.url)
         }
-        if ((existingPlugin?.enabled === true && (refreshPlugins || existingPlugin?.sha !== sha || existingPlugin?.code === undefined))) {
+        if (plugin.localInstallOnly !== true && isGitHub(plugin.url) && existingPlugin?.enabled === true && (refreshPlugins || (existingPlugin.sha !== undefined && existingPlugin.sha !== sha) || existingPlugin?.code === undefined)) {
             const pluginSource = await getDocument(plugin.url);
-            if (pluginSource !== null) {
+            if (pluginSource !== null && pluginSource !== existingPlugin.code) {
                 console.log(`Plugin ${plugin.name} downloaded`);
                 // Update the corresponding plugin
                 const updatedPlugin = {
@@ -490,10 +709,12 @@ async function downloadPlugins(pluginCatalog, plugins, refreshPlugins) {
                     name: plugin.name,
                     description: plugin.description,
                     url: plugin.url,
+                    localInstallOnly: Boolean(plugin.localInstallOnly),
                     version: plugin.version,
                     code: pluginSource,
                     author: plugin.author,
-                    sha: sha
+                    sha: sha,
+                    compatIssueIds: plugin.compatIssueIds
                 };
                 // Replace the old plugin in the plugins array
                 const pluginIndex = plugins.indexOf(existingPlugin);
@@ -513,8 +734,10 @@ async function downloadPlugins(pluginCatalog, plugins, refreshPlugins) {
                 name: plugin.name,
                 description: plugin.description,
                 url: plugin.url,
+                localInstallOnly: Boolean(plugin.localInstallOnly),
                 version: plugin.version,
-                author: plugin.author
+                author: plugin.author,
+                compatIssueIds: plugin.compatIssueIds
             };
             // Replace the old plugin in the plugins array
             const pluginIndex = plugins.indexOf(existingPlugin);
@@ -536,10 +759,88 @@ async function getDocument(url) {
         let document = await response.text();
         return document;
     } catch (error) {
+        showToast("Couldn't fetch " + extractFilename(url) + " (" + error + ")", null, true);
         console.error(error);
         return null;
     }
 }
+
+/* MODAL DIALOG */
+const pluginDialogDialog = document.createElement("div");
+pluginDialogDialog.id = "pluginDialog-input-dialog";
+pluginDialogDialog.style.display = "none";
+
+pluginDialogDialog.innerHTML = `
+    <div class="pluginDialog-dialog-overlay"></div>
+    <div class="pluginDialog-dialog-box">
+        <div class="pluginDialog-dialog-header">
+            <h2>Paste the plugin's code here</h2>
+            <button class="pluginDialog-dialog-close-button">&times;</button>
+        </div>
+        <div class="pluginDialog-dialog-content">
+            <textarea id="pluginDialog-input-textarea" spellcheck="false" autocomplete="off"></textarea>
+        </div>
+        <div class="pluginDialog-dialog-buttons">
+            <button id="pluginDialog-input-ok">OK</button>
+            <button id="pluginDialog-input-cancel">Cancel</button>
+        </div>
+    </div>
+`;
+
+document.body.appendChild(pluginDialogDialog);
+
+const pluginDialogOverlay = document.querySelector(".pluginDialog-dialog-overlay");
+const pluginDialogOkButton = document.getElementById("pluginDialog-input-ok");
+const pluginDialogCancelButton = document.getElementById("pluginDialog-input-cancel");
+const pluginDialogCloseButton = document.querySelector(".pluginDialog-dialog-close-button");
+const pluginDialogTextarea = document.getElementById("pluginDialog-input-textarea");
+let callbackOK
+let callbackCancel
+
+function pluginDialogOpenDialog(inputOK, inputCancel) {
+    pluginDialogDialog.style.display = "block";
+    callbackOK = inputOK
+    callbackCancel = inputCancel
+}
+
+function pluginDialogCloseDialog() {
+    pluginDialogDialog.style.display = "none";
+}
+
+function pluginDialogHandleOkClick() {
+    const userInput = pluginDialogTextarea.value;
+    // Do something with the user input
+    callbackOK()
+    pluginDialogCloseDialog();
+}
+
+function pluginDialogHandleCancelClick() {
+    callbackCancel()
+    pluginDialogCloseDialog();
+}
+
+function pluginDialogHandleOverlayClick(event) {
+    if (event.target === pluginDialogOverlay) {
+        pluginDialogCloseDialog();
+    }
+}
+
+function pluginDialogHandleKeyDown(event) {
+    if ((event.key === "Enter" && event.ctrlKey) || event.key === "Escape") {
+        event.preventDefault();
+        if (event.key === "Enter" && event.ctrlKey) {
+            pluginDialogHandleOkClick();
+        } else {
+            pluginDialogCloseDialog();
+        }
+    }
+}
+
+pluginDialogTextarea.addEventListener("keydown", pluginDialogHandleKeyDown);
+pluginDialogOkButton.addEventListener("click", pluginDialogHandleOkClick);
+pluginDialogCancelButton.addEventListener("click", pluginDialogHandleCancelClick);
+pluginDialogCloseButton.addEventListener("click", pluginDialogCloseDialog);
+pluginDialogOverlay.addEventListener("click", pluginDialogHandleOverlayClick);
 
 /* STORAGE MANAGEMENT */
 // Request persistent storage
