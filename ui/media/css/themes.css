@@ -37,6 +37,9 @@
 
     /* Main theme color, hex color fallback. */
     --theme-color-fallback: #673AB6;
+    --status-orange: rgb(200, 139, 0);
+    --status-green: green;
+    --status-red: red;
 }
 
 .theme-light {

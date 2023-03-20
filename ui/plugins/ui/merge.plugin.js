@@ -367,8 +367,8 @@
 
     document.querySelector('#merge-button').addEventListener('click', async function(e) {
         // Build request template
-        let model0 = document.querySelector('#mergeModelA').value
-        let model1 = document.querySelector('#mergeModelB').value
+        let model0 = mergeModelAField.value
+        let model1 = mergeModelBField.value
         let request = { model0: model0, model1: model1 }
         request['use_fp16'] = document.querySelector('#merge-fp').value == 'fp16'
         let iterations = document.querySelector('#merge-count').value>>0

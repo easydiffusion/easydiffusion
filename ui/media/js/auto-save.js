@@ -46,7 +46,10 @@ const SETTINGS_IDS_LIST = [
     "apply_color_correction",
     "process_order_toggle",
     "thumbnail_size",
-    "auto_scroll"
+    "auto_scroll",
+    "zip_toggle",
+    "tree_toggle",
+    "json_toggle"
 ]
 
 const IGNORE_BY_DEFAULT = [

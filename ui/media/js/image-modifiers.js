@@ -1,6 +1,7 @@
 let activeTags = []
 let modifiers = []
 let customModifiersGroupElement = undefined
+let customModifiersInitialContent
 
 let editorModifierEntries = document.querySelector('#editor-modifiers-entries')
 let editorModifierTagsList = document.querySelector('#editor-inputs-tags-list')
@@ -18,6 +19,9 @@ const CUSTOM_MODIFIERS_KEY = "customModifiers"
 
 function createModifierCard(name, previews, removeBy) {
     const modifierCard = document.createElement('div')
+    let style = previewImageField.value
+    let styleIndex = (style=='portrait') ? 0 : 1
+
     modifierCard.className = 'modifier-card'
     modifierCard.innerHTML = `
     <div class="modifier-card-overlay"></div>
@@ -37,8 +41,8 @@ function createModifierCard(name, previews, removeBy) {
     errorText.innerText = 'No Image'
 
     if (typeof previews == 'object') {
-        image.src = previews[0]; // portrait
-        image.setAttribute('preview-type', 'portrait')
+        image.src = previews[styleIndex]; // portrait
+        image.setAttribute('preview-type', style)
     } else {
         image.remove()
     }
@@ -145,10 +149,11 @@ async function loadModifiers() {
             createCollapsibles(editorModifierEntries)
         }
     } catch (e) {
-        console.log('error fetching modifiers', e)
+        console.error('error fetching modifiers', e)
     }
 
     loadCustomModifiers()
+    resizeModifierCards(modifierCardSizeSlider.value)
     document.dispatchEvent(new Event('loadImageModifiers'))
 }
 
@@ -173,9 +178,9 @@ function refreshModifiersState(newTags) {
                 // add modifier to active array
                 if (!activeTags.map(x => x.name).includes(tag)) { // only add each tag once even if several custom modifier cards share the same tag
                     const imageModifierCard = modifierCard.cloneNode(true)
-                    imageModifierCard.querySelector('.modifier-card-label p').innerText = shortModifierName
+                    imageModifierCard.querySelector('.modifier-card-label p').innerText = tag.replace(modifierName, shortModifierName)
                     activeTags.push({
-                        'name': modifierName,
+                        'name': tag,
                         'element': imageModifierCard,
                         'originElement': modifierCard
                     })
@@ -261,6 +266,7 @@ function refreshTagsList() {
     let brk = document.createElement('br')
     brk.style.clear = 'both'
     editorModifierTagsList.appendChild(brk)
+    document.dispatchEvent(new Event('refreshImageModifiers')) // notify plugins that the image tags have been refreshed 
 }
 
 function toggleCardState(modifierName, makeActive) {
@@ -344,7 +350,26 @@ previewImageField.onchange = () => changePreviewImages(previewImageField.value)
 
 modifierSettingsBtn.addEventListener('click', function(e) {
     modifierSettingsOverlay.classList.add("active")
+    customModifiersTextBox.setSelectionRange(0, 0)
+    customModifiersTextBox.focus()
+    customModifiersInitialContent = customModifiersTextBox.value // preserve the initial content
     e.stopPropagation()
+})
+
+modifierSettingsOverlay.addEventListener('keydown', function(e) {
+    switch (e.key) {
+        case "Escape": // Escape to cancel
+            customModifiersTextBox.value = customModifiersInitialContent // undo the changes
+            modifierSettingsOverlay.classList.remove("active")
+            e.stopPropagation()
+            break
+        case "Enter":
+            if (e.ctrlKey) { // Ctrl+Enter to confirm
+                modifierSettingsOverlay.classList.remove("active")
+                e.stopPropagation()
+                break
+            }
+    }
 })
 
 function saveCustomModifiers() {

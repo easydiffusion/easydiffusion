@@ -149,16 +149,21 @@
 	pointer-events: none;
 }
 
-
 .image-editor-popup {
 	--popup-margin: 16px;
 	--popup-padding: 24px;
 }
 
+@media screen and (min-width: 700px) {
+	.image-editor-popup {
+		overflow-y: auto;
+	}
+}
+
 .image-editor-popup > div {
 	margin: var(--popup-margin);
 	padding: var(--popup-padding);
-	min-height: calc(100vh - (2 * var(--popup-margin)));
+	min-height: calc(99h - (2 * var(--popup-margin)));
 	max-width: none;
 	min-width: fit-content;
 }
@@ -186,7 +191,7 @@
 
 
 .image-editor-popup > div > div {
-	min-height: calc(100vh - (2 * var(--popup-margin)) - (2 * var(--popup-padding)));
+	min-height: calc(99vh - (2 * var(--popup-margin)) - (2 * var(--popup-padding)));
 }
 
 .inpainter .image_editor_color {
@@ -213,4 +218,11 @@
 }
 .image-editor-popup h4 {
 	text-align: left;
+}
+
+.image-editor-popup .load_mask {
+	display: none;
+}
+.inpainter .load_mask {
+	display: flex;
 }
