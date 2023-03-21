@@ -46,6 +46,9 @@ let vaeModelField = new ModelDropdown(document.querySelector('#vae_model'), 'vae
 let hypernetworkModelField = new ModelDropdown(document.querySelector('#hypernetwork_model'), 'hypernetwork', 'None')
 let hypernetworkStrengthSlider = document.querySelector('#hypernetwork_strength_slider')
 let hypernetworkStrengthField = document.querySelector('#hypernetwork_strength')
+let loraModelField = new ModelDropdown(document.querySelector('#lora_model'), 'lora', 'None')
+let loraAlphaSlider = document.querySelector('#lora_alpha_slider')
+let loraAlphaField = document.querySelector('#lora_alpha')
 let outputFormatField = document.querySelector('#output_format')
 let blockNSFWField = document.querySelector('#block_nsfw')
 let showOnlyFilteredImageField = document.querySelector("#show_only_filtered_image")
@@ -931,6 +934,9 @@ function createTask(task) {
         taskConfig += `, <b>Hypernetwork:</b> ${task.reqBody.use_hypernetwork_model}`
         taskConfig += `, <b>Hypernetwork Strength:</b> ${task.reqBody.hypernetwork_strength}`
     }
+    if (task.reqBody.use_lora_model) {
+        taskConfig += `, <b>LoRA:</b> ${task.reqBody.use_lora_model}`
+    }
     if (task.reqBody.preserve_init_image_color_profile) {
         taskConfig += `, <b>Preserve Color Profile:</b> true`
     }
@@ -1041,9 +1047,11 @@ function getCurrentUserRequest() {
             height: parseInt(heightField.value),
             // allow_nsfw: allowNSFWField.checked,
             vram_usage_level: vramUsageLevelField.value,
+            sampler_name: samplerField.value,
             //render_device: undefined, // Set device affinity. Prefer this device, but wont activate.
             use_stable_diffusion_model: stableDiffusionModelField.value,
             use_vae_model: vaeModelField.value,
+            use_lora_model: loraModelField.value,
             stream_progress_updates: true,
             stream_image_progress: (numOutputsTotal > 50 ? false : streamImageProgressField.checked),
             show_only_filtered_image: showOnlyFilteredImageField.checked,
@@ -1067,9 +1075,9 @@ function getCurrentUserRequest() {
             newTask.reqBody.mask = imageInpainter.getImg()
         }
         newTask.reqBody.preserve_init_image_color_profile = applyColorCorrectionField.checked
-        newTask.reqBody.sampler_name = 'ddim'
-    } else {
-        newTask.reqBody.sampler_name = samplerField.value
+        if (!testDiffusers.checked) {
+            newTask.reqBody.sampler_name = 'ddim'
+        }
     }
     if (saveToDiskField.checked && diskPathField.value.trim() !== '') {
         newTask.reqBody.save_to_disk_path = diskPathField.value.trim()
@@ -1458,6 +1466,34 @@ function updateHypernetworkStrengthContainer() {
 hypernetworkModelField.addEventListener('change', updateHypernetworkStrengthContainer)
 updateHypernetworkStrengthContainer()
 
+/********************* LoRA alpha **********************/
+function updateLoraAlpha() {
+    loraAlphaField.value = loraAlphaSlider.value / 100
+    loraAlphaField.dispatchEvent(new Event("change"))
+}
+
+function updateLoraAlphaSlider() {
+    if (loraAlphaField.value < 0) {
+        loraAlphaField.value = 0
+    } else if (loraAlphaField.value > 0.99) {
+        loraAlphaField.value = 0.99
+    }
+
+    loraAlphaSlider.value = loraAlphaField.value * 100
+    loraAlphaSlider.dispatchEvent(new Event("change"))
+}
+
+loraAlphaSlider.addEventListener('input', updateLoraAlpha)
+loraAlphaField.addEventListener('input', updateLoraAlphaSlider)
+updateLoraAlpha()
+
+// function updateLoraAlphaContainer() {
+//     document.querySelector("#lora_alpha_container").style.display = (loraModelField.value === "" ? 'none' : '')
+// }
+// loraModelField.addEventListener('change', updateLoraAlphaContainer)
+// updateLoraAlphaContainer()
+document.querySelector("#lora_alpha_container").style.display = 'none'
+
 /********************* JPEG/WEBP Quality **********************/
 function updateOutputQuality() {
     outputQualityField.value =  0 | outputQualitySlider.value
@@ -1550,7 +1586,9 @@ loadImg2ImgFromFile()
 
 function img2imgLoad() {
     promptStrengthContainer.style.display = 'table-row'
-    samplerSelectionContainer.style.display = "none"
+    if (!testDiffusers.checked) {
+        samplerSelectionContainer.style.display = "none"
+    }
     initImagePreviewContainer.classList.add("has-image")
     colorCorrectionSetting.style.display = ''
 
@@ -1565,7 +1603,9 @@ function img2imgUnload() {
     maskSetting.checked = false
 
     promptStrengthContainer.style.display = "none"
-    samplerSelectionContainer.style.display = ""
+    if (!testDiffusers.checked) {
+        samplerSelectionContainer.style.display = ""
+    }
     initImagePreviewContainer.classList.remove("has-image")
     colorCorrectionSetting.style.display = 'none'
     imageEditor.setImage(null, parseInt(widthField.value), parseInt(heightField.value))

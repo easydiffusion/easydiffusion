@@ -190,6 +190,14 @@ var PARAMETERS = [
         icon: "fa-fire",
         default: false,
     },
+    {
+        id: "test_diffusers",
+        type: ParameterType.checkbox,
+        label: "Test Diffusers",
+        note: "<b>Experimental! Can have bugs!</b> Use upcoming features (like LoRA) in our new engine. Please press Save, then restart the program after changing this.",
+        icon: "fa-bolt",
+        default: false,
+    },
 ];
 
 function getParameterSettingsEntry(id) {
@@ -263,6 +271,7 @@ let listenPortField = document.querySelector("#listen_port")
 let useBetaChannelField = document.querySelector("#use_beta_channel")
 let uiOpenBrowserOnStartField = document.querySelector("#ui_open_browser_on_start")
 let confirmDangerousActionsField = document.querySelector("#confirm_dangerous_actions")
+let testDiffusers = document.querySelector("#test_diffusers")
 
 let saveSettingsBtn = document.querySelector('#save-system-settings-btn')
 
@@ -301,6 +310,10 @@ async function getAppConfig() {
         }
         if (config.net && config.net.listen_port !== undefined) {
             listenPortField.value = config.net.listen_port
+        }
+        if (config.test_diffusers !== undefined) {
+            testDiffusers.checked = config.test_diffusers
+            document.querySelector("#lora_model_container").style.display = (testDiffusers.checked ? '' : 'none')
         }
 
         console.log('get config status response', config)
@@ -471,7 +484,8 @@ saveSettingsBtn.addEventListener('click', function() {
         'update_branch': updateBranch,
         'ui_open_browser_on_start': uiOpenBrowserOnStartField.checked,
         'listen_to_network': listenToNetworkField.checked,
-        'listen_port': listenPortField.value
+        'listen_port': listenPortField.value,
+        'test_diffusers': testDiffusers.checked
     })
     saveSettingsBtn.classList.add('active')
     asyncDelay(300).then(() => saveSettingsBtn.classList.remove('active'))
