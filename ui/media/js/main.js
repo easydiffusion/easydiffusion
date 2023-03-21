@@ -1056,7 +1056,7 @@ function getCurrentUserRequest() {
             metadata_output_format: metadataOutputFormatField.value,
             original_prompt: promptField.value,
             active_tags: (activeTags.map(x => x.name)),
-            inactive_tags: (activeTags.filter(tag => tag.inactive === true).map(x => x.name)),,
+            inactive_tags: (activeTags.filter(tag => tag.inactive === true).map(x => x.name)),
             folder_format: folderFormatField.value,
             filename_format: filenameFormatField.value,
         }
