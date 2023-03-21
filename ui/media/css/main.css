@@ -831,7 +831,7 @@ input::file-selector-button {
 }
 
 /* Small screens */
-@media screen and (max-width: 1265px) {
+@media screen and (max-width: 1365px) {
     #top-nav {
         flex-direction: column;
     }
