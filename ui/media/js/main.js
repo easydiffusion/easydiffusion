@@ -1051,7 +1051,6 @@ function getCurrentUserRequest() {
             //render_device: undefined, // Set device affinity. Prefer this device, but wont activate.
             use_stable_diffusion_model: stableDiffusionModelField.value,
             use_vae_model: vaeModelField.value,
-            use_lora_model: loraModelField.value,
             stream_progress_updates: true,
             stream_image_progress: (numOutputsTotal > 50 ? false : streamImageProgressField.checked),
             show_only_filtered_image: showOnlyFilteredImageField.checked,
@@ -1092,6 +1091,9 @@ function getCurrentUserRequest() {
     if (hypernetworkModelField.value) {
         newTask.reqBody.use_hypernetwork_model = hypernetworkModelField.value
         newTask.reqBody.hypernetwork_strength = parseFloat(hypernetworkStrengthField.value)
+    }
+    if (testDiffusers.checked) {
+        newTask.reqBody.use_lora_model = loraModelField.value
     }
     return newTask
 }
