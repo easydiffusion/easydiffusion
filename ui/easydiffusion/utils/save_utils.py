@@ -27,6 +27,8 @@ TASK_TEXT_MAPPING = {
     "use_vae_model": "VAE model",
     "use_hypernetwork_model": "Hypernetwork model",
     "hypernetwork_strength": "Hypernetwork Strength",
+    "use_lora_model": "LoRA model",
+    #"lora_alpha": "LoRA Strength",
 }
 
 
@@ -86,6 +88,7 @@ def get_metadata_entries_for_request(req: GenerateImageRequest, task_data: TaskD
             "use_stable_diffusion_model": task_data.use_stable_diffusion_model,
             "use_vae_model": task_data.use_vae_model,
             "use_hypernetwork_model": task_data.use_hypernetwork_model,
+            "use_lora_model": task_data.use_lora_model,
             "use_face_correction": task_data.use_face_correction,
             "use_upscale": task_data.use_upscale,
         }
@@ -94,6 +97,12 @@ def get_metadata_entries_for_request(req: GenerateImageRequest, task_data: TaskD
         metadata["upscale_amount"] = task_data.upscale_amount
     if task_data.use_hypernetwork_model is None:
         del metadata["hypernetwork_strength"]
+    if task_data.use_lora_model is None:
+        if "lora_alpha" in metadata:
+            del metadata["lora_alpha"]
+        app_config = app.getConfig()
+        if not app_config.get("test_diffusers", False) and "use_lora_model" in metadata:
+            del metadata["use_lora_model"]
 
     # if text, format it in the text format expected by the UI
     is_txt_format = task_data.metadata_output_format.lower() == "txt"
