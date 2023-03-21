@@ -127,9 +127,9 @@ function filterPlugins() {
         }
 
         if (match) {
-            labels[i].parentNode.parentNode.style.display = "flex";
+            labels[i].closest('.plugin-container').style.display = "flex";
         } else {
-            labels[i].parentNode.parentNode.style.display = "none";
+            labels[i].closest('.plugin-container').style.display = "none";
         }
     }
 }
@@ -396,6 +396,7 @@ async function initPluginTable(plugins) {
         }
     })
     prettifyInputs(pluginsTable)
+    filterPlugins()
 }
 
 /* version management. Thanks Madrang! */
