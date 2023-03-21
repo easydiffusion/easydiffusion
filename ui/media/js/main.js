@@ -86,6 +86,7 @@ let imagePreviewContent = document.querySelector("#preview-content")
 
 let undoButton = document.querySelector("#undo")
 let undoBuffer = []
+const UNDO_LIMIT = 20
 
 imagePreview.addEventListener('drop', function(ev) {
     const data = ev.dataTransfer?.getData("text/plain");
@@ -258,7 +259,7 @@ function playSound() {
 function undoableRemove(element, doubleUndo=false) {
     let data = { 'element': element, 'parent': element.parentNode, 'prev': element.previousSibling, 'next': element.nextSibling, 'doubleUndo': doubleUndo }
     undoBuffer.push(data)
-    if (undoBuffer.length > 10) {
+    if (undoBuffer.length > UNDO_LIMIT) {
         // Remove item from memory and also remove it from the data structures
         let item = undoBuffer.shift()
         htmlTaskMap.delete(item.element)
