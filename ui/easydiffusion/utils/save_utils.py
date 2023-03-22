@@ -28,7 +28,7 @@ TASK_TEXT_MAPPING = {
     "use_hypernetwork_model": "Hypernetwork model",
     "hypernetwork_strength": "Hypernetwork Strength",
     "use_lora_model": "LoRA model",
-    #"lora_alpha": "LoRA Strength",
+    # "lora_alpha": "LoRA Strength",
 }
 
 
@@ -100,6 +100,9 @@ def get_metadata_entries_for_request(req: GenerateImageRequest, task_data: TaskD
     if task_data.use_lora_model is None:
         if "lora_alpha" in metadata:
             del metadata["lora_alpha"]
+
+        from easydiffusion import app
+
         app_config = app.getConfig()
         if not app_config.get("test_diffusers", False) and "use_lora_model" in metadata:
             del metadata["use_lora_model"]
