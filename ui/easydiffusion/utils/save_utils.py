@@ -1,6 +1,5 @@
 import os
 import time
-import base64
 import re
 
 from easydiffusion import app
@@ -9,6 +8,7 @@ from functools import reduce
 from datetime import datetime
 
 from sdkit.utils import save_images, save_dicts
+from numpy import base_repr
 
 filename_regex = re.compile("[^a-zA-Z0-9._-]")
 img_number_regex = re.compile("([0-9]{5,})")
