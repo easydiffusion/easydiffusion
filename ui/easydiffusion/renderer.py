@@ -10,7 +10,7 @@ from easydiffusion.utils import get_printable_request, save_images_to_disk, log
 from sdkit import Context
 from sdkit.generate import generate_images
 from sdkit.filter import apply_filters
-from sdkit.utils import img_to_buffer, img_to_base64_str, latent_samples_to_images, gc
+from sdkit.utils import img_to_buffer, img_to_base64_str, latent_samples_to_images, diffusers_latent_samples_to_images
 
 context = Context()  # thread-local
 """
@@ -25,6 +25,11 @@ def init(device):
     context.stop_processing = False
     context.temp_images = {}
     context.partial_x_samples = None
+
+    from easydiffusion import app
+
+    app_config = app.getConfig()
+    context.test_diffusers = app_config.get("test_diffusers", False)
 
     device_manager.device_init(context, device)
 
@@ -57,7 +62,13 @@ def make_images_internal(
 ):
 
     images, user_stopped = generate_images_internal(
-        req, task_data, data_queue, task_temp_images, step_callback, task_data.stream_image_progress, task_data.stream_image_progress_interval
+        req,
+        task_data,
+        data_queue,
+        task_temp_images,
+        step_callback,
+        task_data.stream_image_progress,
+        task_data.stream_image_progress_interval,
     )
     filtered_images = filter_images(task_data, images, user_stopped)
 
@@ -82,10 +93,18 @@ def generate_images_internal(
 ):
     context.temp_images.clear()
 
-    callback = make_step_callback(req, task_data, data_queue, task_temp_images, step_callback, stream_image_progress, stream_image_progress_interval)
+    callback = make_step_callback(
+        req,
+        task_data,
+        data_queue,
+        task_temp_images,
+        step_callback,
+        stream_image_progress,
+        stream_image_progress_interval,
+    )
 
     try:
-        if req.init_image is not None:
+        if req.init_image is not None and not context.test_diffusers:
             req.sampler_name = "ddim"
 
         images = generate_images(context, callback=callback, **req.dict())
@@ -94,10 +113,14 @@ def generate_images_internal(
         images = []
         user_stopped = True
         if context.partial_x_samples is not None:
-            images = latent_samples_to_images(context, context.partial_x_samples)
+            if context.test_diffusers:
+                images = diffusers_latent_samples_to_images(context, context.partial_x_samples)
+            else:
+                images = latent_samples_to_images(context, context.partial_x_samples)
     finally:
         if hasattr(context, "partial_x_samples") and context.partial_x_samples is not None:
-            del context.partial_x_samples
+            if not context.test_diffusers:
+                del context.partial_x_samples
             context.partial_x_samples = None
 
     return images, user_stopped
@@ -145,7 +168,15 @@ def make_step_callback(
 
     def update_temp_img(x_samples, task_temp_images: list):
         partial_images = []
-        images = latent_samples_to_images(context, x_samples)
+
+        if context.test_diffusers:
+            images = diffusers_latent_samples_to_images(context, x_samples)
+        else:
+            images = latent_samples_to_images(context, x_samples)
+
+        if task_data.block_nsfw:
+            images = apply_filters(context, "nsfw_checker", images)
+
         for i, img in enumerate(images):
             buf = img_to_buffer(img, output_format="JPEG")
 
@@ -155,17 +186,21 @@ def make_step_callback(
         del images
         return partial_images
 
-    def on_image_step(x_samples, i):
+    def on_image_step(x_samples, i, *args):
         nonlocal last_callback_time
 
-        context.partial_x_samples = x_samples
+        if context.test_diffusers:
+            context.partial_x_samples = (x_samples, args[0])
+        else:
+            context.partial_x_samples = x_samples
+
         step_time = time.time() - last_callback_time if last_callback_time != -1 else -1
         last_callback_time = time.time()
 
         progress = {"step": i, "step_time": step_time, "total_steps": n_steps}
 
         if stream_image_progress and stream_image_progress_interval > 0 and i % stream_image_progress_interval == 0:
-            progress["output"] = update_temp_img(x_samples, task_temp_images)
+            progress["output"] = update_temp_img(context.partial_x_samples, task_temp_images)
 
         data_queue.put(json.dumps(progress))
 
