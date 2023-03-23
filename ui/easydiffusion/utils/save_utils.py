@@ -80,8 +80,7 @@ def format_file_name(
         format = format.replace("$n", f"{folder_img_number:05}")
     
     if "$tsb64" in format:
-        img_id = base64.b64encode(int(now + batch_file_number).to_bytes(8, "big")).decode()  # Generate unique ID based on time.
-        img_id = img_id.translate({43: None, 47: None, 61: None})[-8:]  # Remove + / = and keep last 8 chars.
+        img_id = base_repr(int(now * 10000), 36)[-7:] + base_repr(int(batch_file_number), 36) # Base 36 conversion, 0-9, A-Z
         format = format.replace("$tsb64", img_id)
     
     if "$ts" in format:
@@ -158,8 +157,6 @@ def get_metadata_entries_for_request(req: GenerateImageRequest, task_data: TaskD
     if task_data.use_lora_model is None:
         if "lora_alpha" in metadata:
             del metadata["lora_alpha"]
-
-        from easydiffusion import app
 
         app_config = app.getConfig()
         if not app_config.get("test_diffusers", False) and "use_lora_model" in metadata:
