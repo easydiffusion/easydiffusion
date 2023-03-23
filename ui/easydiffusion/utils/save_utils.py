@@ -1,11 +1,11 @@
 import os
 import time
-import base64
 import re
 
 from easydiffusion.types import TaskData, GenerateImageRequest
 
 from sdkit.utils import save_images, save_dicts
+from numpy import base_repr
 
 filename_regex = re.compile("[^a-zA-Z0-9._-]")
 
@@ -121,8 +121,7 @@ def make_filename_callback(req: GenerateImageRequest, suffix=None, now=None):
         now = time.time()
 
     def make_filename(i):
-        img_id = base64.b64encode(int(now + i).to_bytes(8, "big")).decode()  # Generate unique ID based on time.
-        img_id = img_id.translate({43: None, 47: None, 61: None})[-8:]  # Remove + / = and keep last 8 chars.
+        img_id = base_repr(int(now * 10000), 36)[-7:] + base_repr(int(i),36)  # Base 36 conversion, 0-9, A-Z
 
         prompt_flattened = filename_regex.sub("_", req.prompt)[:50]
         name = f"{prompt_flattened}_{img_id}"
