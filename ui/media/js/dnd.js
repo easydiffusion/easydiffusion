@@ -490,6 +490,7 @@ async function parseContent(text) {
         return true
     } else {
         console.warn(`Raw text content couldn't be parsed.`)
+        promptField.value = text
         return false
     }
 }

@@ -30,7 +30,7 @@
             <h1>
                 <img id="logo_img" src="/media/images/icon-512x512.png" >
                 Easy Diffusion
-                <small>v2.5.26 <span id="updateBranchLabel"></span></small>
+                <small>v2.5.28 <span id="updateBranchLabel"></span></small>
             </h1>
         </div>
         <div id="server-status">
@@ -154,15 +154,15 @@
                             <option value="dpm2_a">DPM2 Ancestral</option>
                             <option value="lms">LMS</option>
                             <option value="dpm_solver_stability">DPM Solver (Stability AI)</option>
-                            <option value="dpmpp_2s_a">DPM++ 2s Ancestral</option>
-                            <option value="dpmpp_2m">DPM++ 2m</option>
-                            <option value="dpmpp_sde">DPM++ SDE</option>
-                            <option value="dpm_fast">DPM Fast</option>
-                            <option value="dpm_adaptive">DPM Adaptive</option>
+                            <option value="dpmpp_2s_a">DPM++ 2s Ancestral (Karras)</option>
+                            <option value="dpmpp_2m">DPM++ 2m (Karras)</option>
+                            <option value="dpmpp_sde">DPM++ SDE (Karras)</option>
+                            <option value="dpm_fast">DPM Fast (Karras)</option>
+                            <option value="dpm_adaptive">DPM Adaptive (Karras)</option>
                             <option value="unipc_snr">UniPC SNR</option>
                             <option value="unipc_tu">UniPC TU</option>
                             <option value="unipc_snr_2">UniPC SNR 2</option>
-                            <option value="unipc_tu_2">UniPC TC 2</option>
+                            <option value="unipc_tu_2">UniPC TU 2</option>
                             <option value="unipc_tq">UniPC TQ</option>
                         </select>
                         <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/How-to-Use#samplers" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about samplers</span></i></a>
@@ -217,6 +217,13 @@
                     <tr class="pl-5"><td><label for="num_inference_steps">Inference Steps:</label></td><td> <input id="num_inference_steps" name="num_inference_steps" size="4" value="25" onkeypress="preventNonNumericalInput(event)"></td></tr>
                     <tr class="pl-5"><td><label for="guidance_scale_slider">Guidance Scale:</label></td><td> <input id="guidance_scale_slider" name="guidance_scale_slider" class="editor-slider" value="75" type="range" min="11" max="500"> <input id="guidance_scale" name="guidance_scale" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"></td></tr>
                     <tr id="prompt_strength_container" class="pl-5"><td><label for="prompt_strength_slider">Prompt Strength:</label></td><td> <input id="prompt_strength_slider" name="prompt_strength_slider" class="editor-slider" value="80" type="range" min="0" max="99"> <input id="prompt_strength" name="prompt_strength" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"><br/></td></tr>
+                    <tr id="lora_model_container" class="pl-5"><td><label for="lora_model">LoRA:</i></label></td><td>
+                        <input id="lora_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
+                    </td></tr>
+                    <tr id="lora_alpha_container" class="pl-5">
+                        <td><label for="lora_alpha_slider">LoRA strength:</label></td>
+                        <td> <input id="lora_alpha_slider" name="lora_alpha_slider" class="editor-slider" value="100" type="range" min="0" max="100"> <input id="lora_alpha" name="lora_alpha" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"><br/></td>
+                    </tr>
                     <tr class="pl-5"><td><label for="hypernetwork_model">Hypernetwork:</i></label></td><td>
                         <input id="hypernetwork_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
                     </td></tr>
