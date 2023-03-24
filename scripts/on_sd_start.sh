@@ -103,7 +103,7 @@ if python ../scripts/check_modules.py sdkit sdkit.models ldm transformers numpy 
         export PYTHONNOUSERSITE=1
         export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
 
-        python -m pip install --upgrade sdkit==1.0.52 -q
+        python -m pip install --upgrade sdkit==1.0.53 -q
     fi
 else
     echo "Installing sdkit: https://pypi.org/project/sdkit/"
@@ -111,7 +111,7 @@ else
     export PYTHONNOUSERSITE=1
     export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
 
-    if python -m pip install sdkit==1.0.52 ; then
+    if python -m pip install sdkit==1.0.53 ; then
         echo "Installed."
     else
         fail "sdkit install failed"
