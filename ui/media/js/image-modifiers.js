@@ -129,7 +129,8 @@ function createModifierGroup(modifierGroup, initiallyExpanded, removeBy) {
 }
 
 function trimModifiers(tag) {
-    return tag.replace(/^\(+|\)+$/g, '').replace(/^\[+|\]+$/g, '')
+    // Remove trailing '-' and/or '+'
+    return tag.replace(/[-+]+$/, '');
 }
 
 async function loadModifiers() {
