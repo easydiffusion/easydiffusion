@@ -92,11 +92,13 @@ const TASK_MAPPING = {
         setUI: (seed) => {
             if (!seed) {
                 randomSeedField.checked = true
+                randomSeedField.dispatchEvent(new Event('change')) // let plugins know that the state of the random seed toggle changed
                 seedField.disabled = true
                 seedField.value = 0
                 return
             }
             randomSeedField.checked = false
+            randomSeedField.dispatchEvent(new Event('change')) // let plugins know that the state of the random seed toggle changed
             seedField.disabled = false
             seedField.value = seed
         },
