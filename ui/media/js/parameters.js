@@ -76,7 +76,15 @@ var PARAMETERS = [
             {
                 value: "embed",
                 label: "embed"
-            }
+            },
+            {
+                value: "embed,txt",
+                label: "embed & txt",
+            },
+            {
+                value: "embed,json",
+                label: "embed & json",
+            },
         ],
     },
     {
