@@ -50,6 +50,8 @@ let loraModelField = new ModelDropdown(document.querySelector('#lora_model'), 'l
 let loraAlphaSlider = document.querySelector('#lora_alpha_slider')
 let loraAlphaField = document.querySelector('#lora_alpha')
 let outputFormatField = document.querySelector('#output_format')
+let outputLosslessField = document.querySelector('#output_lossless')
+let outputLosslessContainer = document.querySelector('#output_lossless_container')
 let blockNSFWField = document.querySelector('#block_nsfw')
 let showOnlyFilteredImageField = document.querySelector("#show_only_filtered_image")
 let updateBranchLabel = document.querySelector("#updateBranchLabel")
@@ -1057,6 +1059,7 @@ function getCurrentUserRequest() {
             block_nsfw: blockNSFWField.checked,
             output_format: outputFormatField.value,
             output_quality: parseInt(outputQualityField.value),
+            output_lossless: outputLosslessField.checked,
             metadata_output_format: metadataOutputFormatField.value,
             original_prompt: promptField.value,
             active_tags: (activeTags.map(x => x.name)),
@@ -1517,13 +1520,26 @@ outputQualitySlider.addEventListener('input', updateOutputQuality)
 outputQualityField.addEventListener('input', debounce(updateOutputQualitySlider, 1500))
 updateOutputQuality()
 
-outputFormatField.addEventListener('change', e => {
-    if (outputFormatField.value === 'png') {
+function updateOutputQualityVisibility() {
+    if (outputFormatField.value === 'webp') {
+        outputLosslessContainer.style.display = 'unset'
+        if (outputLosslessField.checked) {
+            outputQualityRow.style.display='none'
+        } else {
+            outputQualityRow.style.display='table-row'
+        }
+    }
+    else if (outputFormatField.value === 'png') {
         outputQualityRow.style.display='none'
+        outputLosslessContainer.style.display = 'none'
     } else {
         outputQualityRow.style.display='table-row'
+        outputLosslessContainer.style.display = 'none'
     }
-})
+}
+
+outputFormatField.addEventListener('change', updateOutputQualityVisibility)
+outputLosslessField.addEventListener('change', updateOutputQualityVisibility)
 /********************* Zoom Slider **********************/
 thumbnailSizeField.addEventListener('change', () => {
     (function (s) {

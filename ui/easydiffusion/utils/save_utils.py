@@ -45,6 +45,7 @@ def save_images_to_disk(images: list, filtered_images: list, req: GenerateImageR
             file_name=make_filename,
             output_format=task_data.output_format,
             output_quality=task_data.output_quality,
+            output_lossless=task_data.output_lossless,
         )
         if task_data.metadata_output_format.lower() in ["json", "txt", "embed"]:
             save_dicts(
@@ -63,6 +64,7 @@ def save_images_to_disk(images: list, filtered_images: list, req: GenerateImageR
             file_name=make_filename,
             output_format=task_data.output_format,
             output_quality=task_data.output_quality,
+            output_lossless=task_data.output_lossless,
         )
         save_images(
             filtered_images,
@@ -70,6 +72,7 @@ def save_images_to_disk(images: list, filtered_images: list, req: GenerateImageR
             file_name=make_filter_filename,
             output_format=task_data.output_format,
             output_quality=task_data.output_quality,
+            output_lossless=task_data.output_lossless,
         )
         if task_data.metadata_output_format.lower() in ["json", "txt", "embed"]:
             save_dicts(

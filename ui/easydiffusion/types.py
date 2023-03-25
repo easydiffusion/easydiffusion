@@ -43,6 +43,7 @@ class TaskData(BaseModel):
     block_nsfw: bool = False
     output_format: str = "jpeg"  # or "png" or "webp"
     output_quality: int = 75
+    output_lossless: bool = False
     metadata_output_format: str = "txt"  # or "json"
     stream_image_progress: bool = False
     stream_image_progress_interval: int = 5

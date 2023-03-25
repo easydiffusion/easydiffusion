@@ -26,6 +26,7 @@ const SETTINGS_IDS_LIST = [
     "lora_alpha",
     "output_format",
     "output_quality",
+    "output_lossless",
     "negative_prompt",
     "stream_image_progress",
     "use_face_correction",
