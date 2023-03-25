@@ -377,7 +377,8 @@ async function initPluginTable(plugins) {
             else
             {
                 plugin.enabled = false
-                console.log(`No code provided for plugin ${plugin.name}`);
+                console.log(`No code provided for plugin ${plugin.name}, disabling the plugin`);
+                showToast("No code provided for plugin " + plugin.name + ", disabling the plugin");
             }
             updateManualInstallButtonCaption()
             await setStorageData('plugins', JSON.stringify(plugins))                    
@@ -562,6 +563,9 @@ async function initPlugins(refreshPlugins = false) {
         try {
             pluginCatalog = JSON.parse(pluginCatalog);
             console.log('Plugin catalog successfully downloaded');
+            if (pluginCatalog.length > plugins.length) {
+                showToast("New plugins are available");
+            }
         } catch (error) {
             console.error('Error parsing plugin catalog:', error);
         }
@@ -701,7 +705,8 @@ async function downloadPlugins(pluginCatalog, plugins, refreshPlugins) {
         if (plugin.localInstallOnly !== true && isGitHub(plugin.url) && existingPlugin?.enabled === true && (refreshPlugins || (existingPlugin.sha !== undefined && existingPlugin.sha !== sha) || existingPlugin?.code === undefined)) {
             const pluginSource = await getDocument(plugin.url);
             if (pluginSource !== null && pluginSource !== existingPlugin.code) {
-                console.log(`Plugin ${plugin.name} downloaded`);
+                console.log(`Plugin ${plugin.name} updated`);
+                showToast("Plugin " + plugin.name + " updated");
                 // Update the corresponding plugin
                 const updatedPlugin = {
                     ...existingPlugin,
