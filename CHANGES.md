@@ -21,6 +21,12 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.28 - 24 Mar 2023 - Support for weighted prompts and long prompt lengths (not limited to 77 tokens). This change requires enabling the `Test Diffusers` setting in beta (in the Settings tab), and restarting the program.
+* 2.5.27 - 21 Mar 2023 - LoRA support, accessible by enabling the `Test Diffusers` setting (in the Settings tab in the UI). This change switches the internal engine to diffusers (if the `Test Diffusers` setting is enabled). If the `Test Diffusers` flag is disabled, it'll have no impact for the user.
+* 2.5.26 - 15 Mar 2023 - Allow styling the buttons displayed on an image. Update the API to allow multiple buttons and text labels in a single row. Thanks @ogmaresca.
+* 2.5.26 - 15 Mar 2023 - View images in full-screen, by either clicking on the image, or clicking the "Full screen" icon next to the Seed number on the image. Thanks @ogmaresca for the internal API.
+* 2.5.25 - 14 Mar 2023 - Button to download all the images, and all the metadata as a zip file. This is available at the top of the UI, as well as on each image. Thanks @JeLuf.
+* 2.5.25 - 14 Mar 2023 - Lots of UI tweaks and bug fixes. Thanks @patriceac and @JeLuf.
 * 2.5.24 - 11 Mar 2023 - Button to load an image mask from a file.
 * 2.5.24 - 10 Mar 2023 - Logo change. Image credit: @lazlo_vii.
 * 2.5.23 - 8 Mar 2023 - Experimental support for Mac M1/M2. Thanks @michaelgallacher, @JeLuf and vishae!

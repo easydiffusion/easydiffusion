@@ -15,6 +15,7 @@ const SETTINGS_IDS_LIST = [
     "stable_diffusion_model",
     "vae_model",
     "hypernetwork_model",
+    "lora_model",
     "sampler_name",
     "width",
     "height",
@@ -22,6 +23,7 @@ const SETTINGS_IDS_LIST = [
     "guidance_scale",
     "prompt_strength",
     "hypernetwork_strength",
+    "lora_alpha",
     "output_format",
     "output_quality",
     "negative_prompt",
@@ -46,7 +48,10 @@ const SETTINGS_IDS_LIST = [
     "apply_color_correction",
     "process_order_toggle",
     "thumbnail_size",
-    "auto_scroll"
+    "auto_scroll",
+    "zip_toggle",
+    "tree_toggle",
+    "json_toggle"
 ]
 
 const IGNORE_BY_DEFAULT = [

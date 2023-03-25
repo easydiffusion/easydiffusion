@@ -16,6 +16,8 @@ from easydiffusion import app, model_manager, task_manager
 from easydiffusion.types import TaskData, GenerateImageRequest, MergeRequest
 from easydiffusion.utils import log
 
+import mimetypes
+
 log.info(f"started in {app.SD_DIR}")
 log.info(f"started at {datetime.datetime.now():%x %X}")
 
@@ -27,10 +29,10 @@ NOCACHE_HEADERS = {"Cache-Control": "no-cache, no-store, must-revalidate", "Prag
 class NoCacheStaticFiles(StaticFiles):
     def __init__(self, directory: str):
         # follow_symlink is only available on fastapi >= 0.92.0
-        if (os.path.islink(directory)):
-            super().__init__(directory = os.path.realpath(directory))
+        if os.path.islink(directory):
+            super().__init__(directory=os.path.realpath(directory))
         else:
-            super().__init__(directory = directory)
+            super().__init__(directory=directory)
 
     def is_not_modified(self, response_headers, request_headers) -> bool:
         if "content-type" in response_headers and (
@@ -49,9 +51,13 @@ class SetAppConfigRequest(BaseModel):
     ui_open_browser_on_start: bool = None
     listen_to_network: bool = None
     listen_port: int = None
+    test_diffusers: bool = False
 
 
 def init():
+    mimetypes.init()
+    mimetypes.add_type("text/css", ".css")
+
     if os.path.isdir(app.CUSTOM_MODIFIERS_DIR):
         server_api.mount(
             "/media/modifier-thumbnails/custom",
@@ -127,6 +133,9 @@ def set_app_config_internal(req: SetAppConfigRequest):
         if "net" not in config:
             config["net"] = {}
         config["net"]["listen_port"] = int(req.listen_port)
+
+    config["test_diffusers"] = req.test_diffusers
+
     try:
         app.setConfig(config)
 

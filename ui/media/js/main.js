@@ -5,6 +5,9 @@ const MIN_GPUS_TO_SHOW_SELECTION = 2
 const IMAGE_REGEX = new RegExp('data:image/[A-Za-z]+;base64')
 const htmlTaskMap = new WeakMap()
 
+let imageCounter = 0
+let imageRequest = []
+
 let promptField = document.querySelector('#prompt')
 let promptsFromFileSelector = document.querySelector('#prompt_from_file')
 let promptsFromFileBtn = document.querySelector('#promptsFromFileBtn')
@@ -21,6 +24,7 @@ let randomSeedField = document.querySelector("#random_seed")
 let seedField = document.querySelector('#seed')
 let widthField = document.querySelector('#width')
 let heightField = document.querySelector('#height')
+let smallImageWarning = document.querySelector('#small_image_warning')
 let initImageSelector = document.querySelector("#init_image")
 let initImagePreview = document.querySelector("#init_image_preview")
 let initImageSizeBox = document.querySelector("#init_image_size_box")
@@ -42,6 +46,9 @@ let vaeModelField = new ModelDropdown(document.querySelector('#vae_model'), 'vae
 let hypernetworkModelField = new ModelDropdown(document.querySelector('#hypernetwork_model'), 'hypernetwork', 'None')
 let hypernetworkStrengthSlider = document.querySelector('#hypernetwork_strength_slider')
 let hypernetworkStrengthField = document.querySelector('#hypernetwork_strength')
+let loraModelField = new ModelDropdown(document.querySelector('#lora_model'), 'lora', 'None')
+let loraAlphaSlider = document.querySelector('#lora_alpha_slider')
+let loraAlphaField = document.querySelector('#lora_alpha')
 let outputFormatField = document.querySelector('#output_format')
 let blockNSFWField = document.querySelector('#block_nsfw')
 let showOnlyFilteredImageField = document.querySelector("#show_only_filtered_image")
@@ -65,7 +72,13 @@ let promptStrengthContainer = document.querySelector('#prompt_strength_container
 let initialText = document.querySelector("#initial-text")
 let previewTools = document.querySelector("#preview-tools")
 let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
+let showDownloadPopupBtn = document.querySelector("#show-download-popup")
+let saveAllImagesPopup = document.querySelector("#download-images-popup")
 let saveAllImagesBtn = document.querySelector("#save-all-images")
+let saveAllZipToggle = document.querySelector("#zip_toggle")
+let saveAllTreeToggle = document.querySelector("#tree_toggle")
+let saveAllJSONToggle = document.querySelector("#json_toggle")
+let saveAllFoldersOption = document.querySelector("#download-add-folders")
 
 let maskSetting = document.querySelector('#enable_mask')
 
@@ -160,18 +173,18 @@ function setStatus(statusType, msg, msgType) {
 function setServerStatus(event) {
     switch(event.type) {
         case 'online':
-            serverStatusColor.style.color = 'green'
-            serverStatusMsg.style.color = 'green'
+            serverStatusColor.style.color = 'var(--status-green)'
+            serverStatusMsg.style.color = 'var(--status-green)'
             serverStatusMsg.innerText = 'Stable Diffusion is ' + event.message
             break
         case 'busy':
-            serverStatusColor.style.color = 'rgb(200, 139, 0)'
-            serverStatusMsg.style.color = 'rgb(200, 139, 0)'
+            serverStatusColor.style.color = 'var(--status-orange)'
+            serverStatusMsg.style.color = 'var(--status-orange)'
             serverStatusMsg.innerText = 'Stable Diffusion is ' + event.message
             break
         case 'error':
-            serverStatusColor.style.color = 'red'
-            serverStatusMsg.style.color = 'red'
+            serverStatusColor.style.color = 'var(--status-red)'
+            serverStatusMsg.style.color = 'var(--status-red)'
             serverStatusMsg.innerText = 'Stable Diffusion has stopped'
             break
     }
@@ -268,7 +281,9 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                 <div class="imgContainer">
                     <img/>
                     <div class="imgItemInfo">
-                        <span class="imgSeedLabel"></span>
+                        <div>
+                            <span class="imgInfoLabel imgExpandBtn"><i class="fa-solid fa-expand"></i></span><span class="imgInfoLabel imgSeedLabel"></span>
+                        </div>
                     </div>
                     <button class="imgPreviewItemClearBtn image_clear_btn"><i class="fa-solid fa-xmark"></i></button>
                     <span class="img_bottom_label"></span>
@@ -288,7 +303,10 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                             allHidden = false;
                         }
                     }
-                    if(allHidden === true) {parentTaskContainer.classList.add("displayNone")}
+                    if(allHidden === true) {
+                        const req = htmlTaskMap.get(parentTaskContainer)
+                        if(!req.isProcessing || req.batchesDone == req.batchCount) {parentTaskContainer.parentNode.removeChild(parentTaskContainer)}
+                    }
                 })
             })
         }
@@ -304,25 +322,36 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             imageItemElem.querySelector('.img_bottom_label').innerText = `${this.naturalWidth} x ${this.naturalHeight}`
         })
 
-
         const imageInfo = imageItemElem.querySelector('.imgItemInfo')
         imageInfo.style.visibility = (livePreview ? 'hidden' : 'visible')
 
         if ('seed' in result && !imageElem.hasAttribute('data-seed')) {
+            const imageExpandBtn = imageItemElem.querySelector('.imgExpandBtn')
+            imageExpandBtn.addEventListener('click', function() {
+                imageModal(imageElem.src)
+            })
+
             const req = Object.assign({}, reqBody, {
                 seed: result?.seed || reqBody.seed
             })
             imageElem.setAttribute('data-seed', req.seed)
+            imageElem.setAttribute('data-imagecounter', ++imageCounter)
+            imageRequest[imageCounter] = req
             const imageSeedLabel = imageItemElem.querySelector('.imgSeedLabel')
             imageSeedLabel.innerText = 'Seed: ' + req.seed
 
             let buttons = [
                 { text: 'Use as Input', on_click: onUseAsInputClick },
-                { text: 'Download', on_click: onDownloadImageClick },
+                [
+                    { html: '<i class="fa-solid fa-download"></i> Download Image', on_click: onDownloadImageClick, class: "download-img" },
+                    { html: '<i class="fa-solid fa-download"></i> JSON', on_click: onDownloadJSONClick, class: "download-json" }
+                ],
                 { text: 'Make Similar Images', on_click: onMakeSimilarClick },
                 { text: 'Draw another 25 steps', on_click: onContinueDrawingClick },
-                { text: 'Upscale', on_click: onUpscaleClick, filter: (req, img) => !req.use_upscale },
-                { text: 'Fix Faces', on_click: onFixFacesClick, filter: (req, img) => !req.use_face_correction }
+                [
+                    { text: 'Upscale', on_click: onUpscaleClick, filter: (req, img) => !req.use_upscale },
+                    { text: 'Fix Faces', on_click: onFixFacesClick, filter: (req, img) => !req.use_face_correction }
+                ]
             ]
 
             // include the plugins
@@ -331,23 +360,60 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             const imgItemInfo = imageItemElem.querySelector('.imgItemInfo')
             const img = imageItemElem.querySelector('img')
             const createButton = function(btnInfo) {
-                const newButton = document.createElement('button')
-                newButton.classList.add('tasksBtns')
-                newButton.innerText = btnInfo.text
-                newButton.addEventListener('click', function(event) {
-                    btnInfo.on_click(req, img, event)
-                })
-                if (btnInfo.class !== undefined) {
-                   newButton.classList.add(btnInfo.class)
+                if (Array.isArray(btnInfo)) {
+                    const wrapper = document.createElement('div');
+                    btnInfo
+                        .map(createButton)
+                        .forEach(buttonElement => wrapper.appendChild(buttonElement))
+                    return wrapper
                 }
-                imgItemInfo.appendChild(newButton)
+
+                const isLabel = btnInfo.type === 'label'
+
+                const newButton = document.createElement(isLabel ? 'span' : 'button')
+                newButton.classList.add('tasksBtns')
+
+                if (btnInfo.html) {
+                    const html = typeof btnInfo.html === 'function' ? btnInfo.html() : btnInfo.html
+                    if (html instanceof HTMLElement) {
+                        newButton.appendChild(html)
+                    } else {
+                        newButton.innerHTML = html
+                    }
+                } else {
+                    newButton.innerText = typeof btnInfo.text === 'function' ? btnInfo.text() : btnInfo.text
+                }
+
+                if (btnInfo.on_click || !isLabel) {
+                    newButton.addEventListener('click', function(event) {
+                        btnInfo.on_click(req, img, event)
+                    })
+                }
+                
+                if (btnInfo.class !== undefined) {
+                    if (Array.isArray(btnInfo.class)) {
+                        newButton.classList.add(...btnInfo.class)
+                    } else {
+                        newButton.classList.add(btnInfo.class)
+                    }
+                }
+                return newButton
             }
             buttons.forEach(btn => {
-                if (btn.filter && btn.filter(req, img) === false) {
+                if (Array.isArray(btn)) {
+                    btn = btn.filter(btnInfo => !btnInfo.filter || btnInfo.filter(req, img) === true)
+                    if (btn.length === 0) {
+                        return
+                    }
+                } else if (btn.filter && btn.filter(req, img) === false) {
                     return
                 }
 
-                createButton(btn)
+                try {
+                    imgItemInfo.appendChild(createButton(btn))
+                } catch (err) {
+                    console.error('Error creating image info button from plugin: ', btn, err)
+                }
             })
         }
     })
@@ -362,17 +428,25 @@ function onUseAsInputClick(req, img) {
     maskSetting.checked = false
 }
 
-function onDownloadImageClick(req, img) {
-    const imgData = img.src
+function getDownloadFilename(img, suffix) {
     const imageSeed = img.getAttribute('data-seed')
     const imagePrompt = img.getAttribute('data-prompt')
     const imageInferenceSteps = img.getAttribute('data-steps')
     const imageGuidanceScale = img.getAttribute('data-guidance')
+    
+    return createFileName(imagePrompt, imageSeed, imageInferenceSteps, imageGuidanceScale, suffix)
+}
 
-    const imgDownload = document.createElement('a')
-    imgDownload.download = createFileName(imagePrompt, imageSeed, imageInferenceSteps, imageGuidanceScale, req['output_format'])
-    imgDownload.href = imgData
-    imgDownload.click()
+function onDownloadJSONClick(req, img) {
+    const name = getDownloadFilename(img, 'json')
+    const blob = new Blob([JSON.stringify(req, null, 2)], { type: 'text/plain' })
+    saveAs(blob, name)
+}
+
+function onDownloadImageClick(req, img) {
+    const name = getDownloadFilename(img, req['output_format'])
+    const blob = dataURItoBlob(img.src)
+    saveAs(blob, name)
 }
 
 function modifyCurrentRequest(...reqDiff) {
@@ -860,6 +934,9 @@ function createTask(task) {
         taskConfig += `, <b>Hypernetwork:</b> ${task.reqBody.use_hypernetwork_model}`
         taskConfig += `, <b>Hypernetwork Strength:</b> ${task.reqBody.hypernetwork_strength}`
     }
+    if (task.reqBody.use_lora_model) {
+        taskConfig += `, <b>LoRA:</b> ${task.reqBody.use_lora_model}`
+    }
     if (task.reqBody.preserve_init_image_color_profile) {
         taskConfig += `, <b>Preserve Color Profile:</b> true`
     }
@@ -970,6 +1047,7 @@ function getCurrentUserRequest() {
             height: parseInt(heightField.value),
             // allow_nsfw: allowNSFWField.checked,
             vram_usage_level: vramUsageLevelField.value,
+            sampler_name: samplerField.value,
             //render_device: undefined, // Set device affinity. Prefer this device, but wont activate.
             use_stable_diffusion_model: stableDiffusionModelField.value,
             use_vae_model: vaeModelField.value,
@@ -996,9 +1074,9 @@ function getCurrentUserRequest() {
             newTask.reqBody.mask = imageInpainter.getImg()
         }
         newTask.reqBody.preserve_init_image_color_profile = applyColorCorrectionField.checked
-        newTask.reqBody.sampler_name = 'ddim'
-    } else {
-        newTask.reqBody.sampler_name = samplerField.value
+        if (!testDiffusers.checked) {
+            newTask.reqBody.sampler_name = 'ddim'
+        }
     }
     if (saveToDiskField.checked && diskPathField.value.trim() !== '') {
         newTask.reqBody.save_to_disk_path = diskPathField.value.trim()
@@ -1013,6 +1091,9 @@ function getCurrentUserRequest() {
     if (hypernetworkModelField.value) {
         newTask.reqBody.use_hypernetwork_model = hypernetworkModelField.value
         newTask.reqBody.hypernetwork_strength = parseFloat(hypernetworkStrengthField.value)
+    }
+    if (testDiffusers.checked) {
+        newTask.reqBody.use_lora_model = loraModelField.value
     }
     return newTask
 }
@@ -1170,19 +1251,89 @@ clearAllPreviewsBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Clear 
     taskEntries.forEach(removeTask)
 })})
 
-saveAllImagesBtn.addEventListener('click', (e) => {
+/* Download images popup */
+showDownloadPopupBtn.addEventListener("click", (e) => { saveAllImagesPopup.classList.add("active") })
+
+saveAllZipToggle.addEventListener('change', (e) => {
+    if (saveAllZipToggle.checked) {
+        saveAllFoldersOption.classList.remove('displayNone')
+    } else {
+        saveAllFoldersOption.classList.add('displayNone')
+    }
+})
+
+// convert base64 to raw binary data held in a string
+function dataURItoBlob(dataURI) {
+    var byteString = atob(dataURI.split(',')[1])
+
+    // separate out the mime component
+    var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0]
+
+    // write the bytes of the string to an ArrayBuffer
+    var ab = new ArrayBuffer(byteString.length)
+
+    // create a view into the buffer
+    var ia = new Uint8Array(ab)
+
+    // set the bytes of the buffer to the correct values
+    for (var i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i)
+    }
+
+    // write the ArrayBuffer to a blob, and you're done
+    return new Blob([ab], {type: mimeString})
+}
+
+function downloadAllImages() {
     let i = 0
+
+    let optZIP  = saveAllZipToggle.checked
+    let optTree = optZIP && saveAllTreeToggle.checked
+    let optJSON = saveAllJSONToggle.checked
+    
+    let zip = new JSZip()
+    let folder = zip
+
     document.querySelectorAll(".imageTaskContainer").forEach(container => {
-        let req = htmlTaskMap.get(container)
+        if (optTree) {
+            let name = ++i + '-' + container.querySelector('.preview-prompt').textContent.replace(/[^a-zA-Z0-9]/g, '_') 
+            folder = zip.folder(name)
+        }
         container.querySelectorAll(".imgContainer img").forEach(img => {
-            if (img.closest('.imgItem').style.display === 'none') {
+            let imgItem = img.closest('.imgItem')
+
+            if (imgItem.style.display === 'none') {
                 return
             }
-            setTimeout(() => {onDownloadImageClick(req, img)}, i*200)
-            i = i+1
+
+            let req = imageRequest[img.dataset['imagecounter']]
+            if (optZIP) {
+                let suffix = img.dataset['imagecounter'] + '.' + req['output_format']
+                folder.file(getDownloadFilename(img, suffix), dataURItoBlob(img.src))
+                if (optJSON) {
+                    suffix = img.dataset['imagecounter'] + '.json'
+                    folder.file(getDownloadFilename(img, suffix), JSON.stringify(req, null, 2))
+                }
+            } else {
+                setTimeout(() => {imgItem.querySelector('.download-img').click()}, i*200)
+                i = i+1
+                if (optJSON) {
+                    setTimeout(() => {imgItem.querySelector('.download-json').click()}, i*200)
+                    i = i+1
+                }
+            }
         })
     })
-})
+    if (optZIP) {
+        let now = new Date()
+        zip.generateAsync({type:"blob"}).then(function (blob) { 
+            saveAs(blob, `EasyDiffusion-Images-${now.toISOString()}.zip`);
+        })
+    }
+
+}    
+
+saveAllImagesBtn.addEventListener('click', (e) => { downloadAllImages() })
 
 stopImageBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Stop all the tasks?", async function(e) {
     await stopAllTasks()
@@ -1204,7 +1355,9 @@ function renameMakeImageButton() {
     }
 }
 numOutputsTotalField.addEventListener('change', renameMakeImageButton)
+numOutputsTotalField.addEventListener('keyup', debounce(renameMakeImageButton, 300))
 numOutputsParallelField.addEventListener('change', renameMakeImageButton)
+numOutputsParallelField.addEventListener('keyup', debounce(renameMakeImageButton, 300))
 
 function onDimensionChange() {
     let widthValue = parseInt(widthField.value)
@@ -1214,6 +1367,11 @@ function onDimensionChange() {
     }
     else {
         imageInpainter.setImage(initImagePreview.src, widthValue, heightValue)
+    }
+    if ( widthValue < 512 && heightValue < 512 ) {
+        smallImageWarning.classList.remove('displayNone')
+    } else {
+        smallImageWarning.classList.add('displayNone')
     }
 }
 
@@ -1310,6 +1468,34 @@ function updateHypernetworkStrengthContainer() {
 hypernetworkModelField.addEventListener('change', updateHypernetworkStrengthContainer)
 updateHypernetworkStrengthContainer()
 
+/********************* LoRA alpha **********************/
+function updateLoraAlpha() {
+    loraAlphaField.value = loraAlphaSlider.value / 100
+    loraAlphaField.dispatchEvent(new Event("change"))
+}
+
+function updateLoraAlphaSlider() {
+    if (loraAlphaField.value < 0) {
+        loraAlphaField.value = 0
+    } else if (loraAlphaField.value > 0.99) {
+        loraAlphaField.value = 0.99
+    }
+
+    loraAlphaSlider.value = loraAlphaField.value * 100
+    loraAlphaSlider.dispatchEvent(new Event("change"))
+}
+
+loraAlphaSlider.addEventListener('input', updateLoraAlpha)
+loraAlphaField.addEventListener('input', updateLoraAlphaSlider)
+updateLoraAlpha()
+
+// function updateLoraAlphaContainer() {
+//     document.querySelector("#lora_alpha_container").style.display = (loraModelField.value === "" ? 'none' : '')
+// }
+// loraModelField.addEventListener('change', updateLoraAlphaContainer)
+// updateLoraAlphaContainer()
+document.querySelector("#lora_alpha_container").style.display = 'none'
+
 /********************* JPEG/WEBP Quality **********************/
 function updateOutputQuality() {
     outputQualityField.value =  0 | outputQualitySlider.value
@@ -1402,7 +1588,9 @@ loadImg2ImgFromFile()
 
 function img2imgLoad() {
     promptStrengthContainer.style.display = 'table-row'
-    samplerSelectionContainer.style.display = "none"
+    if (!testDiffusers.checked) {
+        samplerSelectionContainer.style.display = "none"
+    }
     initImagePreviewContainer.classList.add("has-image")
     colorCorrectionSetting.style.display = ''
 
@@ -1417,7 +1605,9 @@ function img2imgUnload() {
     maskSetting.checked = false
 
     promptStrengthContainer.style.display = "none"
-    samplerSelectionContainer.style.display = ""
+    if (!testDiffusers.checked) {
+        samplerSelectionContainer.style.display = ""
+    }
     initImagePreviewContainer.classList.remove("has-image")
     colorCorrectionSetting.style.display = 'none'
     imageEditor.setImage(null, parseInt(widthField.value), parseInt(heightField.value))
@@ -1434,7 +1624,7 @@ promptsFromFileBtn.addEventListener('click', function() {
     promptsFromFileSelector.click()
 })
 
-promptsFromFileSelector.addEventListener('change', function() {
+promptsFromFileSelector.addEventListener('change', async function() {
     if (promptsFromFileSelector.files.length === 0) {
         return
     }
@@ -1442,8 +1632,8 @@ promptsFromFileSelector.addEventListener('change', function() {
     let reader = new FileReader()
     let file = promptsFromFileSelector.files[0]
 
-    reader.addEventListener('load', function() {
-        promptField.value = reader.result
+    reader.addEventListener('load', async function() {
+        await parseContent(reader.result)
     })
 
     if (file) {
@@ -1530,6 +1720,7 @@ resumeBtn.addEventListener("click", function () {
     document.body.classList.remove('wait-pause')
 })
 
+/* Pause function */
 document.querySelectorAll(".tab").forEach(linkTabContents)
 
 window.addEventListener("beforeunload", function(e) {

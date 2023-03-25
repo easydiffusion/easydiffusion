@@ -1,11 +1,11 @@
 import os
 import time
-import base64
 import re
 
 from easydiffusion.types import TaskData, GenerateImageRequest
 
 from sdkit.utils import save_images, save_dicts
+from numpy import base_repr
 
 filename_regex = re.compile("[^a-zA-Z0-9._-]")
 
@@ -27,6 +27,8 @@ TASK_TEXT_MAPPING = {
     "use_vae_model": "VAE model",
     "use_hypernetwork_model": "Hypernetwork model",
     "hypernetwork_strength": "Hypernetwork Strength",
+    "use_lora_model": "LoRA model",
+    # "lora_alpha": "LoRA Strength",
 }
 
 
@@ -86,6 +88,7 @@ def get_metadata_entries_for_request(req: GenerateImageRequest, task_data: TaskD
             "use_stable_diffusion_model": task_data.use_stable_diffusion_model,
             "use_vae_model": task_data.use_vae_model,
             "use_hypernetwork_model": task_data.use_hypernetwork_model,
+            "use_lora_model": task_data.use_lora_model,
             "use_face_correction": task_data.use_face_correction,
             "use_upscale": task_data.use_upscale,
         }
@@ -94,6 +97,15 @@ def get_metadata_entries_for_request(req: GenerateImageRequest, task_data: TaskD
         metadata["upscale_amount"] = task_data.upscale_amount
     if task_data.use_hypernetwork_model is None:
         del metadata["hypernetwork_strength"]
+    if task_data.use_lora_model is None:
+        if "lora_alpha" in metadata:
+            del metadata["lora_alpha"]
+
+        from easydiffusion import app
+
+        app_config = app.getConfig()
+        if not app_config.get("test_diffusers", False) and "use_lora_model" in metadata:
+            del metadata["use_lora_model"]
 
     # if text, format it in the text format expected by the UI
     is_txt_format = task_data.metadata_output_format.lower() == "txt"
@@ -121,8 +133,7 @@ def make_filename_callback(req: GenerateImageRequest, suffix=None, now=None):
         now = time.time()
 
     def make_filename(i):
-        img_id = base64.b64encode(int(now + i).to_bytes(8, "big")).decode()  # Generate unique ID based on time.
-        img_id = img_id.translate({43: None, 47: None, 61: None})[-8:]  # Remove + / = and keep last 8 chars.
+        img_id = base_repr(int(now * 10000), 36)[-7:] + base_repr(int(i),36)  # Base 36 conversion, 0-9, A-Z
 
         prompt_flattened = filename_regex.sub("_", req.prompt)[:50]
         name = f"{prompt_flattened}_{img_id}"
