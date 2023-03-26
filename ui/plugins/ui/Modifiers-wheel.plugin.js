@@ -1,4 +1,6 @@
-(function () { "use strict"
+(function () {
+    "use strict"
+    
     if (typeof editorModifierTagsList !== 'object') {
         console.error('editorModifierTagsList missing...')
         return
@@ -34,6 +36,10 @@
                             break
                         }
                     }
+                    if (s.charAt(0) !== '(' && s.charAt(s.length-1) !== ')' && s.trim().includes(' ')) {
+                        s = '(' + s + ')'
+                        t = '(' + t + ')'
+                    }
                     if (delta < 0) {
                         // wheel scrolling up
                         if (s.substring(s.length-1) == '-') {
@@ -61,6 +67,10 @@
                                 t = t + '-'
                             }
                         }
+                    }
+                    if (s.charAt(0) === '(' && s.charAt(s.length-1) === ')') {
+                        s = s.substring(1, s.length - 1)
+                        t = t.substring(1, t.length - 1)
                     }
                     i.parentElement.getElementsByClassName('modifier-card-label')[0].getElementsByTagName("p")[0].innerText = s
                     // update activeTags
