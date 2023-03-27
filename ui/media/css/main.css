@@ -574,6 +574,11 @@ div.img-preview img {
     margin-bottom: 5pt;
     margin-top: 5pt;
 }
+
+.taskConfigContainer {
+    display: inline;
+}
+
 .img-batch {
     display: inline;
 }

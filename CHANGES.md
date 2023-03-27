@@ -21,6 +21,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.27 - 27 Mar 2023 - Add containers to task entry config for easier targeting with selectors, helpful especially for plugins. Update `CONTRIBUTING.md` to remove outdated reference to react.
 * 2.5.26 - 15 Mar 2023 - Allow styling the buttons displayed on an image. Update the API to allow multiple buttons and text labels in a single row. Thanks @ogmaresca.
 * 2.5.26 - 15 Mar 2023 - View images in full-screen, by either clicking on the image, or clicking the "Full screen" icon next to the Seed number on the image. Thanks @ogmaresca for the internal API.
 * 2.5.25 - 14 Mar 2023 - Button to download all the images, and all the metadata as a zip file. This is available at the top of the UI, as well as on each image. Thanks @JeLuf.

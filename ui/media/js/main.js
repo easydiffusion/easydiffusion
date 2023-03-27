@@ -904,36 +904,46 @@ function onTaskEntryDragOver(event) {
 
 function createTask(task) {
     let taskConfig = ''
+    let taskConfigList = [];
 
     if (task.reqBody.init_image !== undefined) {
         let h = 80
         let w = task.reqBody.width * h / task.reqBody.height >>0
         taskConfig += `<div class="task-initimg" style="float:left;"><img style="width:${w}px;height:${h}px;" src="${task.reqBody.init_image}"><div class="task-fs-initimage"></div></div>`
     }
-    taskConfig += `<b>Seed:</b> ${task.seed}, <b>Sampler:</b> ${task.reqBody.sampler_name}, <b>Inference Steps:</b> ${task.reqBody.num_inference_steps}, <b>Guidance Scale:</b> ${task.reqBody.guidance_scale}, <b>Model:</b> ${task.reqBody.use_stable_diffusion_model}`
+    
+    // Tags are left intentionally not closed so a call to .join('</span>,</div>`) handle all the commas correctly
+    taskConfigList.push(`<div class="taskConfigContainer taskSeedContainer"><b>Seed:</b> <span class="taskSeed">${task.seed}`)
+    taskConfigList.push(`<div class="taskConfigContainer taskSamplerContainer"><b>Sampler:</b> <span class="taskSampler">${task.reqBody.sampler_name}`)
+    taskConfigList.push(`<div class="taskConfigContainer taskInferenceStepsContainer"><b>Inference Steps:</b> <span class="taskInferenceSteps">${task.reqBody.num_inference_steps}`)
+    taskConfigList.push(`<div class="taskConfigContainer taskGuidanceScaleContainer"><b>Guidance Scale:</b> <span class="taskGuidanceScale">${task.reqBody.guidance_scale}`)
+    taskConfigList.push(`<div class="taskConfigContainer taskModelContainer"><b>Model:</b> <span class="taskModel">${task.reqBody.use_stable_diffusion_model}`)
 
     if (task.reqBody.use_vae_model.trim() !== '') {
-        taskConfig += `, <b>VAE:</b> ${task.reqBody.use_vae_model}`
+        taskConfigList.push(`<div class="taskConfigContainer taskVAEContainer"><b>VAE:</b> <span class="taskVAE">${task.reqBody.use_vae_model}`)
     }
     if (task.reqBody.negative_prompt.trim() !== '') {
-        taskConfig += `, <b>Negative Prompt:</b> ${task.reqBody.negative_prompt}`
+        taskConfigList.push(`<div class="taskConfigContainer taskNegativePromptContainer"><b>Negative Prompt:</b> <span class="taskNegativePrompt">${task.reqBody.negative_prompt}`)
     }
     if (task.reqBody.init_image !== undefined) {
-        taskConfig += `, <b>Prompt Strength:</b> ${task.reqBody.prompt_strength}`
+        taskConfigList.push(`<div class="taskConfigContainer taskPromptStrengthContainer"><b>Prompt Strength:</b> <span class="taskPromptStrength">${task.reqBody.prompt_strength}`)
     }
     if (task.reqBody.use_face_correction) {
-        taskConfig += `, <b>Fix Faces:</b> ${task.reqBody.use_face_correction}`
+        taskConfigList.push(`<div class="taskConfigContainer taskFaceCorrectionContainer"><b>Fix Faces:</b> <span class="taskFaceCorrection">${task.reqBody.use_face_correction}`)
     }
     if (task.reqBody.use_upscale) {
-        taskConfig += `, <b>Upscale:</b> ${task.reqBody.use_upscale} (${task.reqBody.upscale_amount || 4}x)`
+        taskConfigList.push(`<div class="taskConfigContainer taskUpscaleContainer"><b>Upscale:</b> <span class="taskUpscale">${task.reqBody.use_upscale} (${task.reqBody.upscale_amount || 4}x)`)
     }
     if (task.reqBody.use_hypernetwork_model) {
-        taskConfig += `, <b>Hypernetwork:</b> ${task.reqBody.use_hypernetwork_model}`
-        taskConfig += `, <b>Hypernetwork Strength:</b> ${task.reqBody.hypernetwork_strength}`
+        taskConfigList.push(`<div class="taskConfigContainer taskHypernetworkContainer"><b>Hypernetwork:</b> <span class="taskHypernetwork">${task.reqBody.use_hypernetwork_model}`)
+        taskConfigList.push(`<div class="taskConfigContainer taskHypernetworkStrengthContainer"><b>Hypernetwork Strength:</b> <span class="taskHypernetworkStrength">${task.reqBody.hypernetwork_strength}`)
     }
     if (task.reqBody.preserve_init_image_color_profile) {
-        taskConfig += `, <b>Preserve Color Profile:</b> true`
+        taskConfigList.push(`<div class="taskConfigContainer taskPreserveColorContainer"><b>Preserve Color Profile:</b> <span class="taskPreserveColor">true `)
     }
+    // Join with closing tags + add final closing tag with no comma
+    taskConfig += `<div class="taskConfigData">${taskConfigList.join('</span>,&nbsp;</div>')}</span></div></div>`;
+
 
     let taskEntry = document.createElement('div')
     taskEntry.id = `imageTaskContainer-${Date.now()}`
