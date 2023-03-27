@@ -21,6 +21,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.29 - 27 Mar 2023 - Fix a bug where some non-square images would fail while inpainting with a `The size of tensor a must match size of tensor b` error.
 * 2.5.29 - 27 Mar 2023 - Fix the `incorrect number of channels` error, when given a PNG image with an alpha channel in `Test Diffusers`.
 * 2.5.29 - 27 Mar 2023 - Fix broken inpainting in `Test Diffusers` (beta).
 * 2.5.28 - 24 Mar 2023 - Support for weighted prompts and long prompt lengths (not limited to 77 tokens). This change requires enabling the `Test Diffusers` setting in beta (in the Settings tab), and restarting the program.
