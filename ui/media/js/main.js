@@ -298,7 +298,7 @@ function undoRemove() {
 undoButton.addEventListener('click', () =>  { undoRemove() })
 
 document.addEventListener('keydown', function(e) {
-    if (e.ctrlKey && e.key === 'z' && e.target == document.body) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.target == document.body) {
         undoRemove()
     }
 })
