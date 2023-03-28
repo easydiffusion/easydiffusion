@@ -53,7 +53,7 @@ def save_images_to_disk(images: list, filtered_images: list, req: GenerateImageR
                         metadata_entries,
                         save_dir_path,
                         file_name=make_filename,
-                        output_format=task_data.metadata_output_format,
+                        output_format=output_format,
                         file_format=task_data.output_format,
                     )
     else:
