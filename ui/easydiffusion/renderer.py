@@ -147,7 +147,7 @@ def filter_images(task_data: TaskData, images: list, user_stopped):
 def construct_response(images: list, seeds: list, task_data: TaskData, base_seed: int):
     return [
         ResponseImage(
-            data=img_to_base64_str(img, task_data.output_format, task_data.output_quality),
+            data=img_to_base64_str(img, task_data.output_format, task_data.output_quality, task_data.output_lossless),
             seed=seed,
         )
         for img, seed in zip(images, seeds)
