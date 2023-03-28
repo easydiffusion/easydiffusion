@@ -97,6 +97,7 @@ const TASK_MAPPING = {
                 return
             }
             randomSeedField.checked = false
+            randomSeedField.dispatchEvent(new Event('change')) // let plugins know that the state of the random seed toggle changed
             seedField.disabled = false
             seedField.value = seed
         },
