@@ -278,6 +278,9 @@ function undoableRemove(element, doubleUndo=false) {
 
 function undoRemove() {
     let data = undoBuffer.pop()
+    if (!data) {
+        return
+    }
     if (data.next == null) {
         data.parent.appendChild(data.element)
     } else {
@@ -293,6 +296,12 @@ function undoRemove() {
 }
 
 undoButton.addEventListener('click', () =>  { undoRemove() })
+
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === 'z' && e.target == document.body) {
+        undoRemove()
+    }
+})
 
 function showImages(reqBody, res, outputContainer, livePreview) {
     let imageItemElements = outputContainer.querySelectorAll('.imgItem')
