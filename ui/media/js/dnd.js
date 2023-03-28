@@ -230,6 +230,20 @@ const TASK_MAPPING = {
         readUI: () => vaeModelField.value,
         parse: (val) => val
     },
+    use_lora_model: { name: 'LoRA model',
+        setUI: (use_lora_model) => {
+            const oldVal = loraModelField.value
+            use_lora_model = (use_lora_model === undefined || use_lora_model === null || use_lora_model === 'None' ? '' : use_lora_model)
+
+            if (use_lora_model !== '') {
+                use_lora_model = getModelPath(use_lora_model, ['.ckpt', '.safetensors'])
+                use_lora_model = use_lora_model !== '' ? use_lora_model : oldVal
+            }
+            loraModelField.value = use_lora_model
+        },
+        readUI: () => loraModelField.value,
+        parse: (val) => val
+    },
     use_hypernetwork_model: { name: 'Hypernetwork model',
         setUI: (use_hypernetwork_model) => {
             const oldVal = hypernetworkModelField.value
