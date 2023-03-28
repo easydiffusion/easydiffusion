@@ -88,6 +88,11 @@ const processOrder = document.querySelector('#process_order_toggle')
 
 let imagePreview = document.querySelector("#preview")
 let imagePreviewContent = document.querySelector("#preview-content")
+
+let undoButton = document.querySelector("#undo")
+let undoBuffer = []
+const UNDO_LIMIT = 20
+
 imagePreview.addEventListener('drop', function(ev) {
     const data = ev.dataTransfer?.getData("text/plain");
     if (!data) {
@@ -256,6 +261,39 @@ function playSound() {
     }
 }
 
+function undoableRemove(element, doubleUndo=false) {
+    let data = { 'element': element, 'parent': element.parentNode, 'prev': element.previousSibling, 'next': element.nextSibling, 'doubleUndo': doubleUndo }
+    undoBuffer.push(data)
+    if (undoBuffer.length > UNDO_LIMIT) {
+        // Remove item from memory and also remove it from the data structures
+        let item = undoBuffer.shift()
+        htmlTaskMap.delete(item.element)
+        item.element.querySelectorAll('[data-imagecounter]').forEach( (img) => { delete imageRequest[img.dataset['imagecounter']] })
+    }
+    element.remove()
+    if (undoBuffer.length != 0) {
+        undoButton.classList.remove('displayNone')
+    }
+}
+
+function undoRemove() {
+    let data = undoBuffer.pop()
+    if (data.next == null) {
+        data.parent.appendChild(data.element)
+    } else {
+        data.parent.insertBefore(data.element, data.next)
+    }
+    if (data.doubleUndo) {
+        undoRemove()
+    }
+    if (undoBuffer.length == 0) {
+        undoButton.classList.add('displayNone')
+    }
+    updateInitialText()
+}
+
+undoButton.addEventListener('click', () =>  { undoRemove() })
+
 function showImages(reqBody, res, outputContainer, livePreview) {
     let imageItemElements = outputContainer.querySelectorAll('.imgItem')
     if(typeof res != 'object') return
@@ -295,21 +333,19 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             const imageRemoveBtn = imageItemElem.querySelector('.imgPreviewItemClearBtn')
             let parentTaskContainer = imageRemoveBtn.closest('.imageTaskContainer')
             imageRemoveBtn.addEventListener('click', (e) => {
-                shiftOrConfirm(e, "Remove the image from the results?", () => { 
-                    imageItemElem.style.display = 'none' 
-                    let allHidden = true;
-                    let children = parentTaskContainer.querySelectorAll('.imgItem');
-                    for(let x = 0; x < children.length; x++) {
-                        let child = children[x];
-                        if(child.style.display != "none") {
-                            allHidden = false;
-                        }
+                undoableRemove(imageItemElem)
+                let allHidden = true;
+                let children = parentTaskContainer.querySelectorAll('.imgItem');
+                for(let x = 0; x < children.length; x++) {
+                    let child = children[x];
+                    if(child.style.display != "none") {
+                        allHidden = false;
                     }
-                    if(allHidden === true) {
-                        const req = htmlTaskMap.get(parentTaskContainer)
-                        if(!req.isProcessing || req.batchesDone == req.batchCount) {parentTaskContainer.parentNode.removeChild(parentTaskContainer)}
-                    }
-                })
+                }
+                if(allHidden === true) {
+                    const req = htmlTaskMap.get(parentTaskContainer)
+                    if(!req.isProcessing || req.batchesDone == req.batchCount) { undoableRemove(parentTaskContainer, true) }
+                }
             })
         }
         const imageElem = imageItemElem.querySelector('img')
@@ -571,7 +607,7 @@ function makeImage() {
     }))
     newTaskRequests.forEach(createTask)
 
-    initialText.style.display = 'none'
+    updateInitialText()
 }
 
 async function onIdle() {
@@ -869,7 +905,7 @@ async function onTaskStart(task) {
     setStatus('request', 'fetching..')
     renderButtons.style.display = 'flex'
     renameMakeImageButton()
-    previewTools.style.display = 'block'
+    updateInitialText()
 }
 
 /* Hover effect for the init image in the task list */
@@ -1001,13 +1037,16 @@ function createTask(task) {
     task['stopTask'].addEventListener('click', (e) => {
         e.stopPropagation()
 
-        let question = (task['isProcessing'] ? "Stop this task?" : "Remove this task?")
-        shiftOrConfirm(e, question, async function(e) {
-            if (task.batchesDone <= 0 || !task.isProcessing) {
-                removeTask(taskEntry)
-            }
-            abortTask(task)
-        })
+        if (task['isProcessing']) {
+            shiftOrConfirm(e, "Stop this task?", async function(e) {
+                if (task.batchesDone <= 0 || !task.isProcessing) {
+                    removeTask(taskEntry)
+                }
+                abortTask(task)
+            })
+        } else {
+            removeTask(taskEntry)
+        }
     })
 
     task['useSettings'] = taskEntry.querySelector('.useSettings')
@@ -1217,13 +1256,21 @@ async function stopAllTasks() {
     })
 }
 
-function removeTask(taskToRemove) {
-    taskToRemove.remove()
-
+function updateInitialText() {
     if (document.querySelector('.imageTaskContainer') === null) {
-        previewTools.style.display = 'none'
-        initialText.style.display = 'block'
+        if (undoBuffer.length == 0) {
+            previewTools.classList.add('displayNone')
+        }
+        initialText.classList.remove('displayNone')
+    } else {
+        initialText.classList.add('displayNone')
+        previewTools.classList.remove('displayNone')
     }
+}
+
+function removeTask(taskToRemove) {
+    undoableRemove(taskToRemove)
+    updateInitialText()
 }
 
 clearAllPreviewsBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Clear all the results and tasks in this window?", async function() {

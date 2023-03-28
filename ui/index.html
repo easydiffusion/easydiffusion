@@ -292,18 +292,16 @@
         </div>
 
         <div id="preview" class="col-free">
-            <div id="initial-text">
-                Type a prompt and press the "Make Image" button.<br/><br/>You can set an "Initial Image" if you want to guide the AI.<br/><br/>
-                You can also add modifiers like "Realistic", "Pencil Sketch", "ArtStation" etc by browsing through the "Image Modifiers" section 
-                and selecting the desired modifiers.<br/><br/>
-                Click "Image Settings" for additional settings like seed, image size, number of images to generate etc.<br/><br/>Enjoy! :)
-            </div>
 
             <div id="preview-content">
-                <div id="preview-tools">
+                <div id="preview-tools" class="displayNone">
                     <button id="clear-all-previews" class="secondaryButton"><i class="fa-solid fa-trash-can icon"></i> Clear All</button>
                     <button class="tertiaryButton" id="show-download-popup"><i class="fa-solid fa-download"></i> Download images</button>
                     <div class="display-settings">
+                        <button id="undo" class="displayNone tertiaryButton">
+                            Undo <i class="fa-solid fa-rotate-left icon"></i>
+                            <span class="simple-tooltip left">Undo last remove</span>
+                        </button>
                         <span class="auto-scroll"></span> <!-- hack for Rabbit Hole update -->
                         <button id="auto_scroll_btn" class="tertiaryButton">
                             <i class="fa-solid fa-arrows-up-to-line icon"></i>
@@ -327,6 +325,12 @@
                     </div>
                     <div class="clearfix" style="clear: both;"></div>
                 </div>
+            </div>
+            <div id="initial-text">
+                Type a prompt and press the "Make Image" button.<br/><br/>You can set an "Initial Image" if you want to guide the AI.<br/><br/>
+                You can also add modifiers like "Realistic", "Pencil Sketch", "ArtStation" etc by browsing through the "Image Modifiers" section 
+                and selecting the desired modifiers.<br/><br/>
+                Click "Image Settings" for additional settings like seed, image size, number of images to generate etc.<br/><br/>Enjoy! :)
             </div>
         </div>
         </div>
