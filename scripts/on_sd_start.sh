@@ -97,18 +97,13 @@ else
         # Check for AMD dGPU first, assume nobody has a primary nvidia GPU and AMD secondary GPU,
         # and if they do they can edit this themselves like AMD users already have to
         if echo "$DGPU_BRAND" | grep -q "AMD"; then
-            installed=$(python -m pip install --upgrade torch torchvision --extra-index-url "https://download.pytorch.org/whl/rocm5.4.2")
+            python -m pip install --upgrade torch torchvision --extra-index-url "https://download.pytorch.org/whl/rocm5.4.2" || fail "Installation of torch and torchvision for ROCm failed"
         elif echo "$GPU_BRAND" | grep -q "AMD"; then
-            installed=$(python -m pip install --upgrade torch torchvision --extra-index-url "https://download.pytorch.org/whl/rocm5.4.2")
+            python -m pip install --upgrade torch torchvision --extra-index-url "https://download.pytorch.org/whl/rocm5.4.2" || fail "Installation of torch and torchvision for ROCm failed"
         else
-            installed=$(python -m pip install --upgrade torch==1.13.1+cu116 torchvision==0.14.1+cu116 --extra-index-url https://download.pytorch.org/whl/cu116)
+            python -m pip install --upgrade torch==1.13.1+cu116 torchvision==0.14.1+cu116 --extra-index-url https://download.pytorch.org/whl/cu116 || fail "Installation of torch and torchvision for CUDA failed"
         fi
-        
-        if [ -n "$installed" ]; then
-            echo "Installed."
-        else
-            fail "torch install failed"
-        fi
+        echo "Installed."
     elif [ "$OS_NAME" == "macos" ]; then
         if python -m pip install --upgrade torch==1.13.1 torchvision==0.14.1 ; then
             echo "Installed."
