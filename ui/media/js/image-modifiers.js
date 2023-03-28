@@ -160,7 +160,7 @@ async function loadModifiers() {
     document.dispatchEvent(new Event('loadImageModifiers'))
 }
 
-function refreshModifiersState(newTags) {
+function refreshModifiersState(newTags, inactiveTags) {
     // clear existing modifiers
     document.querySelector('#editor-modifiers').querySelectorAll('.modifier-card').forEach(modifierCard => {
         const modifierName = modifierCard.querySelector('.modifier-card-label p').dataset.fullName // pick the full modifier name
@@ -214,7 +214,7 @@ function refreshModifiersState(newTags) {
             })
         }
     })
-    refreshTagsList()
+    refreshTagsList(inactiveTags)
 }
 
 function refreshInactiveTags(inactiveTags) {
@@ -231,13 +231,13 @@ function refreshInactiveTags(inactiveTags) {
     let overlays = document.querySelector('#editor-inputs-tags-list').querySelectorAll('.modifier-card-overlay')
     overlays.forEach (i => {
         let modifierName = i.parentElement.getElementsByClassName('modifier-card-label')[0].getElementsByTagName("p")[0].innerText
-        if (inactiveTags.find(element => element === modifierName) !== undefined) {
+        if (inactiveTags?.find(element => element === modifierName) !== undefined) {
             i.parentElement.classList.add('modifier-toggle-inactive')
         }
     })
 }
 
-function refreshTagsList() {
+function refreshTagsList(inactiveTags) {
     editorModifierTagsList.innerHTML = ''
 
     if (activeTags.length == 0) {
@@ -269,6 +269,7 @@ function refreshTagsList() {
     let brk = document.createElement('br')
     brk.style.clear = 'both'
     editorModifierTagsList.appendChild(brk)
+    refreshInactiveTags(inactiveTags)
     document.dispatchEvent(new Event('refreshImageModifiers')) // notify plugins that the image tags have been refreshed 
 }
 
