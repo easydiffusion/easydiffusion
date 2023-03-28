@@ -236,7 +236,7 @@ const TASK_MAPPING = {
             use_lora_model = (use_lora_model === undefined || use_lora_model === null || use_lora_model === 'None' ? '' : use_lora_model)
 
             if (use_lora_model !== '') {
-                use_lora_model = getModelPath(use_lora_model, ['.vae.pt', '.ckpt'])
+                use_lora_model = getModelPath(use_lora_model, ['.ckpt', '.safetensors'])
                 use_lora_model = use_lora_model !== '' ? use_lora_model : oldVal
             }
             loraModelField.value = use_lora_model
