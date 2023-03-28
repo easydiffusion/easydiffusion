@@ -21,6 +21,9 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.30 - 28 Mar 2023 - Allow the user to undo the deletion of tasks or images, instead of showing a pop-up each time. The new `Undo` button will be present at the top of the UI. Thanks @JeLuf.
+* 2.5.30 - 28 Mar 2023 - Support saving lossless WEBP images. Thanks @ogmaresca.
+* 2.5.30 - 28 Mar 2023 - Lots of bug fixes for the UI (Read LoRA flag in metadata files, new prompt weight format with scrollwheel, fix overflow with lots of tabs, clear button in image editor, shorter filenames in download). Thanks @patriceac, @JeLuf and @ogmaresca.
 * 2.5.29 - 27 Mar 2023 - Fix a bug where some non-square images would fail while inpainting with a `The size of tensor a must match size of tensor b` error.
 * 2.5.29 - 27 Mar 2023 - Fix the `incorrect number of channels` error, when given a PNG image with an alpha channel in `Test Diffusers`.
 * 2.5.29 - 27 Mar 2023 - Fix broken inpainting in `Test Diffusers` (beta).
