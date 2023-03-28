@@ -1557,19 +1557,19 @@ updateOutputQuality()
 
 function updateOutputQualityVisibility() {
     if (outputFormatField.value === 'webp') {
-        outputLosslessContainer.style.display = 'unset'
+        outputLosslessContainer.classList.remove('displayNone')
         if (outputLosslessField.checked) {
-            outputQualityRow.style.display='none'
+            outputQualityRow.classList.add('displayNone')
         } else {
-            outputQualityRow.style.display='table-row'
+            outputQualityRow.classList.remove('displayNone')
         }
     }
     else if (outputFormatField.value === 'png') {
-        outputQualityRow.style.display='none'
-        outputLosslessContainer.style.display = 'none'
+        outputQualityRow.classList.add('displayNone')
+        outputLosslessContainer.classList.add('displayNone')
     } else {
-        outputQualityRow.style.display='table-row'
-        outputLosslessContainer.style.display = 'none'
+        outputQualityRow.classList.remove('displayNone')
+        outputLosslessContainer.classList.add('displayNone')
     }
 }
 
