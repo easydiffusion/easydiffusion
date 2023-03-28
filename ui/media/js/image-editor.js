@@ -171,6 +171,7 @@ const IMAGE_EDITOR_ACTIONS = [
 		icon: "fa-solid fa-xmark",
 		handler: (editor) => {
 			editor.ctx_current.clearRect(0, 0, editor.width, editor.height)
+			imageEditor.setImage(null, editor.width, editor.height) // properly reset the drawing canvas
 		},
 		trackHistory: true
 	},
