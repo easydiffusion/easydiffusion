@@ -47,13 +47,13 @@ def save_images_to_disk(images: list, filtered_images: list, req: GenerateImageR
             output_quality=task_data.output_quality,
         )
         if task_data.metadata_output_format:
-            for output_format in task_data.metadata_output_format.split(','):
-                if output_format.lower() in ["json", "txt", "embed"]:
+            for metadata_output_format in task_data.metadata_output_format.split(','):
+                if metadata_output_format.lower() in ["json", "txt", "embed"]:
                     save_dicts(
                         metadata_entries,
                         save_dir_path,
                         file_name=make_filename,
-                        output_format=output_format,
+                        output_format=metadata_output_format,
                         file_format=task_data.output_format,
                     )
     else:
