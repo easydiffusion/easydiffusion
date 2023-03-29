@@ -73,11 +73,11 @@ DGPU_BRAND=$(lspci 2>/dev/null | grep Display)
 if python ../scripts/check_modules.py torch torchvision; then
     # temp fix for installations that installed torch 2.0 by mistake
     if [ "$OS_NAME" == "linux" ]; then
-        # Check for AMD dGPU first, assume nobody has a primary nvidia GPU and AMD secondary GPU,
-        # and if they do they can edit this themselves like AMD users already have to
-        if echo "$DGPU_BRAND" | grep -q "AMD"; then
-            python -m pip install --upgrade torch torchvision --extra-index-url "https://download.pytorch.org/whl/rocm5.4.2" -q
-        elif echo "$GPU_BRAND" | grep -q "AMD"; then
+        # Check for AMD and NVIDIA dGPUs, always preferring an NVIDIA GPU if available
+        # Fall back to NVIDA/CUDA if somehow none of these checks pass
+        if echo "$DGPU_BRAND" | grep -q "NVIDIA" || echo "$GPU_BRAND" | grep -q "NVIDIA"; then
+            python -m pip install --upgrade torch==1.13.1+cu116 torchvision==0.14.1+cu116 --extra-index-url https://download.pytorch.org/whl/cu116 -q
+        elif echo "$DGPU_BRAND" | grep -q "AMD" || echo "$GPU_BRAND" | grep -q "AMD"; then
             python -m pip install --upgrade torch torchvision --extra-index-url "https://download.pytorch.org/whl/rocm5.4.2" -q
         else
             python -m pip install --upgrade torch==1.13.1+cu116 torchvision==0.14.1+cu116 --extra-index-url https://download.pytorch.org/whl/cu116 -q
@@ -94,11 +94,11 @@ else
     export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
 
     if [ "$OS_NAME" == "linux" ]; then
-        # Check for AMD dGPU first, assume nobody has a primary nvidia GPU and AMD secondary GPU,
-        # and if they do they can edit this themselves like AMD users already have to
-        if echo "$DGPU_BRAND" | grep -q "AMD"; then
-            python -m pip install --upgrade torch torchvision --extra-index-url "https://download.pytorch.org/whl/rocm5.4.2" || fail "Installation of torch and torchvision for ROCm failed"
-        elif echo "$GPU_BRAND" | grep -q "AMD"; then
+        # Check for AMD and NVIDIA dGPUs, always preferring an NVIDIA GPU if available
+        # Fall back to NVIDA/CUDA if somehow none of these checks pass
+        if echo "$DGPU_BRAND" | grep -q "NVIDIA" || echo "$GPU_BRAND" | grep -q "NVIDIA"; then
+            python -m pip install --upgrade torch==1.13.1+cu116 torchvision==0.14.1+cu116 --extra-index-url https://download.pytorch.org/whl/cu116 || fail "Installation of torch and torchvision for CUDA failed"
+        elif echo "$DGPU_BRAND" | grep -q "AMD" || echo "$GPU_BRAND" | grep -q "AMD"; then
             python -m pip install --upgrade torch torchvision --extra-index-url "https://download.pytorch.org/whl/rocm5.4.2" || fail "Installation of torch and torchvision for ROCm failed"
         else
             python -m pip install --upgrade torch==1.13.1+cu116 torchvision==0.14.1+cu116 --extra-index-url https://download.pytorch.org/whl/cu116 || fail "Installation of torch and torchvision for CUDA failed"
