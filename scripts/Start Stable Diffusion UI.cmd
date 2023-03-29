@@ -25,15 +25,12 @@ if exist "on_sd_start.bat" (
 @rem set legacy installer's PATH, if it exists
 if exist "installer" set PATH=%cd%\installer;%cd%\installer\Library\bin;%cd%\installer\Scripts;%cd%\installer\Library\usr\bin;%PATH%
 
-@rem Setup the packages required for the installer
-call scripts\bootstrap.bat
-
 @rem set new installer's PATH, if it downloaded any packages
 if exist "installer_files\env" set PATH=%cd%\installer_files\env;%cd%\installer_files\env\Library\bin;%cd%\installer_files\env\Scripts;%cd%\installer_files\Library\usr\bin;%PATH%
 
 set PYTHONPATH=%cd%\installer;%cd%\installer_files\env
 
-@rem Test the bootstrap
+@rem Test the core requirements
 call where git
 call git --version
 

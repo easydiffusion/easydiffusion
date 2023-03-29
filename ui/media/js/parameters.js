@@ -7,6 +7,7 @@
     checkbox: "checkbox",
     select: "select",
     select_multiple: "select_multiple",
+    slider: "slider",
     custom: "custom",
 };
 
@@ -77,6 +78,14 @@ var PARAMETERS = [
                 label: "embed"
             }
         ],
+    },
+    {
+        id: "block_nsfw",
+        type: ParameterType.checkbox,
+        label: "Block NSFW images",
+        note: "blurs out NSFW images",
+        icon: "fa-land-mine-on",
+        default: false,
     },
     {
         id: "sound_toggle",
@@ -181,6 +190,14 @@ var PARAMETERS = [
         icon: "fa-fire",
         default: false,
     },
+    {
+        id: "test_diffusers",
+        type: ParameterType.checkbox,
+        label: "Test Diffusers",
+        note: "<b>Experimental! Can have bugs!</b> Use upcoming features (like LoRA) in our new engine. Please press Save, then restart the program after changing this.",
+        icon: "fa-bolt",
+        default: false,
+    },
 ];
 
 function getParameterSettingsEntry(id) {
@@ -189,6 +206,18 @@ function getParameterSettingsEntry(id) {
         return
     }
     return parameter[0].settingsEntry
+}
+
+function sliderUpdate(event) {
+    if (event.srcElement.id.endsWith('-input')) {
+        let slider = document.getElementById(event.srcElement.id.slice(0,-6))
+        slider.value = event.srcElement.value
+        slider.dispatchEvent(new Event("change"))
+    } else {
+        let field = document.getElementById(event.srcElement.id+'-input')
+        field.value = event.srcElement.value
+        field.dispatchEvent(new Event("change"))
+    }
 }
 
 function getParameterElement(parameter) {
@@ -201,6 +230,8 @@ function getParameterElement(parameter) {
             var options = (parameter.options || []).map(option => `<option value="${option.value}">${option.label}</option>`).join("")
             var multiple = (parameter.type == ParameterType.select_multiple ? 'multiple' : '')
             return `<select id="${parameter.id}" name="${parameter.id}" ${multiple}>${options}</select>`
+        case ParameterType.slider:
+            return `<input id="${parameter.id}" name="${parameter.id}" class="editor-slider" type="range" value="${parameter.default}" min="${parameter.slider_min}" max="${parameter.slider_max}" oninput="sliderUpdate(event)"> <input id="${parameter.id}-input" name="${parameter.id}-input" size="4" value="${parameter.default}" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" oninput="sliderUpdate(event)">&nbsp;${parameter.slider_unit}`
         case ParameterType.custom:
             return parameter.render(parameter)
         default:
@@ -240,6 +271,7 @@ let listenPortField = document.querySelector("#listen_port")
 let useBetaChannelField = document.querySelector("#use_beta_channel")
 let uiOpenBrowserOnStartField = document.querySelector("#ui_open_browser_on_start")
 let confirmDangerousActionsField = document.querySelector("#confirm_dangerous_actions")
+let testDiffusers = document.querySelector("#test_diffusers")
 
 let saveSettingsBtn = document.querySelector('#save-system-settings-btn')
 
@@ -278,6 +310,10 @@ async function getAppConfig() {
         }
         if (config.net && config.net.listen_port !== undefined) {
             listenPortField.value = config.net.listen_port
+        }
+        if (config.test_diffusers !== undefined) {
+            testDiffusers.checked = config.test_diffusers
+            document.querySelector("#lora_model_container").style.display = (testDiffusers.checked ? '' : 'none')
         }
 
         console.log('get config status response', config)
@@ -420,6 +456,10 @@ async function getSystemInfo() {
         let force = false
         if (res['enforce_output_dir'] !== undefined) {
             force = res['enforce_output_dir']
+            if (force == true) {
+               saveToDiskField.checked = true
+               metadataOutputFormatField.disabled = false
+            }
             saveToDiskField.disabled = force
             diskPathField.disabled = force
         }
@@ -444,8 +484,10 @@ saveSettingsBtn.addEventListener('click', function() {
         'update_branch': updateBranch,
         'ui_open_browser_on_start': uiOpenBrowserOnStartField.checked,
         'listen_to_network': listenToNetworkField.checked,
-        'listen_port': listenPortField.value
+        'listen_port': listenPortField.value,
+        'test_diffusers': testDiffusers.checked
     })
     saveSettingsBtn.classList.add('active')
     asyncDelay(300).then(() => saveSettingsBtn.classList.remove('active'))
 })
+

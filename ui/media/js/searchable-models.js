@@ -61,7 +61,10 @@ class ModelDropdown
         if (this.modelFilterArrow) {
             this.modelFilterArrow.style.color = state ? 'dimgray' : ''
         }
-    }    
+    }
+    get modelElements() {
+        return this.modelList.querySelectorAll('.model-file')
+    }
     addEventListener(type, listener, options) {
         return this.modelFilter.addEventListener(type, listener, options)
     }
@@ -107,8 +110,9 @@ class ModelDropdown
     
     processClick(e) {
         e.preventDefault()
-        if (e.srcElement.classList.contains('model-file')) {
-            this.saveCurrentSelection(e.srcElement, e.srcElement.innerText, e.srcElement.dataset.path)
+        if (e.srcElement.classList.contains('model-file') || e.srcElement.classList.contains('fa-file')) {
+            const elem = e.srcElement.classList.contains('model-file') ? e.srcElement : e.srcElement.parentElement
+            this.saveCurrentSelection(elem, elem.innerText, elem.dataset.path)
             this.hideModelList()
             this.modelFilter.focus()
             this.modelFilter.select()
@@ -116,12 +120,13 @@ class ModelDropdown
     }
 
     getPreviousVisibleSibling(elem) {
-        let prevSibling = elem.previousElementSibling
-        while (prevSibling && prevSibling.classList.contains('model-file')) {
-            if (prevSibling.style.display == 'list-item') return prevSibling
-            prevSibling = prevSibling.previousElementSibling
+        const modelElements = Array.from(this.modelElements)
+        const index = modelElements.indexOf(elem)
+        if (index <= 0) {
+            return undefined
         }
-        if (prevSibling && prevSibling.style.display == 'list-item') return prevSibling
+
+        return modelElements.slice(0, index).reverse().find(e => e.style.display === 'list-item')
     }
 
     getLastVisibleChild(elem) {
@@ -130,63 +135,16 @@ class ModelDropdown
         return this.getPreviousVisibleSibling(lastElementChild)
     }
     
-    findPreviousSibling(elem) {
-        // is there an immediate sibling?
-        let prevSibling = this.getPreviousVisibleSibling(elem)
-        if (prevSibling) {
-            // if the previous sibling is a model file, just select it
-            if (prevSibling.classList.contains('model-file')) return prevSibling
-            
-            // if the previous sibling is a model folder, select the last model file it contains
-            if (prevSibling.classList.contains('model-folder')) return prevSibling.firstElementChild.lastElementChild
-        }
-
-        // no sibling model file and no sibling model folder. look for siblings around the parent element.
-        prevSibling = this.getPreviousVisibleSibling(elem.parentElement.parentElement)
-        if (prevSibling) {
-            // if the previous entry is a model file, select it
-            if (prevSibling.classList.contains('model-file')) return prevSibling
-
-            // is there another model folder to jump to before the current one?
-            if (prevSibling.classList.contains('model-folder')) return this.getLastVisibleChild(prevSibling.firstElementChild)
-        }
-    }
-    
     getNextVisibleSibling(elem) {
-        let nextSibling = elem.nextElementSibling
-        while (nextSibling && nextSibling.classList.contains('model-file')) {
-            if (nextSibling.style.display == 'list-item') return nextSibling
-            nextSibling = nextSibling.nextElementSibling
-        }
-        if (nextSibling && nextSibling.style.display == 'list-item') return nextSibling
+        const modelElements = Array.from(this.modelElements)
+        const index = modelElements.indexOf(elem)
+        return modelElements.slice(index + 1).find(e => e.style.display === 'list-item')
     }
     
     getFirstVisibleChild(elem) {
         let firstElementChild = elem.firstElementChild
         if (firstElementChild.style.display == 'list-item') return firstElementChild
         return this.getNextVisibleSibling(firstElementChild)
-    }
-    
-    findNextSibling(elem) {
-        // is there an immediate sibling?
-        let nextSibling = this.getNextVisibleSibling(elem)
-        if (nextSibling) {
-            // if the next sibling is a model file, just select it
-            if (nextSibling.classList.contains('model-file')) return nextSibling
-            
-            // if the next sibling is a model folder, select the first model file it contains
-            if (nextSibling.classList.contains('model-folder')) return nextSibling.firstElementChild.firstElementChild
-        }
-
-        // no sibling model file and no sibling model folder. look for siblings around the parent element.
-        nextSibling = this.getNextVisibleSibling(elem.parentElement.parentElement)
-        if (nextSibling) {
-            // if the next entry is a model file, select it
-            if (nextSibling.classList.contains('model-file')) return nextSibling
-
-            // is there another model folder to jump to after the current one?
-            if (nextSibling.classList.contains('model-folder')) return this.getFirstVisibleChild(nextSibling.firstElementChild)
-        }
     }
     
     selectModelEntry(elem) {
@@ -202,7 +160,7 @@ class ModelDropdown
     }
     
     selectPreviousFile() {
-        const elem = this.findPreviousSibling(this.highlightedModelEntry)
+        const elem = this.getPreviousVisibleSibling(this.highlightedModelEntry)
         if (elem) {
             this.selectModelEntry(elem)
         }
@@ -215,7 +173,7 @@ class ModelDropdown
     }
     
     selectNextFile() {
-        this.selectModelEntry(this.findNextSibling(this.highlightedModelEntry))
+        this.selectModelEntry(this.getNextVisibleSibling(this.highlightedModelEntry))
         this.modelFilter.select()
     }
     
@@ -346,7 +304,8 @@ class ModelDropdown
         this.modelList.style.display = 'block'
         this.selectEntry()
         this.showAllEntries()
-        this.modelFilter.value = ''
+        //this.modelFilter.value = ''
+        this.modelFilter.select() // preselect the entire string so user can just start typing.
         this.modelFilter.focus()
         this.modelFilter.style.cursor = 'auto'
     }
@@ -373,13 +332,13 @@ class ModelDropdown
     
     selectEntry(path) {
         if (path !== undefined) {
-            const entries = this.modelList.querySelectorAll('.model-file');
+            const entries = this.modelElements;
 
-            for (let i = 0; i < entries.length; i++) {
-                if (entries[i].dataset.path == path) {
-                    this.saveCurrentSelection(entries[i], entries[i].innerText, entries[i].dataset.path)
-                    this.highlightedModelEntry = entries[i]
-                    entries[i].scrollIntoView({block: 'nearest'})
+            for (const elem of entries) {
+                if (elem.dataset.path == path) {
+                    this.saveCurrentSelection(elem, elem.innerText, elem.dataset.path)
+                    this.highlightedModelEntry = elem
+                    elem.scrollIntoView({block: 'nearest'})
                     break
                 }
             }
@@ -453,7 +412,7 @@ class ModelDropdown
         if (found) {
             this.modelResult.style.display = 'list-item'
             this.modelNoResult.style.display = 'none'
-            const elem = this.findNextSibling(this.modelList.querySelector('.model-file'))
+            const elem = this.getNextVisibleSibling(this.modelList.querySelector('.model-file'))
             this.highlightModel(elem)
             elem.scrollIntoView({block: 'nearest'})
         }
@@ -518,10 +477,11 @@ class ModelDropdown
 
     createDropdown() {
         // create dropdown entries
-        this.modelFilter.insertAdjacentElement('afterend', this.createRootModelList(this.inputModels))
+        let rootModelList = this.createRootModelList(this.inputModels)
+        this.modelFilter.insertAdjacentElement('afterend', rootModelList)
         this.modelFilter.insertAdjacentElement(
             'afterend',
-            this.createElement(
+            createElement(
                 'i',
                 { id: `${this.modelFilter.id}-model-filter-arrow` },
                 ['model-selector-arrow', 'fa-solid', 'fa-angle-down'],
@@ -549,30 +509,13 @@ class ModelDropdown
         this.modelList.addEventListener('mousemove', this.bind(this.highlightModelAtPosition, this))
         this.modelList.addEventListener('mousedown', this.bind(this.processClick, this))
 
-        this.selectEntry(this.activeModel)
-    }
+        let mf = this.modelFilter
+        this.modelFilter.addEventListener('focus', function() {
+            let modelFilterStyle = window.getComputedStyle(mf)
+            rootModelList.style.minWidth = modelFilterStyle.width
+        })
 
-    /**
-     * 
-     * @param {string} tag 
-     * @param {object} attributes
-     * @param {Array<string>} classes
-     * @returns {HTMLElement}
-     */
-    createElement(tagName, attributes, classes, text) {
-        const element = document.createElement(tagName)
-        if (attributes) {
-            Object.entries(attributes).forEach(([key, value]) => {
-                element.setAttribute(key, value)
-            })
-        }
-        if (classes) {
-            classes.forEach(className => element.classList.add(className))
-        }
-        if (text) {
-            element.appendChild(document.createTextNode(text))
-        }
-        return element
+        this.selectEntry(this.activeModel)
     }
 
     /**
@@ -582,7 +525,7 @@ class ModelDropdown
      * @returns {HTMLElement}
      */
     createModelNodeList(folderName, modelTree, isRootFolder) {
-        const listElement = this.createElement('ul')
+        const listElement = createElement('ul')
 
         const foldersMap = new Map()
         const modelsMap = new Map()
@@ -607,7 +550,15 @@ class ModelDropdown
                 const fullPath = folderName ? `${folderName.substring(1)}/${model}` : model
                 modelsMap.set(
                     model,
-                    this.createElement('li', { 'data-path': fullPath }, classes, model),
+                    createElement(
+                        'li',
+                        { 'data-path': fullPath },
+                        classes,
+                        [
+                            createElement('i', undefined, ['fa-regular', 'fa-file', 'icon']),
+                            model,
+                        ],
+                    ),
                 )
             }
         })
@@ -621,10 +572,21 @@ class ModelDropdown
         const modelElements = modelNames.map(name => modelsMap.get(name))
 
         if (modelElements.length && folderName) {
-            listElement.appendChild(this.createElement('li', undefined, ['model-folder'], folderName))
+            listElement.appendChild(
+                createElement(
+                    'li',
+                    undefined,
+                    ['model-folder'],
+                    [
+                        createElement('i', undefined, ['fa-regular', 'fa-folder-open', 'icon']),
+                        folderName.substring(1),
+                    ],
+                )
+            )
         }
 
-        const allModelElements = isRootFolder ? [...folderElements, ...modelElements] : [...modelElements, ...folderElements]
+        // const allModelElements = isRootFolder ? [...folderElements, ...modelElements] : [...modelElements, ...folderElements]
+        const allModelElements = [...modelElements, ...folderElements]
         allModelElements.forEach(e => listElement.appendChild(e))
         return listElement
     }
@@ -634,13 +596,13 @@ class ModelDropdown
      * @returns {HTMLElement}
      */
     createRootModelList(modelTree) {
-        const rootList = this.createElement(
+        const rootList = createElement(
             'ul',
             { id: `${this.modelFilter.id}-model-list` },
             ['model-list'],
         )
         rootList.appendChild(
-            this.createElement(
+            createElement(
                 'li',
                 { id: `${this.modelFilter.id}-model-no-result` },
                 ['model-no-result'],
@@ -650,7 +612,7 @@ class ModelDropdown
 
         if (this.noneEntry) {
             rootList.appendChild(
-                this.createElement(
+                createElement(
                     'li',
                     { 'data-path': '' },
                     ['model-file', 'in-root-folder'],
@@ -659,13 +621,16 @@ class ModelDropdown
             )
         }
 
-        const containerListItem = this.createElement(
-            'li',
-            { id: `${this.modelFilter.id}-model-result` },
-            ['model-result'],
-        )
-        containerListItem.appendChild(this.createModelNodeList(undefined, modelTree, true))
-        rootList.appendChild(containerListItem)
+        if (modelTree.length > 0) {
+            const containerListItem = createElement(
+                'li',
+                { id: `${this.modelFilter.id}-model-result` },
+                ['model-result'],
+            )
+            //console.log(containerListItem)
+            containerListItem.appendChild(this.createModelNodeList(undefined, modelTree, true))
+            rootList.appendChild(containerListItem)
+        }
 
         return rootList
     }

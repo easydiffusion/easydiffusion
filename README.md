@@ -3,37 +3,36 @@
 
 Does not require technical knowledge, does not require pre-installed software. 1-click install, powerful features, friendly community.
 
-[Installation guide](#step-1-download-and-extract-the-installer) | [Troubleshooting guide](https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting) | <sub>[![Discord Server](https://img.shields.io/discord/1014774730907209781?label=Discord)](https://discord.com/invite/u9yhsFmEkB)</sub> <sup>(for support queries, and development discussions)</sup>
+[Installation guide](#installation) | [Troubleshooting guide](https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting) | <sub>[![Discord Server](https://img.shields.io/discord/1014774730907209781?label=Discord)](https://discord.com/invite/u9yhsFmEkB)</sub> <sup>(for support queries, and development discussions)</sup>
 
 ![t2i](https://raw.githubusercontent.com/Stability-AI/stablediffusion/main/assets/stable-samples/txt2img/768/merged-0006.png)
 
-# Step 1: Download and extract the installer
+# Installation
 Click the download button for your operating system:
 
 <p float="left">
-  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.4.13/stable-diffusion-ui-windows.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-win.png" width="200" /></a>
-  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.4.13/stable-diffusion-ui-linux.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-linux.png" width="200" /></a>
+  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.24/Easy-Diffusion-Windows.exe"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-win.png" width="200" /></a>
+  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.24/Easy-Diffusion-Linux.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-linux.png" width="200" /></a>
+  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.24/Easy-Diffusion-Mac.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-mac.png" width="200" /></a>
 </p>
-
-## On Windows:
-1. Unzip/extract the folder `stable-diffusion-ui` which should be in your downloads folder, unless you changed your default downloads destination.
-2. Move the `stable-diffusion-ui` folder to your `C:` drive (or any other drive like `D:`, at the top root level). `C:\stable-diffusion-ui` or `D:\stable-diffusion-ui` as examples. This will avoid a common problem with Windows (file path length limits).
-## On Linux:
-1. Unzip/extract the folder `stable-diffusion-ui` which should be in your downloads folder, unless you changed your default downloads destination.
-2. Open a terminal window, and navigate to the `stable-diffusion-ui` directory.
-
-# Step 2: Run the program
-## On Windows: 
-Double-click `Start Stable Diffusion UI.cmd`.
-If Windows SmartScreen prevents you from running the program click `More info` and then `Run anyway`.
-## On Linux: 
-Run `./start.sh` (or `bash start.sh`) in a terminal.
 
 The installer will take care of whatever is needed. If you face any problems, you can join the friendly [Discord community](https://discord.com/invite/u9yhsFmEkB) and ask for assistance.
 
-# Step 3: There is no Step 3. It's that simple!
+## On Windows:
+1. Run the downloaded `Easy-Diffusion-Windows.exe` file.
+2. Run `Easy Diffusion` once the installation finishes. You can also start from your Start Menu, or from your desktop (if you created a shortcut).
 
-**To Uninstall:** Just delete the `stable-diffusion-ui` folder to uninstall all the downloaded packages.
+If Windows SmartScreen prevents you from running the program click `More info` and then `Run anyway`.
+
+**Tip:** On Windows 10, please install at the top level in your drive, e.g. `C:\EasyDiffusion` or `D:\EasyDiffusion`. This will avoid a common problem with Windows 10 (file path length limits).
+
+## On Linux/Mac:
+1. Unzip/extract the folder `easy-diffusion` which should be in your downloads folder, unless you changed your default downloads destination.
+2. Open a terminal window, and navigate to the `easy-diffusion` directory.
+3. Run `./start.sh` (or `bash start.sh`) in a terminal.
+
+# To remove/uninstall:
+Just delete the `EasyDiffusion` folder to uninstall all the downloaded packages.
 
 ----
 
@@ -50,11 +49,11 @@ The installer will take care of whatever is needed. If you face any problems, yo
 - **Multiple Prompts File**: Queue multiple prompts by entering one prompt per line, or by running a text file.
 - **Save generated images to disk**: Save your images to your PC!
 - **UI Themes**: Customize the program to your liking.
-- **Organize your models into sub-folders**
+- **Searchable models dropdown**: organize your models into sub-folders, and search through them in the UI.
 
 ### Image generation
 - **Supports**: "*Text to Image*" and "*Image to Image*".
-- **14 Samplers**: `ddim`, `plms`, `heun`, `euler`, `euler_a`, `dpm2`, `dpm2_a`, `lms`, `dpm_solver_stability`, `dpmpp_2s_a`, `dpmpp_2m`, `dpmpp_sde`, `dpm_fast`, `dpm_adaptive`
+- **19 Samplers**: `ddim`, `plms`, `heun`, `euler`, `euler_a`, `dpm2`, `dpm2_a`, `lms`, `dpm_solver_stability`, `dpmpp_2s_a`, `dpmpp_2m`, `dpmpp_sde`, `dpm_fast`, `dpm_adaptive`, `unipc_snr`, `unipc_tu`, `unipc_tq`, `unipc_snr_2`, `unipc_tu_2`.
 - **In-Painting**: Specify areas of your image to paint into.
 - **Simple Drawing Tool**: Draw basic images to guide the AI, without needing an external drawing program.
 - **Face Correction (GFPGAN)**
@@ -67,7 +66,7 @@ The installer will take care of whatever is needed. If you face any problems, yo
 - **1-click Upscale/Face Correction**: Upscale or correct an image after it has been generated.
 - **Make Similar Images**: Click to generate multiple variations of a generated image.
 - **NSFW Setting**: A setting in the UI to control *NSFW content*.
-- **JPEG/PNG output**: Multiple file formats.
+- **JPEG/PNG/WEBP output**: Multiple file formats.
 
 ### Advanced features
 - **Custom Models**: Use your own `.ckpt` or `.safetensors` file, by placing it inside the `models/stable-diffusion` folder!
@@ -75,6 +74,7 @@ The installer will take care of whatever is needed. If you face any problems, yo
 - **Merge Models**
 - **Use custom VAE models**
 - **Use pre-trained Hypernetworks**
+- **Use custom GFPGAN models**
 - **UI Plugins**: Choose from a growing list of [community-generated UI plugins](https://github.com/cmdr2/stable-diffusion-ui/wiki/UI-Plugins), or write your own plugin to add features to the project!
 
 ### Performance and security

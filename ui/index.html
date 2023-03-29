@@ -15,9 +15,12 @@
     <link rel="stylesheet" href="/media/css/fontawesome-all.min.css">
     <link rel="stylesheet" href="/media/css/image-editor.css">
     <link rel="stylesheet" href="/media/css/searchable-models.css">
+    <link rel="stylesheet" href="/media/css/image-modal.css">
     <link rel="manifest" href="/media/manifest.webmanifest">
     <script src="/media/js/jquery-3.6.1.min.js"></script>
     <script src="/media/js/jquery-confirm.min.js"></script>
+    <script src="/media/js/jszip.min.js"></script>
+    <script src="/media/js/FileSaver.min.js"></script>
     <script src="/media/js/marked.min.js"></script>
 </head>
 <body>
@@ -25,8 +28,9 @@
     <div id="top-nav">
         <div id="logo">
             <h1>
+                <img id="logo_img" src="/media/images/icon-512x512.png" >
                 Easy Diffusion
-                <small>v2.5.20 <span id="updateBranchLabel"></span></small>
+                <small>v2.5.30 <span id="updateBranchLabel"></span></small>
             </h1>
         </div>
         <div id="server-status">
@@ -51,7 +55,7 @@
         <div id="editor">
             <div id="editor-inputs">
                 <div id="editor-inputs-prompt" class="row">
-                    <label for="prompt"><b>Enter Prompt</b></label> <small>or</small> <button id="promptsFromFileBtn">Load from a file</button>
+                    <label for="prompt"><b>Enter Prompt</b></label> <small>or</small> <button id="promptsFromFileBtn" class="tertiaryButton">Load from a file</button>
                     <textarea id="prompt" class="col-free">a photograph of an astronaut riding a horse</textarea>
                     <input id="prompt_from_file" name="prompt_from_file" type="file" /> <!-- hidden -->
                     <label for="negative_prompt" class="collapsible" id="negative_prompt_handle">
@@ -70,7 +74,7 @@
                     <div id="init_image_preview_container" class="image_preview_container">
                         <div id="init_image_wrapper">
                             <img id="init_image_preview" src="" />
-                            <span id="init_image_size_box"></span>
+                            <span id="init_image_size_box" class="img_bottom_label"></span>
                             <button class="init_image_clear image_clear_btn"><i class="fa-solid fa-xmark"></i></button>
                         </div>
                         <div id="init_image_buttons">
@@ -98,7 +102,7 @@
                 </div>
 
                 <div id="editor-inputs-tags-container" class="row">
-                    <label>Image Modifiers <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">click an Image Modifier to remove it, right-click to temporarily disable it, use Ctrl+Mouse Wheel to adjust its weight</span></i>:</label>
+                    <label>Image Modifiers <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">click an Image Modifier to remove it, right-click to temporarily disable it, use Ctrl+Mouse Wheel to adjust its weight</span></i></label>
                     <div id="editor-inputs-tags-list"></div>
                 </div>
 
@@ -150,15 +154,15 @@
                             <option value="dpm2_a">DPM2 Ancestral</option>
                             <option value="lms">LMS</option>
                             <option value="dpm_solver_stability">DPM Solver (Stability AI)</option>
-                            <option value="dpmpp_2s_a">DPM++ 2s Ancestral</option>
-                            <option value="dpmpp_2m">DPM++ 2m</option>
-                            <option value="dpmpp_sde">DPM++ SDE</option>
-                            <option value="dpm_fast">DPM Fast</option>
-                            <option value="dpm_adaptive">DPM Adaptive</option>
+                            <option value="dpmpp_2s_a">DPM++ 2s Ancestral (Karras)</option>
+                            <option value="dpmpp_2m">DPM++ 2m (Karras)</option>
+                            <option value="dpmpp_sde">DPM++ SDE (Karras)</option>
+                            <option value="dpm_fast">DPM Fast (Karras)</option>
+                            <option value="dpm_adaptive">DPM Adaptive (Karras)</option>
                             <option value="unipc_snr">UniPC SNR</option>
                             <option value="unipc_tu">UniPC TU</option>
                             <option value="unipc_snr_2">UniPC SNR 2</option>
-                            <option value="unipc_tu_2">UniPC TC 2</option>
+                            <option value="unipc_tu_2">UniPC TU 2</option>
                             <option value="unipc_tq">UniPC TQ</option>
                         </select>
                         <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/How-to-Use#samplers" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about samplers</span></i></a>
@@ -208,10 +212,18 @@
                             <option value="2048">2048</option>
                         </select>
                         <label for="height"><small>(height)</small></label>
+                        <div id="small_image_warning" class="displayNone">Small image sizes can cause bad image quality</div>
                     </td></tr>
                     <tr class="pl-5"><td><label for="num_inference_steps">Inference Steps:</label></td><td> <input id="num_inference_steps" name="num_inference_steps" size="4" value="25" onkeypress="preventNonNumericalInput(event)"></td></tr>
                     <tr class="pl-5"><td><label for="guidance_scale_slider">Guidance Scale:</label></td><td> <input id="guidance_scale_slider" name="guidance_scale_slider" class="editor-slider" value="75" type="range" min="11" max="500"> <input id="guidance_scale" name="guidance_scale" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"></td></tr>
                     <tr id="prompt_strength_container" class="pl-5"><td><label for="prompt_strength_slider">Prompt Strength:</label></td><td> <input id="prompt_strength_slider" name="prompt_strength_slider" class="editor-slider" value="80" type="range" min="0" max="99"> <input id="prompt_strength" name="prompt_strength" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"><br/></td></tr>
+                    <tr id="lora_model_container" class="pl-5"><td><label for="lora_model">LoRA:</i></label></td><td>
+                        <input id="lora_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
+                    </td></tr>
+                    <tr id="lora_alpha_container" class="pl-5">
+                        <td><label for="lora_alpha_slider">LoRA strength:</label></td>
+                        <td> <input id="lora_alpha_slider" name="lora_alpha_slider" class="editor-slider" value="100" type="range" min="0" max="100"> <input id="lora_alpha" name="lora_alpha" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"><br/></td>
+                    </tr>
                     <tr class="pl-5"><td><label for="hypernetwork_model">Hypernetwork:</i></label></td><td>
                         <input id="hypernetwork_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
                     </td></tr>
@@ -223,9 +235,13 @@
                         <select id="output_format" name="output_format">
                             <option value="jpeg" selected>jpeg</option>
                             <option value="png">png</option>
+                            <option value="webp">webp</option>
                         </select>
+                        <span id="output_lossless_container">
+                            <input id="output_lossless" name="output_lossless" type="checkbox"><label for="output_lossless">Lossless</label></td></tr>
+                        </span>
                     </td></tr>
-                    <tr class="pl-5" id="output_quality_row"><td><label for="output_quality">JPEG Quality:</label></td><td>
+                    <tr class="pl-5" id="output_quality_row"><td><label for="output_quality">Image Quality:</label></td><td>
                     <input id="output_quality_slider" name="output_quality" class="editor-slider" value="75" type="range" min="10" max="95"> <input id="output_quality" name="output_quality" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)">
                     </td></tr>
                     </table></div>
@@ -276,18 +292,45 @@
         </div>
 
         <div id="preview" class="col-free">
+
+            <div id="preview-content">
+                <div id="preview-tools" class="displayNone">
+                    <button id="clear-all-previews" class="secondaryButton"><i class="fa-solid fa-trash-can icon"></i> Clear All</button>
+                    <button class="tertiaryButton" id="show-download-popup"><i class="fa-solid fa-download"></i> Download images</button>
+                    <div class="display-settings">
+                        <button id="undo" class="displayNone primaryButton">
+                            Undo <i class="fa-solid fa-rotate-left icon"></i>
+                            <span class="simple-tooltip left">Undo last remove</span>
+                        </button>
+                        <span class="auto-scroll"></span> <!-- hack for Rabbit Hole update -->
+                        <button id="auto_scroll_btn" class="tertiaryButton">
+                            <i class="fa-solid fa-arrows-up-to-line icon"></i>
+                            <input id="auto_scroll" name="auto_scroll" type="checkbox" style="display: none">
+                            <span class="simple-tooltip left">
+                                Scroll to generated image (<span class="state">OFF</span>)
+                            </span>
+                        </button>
+                        <button class="dropdown tertiaryButton">
+                            <i class="fa-solid fa-magnifying-glass-plus icon dropbtn"></i>
+                            <span class="simple-tooltip left">
+                                Image Size
+                            </span>
+                        </button>
+                        <div class="dropdown-content">
+                            <div class="dropdown-item">
+                                <input id="thumbnail_size" name="thumbnail_size" class="editor-slider" type="range" value="70" min="5" max="200" oninput="sliderUpdate(event)"> 
+                                <input id="thumbnail_size-input" name="thumbnail_size-input" size="3" value="70" pattern="^[0-9.]+$" onkeypress="preventNonNumericalInput(event)" oninput="sliderUpdate(event)">&nbsp;%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="clearfix" style="clear: both;"></div>
+                </div>
+            </div>
             <div id="initial-text">
                 Type a prompt and press the "Make Image" button.<br/><br/>You can set an "Initial Image" if you want to guide the AI.<br/><br/>
                 You can also add modifiers like "Realistic", "Pencil Sketch", "ArtStation" etc by browsing through the "Image Modifiers" section 
                 and selecting the desired modifiers.<br/><br/>
                 Click "Image Settings" for additional settings like seed, image size, number of images to generate etc.<br/><br/>Enjoy! :)
-            </div>
-
-            <div id="preview-content">
-                <div id="preview-tools">
-                    <button id="clear-all-previews" class="secondaryButton"><i class="fa-solid fa-trash-can"></i> Clear All</button>
-                    <button id="save-all-images" class="primaryButton"><i class="fa-solid fa-download"></i> Download All Images</button>
-                </div>
             </div>
         </div>
         </div>
@@ -357,6 +400,31 @@
     </div>
     
 
+    <div class="popup" id="download-images-popup">
+        <div>
+            <i class="close-button fa-solid fa-xmark"></i>
+            <h1>Download all images</h1>
+            <div class="parameters-table">
+                <div>
+                    <div><i class="fa fa-file-zipper"></i></div>
+                    <div><label for="theme">Download as a ZIP file</label><small>Instead of downloading individual files, generate one zip file with all images</small></div>
+                    <div><div class="input-toggle"><input id="zip_toggle" name="zip_toggle" checked="" type="checkbox"><label for="zip_toggle"></label></div></div>
+                </div>
+                <div id="download-add-folders">
+                    <div><i class="fa fa-folder-tree"></i></div>
+                    <div><label for="theme">Add per-job folders</label><small>Place images into job folders</small></div>
+                    <div><div class="input-toggle"><input id="tree_toggle" name="tree_toggle" checked="" type="checkbox"><label for="tree_toggle"></label></div></div>
+                </div>
+                <div>
+                    <div><i class="fa fa-sliders"></i></div>
+                    <div><label for="theme">Add metadata files</label><small>For each image, also download a JSON file with all the settings used to generate the image</small></div>
+                    <div><div class="input-toggle"><input id="json_toggle" name="json_toggle" checked="" type="checkbox"><label for="json_toggle"></label></div></div>
+                </div>
+            </div>
+            <br/>
+            <button id="save-all-images" class="primaryButton"><i class="fa-solid fa-images"></i> Start download</button>
+        </div>
+    </div>
     <div id="save-settings-config" class="popup">
         <div>
             <i class="close-button fa-solid fa-xmark"></i>
@@ -367,12 +435,12 @@
         </div>
     </div>
 
-    <div id="modifier-settings-config" class="popup">
+    <div id="modifier-settings-config" class="popup" tabindex="0">
         <div>
             <i class="close-button fa-solid fa-xmark"></i>
             <h1>Modifier Settings</h1>
             <p>Set your custom modifiers (one per line)</p>
-            <textarea id="custom-modifiers-input" placeholder="Enter your custom modifiers, one-per-line"></textarea>
+            <textarea id="custom-modifiers-input" placeholder="Enter your custom modifiers, one-per-line" spellcheck="false"></textarea>
             <p><small><b>Tip:</b> You can include special characters like {} () [] and |. You can also put multiple comma-separated phrases in a single line, to make a single modifier that combines all of those.</small></p>
         </div>
     </div>
@@ -435,6 +503,7 @@
 <script src="media/js/themes.js"></script>
 <script src="media/js/dnd.js"></script>
 <script src="media/js/image-editor.js"></script>
+<script src="media/js/image-modal.js"></script>
 <script>
 async function init() {
     await initSettings()
@@ -446,8 +515,8 @@ async function init() {
 
     SD.init({
         events: {
-            statusChange: setServerStatus
-            , idle: onIdle
+            statusChange: setServerStatus,
+            idle: onIdle
         }
     })
 

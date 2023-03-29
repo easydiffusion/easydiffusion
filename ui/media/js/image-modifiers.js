@@ -1,6 +1,7 @@
 let activeTags = []
 let modifiers = []
 let customModifiersGroupElement = undefined
+let customModifiersInitialContent
 
 let editorModifierEntries = document.querySelector('#editor-modifiers-entries')
 let editorModifierTagsList = document.querySelector('#editor-inputs-tags-list')
@@ -18,6 +19,9 @@ const CUSTOM_MODIFIERS_KEY = "customModifiers"
 
 function createModifierCard(name, previews, removeBy) {
     const modifierCard = document.createElement('div')
+    let style = previewImageField.value
+    let styleIndex = (style=='portrait') ? 0 : 1
+
     modifierCard.className = 'modifier-card'
     modifierCard.innerHTML = `
     <div class="modifier-card-overlay"></div>
@@ -37,8 +41,8 @@ function createModifierCard(name, previews, removeBy) {
     errorText.innerText = 'No Image'
 
     if (typeof previews == 'object') {
-        image.src = previews[0]; // portrait
-        image.setAttribute('preview-type', 'portrait')
+        image.src = previews[styleIndex]; // portrait
+        image.setAttribute('preview-type', style)
     } else {
         image.remove()
     }
@@ -48,7 +52,6 @@ function createModifierCard(name, previews, removeBy) {
 
     if(cardLabel.length <= maxLabelLength) {
         label.querySelector('p').innerText = cardLabel
-        label.querySelector('p').dataset.fullName = name // preserve the full name
     } else {
         const tooltipText = document.createElement('span')
         tooltipText.className = 'tooltip-text'
@@ -59,6 +62,7 @@ function createModifierCard(name, previews, removeBy) {
 
         label.querySelector('p').innerText = cardLabel.substring(0, maxLabelLength) + '...'
     }
+    label.querySelector('p').dataset.fullName = name // preserve the full name
 
     return modifierCard
 }
@@ -80,7 +84,7 @@ function createModifierGroup(modifierGroup, initiallyExpanded, removeBy) {
 
     modifiers.forEach(modObj => {
         const modifierName = modObj.modifier
-        const modifierPreviews = modObj?.previews?.map(preview => `${modifierThumbnailPath}/${preview.path}`)
+        const modifierPreviews = modObj?.previews?.map(preview => `${IMAGE_REGEX.test(preview.image) ? preview.image : modifierThumbnailPath + '/' + preview.path}`)
 
         const modifierCard = createModifierCard(modifierName, modifierPreviews, removeBy)
 
@@ -115,6 +119,7 @@ function createModifierGroup(modifierGroup, initiallyExpanded, removeBy) {
     modifiersEl.appendChild(brk)
 
     let e = document.createElement('div')
+    e.className = 'modifier-category'
     e.appendChild(titleEl)
     e.appendChild(modifiersEl)
 
@@ -124,7 +129,10 @@ function createModifierGroup(modifierGroup, initiallyExpanded, removeBy) {
 }
 
 function trimModifiers(tag) {
-    return tag.replace(/^\(+|\)+$/g, '').replace(/^\[+|\]+$/g, '')
+    // Remove trailing '-' and/or '+'
+    tag = tag.replace(/[-+]+$/, '');
+    // Remove parentheses at beginning and end
+    return tag.replace(/^[(]+|[\s)]+$/g, '');
 }
 
 async function loadModifiers() {
@@ -144,17 +152,18 @@ async function loadModifiers() {
             createCollapsibles(editorModifierEntries)
         }
     } catch (e) {
-        console.log('error fetching modifiers', e)
+        console.error('error fetching modifiers', e)
     }
 
     loadCustomModifiers()
+    resizeModifierCards(modifierCardSizeSlider.value)
     document.dispatchEvent(new Event('loadImageModifiers'))
 }
 
-function refreshModifiersState(newTags) {
+function refreshModifiersState(newTags, inactiveTags) {
     // clear existing modifiers
     document.querySelector('#editor-modifiers').querySelectorAll('.modifier-card').forEach(modifierCard => {
-        const modifierName = modifierCard.querySelector('.modifier-card-label').innerText
+        const modifierName = modifierCard.querySelector('.modifier-card-label p').dataset.fullName // pick the full modifier name
         if (activeTags.map(x => x.name).includes(modifierName)) {
             modifierCard.classList.remove(activeCardClass)
             modifierCard.querySelector('.modifier-card-image-overlay').innerText = '+'
@@ -166,13 +175,16 @@ function refreshModifiersState(newTags) {
     newTags.forEach(tag => {
         let found = false
         document.querySelector('#editor-modifiers').querySelectorAll('.modifier-card').forEach(modifierCard => {
-            const modifierName = modifierCard.querySelector('.modifier-card-label').innerText
-            if (tag == modifierName) {
+            const modifierName = modifierCard.querySelector('.modifier-card-label p').dataset.fullName
+            const shortModifierName = modifierCard.querySelector('.modifier-card-label p').innerText
+            if (trimModifiers(tag) == trimModifiers(modifierName)) {
                 // add modifier to active array
                 if (!activeTags.map(x => x.name).includes(tag)) { // only add each tag once even if several custom modifier cards share the same tag
+                    const imageModifierCard = modifierCard.cloneNode(true)
+                    imageModifierCard.querySelector('.modifier-card-label p').innerText = tag.replace(modifierName, shortModifierName)
                     activeTags.push({
-                        'name': modifierName,
-                        'element': modifierCard.cloneNode(true),
+                        'name': tag,
+                        'element': imageModifierCard,
                         'originElement': modifierCard
                     })
                 }
@@ -202,7 +214,7 @@ function refreshModifiersState(newTags) {
             })
         }
     })
-    refreshTagsList()
+    refreshTagsList(inactiveTags)
 }
 
 function refreshInactiveTags(inactiveTags) {
@@ -219,13 +231,13 @@ function refreshInactiveTags(inactiveTags) {
     let overlays = document.querySelector('#editor-inputs-tags-list').querySelectorAll('.modifier-card-overlay')
     overlays.forEach (i => {
         let modifierName = i.parentElement.getElementsByClassName('modifier-card-label')[0].getElementsByTagName("p")[0].innerText
-        if (inactiveTags.find(element => element === modifierName) !== undefined) {
+        if (inactiveTags?.find(element => element === modifierName) !== undefined) {
             i.parentElement.classList.add('modifier-toggle-inactive')
         }
     })
 }
 
-function refreshTagsList() {
+function refreshTagsList(inactiveTags) {
     editorModifierTagsList.innerHTML = ''
 
     if (activeTags.length == 0) {
@@ -257,6 +269,8 @@ function refreshTagsList() {
     let brk = document.createElement('br')
     brk.style.clear = 'both'
     editorModifierTagsList.appendChild(brk)
+    refreshInactiveTags(inactiveTags)
+    document.dispatchEvent(new Event('refreshImageModifiers')) // notify plugins that the image tags have been refreshed 
 }
 
 function toggleCardState(modifierName, makeActive) {
@@ -340,7 +354,26 @@ previewImageField.onchange = () => changePreviewImages(previewImageField.value)
 
 modifierSettingsBtn.addEventListener('click', function(e) {
     modifierSettingsOverlay.classList.add("active")
+    customModifiersTextBox.setSelectionRange(0, 0)
+    customModifiersTextBox.focus()
+    customModifiersInitialContent = customModifiersTextBox.value // preserve the initial content
     e.stopPropagation()
+})
+
+modifierSettingsOverlay.addEventListener('keydown', function(e) {
+    switch (e.key) {
+        case "Escape": // Escape to cancel
+            customModifiersTextBox.value = customModifiersInitialContent // undo the changes
+            modifierSettingsOverlay.classList.remove("active")
+            e.stopPropagation()
+            break
+        case "Enter":
+            if (e.ctrlKey) { // Ctrl+Enter to confirm
+                modifierSettingsOverlay.classList.remove("active")
+                e.stopPropagation()
+                break
+            }
+    }
 })
 
 function saveCustomModifiers() {

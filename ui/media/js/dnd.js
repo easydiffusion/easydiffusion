@@ -2,7 +2,7 @@
 
 const EXT_REGEX = /(?:\.([^.]+))?$/
 const TEXT_EXTENSIONS = ['txt', 'json']
-const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif', 'tga']
+const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif', 'tga', 'webp']
 
 function parseBoolean(stringValue) {
     if (typeof stringValue === 'boolean') {
@@ -97,6 +97,7 @@ const TASK_MAPPING = {
                 return
             }
             randomSeedField.checked = false
+            randomSeedField.dispatchEvent(new Event('change')) // let plugins know that the state of the random seed toggle changed
             seedField.disabled = false
             seedField.value = seed
         },
@@ -230,6 +231,20 @@ const TASK_MAPPING = {
         readUI: () => vaeModelField.value,
         parse: (val) => val
     },
+    use_lora_model: { name: 'LoRA model',
+        setUI: (use_lora_model) => {
+            const oldVal = loraModelField.value
+            use_lora_model = (use_lora_model === undefined || use_lora_model === null || use_lora_model === 'None' ? '' : use_lora_model)
+
+            if (use_lora_model !== '') {
+                use_lora_model = getModelPath(use_lora_model, ['.ckpt', '.safetensors'])
+                use_lora_model = use_lora_model !== '' ? use_lora_model : oldVal
+            }
+            loraModelField.value = use_lora_model
+        },
+        readUI: () => loraModelField.value,
+        parse: (val) => val
+    },
     use_hypernetwork_model: { name: 'Hypernetwork model',
         setUI: (use_hypernetwork_model) => {
             const oldVal = hypernetworkModelField.value
@@ -357,6 +372,7 @@ function restoreTaskToUI(task, fieldsToSkip) {
         initImagePreview.addEventListener('load', function() {
             if (Boolean(task.reqBody.mask)) {
                 imageInpainter.setImg(task.reqBody.mask)
+                maskSetting.checked = true
             }
         }, { once: true })
         initImagePreview.src = task.reqBody.init_image
@@ -375,7 +391,7 @@ function readUI() {
 }
 function getModelPath(filename, extensions)
 {
-    if (filename === null) {
+    if (typeof filename !== "string") {
         return
     }
     
@@ -489,6 +505,7 @@ async function parseContent(text) {
         return true
     } else {
         console.warn(`Raw text content couldn't be parsed.`)
+        promptField.value = text
         return false
     }
 }

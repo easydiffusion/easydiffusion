@@ -15,6 +15,7 @@ const SETTINGS_IDS_LIST = [
     "stable_diffusion_model",
     "vae_model",
     "hypernetwork_model",
+    "lora_model",
     "sampler_name",
     "width",
     "height",
@@ -22,14 +23,17 @@ const SETTINGS_IDS_LIST = [
     "guidance_scale",
     "prompt_strength",
     "hypernetwork_strength",
+    "lora_alpha",
     "output_format",
     "output_quality",
+    "output_lossless",
     "negative_prompt",
     "stream_image_progress",
     "use_face_correction",
     "gfpgan_model",
     "use_upscale",
     "upscale_amount",
+    "block_nsfw",
     "show_only_filtered_image",
     "upscale_model",
     "preview-image",
@@ -43,7 +47,12 @@ const SETTINGS_IDS_LIST = [
     "metadata_output_format",
     "auto_save_settings",
     "apply_color_correction",
-    "process_order_toggle"
+    "process_order_toggle",
+    "thumbnail_size",
+    "auto_scroll",
+    "zip_toggle",
+    "tree_toggle",
+    "json_toggle"
 ]
 
 const IGNORE_BY_DEFAULT = [

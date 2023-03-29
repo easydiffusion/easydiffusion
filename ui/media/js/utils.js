@@ -509,6 +509,9 @@ function makeQuerablePromise(promise) {
 /* inserts custom html to allow prettifying of inputs */
 function prettifyInputs(root_element) {
     root_element.querySelectorAll(`input[type="checkbox"]`).forEach(element => {
+        if (element.style.display === "none") {
+            return
+        }
         var parent = element.parentNode;
         if (!parent.classList.contains("input-toggle")) {
             var wrapper = document.createElement("div");
@@ -673,4 +676,35 @@ class ServiceContainer {
     static isConstructor(definition) {
         return typeof definition === 'function'
     }
+}
+
+/**
+ *
+ * @param {string} tag
+ * @param {object} attributes
+ * @param {string | Array<string>} classes
+ * @param {string | HTMLElement | Array<string | HTMLElement>}
+ * @returns {HTMLElement}
+ */
+function createElement(tagName, attributes, classes, textOrElements) {
+    const element = document.createElement(tagName)
+    if (attributes) {
+        Object.entries(attributes).forEach(([key, value]) => {
+            element.setAttribute(key, value)
+        });
+    }
+    if (classes) {
+        (Array.isArray(classes) ? classes : [classes]).forEach(className => element.classList.add(className))
+    }
+    if (textOrElements) {
+        const children = Array.isArray(textOrElements) ? textOrElements : [textOrElements]
+        children.forEach(textOrElem => {
+            if (textOrElem instanceof HTMLElement) {
+                element.appendChild(textOrElem)
+            } else {
+                element.appendChild(document.createTextNode(textOrElem))
+            }
+        })
+    }
+    return element
 }

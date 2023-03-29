@@ -27,12 +27,19 @@
     --input-border-size: 1px; 
     --accent-color: hsl(var(--accent-hue), 100%, var(--accent-lightness));
     --accent-color-hover: hsl(var(--accent-hue), 100%, var(--accent-lightness-hover));
+    --accent-text-color: rgb(255, 221, 255);
     --primary-button-border: none;
     --input-switch-padding: 1px;
     --input-height: 18px;
+	--tertiary-background-color: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (2 * var(--value-step))));
+    --tertiary-border-color: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (3 * var(--value-step))));
+    --tertiary-color: var(--input-text-color)
 
     /* Main theme color, hex color fallback. */
     --theme-color-fallback: #673AB6;
+    --status-orange: rgb(200, 139, 0);
+    --status-green: green;
+    --status-red: red;
 }
 
 .theme-light {
@@ -48,6 +55,11 @@
     --input-border-color: grey; 
 
     --theme-color-fallback: #aaaaaa;
+
+	--tertiary-background-color: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (16.8 * var(--value-step))));
+    --tertiary-border-color: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (12 * var(--value-step))));
+
+    --accent-text-color: white;
 }
 
 .theme-discord {
@@ -64,6 +76,10 @@
     --input-border-color: var(--input-background-color); 
 
     --theme-color-fallback: #202225;
+
+    --tertiary-background-color: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (3.5 * var(--value-step))));
+    --tertiary-border-color: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (4.5 * var(--value-step))));
+    --accent-text-color: white;
 }
 
 .theme-cool-blue {
@@ -81,6 +97,10 @@
     --accent-hue: 212;
 
     --theme-color-fallback: #0056b8;
+
+    --tertiary-background-color: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (3.5 * var(--value-step))));
+    --tertiary-border-color: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (4.5 * var(--value-step))));
+    --accent-text-color: #f7fbff;
 }
 
 
@@ -97,6 +117,9 @@
     --input-background-color: var(--background-color3);
 
     --theme-color-fallback: #5300b8;
+
+    --tertiary-background-color: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (3.5 * var(--value-step))));
+    --tertiary-border-color: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (4.5 * var(--value-step))));
 }
 
 .theme-super-dark {
@@ -131,6 +154,9 @@
     --input-background-color: hsl(222, var(--main-saturation), calc(var(--value-base) - (2 * var(--value-step))));
     --input-text-color: #FF0000;
     --input-border-color: #005E05;
+
+    --tertiary-color: white;
+    --accent-text-color: #f7fbff;
 }
 
 
