@@ -118,6 +118,22 @@ else
     fi
 fi
 
+# install ruamel
+if python ../scripts/check_modules.py ruamel.yaml; then
+    echo "ruamel.yaml has already been installed."
+else
+    echo "Installing ruamel.yaml.."
+
+    export PYTHONNOUSERSITE=1
+    export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
+
+    if python -m pip install ruamel.yaml==0.17.21 ; then
+        echo "Installed."
+    else
+        fail "Install failed for rich"
+    fi
+fi
+
 if python ../scripts/check_modules.py uvicorn fastapi ; then
     echo "Packages necessary for Easy Diffusion were already installed"
 else
