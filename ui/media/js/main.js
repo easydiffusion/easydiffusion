@@ -5,6 +5,28 @@ const MIN_GPUS_TO_SHOW_SELECTION = 2
 const IMAGE_REGEX = new RegExp('data:image/[A-Za-z]+;base64')
 const htmlTaskMap = new WeakMap()
 
+const taskConfigSetup = {
+    taskConfig: {
+        seed: { value: ({ seed }) => seed, label: 'Seed' },
+        dimensions: { value: ({ reqBody }) => `${reqBody?.width}x${reqBody?.height}`, label: 'Dimensions' },
+        sampler_name: 'Sampler',
+        num_inference_steps: 'Inference Steps',
+        guidance_scale: 'Guidance Scale',
+        use_stable_diffusion_model: 'Model',
+        use_vae_model: { label: 'VAE', visible: ({ reqBody }) => reqBody?.use_vae_model !== undefined && reqBody?.use_vae_model.trim() !== ''},
+        negative_prompt: { label: 'Negative Prompt', visible: ({ reqBody }) => reqBody?.negative_prompt !== undefined && reqBody?.negative_prompt.trim() !== ''},
+        prompt_strength: 'Prompt Strength',
+        use_face_correction: 'Fix Faces',
+        upscale: { value: ({ reqBody }) => `${reqBody?.use_upscale} (${reqBody?.upscale_amount || 4}x)`, label: 'Upscale', visible: ({ reqBody }) => !!reqBody?.use_upscale },
+        use_hypernetwork_model: 'Hypernetwork',
+        hypernetwork_strength: { label: 'Hypernetwork Strength', visible: ({ reqBody }) => !!reqBody?.use_hypernetwork_model },
+        use_lora_model: 'Lora Model',
+        preserve_init_image_color_profile: 'Preserve Color Profile',
+    },
+    pluginTaskConfig: {},
+    getCSSKey: (key) => key.split('_').map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join('')
+}
+
 let imageCounter = 0
 let imageRequest = []
 
@@ -952,6 +974,29 @@ function onTaskEntryDragOver(event) {
     }
 }
 
+function generateConfig({ label, value, visible, cssKey }) {
+    if (!visible) return null;
+    return `<div class="taskConfigContainer task${cssKey}Container"><b>${label}:</b> <span class="task${cssKey}">${value}`
+}
+
+function getVisibleConfig(config, task) {
+    const mergedTaskConfig = { ...config.taskConfig, ...config.pluginTaskConfig }
+    return Object.keys(mergedTaskConfig)
+        .map((key) => {
+            const value = mergedTaskConfig?.[key]?.value?.(task) ?? task.reqBody[key]
+            const visible = mergedTaskConfig?.[key]?.visible?.(task) ?? value !== undefined ?? true
+            const label = mergedTaskConfig?.[key]?.label ?? mergedTaskConfig?.[key]
+            const cssKey = config.getCSSKey(key)
+            return { label, visible, value, cssKey }
+        })
+        .map((obj) => generateConfig(obj))
+        .filter(obj => obj)
+}
+
+function createTaskConfig(task) {
+    return getVisibleConfig(taskConfigSetup, task).join('</span>,&nbsp;</div>')
+}
+
 function createTask(task) {
     let taskConfig = ''
 
@@ -960,33 +1005,8 @@ function createTask(task) {
         let w = task.reqBody.width * h / task.reqBody.height >>0
         taskConfig += `<div class="task-initimg" style="float:left;"><img style="width:${w}px;height:${h}px;" src="${task.reqBody.init_image}"><div class="task-fs-initimage"></div></div>`
     }
-    taskConfig += `<b>Seed:</b> ${task.seed}, <b>Sampler:</b> ${task.reqBody.sampler_name}, <b>Inference Steps:</b> ${task.reqBody.num_inference_steps}, <b>Guidance Scale:</b> ${task.reqBody.guidance_scale}, <b>Model:</b> ${task.reqBody.use_stable_diffusion_model}`
 
-    if (task.reqBody.use_vae_model.trim() !== '') {
-        taskConfig += `, <b>VAE:</b> ${task.reqBody.use_vae_model}`
-    }
-    if (task.reqBody.negative_prompt.trim() !== '') {
-        taskConfig += `, <b>Negative Prompt:</b> ${task.reqBody.negative_prompt}`
-    }
-    if (task.reqBody.init_image !== undefined) {
-        taskConfig += `, <b>Prompt Strength:</b> ${task.reqBody.prompt_strength}`
-    }
-    if (task.reqBody.use_face_correction) {
-        taskConfig += `, <b>Fix Faces:</b> ${task.reqBody.use_face_correction}`
-    }
-    if (task.reqBody.use_upscale) {
-        taskConfig += `, <b>Upscale:</b> ${task.reqBody.use_upscale} (${task.reqBody.upscale_amount || 4}x)`
-    }
-    if (task.reqBody.use_hypernetwork_model) {
-        taskConfig += `, <b>Hypernetwork:</b> ${task.reqBody.use_hypernetwork_model}`
-        taskConfig += `, <b>Hypernetwork Strength:</b> ${task.reqBody.hypernetwork_strength}`
-    }
-    if (task.reqBody.use_lora_model) {
-        taskConfig += `, <b>LoRA:</b> ${task.reqBody.use_lora_model}`
-    }
-    if (task.reqBody.preserve_init_image_color_profile) {
-        taskConfig += `, <b>Preserve Color Profile:</b> true`
-    }
+    taskConfig += `<div class="taskConfigData">${createTaskConfig(task)}</span></div></div>`;
 
     let taskEntry = document.createElement('div')
     taskEntry.id = `imageTaskContainer-${Date.now()}`
@@ -1085,7 +1105,6 @@ function getCurrentUserRequest() {
         numOutputsTotal: numOutputsTotal,
         batchCount: Math.ceil(numOutputsTotal / numOutputsParallel),
         seed,
-
         reqBody: {
             seed,
             used_random_seed: randomSeedField.checked,
@@ -1117,7 +1136,6 @@ function getCurrentUserRequest() {
     if (IMAGE_REGEX.test(initImagePreview.src)) {
         newTask.reqBody.init_image = initImagePreview.src
         newTask.reqBody.prompt_strength = parseFloat(promptStrengthField.value)
-
         // if (IMAGE_REGEX.test(maskImagePreview.src)) {
         //     newTask.reqBody.mask = maskImagePreview.src
         // }
