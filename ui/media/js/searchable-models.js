@@ -483,7 +483,7 @@ class ModelDropdown {
             createElement("i", { id: `${this.modelFilter.id}-model-filter-arrow` }, [
                 "model-selector-arrow",
                 "fa-solid",
-                "fa-angle-down",
+                "fa-angle-down"
             ])
         )
         this.modelFilter.classList.add("model-selector")
@@ -547,7 +547,7 @@ class ModelDropdown {
                     model,
                     createElement("li", { "data-path": fullPath }, classes, [
                         createElement("i", undefined, ["fa-regular", "fa-file", "icon"]),
-                        model,
+                        model
                     ])
                 )
             }
@@ -596,7 +596,7 @@ class ModelDropdown {
 
         if (modelTree.length > 0) {
             const containerListItem = createElement("li", { id: `${this.modelFilter.id}-model-result` }, [
-                "model-result",
+                "model-result"
             ])
             //console.log(containerListItem)
             containerListItem.appendChild(this.createModelNodeList(undefined, modelTree, true))

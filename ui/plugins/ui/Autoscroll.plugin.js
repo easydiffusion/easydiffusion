@@ -14,7 +14,7 @@
 
     observer.observe(document.getElementById("preview"), {
         childList: true,
-        subtree: true,
+        subtree: true
     })
 
     function Autoscroll(target) {

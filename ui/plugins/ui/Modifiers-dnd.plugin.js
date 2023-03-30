@@ -25,7 +25,7 @@
     })
 
     observer.observe(editorModifierTagsList, {
-        childList: true,
+        childList: true
     })
 
     let current

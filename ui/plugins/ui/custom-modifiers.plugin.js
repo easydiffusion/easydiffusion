@@ -13,19 +13,19 @@
                 customModifiers = customModifiers.filter((m) => m.trim() !== "")
                 customModifiers = customModifiers.map(function (m) {
                     return {
-                        modifier: m,
+                        modifier: m
                     }
                 })
 
                 let customGroup = {
                     category: "Custom Modifiers",
-                    modifiers: customModifiers,
+                    modifiers: customModifiers
                 }
 
                 customModifiersGroupElement = createModifierGroup(customGroup, true)
 
                 createCollapsibles(customModifiersGroupElement)
             }
-        },
+        }
     })
 })()

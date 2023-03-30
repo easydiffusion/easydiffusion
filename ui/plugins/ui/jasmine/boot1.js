@@ -45,7 +45,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const queryString = new jasmine.QueryString({
         getWindowLocation: function () {
             return window.location
-        },
+        }
     })
 
     const filterSpecs = !!queryString.getParam("spec")
@@ -53,7 +53,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const config = {
         stopOnSpecFailure: queryString.getParam("stopOnSpecFailure"),
         stopSpecOnExpectationFailure: queryString.getParam("stopSpecOnExpectationFailure"),
-        hideDisabled: queryString.getParam("hideDisabled"),
+        hideDisabled: queryString.getParam("hideDisabled")
     }
 
     const random = queryString.getParam("random")
@@ -89,7 +89,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             return document.createTextNode.apply(document, arguments)
         },
         timer: new jasmine.Timer(),
-        filterSpecs: filterSpecs,
+        filterSpecs: filterSpecs
     })
 
     /**
@@ -104,7 +104,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const specFilter = new jasmine.HtmlSpecFilter({
         filterString: function () {
             return queryString.getParam("spec")
-        },
+        }
     })
 
     config.specFilter = function (spec) {

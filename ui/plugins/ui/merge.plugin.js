@@ -455,7 +455,7 @@
             let res = await fetch("/model/merge", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(request),
+                body: JSON.stringify(request)
             })
             const data = await res.json()
             addLogMessage(JSON.stringify(data))

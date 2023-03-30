@@ -15,33 +15,33 @@ const taskConfigSetup = {
         use_stable_diffusion_model: "Model",
         use_vae_model: {
             label: "VAE",
-            visible: ({ reqBody }) => reqBody?.use_vae_model !== undefined && reqBody?.use_vae_model.trim() !== "",
+            visible: ({ reqBody }) => reqBody?.use_vae_model !== undefined && reqBody?.use_vae_model.trim() !== ""
         },
         negative_prompt: {
             label: "Negative Prompt",
-            visible: ({ reqBody }) => reqBody?.negative_prompt !== undefined && reqBody?.negative_prompt.trim() !== "",
+            visible: ({ reqBody }) => reqBody?.negative_prompt !== undefined && reqBody?.negative_prompt.trim() !== ""
         },
         prompt_strength: "Prompt Strength",
         use_face_correction: "Fix Faces",
         upscale: {
             value: ({ reqBody }) => `${reqBody?.use_upscale} (${reqBody?.upscale_amount || 4}x)`,
             label: "Upscale",
-            visible: ({ reqBody }) => !!reqBody?.use_upscale,
+            visible: ({ reqBody }) => !!reqBody?.use_upscale
         },
         use_hypernetwork_model: "Hypernetwork",
         hypernetwork_strength: {
             label: "Hypernetwork Strength",
-            visible: ({ reqBody }) => !!reqBody?.use_hypernetwork_model,
+            visible: ({ reqBody }) => !!reqBody?.use_hypernetwork_model
         },
         use_lora_model: { label: "Lora Model", visible: ({ reqBody }) => !!reqBody?.use_lora_model },
-        preserve_init_image_color_profile: "Preserve Color Profile",
+        preserve_init_image_color_profile: "Preserve Color Profile"
     },
     pluginTaskConfig: {},
     getCSSKey: (key) =>
         key
             .split("_")
             .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-            .join(""),
+            .join("")
 }
 
 let imageCounter = 0
@@ -262,8 +262,8 @@ function shiftOrConfirm(e, prompt, fn) {
                 yes: () => {
                     fn(e)
                 },
-                cancel: () => {},
-            },
+                cancel: () => {}
+            }
         })
     }
 }
@@ -308,7 +308,7 @@ function undoableRemove(element, doubleUndo = false) {
         parent: element.parentNode,
         prev: element.previousSibling,
         next: element.nextSibling,
-        doubleUndo: doubleUndo,
+        doubleUndo: doubleUndo
     }
     undoBuffer.push(data)
     if (undoBuffer.length > UNDO_LIMIT) {
@@ -426,7 +426,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             })
 
             const req = Object.assign({}, reqBody, {
-                seed: result?.seed || reqBody.seed,
+                seed: result?.seed || reqBody.seed
             })
             imageElem.setAttribute("data-seed", req.seed)
             imageElem.setAttribute("data-imagecounter", ++imageCounter)
@@ -440,20 +440,20 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                     {
                         html: '<i class="fa-solid fa-download"></i> Download Image',
                         on_click: onDownloadImageClick,
-                        class: "download-img",
+                        class: "download-img"
                     },
                     {
                         html: '<i class="fa-solid fa-download"></i> JSON',
                         on_click: onDownloadJSONClick,
-                        class: "download-json",
-                    },
+                        class: "download-json"
+                    }
                 ],
                 { text: "Make Similar Images", on_click: onMakeSimilarClick },
                 { text: "Draw another 25 steps", on_click: onContinueDrawingClick },
                 [
                     { text: "Upscale", on_click: onUpscaleClick, filter: (req, img) => !req.use_upscale },
-                    { text: "Fix Faces", on_click: onFixFacesClick, filter: (req, img) => !req.use_face_correction },
-                ],
+                    { text: "Fix Faces", on_click: onFixFacesClick, filter: (req, img) => !req.use_face_correction }
+                ]
             ]
 
             // include the plugins
@@ -553,7 +553,7 @@ function modifyCurrentRequest(...reqDiff) {
     const newTaskRequest = getCurrentUserRequest()
 
     newTaskRequest.reqBody = Object.assign(newTaskRequest.reqBody, ...reqDiff, {
-        use_cpu: useCPUField.checked,
+        use_cpu: useCPUField.checked
     })
     newTaskRequest.seed = newTaskRequest.reqBody.seed
 
@@ -567,7 +567,7 @@ function onMakeSimilarClick(req, img) {
         guidance_scale: 7.5,
         prompt_strength: 0.7,
         init_image: img.src,
-        seed: Math.floor(Math.random() * 10000000),
+        seed: Math.floor(Math.random() * 10000000)
     })
 
     newTaskRequest.numOutputsTotal = 5
@@ -583,7 +583,7 @@ function enqueueImageVariationTask(req, img, reqDiff) {
 
     const newRequestBody = {
         num_outputs: 1, // this can be user-configurable in the future
-        seed: imageSeed,
+        seed: imageSeed
     }
 
     // If the user is editing pictures, stop modifyCurrentRequest from importing
@@ -604,19 +604,19 @@ function enqueueImageVariationTask(req, img, reqDiff) {
 
 function onUpscaleClick(req, img) {
     enqueueImageVariationTask(req, img, {
-        use_upscale: upscaleModelField.value,
+        use_upscale: upscaleModelField.value
     })
 }
 
 function onFixFacesClick(req, img) {
     enqueueImageVariationTask(req, img, {
-        use_face_correction: gfpganModelField.value,
+        use_face_correction: gfpganModelField.value
     })
 }
 
 function onContinueDrawingClick(req, img) {
     enqueueImageVariationTask(req, img, {
-        num_inference_steps: parseInt(req.num_inference_steps) + 25,
+        num_inference_steps: parseInt(req.num_inference_steps) + 25
     })
 }
 
@@ -665,7 +665,7 @@ function makeImage() {
     const taskTemplate = getCurrentUserRequest()
     const newTaskRequests = getPrompts().map((prompt) =>
         Object.assign({}, taskTemplate, {
-            reqBody: Object.assign({ prompt: prompt }, taskTemplate.reqBody),
+            reqBody: Object.assign({ prompt: prompt }, taskTemplate.reqBody)
         })
     )
     newTaskRequests.forEach(createTask)
@@ -1191,8 +1191,8 @@ function getCurrentUserRequest() {
             metadata_output_format: metadataOutputFormatField.value,
             original_prompt: promptField.value,
             active_tags: activeTags.map((x) => x.name),
-            inactive_tags: activeTags.filter((tag) => tag.inactive === true).map((x) => x.name),
-        },
+            inactive_tags: activeTags.filter((tag) => tag.inactive === true).map((x) => x.name)
+        }
     }
     if (IMAGE_REGEX.test(initImagePreview.src)) {
         newTask.reqBody.init_image = initImagePreview.src
@@ -1822,7 +1822,7 @@ function linkTabContents(tab) {
     tabElements.push({
         name: name,
         tab: tab,
-        content: content,
+        content: content
     })
 
     tab.addEventListener("click", (event) => selectTab(tab.id))
