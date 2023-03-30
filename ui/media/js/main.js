@@ -297,12 +297,6 @@ function undoRemove() {
 
 undoButton.addEventListener('click', () =>  { undoRemove() })
 
-document.addEventListener('keydown', function(e) {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.target == document.body) {
-        undoRemove()
-    }
-})
-
 function showImages(reqBody, res, outputContainer, livePreview) {
     let imageItemElements = outputContainer.querySelectorAll('.imgItem')
     if(typeof res != 'object') return
