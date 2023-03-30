@@ -1,6 +1,6 @@
 "use strict"
 
-const imageModal = (function() {
+const imageModal = (function () {
     const zoomElem = createElement("i", undefined, ["fa-solid", "tertiaryButton"])
 
     const closeElem = createElement("i", undefined, ["fa-solid", "fa-xmark", "tertiaryButton"])
@@ -16,7 +16,7 @@ const imageModal = (function() {
     const modalElem = createElement("div", { id: "viewFullSizeImgModal" }, ["popup"], [backdrop, modalContainer])
     document.body.appendChild(modalElem)
 
-    const setZoomLevel = value => {
+    const setZoomLevel = (value) => {
         const img = imageContainer.querySelector("img")
 
         if (value) {
@@ -55,12 +55,12 @@ const imageModal = (function() {
         document.body.style.overflow = "initial"
     }
 
-    window.addEventListener("keydown", e => {
+    window.addEventListener("keydown", (e) => {
         if (e.key === "Escape" && modalElem.classList.contains("active")) {
             close()
         }
     })
-    window.addEventListener("click", e => {
+    window.addEventListener("click", (e) => {
         if (modalElem.classList.contains("active")) {
             if (e.target === backdrop || e.target === closeElem) {
                 close()
@@ -72,7 +72,7 @@ const imageModal = (function() {
         }
     })
 
-    return optionsFactory => {
+    return (optionsFactory) => {
         const options = typeof optionsFactory === "function" ? optionsFactory() : optionsFactory
         const src = typeof options === "string" ? options : options.src
 

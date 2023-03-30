@@ -1,6 +1,6 @@
-;(function() {
+;(function () {
     PLUGINS["MODIFIERS_LOAD"].push({
-        loader: function() {
+        loader: function () {
             let customModifiers = localStorage.getItem(CUSTOM_MODIFIERS_KEY, "")
             customModifiersTextBox.value = customModifiers
 
@@ -10,22 +10,22 @@
 
             if (customModifiers && customModifiers.trim() !== "") {
                 customModifiers = customModifiers.split("\n")
-                customModifiers = customModifiers.filter(m => m.trim() !== "")
-                customModifiers = customModifiers.map(function(m) {
+                customModifiers = customModifiers.filter((m) => m.trim() !== "")
+                customModifiers = customModifiers.map(function (m) {
                     return {
-                        modifier: m
+                        modifier: m,
                     }
                 })
 
                 let customGroup = {
                     category: "Custom Modifiers",
-                    modifiers: customModifiers
+                    modifiers: customModifiers,
                 }
 
                 customModifiersGroupElement = createModifierGroup(customGroup, true)
 
                 createCollapsibles(customModifiersGroupElement)
             }
-        }
+        },
     })
 })()

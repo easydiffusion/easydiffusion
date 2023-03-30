@@ -1,4 +1,4 @@
-;(function() {
+;(function () {
     "use strict"
 
     ///////////////////// Function section
@@ -126,7 +126,7 @@
     }
 
     function updateChart() {
-        let fn = x => x
+        let fn = (x) => x
         switch (document.querySelector("#merge-interpolation").value) {
             case "SmoothStep":
                 fn = smoothstep
@@ -384,7 +384,7 @@
 
     document.querySelector(".merge-config").addEventListener("change", updateChart)
 
-    document.querySelector("#merge-button").addEventListener("click", async function(e) {
+    document.querySelector("#merge-button").addEventListener("click", async function (e) {
         // Build request template
         let model0 = mergeModelAField.value
         let model1 = mergeModelBField.value
@@ -455,7 +455,7 @@
             let res = await fetch("/model/merge", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(request)
+                body: JSON.stringify(request),
             })
             const data = await res.json()
             addLogMessage(JSON.stringify(data))

@@ -76,7 +76,7 @@ class ModelDropdown {
 
     // remember 'this' - http://blog.niftysnippets.org/2008/04/you-must-remember-this.html
     bind(f, obj) {
-        return function() {
+        return function () {
             return f.apply(obj, arguments)
         }
     }
@@ -95,7 +95,7 @@ class ModelDropdown {
         }
         document.addEventListener(
             "refreshModels",
-            this.bind(function(e) {
+            this.bind(function (e) {
                 // reload the models
                 this.inputModels = modelsOptions[this.modelKey]
                 this.populateModels()
@@ -133,7 +133,7 @@ class ModelDropdown {
         return modelElements
             .slice(0, index)
             .reverse()
-            .find(e => e.style.display === "list-item")
+            .find((e) => e.style.display === "list-item")
     }
 
     getLastVisibleChild(elem) {
@@ -145,7 +145,7 @@ class ModelDropdown {
     getNextVisibleSibling(elem) {
         const modelElements = Array.from(this.modelElements)
         const index = modelElements.indexOf(elem)
-        return modelElements.slice(index + 1).find(e => e.style.display === "list-item")
+        return modelElements.slice(index + 1).find((e) => e.style.display === "list-item")
     }
 
     getFirstVisibleChild(elem) {
@@ -379,7 +379,7 @@ class ModelDropdown {
     }
 
     showAllEntries() {
-        this.modelList.querySelectorAll("li").forEach(function(li) {
+        this.modelList.querySelectorAll("li").forEach(function (li) {
             if (li.id !== "model-no-result") {
                 li.style.display = "list-item"
             }
@@ -392,7 +392,7 @@ class ModelDropdown {
         let found = false
         let showAllChildren = false
 
-        this.modelList.querySelectorAll("li").forEach(function(li) {
+        this.modelList.querySelectorAll("li").forEach(function (li) {
             if (li.classList.contains("model-folder")) {
                 showAllChildren = false
             }
@@ -483,7 +483,7 @@ class ModelDropdown {
             createElement("i", { id: `${this.modelFilter.id}-model-filter-arrow` }, [
                 "model-selector-arrow",
                 "fa-solid",
-                "fa-angle-down"
+                "fa-angle-down",
             ])
         )
         this.modelFilter.classList.add("model-selector")
@@ -509,7 +509,7 @@ class ModelDropdown {
         this.modelList.addEventListener("mousedown", this.bind(this.processClick, this))
 
         let mf = this.modelFilter
-        this.modelFilter.addEventListener("focus", function() {
+        this.modelFilter.addEventListener("focus", function () {
             let modelFilterStyle = window.getComputedStyle(mf)
             rootModelList.style.minWidth = modelFilterStyle.width
         })
@@ -529,7 +529,7 @@ class ModelDropdown {
         const foldersMap = new Map()
         const modelsMap = new Map()
 
-        modelTree.forEach(model => {
+        modelTree.forEach((model) => {
             if (Array.isArray(model)) {
                 const [childFolderName, childModels] = model
                 foldersMap.set(
@@ -547,7 +547,7 @@ class ModelDropdown {
                     model,
                     createElement("li", { "data-path": fullPath }, classes, [
                         createElement("i", undefined, ["fa-regular", "fa-file", "icon"]),
-                        model
+                        model,
                     ])
                 )
             }
@@ -555,11 +555,11 @@ class ModelDropdown {
 
         const childFolderNames = Array.from(foldersMap.keys())
         this.sortStringArray(childFolderNames)
-        const folderElements = childFolderNames.map(name => foldersMap.get(name))
+        const folderElements = childFolderNames.map((name) => foldersMap.get(name))
 
         const modelNames = Array.from(modelsMap.keys())
         this.sortStringArray(modelNames)
-        const modelElements = modelNames.map(name => modelsMap.get(name))
+        const modelElements = modelNames.map((name) => modelsMap.get(name))
 
         if (modelElements.length && folderName) {
             listElement.appendChild(
@@ -574,7 +574,7 @@ class ModelDropdown {
 
         // const allModelElements = isRootFolder ? [...folderElements, ...modelElements] : [...modelElements, ...folderElements]
         const allModelElements = [...modelElements, ...folderElements]
-        allModelElements.forEach(e => listElement.appendChild(e))
+        allModelElements.forEach((e) => listElement.appendChild(e))
         return listElement
     }
 
@@ -596,7 +596,7 @@ class ModelDropdown {
 
         if (modelTree.length > 0) {
             const containerListItem = createElement("li", { id: `${this.modelFilter.id}-model-result` }, [
-                "model-result"
+                "model-result",
             ])
             //console.log(containerListItem)
             containerListItem.appendChild(this.createModelNodeList(undefined, modelTree, true))

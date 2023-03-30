@@ -1,4 +1,4 @@
-;(function() {
+;(function () {
     "use strict"
 
     const MAX_WEIGHT = 5
@@ -9,7 +9,7 @@
     }
 
     // observe for changes in tag list
-    const observer = new MutationObserver(function(mutations) {
+    const observer = new MutationObserver(function (mutations) {
         //    mutations.forEach(function (mutation) {
         if (editorModifierTagsList.childNodes.length > 0) {
             ModifierMouseWheel(editorModifierTagsList)
@@ -18,13 +18,13 @@
     })
 
     observer.observe(editorModifierTagsList, {
-        childList: true
+        childList: true,
     })
 
     function ModifierMouseWheel(target) {
         let overlays = document.querySelector("#editor-inputs-tags-list").querySelectorAll(".modifier-card-overlay")
-        overlays.forEach(i => {
-            i.onwheel = e => {
+        overlays.forEach((i) => {
+            i.onwheel = (e) => {
                 if (e.ctrlKey == true) {
                     e.preventDefault()
 

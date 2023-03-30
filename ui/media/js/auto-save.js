@@ -52,7 +52,7 @@ const SETTINGS_IDS_LIST = [
     "auto_scroll",
     "zip_toggle",
     "tree_toggle",
-    "json_toggle"
+    "json_toggle",
 ]
 
 const IGNORE_BY_DEFAULT = ["prompt"]
@@ -62,11 +62,11 @@ const SETTINGS_SECTIONS = [
     { id: "editor-inputs", name: "Prompt" },
     { id: "editor-settings", name: "Image Settings" },
     { id: "system-settings", name: "System Settings" },
-    { id: "container", name: "Other" }
+    { id: "container", name: "Other" },
 ]
 
 async function initSettings() {
-    SETTINGS_IDS_LIST.forEach(id => {
+    SETTINGS_IDS_LIST.forEach((id) => {
         var element = document.getElementById(id)
         if (!element) {
             console.error(`Missing settings element ${id}`)
@@ -81,22 +81,22 @@ async function initSettings() {
             label: getSettingLabel(element),
             default: getSetting(element),
             value: getSetting(element),
-            ignore: IGNORE_BY_DEFAULT.includes(id)
+            ignore: IGNORE_BY_DEFAULT.includes(id),
         }
         element.addEventListener("input", settingChangeHandler)
         element.addEventListener("change", settingChangeHandler)
     })
     var unsorted_settings_ids = [...SETTINGS_IDS_LIST]
-    SETTINGS_SECTIONS.forEach(section => {
+    SETTINGS_SECTIONS.forEach((section) => {
         var name = section.name
         var element = document.getElementById(section.id)
-        var unsorted_ids = unsorted_settings_ids.map(id => `#${id}`).join(",")
+        var unsorted_ids = unsorted_settings_ids.map((id) => `#${id}`).join(",")
         var children = unsorted_ids == "" ? [] : Array.from(element.querySelectorAll(unsorted_ids))
         section.keys = []
-        children.forEach(e => {
+        children.forEach((e) => {
             section.keys.push(e.id)
         })
-        unsorted_settings_ids = unsorted_settings_ids.filter(id => children.find(e => e.id == id) == undefined)
+        unsorted_settings_ids = unsorted_settings_ids.filter((id) => children.find((e) => e.id == id) == undefined)
     })
     loadSettings()
 }
@@ -135,11 +135,11 @@ function setSetting(element, value) {
 }
 
 function saveSettings() {
-    var saved_settings = Object.values(SETTINGS).map(setting => {
+    var saved_settings = Object.values(SETTINGS).map((setting) => {
         return {
             key: setting.key,
             value: setting.value,
-            ignore: setting.ignore
+            ignore: setting.ignore,
         }
     })
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(saved_settings))
@@ -150,12 +150,12 @@ function loadSettings() {
     var saved_settings_text = localStorage.getItem(SETTINGS_KEY)
     if (saved_settings_text) {
         var saved_settings = JSON.parse(saved_settings_text)
-        if (saved_settings.find(s => s.key == "auto_save_settings")?.value == false) {
+        if (saved_settings.find((s) => s.key == "auto_save_settings")?.value == false) {
             setSetting("auto_save_settings", false)
             return
         }
         CURRENTLY_LOADING_SETTINGS = true
-        saved_settings.forEach(saved_setting => {
+        saved_settings.forEach((saved_setting) => {
             var setting = SETTINGS[saved_setting.key]
             if (!setting) {
                 console.warn(`Attempted to load setting ${saved_setting.key}, but no setting found`)
@@ -178,8 +178,8 @@ function loadSettings() {
 
 function loadDefaultSettingsSection(section_id) {
     CURRENTLY_LOADING_SETTINGS = true
-    var section = SETTINGS_SECTIONS.find(s => s.id == section_id)
-    section.keys.forEach(key => {
+    var section = SETTINGS_SECTIONS.find((s) => s.id == section_id)
+    section.keys.forEach((key) => {
         var setting = SETTINGS[key]
         setting.value = setting.default
         setSetting(setting.element, setting.value)
@@ -216,10 +216,10 @@ function getSettingLabel(element) {
 
 function fillSaveSettingsConfigTable() {
     saveSettingsConfigTable.textContent = ""
-    SETTINGS_SECTIONS.forEach(section => {
+    SETTINGS_SECTIONS.forEach((section) => {
         var section_row = `<tr><th>${section.name}</th><td></td></tr>`
         saveSettingsConfigTable.insertAdjacentHTML("beforeend", section_row)
-        section.keys.forEach(key => {
+        section.keys.forEach((key) => {
             var setting = SETTINGS[key]
             var element = setting.element
             var checkbox_id = `shouldsave_${element.id}`
@@ -232,7 +232,7 @@ function fillSaveSettingsConfigTable() {
             var newrow = `<tr><td><label for="${checkbox_id}">${setting.label}</label></td><td><input id="${checkbox_id}" name="${checkbox_id}" ${is_checked} type="checkbox" ></td><td><small>(${value})</small></td></tr>`
             saveSettingsConfigTable.insertAdjacentHTML("beforeend", newrow)
             var checkbox = document.getElementById(checkbox_id)
-            checkbox.addEventListener("input", event => {
+            checkbox.addEventListener("input", (event) => {
                 setting.ignore = !checkbox.checked
                 saveSettings()
             })
@@ -255,7 +255,7 @@ configSettingsButton.addEventListener("click", () => {
     fillSaveSettingsConfigTable()
     saveSettingsConfigOverlay.classList.add("active")
 })
-resetImageSettingsButton.addEventListener("click", event => {
+resetImageSettingsButton.addEventListener("click", (event) => {
     loadDefaultSettingsSection("editor-settings")
     event.stopPropagation()
 })
@@ -265,18 +265,18 @@ function tryLoadOldSettings() {
     // load v1 auto-save.js settings
     var old_map = {
         guidance_scale_slider: "guidance_scale",
-        prompt_strength_slider: "prompt_strength"
+        prompt_strength_slider: "prompt_strength",
     }
     var settings_key_v1 = "user_settings"
     var saved_settings_text = localStorage.getItem(settings_key_v1)
     if (saved_settings_text) {
         var saved_settings = JSON.parse(saved_settings_text)
-        Object.keys(saved_settings.should_save).forEach(key => {
+        Object.keys(saved_settings.should_save).forEach((key) => {
             key = key in old_map ? old_map[key] : key
             if (!(key in SETTINGS)) return
             SETTINGS[key].ignore = !saved_settings.should_save[key]
         })
-        Object.keys(saved_settings.values).forEach(key => {
+        Object.keys(saved_settings.values).forEach((key) => {
             key = key in old_map ? old_map[key] : key
             if (!(key in SETTINGS)) return
             var setting = SETTINGS[key]
@@ -300,9 +300,9 @@ function tryLoadOldSettings() {
         showOnlyFilteredImage: "show_only_filtered_image",
         streamImageProgress: "stream_image_progress",
         outputFormat: "output_format",
-        autoSaveSettings: "auto_save_settings"
+        autoSaveSettings: "auto_save_settings",
     }
-    Object.keys(individual_settings_map).forEach(localStorageKey => {
+    Object.keys(individual_settings_map).forEach((localStorageKey) => {
         var localStorageValue = localStorage.getItem(localStorageKey)
         if (localStorageValue !== null) {
             let key = individual_settings_map[localStorageKey]

@@ -1,6 +1,6 @@
 /** SD-UI Backend control and classes.
  */
-;(function() {
+;(function () {
     "use strict"
     const RETRY_DELAY_IF_BUFFER_IS_EMPTY = 1000 // ms
     const RETRY_DELAY_IF_SERVER_IS_BUSY = 30 * 1000 // ms, status_code 503, already a task running
@@ -32,8 +32,8 @@
             this.#fetchOptions = Object.assign(
                 {
                     headers: {
-                        "Content-Type": "application/json"
-                    }
+                        "Content-Type": "application/json",
+                    },
                 },
                 options
             )
@@ -197,7 +197,7 @@
         EVENT_TASK_END,
         EVENT_TASK_ERROR,
 
-        EVENT_UNEXPECTED_RESPONSE
+        EVENT_UNEXPECTED_RESPONSE,
     ]
     Object.freeze(EVENTS_TYPES)
     const eventSource = new GenericEventSource(EVENTS_TYPES)
@@ -211,7 +211,7 @@
         loadingModel: "LoadingModel",
         online: "Online",
         rendering: "Rendering",
-        unavailable: "Unavailable"
+        unavailable: "Unavailable",
     }
     Object.freeze(ServerStates)
 
@@ -332,7 +332,7 @@
         processing: "processing",
         stopped: "stopped",
         completed: "completed",
-        failed: "failed"
+        failed: "failed",
     }
     Object.freeze(TaskStatus)
 
@@ -340,7 +340,7 @@
         TaskStatus.init,
         TaskStatus.pending,
         TaskStatus.waiting,
-        TaskStatus.processing
+        TaskStatus.processing,
         //Don't add status that are final.
     ]
 
@@ -466,10 +466,10 @@
                     res = await fetch(url, {
                         method: "POST",
                         headers: {
-                            "Content-Type": "application/json"
+                            "Content-Type": "application/json",
                         },
                         body: JSON.stringify(this._reqBody),
-                        signal: abortSignal
+                        signal: abortSignal,
                     })
                     // status_code 503, already a task running.
                 } while (res.status === 503 && (await asyncDelay(RETRY_DELAY_IF_SERVER_IS_BUSY)))
@@ -488,14 +488,14 @@
         static getReader(url) {
             const reader = new ChunkedStreamReader(url)
             const parseToString = reader.parse
-            reader.parse = function(value) {
+            reader.parse = function (value) {
                 value = parseToString.call(this, value)
                 if (!value || value.length <= 0) {
                     return
                 }
                 return reader.readStreamAsJSON(value.join(""))
             }
-            reader.onNext = function({ done, value }) {
+            reader.onNext = function ({ done, value }) {
                 // By default is completed when the return value has a status defined.
                 if (typeof value === "object" && "status" in value) {
                     done = true
@@ -520,7 +520,7 @@
             this.#reader = Task.getReader(this.streamUrl)
             const task = this
             const onNext = this.#reader.onNext
-            this.#reader.onNext = function({ done, value }) {
+            this.#reader.onNext = function ({ done, value }) {
                 if (value && typeof value === "object") {
                     if (
                         task.status === TaskStatus.init ||
@@ -536,14 +536,14 @@
                 }
                 return onNext.call(this, { done, value })
             }
-            this.#reader.onComplete = function(value) {
+            this.#reader.onComplete = function (value) {
                 task.result = value
                 if (task.isPending) {
                     task._setStatus(TaskStatus.completed)
                 }
                 return value
             }
-            this.#reader.onError = function(response) {
+            this.#reader.onError = function (response) {
                 const err = new Error(response.statusText)
                 task.abort(err)
                 throw err
@@ -758,7 +758,7 @@
         stream_image_progress: "boolean",
         show_only_filtered_image: "boolean",
         output_format: "string",
-        output_quality: "number"
+        output_quality: "number",
     }
     const TASK_DEFAULTS = {
         sampler_name: "plms",
@@ -774,7 +774,7 @@
         block_nsfw: false,
         output_format: "png",
         output_quality: 75,
-        output_lossless: false
+        output_lossless: false,
     }
     const TASK_OPTIONAL = {
         device: "string",
@@ -786,7 +786,7 @@
         use_vae_model: "string",
         use_hypernetwork_model: "string",
         hypernetwork_strength: "number",
-        output_lossless: "boolean"
+        output_lossless: "boolean",
     }
 
     // Higer values will result in...
@@ -824,7 +824,7 @@
             }
             if ("modifiers" in this._reqBody) {
                 if (Array.isArray(this._reqBody.modifiers) && this._reqBody.modifiers.length > 0) {
-                    this._reqBody.modifiers = this._reqBody.modifiers.filter(val => val.trim())
+                    this._reqBody.modifiers = this._reqBody.modifiers.filter((val) => val.trim())
                     if (this._reqBody.modifiers.length > 0) {
                         this._reqBody.prompt = `${this._reqBody.prompt}, ${this._reqBody.modifiers.join(", ")}`
                     }
@@ -938,10 +938,10 @@
             try {
                 // Wait for task to start on server.
                 yield this.waitUntil({
-                    callback: function() {
+                    callback: function () {
                         return progressCallback?.call(this, {})
                     },
-                    status: TaskStatus.processing
+                    status: TaskStatus.processing,
                 })
             } catch (e) {
                 this.abort(err)
@@ -998,7 +998,7 @@
             // Open the reader.
             const reader = this.reader
             const task = this
-            reader.onError = function(response) {
+            reader.onError = function (response) {
                 if (progressCallback) {
                     task.abort(new Error(response.statusText))
                     return progressCallback.call(task, { response, reader })
@@ -1082,13 +1082,13 @@
     }
 
     const getSystemInfo = debounce(
-        async function() {
+        async function () {
             let systemInfo = {
                 devices: {
                     all: {},
-                    active: {}
+                    active: {},
                 },
-                hosts: []
+                hosts: [],
             }
             try {
                 const res = await fetch("/get/system_info")
@@ -1117,7 +1117,7 @@
     async function getModels() {
         let models = {
             "stable-diffusion": [],
-            vae: []
+            vae: [],
         }
         try {
             const res = await fetch("/get/models")
@@ -1147,7 +1147,7 @@
             const inputPendingOptions = {
                 // Report mouse/pointer move events when queue is empty.
                 // Delay idle after mouse moves stops.
-                includeContinuous: Boolean(task_queue.size <= 0 && concurrent_generators.size <= 0)
+                includeContinuous: Boolean(task_queue.size <= 0 && concurrent_generators.size <= 0),
             }
             if (navigator.scheduling.isInputPending(inputPendingOptions)) {
                 // Browser/User still active.
@@ -1192,7 +1192,7 @@
                 }
             }
             if (value instanceof Promise) {
-                promise = makeQuerablePromise(value.then(val => ({ done: promise.resolvedValue?.done, value: val })))
+                promise = makeQuerablePromise(value.then((val) => ({ done: promise.resolvedValue?.done, value: val })))
                 concurrent_generators.set(generator, promise)
                 continue
             }
@@ -1212,12 +1212,12 @@
         }
 
         for (let [task, generator] of task_queue.entries()) {
-            const cTsk = completedTasks.find(item => item.generator === generator)
+            const cTsk = completedTasks.find((item) => item.generator === generator)
             if (cTsk?.promise?.rejectReason || task.hasFailed) {
                 eventSource.fireEvent(EVENT_TASK_ERROR, {
                     task,
                     generator,
-                    reason: cTsk?.promise?.rejectReason || task.exception
+                    reason: cTsk?.promise?.rejectReason || task.exception,
                 })
                 task_queue.delete(task)
                 continue
@@ -1266,7 +1266,7 @@
             if (typeof navigator?.scheduling?.isInputPending === "function" && navigator.scheduling.isInputPending()) {
                 return
             }
-            const continuePromise = continueTasks().catch(async function(err) {
+            const continuePromise = continueTasks().catch(async function (err) {
                 console.error(err)
                 await eventSource.fireEvent(EVENT_UNHANDLED_REJECTION, { reason: err })
                 await asyncDelay(RETRY_DELAY_ON_ERROR)
@@ -1284,7 +1284,7 @@
         FilterTask,
 
         Events: EVENTS_TYPES,
-        init: async function(options = {}) {
+        init: async function (options = {}) {
             if ("events" in options) {
                 for (const key in options.events) {
                     eventSource.addEventListener(key, options.events[key])
@@ -1313,45 +1313,45 @@
 
         render: (...args) => RenderTask.run(...args),
         filter: (...args) => FilterTask.run(...args),
-        waitUntil
+        waitUntil,
     }
 
     Object.defineProperties(SD, {
         serverState: {
             configurable: false,
-            get: () => serverState
+            get: () => serverState,
         },
         isAvailable: {
             configurable: false,
-            get: () => isServerAvailable()
+            get: () => isServerAvailable(),
         },
         serverCapacity: {
             configurable: false,
-            get: () => getServerCapacity()
+            get: () => getServerCapacity(),
         },
         sessionId: {
             configurable: false,
             get: () => sessionId,
-            set: val => {
+            set: (val) => {
                 if (typeof val === "undefined") {
                     throw new Error("Can't set sessionId to undefined.")
                 }
                 sessionId = val
-            }
+            },
         },
         MAX_SEED_VALUE: {
             configurable: false,
-            get: () => MAX_SEED_VALUE
+            get: () => MAX_SEED_VALUE,
         },
         activeTasks: {
             configurable: false,
-            get: () => task_queue
-        }
+            get: () => task_queue,
+        },
     })
     Object.defineProperties(getGlobal(), {
         SD: {
             configurable: false,
-            get: () => SD
+            get: () => SD,
         },
         sessionId: {
             //TODO Remove in the future in favor of SD.sessionId
@@ -1361,11 +1361,11 @@
                 console.trace()
                 return SD.sessionId
             },
-            set: val => {
+            set: (val) => {
                 console.warn("Deprecated window.sessionId has been replaced with SD.sessionId.")
                 console.trace()
                 SD.sessionId = val
-            }
-        }
+            },
+        },
     })
 })()

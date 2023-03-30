@@ -1,4 +1,4 @@
-;(function() {
+;(function () {
     "use strict"
     if (typeof editorModifierTagsList !== "object") {
         console.error("editorModifierTagsList missing...")
@@ -16,7 +16,7 @@
     document.head.appendChild(styleSheet)
 
     // observe for changes in tag list
-    const observer = new MutationObserver(function(mutations) {
+    const observer = new MutationObserver(function (mutations) {
         //    mutations.forEach(function (mutation) {
         if (editorModifierTagsList.childNodes.length > 0) {
             ModifierDragAndDrop(editorModifierTagsList)
@@ -25,16 +25,16 @@
     })
 
     observer.observe(editorModifierTagsList, {
-        childList: true
+        childList: true,
     })
 
     let current
     function ModifierDragAndDrop(target) {
         let overlays = document.querySelector("#editor-inputs-tags-list").querySelectorAll(".modifier-card-overlay")
-        overlays.forEach(i => {
+        overlays.forEach((i) => {
             i.parentElement.draggable = true
 
-            i.parentElement.ondragstart = e => {
+            i.parentElement.ondragstart = (e) => {
                 current = i
                 i.parentElement.getElementsByClassName("modifier-card-image-overlay")[0].innerText = ""
                 i.parentElement.draggable = true
@@ -58,7 +58,7 @@
                 }
             }
 
-            i.ondragenter = e => {
+            i.ondragenter = (e) => {
                 e.preventDefault()
                 if (i != current) {
                     let currentPos = 0,
@@ -100,11 +100,11 @@
                 }
             }
 
-            i.ondragover = e => {
+            i.ondragover = (e) => {
                 e.preventDefault()
             }
 
-            i.parentElement.ondragend = e => {
+            i.parentElement.ondragend = (e) => {
                 i.parentElement.classList.remove("drag-sort-active")
                 for (let item of document
                     .querySelector("#editor-inputs-tags-list")

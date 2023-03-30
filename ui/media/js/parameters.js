@@ -8,7 +8,7 @@ var ParameterType = {
     select: "select",
     select_multiple: "select_multiple",
     slider: "slider",
-    custom: "custom"
+    custom: "custom",
 }
 
 /**
@@ -33,10 +33,10 @@ var PARAMETERS = [
             // Note: options expanded dynamically
             {
                 value: "theme-default",
-                label: "Default"
-            }
+                label: "Default",
+            },
         ],
-        icon: "fa-palette"
+        icon: "fa-palette",
     },
     {
         id: "save_to_disk",
@@ -44,15 +44,15 @@ var PARAMETERS = [
         label: "Auto-Save Images",
         note: "automatically saves images to the specified location",
         icon: "fa-download",
-        default: false
+        default: false,
     },
     {
         id: "diskPath",
         type: ParameterType.custom,
         label: "Save Location",
-        render: parameter => {
+        render: (parameter) => {
             return `<input id="${parameter.id}" name="${parameter.id}" size="30" disabled>`
-        }
+        },
     },
     {
         id: "metadata_output_format",
@@ -63,29 +63,29 @@ var PARAMETERS = [
         options: [
             {
                 value: "none",
-                label: "none"
+                label: "none",
             },
             {
                 value: "txt",
-                label: "txt"
+                label: "txt",
             },
             {
                 value: "json",
-                label: "json"
+                label: "json",
             },
             {
                 value: "embed",
-                label: "embed"
+                label: "embed",
             },
             {
                 value: "embed,txt",
-                label: "embed & txt"
+                label: "embed & txt",
             },
             {
                 value: "embed,json",
-                label: "embed & json"
-            }
-        ]
+                label: "embed & json",
+            },
+        ],
     },
     {
         id: "block_nsfw",
@@ -93,7 +93,7 @@ var PARAMETERS = [
         label: "Block NSFW images",
         note: "blurs out NSFW images",
         icon: "fa-land-mine-on",
-        default: false
+        default: false,
     },
     {
         id: "sound_toggle",
@@ -101,7 +101,7 @@ var PARAMETERS = [
         label: "Enable Sound",
         note: "plays a sound on task completion",
         icon: "fa-volume-low",
-        default: true
+        default: true,
     },
     {
         id: "process_order_toggle",
@@ -109,7 +109,7 @@ var PARAMETERS = [
         label: "Process newest jobs first",
         note: "reverse the normal processing order",
         icon: "fa-arrow-down-short-wide",
-        default: false
+        default: false,
     },
     {
         id: "ui_open_browser_on_start",
@@ -117,7 +117,7 @@ var PARAMETERS = [
         label: "Open browser on startup",
         note: "starts the default browser on startup",
         icon: "fa-window-restore",
-        default: true
+        default: true,
     },
     {
         id: "vram_usage_level",
@@ -133,8 +133,8 @@ var PARAMETERS = [
         options: [
             { value: "balanced", label: "Balanced" },
             { value: "high", label: "High" },
-            { value: "low", label: "Low" }
-        ]
+            { value: "low", label: "Low" },
+        ],
     },
     {
         id: "use_cpu",
@@ -142,20 +142,20 @@ var PARAMETERS = [
         label: "Use CPU (not GPU)",
         note: "warning: this will be *very* slow",
         icon: "fa-microchip",
-        default: false
+        default: false,
     },
     {
         id: "auto_pick_gpus",
         type: ParameterType.checkbox,
         label: "Automatically pick the GPUs (experimental)",
-        default: false
+        default: false,
     },
     {
         id: "use_gpus",
         type: ParameterType.select_multiple,
         label: "GPUs to use (experimental)",
         note: "to process in parallel",
-        default: false
+        default: false,
     },
     {
         id: "auto_save_settings",
@@ -163,16 +163,15 @@ var PARAMETERS = [
         label: "Auto-Save Settings",
         note: "restores settings on browser load",
         icon: "fa-gear",
-        default: true
+        default: true,
     },
     {
         id: "confirm_dangerous_actions",
         type: ParameterType.checkbox,
         label: "Confirm dangerous actions",
-        note:
-            "Actions that might lead to data loss must either be clicked with the shift key pressed, or confirmed in an 'Are you sure?' dialog",
+        note: "Actions that might lead to data loss must either be clicked with the shift key pressed, or confirmed in an 'Are you sure?' dialog",
         icon: "fa-check-double",
-        default: true
+        default: true,
     },
     {
         id: "listen_to_network",
@@ -180,7 +179,7 @@ var PARAMETERS = [
         label: "Make Stable Diffusion available on your network",
         note: "Other devices on your network can access this web page",
         icon: "fa-network-wired",
-        default: true
+        default: true,
     },
     {
         id: "listen_port",
@@ -188,32 +187,30 @@ var PARAMETERS = [
         label: "Network port",
         note: "Port that this server listens to. The '9000' part in 'http://localhost:9000'",
         icon: "fa-anchor",
-        render: parameter => {
+        render: (parameter) => {
             return `<input id="${parameter.id}" name="${parameter.id}" size="6" value="9000" onkeypress="preventNonNumericalInput(event)">`
-        }
+        },
     },
     {
         id: "use_beta_channel",
         type: ParameterType.checkbox,
         label: "Beta channel",
-        note:
-            "Get the latest features immediately (but could be less stable). Please restart the program after changing this.",
+        note: "Get the latest features immediately (but could be less stable). Please restart the program after changing this.",
         icon: "fa-fire",
-        default: false
+        default: false,
     },
     {
         id: "test_diffusers",
         type: ParameterType.checkbox,
         label: "Test Diffusers",
-        note:
-            "<b>Experimental! Can have bugs!</b> Use upcoming features (like LoRA) in our new engine. Please press Save, then restart the program after changing this.",
+        note: "<b>Experimental! Can have bugs!</b> Use upcoming features (like LoRA) in our new engine. Please press Save, then restart the program after changing this.",
         icon: "fa-bolt",
-        default: false
-    }
+        default: false,
+    },
 ]
 
 function getParameterSettingsEntry(id) {
-    let parameter = PARAMETERS.filter(p => p.id === id)
+    let parameter = PARAMETERS.filter((p) => p.id === id)
     if (parameter.length === 0) {
         return
     }
@@ -240,7 +237,7 @@ function getParameterElement(parameter) {
         case ParameterType.select:
         case ParameterType.select_multiple:
             var options = (parameter.options || [])
-                .map(option => `<option value="${option.value}">${option.label}</option>`)
+                .map((option) => `<option value="${option.value}">${option.label}</option>`)
                 .join("")
             var multiple = parameter.type == ParameterType.select_multiple ? "multiple" : ""
             return `<select id="${parameter.id}" name="${parameter.id}" ${multiple}>${options}</select>`
@@ -257,7 +254,7 @@ function getParameterElement(parameter) {
 let parametersTable = document.querySelector("#system-settings .parameters-table")
 /* fill in the system settings popup table */
 function initParameters() {
-    PARAMETERS.forEach(parameter => {
+    PARAMETERS.forEach((parameter) => {
         var element = getParameterElement(parameter)
         var note = parameter.note ? `<small>${parameter.note}</small>` : ""
         var icon = parameter.icon ? `<i class="fa ${parameter.icon}"></i>` : ""
@@ -294,9 +291,9 @@ async function changeAppConfig(configDelta) {
         let res = await fetch("/app_config", {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             },
-            body: JSON.stringify(configDelta)
+            body: JSON.stringify(configDelta),
         })
         res = await res.json()
 
@@ -335,7 +332,7 @@ async function getAppConfig() {
     }
 }
 
-saveToDiskField.addEventListener("change", function(e) {
+saveToDiskField.addEventListener("change", function (e) {
     diskPathField.disabled = !this.checked
     metadataOutputFormatField.disabled = !this.checked
 })
@@ -353,7 +350,7 @@ function getCurrentRenderDeviceSelection() {
     return selectedGPUs.join(",")
 }
 
-useCPUField.addEventListener("click", function() {
+useCPUField.addEventListener("click", function () {
     let gpuSettingEntry = getParameterSettingsEntry("use_gpus")
     let autoPickGPUSettingEntry = getParameterSettingsEntry("auto_pick_gpus")
     if (this.checked) {
@@ -375,12 +372,12 @@ useCPUField.addEventListener("click", function() {
     }
 })
 
-useGPUsField.addEventListener("click", function() {
+useGPUsField.addEventListener("click", function () {
     let selectedGPUs = $("#use_gpus").val()
     autoPickGPUsField.checked = selectedGPUs.length === 0
 })
 
-autoPickGPUsField.addEventListener("click", function() {
+autoPickGPUsField.addEventListener("click", function () {
     if (this.checked) {
         $("#use_gpus").val([])
     }
@@ -398,7 +395,7 @@ async function setDiskPath(defaultDiskPath, force = false) {
 
 function setDeviceInfo(devices) {
     let cpu = devices.all.cpu.name
-    let allGPUs = Object.keys(devices.all).filter(d => d != "cpu")
+    let allGPUs = Object.keys(devices.all).filter((d) => d != "cpu")
     let activeGPUs = Object.keys(devices.active)
 
     function ID_TO_TEXT(d) {
@@ -423,7 +420,7 @@ function setDeviceInfo(devices) {
 
 function setHostInfo(hosts) {
     let port = listenPortField.value
-    hosts = hosts.map(addr => `http://${addr}:${port}/`).map(url => `<div><a href="${url}">${url}</a></div>`)
+    hosts = hosts.map((addr) => `http://${addr}:${port}/`).map((url) => `<div><a href="${url}">${url}</a></div>`)
     document.querySelector("#system-info-server-hosts").innerHTML = hosts.join("")
 }
 
@@ -432,8 +429,8 @@ async function getSystemInfo() {
         const res = await SD.getSystemInfo()
         let devices = res["devices"]
 
-        let allDeviceIds = Object.keys(devices["all"]).filter(d => d !== "cpu")
-        let activeDeviceIds = Object.keys(devices["active"]).filter(d => d !== "cpu")
+        let allDeviceIds = Object.keys(devices["all"]).filter((d) => d !== "cpu")
+        let activeDeviceIds = Object.keys(devices["active"]).filter((d) => d !== "cpu")
 
         if (activeDeviceIds.length === 0) {
             useCPUField.checked = true
@@ -454,7 +451,7 @@ async function getSystemInfo() {
         autoPickGPUsField.checked = devices["config"] === "auto"
 
         useGPUsField.innerHTML = ""
-        allDeviceIds.forEach(device => {
+        allDeviceIds.forEach((device) => {
             let deviceName = devices["all"][device]["name"]
             let deviceOption = `<option value="${device}">${deviceName} (${device})</option>`
             useGPUsField.insertAdjacentHTML("beforeend", deviceOption)
@@ -485,7 +482,7 @@ async function getSystemInfo() {
     }
 }
 
-saveSettingsBtn.addEventListener("click", function() {
+saveSettingsBtn.addEventListener("click", function () {
     if (listenPortField.value == "") {
         alert("The network port field must not be empty.")
         return
@@ -501,7 +498,7 @@ saveSettingsBtn.addEventListener("click", function() {
         ui_open_browser_on_start: uiOpenBrowserOnStartField.checked,
         listen_to_network: listenToNetworkField.checked,
         listen_port: listenPortField.value,
-        test_diffusers: testDiffusers.checked
+        test_diffusers: testDiffusers.checked,
     })
     saveSettingsBtn.classList.add("active")
     asyncDelay(300).then(() => saveSettingsBtn.classList.remove("active"))

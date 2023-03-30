@@ -6,17 +6,17 @@ const IMAGE_EDITOR_BUTTONS = [
     {
         name: "Cancel",
         icon: "fa-regular fa-circle-xmark",
-        handler: editor => {
+        handler: (editor) => {
             editor.hide()
-        }
+        },
     },
     {
         name: "Save",
         icon: "fa-solid fa-floppy-disk",
-        handler: editor => {
+        handler: (editor) => {
             editor.saveImage()
-        }
-    }
+        },
+    },
 ]
 
 const defaultToolBegin = (editor, ctx, x, y, is_overlay = false) => {
@@ -46,7 +46,7 @@ const IMAGE_EDITOR_TOOLS = [
         cursor: "url(/media/images/fa-pencil.svg) 0 24, pointer",
         begin: defaultToolBegin,
         move: defaultToolMove,
-        end: defaultToolEnd
+        end: defaultToolEnd,
     },
     {
         id: "erase",
@@ -76,7 +76,7 @@ const IMAGE_EDITOR_TOOLS = [
         },
         setBrush: (editor, layer) => {
             layer.ctx.globalCompositeOperation = "destination-out"
-        }
+        },
     },
     {
         id: "fill",
@@ -91,7 +91,7 @@ const IMAGE_EDITOR_TOOLS = [
             }
         },
         move: toolDoNothing,
-        end: toolDoNothing
+        end: toolDoNothing,
     },
     {
         id: "colorpicker",
@@ -106,14 +106,14 @@ const IMAGE_EDITOR_TOOLS = [
                 editor.custom_color_input.value = rgbToHex({
                     r: drawn_rgb[0] * drawn_opacity + img_rgb[0] * (1 - drawn_opacity),
                     g: drawn_rgb[1] * drawn_opacity + img_rgb[1] * (1 - drawn_opacity),
-                    b: drawn_rgb[2] * drawn_opacity + img_rgb[2] * (1 - drawn_opacity)
+                    b: drawn_rgb[2] * drawn_opacity + img_rgb[2] * (1 - drawn_opacity),
                 })
                 editor.custom_color_input.dispatchEvent(new Event("change"))
             }
         },
         move: toolDoNothing,
-        end: toolDoNothing
-    }
+        end: toolDoNothing,
+    },
 ]
 
 const IMAGE_EDITOR_ACTIONS = [
@@ -122,10 +122,10 @@ const IMAGE_EDITOR_ACTIONS = [
         name: "Load mask from file",
         className: "load_mask",
         icon: "fa-regular fa-folder-open",
-        handler: editor => {
+        handler: (editor) => {
             let el = document.createElement("input")
             el.setAttribute("type", "file")
-            el.addEventListener("change", function() {
+            el.addEventListener("change", function () {
                 if (this.files.length === 0) {
                     return
                 }
@@ -133,7 +133,7 @@ const IMAGE_EDITOR_ACTIONS = [
                 let reader = new FileReader()
                 let file = this.files[0]
 
-                reader.addEventListener("load", function(event) {
+                reader.addEventListener("load", function (event) {
                     let maskData = reader.result
 
                     editor.layers.drawing.ctx.clearRect(0, 0, editor.width, editor.height)
@@ -151,48 +151,48 @@ const IMAGE_EDITOR_ACTIONS = [
 
             el.click()
         },
-        trackHistory: true
+        trackHistory: true,
     },
     {
         id: "fill_all",
         name: "Fill all",
         icon: "fa-solid fa-paint-roller",
-        handler: editor => {
+        handler: (editor) => {
             editor.ctx_current.globalCompositeOperation = "source-over"
             editor.ctx_current.rect(0, 0, editor.width, editor.height)
             editor.ctx_current.fill()
             editor.setBrush()
         },
-        trackHistory: true
+        trackHistory: true,
     },
     {
         id: "clear",
         name: "Clear",
         icon: "fa-solid fa-xmark",
-        handler: editor => {
+        handler: (editor) => {
             editor.ctx_current.clearRect(0, 0, editor.width, editor.height)
             imageEditor.setImage(null, editor.width, editor.height) // properly reset the drawing canvas
         },
-        trackHistory: true
+        trackHistory: true,
     },
     {
         id: "undo",
         name: "Undo",
         icon: "fa-solid fa-rotate-left",
-        handler: editor => {
+        handler: (editor) => {
             editor.history.undo()
         },
-        trackHistory: false
+        trackHistory: false,
     },
     {
         id: "redo",
         name: "Redo",
         icon: "fa-solid fa-rotate-right",
-        handler: editor => {
+        handler: (editor) => {
             editor.history.redo()
         },
-        trackHistory: false
-    }
+        trackHistory: false,
+    },
 ]
 
 var IMAGE_EDITOR_SECTIONS = [
@@ -200,17 +200,17 @@ var IMAGE_EDITOR_SECTIONS = [
         name: "tool",
         title: "Tool",
         default: "draw",
-        options: Array.from(IMAGE_EDITOR_TOOLS.map(t => t.id)),
+        options: Array.from(IMAGE_EDITOR_TOOLS.map((t) => t.id)),
         initElement: (element, option) => {
-            var tool_info = IMAGE_EDITOR_TOOLS.find(t => t.id == option)
+            var tool_info = IMAGE_EDITOR_TOOLS.find((t) => t.id == option)
             element.className = "image-editor-button button"
             var sub_element = document.createElement("div")
             var icon = document.createElement("i")
-            tool_info.icon.split(" ").forEach(c => icon.classList.add(c))
+            tool_info.icon.split(" ").forEach((c) => icon.classList.add(c))
             sub_element.appendChild(icon)
             sub_element.append(tool_info.name)
             element.appendChild(sub_element)
-        }
+        },
     },
     {
         name: "color",
@@ -257,7 +257,7 @@ var IMAGE_EDITOR_SECTIONS = [
             "#c0c0c0",
             "#838383",
             "#525252",
-            "#000000"
+            "#000000",
         ],
         initElement: (element, option) => {
             if (option == "custom") {
@@ -266,7 +266,7 @@ var IMAGE_EDITOR_SECTIONS = [
                 element.appendChild(input)
                 var span = document.createElement("span")
                 span.textContent = "Custom"
-                span.onclick = function(e) {
+                span.onclick = function (e) {
                     input.click()
                 }
                 element.appendChild(span)
@@ -274,10 +274,10 @@ var IMAGE_EDITOR_SECTIONS = [
                 element.style.background = option
             }
         },
-        getCustom: editor => {
+        getCustom: (editor) => {
             var input = editor.popup.querySelector(".image_editor_color input")
             return input.value
-        }
+        },
     },
     {
         name: "brush_size",
@@ -290,7 +290,7 @@ var IMAGE_EDITOR_SECTIONS = [
             element.style.height = option + "px"
             element.style["margin-right"] = "2px"
             element.style["border-radius"] = (option / 2).toFixed() + "px"
-        }
+        },
     },
     {
         name: "opacity",
@@ -299,7 +299,7 @@ var IMAGE_EDITOR_SECTIONS = [
         options: [0, 0.2, 0.4, 0.6, 0.8],
         initElement: (element, option) => {
             element.style.background = `repeating-conic-gradient(rgba(0, 0, 0, ${option}) 0% 25%, rgba(255, 255, 255, ${option}) 0% 50%) 50% / 10px 10px`
-        }
+        },
     },
     {
         name: "sharpness",
@@ -317,8 +317,8 @@ var IMAGE_EDITOR_SECTIONS = [
             sub_element.style["border-radius"] = `${size}px`
             element.style.background = "none"
             element.appendChild(sub_element)
-        }
-    }
+        },
+    },
 ]
 
 class EditorHistory {
@@ -343,7 +343,7 @@ class EditorHistory {
     pushAction(action) {
         this.push({
             type: "action",
-            id: action
+            id: action,
         })
     }
     editBegin(x, y) {
@@ -351,7 +351,7 @@ class EditorHistory {
             type: "edit",
             id: this.editor.getOptionValue("tool"),
             options: Object.assign({}, this.editor.options),
-            points: [{ x: x, y: y }]
+            points: [{ x: x, y: y }],
         }
     }
     editMove(x, y) {
@@ -398,10 +398,10 @@ class EditorHistory {
         for (var i = snapshot_index + 1; i <= target_index; i++) {
             var event = this.events[i]
             if (event.type == "action") {
-                var action = IMAGE_EDITOR_ACTIONS.find(a => a.id == event.id)
+                var action = IMAGE_EDITOR_ACTIONS.find((a) => a.id == event.id)
                 action.handler(this.editor)
             } else if (event.type == "edit") {
-                var tool = IMAGE_EDITOR_TOOLS.find(t => t.id == event.id)
+                var tool = IMAGE_EDITOR_TOOLS.find((t) => t.id == event.id)
                 this.editor.setBrush(this.editor.layers.drawing, event.options)
 
                 var first_point = event.points[0]
@@ -434,14 +434,14 @@ class ImageEditor {
         this.container = popup.querySelector(".editor-controls-center > div")
         this.layers = {}
         var layer_names = ["background", "drawing", "overlay"]
-        layer_names.forEach(name => {
+        layer_names.forEach((name) => {
             let canvas = document.createElement("canvas")
             canvas.className = `editor-canvas-${name}`
             this.container.appendChild(canvas)
             this.layers[name] = {
                 name: name,
                 canvas: canvas,
-                ctx: canvas.getContext("2d")
+                ctx: canvas.getContext("2d"),
             }
         })
 
@@ -460,7 +460,7 @@ class ImageEditor {
         // initialize editor controls
         this.options = {}
         this.optionElements = {}
-        IMAGE_EDITOR_SECTIONS.forEach(section => {
+        IMAGE_EDITOR_SECTIONS.forEach((section) => {
             section.id = `image_editor_${section.name}`
             var sectionElement = document.createElement("div")
             sectionElement.className = section.id
@@ -478,7 +478,7 @@ class ImageEditor {
                 var optionElement = document.createElement("div")
                 optionHolder.appendChild(optionElement)
                 section.initElement(optionElement, option)
-                optionElement.addEventListener("click", target => this.selectOption(section.name, index))
+                optionElement.addEventListener("click", (target) => this.selectOption(section.name, index))
                 optionsContainer.appendChild(optionHolder)
                 this.optionElements[section.name].push(optionElement)
             })
@@ -496,13 +496,13 @@ class ImageEditor {
         })
 
         if (this.inpainter) {
-            this.selectOption("color", IMAGE_EDITOR_SECTIONS.find(s => s.name == "color").options.indexOf("#ffffff"))
-            this.selectOption("opacity", IMAGE_EDITOR_SECTIONS.find(s => s.name == "opacity").options.indexOf(0.4))
+            this.selectOption("color", IMAGE_EDITOR_SECTIONS.find((s) => s.name == "color").options.indexOf("#ffffff"))
+            this.selectOption("opacity", IMAGE_EDITOR_SECTIONS.find((s) => s.name == "opacity").options.indexOf(0.4))
         }
 
         // initialize the right-side controls
         var buttonContainer = document.createElement("div")
-        IMAGE_EDITOR_BUTTONS.forEach(button => {
+        IMAGE_EDITOR_BUTTONS.forEach((button) => {
             var element = document.createElement("div")
             var icon = document.createElement("i")
             element.className = "image-editor-button button"
@@ -510,13 +510,13 @@ class ImageEditor {
             element.appendChild(icon)
             element.append(button.name)
             buttonContainer.appendChild(element)
-            element.addEventListener("click", event => button.handler(this))
+            element.addEventListener("click", (event) => button.handler(this))
         })
         var actionsContainer = document.createElement("div")
         var actionsTitle = document.createElement("h4")
         actionsTitle.textContent = "Actions"
         actionsContainer.appendChild(actionsTitle)
-        IMAGE_EDITOR_ACTIONS.forEach(action => {
+        IMAGE_EDITOR_ACTIONS.forEach((action) => {
             var element = document.createElement("div")
             var icon = document.createElement("i")
             element.className = "image-editor-button button"
@@ -527,7 +527,7 @@ class ImageEditor {
             element.appendChild(icon)
             element.append(action.name)
             actionsContainer.appendChild(element)
-            element.addEventListener("click", event => this.runAction(action.id))
+            element.addEventListener("click", (event) => this.runAction(action.id))
         })
         this.popup.querySelector(".editor-controls-right").appendChild(actionsContainer)
         this.popup.querySelector(".editor-controls-right").appendChild(buttonContainer)
@@ -568,7 +568,7 @@ class ImageEditor {
         this.container.style.width = width + "px"
         this.container.style.height = height + "px"
 
-        Object.values(this.layers).forEach(layer => {
+        Object.values(this.layers).forEach((layer) => {
             layer.canvas.width = width
             layer.canvas.height = height
         })
@@ -581,7 +581,7 @@ class ImageEditor {
     }
     get tool() {
         var tool_id = this.getOptionValue("tool")
-        return IMAGE_EDITOR_TOOLS.find(t => t.id == tool_id)
+        return IMAGE_EDITOR_TOOLS.find((t) => t.id == tool_id)
     }
     loadTool() {
         this.drawing = false
@@ -617,7 +617,7 @@ class ImageEditor {
             // This is an inpainter, so make sure the toggle is set accordingly
             var is_blank = !this.layers.drawing.ctx
                 .getImageData(0, 0, this.width, this.height)
-                .data.some(channel => channel !== 0)
+                .data.some((channel) => channel !== 0)
             maskSetting.checked = !is_blank
         }
         this.hide()
@@ -641,7 +641,7 @@ class ImageEditor {
         image.src = dataUrl
     }
     runAction(action_id) {
-        var action = IMAGE_EDITOR_ACTIONS.find(a => a.id == action_id)
+        var action = IMAGE_EDITOR_ACTIONS.find((a) => a.id == action_id)
         if (action.trackHistory) {
             this.history.pushAction(action_id)
         }
@@ -661,14 +661,14 @@ class ImageEditor {
             layer.ctx.filter = sharpness == 0 ? `none` : `blur(${sharpness}px)`
             layer.ctx.globalAlpha = 1 - options.opacity
             layer.ctx.globalCompositeOperation = "source-over"
-            var tool = IMAGE_EDITOR_TOOLS.find(t => t.id == options.tool)
+            var tool = IMAGE_EDITOR_TOOLS.find((t) => t.id == options.tool)
             if (tool && tool.setBrush) {
                 tool.setBrush(editor, layer)
             }
         } else {
             Object.values(["drawing", "overlay"])
-                .map(name => this.layers[name])
-                .forEach(l => {
+                .map((name) => this.layers[name])
+                .forEach((l) => {
                     this.setBrush(l)
                 })
         }
@@ -713,14 +713,14 @@ class ImageEditor {
         if (dropper_active && !event.ctrlKey) {
             this.selectOption(
                 "tool",
-                IMAGE_EDITOR_TOOLS.findIndex(t => t.id == this.temp_previous_tool)
+                IMAGE_EDITOR_TOOLS.findIndex((t) => t.id == this.temp_previous_tool)
             )
             this.temp_previous_tool = null
         } else if (!dropper_active && event.ctrlKey) {
             this.temp_previous_tool = this.getOptionValue("tool")
             this.selectOption(
                 "tool",
-                IMAGE_EDITOR_TOOLS.findIndex(t => t.id == "colorpicker")
+                IMAGE_EDITOR_TOOLS.findIndex((t) => t.id == "colorpicker")
             )
         }
     }
@@ -733,7 +733,7 @@ class ImageEditor {
             touchstart: "mousedown",
             touchmove: "mousemove",
             touchend: "mouseup",
-            touchcancel: "mouseup"
+            touchcancel: "mouseup",
         }
         if (type in touchmap) {
             type = touchmap[type]
@@ -770,15 +770,15 @@ class ImageEditor {
         }
     }
     getOptionValue(section_name) {
-        var section = IMAGE_EDITOR_SECTIONS.find(s => s.name == section_name)
+        var section = IMAGE_EDITOR_SECTIONS.find((s) => s.name == section_name)
         return this.options && section_name in this.options ? this.options[section_name] : section.default
     }
     selectOption(section_name, option_index) {
-        var section = IMAGE_EDITOR_SECTIONS.find(s => s.name == section_name)
+        var section = IMAGE_EDITOR_SECTIONS.find((s) => s.name == section_name)
         var value = section.options[option_index]
         this.options[section_name] = value == "custom" ? section.getCustom(this) : value
 
-        this.optionElements[section_name].forEach(element => element.classList.remove("active"))
+        this.optionElements[section_name].forEach((element) => element.classList.remove("active"))
         this.optionElements[section_name][option_index].classList.add("active")
 
         // change the editor
@@ -818,7 +818,7 @@ function hexToRgb(hex) {
         ? {
               r: parseInt(result[1], 16),
               g: parseInt(result[2], 16),
-              b: parseInt(result[3], 16)
+              b: parseInt(result[3], 16),
           }
         : null
 }
@@ -836,14 +836,14 @@ function flood_fill(editor, the_canvas_context, x, y, color) {
         r: pixels.data[linear_cords],
         g: pixels.data[linear_cords + 1],
         b: pixels.data[linear_cords + 2],
-        a: pixels.data[linear_cords + 3]
+        a: pixels.data[linear_cords + 3],
     }
 
     var opacity = color.a / 255
     var new_color = {
         r: parseInt(color.r * opacity + original_color.r * (1 - opacity)),
         g: parseInt(color.g * opacity + original_color.g * (1 - opacity)),
-        b: parseInt(color.b * opacity + original_color.b * (1 - opacity))
+        b: parseInt(color.b * opacity + original_color.b * (1 - opacity)),
     }
 
     if (

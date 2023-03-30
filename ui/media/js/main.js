@@ -15,33 +15,33 @@ const taskConfigSetup = {
         use_stable_diffusion_model: "Model",
         use_vae_model: {
             label: "VAE",
-            visible: ({ reqBody }) => reqBody?.use_vae_model !== undefined && reqBody?.use_vae_model.trim() !== ""
+            visible: ({ reqBody }) => reqBody?.use_vae_model !== undefined && reqBody?.use_vae_model.trim() !== "",
         },
         negative_prompt: {
             label: "Negative Prompt",
-            visible: ({ reqBody }) => reqBody?.negative_prompt !== undefined && reqBody?.negative_prompt.trim() !== ""
+            visible: ({ reqBody }) => reqBody?.negative_prompt !== undefined && reqBody?.negative_prompt.trim() !== "",
         },
         prompt_strength: "Prompt Strength",
         use_face_correction: "Fix Faces",
         upscale: {
             value: ({ reqBody }) => `${reqBody?.use_upscale} (${reqBody?.upscale_amount || 4}x)`,
             label: "Upscale",
-            visible: ({ reqBody }) => !!reqBody?.use_upscale
+            visible: ({ reqBody }) => !!reqBody?.use_upscale,
         },
         use_hypernetwork_model: "Hypernetwork",
         hypernetwork_strength: {
             label: "Hypernetwork Strength",
-            visible: ({ reqBody }) => !!reqBody?.use_hypernetwork_model
+            visible: ({ reqBody }) => !!reqBody?.use_hypernetwork_model,
         },
         use_lora_model: { label: "Lora Model", visible: ({ reqBody }) => !!reqBody?.use_lora_model },
-        preserve_init_image_color_profile: "Preserve Color Profile"
+        preserve_init_image_color_profile: "Preserve Color Profile",
     },
     pluginTaskConfig: {},
-    getCSSKey: key =>
+    getCSSKey: (key) =>
         key
             .split("_")
-            .map(s => s.charAt(0).toUpperCase() + s.slice(1))
-            .join("")
+            .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+            .join(""),
 }
 
 let imageCounter = 0
@@ -132,7 +132,7 @@ let undoButton = document.querySelector("#undo")
 let undoBuffer = []
 const UNDO_LIMIT = 20
 
-imagePreview.addEventListener("drop", function(ev) {
+imagePreview.addEventListener("drop", function (ev) {
     const data = ev.dataTransfer?.getData("text/plain")
     if (!data) {
         return
@@ -192,13 +192,13 @@ function getLocalStorageBoolItem(key, fallback) {
 }
 
 function handleBoolSettingChange(key) {
-    return function(e) {
+    return function (e) {
         localStorage.setItem(key, e.target.checked.toString())
     }
 }
 
 function handleStringSettingChange(key) {
-    return function(e) {
+    return function (e) {
         localStorage.setItem(key, e.target.value.toString())
     }
 }
@@ -262,8 +262,8 @@ function shiftOrConfirm(e, prompt, fn) {
                 yes: () => {
                     fn(e)
                 },
-                cancel: () => {}
-            }
+                cancel: () => {},
+            },
         })
     }
 }
@@ -295,8 +295,8 @@ function playSound() {
     var promise = audio.play()
     if (promise !== undefined) {
         promise
-            .then(_ => {})
-            .catch(error => {
+            .then((_) => {})
+            .catch((error) => {
                 console.warn("browser blocked autoplay")
             })
     }
@@ -308,14 +308,14 @@ function undoableRemove(element, doubleUndo = false) {
         parent: element.parentNode,
         prev: element.previousSibling,
         next: element.nextSibling,
-        doubleUndo: doubleUndo
+        doubleUndo: doubleUndo,
     }
     undoBuffer.push(data)
     if (undoBuffer.length > UNDO_LIMIT) {
         // Remove item from memory and also remove it from the data structures
         let item = undoBuffer.shift()
         htmlTaskMap.delete(item.element)
-        item.element.querySelectorAll("[data-imagecounter]").forEach(img => {
+        item.element.querySelectorAll("[data-imagecounter]").forEach((img) => {
             delete imageRequest[img.dataset["imagecounter"]]
         })
     }
@@ -386,7 +386,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             outputContainer.appendChild(imageItemElem)
             const imageRemoveBtn = imageItemElem.querySelector(".imgPreviewItemClearBtn")
             let parentTaskContainer = imageRemoveBtn.closest(".imageTaskContainer")
-            imageRemoveBtn.addEventListener("click", e => {
+            imageRemoveBtn.addEventListener("click", (e) => {
                 undoableRemove(imageItemElem)
                 let allHidden = true
                 let children = parentTaskContainer.querySelectorAll(".imgItem")
@@ -412,7 +412,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         imageElem.setAttribute("data-steps", imageInferenceSteps)
         imageElem.setAttribute("data-guidance", imageGuidanceScale)
 
-        imageElem.addEventListener("load", function() {
+        imageElem.addEventListener("load", function () {
             imageItemElem.querySelector(".img_bottom_label").innerText = `${this.naturalWidth} x ${this.naturalHeight}`
         })
 
@@ -421,12 +421,12 @@ function showImages(reqBody, res, outputContainer, livePreview) {
 
         if ("seed" in result && !imageElem.hasAttribute("data-seed")) {
             const imageExpandBtn = imageItemElem.querySelector(".imgExpandBtn")
-            imageExpandBtn.addEventListener("click", function() {
+            imageExpandBtn.addEventListener("click", function () {
                 imageModal(imageElem.src)
             })
 
             const req = Object.assign({}, reqBody, {
-                seed: result?.seed || reqBody.seed
+                seed: result?.seed || reqBody.seed,
             })
             imageElem.setAttribute("data-seed", req.seed)
             imageElem.setAttribute("data-imagecounter", ++imageCounter)
@@ -440,20 +440,20 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                     {
                         html: '<i class="fa-solid fa-download"></i> Download Image',
                         on_click: onDownloadImageClick,
-                        class: "download-img"
+                        class: "download-img",
                     },
                     {
                         html: '<i class="fa-solid fa-download"></i> JSON',
                         on_click: onDownloadJSONClick,
-                        class: "download-json"
-                    }
+                        class: "download-json",
+                    },
                 ],
                 { text: "Make Similar Images", on_click: onMakeSimilarClick },
                 { text: "Draw another 25 steps", on_click: onContinueDrawingClick },
                 [
                     { text: "Upscale", on_click: onUpscaleClick, filter: (req, img) => !req.use_upscale },
-                    { text: "Fix Faces", on_click: onFixFacesClick, filter: (req, img) => !req.use_face_correction }
-                ]
+                    { text: "Fix Faces", on_click: onFixFacesClick, filter: (req, img) => !req.use_face_correction },
+                ],
             ]
 
             // include the plugins
@@ -461,10 +461,10 @@ function showImages(reqBody, res, outputContainer, livePreview) {
 
             const imgItemInfo = imageItemElem.querySelector(".imgItemInfo")
             const img = imageItemElem.querySelector("img")
-            const createButton = function(btnInfo) {
+            const createButton = function (btnInfo) {
                 if (Array.isArray(btnInfo)) {
                     const wrapper = document.createElement("div")
-                    btnInfo.map(createButton).forEach(buttonElement => wrapper.appendChild(buttonElement))
+                    btnInfo.map(createButton).forEach((buttonElement) => wrapper.appendChild(buttonElement))
                     return wrapper
                 }
 
@@ -485,7 +485,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                 }
 
                 if (btnInfo.on_click || !isLabel) {
-                    newButton.addEventListener("click", function(event) {
+                    newButton.addEventListener("click", function (event) {
                         btnInfo.on_click(req, img, event)
                     })
                 }
@@ -499,9 +499,9 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                 }
                 return newButton
             }
-            buttons.forEach(btn => {
+            buttons.forEach((btn) => {
                 if (Array.isArray(btn)) {
-                    btn = btn.filter(btnInfo => !btnInfo.filter || btnInfo.filter(req, img) === true)
+                    btn = btn.filter((btnInfo) => !btnInfo.filter || btnInfo.filter(req, img) === true)
                     if (btn.length === 0) {
                         return
                     }
@@ -553,7 +553,7 @@ function modifyCurrentRequest(...reqDiff) {
     const newTaskRequest = getCurrentUserRequest()
 
     newTaskRequest.reqBody = Object.assign(newTaskRequest.reqBody, ...reqDiff, {
-        use_cpu: useCPUField.checked
+        use_cpu: useCPUField.checked,
     })
     newTaskRequest.seed = newTaskRequest.reqBody.seed
 
@@ -567,7 +567,7 @@ function onMakeSimilarClick(req, img) {
         guidance_scale: 7.5,
         prompt_strength: 0.7,
         init_image: img.src,
-        seed: Math.floor(Math.random() * 10000000)
+        seed: Math.floor(Math.random() * 10000000),
     })
 
     newTaskRequest.numOutputsTotal = 5
@@ -583,7 +583,7 @@ function enqueueImageVariationTask(req, img, reqDiff) {
 
     const newRequestBody = {
         num_outputs: 1, // this can be user-configurable in the future
-        seed: imageSeed
+        seed: imageSeed,
     }
 
     // If the user is editing pictures, stop modifyCurrentRequest from importing
@@ -604,26 +604,26 @@ function enqueueImageVariationTask(req, img, reqDiff) {
 
 function onUpscaleClick(req, img) {
     enqueueImageVariationTask(req, img, {
-        use_upscale: upscaleModelField.value
+        use_upscale: upscaleModelField.value,
     })
 }
 
 function onFixFacesClick(req, img) {
     enqueueImageVariationTask(req, img, {
-        use_face_correction: gfpganModelField.value
+        use_face_correction: gfpganModelField.value,
     })
 }
 
 function onContinueDrawingClick(req, img) {
     enqueueImageVariationTask(req, img, {
-        num_inference_steps: parseInt(req.num_inference_steps) + 25
+        num_inference_steps: parseInt(req.num_inference_steps) + 25,
     })
 }
 
 function getUncompletedTaskEntries() {
     const taskEntries = Array.from(document.querySelectorAll("#preview .imageTaskContainer .taskStatusLabel"))
-        .filter(taskLabel => taskLabel.style.display !== "none")
-        .map(function(taskLabel) {
+        .filter((taskLabel) => taskLabel.style.display !== "none")
+        .map(function (taskLabel) {
             let imageTaskContainer = taskLabel.parentNode
             while (!imageTaskContainer.classList.contains("imageTaskContainer") && imageTaskContainer.parentNode) {
                 imageTaskContainer = imageTaskContainer.parentNode
@@ -663,9 +663,9 @@ function makeImage() {
         guidanceScaleField.value = guidanceScaleSlider.value / 10
     }
     const taskTemplate = getCurrentUserRequest()
-    const newTaskRequests = getPrompts().map(prompt =>
+    const newTaskRequests = getPrompts().map((prompt) =>
         Object.assign({}, taskTemplate, {
-            reqBody: Object.assign({ prompt: prompt }, taskTemplate.reqBody)
+            reqBody: Object.assign({ prompt: prompt }, taskTemplate.reqBody),
         })
     )
     newTaskRequests.forEach(createTask)
@@ -700,7 +700,7 @@ function getTaskUpdater(task, reqBody, outputContainer) {
 
     const batchCount = task.batchCount
     let lastStatus = undefined
-    return async function(event) {
+    return async function (event) {
         if (this.status !== lastStatus) {
             lastStatus = this.status
             switch (this.status) {
@@ -798,10 +798,10 @@ function abortTask(task) {
     task.progressBar.classList.remove("active")
     task["taskStatusLabel"].style.display = "none"
     task["stopTask"].innerHTML = '<i class="fa-solid fa-trash-can"></i> Remove'
-    if (!task.instances?.some(r => r.isPending)) {
+    if (!task.instances?.some((r) => r.isPending)) {
         return
     }
-    task.instances.forEach(instance => {
+    task.instances.forEach((instance) => {
         try {
             instance.abort()
         } catch (e) {
@@ -859,7 +859,7 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
         task["taskStatusLabel"].classList.remove("activeTaskLabel")
         return
     }
-    if ("instances" in task && task.instances.some(ins => ins != instance && ins.isPending)) {
+    if ("instances" in task && task.instances.some((ins) => ins != instance && ins.isPending)) {
         return
     }
 
@@ -950,7 +950,7 @@ async function onTaskStart(task) {
     task.outputContainer.insertBefore(outputContainer, task.outputContainer.firstChild)
 
     const eventInfo = { reqBody: newTaskReqBody }
-    const callbacksPromises = PLUGINS["TASK_CREATE"].map(hook => {
+    const callbacksPromises = PLUGINS["TASK_CREATE"].map((hook) => {
         if (typeof hook !== "function") {
             console.error("The provided TASK_CREATE hook is not a function. Hook: %o", hook)
             return Promise.reject(new Error("hook is not a function."))
@@ -971,9 +971,9 @@ async function onTaskStart(task) {
         }
         if (!instance) {
             console.error(
-                `${factory ? "Factory " + String(factory) : "No factory defined"} for output format ${eventInfo.reqBody
-                    ?.output_format || newTaskReqBody.output_format}. Instance is ${instance ||
-                    "undefined"}. Using default renderer.`
+                `${factory ? "Factory " + String(factory) : "No factory defined"} for output format ${
+                    eventInfo.reqBody?.output_format || newTaskReqBody.output_format
+                }. Instance is ${instance || "undefined"}. Using default renderer.`
             )
             instance = new SD.RenderTask(eventInfo.reqBody || newTaskReqBody)
         }
@@ -983,10 +983,10 @@ async function onTaskStart(task) {
     task.batchesDone++
 
     instance.enqueue(getTaskUpdater(task, newTaskReqBody, outputContainer)).then(
-        renderResult => {
+        (renderResult) => {
             onTaskCompleted(task, newTaskReqBody, instance, outputContainer, renderResult)
         },
-        reason => {
+        (reason) => {
             onTaskErrorHandler(task, newTaskReqBody, instance, reason)
         }
     )
@@ -1004,7 +1004,7 @@ function createInitImageHover(taskEntry) {
     img.src = taskEntry.querySelector("div.task-initimg > img").src
     $tooltip.append(img)
     $tooltip.append(`<div class="top-right"><button>Use as Input</button></div>`)
-    $tooltip.find("button").on("click", e => {
+    $tooltip.find("button").on("click", (e) => {
         e.stopPropagation()
         onUseAsInputClick(null, img)
     })
@@ -1012,7 +1012,7 @@ function createInitImageHover(taskEntry) {
 
 let startX, startY
 function onTaskEntryDragOver(event) {
-    imagePreview.querySelectorAll(".imageTaskContainer").forEach(itc => {
+    imagePreview.querySelectorAll(".imageTaskContainer").forEach((itc) => {
         if (itc != event.target.closest(".imageTaskContainer")) {
             itc.classList.remove("dropTargetBefore", "dropTargetAfter")
         }
@@ -1040,15 +1040,15 @@ function generateConfig({ label, value, visible, cssKey }) {
 function getVisibleConfig(config, task) {
     const mergedTaskConfig = { ...config.taskConfig, ...config.pluginTaskConfig }
     return Object.keys(mergedTaskConfig)
-        .map(key => {
+        .map((key) => {
             const value = mergedTaskConfig?.[key]?.value?.(task) ?? task.reqBody[key]
             const visible = mergedTaskConfig?.[key]?.visible?.(task) ?? value !== undefined ?? true
             const label = mergedTaskConfig?.[key]?.label ?? mergedTaskConfig?.[key]
             const cssKey = config.getCSSKey(key)
             return { label, visible, value, cssKey }
         })
-        .map(obj => generateConfig(obj))
-        .filter(obj => obj)
+        .map((obj) => generateConfig(obj))
+        .filter((obj) => obj)
 }
 
 function createTaskConfig(task) {
@@ -1086,27 +1086,27 @@ function createTask(task) {
     createCollapsibles(taskEntry)
 
     let draghandle = taskEntry.querySelector(".drag-handle")
-    draghandle.addEventListener("mousedown", e => {
+    draghandle.addEventListener("mousedown", (e) => {
         taskEntry.setAttribute("draggable", true)
     })
     // Add a debounce delay to allow mobile to bouble tap.
     draghandle.addEventListener(
         "mouseup",
-        debounce(e => {
+        debounce((e) => {
             taskEntry.setAttribute("draggable", false)
         }, 2000)
     )
-    draghandle.addEventListener("click", e => {
+    draghandle.addEventListener("click", (e) => {
         e.preventDefault() // Don't allow the results to be collapsed...
     })
-    taskEntry.addEventListener("dragend", e => {
+    taskEntry.addEventListener("dragend", (e) => {
         taskEntry.setAttribute("draggable", false)
-        imagePreview.querySelectorAll(".imageTaskContainer").forEach(itc => {
+        imagePreview.querySelectorAll(".imageTaskContainer").forEach((itc) => {
             itc.classList.remove("dropTargetBefore", "dropTargetAfter")
         })
         imagePreview.removeEventListener("dragover", onTaskEntryDragOver)
     })
-    taskEntry.addEventListener("dragstart", function(e) {
+    taskEntry.addEventListener("dragstart", function (e) {
         imagePreview.addEventListener("dragover", onTaskEntryDragOver)
         e.dataTransfer.setData("text/plain", taskEntry.id)
         startX = e.target.closest(".imageTaskContainer").offsetLeft
@@ -1124,11 +1124,11 @@ function createTask(task) {
     task["progressBar"] = taskEntry.querySelector(".progress-bar")
     task["stopTask"] = taskEntry.querySelector(".stopTask")
 
-    task["stopTask"].addEventListener("click", e => {
+    task["stopTask"].addEventListener("click", (e) => {
         e.stopPropagation()
 
         if (task["isProcessing"]) {
-            shiftOrConfirm(e, "Stop this task?", async function(e) {
+            shiftOrConfirm(e, "Stop this task?", async function (e) {
                 if (task.batchesDone <= 0 || !task.isProcessing) {
                     removeTask(taskEntry)
                 }
@@ -1140,7 +1140,7 @@ function createTask(task) {
     })
 
     task["useSettings"] = taskEntry.querySelector(".useSettings")
-    task["useSettings"].addEventListener("click", function(e) {
+    task["useSettings"].addEventListener("click", function (e) {
         e.stopPropagation()
         restoreTaskToUI(task, TASK_REQ_NO_EXPORT)
     })
@@ -1190,9 +1190,9 @@ function getCurrentUserRequest() {
             output_lossless: outputLosslessField.checked,
             metadata_output_format: metadataOutputFormatField.value,
             original_prompt: promptField.value,
-            active_tags: activeTags.map(x => x.name),
-            inactive_tags: activeTags.filter(tag => tag.inactive === true).map(x => x.name)
-        }
+            active_tags: activeTags.map((x) => x.name),
+            inactive_tags: activeTags.filter((tag) => tag.inactive === true).map((x) => x.name),
+        },
     }
     if (IMAGE_REGEX.test(initImagePreview.src)) {
         newTask.reqBody.init_image = initImagePreview.src
@@ -1239,17 +1239,17 @@ function getPrompts(prompts) {
     let promptsToMake = []
     if (prompts.trim() !== "") {
         prompts = prompts.split("\n")
-        prompts = prompts.map(prompt => prompt.trim())
-        prompts = prompts.filter(prompt => prompt !== "")
+        prompts = prompts.map((prompt) => prompt.trim())
+        prompts = prompts.filter((prompt) => prompt !== "")
 
         promptsToMake = applyPermuteOperator(prompts)
         promptsToMake = applySetOperator(promptsToMake)
     }
-    const newTags = activeTags.filter(tag => tag.inactive === undefined || tag.inactive === false)
+    const newTags = activeTags.filter((tag) => tag.inactive === undefined || tag.inactive === false)
     if (newTags.length > 0) {
-        const promptTags = newTags.map(x => x.name).join(", ")
+        const promptTags = newTags.map((x) => x.name).join(", ")
         if (promptsToMake.length > 0) {
-            promptsToMake = promptsToMake.map(prompt => `${prompt}, ${promptTags}`)
+            promptsToMake = promptsToMake.map((prompt) => `${prompt}, ${promptTags}`)
         } else {
             promptsToMake.push(promptTags)
         }
@@ -1258,7 +1258,7 @@ function getPrompts(prompts) {
     promptsToMake = applyPermuteOperator(promptsToMake)
     promptsToMake = applySetOperator(promptsToMake)
 
-    PLUGINS["GET_PROMPTS_HOOK"].forEach(fn => {
+    PLUGINS["GET_PROMPTS_HOOK"].forEach((fn) => {
         promptsToMake = fn(promptsToMake)
     })
 
@@ -1268,7 +1268,7 @@ function getPrompts(prompts) {
 function applySetOperator(prompts) {
     let promptsToMake = []
     let braceExpander = new BraceExpander()
-    prompts.forEach(prompt => {
+    prompts.forEach((prompt) => {
         let expandedPrompts = braceExpander.expand(prompt)
         promptsToMake = promptsToMake.concat(expandedPrompts)
     })
@@ -1278,13 +1278,13 @@ function applySetOperator(prompts) {
 
 function applyPermuteOperator(prompts) {
     let promptsToMake = []
-    prompts.forEach(prompt => {
+    prompts.forEach((prompt) => {
         let promptMatrix = prompt.split("|")
         prompt = promptMatrix.shift().trim()
         promptsToMake.push(prompt)
 
-        promptMatrix = promptMatrix.map(p => p.trim())
-        promptMatrix = promptMatrix.filter(p => p !== "")
+        promptMatrix = promptMatrix.map((p) => p.trim())
+        promptMatrix = promptMatrix.filter((p) => p !== "")
 
         if (promptMatrix.length > 0) {
             let promptPermutations = permutePrompts(prompt, promptMatrix)
@@ -1298,7 +1298,7 @@ function applyPermuteOperator(prompts) {
 function permutePrompts(promptBase, promptMatrix) {
     let prompts = []
     let permutations = permute(promptMatrix)
-    permutations.forEach(perm => {
+    permutations.forEach((perm) => {
         let prompt = promptBase
 
         if (perm.length > 0) {
@@ -1330,7 +1330,7 @@ function createFileName(prompt, seed, steps, guidance, outputFormat) {
 }
 
 async function stopAllTasks() {
-    getUncompletedTaskEntries().forEach(taskEntry => {
+    getUncompletedTaskEntries().forEach((taskEntry) => {
         const taskStatusLabel = taskEntry.querySelector(".taskStatusLabel")
         if (taskStatusLabel) {
             taskStatusLabel.style.display = "none"
@@ -1360,8 +1360,8 @@ function removeTask(taskToRemove) {
     updateInitialText()
 }
 
-clearAllPreviewsBtn.addEventListener("click", e => {
-    shiftOrConfirm(e, "Clear all the results and tasks in this window?", async function() {
+clearAllPreviewsBtn.addEventListener("click", (e) => {
+    shiftOrConfirm(e, "Clear all the results and tasks in this window?", async function () {
         await stopAllTasks()
 
         let taskEntries = document.querySelectorAll(".imageTaskContainer")
@@ -1370,11 +1370,11 @@ clearAllPreviewsBtn.addEventListener("click", e => {
 })
 
 /* Download images popup */
-showDownloadPopupBtn.addEventListener("click", e => {
+showDownloadPopupBtn.addEventListener("click", (e) => {
     saveAllImagesPopup.classList.add("active")
 })
 
-saveAllZipToggle.addEventListener("change", e => {
+saveAllZipToggle.addEventListener("change", (e) => {
     if (saveAllZipToggle.checked) {
         saveAllFoldersOption.classList.remove("displayNone")
     } else {
@@ -1387,10 +1387,7 @@ function dataURItoBlob(dataURI) {
     var byteString = atob(dataURI.split(",")[1])
 
     // separate out the mime component
-    var mimeString = dataURI
-        .split(",")[0]
-        .split(":")[1]
-        .split(";")[0]
+    var mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0]
 
     // write the bytes of the string to an ArrayBuffer
     var ab = new ArrayBuffer(byteString.length)
@@ -1417,7 +1414,7 @@ function downloadAllImages() {
     let zip = new JSZip()
     let folder = zip
 
-    document.querySelectorAll(".imageTaskContainer").forEach(container => {
+    document.querySelectorAll(".imageTaskContainer").forEach((container) => {
         if (optTree) {
             let name =
                 ++i +
@@ -1428,7 +1425,7 @@ function downloadAllImages() {
                     .substring(0, 25)
             folder = zip.folder(name)
         }
-        container.querySelectorAll(".imgContainer img").forEach(img => {
+        container.querySelectorAll(".imgContainer img").forEach((img) => {
             let imgItem = img.closest(".imgItem")
 
             if (imgItem.style.display === "none") {
@@ -1458,21 +1455,19 @@ function downloadAllImages() {
         })
     })
     if (optZIP) {
-        let now = Date.now()
-            .toString(36)
-            .toUpperCase()
-        zip.generateAsync({ type: "blob" }).then(function(blob) {
+        let now = Date.now().toString(36).toUpperCase()
+        zip.generateAsync({ type: "blob" }).then(function (blob) {
             saveAs(blob, `EasyDiffusion-Images-${now}.zip`)
         })
     }
 }
 
-saveAllImagesBtn.addEventListener("click", e => {
+saveAllImagesBtn.addEventListener("click", (e) => {
     downloadAllImages()
 })
 
-stopImageBtn.addEventListener("click", e => {
-    shiftOrConfirm(e, "Stop all the tasks?", async function(e) {
+stopImageBtn.addEventListener("click", (e) => {
+    shiftOrConfirm(e, "Stop all the tasks?", async function (e) {
         await stopAllTasks()
     })
 })
@@ -1517,20 +1512,20 @@ diskPathField.disabled = !saveToDiskField.checked
 metadataOutputFormatField.disabled = !saveToDiskField.checked
 
 gfpganModelField.disabled = !useFaceCorrectionField.checked
-useFaceCorrectionField.addEventListener("change", function(e) {
+useFaceCorrectionField.addEventListener("change", function (e) {
     gfpganModelField.disabled = !this.checked
 })
 
 upscaleModelField.disabled = !useUpscalingField.checked
 upscaleAmountField.disabled = !useUpscalingField.checked
-useUpscalingField.addEventListener("change", function(e) {
+useUpscalingField.addEventListener("change", function (e) {
     upscaleModelField.disabled = !this.checked
     upscaleAmountField.disabled = !this.checked
 })
 
 makeImageBtn.addEventListener("click", makeImage)
 
-document.onkeydown = function(e) {
+document.onkeydown = function (e) {
     if (e.ctrlKey && e.code === "Enter") {
         makeImage()
         e.preventDefault()
@@ -1677,7 +1672,7 @@ outputFormatField.addEventListener("change", updateOutputQualityVisibility)
 outputLosslessField.addEventListener("change", updateOutputQualityVisibility)
 /********************* Zoom Slider **********************/
 thumbnailSizeField.addEventListener("change", () => {
-    ;(function(s) {
+    ;(function (s) {
         for (var j = 0; j < document.styleSheets.length; j++) {
             let cssSheet = document.styleSheets[j]
             for (var i = 0; i < cssSheet.cssRules.length; i++) {
@@ -1700,7 +1695,7 @@ function onAutoScrollUpdate() {
     }
     autoscrollBtn.querySelector(".state").innerHTML = autoScroll.checked ? "ON" : "OFF"
 }
-autoscrollBtn.addEventListener("click", function() {
+autoscrollBtn.addEventListener("click", function () {
     autoScroll.checked = !autoScroll.checked
     autoScroll.dispatchEvent(new Event("change"))
     onAutoScrollUpdate()
@@ -1726,7 +1721,7 @@ function loadImg2ImgFromFile() {
     let reader = new FileReader()
     let file = initImageSelector.files[0]
 
-    reader.addEventListener("load", function(event) {
+    reader.addEventListener("load", function (event) {
         initImagePreview.src = reader.result
     })
 
@@ -1766,15 +1761,15 @@ function img2imgUnload() {
 initImagePreview.addEventListener("load", img2imgLoad)
 initImageClearBtn.addEventListener("click", img2imgUnload)
 
-maskSetting.addEventListener("click", function() {
+maskSetting.addEventListener("click", function () {
     onDimensionChange()
 })
 
-promptsFromFileBtn.addEventListener("click", function() {
+promptsFromFileBtn.addEventListener("click", function () {
     promptsFromFileSelector.click()
 })
 
-promptsFromFileSelector.addEventListener("change", async function() {
+promptsFromFileSelector.addEventListener("change", async function () {
     if (promptsFromFileSelector.files.length === 0) {
         return
     }
@@ -1782,7 +1777,7 @@ promptsFromFileSelector.addEventListener("change", async function() {
     let reader = new FileReader()
     let file = promptsFromFileSelector.files[0]
 
-    reader.addEventListener("load", async function() {
+    reader.addEventListener("load", async function () {
         await parseContent(reader.result)
     })
 
@@ -1792,8 +1787,8 @@ promptsFromFileSelector.addEventListener("change", async function() {
 })
 
 /* setup popup handlers */
-document.querySelectorAll(".popup").forEach(popup => {
-    popup.addEventListener("click", event => {
+document.querySelectorAll(".popup").forEach((popup) => {
+    popup.addEventListener("click", (event) => {
         if (event.target == popup) {
             popup.classList.remove("active")
         }
@@ -1808,9 +1803,9 @@ document.querySelectorAll(".popup").forEach(popup => {
 
 var tabElements = []
 function selectTab(tab_id) {
-    let tabInfo = tabElements.find(t => t.tab.id == tab_id)
+    let tabInfo = tabElements.find((t) => t.tab.id == tab_id)
     if (!tabInfo.tab.classList.contains("active")) {
-        tabElements.forEach(info => {
+        tabElements.forEach((info) => {
             if (info.tab.classList.contains("active") && info.tab.parentNode === tabInfo.tab.parentNode) {
                 info.tab.classList.toggle("active")
                 info.content.classList.toggle("active")
@@ -1827,10 +1822,10 @@ function linkTabContents(tab) {
     tabElements.push({
         name: name,
         tab: tab,
-        content: content
+        content: content,
     })
 
-    tab.addEventListener("click", event => selectTab(tab.id))
+    tab.addEventListener("click", (event) => selectTab(tab.id))
 }
 function isTabActive(tab) {
     return tab.classList.contains("active")
@@ -1843,8 +1838,8 @@ function resumeClient() {
         document.body.classList.remove("wait-pause")
         document.body.classList.add("pause")
     }
-    return new Promise(resolve => {
-        let playbuttonclick = function() {
+    return new Promise((resolve) => {
+        let playbuttonclick = function () {
             resumeBtn.removeEventListener("click", playbuttonclick)
             resolve("resolved")
         }
@@ -1854,14 +1849,14 @@ function resumeClient() {
 
 promptField.addEventListener("input", debounce(renameMakeImageButton, 1000))
 
-pauseBtn.addEventListener("click", function() {
+pauseBtn.addEventListener("click", function () {
     pauseClient = true
     pauseBtn.style.display = "none"
     resumeBtn.style.display = "inline"
     document.body.classList.add("wait-pause")
 })
 
-resumeBtn.addEventListener("click", function() {
+resumeBtn.addEventListener("click", function () {
     pauseClient = false
     resumeBtn.style.display = "none"
     pauseBtn.style.display = "inline"
@@ -1872,7 +1867,7 @@ resumeBtn.addEventListener("click", function() {
 /* Pause function */
 document.querySelectorAll(".tab").forEach(linkTabContents)
 
-window.addEventListener("beforeunload", function(e) {
+window.addEventListener("beforeunload", function (e) {
     const msg = "Unsaved pictures will be lost!"
 
     let elementList = document.getElementsByClassName("imageTaskContainer")

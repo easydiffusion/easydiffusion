@@ -1,4 +1,4 @@
-;(function() {
+;(function () {
     "use strict"
 
     var styleSheet = document.createElement("style")
@@ -12,7 +12,7 @@
     document.head.appendChild(styleSheet)
 
     // observe for changes in tag list
-    var observer = new MutationObserver(function(mutations) {
+    var observer = new MutationObserver(function (mutations) {
         //    mutations.forEach(function (mutation) {
         if (editorModifierTagsList.childNodes.length > 0) {
             ModifierToggle()
@@ -21,13 +21,13 @@
     })
 
     observer.observe(editorModifierTagsList, {
-        childList: true
+        childList: true,
     })
 
     function ModifierToggle() {
         let overlays = document.querySelector("#editor-inputs-tags-list").querySelectorAll(".modifier-card-overlay")
-        overlays.forEach(i => {
-            i.oncontextmenu = e => {
+        overlays.forEach((i) => {
+            i.oncontextmenu = (e) => {
                 e.preventDefault()
 
                 if (i.parentElement.classList.contains("modifier-toggle-inactive")) {
@@ -39,7 +39,7 @@
                 let modifierName = i.parentElement
                     .getElementsByClassName("modifier-card-label")[0]
                     .getElementsByTagName("p")[0].dataset.fullName
-                activeTags = activeTags.map(obj => {
+                activeTags = activeTags.map((obj) => {
                     if (trimModifiers(obj.name) === trimModifiers(modifierName)) {
                         return { ...obj, inactive: obj.element.classList.contains("modifier-toggle-inactive") }
                     }

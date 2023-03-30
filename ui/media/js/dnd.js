@@ -40,39 +40,39 @@ function parseBoolean(stringValue) {
 const TASK_MAPPING = {
     prompt: {
         name: "Prompt",
-        setUI: prompt => {
+        setUI: (prompt) => {
             promptField.value = prompt
         },
         readUI: () => promptField.value,
-        parse: val => val
+        parse: (val) => val,
     },
     negative_prompt: {
         name: "Negative Prompt",
-        setUI: negative_prompt => {
+        setUI: (negative_prompt) => {
             negativePromptField.value = negative_prompt
         },
         readUI: () => negativePromptField.value,
-        parse: val => val
+        parse: (val) => val,
     },
     active_tags: {
         name: "Image Modifiers",
-        setUI: active_tags => {
+        setUI: (active_tags) => {
             refreshModifiersState(active_tags)
         },
-        readUI: () => activeTags.map(x => x.name),
-        parse: val => val
+        readUI: () => activeTags.map((x) => x.name),
+        parse: (val) => val,
     },
     inactive_tags: {
         name: "Inactive Image Modifiers",
-        setUI: inactive_tags => {
+        setUI: (inactive_tags) => {
             refreshInactiveTags(inactive_tags)
         },
-        readUI: () => activeTags.filter(tag => tag.inactive === true).map(x => x.name),
-        parse: val => val
+        readUI: () => activeTags.filter((tag) => tag.inactive === true).map((x) => x.name),
+        parse: (val) => val,
     },
     width: {
         name: "Width",
-        setUI: width => {
+        setUI: (width) => {
             const oldVal = widthField.value
             widthField.value = width
             if (!widthField.value) {
@@ -80,11 +80,11 @@ const TASK_MAPPING = {
             }
         },
         readUI: () => parseInt(widthField.value),
-        parse: val => parseInt(val)
+        parse: (val) => parseInt(val),
     },
     height: {
         name: "Height",
-        setUI: height => {
+        setUI: (height) => {
             const oldVal = heightField.value
             heightField.value = height
             if (!heightField.value) {
@@ -92,11 +92,11 @@ const TASK_MAPPING = {
             }
         },
         readUI: () => parseInt(heightField.value),
-        parse: val => parseInt(val)
+        parse: (val) => parseInt(val),
     },
     seed: {
         name: "Seed",
-        setUI: seed => {
+        setUI: (seed) => {
             if (!seed) {
                 randomSeedField.checked = true
                 seedField.disabled = true
@@ -109,46 +109,46 @@ const TASK_MAPPING = {
             seedField.value = seed
         },
         readUI: () => parseInt(seedField.value), // just return the value the user is seeing in the UI
-        parse: val => parseInt(val)
+        parse: (val) => parseInt(val),
     },
     num_inference_steps: {
         name: "Steps",
-        setUI: num_inference_steps => {
+        setUI: (num_inference_steps) => {
             numInferenceStepsField.value = num_inference_steps
         },
         readUI: () => parseInt(numInferenceStepsField.value),
-        parse: val => parseInt(val)
+        parse: (val) => parseInt(val),
     },
     guidance_scale: {
         name: "Guidance Scale",
-        setUI: guidance_scale => {
+        setUI: (guidance_scale) => {
             guidanceScaleField.value = guidance_scale
             updateGuidanceScaleSlider()
         },
         readUI: () => parseFloat(guidanceScaleField.value),
-        parse: val => parseFloat(val)
+        parse: (val) => parseFloat(val),
     },
     prompt_strength: {
         name: "Prompt Strength",
-        setUI: prompt_strength => {
+        setUI: (prompt_strength) => {
             promptStrengthField.value = prompt_strength
             updatePromptStrengthSlider()
         },
         readUI: () => parseFloat(promptStrengthField.value),
-        parse: val => parseFloat(val)
+        parse: (val) => parseFloat(val),
     },
 
     init_image: {
         name: "Initial Image",
-        setUI: init_image => {
+        setUI: (init_image) => {
             initImagePreview.src = init_image
         },
         readUI: () => initImagePreview.src,
-        parse: val => val
+        parse: (val) => val,
     },
     mask: {
         name: "Mask",
-        setUI: mask => {
+        setUI: (mask) => {
             setTimeout(() => {
                 // add a delay to insure this happens AFTER the main image loads (which reloads the inpainter)
                 imageInpainter.setImg(mask)
@@ -156,20 +156,20 @@ const TASK_MAPPING = {
             maskSetting.checked = Boolean(mask)
         },
         readUI: () => (maskSetting.checked ? imageInpainter.getImg() : undefined),
-        parse: val => val
+        parse: (val) => val,
     },
     preserve_init_image_color_profile: {
         name: "Preserve Color Profile",
-        setUI: preserve_init_image_color_profile => {
+        setUI: (preserve_init_image_color_profile) => {
             applyColorCorrectionField.checked = parseBoolean(preserve_init_image_color_profile)
         },
         readUI: () => applyColorCorrectionField.checked,
-        parse: val => parseBoolean(val)
+        parse: (val) => parseBoolean(val),
     },
 
     use_face_correction: {
         name: "Use Face Correction",
-        setUI: use_face_correction => {
+        setUI: (use_face_correction) => {
             const oldVal = gfpganModelField.value
             gfpganModelField.value = getModelPath(use_face_correction, [".pth"])
             if (gfpganModelField.value) {
@@ -186,11 +186,11 @@ const TASK_MAPPING = {
             //useFaceCorrectionField.checked = parseBoolean(use_face_correction)
         },
         readUI: () => (useFaceCorrectionField.checked ? gfpganModelField.value : undefined),
-        parse: val => val
+        parse: (val) => val,
     },
     use_upscale: {
         name: "Use Upscaling",
-        setUI: use_upscale => {
+        setUI: (use_upscale) => {
             const oldVal = upscaleModelField.value
             upscaleModelField.value = getModelPath(use_upscale, [".pth"])
             if (upscaleModelField.value) {
@@ -207,27 +207,27 @@ const TASK_MAPPING = {
             }
         },
         readUI: () => (useUpscalingField.checked ? upscaleModelField.value : undefined),
-        parse: val => val
+        parse: (val) => val,
     },
     upscale_amount: {
         name: "Upscale By",
-        setUI: upscale_amount => {
+        setUI: (upscale_amount) => {
             upscaleAmountField.value = upscale_amount
         },
         readUI: () => upscaleAmountField.value,
-        parse: val => val
+        parse: (val) => val,
     },
     sampler_name: {
         name: "Sampler",
-        setUI: sampler_name => {
+        setUI: (sampler_name) => {
             samplerField.value = sampler_name
         },
         readUI: () => samplerField.value,
-        parse: val => val
+        parse: (val) => val,
     },
     use_stable_diffusion_model: {
         name: "Stable Diffusion model",
-        setUI: use_stable_diffusion_model => {
+        setUI: (use_stable_diffusion_model) => {
             const oldVal = stableDiffusionModelField.value
 
             use_stable_diffusion_model = getModelPath(use_stable_diffusion_model, [".ckpt", ".safetensors"])
@@ -238,11 +238,11 @@ const TASK_MAPPING = {
             }
         },
         readUI: () => stableDiffusionModelField.value,
-        parse: val => val
+        parse: (val) => val,
     },
     use_vae_model: {
         name: "VAE model",
-        setUI: use_vae_model => {
+        setUI: (use_vae_model) => {
             const oldVal = vaeModelField.value
             use_vae_model =
                 use_vae_model === undefined || use_vae_model === null || use_vae_model === "None" ? "" : use_vae_model
@@ -254,11 +254,11 @@ const TASK_MAPPING = {
             vaeModelField.value = use_vae_model
         },
         readUI: () => vaeModelField.value,
-        parse: val => val
+        parse: (val) => val,
     },
     use_lora_model: {
         name: "LoRA model",
-        setUI: use_lora_model => {
+        setUI: (use_lora_model) => {
             const oldVal = loraModelField.value
             use_lora_model =
                 use_lora_model === undefined || use_lora_model === null || use_lora_model === "None"
@@ -272,11 +272,11 @@ const TASK_MAPPING = {
             loraModelField.value = use_lora_model
         },
         readUI: () => loraModelField.value,
-        parse: val => val
+        parse: (val) => val,
     },
     use_hypernetwork_model: {
         name: "Hypernetwork model",
-        setUI: use_hypernetwork_model => {
+        setUI: (use_hypernetwork_model) => {
             const oldVal = hypernetworkModelField.value
             use_hypernetwork_model =
                 use_hypernetwork_model === undefined ||
@@ -293,69 +293,69 @@ const TASK_MAPPING = {
             hypernetworkModelField.dispatchEvent(new Event("change"))
         },
         readUI: () => hypernetworkModelField.value,
-        parse: val => val
+        parse: (val) => val,
     },
     hypernetwork_strength: {
         name: "Hypernetwork Strength",
-        setUI: hypernetwork_strength => {
+        setUI: (hypernetwork_strength) => {
             hypernetworkStrengthField.value = hypernetwork_strength
             updateHypernetworkStrengthSlider()
         },
         readUI: () => parseFloat(hypernetworkStrengthField.value),
-        parse: val => parseFloat(val)
+        parse: (val) => parseFloat(val),
     },
 
     num_outputs: {
         name: "Parallel Images",
-        setUI: num_outputs => {
+        setUI: (num_outputs) => {
             numOutputsParallelField.value = num_outputs
         },
         readUI: () => parseInt(numOutputsParallelField.value),
-        parse: val => val
+        parse: (val) => val,
     },
 
     use_cpu: {
         name: "Use CPU",
-        setUI: use_cpu => {
+        setUI: (use_cpu) => {
             useCPUField.checked = use_cpu
         },
         readUI: () => useCPUField.checked,
-        parse: val => val
+        parse: (val) => val,
     },
 
     stream_image_progress: {
         name: "Stream Image Progress",
-        setUI: stream_image_progress => {
+        setUI: (stream_image_progress) => {
             streamImageProgressField.checked = parseInt(numOutputsTotalField.value) > 50 ? false : stream_image_progress
         },
         readUI: () => streamImageProgressField.checked,
-        parse: val => Boolean(val)
+        parse: (val) => Boolean(val),
     },
     show_only_filtered_image: {
         name: "Show only the corrected/upscaled image",
-        setUI: show_only_filtered_image => {
+        setUI: (show_only_filtered_image) => {
             showOnlyFilteredImageField.checked = show_only_filtered_image
         },
         readUI: () => showOnlyFilteredImageField.checked,
-        parse: val => Boolean(val)
+        parse: (val) => Boolean(val),
     },
     output_format: {
         name: "Output Format",
-        setUI: output_format => {
+        setUI: (output_format) => {
             outputFormatField.value = output_format
         },
         readUI: () => outputFormatField.value,
-        parse: val => val
+        parse: (val) => val,
     },
     save_to_disk_path: {
         name: "Save to disk path",
-        setUI: save_to_disk_path => {
+        setUI: (save_to_disk_path) => {
             saveToDiskField.checked = Boolean(save_to_disk_path)
             diskPathField.value = save_to_disk_path
         },
         readUI: () => diskPathField.value,
-        parse: val => val
-    }
+        parse: (val) => val,
+    },
 }
 
 function restoreTaskToUI(task, fieldsToSkip) {
@@ -412,7 +412,7 @@ function restoreTaskToUI(task, fieldsToSkip) {
         // listen for inpainter loading event, which happens AFTER the main image loads (which reloads the inpainter)
         initImagePreview.addEventListener(
             "load",
-            function() {
+            function () {
                 if (Boolean(task.reqBody.mask)) {
                     imageInpainter.setImg(task.reqBody.mask)
                     maskSetting.checked = true
@@ -431,7 +431,7 @@ function readUI() {
     return {
         numOutputsTotal: parseInt(numOutputsTotalField.value),
         seed: TASK_MAPPING["seed"].readUI(),
-        reqBody: reqBody
+        reqBody: reqBody,
     }
 }
 function getModelPath(filename, extensions) {
@@ -448,7 +448,7 @@ function getModelPath(filename, extensions) {
     if (pathIdx >= 0) {
         filename = filename.slice(pathIdx)
     }
-    extensions.forEach(ext => {
+    extensions.forEach((ext) => {
         if (filename.endsWith(ext)) {
             filename = filename.slice(0, filename.length - ext.length)
         }
@@ -471,7 +471,7 @@ const TASK_TEXT_MAPPING = {
     negative_prompt: "Negative Prompt",
     use_stable_diffusion_model: "Stable Diffusion model",
     use_hypernetwork_model: "Hypernetwork model",
-    hypernetwork_strength: "Hypernetwork Strength"
+    hypernetwork_strength: "Hypernetwork Strength",
 }
 function parseTaskFromText(str) {
     const taskReqBody = {}
@@ -568,19 +568,19 @@ function dropHandler(ev) {
     if (ev?.dataTransfer?.items) {
         // Use DataTransferItemList interface
         items = Array.from(ev.dataTransfer.items)
-        items = items.filter(item => item.kind === "file")
-        items = items.map(item => item.getAsFile())
+        items = items.filter((item) => item.kind === "file")
+        items = items.map((item) => item.getAsFile())
     } else if (ev?.dataTransfer?.files) {
         // Use DataTransfer interface
         items = Array.from(ev.dataTransfer.files)
     }
 
-    items.forEach(item => {
+    items.forEach((item) => {
         item.file_ext = EXT_REGEX.exec(item.name.toLowerCase())[1]
     })
 
-    let text_items = items.filter(item => TEXT_EXTENSIONS.includes(item.file_ext))
-    let image_items = items.filter(item => IMAGE_EXTENSIONS.includes(item.file_ext))
+    let text_items = items.filter((item) => TEXT_EXTENSIONS.includes(item.file_ext))
+    let image_items = items.filter((item) => IMAGE_EXTENSIONS.includes(item.file_ext))
 
     if (image_items.length > 0 && ev.target == initImageSelector) {
         return // let the event bubble up, so that the Init Image filepicker can receive this
@@ -616,7 +616,7 @@ function checkReadTextClipboardPermission(result) {
     const pasteIcon = document.createElement("i")
     pasteIcon.className = "fa-solid fa-paste section-button"
     pasteIcon.innerHTML = `<span class="simple-tooltip top-left">Paste Image Settings</span>`
-    pasteIcon.addEventListener("click", async event => {
+    pasteIcon.addEventListener("click", async (event) => {
         event.stopPropagation()
         // Add css class 'active'
         pasteIcon.classList.add("active")
@@ -631,9 +631,9 @@ function checkReadTextClipboardPermission(result) {
 }
 navigator.permissions
     .query({ name: "clipboard-read" })
-    .then(checkReadTextClipboardPermission, reason => console.log("clipboard-read is not available. %o", reason))
+    .then(checkReadTextClipboardPermission, (reason) => console.log("clipboard-read is not available. %o", reason))
 
-document.addEventListener("paste", async event => {
+document.addEventListener("paste", async (event) => {
     if (event.target) {
         const targetTag = event.target.tagName.toLowerCase()
         // Disable when targeting input elements.
@@ -658,14 +658,14 @@ function checkWriteToClipboardPermission(result) {
     const copyIcon = document.createElement("i")
     copyIcon.className = "fa-solid fa-clipboard section-button"
     copyIcon.innerHTML = `<span class="simple-tooltip top-left">Copy Image Settings</span>`
-    copyIcon.addEventListener("click", event => {
+    copyIcon.addEventListener("click", (event) => {
         event.stopPropagation()
         // Add css class 'active'
         copyIcon.classList.add("active")
         // In 350 ms remove the 'active' class
         asyncDelay(350).then(() => copyIcon.classList.remove("active"))
         const uiState = readUI()
-        TASK_REQ_NO_EXPORT.forEach(key => delete uiState.reqBody[key])
+        TASK_REQ_NO_EXPORT.forEach((key) => delete uiState.reqBody[key])
         if (uiState.reqBody.init_image && !IMAGE_REGEX.test(uiState.reqBody.init_image)) {
             delete uiState.reqBody.init_image
             delete uiState.reqBody.prompt_strength
@@ -675,7 +675,7 @@ function checkWriteToClipboardPermission(result) {
     resetSettings.parentNode.insertBefore(copyIcon, resetSettings)
 }
 // Determine which access we have to the clipboard. Clipboard access is only available on localhost or via TLS.
-navigator.permissions.query({ name: "clipboard-write" }).then(checkWriteToClipboardPermission, e => {
+navigator.permissions.query({ name: "clipboard-write" }).then(checkWriteToClipboardPermission, (e) => {
     if (e instanceof TypeError && typeof navigator?.clipboard?.writeText === "function") {
         // Fix for firefox https://bugzilla.mozilla.org/show_bug.cgi?id=1560373
         checkWriteToClipboardPermission({ state: "granted" })

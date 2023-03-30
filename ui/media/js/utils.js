@@ -55,7 +55,7 @@ function toggleCollapsible(element) {
 
 function saveCollapsibles() {
     let values = {}
-    COLLAPSIBLE_PANELS.forEach(element => {
+    COLLAPSIBLE_PANELS.forEach((element) => {
         let value = element.querySelector(".collapsible").className.indexOf("active") !== -1
         values[element.id] = value
     })
@@ -69,7 +69,7 @@ function createCollapsibles(node) {
         save = true
     }
     let collapsibles = node.querySelectorAll(".collapsible")
-    collapsibles.forEach(function(c) {
+    collapsibles.forEach(function (c) {
         if (save && c.parentElement.id) {
             COLLAPSIBLE_PANELS.push(c.parentElement)
         }
@@ -83,7 +83,7 @@ function createCollapsibles(node) {
         }
         c.insertBefore(handle, c.firstChild)
 
-        c.addEventListener("click", function() {
+        c.addEventListener("click", function () {
             toggleCollapsible(c.parentElement)
         })
     })
@@ -97,7 +97,7 @@ function createCollapsibles(node) {
             saved = localStorage.getItem(COLLAPSIBLES_KEY)
         }
         let values = JSON.parse(saved)
-        COLLAPSIBLE_PANELS.forEach(element => {
+        COLLAPSIBLE_PANELS.forEach((element) => {
             let value = element.querySelector(".collapsible").className.indexOf("active") !== -1
             if (values[element.id] != value) {
                 toggleCollapsible(element)
@@ -111,11 +111,11 @@ function tryLoadOldCollapsibles() {
     const old_map = {
         advancedPanelOpen: "editor-settings",
         modifiersPanelOpen: "editor-modifiers",
-        negativePromptPanelOpen: "editor-inputs-prompt"
+        negativePromptPanelOpen: "editor-inputs-prompt",
     }
     if (localStorage.getItem(Object.keys(old_map)[0])) {
         let result = {}
-        Object.keys(old_map).forEach(key => {
+        Object.keys(old_map).forEach((key) => {
             const value = localStorage.getItem(key)
             if (value !== null) {
                 result[old_map[key]] = value == true || value == "true"
@@ -135,9 +135,7 @@ function permute(arr) {
     let n_permutations = Math.pow(2, n)
     for (let i = 0; i < n_permutations; i++) {
         let perm = []
-        let mask = Number(i)
-            .toString(2)
-            .padStart(n, "0")
+        let mask = Number(i).toString(2).padStart(n, "0")
 
         for (let idx = 0; idx < mask.length; idx++) {
             if (mask[idx] === "1" && arr[idx].trim() !== "") {
@@ -195,7 +193,7 @@ function BraceExpander() {
             ? bracePair(tkns, iPosn + 1, n, lst)
             : {
                   close: iPosn,
-                  commas: lst
+                  commas: lst,
               }
     }
 
@@ -207,7 +205,7 @@ function BraceExpander() {
                 ? dctSofar
                 : {
                       fn: and,
-                      args: []
+                      args: [],
                   },
             head = tkns[0],
             tail = head ? tkns.slice(1) : [],
@@ -217,7 +215,7 @@ function BraceExpander() {
         return andTree(
             {
                 fn: and,
-                args: dctParse.args.concat(lstOR ? orTree(dctParse, lstOR[0], dctBrace.commas) : head)
+                args: dctParse.args.concat(lstOR ? orTree(dctParse, lstOR[0], dctBrace.commas) : head),
             },
             lstOR ? lstOR[1] : tail
         )
@@ -231,28 +229,28 @@ function BraceExpander() {
         return {
             fn: or,
             args: splitsAt(lstCommas, tkns)
-                .map(function(x, i) {
+                .map(function (x, i) {
                     let ts = x.slice(1, i === iLast ? -1 : void 0)
 
                     return ts.length ? ts : [""]
                 })
-                .map(function(ts) {
+                .map(function (ts) {
                     return ts.length > 1 ? andTree(null, ts)[0] : ts[0]
-                })
+                }),
         }
     }
 
     // List of unescaped braces and commas, and remaining strings
     function tokens(str) {
         // Filter function excludes empty splitting artefacts
-        let toS = function(x) {
+        let toS = function (x) {
             return x.toString()
         }
 
         return str
             .split(/(\\\\)/)
             .filter(toS)
-            .reduce(function(a, s) {
+            .reduce(function (a, s) {
                 return a.concat(s.charAt(0) === "\\" ? s : s.split(/(\\*[{,}])/).filter(toS))
             }, [])
     }
@@ -266,9 +264,9 @@ function BraceExpander() {
 
         return lng
             ? 1 < lng
-                ? lstHead.reduce(function(a, h) {
+                ? lstHead.reduce(function (a, h) {
                       return a.concat(
-                          and(args.slice(1)).map(function(t) {
+                          and(args.slice(1)).map(function (t) {
                               return h + t
                           })
                       )
@@ -280,7 +278,7 @@ function BraceExpander() {
     // PARSE TREE OPERATOR (2 of 2)
     // Each option flattened
     function or(args) {
-        return args.reduce(function(a, b) {
+        return args.reduce(function (a, b) {
             return a.concat(b)
         }, [])
     }
@@ -293,7 +291,7 @@ function BraceExpander() {
     // One list split into several (sublist lengths [n])
     function splitsAt(lstN, lst) {
         return lstN.reduceRight(
-            function(a, x) {
+            function (a, x) {
                 return splitAt(x, a[0]).concat(a.slice(1))
             },
             [lst]
@@ -309,7 +307,7 @@ function BraceExpander() {
     function pp(e) {
         return JSON.stringify(
             e,
-            function(k, v) {
+            function (k, v) {
                 return typeof v === "function" ? "[function " + v.name + "]" : v
             },
             2
@@ -319,7 +317,7 @@ function BraceExpander() {
     // ----------------------- MAIN ------------------------
 
     // s -> [s]
-    this.expand = function(s) {
+    this.expand = function (s) {
         // BRACE EXPRESSION PARSED
         let dctParse = andTree(null, tokens(s))[0]
 
@@ -335,7 +333,7 @@ function BraceExpander() {
  * @Returns a promise that will resolve after the specified timeout.
  */
 function asyncDelay(timeout) {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
         setTimeout(resolve, timeout, true)
     })
 }
@@ -344,11 +342,11 @@ function PromiseSource() {
     const srcPromise = new Promise((resolve, reject) => {
         Object.defineProperties(this, {
             resolve: { value: resolve, writable: false },
-            reject: { value: reject, writable: false }
+            reject: { value: reject, writable: false },
         })
     })
     Object.defineProperties(this, {
-        promise: { value: makeQuerablePromise(srcPromise), writable: false }
+        promise: { value: makeQuerablePromise(srcPromise), writable: false },
     })
 }
 
@@ -367,7 +365,7 @@ function debounce(func, wait, immediate) {
     }
     let timeout = null
     let lastPromiseSrc = new PromiseSource()
-    const applyFn = function(context, args) {
+    const applyFn = function (context, args) {
         let result = undefined
         try {
             result = func.apply(context, args)
@@ -380,13 +378,13 @@ function debounce(func, wait, immediate) {
             lastPromiseSrc.resolve(result)
         }
     }
-    return function(...args) {
+    return function (...args) {
         const callNow = Boolean(immediate && !timeout)
         const context = this
         if (timeout) {
             clearTimeout(timeout)
         }
-        timeout = setTimeout(function() {
+        timeout = setTimeout(function () {
             if (!immediate) {
                 applyFn(context, args)
             }
@@ -456,13 +454,13 @@ function makeQuerablePromise(promise) {
     let isResolved = false
     let resolvedValue = undefined
     const qurPro = promise.then(
-        function(val) {
+        function (val) {
             isResolved = true
             isPending = false
             resolvedValue = val
             return val
         },
-        function(reason) {
+        function (reason) {
             rejectReason = reason
             isRejected = true
             isPending = false
@@ -471,27 +469,27 @@ function makeQuerablePromise(promise) {
     )
     Object.defineProperties(qurPro, {
         isResolved: {
-            get: () => isResolved
+            get: () => isResolved,
         },
         resolvedValue: {
-            get: () => resolvedValue
+            get: () => resolvedValue,
         },
         isPending: {
-            get: () => isPending
+            get: () => isPending,
         },
         isRejected: {
-            get: () => isRejected
+            get: () => isRejected,
         },
         rejectReason: {
-            get: () => rejectReason
-        }
+            get: () => rejectReason,
+        },
     })
     return qurPro
 }
 
 /* inserts custom html to allow prettifying of inputs */
 function prettifyInputs(root_element) {
-    root_element.querySelectorAll(`input[type="checkbox"]`).forEach(element => {
+    root_element.querySelectorAll(`input[type="checkbox"]`).forEach((element) => {
         if (element.style.display === "none") {
             return
         }
@@ -558,7 +556,7 @@ class GenericEventSource {
             return Promise.resolve()
         }
         return Promise.allSettled(
-            evs.map(callback => {
+            evs.map((callback) => {
                 try {
                     return Promise.resolve(callback.apply(SD, args))
                 } catch (ex) {
@@ -591,7 +589,7 @@ class ServiceContainer {
         if (typeof params !== "object") {
             throw new Error("params is not an object.")
         }
-        ;["name", "definition"].forEach(key => {
+        ;["name", "definition"].forEach((key) => {
             if (!(key in params)) {
                 console.error("Invalid service %o registration.", params)
                 throw new Error(`params.${key} is not defined.`)
@@ -600,7 +598,7 @@ class ServiceContainer {
         const opts = { definition: params.definition }
         if ("dependencies" in params) {
             if (Array.isArray(params.dependencies)) {
-                params.dependencies.forEach(dep => {
+                params.dependencies.forEach((dep) => {
                     if (typeof dep !== "string") {
                         throw new Error("dependency name is not a string.")
                     }
@@ -681,11 +679,11 @@ function createElement(tagName, attributes, classes, textOrElements) {
         })
     }
     if (classes) {
-        ;(Array.isArray(classes) ? classes : [classes]).forEach(className => element.classList.add(className))
+        ;(Array.isArray(classes) ? classes : [classes]).forEach((className) => element.classList.add(className))
     }
     if (textOrElements) {
         const children = Array.isArray(textOrElements) ? textOrElements : [textOrElements]
-        children.forEach(textOrElem => {
+        children.forEach((textOrElem) => {
             if (textOrElem instanceof HTMLElement) {
                 element.appendChild(textOrElem)
             } else {

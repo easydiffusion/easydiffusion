@@ -33,7 +33,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  after `boot0.js` is loaded and before this file is loaded.
  */
 
-;(function() {
+;(function () {
     const env = jasmine.getEnv()
 
     /**
@@ -43,9 +43,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
      */
 
     const queryString = new jasmine.QueryString({
-        getWindowLocation: function() {
+        getWindowLocation: function () {
             return window.location
-        }
+        },
     })
 
     const filterSpecs = !!queryString.getParam("spec")
@@ -53,7 +53,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const config = {
         stopOnSpecFailure: queryString.getParam("stopOnSpecFailure"),
         stopSpecOnExpectationFailure: queryString.getParam("stopSpecOnExpectationFailure"),
-        hideDisabled: queryString.getParam("hideDisabled")
+        hideDisabled: queryString.getParam("hideDisabled"),
     }
 
     const random = queryString.getParam("random")
@@ -73,23 +73,23 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
      */
     const htmlReporter = new jasmine.HtmlReporter({
         env: env,
-        navigateWithNewParam: function(key, value) {
+        navigateWithNewParam: function (key, value) {
             return queryString.navigateWithNewParam(key, value)
         },
-        addToExistingQueryString: function(key, value) {
+        addToExistingQueryString: function (key, value) {
             return queryString.fullStringWithNewParam(key, value)
         },
-        getContainer: function() {
+        getContainer: function () {
             return document.body
         },
-        createElement: function() {
+        createElement: function () {
             return document.createElement.apply(document, arguments)
         },
-        createTextNode: function() {
+        createTextNode: function () {
             return document.createTextNode.apply(document, arguments)
         },
         timer: new jasmine.Timer(),
-        filterSpecs: filterSpecs
+        filterSpecs: filterSpecs,
     })
 
     /**
@@ -102,12 +102,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
      * Filter which specs will be run by matching the start of the full name against the `spec` query param.
      */
     const specFilter = new jasmine.HtmlSpecFilter({
-        filterString: function() {
+        filterString: function () {
             return queryString.getParam("spec")
-        }
+        },
     })
 
-    config.specFilter = function(spec) {
+    config.specFilter = function (spec) {
         return specFilter.matches(spec.getFullName())
     }
 
@@ -120,7 +120,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
      */
     const currentWindowOnload = window.onload
 
-    window.onload = function() {
+    window.onload = function () {
         if (currentWindowOnload) {
             currentWindowOnload()
         }

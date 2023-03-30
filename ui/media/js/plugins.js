@@ -30,17 +30,17 @@ const PLUGINS = {
     TASK_CREATE: [],
     OUTPUTS_FORMATS: new ServiceContainer(
         function png() {
-            return reqBody => new SD.RenderTask(reqBody)
+            return (reqBody) => new SD.RenderTask(reqBody)
         },
         function jpeg() {
-            return reqBody => new SD.RenderTask(reqBody)
+            return (reqBody) => new SD.RenderTask(reqBody)
         },
         function webp() {
-            return reqBody => new SD.RenderTask(reqBody)
+            return (reqBody) => new SD.RenderTask(reqBody)
         }
-    )
+    ),
 }
-PLUGINS.OUTPUTS_FORMATS.register = function(...args) {
+PLUGINS.OUTPUTS_FORMATS.register = function (...args) {
     const service = ServiceContainer.prototype.register.apply(this, args)
     if (typeof outputFormatField !== "undefined") {
         const newOption = document.createElement("option")

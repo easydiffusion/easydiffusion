@@ -82,10 +82,11 @@ function createModifierGroup(modifierGroup, initiallyExpanded, removeBy) {
         titleEl.className += " active"
     }
 
-    modifiers.forEach(modObj => {
+    modifiers.forEach((modObj) => {
         const modifierName = modObj.modifier
         const modifierPreviews = modObj?.previews?.map(
-            preview => `${IMAGE_REGEX.test(preview.image) ? preview.image : modifierThumbnailPath + "/" + preview.path}`
+            (preview) =>
+                `${IMAGE_REGEX.test(preview.image) ? preview.image : modifierThumbnailPath + "/" + preview.path}`
         )
 
         const modifierCard = createModifierCard(modifierName, modifierPreviews, removeBy)
@@ -95,9 +96,9 @@ function createModifierGroup(modifierGroup, initiallyExpanded, removeBy) {
             const trimmedName = trimModifiers(modifierName)
 
             modifierCard.addEventListener("click", () => {
-                if (activeTags.map(x => trimModifiers(x.name)).includes(trimmedName)) {
+                if (activeTags.map((x) => trimModifiers(x.name)).includes(trimmedName)) {
                     // remove modifier from active array
-                    activeTags = activeTags.filter(x => trimModifiers(x.name) != trimmedName)
+                    activeTags = activeTags.filter((x) => trimModifiers(x.name) != trimmedName)
                     toggleCardState(trimmedName, false)
                 } else {
                     // add modifier to active array
@@ -105,7 +106,7 @@ function createModifierGroup(modifierGroup, initiallyExpanded, removeBy) {
                         name: modifierName,
                         element: modifierCard.cloneNode(true),
                         originElement: modifierCard,
-                        previews: modifierPreviews
+                        previews: modifierPreviews,
                     })
                     toggleCardState(trimmedName, true)
                 }
@@ -167,9 +168,9 @@ function refreshModifiersState(newTags, inactiveTags) {
     document
         .querySelector("#editor-modifiers")
         .querySelectorAll(".modifier-card")
-        .forEach(modifierCard => {
+        .forEach((modifierCard) => {
             const modifierName = modifierCard.querySelector(".modifier-card-label p").dataset.fullName // pick the full modifier name
-            if (activeTags.map(x => x.name).includes(modifierName)) {
+            if (activeTags.map((x) => x.name).includes(modifierName)) {
                 modifierCard.classList.remove(activeCardClass)
                 modifierCard.querySelector(".modifier-card-image-overlay").innerText = "+"
             }
@@ -177,17 +178,17 @@ function refreshModifiersState(newTags, inactiveTags) {
     activeTags = []
 
     // set new modifiers
-    newTags.forEach(tag => {
+    newTags.forEach((tag) => {
         let found = false
         document
             .querySelector("#editor-modifiers")
             .querySelectorAll(".modifier-card")
-            .forEach(modifierCard => {
+            .forEach((modifierCard) => {
                 const modifierName = modifierCard.querySelector(".modifier-card-label p").dataset.fullName
                 const shortModifierName = modifierCard.querySelector(".modifier-card-label p").innerText
                 if (trimModifiers(tag) == trimModifiers(modifierName)) {
                     // add modifier to active array
-                    if (!activeTags.map(x => x.name).includes(tag)) {
+                    if (!activeTags.map((x) => x.name).includes(tag)) {
                         // only add each tag once even if several custom modifier cards share the same tag
                         const imageModifierCard = modifierCard.cloneNode(true)
                         imageModifierCard.querySelector(".modifier-card-label p").innerText = tag.replace(
@@ -197,7 +198,7 @@ function refreshModifiersState(newTags, inactiveTags) {
                         activeTags.push({
                             name: tag,
                             element: imageModifierCard,
-                            originElement: modifierCard
+                            originElement: modifierCard,
                         })
                     }
                     modifierCard.classList.add(activeCardClass)
@@ -210,9 +211,9 @@ function refreshModifiersState(newTags, inactiveTags) {
             let modifierCard = createModifierCard(tag, undefined, false) // create a modifier card for the missing tag, no image
 
             modifierCard.addEventListener("click", () => {
-                if (activeTags.map(x => x.name).includes(tag)) {
+                if (activeTags.map((x) => x.name).includes(tag)) {
                     // remove modifier from active array
-                    activeTags = activeTags.filter(x => x.name != tag)
+                    activeTags = activeTags.filter((x) => x.name != tag)
                     modifierCard.classList.remove(activeCardClass)
 
                     modifierCard.querySelector(".modifier-card-image-overlay").innerText = "+"
@@ -223,7 +224,7 @@ function refreshModifiersState(newTags, inactiveTags) {
             activeTags.push({
                 name: tag,
                 element: modifierCard,
-                originElement: undefined // no origin element for missing tags
+                originElement: undefined, // no origin element for missing tags
             })
         }
     })
@@ -233,8 +234,8 @@ function refreshModifiersState(newTags, inactiveTags) {
 function refreshInactiveTags(inactiveTags) {
     // update inactive tags
     if (inactiveTags !== undefined && inactiveTags.length > 0) {
-        activeTags.forEach(tag => {
-            if (inactiveTags.find(element => element === tag.name) !== undefined) {
+        activeTags.forEach((tag) => {
+            if (inactiveTags.find((element) => element === tag.name) !== undefined) {
                 tag.inactive = true
             }
         })
@@ -242,10 +243,11 @@ function refreshInactiveTags(inactiveTags) {
 
     // update cards
     let overlays = document.querySelector("#editor-inputs-tags-list").querySelectorAll(".modifier-card-overlay")
-    overlays.forEach(i => {
-        let modifierName = i.parentElement.getElementsByClassName("modifier-card-label")[0].getElementsByTagName("p")[0]
-            .innerText
-        if (inactiveTags?.find(element => element === modifierName) !== undefined) {
+    overlays.forEach((i) => {
+        let modifierName = i.parentElement
+            .getElementsByClassName("modifier-card-label")[0]
+            .getElementsByTagName("p")[0].innerText
+        if (inactiveTags?.find((element) => element === modifierName) !== undefined) {
             i.parentElement.classList.add("modifier-toggle-inactive")
         }
     })
@@ -268,7 +270,7 @@ function refreshTagsList(inactiveTags) {
         editorModifierTagsList.appendChild(tag.element)
 
         tag.element.addEventListener("click", () => {
-            let idx = activeTags.findIndex(o => {
+            let idx = activeTags.findIndex((o) => {
                 return o.name === tag.name
             })
 
@@ -293,7 +295,7 @@ function toggleCardState(modifierName, makeActive) {
     document
         .querySelector("#editor-modifiers")
         .querySelectorAll(".modifier-card")
-        .forEach(card => {
+        .forEach((card) => {
             const name = card.querySelector(".modifier-card-label").innerText
             if (
                 trimModifiers(modifierName) == trimModifiers(name) ||
@@ -315,23 +317,23 @@ function changePreviewImages(val) {
 
     let previewArr = []
 
-    modifiers.map(x => x.modifiers).forEach(x => previewArr.push(...x.map(m => m.previews)))
+    modifiers.map((x) => x.modifiers).forEach((x) => previewArr.push(...x.map((m) => m.previews)))
 
-    previewArr = previewArr.map(x => {
+    previewArr = previewArr.map((x) => {
         let obj = {}
 
-        x.forEach(preview => {
+        x.forEach((preview) => {
             obj[preview.name] = preview.path
         })
 
         return obj
     })
 
-    previewImages.forEach(previewImage => {
+    previewImages.forEach((previewImage) => {
         const currentPreviewType = previewImage.getAttribute("preview-type")
         const relativePreviewPath = previewImage.src.split(modifierThumbnailPath + "/").pop()
 
-        const previews = previewArr.find(preview => relativePreviewPath == preview[currentPreviewType])
+        const previews = previewArr.find((preview) => relativePreviewPath == preview[currentPreviewType])
 
         if (typeof previews == "object") {
             let preview = null
@@ -355,11 +357,11 @@ function resizeModifierCards(val) {
     const modifierCardClass = "modifier-card"
 
     const modifierCards = document.querySelectorAll(`.${modifierCardClass}`)
-    const cardSize = n => `${cardSizePrefix}${n}`
+    const cardSize = (n) => `${cardSizePrefix}${n}`
 
-    modifierCards.forEach(card => {
+    modifierCards.forEach((card) => {
         // remove existing size classes
-        const classes = card.className.split(" ").filter(c => !c.startsWith(cardSizePrefix))
+        const classes = card.className.split(" ").filter((c) => !c.startsWith(cardSizePrefix))
         card.className = classes.join(" ").trim()
 
         if (val != 0) {
@@ -371,7 +373,7 @@ function resizeModifierCards(val) {
 modifierCardSizeSlider.onchange = () => resizeModifierCards(modifierCardSizeSlider.value)
 previewImageField.onchange = () => changePreviewImages(previewImageField.value)
 
-modifierSettingsBtn.addEventListener("click", function(e) {
+modifierSettingsBtn.addEventListener("click", function (e) {
     modifierSettingsOverlay.classList.add("active")
     customModifiersTextBox.setSelectionRange(0, 0)
     customModifiersTextBox.focus()
@@ -379,7 +381,7 @@ modifierSettingsBtn.addEventListener("click", function(e) {
     e.stopPropagation()
 })
 
-modifierSettingsOverlay.addEventListener("keydown", function(e) {
+modifierSettingsOverlay.addEventListener("keydown", function (e) {
     switch (e.key) {
         case "Escape": // Escape to cancel
             customModifiersTextBox.value = customModifiersInitialContent // undo the changes
@@ -403,7 +405,7 @@ function saveCustomModifiers() {
 }
 
 function loadCustomModifiers() {
-    PLUGINS["MODIFIERS_LOAD"].forEach(fn => fn.loader.call())
+    PLUGINS["MODIFIERS_LOAD"].forEach((fn) => fn.loader.call())
 }
 
 customModifiersTextBox.addEventListener("change", saveCustomModifiers)

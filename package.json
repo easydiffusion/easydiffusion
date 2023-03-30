@@ -3,6 +3,6 @@
     "prettier": "prettier --write \"./**/*.js\""
   },
   "devDependencies": {
-    "prettier": "^1.19.1"
+    "prettier": "^2.8.7"
   }
 }
