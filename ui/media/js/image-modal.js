@@ -1,6 +1,6 @@
 "use strict"
 
-const imageModal = (function () {
+const imageModal = (function() {
     const zoomElem = createElement("i", undefined, ["fa-solid", "tertiaryButton"])
 
     const closeElem = createElement("i", undefined, ["fa-solid", "fa-xmark", "tertiaryButton"])

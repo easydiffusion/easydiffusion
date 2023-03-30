@@ -1,4 +1,4 @@
-;(function () {
+;(function() {
     "use strict"
 
     var styleSheet = document.createElement("style")
@@ -12,7 +12,7 @@
     document.head.appendChild(styleSheet)
 
     // observe for changes in tag list
-    var observer = new MutationObserver(function (mutations) {
+    var observer = new MutationObserver(function(mutations) {
         //    mutations.forEach(function (mutation) {
         if (editorModifierTagsList.childNodes.length > 0) {
             ModifierToggle()

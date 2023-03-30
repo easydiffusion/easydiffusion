@@ -69,7 +69,7 @@ function createCollapsibles(node) {
         save = true
     }
     let collapsibles = node.querySelectorAll(".collapsible")
-    collapsibles.forEach(function (c) {
+    collapsibles.forEach(function(c) {
         if (save && c.parentElement.id) {
             COLLAPSIBLE_PANELS.push(c.parentElement)
         }
@@ -83,7 +83,7 @@ function createCollapsibles(node) {
         }
         c.insertBefore(handle, c.firstChild)
 
-        c.addEventListener("click", function () {
+        c.addEventListener("click", function() {
             toggleCollapsible(c.parentElement)
         })
     })
@@ -135,7 +135,9 @@ function permute(arr) {
     let n_permutations = Math.pow(2, n)
     for (let i = 0; i < n_permutations; i++) {
         let perm = []
-        let mask = Number(i).toString(2).padStart(n, "0")
+        let mask = Number(i)
+            .toString(2)
+            .padStart(n, "0")
 
         for (let idx = 0; idx < mask.length; idx++) {
             if (mask[idx] === "1" && arr[idx].trim() !== "") {
@@ -229,12 +231,12 @@ function BraceExpander() {
         return {
             fn: or,
             args: splitsAt(lstCommas, tkns)
-                .map(function (x, i) {
+                .map(function(x, i) {
                     let ts = x.slice(1, i === iLast ? -1 : void 0)
 
                     return ts.length ? ts : [""]
                 })
-                .map(function (ts) {
+                .map(function(ts) {
                     return ts.length > 1 ? andTree(null, ts)[0] : ts[0]
                 })
         }
@@ -243,14 +245,14 @@ function BraceExpander() {
     // List of unescaped braces and commas, and remaining strings
     function tokens(str) {
         // Filter function excludes empty splitting artefacts
-        let toS = function (x) {
+        let toS = function(x) {
             return x.toString()
         }
 
         return str
             .split(/(\\\\)/)
             .filter(toS)
-            .reduce(function (a, s) {
+            .reduce(function(a, s) {
                 return a.concat(s.charAt(0) === "\\" ? s : s.split(/(\\*[{,}])/).filter(toS))
             }, [])
     }
@@ -264,9 +266,9 @@ function BraceExpander() {
 
         return lng
             ? 1 < lng
-                ? lstHead.reduce(function (a, h) {
+                ? lstHead.reduce(function(a, h) {
                       return a.concat(
-                          and(args.slice(1)).map(function (t) {
+                          and(args.slice(1)).map(function(t) {
                               return h + t
                           })
                       )
@@ -278,7 +280,7 @@ function BraceExpander() {
     // PARSE TREE OPERATOR (2 of 2)
     // Each option flattened
     function or(args) {
-        return args.reduce(function (a, b) {
+        return args.reduce(function(a, b) {
             return a.concat(b)
         }, [])
     }
@@ -291,7 +293,7 @@ function BraceExpander() {
     // One list split into several (sublist lengths [n])
     function splitsAt(lstN, lst) {
         return lstN.reduceRight(
-            function (a, x) {
+            function(a, x) {
                 return splitAt(x, a[0]).concat(a.slice(1))
             },
             [lst]
@@ -307,7 +309,7 @@ function BraceExpander() {
     function pp(e) {
         return JSON.stringify(
             e,
-            function (k, v) {
+            function(k, v) {
                 return typeof v === "function" ? "[function " + v.name + "]" : v
             },
             2
@@ -317,7 +319,7 @@ function BraceExpander() {
     // ----------------------- MAIN ------------------------
 
     // s -> [s]
-    this.expand = function (s) {
+    this.expand = function(s) {
         // BRACE EXPRESSION PARSED
         let dctParse = andTree(null, tokens(s))[0]
 
@@ -333,7 +335,7 @@ function BraceExpander() {
  * @Returns a promise that will resolve after the specified timeout.
  */
 function asyncDelay(timeout) {
-    return new Promise(function (resolve, reject) {
+    return new Promise(function(resolve, reject) {
         setTimeout(resolve, timeout, true)
     })
 }
@@ -365,7 +367,7 @@ function debounce(func, wait, immediate) {
     }
     let timeout = null
     let lastPromiseSrc = new PromiseSource()
-    const applyFn = function (context, args) {
+    const applyFn = function(context, args) {
         let result = undefined
         try {
             result = func.apply(context, args)
@@ -378,13 +380,13 @@ function debounce(func, wait, immediate) {
             lastPromiseSrc.resolve(result)
         }
     }
-    return function (...args) {
+    return function(...args) {
         const callNow = Boolean(immediate && !timeout)
         const context = this
         if (timeout) {
             clearTimeout(timeout)
         }
-        timeout = setTimeout(function () {
+        timeout = setTimeout(function() {
             if (!immediate) {
                 applyFn(context, args)
             }
@@ -454,13 +456,13 @@ function makeQuerablePromise(promise) {
     let isResolved = false
     let resolvedValue = undefined
     const qurPro = promise.then(
-        function (val) {
+        function(val) {
             isResolved = true
             isPending = false
             resolvedValue = val
             return val
         },
-        function (reason) {
+        function(reason) {
             rejectReason = reason
             isRejected = true
             isPending = false

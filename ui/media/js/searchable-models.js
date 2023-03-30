@@ -76,7 +76,7 @@ class ModelDropdown {
 
     // remember 'this' - http://blog.niftysnippets.org/2008/04/you-must-remember-this.html
     bind(f, obj) {
-        return function () {
+        return function() {
             return f.apply(obj, arguments)
         }
     }
@@ -95,7 +95,7 @@ class ModelDropdown {
         }
         document.addEventListener(
             "refreshModels",
-            this.bind(function (e) {
+            this.bind(function(e) {
                 // reload the models
                 this.inputModels = modelsOptions[this.modelKey]
                 this.populateModels()
@@ -379,7 +379,7 @@ class ModelDropdown {
     }
 
     showAllEntries() {
-        this.modelList.querySelectorAll("li").forEach(function (li) {
+        this.modelList.querySelectorAll("li").forEach(function(li) {
             if (li.id !== "model-no-result") {
                 li.style.display = "list-item"
             }
@@ -392,7 +392,7 @@ class ModelDropdown {
         let found = false
         let showAllChildren = false
 
-        this.modelList.querySelectorAll("li").forEach(function (li) {
+        this.modelList.querySelectorAll("li").forEach(function(li) {
             if (li.classList.contains("model-folder")) {
                 showAllChildren = false
             }
@@ -509,7 +509,7 @@ class ModelDropdown {
         this.modelList.addEventListener("mousedown", this.bind(this.processClick, this))
 
         let mf = this.modelFilter
-        this.modelFilter.addEventListener("focus", function () {
+        this.modelFilter.addEventListener("focus", function() {
             let modelFilterStyle = window.getComputedStyle(mf)
             rootModelList.style.minWidth = modelFilterStyle.width
         })

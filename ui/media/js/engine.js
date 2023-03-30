@@ -1,6 +1,6 @@
 /** SD-UI Backend control and classes.
  */
-;(function () {
+;(function() {
     "use strict"
     const RETRY_DELAY_IF_BUFFER_IS_EMPTY = 1000 // ms
     const RETRY_DELAY_IF_SERVER_IS_BUSY = 30 * 1000 // ms, status_code 503, already a task running
@@ -488,14 +488,14 @@
         static getReader(url) {
             const reader = new ChunkedStreamReader(url)
             const parseToString = reader.parse
-            reader.parse = function (value) {
+            reader.parse = function(value) {
                 value = parseToString.call(this, value)
                 if (!value || value.length <= 0) {
                     return
                 }
                 return reader.readStreamAsJSON(value.join(""))
             }
-            reader.onNext = function ({ done, value }) {
+            reader.onNext = function({ done, value }) {
                 // By default is completed when the return value has a status defined.
                 if (typeof value === "object" && "status" in value) {
                     done = true
@@ -520,7 +520,7 @@
             this.#reader = Task.getReader(this.streamUrl)
             const task = this
             const onNext = this.#reader.onNext
-            this.#reader.onNext = function ({ done, value }) {
+            this.#reader.onNext = function({ done, value }) {
                 if (value && typeof value === "object") {
                     if (
                         task.status === TaskStatus.init ||
@@ -536,14 +536,14 @@
                 }
                 return onNext.call(this, { done, value })
             }
-            this.#reader.onComplete = function (value) {
+            this.#reader.onComplete = function(value) {
                 task.result = value
                 if (task.isPending) {
                     task._setStatus(TaskStatus.completed)
                 }
                 return value
             }
-            this.#reader.onError = function (response) {
+            this.#reader.onError = function(response) {
                 const err = new Error(response.statusText)
                 task.abort(err)
                 throw err
@@ -938,7 +938,7 @@
             try {
                 // Wait for task to start on server.
                 yield this.waitUntil({
-                    callback: function () {
+                    callback: function() {
                         return progressCallback?.call(this, {})
                     },
                     status: TaskStatus.processing
@@ -998,7 +998,7 @@
             // Open the reader.
             const reader = this.reader
             const task = this
-            reader.onError = function (response) {
+            reader.onError = function(response) {
                 if (progressCallback) {
                     task.abort(new Error(response.statusText))
                     return progressCallback.call(task, { response, reader })
@@ -1082,7 +1082,7 @@
     }
 
     const getSystemInfo = debounce(
-        async function () {
+        async function() {
             let systemInfo = {
                 devices: {
                     all: {},
@@ -1266,7 +1266,7 @@
             if (typeof navigator?.scheduling?.isInputPending === "function" && navigator.scheduling.isInputPending()) {
                 return
             }
-            const continuePromise = continueTasks().catch(async function (err) {
+            const continuePromise = continueTasks().catch(async function(err) {
                 console.error(err)
                 await eventSource.fireEvent(EVENT_UNHANDLED_REJECTION, { reason: err })
                 await asyncDelay(RETRY_DELAY_ON_ERROR)
@@ -1284,7 +1284,7 @@
         FilterTask,
 
         Events: EVENTS_TYPES,
-        init: async function (options = {}) {
+        init: async function(options = {}) {
             if ("events" in options) {
                 for (const key in options.events) {
                     eventSource.addEventListener(key, options.events[key])

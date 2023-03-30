@@ -244,9 +244,8 @@ function refreshInactiveTags(inactiveTags) {
     // update cards
     let overlays = document.querySelector("#editor-inputs-tags-list").querySelectorAll(".modifier-card-overlay")
     overlays.forEach((i) => {
-        let modifierName = i.parentElement
-            .getElementsByClassName("modifier-card-label")[0]
-            .getElementsByTagName("p")[0].innerText
+        let modifierName = i.parentElement.getElementsByClassName("modifier-card-label")[0].getElementsByTagName("p")[0]
+            .innerText
         if (inactiveTags?.find((element) => element === modifierName) !== undefined) {
             i.parentElement.classList.add("modifier-toggle-inactive")
         }
@@ -373,7 +372,7 @@ function resizeModifierCards(val) {
 modifierCardSizeSlider.onchange = () => resizeModifierCards(modifierCardSizeSlider.value)
 previewImageField.onchange = () => changePreviewImages(previewImageField.value)
 
-modifierSettingsBtn.addEventListener("click", function (e) {
+modifierSettingsBtn.addEventListener("click", function(e) {
     modifierSettingsOverlay.classList.add("active")
     customModifiersTextBox.setSelectionRange(0, 0)
     customModifiersTextBox.focus()
@@ -381,7 +380,7 @@ modifierSettingsBtn.addEventListener("click", function (e) {
     e.stopPropagation()
 })
 
-modifierSettingsOverlay.addEventListener("keydown", function (e) {
+modifierSettingsOverlay.addEventListener("keydown", function(e) {
     switch (e.key) {
         case "Escape": // Escape to cancel
             customModifiersTextBox.value = customModifiersInitialContent // undo the changes

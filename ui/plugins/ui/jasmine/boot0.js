@@ -26,7 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  after `jasmine.js` and `jasmine_html.js`, but before `boot1.js` or any project
  source files or spec files are loaded.
  */
-;(function () {
+;(function() {
     const jasmineRequire = window.jasmineRequire || require("./jasmine.js")
 
     /**

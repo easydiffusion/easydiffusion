@@ -132,7 +132,7 @@ let undoButton = document.querySelector("#undo")
 let undoBuffer = []
 const UNDO_LIMIT = 20
 
-imagePreview.addEventListener("drop", function (ev) {
+imagePreview.addEventListener("drop", function(ev) {
     const data = ev.dataTransfer?.getData("text/plain")
     if (!data) {
         return
@@ -192,13 +192,13 @@ function getLocalStorageBoolItem(key, fallback) {
 }
 
 function handleBoolSettingChange(key) {
-    return function (e) {
+    return function(e) {
         localStorage.setItem(key, e.target.checked.toString())
     }
 }
 
 function handleStringSettingChange(key) {
-    return function (e) {
+    return function(e) {
         localStorage.setItem(key, e.target.value.toString())
     }
 }
@@ -412,7 +412,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         imageElem.setAttribute("data-steps", imageInferenceSteps)
         imageElem.setAttribute("data-guidance", imageGuidanceScale)
 
-        imageElem.addEventListener("load", function () {
+        imageElem.addEventListener("load", function() {
             imageItemElem.querySelector(".img_bottom_label").innerText = `${this.naturalWidth} x ${this.naturalHeight}`
         })
 
@@ -421,7 +421,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
 
         if ("seed" in result && !imageElem.hasAttribute("data-seed")) {
             const imageExpandBtn = imageItemElem.querySelector(".imgExpandBtn")
-            imageExpandBtn.addEventListener("click", function () {
+            imageExpandBtn.addEventListener("click", function() {
                 imageModal(imageElem.src)
             })
 
@@ -461,7 +461,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
 
             const imgItemInfo = imageItemElem.querySelector(".imgItemInfo")
             const img = imageItemElem.querySelector("img")
-            const createButton = function (btnInfo) {
+            const createButton = function(btnInfo) {
                 if (Array.isArray(btnInfo)) {
                     const wrapper = document.createElement("div")
                     btnInfo.map(createButton).forEach((buttonElement) => wrapper.appendChild(buttonElement))
@@ -485,7 +485,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                 }
 
                 if (btnInfo.on_click || !isLabel) {
-                    newButton.addEventListener("click", function (event) {
+                    newButton.addEventListener("click", function(event) {
                         btnInfo.on_click(req, img, event)
                     })
                 }
@@ -623,7 +623,7 @@ function onContinueDrawingClick(req, img) {
 function getUncompletedTaskEntries() {
     const taskEntries = Array.from(document.querySelectorAll("#preview .imageTaskContainer .taskStatusLabel"))
         .filter((taskLabel) => taskLabel.style.display !== "none")
-        .map(function (taskLabel) {
+        .map(function(taskLabel) {
             let imageTaskContainer = taskLabel.parentNode
             while (!imageTaskContainer.classList.contains("imageTaskContainer") && imageTaskContainer.parentNode) {
                 imageTaskContainer = imageTaskContainer.parentNode
@@ -700,7 +700,7 @@ function getTaskUpdater(task, reqBody, outputContainer) {
 
     const batchCount = task.batchCount
     let lastStatus = undefined
-    return async function (event) {
+    return async function(event) {
         if (this.status !== lastStatus) {
             lastStatus = this.status
             switch (this.status) {
@@ -971,9 +971,9 @@ async function onTaskStart(task) {
         }
         if (!instance) {
             console.error(
-                `${factory ? "Factory " + String(factory) : "No factory defined"} for output format ${
-                    eventInfo.reqBody?.output_format || newTaskReqBody.output_format
-                }. Instance is ${instance || "undefined"}. Using default renderer.`
+                `${factory ? "Factory " + String(factory) : "No factory defined"} for output format ${eventInfo.reqBody
+                    ?.output_format || newTaskReqBody.output_format}. Instance is ${instance ||
+                    "undefined"}. Using default renderer.`
             )
             instance = new SD.RenderTask(eventInfo.reqBody || newTaskReqBody)
         }
@@ -1106,7 +1106,7 @@ function createTask(task) {
         })
         imagePreview.removeEventListener("dragover", onTaskEntryDragOver)
     })
-    taskEntry.addEventListener("dragstart", function (e) {
+    taskEntry.addEventListener("dragstart", function(e) {
         imagePreview.addEventListener("dragover", onTaskEntryDragOver)
         e.dataTransfer.setData("text/plain", taskEntry.id)
         startX = e.target.closest(".imageTaskContainer").offsetLeft
@@ -1128,7 +1128,7 @@ function createTask(task) {
         e.stopPropagation()
 
         if (task["isProcessing"]) {
-            shiftOrConfirm(e, "Stop this task?", async function (e) {
+            shiftOrConfirm(e, "Stop this task?", async function(e) {
                 if (task.batchesDone <= 0 || !task.isProcessing) {
                     removeTask(taskEntry)
                 }
@@ -1140,7 +1140,7 @@ function createTask(task) {
     })
 
     task["useSettings"] = taskEntry.querySelector(".useSettings")
-    task["useSettings"].addEventListener("click", function (e) {
+    task["useSettings"].addEventListener("click", function(e) {
         e.stopPropagation()
         restoreTaskToUI(task, TASK_REQ_NO_EXPORT)
     })
@@ -1361,7 +1361,7 @@ function removeTask(taskToRemove) {
 }
 
 clearAllPreviewsBtn.addEventListener("click", (e) => {
-    shiftOrConfirm(e, "Clear all the results and tasks in this window?", async function () {
+    shiftOrConfirm(e, "Clear all the results and tasks in this window?", async function() {
         await stopAllTasks()
 
         let taskEntries = document.querySelectorAll(".imageTaskContainer")
@@ -1387,7 +1387,10 @@ function dataURItoBlob(dataURI) {
     var byteString = atob(dataURI.split(",")[1])
 
     // separate out the mime component
-    var mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0]
+    var mimeString = dataURI
+        .split(",")[0]
+        .split(":")[1]
+        .split(";")[0]
 
     // write the bytes of the string to an ArrayBuffer
     var ab = new ArrayBuffer(byteString.length)
@@ -1455,8 +1458,10 @@ function downloadAllImages() {
         })
     })
     if (optZIP) {
-        let now = Date.now().toString(36).toUpperCase()
-        zip.generateAsync({ type: "blob" }).then(function (blob) {
+        let now = Date.now()
+            .toString(36)
+            .toUpperCase()
+        zip.generateAsync({ type: "blob" }).then(function(blob) {
             saveAs(blob, `EasyDiffusion-Images-${now}.zip`)
         })
     }
@@ -1467,7 +1472,7 @@ saveAllImagesBtn.addEventListener("click", (e) => {
 })
 
 stopImageBtn.addEventListener("click", (e) => {
-    shiftOrConfirm(e, "Stop all the tasks?", async function (e) {
+    shiftOrConfirm(e, "Stop all the tasks?", async function(e) {
         await stopAllTasks()
     })
 })
@@ -1512,20 +1517,20 @@ diskPathField.disabled = !saveToDiskField.checked
 metadataOutputFormatField.disabled = !saveToDiskField.checked
 
 gfpganModelField.disabled = !useFaceCorrectionField.checked
-useFaceCorrectionField.addEventListener("change", function (e) {
+useFaceCorrectionField.addEventListener("change", function(e) {
     gfpganModelField.disabled = !this.checked
 })
 
 upscaleModelField.disabled = !useUpscalingField.checked
 upscaleAmountField.disabled = !useUpscalingField.checked
-useUpscalingField.addEventListener("change", function (e) {
+useUpscalingField.addEventListener("change", function(e) {
     upscaleModelField.disabled = !this.checked
     upscaleAmountField.disabled = !this.checked
 })
 
 makeImageBtn.addEventListener("click", makeImage)
 
-document.onkeydown = function (e) {
+document.onkeydown = function(e) {
     if (e.ctrlKey && e.code === "Enter") {
         makeImage()
         e.preventDefault()
@@ -1672,7 +1677,7 @@ outputFormatField.addEventListener("change", updateOutputQualityVisibility)
 outputLosslessField.addEventListener("change", updateOutputQualityVisibility)
 /********************* Zoom Slider **********************/
 thumbnailSizeField.addEventListener("change", () => {
-    ;(function (s) {
+    ;(function(s) {
         for (var j = 0; j < document.styleSheets.length; j++) {
             let cssSheet = document.styleSheets[j]
             for (var i = 0; i < cssSheet.cssRules.length; i++) {
@@ -1695,7 +1700,7 @@ function onAutoScrollUpdate() {
     }
     autoscrollBtn.querySelector(".state").innerHTML = autoScroll.checked ? "ON" : "OFF"
 }
-autoscrollBtn.addEventListener("click", function () {
+autoscrollBtn.addEventListener("click", function() {
     autoScroll.checked = !autoScroll.checked
     autoScroll.dispatchEvent(new Event("change"))
     onAutoScrollUpdate()
@@ -1721,7 +1726,7 @@ function loadImg2ImgFromFile() {
     let reader = new FileReader()
     let file = initImageSelector.files[0]
 
-    reader.addEventListener("load", function (event) {
+    reader.addEventListener("load", function(event) {
         initImagePreview.src = reader.result
     })
 
@@ -1761,15 +1766,15 @@ function img2imgUnload() {
 initImagePreview.addEventListener("load", img2imgLoad)
 initImageClearBtn.addEventListener("click", img2imgUnload)
 
-maskSetting.addEventListener("click", function () {
+maskSetting.addEventListener("click", function() {
     onDimensionChange()
 })
 
-promptsFromFileBtn.addEventListener("click", function () {
+promptsFromFileBtn.addEventListener("click", function() {
     promptsFromFileSelector.click()
 })
 
-promptsFromFileSelector.addEventListener("change", async function () {
+promptsFromFileSelector.addEventListener("change", async function() {
     if (promptsFromFileSelector.files.length === 0) {
         return
     }
@@ -1777,7 +1782,7 @@ promptsFromFileSelector.addEventListener("change", async function () {
     let reader = new FileReader()
     let file = promptsFromFileSelector.files[0]
 
-    reader.addEventListener("load", async function () {
+    reader.addEventListener("load", async function() {
         await parseContent(reader.result)
     })
 
@@ -1839,7 +1844,7 @@ function resumeClient() {
         document.body.classList.add("pause")
     }
     return new Promise((resolve) => {
-        let playbuttonclick = function () {
+        let playbuttonclick = function() {
             resumeBtn.removeEventListener("click", playbuttonclick)
             resolve("resolved")
         }
@@ -1849,14 +1854,14 @@ function resumeClient() {
 
 promptField.addEventListener("input", debounce(renameMakeImageButton, 1000))
 
-pauseBtn.addEventListener("click", function () {
+pauseBtn.addEventListener("click", function() {
     pauseClient = true
     pauseBtn.style.display = "none"
     resumeBtn.style.display = "inline"
     document.body.classList.add("wait-pause")
 })
 
-resumeBtn.addEventListener("click", function () {
+resumeBtn.addEventListener("click", function() {
     pauseClient = false
     resumeBtn.style.display = "none"
     pauseBtn.style.display = "inline"
@@ -1867,7 +1872,7 @@ resumeBtn.addEventListener("click", function () {
 /* Pause function */
 document.querySelectorAll(".tab").forEach(linkTabContents)
 
-window.addEventListener("beforeunload", function (e) {
+window.addEventListener("beforeunload", function(e) {
     const msg = "Unsaved pictures will be lost!"
 
     let elementList = document.getElementsByClassName("imageTaskContainer")

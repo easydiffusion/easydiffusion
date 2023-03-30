@@ -169,7 +169,8 @@ var PARAMETERS = [
         id: "confirm_dangerous_actions",
         type: ParameterType.checkbox,
         label: "Confirm dangerous actions",
-        note: "Actions that might lead to data loss must either be clicked with the shift key pressed, or confirmed in an 'Are you sure?' dialog",
+        note:
+            "Actions that might lead to data loss must either be clicked with the shift key pressed, or confirmed in an 'Are you sure?' dialog",
         icon: "fa-check-double",
         default: true
     },
@@ -195,7 +196,8 @@ var PARAMETERS = [
         id: "use_beta_channel",
         type: ParameterType.checkbox,
         label: "Beta channel",
-        note: "Get the latest features immediately (but could be less stable). Please restart the program after changing this.",
+        note:
+            "Get the latest features immediately (but could be less stable). Please restart the program after changing this.",
         icon: "fa-fire",
         default: false
     },
@@ -203,7 +205,8 @@ var PARAMETERS = [
         id: "test_diffusers",
         type: ParameterType.checkbox,
         label: "Test Diffusers",
-        note: "<b>Experimental! Can have bugs!</b> Use upcoming features (like LoRA) in our new engine. Please press Save, then restart the program after changing this.",
+        note:
+            "<b>Experimental! Can have bugs!</b> Use upcoming features (like LoRA) in our new engine. Please press Save, then restart the program after changing this.",
         icon: "fa-bolt",
         default: false
     }
@@ -332,7 +335,7 @@ async function getAppConfig() {
     }
 }
 
-saveToDiskField.addEventListener("change", function (e) {
+saveToDiskField.addEventListener("change", function(e) {
     diskPathField.disabled = !this.checked
     metadataOutputFormatField.disabled = !this.checked
 })
@@ -350,7 +353,7 @@ function getCurrentRenderDeviceSelection() {
     return selectedGPUs.join(",")
 }
 
-useCPUField.addEventListener("click", function () {
+useCPUField.addEventListener("click", function() {
     let gpuSettingEntry = getParameterSettingsEntry("use_gpus")
     let autoPickGPUSettingEntry = getParameterSettingsEntry("auto_pick_gpus")
     if (this.checked) {
@@ -372,12 +375,12 @@ useCPUField.addEventListener("click", function () {
     }
 })
 
-useGPUsField.addEventListener("click", function () {
+useGPUsField.addEventListener("click", function() {
     let selectedGPUs = $("#use_gpus").val()
     autoPickGPUsField.checked = selectedGPUs.length === 0
 })
 
-autoPickGPUsField.addEventListener("click", function () {
+autoPickGPUsField.addEventListener("click", function() {
     if (this.checked) {
         $("#use_gpus").val([])
     }
@@ -482,7 +485,7 @@ async function getSystemInfo() {
     }
 }
 
-saveSettingsBtn.addEventListener("click", function () {
+saveSettingsBtn.addEventListener("click", function() {
     if (listenPortField.value == "") {
         alert("The network port field must not be empty.")
         return

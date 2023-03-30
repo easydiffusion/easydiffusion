@@ -2,12 +2,12 @@
 
 const JASMINE_SESSION_ID = `jasmine-${String(Date.now()).slice(8)}`
 
-beforeEach(function () {
+beforeEach(function() {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 15 * 60 * 1000 // Test timeout after 15 minutes
     jasmine.addMatchers({
-        toBeOneOf: function () {
+        toBeOneOf: function() {
             return {
-                compare: function (actual, expected) {
+                compare: function(actual, expected) {
                     return {
                         pass: expected.includes(actual)
                     }
@@ -16,20 +16,20 @@ beforeEach(function () {
         }
     })
 })
-describe("stable-diffusion-ui", function () {
-    beforeEach(function () {
+describe("stable-diffusion-ui", function() {
+    beforeEach(function() {
         expect(typeof SD).toBe("object")
         expect(typeof SD.serverState).toBe("object")
         expect(typeof SD.serverState.status).toBe("string")
     })
-    it("should be able to reach the backend", async function () {
+    it("should be able to reach the backend", async function() {
         expect(SD.serverState.status).toBe(SD.ServerStates.unavailable)
         SD.sessionId = JASMINE_SESSION_ID
         await SD.init()
         expect(SD.isServerAvailable()).toBeTrue()
     })
 
-    it("enfore the current task state", function () {
+    it("enfore the current task state", function() {
         const task = new SD.Task()
         expect(task.status).toBe(SD.TaskStatus.init)
         expect(task.isPending).toBeTrue()
@@ -37,37 +37,37 @@ describe("stable-diffusion-ui", function () {
         task._setStatus(SD.TaskStatus.pending)
         expect(task.status).toBe(SD.TaskStatus.pending)
         expect(task.isPending).toBeTrue()
-        expect(function () {
+        expect(function() {
             task._setStatus(SD.TaskStatus.init)
         }).toThrowError()
 
         task._setStatus(SD.TaskStatus.waiting)
         expect(task.status).toBe(SD.TaskStatus.waiting)
         expect(task.isPending).toBeTrue()
-        expect(function () {
+        expect(function() {
             task._setStatus(SD.TaskStatus.pending)
         }).toThrowError()
 
         task._setStatus(SD.TaskStatus.processing)
         expect(task.status).toBe(SD.TaskStatus.processing)
         expect(task.isPending).toBeTrue()
-        expect(function () {
+        expect(function() {
             task._setStatus(SD.TaskStatus.pending)
         }).toThrowError()
 
         task._setStatus(SD.TaskStatus.failed)
         expect(task.status).toBe(SD.TaskStatus.failed)
         expect(task.isPending).toBeFalse()
-        expect(function () {
+        expect(function() {
             task._setStatus(SD.TaskStatus.processing)
         }).toThrowError()
-        expect(function () {
+        expect(function() {
             task._setStatus(SD.TaskStatus.completed)
         }).toThrowError()
     })
-    it("should be able to run tasks", async function () {
+    it("should be able to run tasks", async function() {
         expect(typeof SD.Task.run).toBe("function")
-        const promiseGenerator = (function* (val) {
+        const promiseGenerator = (function*(val) {
             expect(val).toBe("start")
             expect(yield 1 + 1).toBe(4)
             expect(yield 2 + 2).toBe(8)
@@ -76,14 +76,14 @@ describe("stable-diffusion-ui", function () {
             expect(yield 4 + 4).toBe(16)
             return 8 + 8
         })("start")
-        const callback = function ({ value, done }) {
+        const callback = function({ value, done }) {
             return { value: 2 * value, done }
         }
         expect(await SD.Task.run(promiseGenerator, { callback })).toBe(32)
     })
-    it("should be able to queue tasks", async function () {
+    it("should be able to queue tasks", async function() {
         expect(typeof SD.Task.enqueue).toBe("function")
-        const promiseGenerator = (function* (val) {
+        const promiseGenerator = (function*(val) {
             expect(val).toBe("start")
             expect(yield 1 + 1).toBe(4)
             expect(yield 2 + 2).toBe(8)
@@ -92,15 +92,15 @@ describe("stable-diffusion-ui", function () {
             expect(yield 4 + 4).toBe(16)
             return 8 + 8
         })("start")
-        const callback = function ({ value, done }) {
+        const callback = function({ value, done }) {
             return { value: 2 * value, done }
         }
         const gen = SD.Task.asGenerator({ generator: promiseGenerator, callback })
         expect(await SD.Task.enqueue(gen)).toBe(32)
     })
-    it("should be able to chain handlers", async function () {
+    it("should be able to chain handlers", async function() {
         expect(typeof SD.Task.enqueue).toBe("function")
-        const promiseGenerator = (function* (val) {
+        const promiseGenerator = (function*(val) {
             expect(val).toBe("start")
             expect(yield { test: "1" }).toEqual({ test: "1", foo: "bar" })
             expect(yield 2 + 2).toEqual(8)
@@ -111,7 +111,7 @@ describe("stable-diffusion-ui", function () {
         })("start")
         const gen1 = SD.Task.asGenerator({
             generator: promiseGenerator,
-            callback: function ({ value, done }) {
+            callback: function({ value, done }) {
                 if (typeof value === "object") {
                     value["foo"] = "bar"
                 }
@@ -120,7 +120,7 @@ describe("stable-diffusion-ui", function () {
         })
         const gen2 = SD.Task.asGenerator({
             generator: gen1,
-            callback: function ({ value, done }) {
+            callback: function({ value, done }) {
                 if (typeof value === "number") {
                     value = 2 * value
                 }
@@ -132,8 +132,8 @@ describe("stable-diffusion-ui", function () {
         })
         expect(await SD.Task.enqueue(gen2)).toEqual({ test: 32, foo: "bar" })
     })
-    describe("ServiceContainer", function () {
-        it("should be able to register providers", function () {
+    describe("ServiceContainer", function() {
+        it("should be able to register providers", function() {
             const cont = new ServiceContainer(
                 function foo() {
                     this.bar = ""
@@ -174,7 +174,7 @@ describe("stable-diffusion-ui", function () {
             expect(test.foo).toBe("bar")
         })
     })
-    it("should be able to stream data in chunks", async function () {
+    it("should be able to stream data in chunks", async function() {
         expect(SD.isServerAvailable()).toBeTrue()
         const nbr_steps = 15
         let res = await fetch("/render", {
@@ -224,14 +224,14 @@ describe("stable-diffusion-ui", function () {
 
         const reader = new SD.ChunkedStreamReader(renderRequest.stream)
         const parseToString = reader.parse
-        reader.parse = function (value) {
+        reader.parse = function(value) {
             value = parseToString.call(this, value)
             if (!value || value.length <= 0) {
                 return
             }
             return reader.readStreamAsJSON(value.join(""))
         }
-        reader.onNext = function ({ done, value }) {
+        reader.onNext = function({ done, value }) {
             console.log(value)
             if (typeof value === "object" && "status" in value) {
                 done = true
@@ -267,11 +267,11 @@ describe("stable-diffusion-ui", function () {
         }
     })
 
-    describe("should be able to make renders", function () {
-        beforeEach(function () {
+    describe("should be able to make renders", function() {
+        beforeEach(function() {
             expect(SD.isServerAvailable()).toBeTrue()
         })
-        it("basic inline request", async function () {
+        it("basic inline request", async function() {
             let stepCount = 0
             let complete = false
             const result = await SD.render(
@@ -285,7 +285,7 @@ describe("stable-diffusion-ui", function () {
                     use_upscale: "RealESRGAN_x4plus",
                     session_id: JASMINE_SESSION_ID
                 },
-                function (event) {
+                function(event) {
                     console.log(this, event)
                     if ("update" in event) {
                         const stepUpdate = event.update
@@ -307,7 +307,7 @@ describe("stable-diffusion-ui", function () {
             expect(result.status).toBe("succeeded")
             expect(result.output).toHaveSize(2)
         })
-        it("post and reader request", async function () {
+        it("post and reader request", async function() {
             const renderTask = new SD.RenderTask({
                 prompt: "a photograph of an astronaut riding a horse",
                 width: 128,
@@ -351,7 +351,7 @@ describe("stable-diffusion-ui", function () {
             expect(renderTask.result.status).toBe("succeeded")
             expect(renderTask.result.output).toHaveSize(1)
         })
-        it("queued request", async function () {
+        it("queued request", async function() {
             let stepCount = 0
             let complete = false
             const renderTask = new SD.RenderTask({
@@ -364,7 +364,7 @@ describe("stable-diffusion-ui", function () {
                 use_upscale: "RealESRGAN_x4plus",
                 session_id: JASMINE_SESSION_ID
             })
-            await renderTask.enqueue(function (event) {
+            await renderTask.enqueue(function(event) {
                 console.log(this, event)
                 if ("update" in event) {
                     const stepUpdate = event.update
@@ -386,9 +386,9 @@ describe("stable-diffusion-ui", function () {
             expect(renderTask.result.output).toHaveSize(2)
         })
     })
-    describe("# Special cases", function () {
-        it("should throw an exception on set for invalid sessionId", function () {
-            expect(function () {
+    describe("# Special cases", function() {
+        it("should throw an exception on set for invalid sessionId", function() {
+            expect(function() {
                 SD.sessionId = undefined
             }).toThrowError("Can't set sessionId to undefined.")
         })
@@ -397,30 +397,30 @@ describe("stable-diffusion-ui", function () {
 
 const loadCompleted = window.onload
 let loadEvent = undefined
-window.onload = function (evt) {
+window.onload = function(evt) {
     loadEvent = evt
 }
 if (!PLUGINS.SELFTEST) {
     PLUGINS.SELFTEST = {}
 }
-loadUIPlugins().then(function () {
+loadUIPlugins().then(function() {
     console.log("loadCompleted", loadEvent)
-    describe("@Plugins", function () {
-        it("exposes hooks to overide", function () {
+    describe("@Plugins", function() {
+        it("exposes hooks to overide", function() {
             expect(typeof PLUGINS.IMAGE_INFO_BUTTONS).toBe("object")
             expect(typeof PLUGINS.TASK_CREATE).toBe("object")
         })
-        describe("supports selftests", function () {
+        describe("supports selftests", function() {
             // Hook to allow plugins to define tests.
             const pluginsTests = Object.keys(PLUGINS.SELFTEST).filter((key) => PLUGINS.SELFTEST.hasOwnProperty(key))
             if (!pluginsTests || pluginsTests.length <= 0) {
-                it("but nothing loaded...", function () {
+                it("but nothing loaded...", function() {
                     expect(true).toBeTruthy()
                 })
                 return
             }
             for (const pTest of pluginsTests) {
-                describe(pTest, function () {
+                describe(pTest, function() {
                     const testFn = PLUGINS.SELFTEST[pTest]
                     return Promise.resolve(testFn.call(jasmine, pTest))
                 })

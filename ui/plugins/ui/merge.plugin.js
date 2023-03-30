@@ -1,4 +1,4 @@
-;(function () {
+;(function() {
     "use strict"
 
     ///////////////////// Function section
@@ -384,7 +384,7 @@
 
     document.querySelector(".merge-config").addEventListener("change", updateChart)
 
-    document.querySelector("#merge-button").addEventListener("click", async function (e) {
+    document.querySelector("#merge-button").addEventListener("click", async function(e) {
         // Build request template
         let model0 = mergeModelAField.value
         let model1 = mergeModelBField.value

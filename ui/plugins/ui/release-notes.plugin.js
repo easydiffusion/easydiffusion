@@ -1,8 +1,8 @@
-;(function () {
+;(function() {
     // Register selftests when loaded by jasmine.
     if (typeof PLUGINS?.SELFTEST === "object") {
-        PLUGINS.SELFTEST["release-notes"] = function () {
-            it("should be able to fetch CHANGES.md", async function () {
+        PLUGINS.SELFTEST["release-notes"] = function() {
+            it("should be able to fetch CHANGES.md", async function() {
                 let releaseNotes = await fetch(
                     `https://raw.githubusercontent.com/cmdr2/stable-diffusion-ui/main/CHANGES.md`
                 )
@@ -54,7 +54,7 @@
     `
     )
 
-    loadScript("/media/js/marked.min.js").then(async function () {
+    loadScript("/media/js/marked.min.js").then(async function() {
         let appConfig = await fetch("/get/app_config")
         if (!appConfig.ok) {
             console.error("[release-notes] Failed to get app_config.")

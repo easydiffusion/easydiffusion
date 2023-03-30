@@ -23,14 +23,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // eslint-disable-next-line no-var
 var jasmineRequire = window.jasmineRequire || require("./jasmine.js")
 
-jasmineRequire.html = function (j$) {
+jasmineRequire.html = function(j$) {
     j$.ResultsNode = jasmineRequire.ResultsNode()
     j$.HtmlReporter = jasmineRequire.HtmlReporter(j$)
     j$.QueryString = jasmineRequire.QueryString()
     j$.HtmlSpecFilter = jasmineRequire.HtmlSpecFilter()
 }
 
-jasmineRequire.HtmlReporter = function (j$) {
+jasmineRequire.HtmlReporter = function(j$) {
     function ResultsStateBuilder() {
         this.topResults = new j$.ResultsNode({}, "", null)
         this.currentParent = this.topResults
@@ -39,12 +39,12 @@ jasmineRequire.HtmlReporter = function (j$) {
         this.pendingSpecCount = 0
     }
 
-    ResultsStateBuilder.prototype.suiteStarted = function (result) {
+    ResultsStateBuilder.prototype.suiteStarted = function(result) {
         this.currentParent.addChild(result, "suite")
         this.currentParent = this.currentParent.last()
     }
 
-    ResultsStateBuilder.prototype.suiteDone = function (result) {
+    ResultsStateBuilder.prototype.suiteDone = function(result) {
         this.currentParent.updateResult(result)
         if (this.currentParent !== this.topResults) {
             this.currentParent = this.currentParent.parent
@@ -55,9 +55,9 @@ jasmineRequire.HtmlReporter = function (j$) {
         }
     }
 
-    ResultsStateBuilder.prototype.specStarted = function (result) {}
+    ResultsStateBuilder.prototype.specStarted = function(result) {}
 
-    ResultsStateBuilder.prototype.specDone = function (result) {
+    ResultsStateBuilder.prototype.specDone = function(result) {
         this.currentParent.addChild(result, "spec")
 
         if (result.status !== "excluded") {
@@ -73,7 +73,7 @@ jasmineRequire.HtmlReporter = function (j$) {
         }
     }
 
-    ResultsStateBuilder.prototype.jasmineDone = function (result) {
+    ResultsStateBuilder.prototype.jasmineDone = function(result) {
         if (result.failedExpectations) {
             this.failureCount += result.failedExpectations.length
         }
@@ -87,7 +87,7 @@ jasmineRequire.HtmlReporter = function (j$) {
         const getContainer = options.getContainer
         const createElement = options.createElement
         const createTextNode = options.createTextNode
-        const navigateWithNewParam = options.navigateWithNewParam || function () {}
+        const navigateWithNewParam = options.navigateWithNewParam || function() {}
         const addToExistingQueryString = options.addToExistingQueryString || defaultQueryString
         const filterSpecs = options.filterSpecs
         let htmlReporterMain
@@ -95,7 +95,7 @@ jasmineRequire.HtmlReporter = function (j$) {
         const deprecationWarnings = []
         const failures = []
 
-        this.initialize = function () {
+        this.initialize = function() {
             clearPrior()
             htmlReporterMain = createDom(
                 "div",
@@ -118,7 +118,7 @@ jasmineRequire.HtmlReporter = function (j$) {
         }
 
         let totalSpecsDefined
-        this.jasmineStarted = function (options) {
+        this.jasmineStarted = function(options) {
             totalSpecsDefined = options.totalSpecsDefined || 0
         }
 
@@ -126,11 +126,11 @@ jasmineRequire.HtmlReporter = function (j$) {
 
         const stateBuilder = new ResultsStateBuilder()
 
-        this.suiteStarted = function (result) {
+        this.suiteStarted = function(result) {
             stateBuilder.suiteStarted(result)
         }
 
-        this.suiteDone = function (result) {
+        this.suiteDone = function(result) {
             stateBuilder.suiteDone(result)
 
             if (result.status === "failed") {
@@ -139,11 +139,11 @@ jasmineRequire.HtmlReporter = function (j$) {
             addDeprecationWarnings(result, "suite")
         }
 
-        this.specStarted = function (result) {
+        this.specStarted = function(result) {
             stateBuilder.specStarted(result)
         }
 
-        this.specDone = function (result) {
+        this.specDone = function(result) {
             stateBuilder.specDone(result)
 
             if (noExpectations(result)) {
@@ -174,20 +174,20 @@ jasmineRequire.HtmlReporter = function (j$) {
             addDeprecationWarnings(result, "spec")
         }
 
-        this.displaySpecInCorrectFormat = function (result) {
+        this.displaySpecInCorrectFormat = function(result) {
             return noExpectations(result) && result.status === "passed"
                 ? "jasmine-empty"
                 : this.resultStatus(result.status)
         }
 
-        this.resultStatus = function (status) {
+        this.resultStatus = function(status) {
             if (status === "excluded") {
                 return config().hideDisabled ? "jasmine-excluded-no-display" : "jasmine-excluded"
             }
             return "jasmine-" + status
         }
 
-        this.jasmineDone = function (doneResult) {
+        this.jasmineDone = function(doneResult) {
             stateBuilder.jasmineDone(doneResult)
             const banner = find(".jasmine-banner")
             const alert = find(".jasmine-alert")
@@ -297,7 +297,7 @@ jasmineRequire.HtmlReporter = function (j$) {
                         context = ""
                 }
 
-                deprecationWarnings[i].message.split("\n").forEach(function (line) {
+                deprecationWarnings[i].message.split("\n").forEach(function(line) {
                     children.push(line)
                     children.push(createDom("br"))
                 })
@@ -335,11 +335,11 @@ jasmineRequire.HtmlReporter = function (j$) {
                     )
                 )
 
-                find(".jasmine-failures-menu").onclick = function () {
+                find(".jasmine-failures-menu").onclick = function() {
                     setMenuModeTo("jasmine-failure-list")
                     return false
                 }
-                find(".jasmine-spec-list-menu").onclick = function () {
+                find(".jasmine-spec-list-menu").onclick = function() {
                     setMenuModeTo("jasmine-spec-list")
                     return false
                 }
@@ -386,7 +386,7 @@ jasmineRequire.HtmlReporter = function (j$) {
         function debugLogTable(debugLogs) {
             const tbody = createDom("tbody")
 
-            debugLogs.forEach(function (entry) {
+            debugLogs.forEach(function(entry) {
                 tbody.appendChild(
                     createDom(
                         "tr",
@@ -532,25 +532,25 @@ jasmineRequire.HtmlReporter = function (j$) {
 
             const failFastCheckbox = optionsMenuDom.querySelector("#jasmine-fail-fast")
             failFastCheckbox.checked = config.stopOnSpecFailure
-            failFastCheckbox.onclick = function () {
+            failFastCheckbox.onclick = function() {
                 navigateWithNewParam("stopOnSpecFailure", !config.stopOnSpecFailure)
             }
 
             const throwCheckbox = optionsMenuDom.querySelector("#jasmine-throw-failures")
             throwCheckbox.checked = config.stopSpecOnExpectationFailure
-            throwCheckbox.onclick = function () {
+            throwCheckbox.onclick = function() {
                 navigateWithNewParam("stopSpecOnExpectationFailure", !config.stopSpecOnExpectationFailure)
             }
 
             const randomCheckbox = optionsMenuDom.querySelector("#jasmine-random-order")
             randomCheckbox.checked = config.random
-            randomCheckbox.onclick = function () {
+            randomCheckbox.onclick = function() {
                 navigateWithNewParam("random", !config.random)
             }
 
             const hideDisabled = optionsMenuDom.querySelector("#jasmine-hide-disabled")
             hideDisabled.checked = config.hideDisabled
-            hideDisabled.onclick = function () {
+            hideDisabled.onclick = function() {
                 navigateWithNewParam("hideDisabled", !config.hideDisabled)
             }
 
@@ -558,7 +558,7 @@ jasmineRequire.HtmlReporter = function (j$) {
                 optionsPayload = optionsMenuDom.querySelector(".jasmine-payload"),
                 isOpen = /\bjasmine-open\b/
 
-            optionsTrigger.onclick = function () {
+            optionsTrigger.onclick = function() {
                 if (isOpen.test(optionsPayload.className)) {
                     optionsPayload.className = optionsPayload.className.replace(isOpen, "")
                 } else {
@@ -623,7 +623,7 @@ jasmineRequire.HtmlReporter = function (j$) {
                 createDom("div", { className: "jasmine-expander-contents jasmine-stack-trace" }, stackTrace)
             )
 
-            expandLink.addEventListener("click", function (e) {
+            expandLink.addEventListener("click", function(e) {
                 e.preventDefault()
 
                 if (root.classList.contains("jasmine-expanded")) {
@@ -735,13 +735,13 @@ jasmineRequire.HtmlReporter = function (j$) {
     return HtmlReporter
 }
 
-jasmineRequire.HtmlSpecFilter = function () {
+jasmineRequire.HtmlSpecFilter = function() {
     function HtmlSpecFilter(options) {
         const filterString =
             options && options.filterString() && options.filterString().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&")
         const filterPattern = new RegExp(filterString)
 
-        this.matches = function (specName) {
+        this.matches = function(specName) {
             return filterPattern.test(specName)
         }
     }
@@ -749,7 +749,7 @@ jasmineRequire.HtmlSpecFilter = function () {
     return HtmlSpecFilter
 }
 
-jasmineRequire.ResultsNode = function () {
+jasmineRequire.ResultsNode = function() {
     function ResultsNode(result, type, parent) {
         this.result = result
         this.type = type
@@ -757,15 +757,15 @@ jasmineRequire.ResultsNode = function () {
 
         this.children = []
 
-        this.addChild = function (result, type) {
+        this.addChild = function(result, type) {
             this.children.push(new ResultsNode(result, type, this))
         }
 
-        this.last = function () {
+        this.last = function() {
             return this.children[this.children.length - 1]
         }
 
-        this.updateResult = function (result) {
+        this.updateResult = function(result) {
             this.result = result
         }
     }
@@ -773,19 +773,19 @@ jasmineRequire.ResultsNode = function () {
     return ResultsNode
 }
 
-jasmineRequire.QueryString = function () {
+jasmineRequire.QueryString = function() {
     function QueryString(options) {
-        this.navigateWithNewParam = function (key, value) {
+        this.navigateWithNewParam = function(key, value) {
             options.getWindowLocation().search = this.fullStringWithNewParam(key, value)
         }
 
-        this.fullStringWithNewParam = function (key, value) {
+        this.fullStringWithNewParam = function(key, value) {
             const paramMap = queryStringToParamMap()
             paramMap[key] = value
             return toQueryString(paramMap)
         }
 
-        this.getParam = function (key) {
+        this.getParam = function(key) {
             return queryStringToParamMap()[key]
         }
 

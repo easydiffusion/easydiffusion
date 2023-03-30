@@ -40,7 +40,7 @@ const PLUGINS = {
         }
     )
 }
-PLUGINS.OUTPUTS_FORMATS.register = function (...args) {
+PLUGINS.OUTPUTS_FORMATS.register = function(...args) {
     const service = ServiceContainer.prototype.register.apply(this, args)
     if (typeof outputFormatField !== "undefined") {
         const newOption = document.createElement("option")

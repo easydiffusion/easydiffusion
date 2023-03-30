@@ -125,7 +125,7 @@ const IMAGE_EDITOR_ACTIONS = [
         handler: (editor) => {
             let el = document.createElement("input")
             el.setAttribute("type", "file")
-            el.addEventListener("change", function () {
+            el.addEventListener("change", function() {
                 if (this.files.length === 0) {
                     return
                 }
@@ -133,7 +133,7 @@ const IMAGE_EDITOR_ACTIONS = [
                 let reader = new FileReader()
                 let file = this.files[0]
 
-                reader.addEventListener("load", function (event) {
+                reader.addEventListener("load", function(event) {
                     let maskData = reader.result
 
                     editor.layers.drawing.ctx.clearRect(0, 0, editor.width, editor.height)
@@ -235,7 +235,7 @@ var IMAGE_EDITOR_SECTIONS = [
                 element.appendChild(input)
                 var span = document.createElement("span")
                 span.textContent = "Custom"
-                span.onclick = function (e) {
+                span.onclick = function(e) {
                     input.click()
                 }
                 element.appendChild(span)

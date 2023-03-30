@@ -1,6 +1,6 @@
 /* SD-UI Selftest Plugin.js
  */
-;(function () {
+;(function() {
     "use strict"
     const ID_PREFIX = "selftest-plugin"
 

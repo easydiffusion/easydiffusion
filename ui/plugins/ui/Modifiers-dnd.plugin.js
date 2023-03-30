@@ -1,4 +1,4 @@
-;(function () {
+;(function() {
     "use strict"
     if (typeof editorModifierTagsList !== "object") {
         console.error("editorModifierTagsList missing...")
@@ -16,7 +16,7 @@
     document.head.appendChild(styleSheet)
 
     // observe for changes in tag list
-    const observer = new MutationObserver(function (mutations) {
+    const observer = new MutationObserver(function(mutations) {
         //    mutations.forEach(function (mutation) {
         if (editorModifierTagsList.childNodes.length > 0) {
             ModifierDragAndDrop(editorModifierTagsList)
