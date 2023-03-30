@@ -20,7 +20,7 @@ const taskConfigSetup = {
         upscale: { value: ({ reqBody }) => `${reqBody?.use_upscale} (${reqBody?.upscale_amount || 4}x)`, label: 'Upscale', visible: ({ reqBody }) => !!reqBody?.use_upscale },
         use_hypernetwork_model: 'Hypernetwork',
         hypernetwork_strength: { label: 'Hypernetwork Strength', visible: ({ reqBody }) => !!reqBody?.use_hypernetwork_model },
-        use_lora_model: 'Lora Model',
+        use_lora_model: { label: 'Lora Model', visible: ({ reqBody }) => !!reqBody?.use_lora_model },
         preserve_init_image_color_profile: 'Preserve Color Profile',
     },
     pluginTaskConfig: {},
