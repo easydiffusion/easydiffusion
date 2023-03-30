@@ -48,23 +48,23 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   });
 
-  const filterSpecs = !!queryString.getParam('spec');
+  const filterSpecs = !!queryString.getParam("spec");
 
   const config = {
-    stopOnSpecFailure: queryString.getParam('stopOnSpecFailure'),
+    stopOnSpecFailure: queryString.getParam("stopOnSpecFailure"),
     stopSpecOnExpectationFailure: queryString.getParam(
-      'stopSpecOnExpectationFailure'
+      "stopSpecOnExpectationFailure"
     ),
-    hideDisabled: queryString.getParam('hideDisabled')
+    hideDisabled: queryString.getParam("hideDisabled")
   };
 
-  const random = queryString.getParam('random');
+  const random = queryString.getParam("random");
 
-  if (random !== undefined && random !== '') {
+  if (random !== undefined && random !== "") {
     config.random = random;
   }
 
-  const seed = queryString.getParam('seed');
+  const seed = queryString.getParam("seed");
   if (seed) {
     config.seed = seed;
   }
@@ -105,7 +105,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    */
   const specFilter = new jasmine.HtmlSpecFilter({
     filterString: function() {
-      return queryString.getParam('spec');
+      return queryString.getParam("spec");
     }
   });
 

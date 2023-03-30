@@ -21,7 +21,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 // eslint-disable-next-line no-var
-var jasmineRequire = window.jasmineRequire || require('./jasmine.js');
+var jasmineRequire = window.jasmineRequire || require("./jasmine.js");
 
 jasmineRequire.html = function(j$) {
   j$.ResultsNode = jasmineRequire.ResultsNode();
@@ -32,7 +32,7 @@ jasmineRequire.html = function(j$) {
 
 jasmineRequire.HtmlReporter = function(j$) {
   function ResultsStateBuilder() {
-    this.topResults = new j$.ResultsNode({}, '', null);
+    this.topResults = new j$.ResultsNode({}, "", null);
     this.currentParent = this.topResults;
     this.specsExecuted = 0;
     this.failureCount = 0;
@@ -40,7 +40,7 @@ jasmineRequire.HtmlReporter = function(j$) {
   }
 
   ResultsStateBuilder.prototype.suiteStarted = function(result) {
-    this.currentParent.addChild(result, 'suite');
+    this.currentParent.addChild(result, "suite");
     this.currentParent = this.currentParent.last();
   };
 
@@ -50,7 +50,7 @@ jasmineRequire.HtmlReporter = function(j$) {
       this.currentParent = this.currentParent.parent;
     }
 
-    if (result.status === 'failed') {
+    if (result.status === "failed") {
       this.failureCount++;
     }
   };
@@ -58,17 +58,17 @@ jasmineRequire.HtmlReporter = function(j$) {
   ResultsStateBuilder.prototype.specStarted = function(result) {};
 
   ResultsStateBuilder.prototype.specDone = function(result) {
-    this.currentParent.addChild(result, 'spec');
+    this.currentParent.addChild(result, "spec");
 
-    if (result.status !== 'excluded') {
+    if (result.status !== "excluded") {
       this.specsExecuted++;
     }
 
-    if (result.status === 'failed') {
+    if (result.status === "failed") {
       this.failureCount++;
     }
 
-    if (result.status == 'pending') {
+    if (result.status == "pending") {
       this.pendingSpecCount++;
     }
   };
@@ -99,24 +99,24 @@ jasmineRequire.HtmlReporter = function(j$) {
     this.initialize = function() {
       clearPrior();
       htmlReporterMain = createDom(
-        'div',
-        { className: 'jasmine_html-reporter' },
+        "div",
+        { className: "jasmine_html-reporter" },
         createDom(
-          'div',
-          { className: 'jasmine-banner' },
-          createDom('a', {
-            className: 'jasmine-title',
-            href: 'http://jasmine.github.io/',
-            target: '_blank'
+          "div",
+          { className: "jasmine-banner" },
+          createDom("a", {
+            className: "jasmine-title",
+            href: "http://jasmine.github.io/",
+            target: "_blank"
           }),
-          createDom('span', { className: 'jasmine-version' }, j$.version)
+          createDom("span", { className: "jasmine-version" }, j$.version)
         ),
-        createDom('ul', { className: 'jasmine-symbol-summary' }),
-        createDom('div', { className: 'jasmine-alert' }),
+        createDom("ul", { className: "jasmine-symbol-summary" }),
+        createDom("div", { className: "jasmine-alert" }),
         createDom(
-          'div',
-          { className: 'jasmine-results' },
-          createDom('div', { className: 'jasmine-failures' })
+          "div",
+          { className: "jasmine-results" },
+          createDom("div", { className: "jasmine-failures" })
         )
       );
       getContainer().appendChild(htmlReporterMain);
@@ -127,7 +127,7 @@ jasmineRequire.HtmlReporter = function(j$) {
       totalSpecsDefined = options.totalSpecsDefined || 0;
     };
 
-    const summary = createDom('div', { className: 'jasmine-summary' });
+    const summary = createDom("div", { className: "jasmine-summary" });
 
     const stateBuilder = new ResultsStateBuilder();
 
@@ -138,10 +138,10 @@ jasmineRequire.HtmlReporter = function(j$) {
     this.suiteDone = function(result) {
       stateBuilder.suiteDone(result);
 
-      if (result.status === 'failed') {
+      if (result.status === "failed") {
         failures.push(failureDom(result));
       }
-      addDeprecationWarnings(result, 'suite');
+      addDeprecationWarnings(result, "suite");
     };
 
     this.specStarted = function(result) {
@@ -153,7 +153,7 @@ jasmineRequire.HtmlReporter = function(j$) {
 
       if (noExpectations(result)) {
         const noSpecMsg = "Spec '" + result.fullName + "' has no expectations.";
-        if (result.status === 'failed') {
+        if (result.status === "failed") {
           console.error(noSpecMsg);
         } else {
           console.warn(noSpecMsg);
@@ -161,50 +161,50 @@ jasmineRequire.HtmlReporter = function(j$) {
       }
 
       if (!symbols) {
-        symbols = find('.jasmine-symbol-summary');
+        symbols = find(".jasmine-symbol-summary");
       }
 
       symbols.appendChild(
-        createDom('li', {
+        createDom("li", {
           className: this.displaySpecInCorrectFormat(result),
-          id: 'spec_' + result.id,
+          id: "spec_" + result.id,
           title: result.fullName
         })
       );
 
-      if (result.status === 'failed') {
+      if (result.status === "failed") {
         failures.push(failureDom(result));
       }
 
-      addDeprecationWarnings(result, 'spec');
+      addDeprecationWarnings(result, "spec");
     };
 
     this.displaySpecInCorrectFormat = function(result) {
-      return noExpectations(result) && result.status === 'passed'
-        ? 'jasmine-empty'
+      return noExpectations(result) && result.status === "passed"
+        ? "jasmine-empty"
         : this.resultStatus(result.status);
     };
 
     this.resultStatus = function(status) {
-      if (status === 'excluded') {
+      if (status === "excluded") {
         return config().hideDisabled
-          ? 'jasmine-excluded-no-display'
-          : 'jasmine-excluded';
+          ? "jasmine-excluded-no-display"
+          : "jasmine-excluded";
       }
-      return 'jasmine-' + status;
+      return "jasmine-" + status;
     };
 
     this.jasmineDone = function(doneResult) {
       stateBuilder.jasmineDone(doneResult);
-      const banner = find('.jasmine-banner');
-      const alert = find('.jasmine-alert');
+      const banner = find(".jasmine-banner");
+      const alert = find(".jasmine-alert");
       const order = doneResult && doneResult.order;
 
       alert.appendChild(
         createDom(
-          'span',
-          { className: 'jasmine-duration' },
-          'finished in ' + doneResult.totalTime / 1000 + 's'
+          "span",
+          { className: "jasmine-duration" },
+          "finished in " + doneResult.totalTime / 1000 + "s"
         )
       );
 
@@ -212,67 +212,67 @@ jasmineRequire.HtmlReporter = function(j$) {
 
       if (stateBuilder.specsExecuted < totalSpecsDefined) {
         const skippedMessage =
-          'Ran ' +
+          "Ran " +
           stateBuilder.specsExecuted +
-          ' of ' +
+          " of " +
           totalSpecsDefined +
-          ' specs - run all';
+          " specs - run all";
         // include window.location.pathname to fix issue with karma-jasmine-html-reporter in angular: see https://github.com/jasmine/jasmine/issues/1906
         const skippedLink =
-          (window.location.pathname || '') +
-          addToExistingQueryString('spec', '');
+          (window.location.pathname || "") +
+          addToExistingQueryString("spec", "");
         alert.appendChild(
           createDom(
-            'span',
-            { className: 'jasmine-bar jasmine-skipped' },
+            "span",
+            { className: "jasmine-bar jasmine-skipped" },
             createDom(
-              'a',
-              { href: skippedLink, title: 'Run all specs' },
+              "a",
+              { href: skippedLink, title: "Run all specs" },
               skippedMessage
             )
           )
         );
       }
-      let statusBarMessage = '';
-      let statusBarClassName = 'jasmine-overall-result jasmine-bar ';
+      let statusBarMessage = "";
+      let statusBarClassName = "jasmine-overall-result jasmine-bar ";
       const globalFailures =
         (doneResult && doneResult.failedExpectations) || [];
       const failed = stateBuilder.failureCount + globalFailures.length > 0;
 
       if (totalSpecsDefined > 0 || failed) {
         statusBarMessage +=
-          pluralize('spec', stateBuilder.specsExecuted) +
-          ', ' +
-          pluralize('failure', stateBuilder.failureCount);
+          pluralize("spec", stateBuilder.specsExecuted) +
+          ", " +
+          pluralize("failure", stateBuilder.failureCount);
         if (stateBuilder.pendingSpecCount) {
           statusBarMessage +=
-            ', ' + pluralize('pending spec', stateBuilder.pendingSpecCount);
+            ", " + pluralize("pending spec", stateBuilder.pendingSpecCount);
         }
       }
 
-      if (doneResult.overallStatus === 'passed') {
-        statusBarClassName += ' jasmine-passed ';
-      } else if (doneResult.overallStatus === 'incomplete') {
-        statusBarClassName += ' jasmine-incomplete ';
+      if (doneResult.overallStatus === "passed") {
+        statusBarClassName += " jasmine-passed ";
+      } else if (doneResult.overallStatus === "incomplete") {
+        statusBarClassName += " jasmine-incomplete ";
         statusBarMessage =
-          'Incomplete: ' +
+          "Incomplete: " +
           doneResult.incompleteReason +
-          ', ' +
+          ", " +
           statusBarMessage;
       } else {
-        statusBarClassName += ' jasmine-failed ';
+        statusBarClassName += " jasmine-failed ";
       }
 
       let seedBar;
       if (order && order.random) {
         seedBar = createDom(
-          'span',
-          { className: 'jasmine-seed-bar' },
-          ', randomized with seed ',
+          "span",
+          { className: "jasmine-seed-bar" },
+          ", randomized with seed ",
           createDom(
-            'a',
+            "a",
             {
-              title: 'randomized with seed ' + order.seed,
+              title: "randomized with seed " + order.seed,
               href: seedHref(order.seed)
             },
             order.seed
@@ -282,20 +282,20 @@ jasmineRequire.HtmlReporter = function(j$) {
 
       alert.appendChild(
         createDom(
-          'span',
+          "span",
           { className: statusBarClassName },
           statusBarMessage,
           seedBar
         )
       );
 
-      const errorBarClassName = 'jasmine-bar jasmine-errored';
-      const afterAllMessagePrefix = 'AfterAll ';
+      const errorBarClassName = "jasmine-bar jasmine-errored";
+      const afterAllMessagePrefix = "AfterAll ";
 
       for (let i = 0; i < globalFailures.length; i++) {
         alert.appendChild(
           createDom(
-            'span',
+            "span",
             { className: errorBarClassName },
             globalFailureMessage(globalFailures[i])
           )
@@ -303,17 +303,17 @@ jasmineRequire.HtmlReporter = function(j$) {
       }
 
       function globalFailureMessage(failure) {
-        if (failure.globalErrorType === 'load') {
-          const prefix = 'Error during loading: ' + failure.message;
+        if (failure.globalErrorType === "load") {
+          const prefix = "Error during loading: " + failure.message;
 
           if (failure.filename) {
             return (
-              prefix + ' in ' + failure.filename + ' line ' + failure.lineno
+              prefix + " in " + failure.filename + " line " + failure.lineno
             );
           } else {
             return prefix;
           }
-        } else if (failure.globalErrorType === 'afterAll') {
+        } else if (failure.globalErrorType === "afterAll") {
           return afterAllMessagePrefix + failure.message;
         } else {
           return failure.message;
@@ -327,22 +327,22 @@ jasmineRequire.HtmlReporter = function(j$) {
         let context;
 
         switch (deprecationWarnings[i].runnableType) {
-          case 'spec':
-            context = '(in spec: ' + deprecationWarnings[i].runnableName + ')';
+          case "spec":
+            context = "(in spec: " + deprecationWarnings[i].runnableName + ")";
             break;
-          case 'suite':
-            context = '(in suite: ' + deprecationWarnings[i].runnableName + ')';
+          case "suite":
+            context = "(in suite: " + deprecationWarnings[i].runnableName + ")";
             break;
           default:
-            context = '';
+            context = "";
         }
 
-        deprecationWarnings[i].message.split('\n').forEach(function(line) {
+        deprecationWarnings[i].message.split("\n").forEach(function(line) {
           children.push(line);
-          children.push(createDom('br'));
+          children.push(createDom("br"));
         });
 
-        children[0] = 'DEPRECATION: ' + children[0];
+        children[0] = "DEPRECATION: " + children[0];
         children.push(context);
 
         if (deprecationWarnings[i].stack) {
@@ -351,14 +351,14 @@ jasmineRequire.HtmlReporter = function(j$) {
 
         alert.appendChild(
           createDom(
-            'span',
-            { className: 'jasmine-bar jasmine-warning' },
+            "span",
+            { className: "jasmine-bar jasmine-warning" },
             children
           )
         );
       }
 
-      const results = find('.jasmine-results');
+      const results = find(".jasmine-results");
       results.appendChild(summary);
 
       summaryList(stateBuilder.topResults, summary);
@@ -366,41 +366,41 @@ jasmineRequire.HtmlReporter = function(j$) {
       if (failures.length) {
         alert.appendChild(
           createDom(
-            'span',
-            { className: 'jasmine-menu jasmine-bar jasmine-spec-list' },
-            createDom('span', {}, 'Spec List | '),
+            "span",
+            { className: "jasmine-menu jasmine-bar jasmine-spec-list" },
+            createDom("span", {}, "Spec List | "),
             createDom(
-              'a',
-              { className: 'jasmine-failures-menu', href: '#' },
-              'Failures'
+              "a",
+              { className: "jasmine-failures-menu", href: "#" },
+              "Failures"
             )
           )
         );
         alert.appendChild(
           createDom(
-            'span',
-            { className: 'jasmine-menu jasmine-bar jasmine-failure-list' },
+            "span",
+            { className: "jasmine-menu jasmine-bar jasmine-failure-list" },
             createDom(
-              'a',
-              { className: 'jasmine-spec-list-menu', href: '#' },
-              'Spec List'
+              "a",
+              { className: "jasmine-spec-list-menu", href: "#" },
+              "Spec List"
             ),
-            createDom('span', {}, ' | Failures ')
+            createDom("span", {}, " | Failures ")
           )
         );
 
-        find('.jasmine-failures-menu').onclick = function() {
-          setMenuModeTo('jasmine-failure-list');
+        find(".jasmine-failures-menu").onclick = function() {
+          setMenuModeTo("jasmine-failure-list");
           return false;
         };
-        find('.jasmine-spec-list-menu').onclick = function() {
-          setMenuModeTo('jasmine-spec-list');
+        find(".jasmine-spec-list-menu").onclick = function() {
+          setMenuModeTo("jasmine-spec-list");
           return false;
         };
 
-        setMenuModeTo('jasmine-failure-list');
+        setMenuModeTo("jasmine-failure-list");
 
-        const failureNode = find('.jasmine-failures');
+        const failureNode = find(".jasmine-failures");
         for (let i = 0; i < failures.length; i++) {
           failureNode.appendChild(failures[i]);
         }
@@ -411,10 +411,10 @@ jasmineRequire.HtmlReporter = function(j$) {
 
     function failureDom(result) {
       const failure = createDom(
-        'div',
-        { className: 'jasmine-spec-detail jasmine-failed' },
+        "div",
+        { className: "jasmine-spec-detail jasmine-failed" },
         failureDescription(result, stateBuilder.currentParent),
-        createDom('div', { className: 'jasmine-messages' })
+        createDom("div", { className: "jasmine-messages" })
       );
       const messages = failure.childNodes[1];
 
@@ -422,15 +422,15 @@ jasmineRequire.HtmlReporter = function(j$) {
         const expectation = result.failedExpectations[i];
         messages.appendChild(
           createDom(
-            'div',
-            { className: 'jasmine-result-message' },
+            "div",
+            { className: "jasmine-result-message" },
             expectation.message
           )
         );
         messages.appendChild(
           createDom(
-            'div',
-            { className: 'jasmine-stack-trace' },
+            "div",
+            { className: "jasmine-stack-trace" },
             expectation.stack
           )
         );
@@ -439,9 +439,9 @@ jasmineRequire.HtmlReporter = function(j$) {
       if (result.failedExpectations.length === 0) {
         messages.appendChild(
           createDom(
-            'div',
-            { className: 'jasmine-result-message' },
-            'Spec has no expectations'
+            "div",
+            { className: "jasmine-result-message" },
+            "Spec has no expectations"
           )
         );
       }
@@ -454,38 +454,38 @@ jasmineRequire.HtmlReporter = function(j$) {
     }
 
     function debugLogTable(debugLogs) {
-      const tbody = createDom('tbody');
+      const tbody = createDom("tbody");
 
       debugLogs.forEach(function(entry) {
         tbody.appendChild(
           createDom(
-            'tr',
+            "tr",
             {},
-            createDom('td', {}, entry.timestamp.toString()),
-            createDom('td', {}, entry.message)
+            createDom("td", {}, entry.timestamp.toString()),
+            createDom("td", {}, entry.message)
           )
         );
       });
 
       return createDom(
-        'div',
-        { className: 'jasmine-debug-log' },
+        "div",
+        { className: "jasmine-debug-log" },
         createDom(
-          'div',
-          { className: 'jasmine-debug-log-header' },
-          'Debug logs'
+          "div",
+          { className: "jasmine-debug-log-header" },
+          "Debug logs"
         ),
         createDom(
-          'table',
+          "table",
           {},
           createDom(
-            'thead',
+            "thead",
             {},
             createDom(
-              'tr',
+              "tr",
               {},
-              createDom('th', {}, 'Time (ms)'),
-              createDom('th', {}, 'Message')
+              createDom("th", {}, "Time (ms)"),
+              createDom("th", {}, "Message")
             )
           ),
           tbody
@@ -500,18 +500,18 @@ jasmineRequire.HtmlReporter = function(j$) {
         if (filterSpecs && !hasActiveSpec(resultNode)) {
           continue;
         }
-        if (resultNode.type === 'suite') {
+        if (resultNode.type === "suite") {
           const suiteListNode = createDom(
-            'ul',
-            { className: 'jasmine-suite', id: 'suite-' + resultNode.result.id },
+            "ul",
+            { className: "jasmine-suite", id: "suite-" + resultNode.result.id },
             createDom(
-              'li',
+              "li",
               {
                 className:
-                  'jasmine-suite-detail jasmine-' + resultNode.result.status
+                  "jasmine-suite-detail jasmine-" + resultNode.result.status
               },
               createDom(
-                'a',
+                "a",
                 { href: specHref(resultNode.result) },
                 resultNode.result.description
               )
@@ -521,33 +521,33 @@ jasmineRequire.HtmlReporter = function(j$) {
           summaryList(resultNode, suiteListNode);
           domParent.appendChild(suiteListNode);
         }
-        if (resultNode.type === 'spec') {
-          if (domParent.getAttribute('class') !== 'jasmine-specs') {
-            specListNode = createDom('ul', { className: 'jasmine-specs' });
+        if (resultNode.type === "spec") {
+          if (domParent.getAttribute("class") !== "jasmine-specs") {
+            specListNode = createDom("ul", { className: "jasmine-specs" });
             domParent.appendChild(specListNode);
           }
           let specDescription = resultNode.result.description;
           if (noExpectations(resultNode.result)) {
-            specDescription = 'SPEC HAS NO EXPECTATIONS ' + specDescription;
+            specDescription = "SPEC HAS NO EXPECTATIONS " + specDescription;
           }
           if (
-            resultNode.result.status === 'pending' &&
-            resultNode.result.pendingReason !== ''
+            resultNode.result.status === "pending" &&
+            resultNode.result.pendingReason !== ""
           ) {
             specDescription =
               specDescription +
-              ' PENDING WITH MESSAGE: ' +
+              " PENDING WITH MESSAGE: " +
               resultNode.result.pendingReason;
           }
           specListNode.appendChild(
             createDom(
-              'li',
+              "li",
               {
-                className: 'jasmine-' + resultNode.result.status,
-                id: 'spec-' + resultNode.result.id
+                className: "jasmine-" + resultNode.result.status,
+                id: "spec-" + resultNode.result.id
               },
               createDom(
-                'a',
+                "a",
                 { href: specHref(resultNode.result) },
                 specDescription
               )
@@ -559,118 +559,118 @@ jasmineRequire.HtmlReporter = function(j$) {
 
     function optionsMenu(config) {
       const optionsMenuDom = createDom(
-        'div',
-        { className: 'jasmine-run-options' },
-        createDom('span', { className: 'jasmine-trigger' }, 'Options'),
+        "div",
+        { className: "jasmine-run-options" },
+        createDom("span", { className: "jasmine-trigger" }, "Options"),
         createDom(
-          'div',
-          { className: 'jasmine-payload' },
+          "div",
+          { className: "jasmine-payload" },
           createDom(
-            'div',
-            { className: 'jasmine-stop-on-failure' },
-            createDom('input', {
-              className: 'jasmine-fail-fast',
-              id: 'jasmine-fail-fast',
-              type: 'checkbox'
+            "div",
+            { className: "jasmine-stop-on-failure" },
+            createDom("input", {
+              className: "jasmine-fail-fast",
+              id: "jasmine-fail-fast",
+              type: "checkbox"
             }),
             createDom(
-              'label',
-              { className: 'jasmine-label', for: 'jasmine-fail-fast' },
-              'stop execution on spec failure'
+              "label",
+              { className: "jasmine-label", for: "jasmine-fail-fast" },
+              "stop execution on spec failure"
             )
           ),
           createDom(
-            'div',
-            { className: 'jasmine-throw-failures' },
-            createDom('input', {
-              className: 'jasmine-throw',
-              id: 'jasmine-throw-failures',
-              type: 'checkbox'
+            "div",
+            { className: "jasmine-throw-failures" },
+            createDom("input", {
+              className: "jasmine-throw",
+              id: "jasmine-throw-failures",
+              type: "checkbox"
             }),
             createDom(
-              'label',
-              { className: 'jasmine-label', for: 'jasmine-throw-failures' },
-              'stop spec on expectation failure'
+              "label",
+              { className: "jasmine-label", for: "jasmine-throw-failures" },
+              "stop spec on expectation failure"
             )
           ),
           createDom(
-            'div',
-            { className: 'jasmine-random-order' },
-            createDom('input', {
-              className: 'jasmine-random',
-              id: 'jasmine-random-order',
-              type: 'checkbox'
+            "div",
+            { className: "jasmine-random-order" },
+            createDom("input", {
+              className: "jasmine-random",
+              id: "jasmine-random-order",
+              type: "checkbox"
             }),
             createDom(
-              'label',
-              { className: 'jasmine-label', for: 'jasmine-random-order' },
-              'run tests in random order'
+              "label",
+              { className: "jasmine-label", for: "jasmine-random-order" },
+              "run tests in random order"
             )
           ),
           createDom(
-            'div',
-            { className: 'jasmine-hide-disabled' },
-            createDom('input', {
-              className: 'jasmine-disabled',
-              id: 'jasmine-hide-disabled',
-              type: 'checkbox'
+            "div",
+            { className: "jasmine-hide-disabled" },
+            createDom("input", {
+              className: "jasmine-disabled",
+              id: "jasmine-hide-disabled",
+              type: "checkbox"
             }),
             createDom(
-              'label',
-              { className: 'jasmine-label', for: 'jasmine-hide-disabled' },
-              'hide disabled tests'
+              "label",
+              { className: "jasmine-label", for: "jasmine-hide-disabled" },
+              "hide disabled tests"
             )
           )
         )
       );
 
       const failFastCheckbox = optionsMenuDom.querySelector(
-        '#jasmine-fail-fast'
+        "#jasmine-fail-fast"
       );
       failFastCheckbox.checked = config.stopOnSpecFailure;
       failFastCheckbox.onclick = function() {
-        navigateWithNewParam('stopOnSpecFailure', !config.stopOnSpecFailure);
+        navigateWithNewParam("stopOnSpecFailure", !config.stopOnSpecFailure);
       };
 
       const throwCheckbox = optionsMenuDom.querySelector(
-        '#jasmine-throw-failures'
+        "#jasmine-throw-failures"
       );
       throwCheckbox.checked = config.stopSpecOnExpectationFailure;
       throwCheckbox.onclick = function() {
         navigateWithNewParam(
-          'stopSpecOnExpectationFailure',
+          "stopSpecOnExpectationFailure",
           !config.stopSpecOnExpectationFailure
         );
       };
 
       const randomCheckbox = optionsMenuDom.querySelector(
-        '#jasmine-random-order'
+        "#jasmine-random-order"
       );
       randomCheckbox.checked = config.random;
       randomCheckbox.onclick = function() {
-        navigateWithNewParam('random', !config.random);
+        navigateWithNewParam("random", !config.random);
       };
 
       const hideDisabled = optionsMenuDom.querySelector(
-        '#jasmine-hide-disabled'
+        "#jasmine-hide-disabled"
       );
       hideDisabled.checked = config.hideDisabled;
       hideDisabled.onclick = function() {
-        navigateWithNewParam('hideDisabled', !config.hideDisabled);
+        navigateWithNewParam("hideDisabled", !config.hideDisabled);
       };
 
-      const optionsTrigger = optionsMenuDom.querySelector('.jasmine-trigger'),
-        optionsPayload = optionsMenuDom.querySelector('.jasmine-payload'),
+      const optionsTrigger = optionsMenuDom.querySelector(".jasmine-trigger"),
+        optionsPayload = optionsMenuDom.querySelector(".jasmine-payload"),
         isOpen = /\bjasmine-open\b/;
 
       optionsTrigger.onclick = function() {
         if (isOpen.test(optionsPayload.className)) {
           optionsPayload.className = optionsPayload.className.replace(
             isOpen,
-            ''
+            ""
           );
         } else {
-          optionsPayload.className += ' jasmine-open';
+          optionsPayload.className += " jasmine-open";
         }
       };
 
@@ -679,10 +679,10 @@ jasmineRequire.HtmlReporter = function(j$) {
 
     function failureDescription(result, suite) {
       const wrapper = createDom(
-        'div',
-        { className: 'jasmine-description' },
+        "div",
+        { className: "jasmine-description" },
         createDom(
-          'a',
+          "a",
           { title: result.description, href: specHref(result) },
           result.description
         )
@@ -690,9 +690,9 @@ jasmineRequire.HtmlReporter = function(j$) {
       let suiteLink;
 
       while (suite && suite.parent) {
-        wrapper.insertBefore(createTextNode(' > '), wrapper.firstChild);
+        wrapper.insertBefore(createTextNode(" > "), wrapper.firstChild);
         suiteLink = createDom(
-          'a',
+          "a",
           { href: suiteHref(suite) },
           suite.result.description
         );
@@ -714,8 +714,8 @@ jasmineRequire.HtmlReporter = function(j$) {
 
       // include window.location.pathname to fix issue with karma-jasmine-html-reporter in angular: see https://github.com/jasmine/jasmine/issues/1906
       return (
-        (window.location.pathname || '') +
-        addToExistingQueryString('spec', els.join(' '))
+        (window.location.pathname || "") +
+        addToExistingQueryString("spec", els.join(" "))
       );
     }
 
@@ -734,27 +734,27 @@ jasmineRequire.HtmlReporter = function(j$) {
     }
 
     function createExpander(stackTrace) {
-      const expandLink = createDom('a', { href: '#' }, 'Show stack trace');
+      const expandLink = createDom("a", { href: "#" }, "Show stack trace");
       const root = createDom(
-        'div',
-        { className: 'jasmine-expander' },
+        "div",
+        { className: "jasmine-expander" },
         expandLink,
         createDom(
-          'div',
-          { className: 'jasmine-expander-contents jasmine-stack-trace' },
+          "div",
+          { className: "jasmine-expander-contents jasmine-stack-trace" },
           stackTrace
         )
       );
 
-      expandLink.addEventListener('click', function(e) {
+      expandLink.addEventListener("click", function(e) {
         e.preventDefault();
 
-        if (root.classList.contains('jasmine-expanded')) {
-          root.classList.remove('jasmine-expanded');
-          expandLink.textContent = 'Show stack trace';
+        if (root.classList.contains("jasmine-expanded")) {
+          root.classList.remove("jasmine-expanded");
+          expandLink.textContent = "Show stack trace";
         } else {
-          root.classList.add('jasmine-expanded');
-          expandLink.textContent = 'Hide stack trace';
+          root.classList.add("jasmine-expanded");
+          expandLink.textContent = "Hide stack trace";
         }
       });
 
@@ -762,11 +762,11 @@ jasmineRequire.HtmlReporter = function(j$) {
     }
 
     function find(selector) {
-      return getContainer().querySelector('.jasmine_html-reporter ' + selector);
+      return getContainer().querySelector(".jasmine_html-reporter " + selector);
     }
 
     function clearPrior() {
-      const oldReporter = find('');
+      const oldReporter = find("");
 
       if (oldReporter) {
         getContainer().removeChild(oldReporter);
@@ -790,7 +790,7 @@ jasmineRequire.HtmlReporter = function(j$) {
       for (let i = 0; i < children.length; i++) {
         const child = children[i];
 
-        if (typeof child === 'string') {
+        if (typeof child === "string") {
           el.appendChild(createTextNode(child));
         } else {
           if (child) {
@@ -800,7 +800,7 @@ jasmineRequire.HtmlReporter = function(j$) {
       }
 
       for (const attr in attrs) {
-        if (attr == 'className') {
+        if (attr == "className") {
           el[attr] = attrs[attr];
         } else {
           el.setAttribute(attr, attrs[attr]);
@@ -811,33 +811,33 @@ jasmineRequire.HtmlReporter = function(j$) {
     }
 
     function pluralize(singular, count) {
-      const word = count == 1 ? singular : singular + 's';
+      const word = count == 1 ? singular : singular + "s";
 
-      return '' + count + ' ' + word;
+      return "" + count + " " + word;
     }
 
     function specHref(result) {
       // include window.location.pathname to fix issue with karma-jasmine-html-reporter in angular: see https://github.com/jasmine/jasmine/issues/1906
       return (
-        (window.location.pathname || '') +
-        addToExistingQueryString('spec', result.fullName)
+        (window.location.pathname || "") +
+        addToExistingQueryString("spec", result.fullName)
       );
     }
 
     function seedHref(seed) {
       // include window.location.pathname to fix issue with karma-jasmine-html-reporter in angular: see https://github.com/jasmine/jasmine/issues/1906
       return (
-        (window.location.pathname || '') +
-        addToExistingQueryString('seed', seed)
+        (window.location.pathname || "") +
+        addToExistingQueryString("seed", seed)
       );
     }
 
     function defaultQueryString(key, value) {
-      return '?' + key + '=' + value;
+      return "?" + key + "=" + value;
     }
 
     function setMenuModeTo(mode) {
-      htmlReporterMain.setAttribute('class', 'jasmine_html-reporter ' + mode);
+      htmlReporterMain.setAttribute("class", "jasmine_html-reporter " + mode);
     }
 
     function noExpectations(result) {
@@ -846,16 +846,16 @@ jasmineRequire.HtmlReporter = function(j$) {
 
       return (
         allExpectations === 0 &&
-        (result.status === 'passed' || result.status === 'failed')
+        (result.status === "passed" || result.status === "failed")
       );
     }
 
     function hasActiveSpec(resultNode) {
-      if (resultNode.type == 'spec' && resultNode.result.status != 'excluded') {
+      if (resultNode.type == "spec" && resultNode.result.status != "excluded") {
         return true;
       }
 
-      if (resultNode.type == 'suite') {
+      if (resultNode.type == "suite") {
         for (let i = 0, j = resultNode.children.length; i < j; i++) {
           if (hasActiveSpec(resultNode.children[i])) {
             return true;
@@ -873,7 +873,7 @@ jasmineRequire.HtmlSpecFilter = function() {
     const filterString =
       options &&
       options.filterString() &&
-      options.filterString().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+      options.filterString().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
     const filterPattern = new RegExp(filterString);
 
     this.matches = function(specName) {
@@ -933,10 +933,10 @@ jasmineRequire.QueryString = function() {
       const qStrPairs = [];
       for (const prop in paramMap) {
         qStrPairs.push(
-          encodeURIComponent(prop) + '=' + encodeURIComponent(paramMap[prop])
+          encodeURIComponent(prop) + "=" + encodeURIComponent(paramMap[prop])
         );
       }
-      return '?' + qStrPairs.join('&');
+      return "?" + qStrPairs.join("&");
     }
 
     function queryStringToParamMap() {
@@ -945,11 +945,11 @@ jasmineRequire.QueryString = function() {
       const paramMap = {};
 
       if (paramStr.length > 0) {
-        params = paramStr.split('&');
+        params = paramStr.split("&");
         for (let i = 0; i < params.length; i++) {
-          const p = params[i].split('=');
+          const p = params[i].split("=");
           let value = decodeURIComponent(p[1]);
-          if (value === 'true' || value === 'false') {
+          if (value === "true" || value === "false") {
             value = JSON.parse(value);
           }
           paramMap[decodeURIComponent(p[0])] = value;

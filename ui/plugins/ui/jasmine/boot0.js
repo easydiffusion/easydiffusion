@@ -27,7 +27,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  source files or spec files are loaded.
  */
 (function() {
-  const jasmineRequire = window.jasmineRequire || require('./jasmine.js');
+  const jasmineRequire = window.jasmineRequire || require("./jasmine.js");
 
   /**
    * ## Require &amp; Instantiate
