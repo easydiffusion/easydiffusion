@@ -137,11 +137,7 @@ def set_app_config_internal(req: SetAppConfigRequest):
     config["test_diffusers"] = req.test_diffusers
 
     for property, property_value in req.dict().items():
-        log.info(f"set_app_config_internal {property} === {property_value}")
-        if property_value is not None and property in req.__fields__:
-            log.info(f"set_app_config_internal {property} IS DEFINED PROPERTY")
         if property_value is not None and property not in req.__fields__:
-            log.info(f"set_app_config_internal {property} IS ADDITIONAL PROPERTY")
             config[property] = property_value
 
     try:
