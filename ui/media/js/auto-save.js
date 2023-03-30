@@ -55,15 +55,14 @@ const SETTINGS_IDS_LIST = [
     "json_toggle"
 ]
 
-const IGNORE_BY_DEFAULT = [
-    "prompt"
-]
+const IGNORE_BY_DEFAULT = ["prompt"]
 
-const SETTINGS_SECTIONS = [ // gets the "keys" property filled in with an ordered list of settings in this section via initSettings
-    { id: "editor-inputs",   name: "Prompt" },
+const SETTINGS_SECTIONS = [
+    // gets the "keys" property filled in with an ordered list of settings in this section via initSettings
+    { id: "editor-inputs", name: "Prompt" },
     { id: "editor-settings", name: "Image Settings" },
     { id: "system-settings", name: "System Settings" },
-    { id: "container",       name: "Other" }
+    { id: "container", name: "Other" }
 ]
 
 async function initSettings() {
@@ -72,7 +71,8 @@ async function initSettings() {
         if (!element) {
             console.error(`Missing settings element ${id}`)
         }
-        if (id in SETTINGS) { // don't create it again
+        if (id in SETTINGS) {
+            // don't create it again
             return
         }
         SETTINGS[id] = {
@@ -91,7 +91,7 @@ async function initSettings() {
         var name = section.name
         var element = document.getElementById(section.id)
         var unsorted_ids = unsorted_settings_ids.map(id => `#${id}`).join(",")
-        var children = unsorted_ids == "" ? [] : Array.from(element.querySelectorAll(unsorted_ids));
+        var children = unsorted_ids == "" ? [] : Array.from(element.querySelectorAll(unsorted_ids))
         section.keys = []
         children.forEach(e => {
             section.keys.push(e.id)
@@ -102,7 +102,7 @@ async function initSettings() {
 }
 
 function getSetting(element) {
-    if (element.dataset && 'path' in element.dataset) {
+    if (element.dataset && "path" in element.dataset) {
         return element.dataset.path
     }
     if (typeof element === "string" || element instanceof String) {
@@ -114,7 +114,7 @@ function getSetting(element) {
     return element.value
 }
 function setSetting(element, value) {
-    if (element.dataset && 'path' in element.dataset) {
+    if (element.dataset && "path" in element.dataset) {
         element.dataset.path = value
         return // no need to dispatch any event here because the models are not loaded yet
     }
@@ -127,8 +127,7 @@ function setSetting(element, value) {
     }
     if (element.type == "checkbox") {
         element.checked = value
-    }
-    else {
+    } else {
         element.value = value
     }
     element.dispatchEvent(new Event("input"))
@@ -159,8 +158,8 @@ function loadSettings() {
         saved_settings.forEach(saved_setting => {
             var setting = SETTINGS[saved_setting.key]
             if (!setting) {
-                console.warn(`Attempted to load setting ${saved_setting.key}, but no setting found`);
-                return null;
+                console.warn(`Attempted to load setting ${saved_setting.key}, but no setting found`)
+                return null
             }
             setting.ignore = saved_setting.ignore
             if (!setting.ignore) {
@@ -169,10 +168,9 @@ function loadSettings() {
             }
         })
         CURRENTLY_LOADING_SETTINGS = false
-    }
-    else {
+    } else {
         CURRENTLY_LOADING_SETTINGS = true
-        tryLoadOldSettings();
+        tryLoadOldSettings()
         CURRENTLY_LOADING_SETTINGS = false
         saveSettings()
     }
@@ -180,9 +178,9 @@ function loadSettings() {
 
 function loadDefaultSettingsSection(section_id) {
     CURRENTLY_LOADING_SETTINGS = true
-    var section = SETTINGS_SECTIONS.find(s => s.id == section_id);
+    var section = SETTINGS_SECTIONS.find(s => s.id == section_id)
     section.keys.forEach(key => {
-        var setting = SETTINGS[key];
+        var setting = SETTINGS[key]
         setting.value = setting.default
         setSetting(setting.element, setting.value)
     })
@@ -245,9 +243,6 @@ function fillSaveSettingsConfigTable() {
 
 // configureSettingsSaveBtn
 
-
-
-
 var autoSaveSettings = document.getElementById("auto_save_settings")
 var configSettingsButton = document.createElement("button")
 configSettingsButton.textContent = "Configure"
@@ -256,22 +251,21 @@ autoSaveSettings.insertAdjacentElement("beforebegin", configSettingsButton)
 autoSaveSettings.addEventListener("change", () => {
     configSettingsButton.style.display = autoSaveSettings.checked ? "block" : "none"
 })
-configSettingsButton.addEventListener('click', () => {
+configSettingsButton.addEventListener("click", () => {
     fillSaveSettingsConfigTable()
     saveSettingsConfigOverlay.classList.add("active")
 })
-resetImageSettingsButton.addEventListener('click', event => {
-    loadDefaultSettingsSection("editor-settings");
+resetImageSettingsButton.addEventListener("click", event => {
+    loadDefaultSettingsSection("editor-settings")
     event.stopPropagation()
 })
-
 
 function tryLoadOldSettings() {
     console.log("Loading old user settings")
     // load v1 auto-save.js settings
     var old_map = {
-        "guidance_scale_slider": "guidance_scale",
-        "prompt_strength_slider": "prompt_strength"
+        guidance_scale_slider: "guidance_scale",
+        prompt_strength_slider: "prompt_strength"
     }
     var settings_key_v1 = "user_settings"
     var saved_settings_text = localStorage.getItem(settings_key_v1)
@@ -281,7 +275,7 @@ function tryLoadOldSettings() {
             key = key in old_map ? old_map[key] : key
             if (!(key in SETTINGS)) return
             SETTINGS[key].ignore = !saved_settings.should_save[key]
-        });
+        })
         Object.keys(saved_settings.values).forEach(key => {
             key = key in old_map ? old_map[key] : key
             if (!(key in SETTINGS)) return
@@ -290,38 +284,42 @@ function tryLoadOldSettings() {
                 setting.value = saved_settings.values[key]
                 setSetting(setting.element, setting.value)
             }
-        });
+        })
         localStorage.removeItem(settings_key_v1)
     }
 
     // load old individually stored items
-    var individual_settings_map = { // maps old localStorage-key to new SETTINGS-key
-        "soundEnabled": "sound_toggle",
-        "saveToDisk": "save_to_disk",
-        "useCPU": "use_cpu",
-        "diskPath": "diskPath",
-        "useFaceCorrection": "use_face_correction",
-        "useUpscaling": "use_upscale",
-        "showOnlyFilteredImage": "show_only_filtered_image",
-        "streamImageProgress": "stream_image_progress",
-        "outputFormat": "output_format",
-        "autoSaveSettings": "auto_save_settings",
-    };
+    var individual_settings_map = {
+        // maps old localStorage-key to new SETTINGS-key
+        soundEnabled: "sound_toggle",
+        saveToDisk: "save_to_disk",
+        useCPU: "use_cpu",
+        diskPath: "diskPath",
+        useFaceCorrection: "use_face_correction",
+        useUpscaling: "use_upscale",
+        showOnlyFilteredImage: "show_only_filtered_image",
+        streamImageProgress: "stream_image_progress",
+        outputFormat: "output_format",
+        autoSaveSettings: "auto_save_settings"
+    }
     Object.keys(individual_settings_map).forEach(localStorageKey => {
-        var localStorageValue = localStorage.getItem(localStorageKey);
+        var localStorageValue = localStorage.getItem(localStorageKey)
         if (localStorageValue !== null) {
             let key = individual_settings_map[localStorageKey]
             var setting = SETTINGS[key]
             if (!setting) {
-                console.warn(`Attempted to map old setting ${key}, but no setting found`);
-                return null;
+                console.warn(`Attempted to map old setting ${key}, but no setting found`)
+                return null
             }
-            if (setting.element.type == "checkbox" && (typeof localStorageValue === "string" || localStorageValue instanceof String)) {
+            if (
+                setting.element.type == "checkbox" &&
+                (typeof localStorageValue === "string" || localStorageValue instanceof String)
+            ) {
                 localStorageValue = localStorageValue == "true"
             }
             setting.value = localStorageValue
             setSetting(setting.element, setting.value)
-            localStorage.removeItem(localStorageKey);
+            localStorage.removeItem(localStorageKey)
         }
     })
 }

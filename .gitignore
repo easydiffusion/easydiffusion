@@ -3,3 +3,4 @@ installer
 installer.tar
 dist
 .idea/*
+node_modules/*

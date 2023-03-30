@@ -1,4 +1,4 @@
-(function() {
+;(function() {
     "use strict"
 
     ///////////////////// Function section
@@ -18,113 +18,123 @@
         return y
     }
     function getCurrentTime() {
-        const now = new Date();
-        let hours = now.getHours();
-        let minutes = now.getMinutes();
-        let seconds = now.getSeconds();
+        const now = new Date()
+        let hours = now.getHours()
+        let minutes = now.getMinutes()
+        let seconds = now.getSeconds()
 
-        hours = hours < 10 ? `0${hours}` : hours;
-        minutes = minutes < 10 ? `0${minutes}` : minutes;
-        seconds = seconds < 10 ? `0${seconds}` : seconds;
+        hours = hours < 10 ? `0${hours}` : hours
+        minutes = minutes < 10 ? `0${minutes}` : minutes
+        seconds = seconds < 10 ? `0${seconds}` : seconds
 
-        return `${hours}:${minutes}:${seconds}`;
+        return `${hours}:${minutes}:${seconds}`
     }
 
     function addLogMessage(message) {
-        const logContainer = document.getElementById('merge-log');
-        logContainer.innerHTML += `<i>${getCurrentTime()}</i> ${message}<br>`;
+        const logContainer = document.getElementById("merge-log")
+        logContainer.innerHTML += `<i>${getCurrentTime()}</i> ${message}<br>`
 
         // Scroll to the bottom of the log
-        logContainer.scrollTop = logContainer.scrollHeight;
+        logContainer.scrollTop = logContainer.scrollHeight
 
-        document.querySelector('#merge-log-container').style.display = 'block'
-    }    
+        document.querySelector("#merge-log-container").style.display = "block"
+    }
 
     function addLogSeparator() {
-        const logContainer = document.getElementById('merge-log');
-        logContainer.innerHTML += '<hr>'
+        const logContainer = document.getElementById("merge-log")
+        logContainer.innerHTML += "<hr>"
 
-        logContainer.scrollTop = logContainer.scrollHeight;
+        logContainer.scrollTop = logContainer.scrollHeight
     }
 
     function drawDiagram(fn) {
         const SIZE = 300
-        const canvas = document.getElementById('merge-canvas');
+        const canvas = document.getElementById("merge-canvas")
         canvas.height = canvas.width = SIZE
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext("2d")
 
         // Draw coordinate system
-        ctx.scale(1, -1);
-        ctx.translate(0, -canvas.height);
-        ctx.lineWidth = 1;
-        ctx.beginPath();
+        ctx.scale(1, -1)
+        ctx.translate(0, -canvas.height)
+        ctx.lineWidth = 1
+        ctx.beginPath()
 
-        ctx.strokeStyle = 'white'
-        ctx.moveTo(0,0); ctx.lineTo(0,SIZE); ctx.lineTo(SIZE,SIZE); ctx.lineTo(SIZE,0); ctx.lineTo(0,0); ctx.lineTo(SIZE,SIZE);
+        ctx.strokeStyle = "white"
+        ctx.moveTo(0, 0)
+        ctx.lineTo(0, SIZE)
+        ctx.lineTo(SIZE, SIZE)
+        ctx.lineTo(SIZE, 0)
+        ctx.lineTo(0, 0)
+        ctx.lineTo(SIZE, SIZE)
         ctx.stroke()
         ctx.beginPath()
-        ctx.setLineDash([1,2])
+        ctx.setLineDash([1, 2])
         const n = SIZE / 10
-        for (let i=n; i<SIZE; i+=n) {
-            ctx.moveTo(0,i)
-            ctx.lineTo(SIZE,i)
-            ctx.moveTo(i,0)
-            ctx.lineTo(i,SIZE)
+        for (let i = n; i < SIZE; i += n) {
+            ctx.moveTo(0, i)
+            ctx.lineTo(SIZE, i)
+            ctx.moveTo(i, 0)
+            ctx.lineTo(i, SIZE)
         }
         ctx.stroke()
         ctx.beginPath()
         ctx.setLineDash([])
-        ctx.beginPath();
-        ctx.strokeStyle = 'black'
-        ctx.lineWidth = 3;
+        ctx.beginPath()
+        ctx.strokeStyle = "black"
+        ctx.lineWidth = 3
         // Plot function
-        const numSamples = 20;
+        const numSamples = 20
         for (let i = 0; i <= numSamples; i++) {
-            const x = i / numSamples;
-            const y = fn(x);
-        
-            const canvasX = x * SIZE;
-            const canvasY = y * SIZE;
+            const x = i / numSamples
+            const y = fn(x)
+
+            const canvasX = x * SIZE
+            const canvasY = y * SIZE
 
             if (i === 0) {
-                ctx.moveTo(canvasX, canvasY);
+                ctx.moveTo(canvasX, canvasY)
             } else {
-                ctx.lineTo(canvasX, canvasY);
+                ctx.lineTo(canvasX, canvasY)
             }
         }
         ctx.stroke()
         // Plot alpha values (yellow boxes)
-        let start = parseFloat( document.querySelector('#merge-start').value )
-        let step = parseFloat( document.querySelector('#merge-step').value )
-        let iterations = document.querySelector('#merge-count').value>>0
+        let start = parseFloat(document.querySelector("#merge-start").value)
+        let step = parseFloat(document.querySelector("#merge-step").value)
+        let iterations = document.querySelector("#merge-count").value >> 0
         ctx.beginPath()
         ctx.fillStyle = "yellow"
-        for (let i=0; i< iterations; i++) {
-            const alpha = ( start + i * step ) / 100
-            const x = alpha*SIZE
+        for (let i = 0; i < iterations; i++) {
+            const alpha = (start + i * step) / 100
+            const x = alpha * SIZE
             const y = fn(alpha) * SIZE
             if (x <= SIZE) {
-                ctx.rect(x-3,y-3,6,6)
+                ctx.rect(x - 3, y - 3, 6, 6)
                 ctx.fill()
             } else {
-                ctx.strokeStyle = 'red'
-                ctx.moveTo(0,0); ctx.lineTo(0,SIZE); ctx.lineTo(SIZE,SIZE); ctx.lineTo(SIZE,0); ctx.lineTo(0,0); ctx.lineTo(SIZE,SIZE);
+                ctx.strokeStyle = "red"
+                ctx.moveTo(0, 0)
+                ctx.lineTo(0, SIZE)
+                ctx.lineTo(SIZE, SIZE)
+                ctx.lineTo(SIZE, 0)
+                ctx.lineTo(0, 0)
+                ctx.lineTo(SIZE, SIZE)
                 ctx.stroke()
-                addLogMessage('<i>Warning: maximum ratio is &#8805; 100%</i>')
+                addLogMessage("<i>Warning: maximum ratio is &#8805; 100%</i>")
             }
         }
     }
 
     function updateChart() {
-        let fn = (x) => x
-        switch (document.querySelector('#merge-interpolation').value) {
-            case 'SmoothStep':
+        let fn = x => x
+        switch (document.querySelector("#merge-interpolation").value) {
+            case "SmoothStep":
                 fn = smoothstep
                 break
-            case 'SmootherStep':
+            case "SmootherStep":
                 fn = smootherstep
                 break
-            case 'SmoothestStep':
+            case "SmoothestStep":
                 fn = smootheststep
                 break
         }
@@ -132,31 +142,39 @@
     }
 
     /////////////////////// Tab implementation
-    document.querySelector('.tab-container')?.insertAdjacentHTML('beforeend', `
+    document.querySelector(".tab-container")?.insertAdjacentHTML(
+        "beforeend",
+        `
         <span id="tab-merge" class="tab">
             <span><i class="fa fa-code-merge icon"></i> Merge models</span>
         </span>
-    `)
+    `
+    )
 
-    document.querySelector('#tab-content-wrapper')?.insertAdjacentHTML('beforeend', `
+    document.querySelector("#tab-content-wrapper")?.insertAdjacentHTML(
+        "beforeend",
+        `
         <div id="tab-content-merge" class="tab-content">
             <div id="merge" class="tab-content-inner">
                 Loading..
             </div>
         </div>
-    `)
+    `
+    )
 
-    const tabMerge = document.querySelector('#tab-merge')
+    const tabMerge = document.querySelector("#tab-merge")
     if (tabMerge) {
         linkTabContents(tabMerge)
     }
-    const merge = document.querySelector('#merge')
+    const merge = document.querySelector("#merge")
     if (!merge) {
         // merge tab not found, dont exec plugin code.
         return
     }
 
-    document.querySelector('body').insertAdjacentHTML('beforeend', `
+    document.querySelector("body").insertAdjacentHTML(
+        "beforeend",
+        `
         <style>
         #tab-content-merge .tab-content-inner {
             max-width: 100%;
@@ -235,7 +253,8 @@
             color: rgb(153, 153, 153);
         }
         </style>
-    `)
+    `
+    )
 
     merge.innerHTML = `
     <div class="merge-container panel-box">
@@ -329,19 +348,19 @@
       </div>
     </div>`
 
-    const tabSettingsSingle = document.querySelector('#tab-merge-opts-single')
-    const tabSettingsBatch = document.querySelector('#tab-merge-opts-batch')
+    const tabSettingsSingle = document.querySelector("#tab-merge-opts-single")
+    const tabSettingsBatch = document.querySelector("#tab-merge-opts-batch")
     linkTabContents(tabSettingsSingle)
     linkTabContents(tabSettingsBatch)
 
-    console.log('Activate')
-    let mergeModelAField = new ModelDropdown(document.querySelector('#mergeModelA'), 'stable-diffusion')
-    let mergeModelBField = new ModelDropdown(document.querySelector('#mergeModelB'), 'stable-diffusion')
+    console.log("Activate")
+    let mergeModelAField = new ModelDropdown(document.querySelector("#mergeModelA"), "stable-diffusion")
+    let mergeModelBField = new ModelDropdown(document.querySelector("#mergeModelB"), "stable-diffusion")
     updateChart()
 
     // slider
-    const singleMergeRatioField = document.querySelector('#single-merge-ratio')
-    const singleMergeRatioSlider = document.querySelector('#single-merge-ratio-slider')
+    const singleMergeRatioField = document.querySelector("#single-merge-ratio")
+    const singleMergeRatioSlider = document.querySelector("#single-merge-ratio-slider")
 
     function updateSingleMergeRatio() {
         singleMergeRatioField.value = singleMergeRatioSlider.value / 10
@@ -359,21 +378,21 @@
         singleMergeRatioSlider.dispatchEvent(new Event("change"))
     }
 
-    singleMergeRatioSlider.addEventListener('input', updateSingleMergeRatio)
-    singleMergeRatioField.addEventListener('input', updateSingleMergeRatioSlider)
+    singleMergeRatioSlider.addEventListener("input", updateSingleMergeRatio)
+    singleMergeRatioField.addEventListener("input", updateSingleMergeRatioSlider)
     updateSingleMergeRatio()
 
-    document.querySelector('.merge-config').addEventListener('change', updateChart)
+    document.querySelector(".merge-config").addEventListener("change", updateChart)
 
-    document.querySelector('#merge-button').addEventListener('click', async function(e) {
+    document.querySelector("#merge-button").addEventListener("click", async function(e) {
         // Build request template
         let model0 = mergeModelAField.value
         let model1 = mergeModelBField.value
         let request = { model0: model0, model1: model1 }
-        request['use_fp16'] = document.querySelector('#merge-fp').value == 'fp16'
-        let iterations = document.querySelector('#merge-count').value>>0
-        let start = parseFloat( document.querySelector('#merge-start').value )
-        let step = parseFloat( document.querySelector('#merge-step').value )
+        request["use_fp16"] = document.querySelector("#merge-fp").value == "fp16"
+        let iterations = document.querySelector("#merge-count").value >> 0
+        let start = parseFloat(document.querySelector("#merge-start").value)
+        let step = parseFloat(document.querySelector("#merge-step").value)
 
         if (isTabActive(tabSettingsSingle)) {
             start = parseFloat(singleMergeRatioField.value)
@@ -385,74 +404,74 @@
             addLogMessage(`step  = ${step}%`)
         }
 
-        if (start + (iterations-1) * step >= 100) {
-            addLogMessage('<i>Aborting: maximum ratio is &#8805; 100%</i>')
-            addLogMessage('Reduce the number of variations or the step size')
+        if (start + (iterations - 1) * step >= 100) {
+            addLogMessage("<i>Aborting: maximum ratio is &#8805; 100%</i>")
+            addLogMessage("Reduce the number of variations or the step size")
             addLogSeparator()
-            document.querySelector('#merge-count').focus()
+            document.querySelector("#merge-count").focus()
             return
         }
 
-        if (document.querySelector('#merge-filename').value == "") {
-            addLogMessage('<i>Aborting: No output file name specified</i>')
+        if (document.querySelector("#merge-filename").value == "") {
+            addLogMessage("<i>Aborting: No output file name specified</i>")
             addLogSeparator()
-            document.querySelector('#merge-filename').focus()
+            document.querySelector("#merge-filename").focus()
             return
         }
-        
+
         // Disable merge button
-        e.target.disabled=true
-        e.target.classList.add('disabled')
-        let cursor = $("body").css("cursor");
-        let label = document.querySelector('#merge-button').innerHTML
-        $("body").css("cursor", "progress");
-        document.querySelector('#merge-button').innerHTML = 'Merging models ...'
+        e.target.disabled = true
+        e.target.classList.add("disabled")
+        let cursor = $("body").css("cursor")
+        let label = document.querySelector("#merge-button").innerHTML
+        $("body").css("cursor", "progress")
+        document.querySelector("#merge-button").innerHTML = "Merging models ..."
 
         addLogMessage("Merging models")
-        addLogMessage("Model A: "+model0)
-        addLogMessage("Model B: "+model1)
+        addLogMessage("Model A: " + model0)
+        addLogMessage("Model B: " + model1)
 
         // Batch main loop
-        for (let i=0; i<iterations; i++) {
-            let alpha = ( start + i * step ) / 100
-            switch (document.querySelector('#merge-interpolation').value) {
-                case 'SmoothStep':
+        for (let i = 0; i < iterations; i++) {
+            let alpha = (start + i * step) / 100
+            switch (document.querySelector("#merge-interpolation").value) {
+                case "SmoothStep":
                     alpha = smoothstep(alpha)
                     break
-                case 'SmootherStep':
+                case "SmootherStep":
                     alpha = smootherstep(alpha)
                     break
-                case 'SmoothestStep':
+                case "SmoothestStep":
                     alpha = smootheststep(alpha)
                     break
             }
-            addLogMessage(`merging batch job ${i+1}/${iterations}, alpha = ${alpha.toFixed(5)}...`)
+            addLogMessage(`merging batch job ${i + 1}/${iterations}, alpha = ${alpha.toFixed(5)}...`)
 
-            request['out_path'] = document.querySelector('#merge-filename').value
-            request['out_path'] += '-' + alpha.toFixed(5) + '.' + document.querySelector('#merge-format').value
-            addLogMessage(`&nbsp;&nbsp;filename: ${request['out_path']}`)
+            request["out_path"] = document.querySelector("#merge-filename").value
+            request["out_path"] += "-" + alpha.toFixed(5) + "." + document.querySelector("#merge-format").value
+            addLogMessage(`&nbsp;&nbsp;filename: ${request["out_path"]}`)
 
-            request['ratio'] = alpha
-            let res = await fetch('/model/merge', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(request) })
-            const data = await res.json();
+            request["ratio"] = alpha
+            let res = await fetch("/model/merge", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(request)
+            })
+            const data = await res.json()
             addLogMessage(JSON.stringify(data))
         }
         addLogMessage("<b>Done.</b> The models have been saved to your <tt>models/stable-diffusion</tt> folder.")
         addLogSeparator()
         // Re-enable merge button
-        $("body").css("cursor", cursor);
-        document.querySelector('#merge-button').innerHTML = label
-        e.target.disabled=false
-        e.target.classList.remove('disabled')
+        $("body").css("cursor", cursor)
+        document.querySelector("#merge-button").innerHTML = label
+        e.target.disabled = false
+        e.target.classList.remove("disabled")
 
         // Update model list
-        stableDiffusionModelField.innerHTML = ''
-        vaeModelField.innerHTML = ''
-        hypernetworkModelField.innerHTML = ''
+        stableDiffusionModelField.innerHTML = ""
+        vaeModelField.innerHTML = ""
+        hypernetworkModelField.innerHTML = ""
         await getModels()
     })
-
 })()
