@@ -717,8 +717,6 @@ function createElement(tagName, attributes, classes, textOrElements) {
  * @param {(args) => {}} callback
  */
 Array.prototype.addEventListener = function(method, callback) {
-    console.log(`Array.addEventListener(${method})`)
-
     const originalFunction = this[method]
     if (originalFunction) {
         this[method] = function() {
