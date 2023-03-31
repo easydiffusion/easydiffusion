@@ -672,12 +672,18 @@ class ImageEditor {
 				else {
 					this.history.redo()
 				}
+			        event.stopPropagation();
+				event.preventDefault();
 			}
 			if (event.key == "y" && event.ctrlKey) {
 				this.history.redo()
+			        event.stopPropagation();
+				event.preventDefault();
 			}
 			if (event.key === "Escape") {
 				this.hide()
+			        event.stopPropagation();
+				event.preventDefault();
 			}
 		}
 		
