@@ -691,7 +691,24 @@ async function getFileHash(url) {
     return data.sha;
 }
 
+function refreshAllowed() {
+    const lastRun = localStorage.getItem('plugin_download_last_run');
+    const currentTime = new Date().getTime();
+
+    if (lastRun && currentTime - lastRun < 60 * 60 * 1000) {
+        return false;
+    }
+
+    localStorage.setItem('plugin_download_last_run', currentTime);
+    return true;
+}
+
 async function downloadPlugins(pluginCatalog, plugins, refreshPlugins) {
+    if (refreshAllowed() === false) {
+        console.log('Throttling plugin refresh')
+        return
+    }
+    
     // download the plugins as needed
     for (const plugin of pluginCatalog) {
         //console.log(plugin.id, plugin.url)
