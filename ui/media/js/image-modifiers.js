@@ -129,9 +129,8 @@ function createModifierGroup(modifierGroup, initiallyExpanded, removeBy) {
 }
 
 function trimModifiers(tag) {
-    // Remove trailing '-' and/or '+'
-    return tag.replace(/[-+]+$/, '');
-}
+    // Remove parentheses at beginning and end
+    return tag.replace(/^[(]+|[\s)]+$/g, '');}
 
 async function loadModifiers() {
     try {
