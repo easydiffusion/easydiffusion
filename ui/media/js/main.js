@@ -21,6 +21,7 @@ const taskConfigSetup = {
         use_hypernetwork_model: 'Hypernetwork',
         hypernetwork_strength: { label: 'Hypernetwork Strength', visible: ({ reqBody }) => !!reqBody?.use_hypernetwork_model },
         use_lora_model: { label: 'Lora Model', visible: ({ reqBody }) => !!reqBody?.use_lora_model },
+        lora_alpha: { label: 'Lora Strength', visible: ({ reqBody }) => !!reqBody?.use_lora_model },
         preserve_init_image_color_profile: 'Preserve Color Profile',
     },
     pluginTaskConfig: {},
@@ -1155,8 +1156,9 @@ function getCurrentUserRequest() {
         newTask.reqBody.use_hypernetwork_model = hypernetworkModelField.value
         newTask.reqBody.hypernetwork_strength = parseFloat(hypernetworkStrengthField.value)
     }
-    if (testDiffusers.checked) {
+    if (testDiffusers.checked && loraModelField.value) {
         newTask.reqBody.use_lora_model = loraModelField.value
+        newTask.reqBody.lora_alpha = parseFloat(loraAlphaField.value)
     }
     return newTask
 }
@@ -1527,8 +1529,8 @@ function updateLoraAlpha() {
 function updateLoraAlphaSlider() {
     if (loraAlphaField.value < 0) {
         loraAlphaField.value = 0
-    } else if (loraAlphaField.value > 0.99) {
-        loraAlphaField.value = 0.99
+    } else if (loraAlphaField.value > 1) {
+        loraAlphaField.value = 1
     }
 
     loraAlphaSlider.value = loraAlphaField.value * 100
@@ -1539,12 +1541,11 @@ loraAlphaSlider.addEventListener('input', updateLoraAlpha)
 loraAlphaField.addEventListener('input', updateLoraAlphaSlider)
 updateLoraAlpha()
 
-// function updateLoraAlphaContainer() {
-//     document.querySelector("#lora_alpha_container").style.display = (loraModelField.value === "" ? 'none' : '')
-// }
-// loraModelField.addEventListener('change', updateLoraAlphaContainer)
-// updateLoraAlphaContainer()
-document.querySelector("#lora_alpha_container").style.display = 'none'
+function updateLoraAlphaContainer() {
+    document.querySelector("#lora_alpha_container").style.display = (loraModelField.value === "" ? 'none' : '')
+}
+loraModelField.addEventListener('change', updateLoraAlphaContainer)
+updateLoraAlphaContainer()
 
 /********************* JPEG/WEBP Quality **********************/
 function updateOutputQuality() {
