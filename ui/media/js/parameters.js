@@ -309,6 +309,8 @@ async function getAppConfig() {
         if (config.update_branch === 'beta') {
             useBetaChannelField.checked = true
             document.querySelector("#updateBranchLabel").innerText = "(beta)"
+        } else {
+            getParameterSettingsEntry("test_diffusers").style.display = "none"
         }
         if (config.ui && config.ui.open_browser_on_start === false) {
             uiOpenBrowserOnStartField.checked = false
@@ -320,7 +322,7 @@ async function getAppConfig() {
             listenPortField.value = config.net.listen_port
         }
         if (config.test_diffusers !== undefined) {
-            testDiffusers.checked = config.test_diffusers
+            testDiffusers.checked = config.test_diffusers && config.update_branch === 'beta'
             document.querySelector("#lora_model_container").style.display = (testDiffusers.checked ? '' : 'none')
         }
 

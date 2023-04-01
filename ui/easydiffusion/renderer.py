@@ -29,7 +29,9 @@ def init(device):
     from easydiffusion import app
 
     app_config = app.getConfig()
-    context.test_diffusers = app_config.get("test_diffusers", False)
+    context.test_diffusers = (
+        app_config.get("test_diffusers", False) and app_config.get("update_branch", "main") != "main"
+    )
 
     device_manager.device_init(context, device)
 
