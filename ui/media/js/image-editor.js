@@ -512,13 +512,13 @@ class ImageEditor {
 	}
 	show() {
 		this.popup.classList.add("active")
-		document.addEventListener("keydown", this.keyHandlerBound)
-		document.addEventListener("keyup", this.keyHandlerBound)
+		document.addEventListener("keydown", this.keyHandlerBound, true)
+		document.addEventListener("keyup", this.keyHandlerBound, true)
 	}
 	hide() {
 		this.popup.classList.remove("active")
-		document.removeEventListener("keydown", this.keyHandlerBound)
-		document.removeEventListener("keyup", this.keyHandlerBound)
+		document.removeEventListener("keydown", this.keyHandlerBound, true)
+		document.removeEventListener("keyup", this.keyHandlerBound, true)
 	}
 	setSize(width, height) {
 		if (width == this.width && height == this.height) {
