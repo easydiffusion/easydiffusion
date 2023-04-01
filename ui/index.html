@@ -469,6 +469,7 @@ async function init() {
     await loadUIPlugins()
     await loadModifiers()
     await getSystemInfo()
+    await initPlugins();
 
     SD.init({
         events: {

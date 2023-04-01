@@ -600,7 +600,6 @@ async function initPlugins(refreshPlugins = false) {
     
     initPluginsInProgress = false
 }
-initPlugins()
 
 function updateCompatIssueIds() {
     // Loop through each plugin
