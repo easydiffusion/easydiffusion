@@ -28,7 +28,7 @@ TASK_TEXT_MAPPING = {
     "use_hypernetwork_model": "Hypernetwork model",
     "hypernetwork_strength": "Hypernetwork Strength",
     "use_lora_model": "LoRA model",
-    # "lora_alpha": "LoRA Strength",
+    "lora_alpha": "LoRA Strength",
 }
 
 
