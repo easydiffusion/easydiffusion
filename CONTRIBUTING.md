@@ -42,8 +42,6 @@ or for Windows
 10) Congrats, now any changes you make in your repo `ui` folder are linked to this running archive of the app and can be previewed in the browser.
 11) Please update CHANGES.md in your pull requests.
 
-Check the `ui/frontend/build/README.md` for instructions on running and building the React code.
-
 ## Development environment for Installer changes
 Build the Windows installer using Windows, and the Linux installer using Linux. Don't mix the two, and don't use WSL. An Ubuntu VM is fine for building the Linux installer on a Windows host.
 

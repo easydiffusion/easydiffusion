@@ -5,6 +5,28 @@ const MIN_GPUS_TO_SHOW_SELECTION = 2
 const IMAGE_REGEX = new RegExp('data:image/[A-Za-z]+;base64')
 const htmlTaskMap = new WeakMap()
 
+const taskConfigSetup = {
+    taskConfig: {
+        seed: { value: ({ seed }) => seed, label: 'Seed' },
+        dimensions: { value: ({ reqBody }) => `${reqBody?.width}x${reqBody?.height}`, label: 'Dimensions' },
+        sampler_name: 'Sampler',
+        num_inference_steps: 'Inference Steps',
+        guidance_scale: 'Guidance Scale',
+        use_stable_diffusion_model: 'Model',
+        use_vae_model: { label: 'VAE', visible: ({ reqBody }) => reqBody?.use_vae_model !== undefined && reqBody?.use_vae_model.trim() !== ''},
+        negative_prompt: { label: 'Negative Prompt', visible: ({ reqBody }) => reqBody?.negative_prompt !== undefined && reqBody?.negative_prompt.trim() !== ''},
+        prompt_strength: 'Prompt Strength',
+        use_face_correction: 'Fix Faces',
+        upscale: { value: ({ reqBody }) => `${reqBody?.use_upscale} (${reqBody?.upscale_amount || 4}x)`, label: 'Upscale', visible: ({ reqBody }) => !!reqBody?.use_upscale },
+        use_hypernetwork_model: 'Hypernetwork',
+        hypernetwork_strength: { label: 'Hypernetwork Strength', visible: ({ reqBody }) => !!reqBody?.use_hypernetwork_model },
+        use_lora_model: { label: 'Lora Model', visible: ({ reqBody }) => !!reqBody?.use_lora_model },
+        preserve_init_image_color_profile: 'Preserve Color Profile',
+    },
+    pluginTaskConfig: {},
+    getCSSKey: (key) => key.split('_').map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join('')
+}
+
 let imageCounter = 0
 let imageRequest = []
 
@@ -50,6 +72,8 @@ let loraModelField = new ModelDropdown(document.querySelector('#lora_model'), 'l
 let loraAlphaSlider = document.querySelector('#lora_alpha_slider')
 let loraAlphaField = document.querySelector('#lora_alpha')
 let outputFormatField = document.querySelector('#output_format')
+let outputLosslessField = document.querySelector('#output_lossless')
+let outputLosslessContainer = document.querySelector('#output_lossless_container')
 let blockNSFWField = document.querySelector('#block_nsfw')
 let showOnlyFilteredImageField = document.querySelector("#show_only_filtered_image")
 let updateBranchLabel = document.querySelector("#updateBranchLabel")
@@ -86,6 +110,11 @@ const processOrder = document.querySelector('#process_order_toggle')
 
 let imagePreview = document.querySelector("#preview")
 let imagePreviewContent = document.querySelector("#preview-content")
+
+let undoButton = document.querySelector("#undo")
+let undoBuffer = []
+const UNDO_LIMIT = 20
+
 imagePreview.addEventListener('drop', function(ev) {
     const data = ev.dataTransfer?.getData("text/plain");
     if (!data) {
@@ -254,6 +283,42 @@ function playSound() {
     }
 }
 
+function undoableRemove(element, doubleUndo=false) {
+    let data = { 'element': element, 'parent': element.parentNode, 'prev': element.previousSibling, 'next': element.nextSibling, 'doubleUndo': doubleUndo }
+    undoBuffer.push(data)
+    if (undoBuffer.length > UNDO_LIMIT) {
+        // Remove item from memory and also remove it from the data structures
+        let item = undoBuffer.shift()
+        htmlTaskMap.delete(item.element)
+        item.element.querySelectorAll('[data-imagecounter]').forEach( (img) => { delete imageRequest[img.dataset['imagecounter']] })
+    }
+    element.remove()
+    if (undoBuffer.length != 0) {
+        undoButton.classList.remove('displayNone')
+    }
+}
+
+function undoRemove() {
+    let data = undoBuffer.pop()
+    if (!data) {
+        return
+    }
+    if (data.next == null) {
+        data.parent.appendChild(data.element)
+    } else {
+        data.parent.insertBefore(data.element, data.next)
+    }
+    if (data.doubleUndo) {
+        undoRemove()
+    }
+    if (undoBuffer.length == 0) {
+        undoButton.classList.add('displayNone')
+    }
+    updateInitialText()
+}
+
+undoButton.addEventListener('click', () =>  { undoRemove() })
+
 function showImages(reqBody, res, outputContainer, livePreview) {
     let imageItemElements = outputContainer.querySelectorAll('.imgItem')
     if(typeof res != 'object') return
@@ -293,21 +358,19 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             const imageRemoveBtn = imageItemElem.querySelector('.imgPreviewItemClearBtn')
             let parentTaskContainer = imageRemoveBtn.closest('.imageTaskContainer')
             imageRemoveBtn.addEventListener('click', (e) => {
-                shiftOrConfirm(e, "Remove the image from the results?", () => { 
-                    imageItemElem.style.display = 'none' 
-                    let allHidden = true;
-                    let children = parentTaskContainer.querySelectorAll('.imgItem');
-                    for(let x = 0; x < children.length; x++) {
-                        let child = children[x];
-                        if(child.style.display != "none") {
-                            allHidden = false;
-                        }
+                undoableRemove(imageItemElem)
+                let allHidden = true;
+                let children = parentTaskContainer.querySelectorAll('.imgItem');
+                for(let x = 0; x < children.length; x++) {
+                    let child = children[x];
+                    if(child.style.display != "none") {
+                        allHidden = false;
                     }
-                    if(allHidden === true) {
-                        const req = htmlTaskMap.get(parentTaskContainer)
-                        if(!req.isProcessing || req.batchesDone == req.batchCount) {parentTaskContainer.parentNode.removeChild(parentTaskContainer)}
-                    }
-                })
+                }
+                if(allHidden === true) {
+                    const req = htmlTaskMap.get(parentTaskContainer)
+                    if(!req.isProcessing || req.batchesDone == req.batchCount) { undoableRemove(parentTaskContainer, true) }
+                }
             })
         }
         const imageElem = imageItemElem.querySelector('img')
@@ -569,7 +632,7 @@ function makeImage() {
     }))
     newTaskRequests.forEach(createTask)
 
-    initialText.style.display = 'none'
+    updateInitialText()
 }
 
 async function onIdle() {
@@ -867,7 +930,7 @@ async function onTaskStart(task) {
     setStatus('request', 'fetching..')
     renderButtons.style.display = 'flex'
     renameMakeImageButton()
-    previewTools.style.display = 'block'
+    updateInitialText()
 }
 
 /* Hover effect for the init image in the task list */
@@ -905,6 +968,29 @@ function onTaskEntryDragOver(event) {
     }
 }
 
+function generateConfig({ label, value, visible, cssKey }) {
+    if (!visible) return null;
+    return `<div class="taskConfigContainer task${cssKey}Container"><b>${label}:</b> <span class="task${cssKey}">${value}`
+}
+
+function getVisibleConfig(config, task) {
+    const mergedTaskConfig = { ...config.taskConfig, ...config.pluginTaskConfig }
+    return Object.keys(mergedTaskConfig)
+        .map((key) => {
+            const value = mergedTaskConfig?.[key]?.value?.(task) ?? task.reqBody[key]
+            const visible = mergedTaskConfig?.[key]?.visible?.(task) ?? value !== undefined ?? true
+            const label = mergedTaskConfig?.[key]?.label ?? mergedTaskConfig?.[key]
+            const cssKey = config.getCSSKey(key)
+            return { label, visible, value, cssKey }
+        })
+        .map((obj) => generateConfig(obj))
+        .filter(obj => obj)
+}
+
+function createTaskConfig(task) {
+    return getVisibleConfig(taskConfigSetup, task).join('</span>,&nbsp;</div>')
+}
+
 function createTask(task) {
     let taskConfig = ''
 
@@ -913,33 +999,8 @@ function createTask(task) {
         let w = task.reqBody.width * h / task.reqBody.height >>0
         taskConfig += `<div class="task-initimg" style="float:left;"><img style="width:${w}px;height:${h}px;" src="${task.reqBody.init_image}"><div class="task-fs-initimage"></div></div>`
     }
-    taskConfig += `<b>Seed:</b> ${task.seed}, <b>Sampler:</b> ${task.reqBody.sampler_name}, <b>Inference Steps:</b> ${task.reqBody.num_inference_steps}, <b>Guidance Scale:</b> ${task.reqBody.guidance_scale}, <b>Model:</b> ${task.reqBody.use_stable_diffusion_model}`
 
-    if (task.reqBody.use_vae_model.trim() !== '') {
-        taskConfig += `, <b>VAE:</b> ${task.reqBody.use_vae_model}`
-    }
-    if (task.reqBody.negative_prompt.trim() !== '') {
-        taskConfig += `, <b>Negative Prompt:</b> ${task.reqBody.negative_prompt}`
-    }
-    if (task.reqBody.init_image !== undefined) {
-        taskConfig += `, <b>Prompt Strength:</b> ${task.reqBody.prompt_strength}`
-    }
-    if (task.reqBody.use_face_correction) {
-        taskConfig += `, <b>Fix Faces:</b> ${task.reqBody.use_face_correction}`
-    }
-    if (task.reqBody.use_upscale) {
-        taskConfig += `, <b>Upscale:</b> ${task.reqBody.use_upscale} (${task.reqBody.upscale_amount || 4}x)`
-    }
-    if (task.reqBody.use_hypernetwork_model) {
-        taskConfig += `, <b>Hypernetwork:</b> ${task.reqBody.use_hypernetwork_model}`
-        taskConfig += `, <b>Hypernetwork Strength:</b> ${task.reqBody.hypernetwork_strength}`
-    }
-    if (task.reqBody.use_lora_model) {
-        taskConfig += `, <b>LoRA:</b> ${task.reqBody.use_lora_model}`
-    }
-    if (task.reqBody.preserve_init_image_color_profile) {
-        taskConfig += `, <b>Preserve Color Profile:</b> true`
-    }
+    taskConfig += `<div class="taskConfigData">${createTaskConfig(task)}</span></div></div>`;
 
     let taskEntry = document.createElement('div')
     taskEntry.id = `imageTaskContainer-${Date.now()}`
@@ -999,13 +1060,16 @@ function createTask(task) {
     task['stopTask'].addEventListener('click', (e) => {
         e.stopPropagation()
 
-        let question = (task['isProcessing'] ? "Stop this task?" : "Remove this task?")
-        shiftOrConfirm(e, question, async function(e) {
-            if (task.batchesDone <= 0 || !task.isProcessing) {
-                removeTask(taskEntry)
-            }
-            abortTask(task)
-        })
+        if (task['isProcessing']) {
+            shiftOrConfirm(e, "Stop this task?", async function(e) {
+                if (task.batchesDone <= 0 || !task.isProcessing) {
+                    removeTask(taskEntry)
+                }
+                abortTask(task)
+            })
+        } else {
+            removeTask(taskEntry)
+        }
     })
 
     task['useSettings'] = taskEntry.querySelector('.useSettings')
@@ -1035,7 +1099,6 @@ function getCurrentUserRequest() {
         numOutputsTotal: numOutputsTotal,
         batchCount: Math.ceil(numOutputsTotal / numOutputsParallel),
         seed,
-
         reqBody: {
             seed,
             used_random_seed: randomSeedField.checked,
@@ -1057,6 +1120,7 @@ function getCurrentUserRequest() {
             block_nsfw: blockNSFWField.checked,
             output_format: outputFormatField.value,
             output_quality: parseInt(outputQualityField.value),
+            output_lossless: outputLosslessField.checked,
             metadata_output_format: metadataOutputFormatField.value,
             original_prompt: promptField.value,
             active_tags: (activeTags.map(x => x.name)),
@@ -1066,7 +1130,6 @@ function getCurrentUserRequest() {
     if (IMAGE_REGEX.test(initImagePreview.src)) {
         newTask.reqBody.init_image = initImagePreview.src
         newTask.reqBody.prompt_strength = parseFloat(promptStrengthField.value)
-
         // if (IMAGE_REGEX.test(maskImagePreview.src)) {
         //     newTask.reqBody.mask = maskImagePreview.src
         // }
@@ -1192,31 +1255,10 @@ function createFileName(prompt, seed, steps, guidance, outputFormat) {
 
     // Most important information is the prompt
     let underscoreName = prompt.replace(/[^a-zA-Z0-9]/g, '_')
-    underscoreName = underscoreName.substring(0, 100)
-    //const steps = numInferenceStepsField.value
-    //const guidance =  guidanceScaleField.value
+    underscoreName = underscoreName.substring(0, 70)
 
     // name and the top level metadata
-    let fileName = `${underscoreName}_Seed-${seed}_Steps-${steps}_Guidance-${guidance}`
-
-    // add the tags
-    // let tags = []
-    // let tagString = ''
-    // document.querySelectorAll(modifyTagsSelector).forEach(function(tag) {
-    //     tags.push(tag.innerHTML)
-    // })
-
-    // join the tags with a pipe
-    // if (activeTags.length > 0) {
-    //     tagString = '_Tags-'
-    //     tagString += tags.join('|')
-    // }
-
-    // // append empty or populated tags
-    // fileName += `${tagString}`
-
-    // add the file extension
-    fileName += '.' + outputFormat
+    let fileName = `${underscoreName}_S${seed}_St${steps}_G${guidance}.${outputFormat}`
 
     return fileName
 }
@@ -1235,13 +1277,21 @@ async function stopAllTasks() {
     })
 }
 
-function removeTask(taskToRemove) {
-    taskToRemove.remove()
-
+function updateInitialText() {
     if (document.querySelector('.imageTaskContainer') === null) {
-        previewTools.style.display = 'none'
-        initialText.style.display = 'block'
+        if (undoBuffer.length == 0) {
+            previewTools.classList.add('displayNone')
+        }
+        initialText.classList.remove('displayNone')
+    } else {
+        initialText.classList.add('displayNone')
+        previewTools.classList.remove('displayNone')
     }
+}
+
+function removeTask(taskToRemove) {
+    undoableRemove(taskToRemove)
+    updateInitialText()
 }
 
 clearAllPreviewsBtn.addEventListener('click', (e) => { shiftOrConfirm(e, "Clear all the results and tasks in this window?", async function() {
@@ -1296,7 +1346,7 @@ function downloadAllImages() {
 
     document.querySelectorAll(".imageTaskContainer").forEach(container => {
         if (optTree) {
-            let name = ++i + '-' + container.querySelector('.preview-prompt').textContent.replace(/[^a-zA-Z0-9]/g, '_') 
+            let name = ++i + '-' + container.querySelector('.preview-prompt').textContent.replace(/[^a-zA-Z0-9]/g, '_').substring(0,25)
             folder = zip.folder(name)
         }
         container.querySelectorAll(".imgContainer img").forEach(img => {
@@ -1325,9 +1375,9 @@ function downloadAllImages() {
         })
     })
     if (optZIP) {
-        let now = new Date()
+        let now = Date.now().toString(36).toUpperCase()
         zip.generateAsync({type:"blob"}).then(function (blob) { 
-            saveAs(blob, `EasyDiffusion-Images-${now.toISOString()}.zip`);
+            saveAs(blob, `EasyDiffusion-Images-${now}.zip`);
         })
     }
 
@@ -1517,13 +1567,26 @@ outputQualitySlider.addEventListener('input', updateOutputQuality)
 outputQualityField.addEventListener('input', debounce(updateOutputQualitySlider, 1500))
 updateOutputQuality()
 
-outputFormatField.addEventListener('change', e => {
-    if (outputFormatField.value === 'png') {
-        outputQualityRow.style.display='none'
-    } else {
-        outputQualityRow.style.display='table-row'
+function updateOutputQualityVisibility() {
+    if (outputFormatField.value === 'webp') {
+        outputLosslessContainer.classList.remove('displayNone')
+        if (outputLosslessField.checked) {
+            outputQualityRow.classList.add('displayNone')
+        } else {
+            outputQualityRow.classList.remove('displayNone')
+        }
     }
-})
+    else if (outputFormatField.value === 'png') {
+        outputQualityRow.classList.add('displayNone')
+        outputLosslessContainer.classList.add('displayNone')
+    } else {
+        outputQualityRow.classList.remove('displayNone')
+        outputLosslessContainer.classList.add('displayNone')
+    }
+}
+
+outputFormatField.addEventListener('change', updateOutputQualityVisibility)
+outputLosslessField.addEventListener('change', updateOutputQualityVisibility)
 /********************* Zoom Slider **********************/
 thumbnailSizeField.addEventListener('change', () => {
     (function (s) {

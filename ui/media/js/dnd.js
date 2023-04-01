@@ -97,6 +97,7 @@ const TASK_MAPPING = {
                 return
             }
             randomSeedField.checked = false
+            randomSeedField.dispatchEvent(new Event('change')) // let plugins know that the state of the random seed toggle changed
             seedField.disabled = false
             seedField.value = seed
         },
@@ -228,6 +229,20 @@ const TASK_MAPPING = {
             vaeModelField.value = use_vae_model
         },
         readUI: () => vaeModelField.value,
+        parse: (val) => val
+    },
+    use_lora_model: { name: 'LoRA model',
+        setUI: (use_lora_model) => {
+            const oldVal = loraModelField.value
+            use_lora_model = (use_lora_model === undefined || use_lora_model === null || use_lora_model === 'None' ? '' : use_lora_model)
+
+            if (use_lora_model !== '') {
+                use_lora_model = getModelPath(use_lora_model, ['.ckpt', '.safetensors'])
+                use_lora_model = use_lora_model !== '' ? use_lora_model : oldVal
+            }
+            loraModelField.value = use_lora_model
+        },
+        readUI: () => loraModelField.value,
         parse: (val) => val
     },
     use_hypernetwork_model: { name: 'Hypernetwork model',
