@@ -21,6 +21,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.30 - 1 Apr 2023 - Slider to control the strength of the LoRA model.
 * 2.5.30 - 28 Mar 2023 - Refactor task entry config to use a generating method. Added ability for plugins to easily add to this. Removed confusing sentence from `contributing.md`
 * 2.5.30 - 28 Mar 2023 - Allow the user to undo the deletion of tasks or images, instead of showing a pop-up each time. The new `Undo` button will be present at the top of the UI. Thanks @JeLuf.
 * 2.5.30 - 28 Mar 2023 - Support saving lossless WEBP images. Thanks @ogmaresca.
