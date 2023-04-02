@@ -558,44 +558,46 @@ async function initPlugins(refreshPlugins = false) {
     }
 
     // update plugins asynchronously (updated versions will be available next time the UI is loaded)
-    let pluginCatalog = await getDocument(PLUGIN_CATALOG)
-    if (pluginCatalog !== null) {
-        try {
-            pluginCatalog = JSON.parse(pluginCatalog);
-            console.log('Plugin catalog successfully downloaded');
-            if (pluginCatalog.length > plugins.length) {
-                showToast("New plugins are available");
+    if(refreshAllowed()) {
+        let pluginCatalog = await getDocument(PLUGIN_CATALOG)
+        if (pluginCatalog !== null) {
+            try {
+                pluginCatalog = JSON.parse(pluginCatalog);
+                console.log('Plugin catalog successfully downloaded');
+                if (pluginCatalog.length > plugins.length) {
+                    showToast("New plugins are available");
+                }
+            } catch (error) {
+                console.error('Error parsing plugin catalog:', error);
             }
-        } catch (error) {
-            console.error('Error parsing plugin catalog:', error);
-        }
-        
-        await downloadPlugins(pluginCatalog, plugins, refreshPlugins)
 
-        // update compatIssueIds
-        updateCompatIssueIds()
-        
-        // remove plugins that don't meet the min ED version requirement
-        plugins = filterPluginsByMinEDVersion(plugins, EasyDiffusionVersion)
-        
-        // remove from plugins the entries that don't have mandatory fields (id, name, url)
-        plugins = plugins.filter((plugin) => { return plugin.id !== '' && plugin.name !== '' && plugin.url !== ''; });
-        
-        // remove from plugins the entries that no longer exist in the catalog
-        plugins = plugins.filter((plugin) => { return pluginCatalog.find((p) => p.id === plugin.id) });
-        
-        // save the remaining plugins            
-        await setStorageData('plugins', JSON.stringify(plugins))
+            await downloadPlugins(pluginCatalog, plugins, refreshPlugins)
 
-        // refresh the display of the plugins table
-        initPluginTable(plugins)
-        if (pluginsLoaded && pluginsLoaded === false) {
-            loadPlugins(plugins)
+            // update compatIssueIds
+            updateCompatIssueIds()
+
+            // remove plugins that don't meet the min ED version requirement
+            plugins = filterPluginsByMinEDVersion(plugins, EasyDiffusionVersion)
+
+            // remove from plugins the entries that don't have mandatory fields (id, name, url)
+            plugins = plugins.filter((plugin) => { return plugin.id !== '' && plugin.name !== '' && plugin.url !== ''; });
+
+            // remove from plugins the entries that no longer exist in the catalog
+            plugins = plugins.filter((plugin) => { return pluginCatalog.find((p) => p.id === plugin.id) });
+
+            // save the remaining plugins            
+            await setStorageData('plugins', JSON.stringify(plugins))
+
+            // refresh the display of the plugins table
+            initPluginTable(plugins)
+            if (pluginsLoaded && pluginsLoaded === false) {
+                loadPlugins(plugins)
+            }
         }
-    }
-    else
-    {
-        console.error('Could not download the plugin catalog from ' + PLUGIN_CATALOG)
+        else
+        {
+            console.error('Could not download the plugin catalog from ' + PLUGIN_CATALOG)
+        }
     }
     
     initPluginsInProgress = false
@@ -691,24 +693,22 @@ async function getFileHash(url) {
     return data.sha;
 }
 
+// only allow two refresh per hour
 function refreshAllowed() {
-    const lastRun = localStorage.getItem('plugin_download_last_run');
+    const lastRuns = JSON.parse(localStorage.getItem('lastRuns') || '[]');
     const currentTime = new Date().getTime();
+    const numRunsLast60Min = lastRuns.filter(run => currentTime - run <= 60 * 60 * 1000).length;
 
-    if (lastRun && currentTime - lastRun < 60 * 60 * 1000) {
+    if (numRunsLast60Min >= 2) {
         return false;
     }
 
-    localStorage.setItem('plugin_download_last_run', currentTime);
+    lastRuns.push(currentTime);
+    localStorage.setItem('lastRuns', JSON.stringify(lastRuns));
     return true;
 }
 
 async function downloadPlugins(pluginCatalog, plugins, refreshPlugins) {
-    if (refreshAllowed() === false) {
-        console.log('Throttling plugin refresh')
-        return
-    }
-    
     // download the plugins as needed
     for (const plugin of pluginCatalog) {
         //console.log(plugin.id, plugin.url)
