@@ -334,7 +334,11 @@ async function initPluginTable(plugins) {
                     const pluginSource = await getDocument(plugin.url);
                     if (pluginSource !== null) {
                         warningElement?.classList.remove("hide");
+                        // Store the current scroll position before navigating away
+                        const currentPosition = window.pageYOffset;
                         initPluginTable(plugins)
+                        // When returning to the page, set the scroll position to the stored value
+                        window.scrollTo(0, currentPosition);
                         plugin.code = pluginSource
                         console.log(`Plugin ${plugin.name} installed`);
                         showToast("Plugin " + plugin.name + " installed");
@@ -348,7 +352,11 @@ async function initPluginTable(plugins) {
                     }
                 } else {
                     warningElement?.classList.add("hide");
+                    // Store the current scroll position before navigating away
+                    const currentPosition = window.pageYOffset;
                     initPluginTable(plugins)
+                    // When returning to the page, set the scroll position to the stored value
+                    window.scrollTo(0, currentPosition);
                 }
                 await setStorageData('plugins', JSON.stringify(plugins))
             })
