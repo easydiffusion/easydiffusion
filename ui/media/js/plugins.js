@@ -171,7 +171,6 @@ const refreshPlugins = document.getElementById("refresh-plugins")
 refreshPlugins.addEventListener("click", async function(event) {
     event.preventDefault()
     await initPlugins(true)
-    showToast('Plugins refreshed')
 })
 
 function showToast(message, duration = 5000, error = false) {
@@ -598,8 +597,16 @@ async function initPlugins(refreshPlugins = false) {
         {
             console.error('Could not download the plugin catalog from ' + PLUGIN_CATALOG)
         }
+        if (refreshPlugins) {
+            showToast('Plugins refreshed')
+        }
     }
-    
+    else
+    {
+        if (refreshPlugins) {
+            showToast('Plugins have been refreshed recently, refresh will be available within 1 hour', 5000, true)
+        }
+    }
     initPluginsInProgress = false
 }
 
@@ -700,6 +707,7 @@ function refreshAllowed() {
     const numRunsLast60Min = lastRuns.filter(run => currentTime - run <= 60 * 60 * 1000).length;
 
     if (numRunsLast60Min >= 2) {
+        console.log(`Next refresh available in ${3600 - Math.round((currentTime - lastRuns[lastRuns.length - 1]) / 1000)} seconds`)
         return false;
     }
 
