@@ -340,7 +340,12 @@ function restoreTaskToUI(task, fieldsToSkip) {
         hypernetworkModelField.value = ""
         hypernetworkModelField.dispatchEvent(new Event("change"))
     }
-
+    
+    if (!('use_lora_model' in task.reqBody)) {
+        loraModelField.value = "None"
+        loraModelField.dispatchEvent(new Event("change"))
+    }
+    
     // restore the original prompt if provided (e.g. use settings), fallback to prompt as needed (e.g. copy/paste or d&d)
     promptField.value = task.reqBody.original_prompt
     if (!('original_prompt' in task.reqBody)) {
