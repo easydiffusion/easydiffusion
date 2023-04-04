@@ -2428,6 +2428,19 @@
             "path": "artist/by_yoshitaka_amano/landscape-0.jpg"
           }
         ]
+      },
+      {
+        "modifier": "by Zdzislaw Beksinski",
+        "previews": [
+          {
+            "name": "portrait",
+            "path": "artist/by_zdzislaw_beksinski/portrait-0.jpg"
+          },
+          {
+            "name": "landscape",
+            "path": "artist/by_zdzislaw_beksinski/landscape-0.jpg"
+          }
+        ]
       }
     ]
   },

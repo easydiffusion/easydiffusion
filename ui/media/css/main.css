@@ -309,8 +309,7 @@ div.img-preview img {
 #server-status {
     position: absolute;
     right: 16px;
-    top: 50%;
-    transform: translateY(-50%);
+    top: 4px;
     text-align: right;
 }
 #server-status-color {
@@ -336,6 +335,7 @@ div.img-preview img {
     position: relative;
     background: var(--background-color4);
     display: flex;
+    padding: 12px 0 0;
 }
 .tab .icon {
     padding-right: 4pt;
@@ -344,8 +344,7 @@ div.img-preview img {
 }
 #logo {
     display: inline;
-    padding: 12px;
-    padding-top: 8px;
+    padding: 0 12px 12px;
     white-space: nowrap;
 }
 #logo h1 {
@@ -559,7 +558,6 @@ div.img-preview img {
     float: right;
 }
 #preview-tools {
-    display: none;
     padding: 4pt;
 }
 #preview-tools .display-settings .dropdown-content {
@@ -574,6 +572,11 @@ div.img-preview img {
     margin-bottom: 5pt;
     margin-top: 5pt;
 }
+
+.taskConfigContainer {
+    display: inline;
+}
+
 .img-batch {
     display: inline;
 }
@@ -881,9 +884,6 @@ input::file-selector-button {
     .tab .icon {
         padding-right: 0px;
     }
-    #server-status {
-        top: 75%;
-    }
     .popup > div {
         padding-left: 5px !important;
         padding-right: 5px !important;
@@ -1126,6 +1126,8 @@ input::file-selector-button {
 .tab-container {
     display: flex;
     align-items: flex-end;
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 
 .tab {

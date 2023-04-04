@@ -171,6 +171,7 @@ const IMAGE_EDITOR_ACTIONS = [
 		icon: "fa-solid fa-xmark",
 		handler: (editor) => {
 			editor.ctx_current.clearRect(0, 0, editor.width, editor.height)
+			imageEditor.setImage(null, editor.width, editor.height) // properly reset the drawing canvas
 		},
 		trackHistory: true
 	},
@@ -511,13 +512,13 @@ class ImageEditor {
 	}
 	show() {
 		this.popup.classList.add("active")
-		document.addEventListener("keydown", this.keyHandlerBound)
-		document.addEventListener("keyup", this.keyHandlerBound)
+		document.addEventListener("keydown", this.keyHandlerBound, true)
+		document.addEventListener("keyup", this.keyHandlerBound, true)
 	}
 	hide() {
 		this.popup.classList.remove("active")
-		document.removeEventListener("keydown", this.keyHandlerBound)
-		document.removeEventListener("keyup", this.keyHandlerBound)
+		document.removeEventListener("keydown", this.keyHandlerBound, true)
+		document.removeEventListener("keyup", this.keyHandlerBound, true)
 	}
 	setSize(width, height) {
 		if (width == this.width && height == this.height) {
@@ -671,12 +672,18 @@ class ImageEditor {
 				else {
 					this.history.redo()
 				}
+				event.stopPropagation();
+				event.preventDefault();
 			}
 			if (event.key == "y" && event.ctrlKey) {
 				this.history.redo()
+				event.stopPropagation();
+				event.preventDefault();
 			}
 			if (event.key === "Escape") {
 				this.hide()
+				event.stopPropagation();
+				event.preventDefault();
 			}
 		}
 		

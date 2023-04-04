@@ -30,7 +30,7 @@
             <h1>
                 <img id="logo_img" src="/media/images/icon-512x512.png" >
                 Easy Diffusion
-                <small>v2.5.26 <span id="updateBranchLabel"></span></small>
+                <small>v2.5.30 <span id="updateBranchLabel"></span></small>
             </h1>
         </div>
         <div id="server-status">
@@ -162,7 +162,7 @@
                             <option value="unipc_snr">UniPC SNR</option>
                             <option value="unipc_tu">UniPC TU</option>
                             <option value="unipc_snr_2">UniPC SNR 2</option>
-                            <option value="unipc_tu_2">UniPC TC 2</option>
+                            <option value="unipc_tu_2">UniPC TU 2</option>
                             <option value="unipc_tq">UniPC TQ</option>
                         </select>
                         <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/How-to-Use#samplers" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about samplers</span></i></a>
@@ -217,6 +217,13 @@
                     <tr class="pl-5"><td><label for="num_inference_steps">Inference Steps:</label></td><td> <input id="num_inference_steps" name="num_inference_steps" size="4" value="25" onkeypress="preventNonNumericalInput(event)"></td></tr>
                     <tr class="pl-5"><td><label for="guidance_scale_slider">Guidance Scale:</label></td><td> <input id="guidance_scale_slider" name="guidance_scale_slider" class="editor-slider" value="75" type="range" min="11" max="500"> <input id="guidance_scale" name="guidance_scale" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"></td></tr>
                     <tr id="prompt_strength_container" class="pl-5"><td><label for="prompt_strength_slider">Prompt Strength:</label></td><td> <input id="prompt_strength_slider" name="prompt_strength_slider" class="editor-slider" value="80" type="range" min="0" max="99"> <input id="prompt_strength" name="prompt_strength" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"><br/></td></tr>
+                    <tr id="lora_model_container" class="pl-5"><td><label for="lora_model">LoRA:</i></label></td><td>
+                        <input id="lora_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
+                    </td></tr>
+                    <tr id="lora_alpha_container" class="pl-5">
+                        <td><label for="lora_alpha_slider">LoRA strength:</label></td>
+                        <td> <input id="lora_alpha_slider" name="lora_alpha_slider" class="editor-slider" value="50" type="range" min="0" max="100"> <input id="lora_alpha" name="lora_alpha" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"><br/></td>
+                    </tr>
                     <tr class="pl-5"><td><label for="hypernetwork_model">Hypernetwork:</i></label></td><td>
                         <input id="hypernetwork_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
                     </td></tr>
@@ -230,6 +237,9 @@
                             <option value="png">png</option>
                             <option value="webp">webp</option>
                         </select>
+                        <span id="output_lossless_container" class="displayNone">
+                            <input id="output_lossless" name="output_lossless" type="checkbox"><label for="output_lossless">Lossless</label></td></tr>
+                        </span>
                     </td></tr>
                     <tr class="pl-5" id="output_quality_row"><td><label for="output_quality">Image Quality:</label></td><td>
                     <input id="output_quality_slider" name="output_quality" class="editor-slider" value="75" type="range" min="10" max="95"> <input id="output_quality" name="output_quality" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)">
@@ -282,18 +292,16 @@
         </div>
 
         <div id="preview" class="col-free">
-            <div id="initial-text">
-                Type a prompt and press the "Make Image" button.<br/><br/>You can set an "Initial Image" if you want to guide the AI.<br/><br/>
-                You can also add modifiers like "Realistic", "Pencil Sketch", "ArtStation" etc by browsing through the "Image Modifiers" section 
-                and selecting the desired modifiers.<br/><br/>
-                Click "Image Settings" for additional settings like seed, image size, number of images to generate etc.<br/><br/>Enjoy! :)
-            </div>
 
             <div id="preview-content">
-                <div id="preview-tools">
+                <div id="preview-tools" class="displayNone">
                     <button id="clear-all-previews" class="secondaryButton"><i class="fa-solid fa-trash-can icon"></i> Clear All</button>
                     <button class="tertiaryButton" id="show-download-popup"><i class="fa-solid fa-download"></i> Download images</button>
                     <div class="display-settings">
+                        <button id="undo" class="displayNone primaryButton">
+                            Undo <i class="fa-solid fa-rotate-left icon"></i>
+                            <span class="simple-tooltip left">Undo last remove</span>
+                        </button>
                         <span class="auto-scroll"></span> <!-- hack for Rabbit Hole update -->
                         <button id="auto_scroll_btn" class="tertiaryButton">
                             <i class="fa-solid fa-arrows-up-to-line icon"></i>
@@ -317,6 +325,12 @@
                     </div>
                     <div class="clearfix" style="clear: both;"></div>
                 </div>
+            </div>
+            <div id="initial-text">
+                Type a prompt and press the "Make Image" button.<br/><br/>You can set an "Initial Image" if you want to guide the AI.<br/><br/>
+                You can also add modifiers like "Realistic", "Pencil Sketch", "ArtStation" etc by browsing through the "Image Modifiers" section 
+                and selecting the desired modifiers.<br/><br/>
+                Click "Image Settings" for additional settings like seed, image size, number of images to generate etc.<br/><br/>Enjoy! :)
             </div>
         </div>
         </div>

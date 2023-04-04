@@ -27,6 +27,8 @@ TASK_TEXT_MAPPING = {
     "use_vae_model": "VAE model",
     "use_hypernetwork_model": "Hypernetwork model",
     "hypernetwork_strength": "Hypernetwork Strength",
+    "use_lora_model": "LoRA model",
+    # "lora_alpha": "LoRA Strength",
 }
 
 
@@ -43,15 +45,18 @@ def save_images_to_disk(images: list, filtered_images: list, req: GenerateImageR
             file_name=make_filename,
             output_format=task_data.output_format,
             output_quality=task_data.output_quality,
+            output_lossless=task_data.output_lossless,
         )
-        if task_data.metadata_output_format.lower() in ["json", "txt", "embed"]:
-            save_dicts(
-                metadata_entries,
-                save_dir_path,
-                file_name=make_filename,
-                output_format=task_data.metadata_output_format,
-                file_format=task_data.output_format,
-            )
+        if task_data.metadata_output_format:
+            for metadata_output_format in task_data.metadata_output_format.split(','):
+                if metadata_output_format.lower() in ["json", "txt", "embed"]:
+                    save_dicts(
+                        metadata_entries,
+                        save_dir_path,
+                        file_name=make_filename,
+                        output_format=metadata_output_format,
+                        file_format=task_data.output_format,
+                    )
     else:
         make_filter_filename = make_filename_callback(req, now=now, suffix="filtered")
 
@@ -61,6 +66,7 @@ def save_images_to_disk(images: list, filtered_images: list, req: GenerateImageR
             file_name=make_filename,
             output_format=task_data.output_format,
             output_quality=task_data.output_quality,
+            output_lossless=task_data.output_lossless,
         )
         save_images(
             filtered_images,
@@ -68,6 +74,7 @@ def save_images_to_disk(images: list, filtered_images: list, req: GenerateImageR
             file_name=make_filter_filename,
             output_format=task_data.output_format,
             output_quality=task_data.output_quality,
+            output_lossless=task_data.output_lossless,
         )
         if task_data.metadata_output_format.lower() in ["json", "txt", "embed"]:
             save_dicts(
@@ -86,6 +93,7 @@ def get_metadata_entries_for_request(req: GenerateImageRequest, task_data: TaskD
             "use_stable_diffusion_model": task_data.use_stable_diffusion_model,
             "use_vae_model": task_data.use_vae_model,
             "use_hypernetwork_model": task_data.use_hypernetwork_model,
+            "use_lora_model": task_data.use_lora_model,
             "use_face_correction": task_data.use_face_correction,
             "use_upscale": task_data.use_upscale,
         }
@@ -94,6 +102,15 @@ def get_metadata_entries_for_request(req: GenerateImageRequest, task_data: TaskD
         metadata["upscale_amount"] = task_data.upscale_amount
     if task_data.use_hypernetwork_model is None:
         del metadata["hypernetwork_strength"]
+    if task_data.use_lora_model is None:
+        if "lora_alpha" in metadata:
+            del metadata["lora_alpha"]
+
+        from easydiffusion import app
+
+        app_config = app.getConfig()
+        if not app_config.get("test_diffusers", False) and "use_lora_model" in metadata:
+            del metadata["use_lora_model"]
 
     # if text, format it in the text format expected by the UI
     is_txt_format = task_data.metadata_output_format.lower() == "txt"

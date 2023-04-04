@@ -21,6 +21,7 @@ class GenerateImageRequest(BaseModel):
 
     sampler_name: str = None  # "ddim", "plms", "heun", "euler", "euler_a", "dpm2", "dpm2_a", "lms"
     hypernetwork_strength: float = 0
+    lora_alpha: float = 0
 
 
 class TaskData(BaseModel):
@@ -36,11 +37,13 @@ class TaskData(BaseModel):
     # use_stable_diffusion_config: str = "v1-inference"
     use_vae_model: str = None
     use_hypernetwork_model: str = None
+    use_lora_model: str = None
 
     show_only_filtered_image: bool = False
     block_nsfw: bool = False
     output_format: str = "jpeg"  # or "png" or "webp"
     output_quality: int = 75
+    output_lossless: bool = False
     metadata_output_format: str = "txt"  # or "json"
     stream_image_progress: bool = False
     stream_image_progress_interval: int = 5

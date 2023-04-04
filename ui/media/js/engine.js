@@ -744,6 +744,7 @@
         "block_nsfw": false,
         "output_format": "png",
         "output_quality": 75,
+        "output_lossless": false,
     }
     const TASK_OPTIONAL = {
         "device": 'string',
@@ -755,6 +756,7 @@
         "use_vae_model": 'string',
         "use_hypernetwork_model": 'string',
         "hypernetwork_strength": 'number',
+        "output_lossless": 'boolean',
     }
 
     // Higer values will result in...
