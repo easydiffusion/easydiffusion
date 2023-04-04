@@ -21,16 +21,16 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
-* 2.5.30 - 1 Apr 2023 - Slider to control the strength of the LoRA model.
+* 2.5.30 - 1 Apr 2023 - (beta-only) Slider to control the strength of the LoRA model.
 * 2.5.30 - 28 Mar 2023 - Refactor task entry config to use a generating method. Added ability for plugins to easily add to this. Removed confusing sentence from `contributing.md`
 * 2.5.30 - 28 Mar 2023 - Allow the user to undo the deletion of tasks or images, instead of showing a pop-up each time. The new `Undo` button will be present at the top of the UI. Thanks @JeLuf.
 * 2.5.30 - 28 Mar 2023 - Support saving lossless WEBP images. Thanks @ogmaresca.
 * 2.5.30 - 28 Mar 2023 - Lots of bug fixes for the UI (Read LoRA flag in metadata files, new prompt weight format with scrollwheel, fix overflow with lots of tabs, clear button in image editor, shorter filenames in download). Thanks @patriceac, @JeLuf and @ogmaresca.
-* 2.5.29 - 27 Mar 2023 - Fix a bug where some non-square images would fail while inpainting with a `The size of tensor a must match size of tensor b` error.
-* 2.5.29 - 27 Mar 2023 - Fix the `incorrect number of channels` error, when given a PNG image with an alpha channel in `Test Diffusers`.
-* 2.5.29 - 27 Mar 2023 - Fix broken inpainting in `Test Diffusers` (beta).
-* 2.5.28 - 24 Mar 2023 - Support for weighted prompts and long prompt lengths (not limited to 77 tokens). This change requires enabling the `Test Diffusers` setting in beta (in the Settings tab), and restarting the program.
-* 2.5.27 - 21 Mar 2023 - LoRA support, accessible by enabling the `Test Diffusers` setting (in the Settings tab in the UI). This change switches the internal engine to diffusers (if the `Test Diffusers` setting is enabled). If the `Test Diffusers` flag is disabled, it'll have no impact for the user.
+* 2.5.29 - 27 Mar 2023 - (beta-only) Fix a bug where some non-square images would fail while inpainting with a `The size of tensor a must match size of tensor b` error.
+* 2.5.29 - 27 Mar 2023 - (beta-only) Fix the `incorrect number of channels` error, when given a PNG image with an alpha channel in `Test Diffusers`.
+* 2.5.29 - 27 Mar 2023 - (beta-only) Fix broken inpainting in `Test Diffusers`.
+* 2.5.28 - 24 Mar 2023 - (beta-only) Support for weighted prompts and long prompt lengths (not limited to 77 tokens). This change requires enabling the `Test Diffusers` setting in beta (in the Settings tab), and restarting the program.
+* 2.5.27 - 21 Mar 2023 - (beta-only) LoRA support, accessible by enabling the `Test Diffusers` setting (in the Settings tab in the UI). This change switches the internal engine to diffusers (if the `Test Diffusers` setting is enabled). If the `Test Diffusers` flag is disabled, it'll have no impact for the user.
 * 2.5.26 - 15 Mar 2023 - Allow styling the buttons displayed on an image. Update the API to allow multiple buttons and text labels in a single row. Thanks @ogmaresca.
 * 2.5.26 - 15 Mar 2023 - View images in full-screen, by either clicking on the image, or clicking the "Full screen" icon next to the Seed number on the image. Thanks @ogmaresca for the internal API.
 * 2.5.25 - 14 Mar 2023 - Button to download all the images, and all the metadata as a zip file. This is available at the top of the UI, as well as on each image. Thanks @JeLuf.
