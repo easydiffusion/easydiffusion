@@ -31,7 +31,7 @@ EOF
 filesize() {
     case "$(uname -s)" in
         Linux*)     stat -c "%s" $1;;
-        Darwin*)    stat -f "%z" $1;;
+        Darwin*)    /usr/bin/stat -f "%z" $1;;
         *)          echo "Unknown OS: $OS_NAME! This script runs only on Linux or Mac" && exit
     esac
 }
