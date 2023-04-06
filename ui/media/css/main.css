@@ -238,6 +238,10 @@ code {
 #stopImage:hover {
     background: rgb(177, 27, 0);
 }
+#undo {
+    float: right;
+    margin-left: 5px;
+}
 
 div#render-buttons {
     gap: 3px;

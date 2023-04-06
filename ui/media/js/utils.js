@@ -690,7 +690,9 @@ function createElement(tagName, attributes, classes, textOrElements) {
     const element = document.createElement(tagName)
     if (attributes) {
         Object.entries(attributes).forEach(([key, value]) => {
-            element.setAttribute(key, value)
+            if (value !== undefined && value !== null) {
+                element.setAttribute(key, value)
+            }
         });
     }
     if (classes) {
@@ -707,6 +709,21 @@ function createElement(tagName, attributes, classes, textOrElements) {
         })
     }
     return element
+}
+
+/*
+ * Add a listener for arrays
+ * @param {keyof Array} method
+ * @param {(args) => {}} callback
+ */
+Array.prototype.addEventListener = function(method, callback) {
+    const originalFunction = this[method]
+    if (originalFunction) {
+        this[method] = function() {
+            originalFunction.apply(this, arguments)
+            callback.apply(this, arguments)
+        }
+    }
 }
 
 /**

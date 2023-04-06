@@ -30,7 +30,7 @@
             <h1>
                 <img id="logo_img" src="/media/images/icon-512x512.png" >
                 Easy Diffusion
-                <small>v2.5.30 <span id="updateBranchLabel"></span></small>
+                <small>v2.5.31 <span id="updateBranchLabel"></span></small>
             </h1>
         </div>
         <div id="server-status">
@@ -221,7 +221,7 @@
                         <input id="lora_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
                     </td></tr>
                     <tr id="lora_alpha_container" class="pl-5">
-                        <td><label for="lora_alpha_slider">LoRA strength:</label></td>
+                        <td><label for="lora_alpha_slider">LoRA Strength:</label></td>
                         <td> <input id="lora_alpha_slider" name="lora_alpha_slider" class="editor-slider" value="50" type="range" min="0" max="100"> <input id="lora_alpha" name="lora_alpha" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"><br/></td>
                     </tr>
                     <tr class="pl-5"><td><label for="hypernetwork_model">Hypernetwork:</i></label></td><td>
@@ -293,6 +293,12 @@
 
         <div id="preview" class="col-free">
 
+            <div id="initial-text">
+                Type a prompt and press the "Make Image" button.<br/><br/>You can set an "Initial Image" if you want to guide the AI.<br/><br/>
+                You can also add modifiers like "Realistic", "Pencil Sketch", "ArtStation" etc by browsing through the "Image Modifiers" section 
+                and selecting the desired modifiers.<br/><br/>
+                Click "Image Settings" for additional settings like seed, image size, number of images to generate etc.<br/><br/>Enjoy! :)
+            </div>
             <div id="preview-content">
                 <div id="preview-tools" class="displayNone">
                     <button id="clear-all-previews" class="secondaryButton"><i class="fa-solid fa-trash-can icon"></i> Clear All</button>
@@ -325,12 +331,6 @@
                     </div>
                     <div class="clearfix" style="clear: both;"></div>
                 </div>
-            </div>
-            <div id="initial-text">
-                Type a prompt and press the "Make Image" button.<br/><br/>You can set an "Initial Image" if you want to guide the AI.<br/><br/>
-                You can also add modifiers like "Realistic", "Pencil Sketch", "ArtStation" etc by browsing through the "Image Modifiers" section 
-                and selecting the desired modifiers.<br/><br/>
-                Click "Image Settings" for additional settings like seed, image size, number of images to generate etc.<br/><br/>Enjoy! :)
             </div>
         </div>
         </div>
