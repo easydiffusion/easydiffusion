@@ -1122,7 +1122,7 @@ function createTask(task) {
 function getCurrentUserRequest() {
     const numOutputsTotal = parseInt(numOutputsTotalField.value)
     const numOutputsParallel = parseInt(numOutputsParallelField.value)
-    const seed = (randomSeedField.checked ? Math.floor(Math.random() * 10000000) : parseInt(seedField.value))
+    const seed = (randomSeedField.checked ? Math.floor(Math.random() * (2**32 - 1)) : parseInt(seedField.value))
 
     const newTask = {
         batchesDone: 0,
