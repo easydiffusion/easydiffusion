@@ -711,7 +711,7 @@ function createElement(tagName, attributes, classes, textOrElements) {
     return element
 }
 
-/*
+/**
  * Add a listener for arrays
  * @param {keyof Array} method
  * @param {(args) => {}} callback
