@@ -8,6 +8,10 @@ if exist "scripts\config.bat" (
     @call scripts\config.bat
 )
 
+if exist "scripts\user_config.bat" (
+    @call scripts\user_config.bat
+)
+
 if "%update_branch%"=="" (
     set update_branch=main
 )
