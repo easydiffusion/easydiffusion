@@ -10,7 +10,7 @@ from typing import List, Union
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse, JSONResponse, StreamingResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Extra
 
 from easydiffusion import app, model_manager, task_manager
 from easydiffusion.types import TaskData, GenerateImageRequest, MergeRequest
@@ -44,7 +44,7 @@ class NoCacheStaticFiles(StaticFiles):
         return super().is_not_modified(response_headers, request_headers)
 
 
-class SetAppConfigRequest(BaseModel):
+class SetAppConfigRequest(BaseModel, extra=Extra.allow):
     update_branch: str = None
     render_devices: Union[List[str], List[int], str, int] = None
     model_vae: str = None
@@ -135,6 +135,10 @@ def set_app_config_internal(req: SetAppConfigRequest):
         config["net"]["listen_port"] = int(req.listen_port)
 
     config["test_diffusers"] = req.test_diffusers
+
+    for property, property_value in req.dict().items():
+        if property_value is not None and property not in req.__fields__:
+            config[property] = property_value
 
     try:
         app.setConfig(config)
