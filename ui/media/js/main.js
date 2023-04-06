@@ -1310,13 +1310,15 @@ async function stopAllTasks() {
 
 function updateInitialText() {
     if (document.querySelector('.imageTaskContainer') === null) {
-        if (undoBuffer.length == 0) {
-            previewTools.classList.add('displayNone')
+        if (undoBuffer.length > 0) {
+            initialText.prepend(undoButton)
         }
+        previewTools.classList.add('displayNone')
         initialText.classList.remove('displayNone')
     } else {
         initialText.classList.add('displayNone')
         previewTools.classList.remove('displayNone')
+        document.querySelector('div.display-settings').prepend(undoButton)
     }
 }
 
