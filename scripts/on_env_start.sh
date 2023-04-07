@@ -8,6 +8,11 @@ if [ -f "scripts/config.sh" ]; then
     source scripts/config.sh
 fi
 
+if [ -f "scripts/user_config.sh" ]; then
+    source scripts/user_config.sh
+fi
+
+
 if [ "$update_branch" == "" ]; then
     export update_branch="main"
 fi
