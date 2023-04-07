@@ -83,9 +83,9 @@ if python ../scripts/check_modules.py torch torchvision; then
     if [ "$OS_NAME" == "linux" ]; then
         # Check for AMD and NVIDIA dGPUs, always preferring an NVIDIA GPU if available
         if [ "$HAS_NVIDIA" != "yes" -a "$HAS_AMD" = "yes" ]; then
-            python -m pip install --upgrade torch torchvision --extra-index-url "https://download.pytorch.org/whl/rocm5.4.2"  || fail "Installation of torch and torchvision for AMD failed"
+            python -m pip install --upgrade torch torchvision --extra-index-url "https://download.pytorch.org/whl/rocm5.4.2" -q || fail "Installation of torch and torchvision for AMD failed"
         else
-            python -m pip install --upgrade torch==1.13.1+cu116 torchvision==0.14.1+cu116 --extra-index-url "https://download.pytorch.org/whl/cu116"  || fail "Installation of torch and torchvision for CUDA failed"
+            python -m pip install --upgrade torch==1.13.1+cu116 torchvision==0.14.1+cu116 --extra-index-url "https://download.pytorch.org/whl/cu116" -q || fail "Installation of torch and torchvision for CUDA failed"
         fi
     elif [ "$OS_NAME" == "macos" ]; then
         python -m pip install --upgrade torch==1.13.1 torchvision==0.14.1 -q
