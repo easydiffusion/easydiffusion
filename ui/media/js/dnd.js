@@ -245,6 +245,14 @@ const TASK_MAPPING = {
         readUI: () => loraModelField.value,
         parse: (val) => val
     },
+    lora_alpha: { name: 'LoRA Strength',
+        setUI: (lora_alpha) => {
+            loraAlphaField.value = lora_alpha
+            updateLoraAlphaSlider()
+        },
+        readUI: () => parseFloat(loraAlphaField.value),
+        parse: (val) => parseFloat(val)
+    },
     use_hypernetwork_model: { name: 'Hypernetwork model',
         setUI: (use_hypernetwork_model) => {
             const oldVal = hypernetworkModelField.value
@@ -340,7 +348,12 @@ function restoreTaskToUI(task, fieldsToSkip) {
         hypernetworkModelField.value = ""
         hypernetworkModelField.dispatchEvent(new Event("change"))
     }
-
+    
+    if (!('use_lora_model' in task.reqBody)) {
+        loraModelField.value = "None"
+        loraModelField.dispatchEvent(new Event("change"))
+    }
+    
     // restore the original prompt if provided (e.g. use settings), fallback to prompt as needed (e.g. copy/paste or d&d)
     promptField.value = task.reqBody.original_prompt
     if (!('original_prompt' in task.reqBody)) {

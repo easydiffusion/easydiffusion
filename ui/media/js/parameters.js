@@ -15,10 +15,13 @@
  * JSDoc style
  * @typedef {object} Parameter
  * @property {string} id
- * @property {ParameterType} type
- * @property {string} label
- * @property {?string} note
+ * @property {keyof ParameterType} type
+ * @property {string | (parameter: Parameter) => (HTMLElement | string)} label
+ * @property {string | (parameter: Parameter) => (HTMLElement | string) | undefined} note
+ * @property {(parameter: Parameter) => (HTMLElement | string) | undefined} render
+ * @property {string | undefined} icon
  * @property {number|boolean|string} default
+ * @property {boolean?} saveInAppConfig
  */
 
 
@@ -118,6 +121,7 @@ var PARAMETERS = [
         note: "starts the default browser on startup",
         icon: "fa-window-restore",
         default: true,
+        saveInAppConfig: true,
     },
     {
         id: "vram_usage_level",
@@ -179,6 +183,7 @@ var PARAMETERS = [
         note: "Other devices on your network can access this web page",
         icon: "fa-network-wired",
         default: true,
+        saveInAppConfig: true,
     },
     {
         id: "listen_port",
@@ -188,7 +193,8 @@ var PARAMETERS = [
         icon: "fa-anchor",
         render: (parameter) => {
             return `<input id="${parameter.id}" name="${parameter.id}" size="6" value="9000" onkeypress="preventNonNumericalInput(event)">`
-        }
+        },
+        saveInAppConfig: true,
     },
     {
         id: "use_beta_channel",
@@ -205,6 +211,7 @@ var PARAMETERS = [
         note: "<b>Experimental! Can have bugs!</b> Use upcoming features (like LoRA) in our new engine. Please press Save, then restart the program after changing this.",
         icon: "fa-bolt",
         default: false,
+        saveInAppConfig: true,
     },
 ];
 
@@ -228,6 +235,10 @@ function sliderUpdate(event) {
     }
 }
 
+/**
+ * @param {Parameter} parameter 
+ * @returns {string | HTMLElement}
+ */
 function getParameterElement(parameter) {
     switch (parameter.type) {
         case ParameterType.checkbox:
@@ -243,29 +254,74 @@ function getParameterElement(parameter) {
         case ParameterType.custom:
             return parameter.render(parameter)
         default:
-            console.error(`Invalid type for parameter ${parameter.id}`);
+            console.error(`Invalid type ${parameter.type} for parameter ${parameter.id}`);
             return "ERROR: Invalid Type"
     }
 }
 
 let parametersTable = document.querySelector("#system-settings .parameters-table")
-/* fill in the system settings popup table */
-function initParameters() {
-    PARAMETERS.forEach(parameter => {
-        var element = getParameterElement(parameter)
-        var note = parameter.note ? `<small>${parameter.note}</small>` : "";
-        var icon = parameter.icon ? `<i class="fa ${parameter.icon}"></i>` : "";
-        var newrow = document.createElement('div')
-        newrow.innerHTML = `
-            <div>${icon}</div>
-            <div><label for="${parameter.id}">${parameter.label}</label>${note}</div>
-            <div>${element}</div>`
+/**
+ * fill in the system settings popup table
+ * @param {Array<Parameter> | undefined} parameters
+ * */
+function initParameters(parameters) {
+    parameters.forEach(parameter => {
+        const element = getParameterElement(parameter)
+        const elementWrapper = createElement('div')
+        if (element instanceof Node) {
+            elementWrapper.appendChild(element)
+        } else {
+            elementWrapper.innerHTML = element
+        }
+
+        const note = typeof parameter.note === 'function' ? parameter.note(parameter) : parameter.note
+        const noteElements = []
+        if (note) {
+            const noteElement = createElement('small')
+            if (note instanceof Node) {
+                noteElement.appendChild(note)
+            } else {
+                noteElement.innerHTML = note || ''
+            }
+            noteElements.push(noteElement)
+        }
+
+        const icon = parameter.icon ? [createElement('i', undefined, ['fa', parameter.icon])] : []
+
+        const label = typeof parameter.label === 'function' ? parameter.label(parameter) : parameter.label
+        const labelElement = createElement('label', { for: parameter.id })
+        if (label instanceof Node) {
+            labelElement.appendChild(label)
+        } else {
+            labelElement.innerHTML = label
+        }
+
+        const newrow = createElement(
+            'div',
+            { 'data-setting-id': parameter.id, 'data-save-in-app-config': parameter.saveInAppConfig },
+            undefined,
+            [
+                createElement('div', undefined, undefined, icon),
+                createElement('div', undefined, undefined, [labelElement, ...noteElements]),
+                elementWrapper,
+            ]
+        )
         parametersTable.appendChild(newrow)
         parameter.settingsEntry = newrow
     })
 }
 
-initParameters()
+initParameters(PARAMETERS)
+
+// listen to parameters from plugins
+PARAMETERS.addEventListener('push', (...items) => {
+    initParameters(items)
+    
+    if (items.find(item => item.saveInAppConfig)) {
+        console.log('Reloading app config for new parameters', items.map(p => p.id))
+        getAppConfig()
+    }
+})
 
 let vramUsageLevelField = document.querySelector('#vram_usage_level')
 let useCPUField = document.querySelector('#use_cpu')
@@ -330,9 +386,44 @@ async function getAppConfig() {
             document.querySelector("#lora_alpha_container").style.display = (testDiffusers.checked && loraModelField.value !== "" ? '' : 'none')
         }
 
+        Array.from(parametersTable.children).forEach(parameterRow => {
+            if (parameterRow.dataset.settingId in config && parameterRow.dataset.saveInAppConfig === 'true') {
+                const configValue = config[parameterRow.dataset.settingId]
+                const parameterElement = document.getElementById(parameterRow.dataset.settingId) ||
+                    parameterRow.querySelector('input') || parameterRow.querySelector('select')
+    
+                switch (parameterElement?.tagName) {
+                    case 'INPUT':
+                        if (parameterElement.type === 'checkbox') {
+                            parameterElement.checked = configValue
+                        } else {
+                            parameterElement.value = configValue
+                        }
+                        parameterElement.dispatchEvent(new Event('change'))
+                        break
+                    case 'SELECT':
+                        if (Array.isArray(configValue)) {
+                            Array.from(parameterElement.options).forEach(option => {
+                                if (configValue.includes(option.value || option.text)) {
+                                    option.selected = true
+                                }
+                            })
+                        } else {
+                            parameterElement.value = configValue
+                        }
+                        parameterElement.dispatchEvent(new Event('change'))
+                        break
+                }
+            }
+        })
+
         console.log('get config status response', config)
+
+        return config
     } catch (e) {
         console.log('get config status error', e)
+
+        return {}
     }
 }
 
@@ -492,16 +583,43 @@ saveSettingsBtn.addEventListener('click', function() {
         alert('The network port must be a number from 1 to 65535')
         return
     }
-    let updateBranch = (useBetaChannelField.checked ? 'beta' : 'main')
-    changeAppConfig({
+    const updateBranch = (useBetaChannelField.checked ? 'beta' : 'main')
+
+    const updateAppConfigRequest = {
         'render_devices': getCurrentRenderDeviceSelection(),
         'update_branch': updateBranch,
-        'ui_open_browser_on_start': uiOpenBrowserOnStartField.checked,
-        'listen_to_network': listenToNetworkField.checked,
-        'listen_port': listenPortField.value,
-        'test_diffusers': testDiffusers.checked
-    })
-    saveSettingsBtn.classList.add('active')
-    asyncDelay(300).then(() => saveSettingsBtn.classList.remove('active'))
-})
+    }
 
+    Array.from(parametersTable.children).forEach(parameterRow => {
+        if (parameterRow.dataset.saveInAppConfig === 'true') {
+            const parameterElement = document.getElementById(parameterRow.dataset.settingId) ||
+                parameterRow.querySelector('input') || parameterRow.querySelector('select')
+
+            switch (parameterElement?.tagName) {
+                case 'INPUT':
+                    if (parameterElement.type === 'checkbox') {
+                        updateAppConfigRequest[parameterRow.dataset.settingId] = parameterElement.checked
+                    } else {
+                        updateAppConfigRequest[parameterRow.dataset.settingId] = parameterElement.value
+                    }
+                    break
+                case 'SELECT':
+                    if (parameterElement.multiple) {
+                        updateAppConfigRequest[parameterRow.dataset.settingId] = Array.from(parameterElement.options)
+                            .filter(option => option.selected)
+                            .map(option => option.value || option.text)
+                    } else {
+                        updateAppConfigRequest[parameterRow.dataset.settingId] = parameterElement.value
+                    }
+                    break
+                default:
+                    console.error(`Setting parameter ${parameterRow.dataset.settingId} couldn't be saved to app.config - element #${parameter.id} is a <${parameterElement?.tagName} /> instead of a <input /> or a <select />!`)
+                    break
+            }
+        }
+    })
+
+    const savePromise = changeAppConfig(updateAppConfigRequest)
+    saveSettingsBtn.classList.add('active')
+    Promise.all([savePromise, asyncDelay(300)]).then(() => saveSettingsBtn.classList.remove('active'))
+})

@@ -683,14 +683,16 @@ class ServiceContainer {
  * @param {string} tag
  * @param {object} attributes
  * @param {string | Array<string>} classes
- * @param {string | HTMLElement | Array<string | HTMLElement>}
+ * @param {string | Node | Array<string | Node>}
  * @returns {HTMLElement}
  */
 function createElement(tagName, attributes, classes, textOrElements) {
     const element = document.createElement(tagName)
     if (attributes) {
         Object.entries(attributes).forEach(([key, value]) => {
-            element.setAttribute(key, value)
+            if (value !== undefined && value !== null) {
+                element.setAttribute(key, value)
+            }
         });
     }
     if (classes) {
@@ -699,7 +701,7 @@ function createElement(tagName, attributes, classes, textOrElements) {
     if (textOrElements) {
         const children = Array.isArray(textOrElements) ? textOrElements : [textOrElements]
         children.forEach(textOrElem => {
-            if (textOrElem instanceof HTMLElement) {
+            if (textOrElem instanceof Node) {
                 element.appendChild(textOrElem)
             } else {
                 element.appendChild(document.createTextNode(textOrElem))
@@ -707,4 +709,20 @@ function createElement(tagName, attributes, classes, textOrElements) {
         })
     }
     return element
+}
+
+/**
+ * Add a listener for arrays
+ * @param {keyof Array} method
+ * @param {(args) => {}} callback
+ */
+Array.prototype.addEventListener = function(method, callback) {
+    const originalFunction = this[method]
+    if (originalFunction) {
+        this[method] = function() {
+            console.log(`Array.${method}()`, arguments)
+            originalFunction.apply(this, arguments)
+            callback.apply(this, arguments)
+        }
+    }
 }
