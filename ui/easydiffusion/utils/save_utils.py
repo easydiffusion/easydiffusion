@@ -1,6 +1,5 @@
 import os
 import time
-import base64
 import re
 
 from easydiffusion import app
@@ -137,7 +136,13 @@ def save_images_to_disk(images: list, filtered_images: list, req: GenerateImageR
                         file_format=task_data.output_format,
                     )
     else:
-        make_filter_filename = make_filename_callback(req, task_data, file_number, now=now, suffix="filtered")
+        make_filter_filename = make_filename_callback(
+            app_config.get("filename_format", "$p_$tsb64"),
+            req,
+            task_data,
+            file_number,
+            now=now,
+            suffix="filtered")
 
         save_images(
             images,
