@@ -3,7 +3,7 @@
  * @readonly
  * @enum {string}
  */
- var ParameterType = {
+var ParameterType = {
     checkbox: "checkbox",
     select: "select",
     select_multiple: "select_multiple",
@@ -362,6 +362,9 @@ async function getAppConfig() {
         let res = await fetch('/get/app_config')
         const config = await res.json()
 
+        applySettingsFromConfig(config)
+
+        // custom overrides
         if (config.update_branch === 'beta') {
             useBetaChannelField.checked = true
             document.querySelector("#updateBranchLabel").innerText = "(beta)"
@@ -378,6 +381,7 @@ async function getAppConfig() {
             listenPortField.value = config.net.listen_port
         }
         if (config.test_diffusers === undefined || config.update_branch === 'main') {
+            testDiffusers.checked = false
             document.querySelector("#lora_model_container").style.display = 'none'
             document.querySelector("#lora_alpha_container").style.display = 'none'
         } else {
@@ -385,37 +389,6 @@ async function getAppConfig() {
             document.querySelector("#lora_model_container").style.display = (testDiffusers.checked ? '' : 'none')
             document.querySelector("#lora_alpha_container").style.display = (testDiffusers.checked && loraModelField.value !== "" ? '' : 'none')
         }
-
-        Array.from(parametersTable.children).forEach(parameterRow => {
-            if (parameterRow.dataset.settingId in config && parameterRow.dataset.saveInAppConfig === 'true') {
-                const configValue = config[parameterRow.dataset.settingId]
-                const parameterElement = document.getElementById(parameterRow.dataset.settingId) ||
-                    parameterRow.querySelector('input') || parameterRow.querySelector('select')
-    
-                switch (parameterElement?.tagName) {
-                    case 'INPUT':
-                        if (parameterElement.type === 'checkbox') {
-                            parameterElement.checked = configValue
-                        } else {
-                            parameterElement.value = configValue
-                        }
-                        parameterElement.dispatchEvent(new Event('change'))
-                        break
-                    case 'SELECT':
-                        if (Array.isArray(configValue)) {
-                            Array.from(parameterElement.options).forEach(option => {
-                                if (configValue.includes(option.value || option.text)) {
-                                    option.selected = true
-                                }
-                            })
-                        } else {
-                            parameterElement.value = configValue
-                        }
-                        parameterElement.dispatchEvent(new Event('change'))
-                        break
-                }
-            }
-        })
 
         console.log('get config status response', config)
 
@@ -425,6 +398,39 @@ async function getAppConfig() {
 
         return {}
     }
+}
+
+function applySettingsFromConfig(config) {
+    Array.from(parametersTable.children).forEach(parameterRow => {
+        if (parameterRow.dataset.settingId in config && parameterRow.dataset.saveInAppConfig === 'true') {
+            const configValue = config[parameterRow.dataset.settingId]
+            const parameterElement = document.getElementById(parameterRow.dataset.settingId) ||
+                parameterRow.querySelector('input') || parameterRow.querySelector('select')
+
+            switch (parameterElement?.tagName) {
+                case 'INPUT':
+                    if (parameterElement.type === 'checkbox') {
+                        parameterElement.checked = configValue
+                    } else {
+                        parameterElement.value = configValue
+                    }
+                    parameterElement.dispatchEvent(new Event('change'))
+                    break
+                case 'SELECT':
+                    if (Array.isArray(configValue)) {
+                        Array.from(parameterElement.options).forEach(option => {
+                            if (configValue.includes(option.value || option.text)) {
+                                option.selected = true
+                            }
+                        })
+                    } else {
+                        parameterElement.value = configValue
+                    }
+                    parameterElement.dispatchEvent(new Event('change'))
+                    break
+            }
+        }
+    })
 }
 
 saveToDiskField.addEventListener('change', function(e) {
