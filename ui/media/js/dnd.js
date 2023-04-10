@@ -350,7 +350,7 @@ function restoreTaskToUI(task, fieldsToSkip) {
     }
     
     if (!('use_lora_model' in task.reqBody)) {
-        loraModelField.value = "None"
+        loraModelField.value = ""
         loraModelField.dispatchEvent(new Event("change"))
     }
     
