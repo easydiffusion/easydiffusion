@@ -10,7 +10,13 @@ from easydiffusion.utils import get_printable_request, save_images_to_disk, log
 from sdkit import Context
 from sdkit.generate import generate_images
 from sdkit.filter import apply_filters
-from sdkit.utils import img_to_buffer, img_to_base64_str, latent_samples_to_images, diffusers_latent_samples_to_images
+from sdkit.utils import (
+    img_to_buffer,
+    img_to_base64_str,
+    latent_samples_to_images,
+    diffusers_latent_samples_to_images,
+    gc,
+)
 
 context = Context()  # thread-local
 """
@@ -62,7 +68,6 @@ def print_task_info(req: GenerateImageRequest, task_data: TaskData):
 def make_images_internal(
     req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback
 ):
-
     images, user_stopped = generate_images_internal(
         req,
         task_data,
@@ -72,6 +77,7 @@ def make_images_internal(
         task_data.stream_image_progress,
         task_data.stream_image_progress_interval,
     )
+    gc(context)
     filtered_images = filter_images(task_data, images, user_stopped)
 
     if task_data.save_to_disk_path is not None:
