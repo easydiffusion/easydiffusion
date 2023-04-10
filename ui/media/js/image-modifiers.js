@@ -230,7 +230,7 @@ function refreshInactiveTags(inactiveTags) {
     // update cards
     let overlays = document.querySelector('#editor-inputs-tags-list').querySelectorAll('.modifier-card-overlay')
     overlays.forEach (i => {
-        let modifierName = i.parentElement.getElementsByClassName('modifier-card-label')[0].getElementsByTagName("p")[0].innerText
+        let modifierName = i.parentElement.getElementsByClassName('modifier-card-label')[0].getElementsByTagName("p")[0].dataset.fullName
         if (inactiveTags?.find(element => element === modifierName) !== undefined) {
             i.parentElement.classList.add('modifier-toggle-inactive')
         }
