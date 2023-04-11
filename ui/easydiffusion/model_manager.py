@@ -44,8 +44,7 @@ def load_default_models(context: Context):
             load_model(context, model_type)
         except Exception as e:
             log.error(f"[red]Error while loading {model_type} model: {context.model_paths[model_type]}[/red]")
-            log.error(f"[red]Error: {e}[/red]")
-            log.error(f"[red]Consider removing the model from the model folder.[red]")
+            log.exception(e)
 
 
 def unload_all(context: Context):
