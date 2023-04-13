@@ -41,7 +41,11 @@ def load_default_models(context: Context):
     for model_type in MODELS_TO_LOAD_ON_START:
         context.model_paths[model_type] = resolve_model_to_use(model_type=model_type)
         try:
-            load_model(context, model_type, scan_model = not context.model_paths[model_type].endswith('safetensors'))
+            load_model(
+                context,
+                model_type,
+                scan_model = context.model_paths[model_type] != None and not context.model_paths[model_type].endswith('safetensors')
+            )
         except Exception as e:
             log.error(f"[red]Error while loading {model_type} model: {context.model_paths[model_type]}[/red]")
             log.error(f"[red]Error: {e}[/red]")
