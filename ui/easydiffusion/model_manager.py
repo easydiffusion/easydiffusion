@@ -48,8 +48,7 @@ def load_default_models(context: Context):
             )
         except Exception as e:
             log.error(f"[red]Error while loading {model_type} model: {context.model_paths[model_type]}[/red]")
-            log.error(f"[red]Error: {e}[/red]")
-
+            log.exception(e)
 
 def unload_all(context: Context):
     for model_type in KNOWN_MODEL_TYPES:

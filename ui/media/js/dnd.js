@@ -350,7 +350,7 @@ function restoreTaskToUI(task, fieldsToSkip) {
     }
     
     if (!('use_lora_model' in task.reqBody)) {
-        loraModelField.value = "None"
+        loraModelField.value = ""
         loraModelField.dispatchEvent(new Event("change"))
     }
     
@@ -608,7 +608,7 @@ document.addEventListener('paste', async (event) => {
     }
     const paste = (event.clipboardData || window.clipboardData).getData('text')
     const selection = window.getSelection()
-    if (selection.toString().trim().length <= 0 && await parseContent(paste)) {
+    if (paste != "" && selection.toString().trim().length <= 0 && await parseContent(paste)) {
         event.preventDefault()
         return
     }

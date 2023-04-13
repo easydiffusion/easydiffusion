@@ -21,6 +21,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.31 - 10 Apr 2023 - Reduce VRAM usage while upscaling.
 * 2.5.31 - 6 Apr 2023 - Allow seeds upto `4,294,967,295`. Thanks @ogmaresca.
 * 2.5.31 - 6 Apr 2023 - Buttons to show the previous/next image in the image popup. Thanks @ogmaresca.
 * 2.5.30 - 5 Apr 2023 - Fix a bug where the JPEG image quality wasn't being respected when embedding the metadata into it. Thanks @JeLuf.
