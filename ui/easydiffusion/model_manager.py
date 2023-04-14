@@ -44,7 +44,7 @@ def load_default_models(context: Context):
             load_model(
                 context,
                 model_type,
-                scan_model = context.model_paths[model_type] != None and not context.model_paths[model_type].endswith('safetensors')
+                scan_model = context.model_paths[model_type] != None and not context.model_paths[model_type].endswith('.safetensors')
             )
         except Exception as e:
             log.error(f"[red]Error while loading {model_type} model: {context.model_paths[model_type]}[/red]")
