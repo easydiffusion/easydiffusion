@@ -7,6 +7,11 @@ cp sd-ui-files/scripts/check_modules.py scripts/
 
 source ./scripts/functions.sh
 
+TORCH_VERSION="2.0.0"
+TORCHVISION_VERSION="0.15.1"
+SDKIT_VERSION="1.0.71"
+SD_VERSION="2.1.4"
+
 # activate the installer env
 CONDA_BASEPATH=$(conda info --base)
 source "$CONDA_BASEPATH/etc/profile.d/conda.sh" # avoids the 'shell not initialized' error
@@ -64,14 +69,7 @@ case "${OS_NAME}" in
 esac
 
 # install torch and torchvision
-if python ../scripts/check_modules.py torch torchvision; then
-    # temp fix for installations that installed torch 2.0 by mistake
-    if [ "$OS_NAME" == "linux" ]; then
-        python -m pip install --upgrade torch==1.13.1+cu116 torchvision==0.14.1+cu116 --extra-index-url https://download.pytorch.org/whl/cu116 -q
-    elif [ "$OS_NAME" == "macos" ]; then
-        python -m pip install --upgrade torch==1.13.1 torchvision==0.14.1 -q
-    fi
-
+if python ../scripts/check_modules.py torch==$TORCH_VERSION torchvision==$TORCHVISION_VERSION; then
     echo "torch and torchvision have already been installed."
 else
     echo "Installing torch and torchvision.."
@@ -79,20 +77,14 @@ else
     export PYTHONNOUSERSITE=1
     export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
 
-    if [ "$OS_NAME" == "linux" ]; then
-        if python -m pip install --upgrade torch==1.13.1+cu116 torchvision==0.14.1+cu116 --extra-index-url https://download.pytorch.org/whl/cu116 ; then
-            echo "Installed."
-        else
-            fail "torch install failed"
-        fi
-    elif [ "$OS_NAME" == "macos" ]; then
-        if python -m pip install --upgrade torch==1.13.1 torchvision==0.14.1 ; then
-            echo "Installed."
-        else
-            fail "torch install failed"
-        fi
+    if python -m pip install --upgrade torch==$TORCH_VERSION torchvision==$TORCHVISION_VERSION ; then
+        echo "Installed."
+    else
+        fail "torch install failed"
     fi
 fi
+
+python -c "from importlib.metadata import version; print('torch version:', version('torch'))"
 
 # install/upgrade sdkit
 if python ../scripts/check_modules.py sdkit sdkit.models ldm transformers numpy antlr4 gfpgan realesrgan ; then
@@ -103,7 +95,7 @@ if python ../scripts/check_modules.py sdkit sdkit.models ldm transformers numpy 
         export PYTHONNOUSERSITE=1
         export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
 
-        python -m pip install --upgrade sdkit==1.0.70 -q
+        python -m pip install --upgrade sdkit==$SDKIT_VERSION -q
     fi
 else
     echo "Installing sdkit: https://pypi.org/project/sdkit/"
@@ -111,7 +103,7 @@ else
     export PYTHONNOUSERSITE=1
     export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
 
-    if python -m pip install sdkit==1.0.70 ; then
+    if python -m pip install sdkit==$SDKIT_VERSION ; then
         echo "Installed."
     else
         fail "sdkit install failed"
@@ -121,7 +113,7 @@ fi
 python -c "from importlib.metadata import version; print('sdkit version:', version('sdkit'))"
 
 # upgrade stable-diffusion-sdkit
-python -m pip install --upgrade stable-diffusion-sdkit==2.1.4 -q
+python -m pip install --upgrade stable-diffusion-sdkit==$SD_VERSION -q
 python -c "from importlib.metadata import version; print('stable-diffusion version:', version('stable-diffusion-sdkit'))"
 
 # install rich
