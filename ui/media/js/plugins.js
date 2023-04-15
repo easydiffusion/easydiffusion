@@ -738,7 +738,7 @@ async function downloadPlugins(pluginCatalog, plugins, refreshPlugins) {
             const pluginSource = await getDocument(plugin.url);
             if (pluginSource !== null && pluginSource !== existingPlugin.code) {
                 console.log(`Plugin ${plugin.name} updated`);
-                showToast("Plugin " + plugin.name + " updated");
+                showToast("Plugin " + plugin.name + " updated", 20000);
                 // Update the corresponding plugin
                 const updatedPlugin = {
                     ...existingPlugin,
