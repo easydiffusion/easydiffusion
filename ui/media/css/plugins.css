@@ -109,7 +109,7 @@
     position: fixed;
     bottom: 10px;
     right: -300px;
-    max-width: 300px;
+    width: 300px;
     background-color: #333;
     color: #fff;
     padding: 10px 20px;
