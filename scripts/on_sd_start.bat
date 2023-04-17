@@ -3,9 +3,15 @@
 @REM Caution, this file will make your eyes and brain bleed. It's such an unholy mess.
 @REM Note to self: Please rewrite this in Python. For the sake of your own sanity.
 
-@copy sd-ui-files\scripts\on_env_start.bat scripts\ /Y
-@copy sd-ui-files\scripts\bootstrap.bat scripts\ /Y
-@copy sd-ui-files\scripts\check_modules.py scripts\ /Y
+@REM @copy sd-ui-files\scripts\on_env_start.bat scripts\ /Y
+@REM @copy sd-ui-files\scripts\bootstrap.bat scripts\ /Y
+@REM @copy sd-ui-files\scripts\check_modules.py scripts\ /Y
+
+set TORCH_VERSION=2.0.0+cu117
+set TORCHVISION_VERSION=0.15.1+cu117
+set TORCH_INDEX_URL=https://download.pytorch.org/whl/cu117
+set SDKIT_VERSION=1.0.72
+set SD_VERSION=2.1.4
 
 if exist "%cd%\profile" (
     set USERPROFILE=%cd%\profile
@@ -65,7 +71,7 @@ if not exist "%INSTALL_ENV_DIR%\DLLs\libssl-1_1-x64.dll"    copy "%INSTALL_ENV_D
 if not exist "%INSTALL_ENV_DIR%\DLLs\libcrypto-1_1-x64.dll" copy "%INSTALL_ENV_DIR%\Library\bin\libcrypto-1_1-x64.dll" "%INSTALL_ENV_DIR%\DLLs\"
 
 @rem install torch and torchvision
-call python ..\scripts\check_modules.py torch torchvision
+call python ..\scripts\check_modules.py torch==%TORCH_VERSION% torchvision==%TORCHVISION_VERSION%
 if "%ERRORLEVEL%" EQU "0" (
     echo "torch and torchvision have already been installed."
 ) else (
@@ -75,12 +81,14 @@ if "%ERRORLEVEL%" EQU "0" (
     set PYTHONNOUSERSITE=1
     set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 
-    call python -m pip install --upgrade torch==1.13.1+cu116 torchvision==0.14.1+cu116 --extra-index-url https://download.pytorch.org/whl/cu116 || (
+    call python -m pip install --upgrade torch==%TORCH_VERSION% torchvision==%TORCHVISION_VERSION% --index-url %TORCH_INDEX_URL% || (
         echo "Error installing torch. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
         pause
         exit /b
     )
 )
+
+call python -c "from importlib.metadata import version; print('torch version:', version('torch'))"
 
 set PATH=C:\Windows\System32;%PATH%
 
@@ -95,7 +103,7 @@ if "%ERRORLEVEL%" EQU "0" (
         set PYTHONNOUSERSITE=1
         set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 
-        call python -m pip install --upgrade sdkit==1.0.72 -q || (
+        call python -m pip install --upgrade sdkit==%SDKIT_VERSION% -q || (
             echo "Error updating sdkit"
         )
     )
@@ -106,7 +114,7 @@ if "%ERRORLEVEL%" EQU "0" (
     set PYTHONNOUSERSITE=1
     set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 
-    call python -m pip install sdkit==1.0.72 || (
+    call python -m pip install sdkit==%SDKIT_VERSION% || (
         echo "Error installing sdkit. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
         pause
         exit /b
@@ -116,7 +124,7 @@ if "%ERRORLEVEL%" EQU "0" (
 call python -c "from importlib.metadata import version; print('sdkit version:', version('sdkit'))"
 
 @rem upgrade stable-diffusion-sdkit
-call python -m pip install --upgrade stable-diffusion-sdkit==2.1.4 -q || (
+call python -m pip install --upgrade stable-diffusion-sdkit==%SD_VERSION% -q || (
     echo "Error updating stable-diffusion-sdkit"
 )
 call python -c "from importlib.metadata import version; print('stable-diffusion version:', version('stable-diffusion-sdkit'))"
