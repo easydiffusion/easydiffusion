@@ -153,6 +153,10 @@
     position: absolute;
     z-index: 3;
 }
+.modifier-card-overlay:hover ~ .modifier-card-container .modifier-card-label.tooltip .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
 .modifier-card:hover > .modifier-card-image-container .modifier-card-image-overlay {
     opacity: 1;
 }

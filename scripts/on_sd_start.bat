@@ -34,7 +34,7 @@ call conda activate
 @REM remove the old version of the dev console script, if it's still present
 if exist "Open Developer Console.cmd" del "Open Developer Console.cmd"
 
-@call python -c "import os; import shutil; frm = 'sd-ui-files\\ui\\hotfix\\9c24e6cd9f499d02c4f21a033736dabd365962dc80fe3aeb57a8f85ea45a20a3.26fead7ea4f0f843f6eb4055dfd25693f1a71f3c6871b184042d4b126244e142'; dst = os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'transformers', '9c24e6cd9f499d02c4f21a033736dabd365962dc80fe3aeb57a8f85ea45a20a3.26fead7ea4f0f843f6eb4055dfd25693f1a71f3c6871b184042d4b126244e142'); shutil.copyfile(frm, dst) if os.path.exists(dst) else print(''); print('Hotfixed broken JSON file from OpenAI');"
+@REM @call python -c "import os; import shutil; frm = 'sd-ui-files\\ui\\hotfix\\9c24e6cd9f499d02c4f21a033736dabd365962dc80fe3aeb57a8f85ea45a20a3.26fead7ea4f0f843f6eb4055dfd25693f1a71f3c6871b184042d4b126244e142'; dst = os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'transformers', '9c24e6cd9f499d02c4f21a033736dabd365962dc80fe3aeb57a8f85ea45a20a3.26fead7ea4f0f843f6eb4055dfd25693f1a71f3c6871b184042d4b126244e142'); shutil.copyfile(frm, dst) if os.path.exists(dst) else print(''); print('Hotfixed broken JSON file from OpenAI');"
 
 @rem create the stable-diffusion folder, to work with legacy installations
 if not exist "stable-diffusion" mkdir stable-diffusion
@@ -95,7 +95,7 @@ if "%ERRORLEVEL%" EQU "0" (
         set PYTHONNOUSERSITE=1
         set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 
-        call python -m pip install --upgrade sdkit==1.0.65 -q || (
+        call python -m pip install --upgrade sdkit==1.0.70 -q || (
             echo "Error updating sdkit"
         )
     )
@@ -106,7 +106,7 @@ if "%ERRORLEVEL%" EQU "0" (
     set PYTHONNOUSERSITE=1
     set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 
-    call python -m pip install sdkit==1.0.65 || (
+    call python -m pip install sdkit==1.0.70 || (
         echo "Error installing sdkit. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
         pause
         exit /b
