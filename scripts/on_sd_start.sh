@@ -9,7 +9,7 @@ source ./scripts/functions.sh
 
 TORCH_VERSION="2.0.0"
 TORCHVISION_VERSION="0.15.1"
-SDKIT_VERSION="1.0.71"
+SDKIT_VERSION="1.0.72"
 SD_VERSION="2.1.4"
 
 # activate the installer env

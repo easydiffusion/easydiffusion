@@ -9,7 +9,7 @@
 
 set TORCH_VERSION=2.0.0+cu117
 set TORCHVISION_VERSION=0.15.1+cu117
-set SDKIT_VERSION=1.0.71
+set SDKIT_VERSION=1.0.72
 set SD_VERSION=2.1.4
 
 if exist "%cd%\profile" (
