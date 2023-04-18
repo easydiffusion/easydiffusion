@@ -7,11 +7,6 @@ cp sd-ui-files/scripts/check_modules.py scripts/
 
 source ./scripts/functions.sh
 
-TORCH_VERSION="2.0.0"
-TORCHVISION_VERSION="0.15.1"
-SDKIT_VERSION="1.0.72"
-SD_VERSION="2.1.4"
-
 # activate the installer env
 CONDA_BASEPATH=$(conda info --base)
 source "$CONDA_BASEPATH/etc/profile.d/conda.sh" # avoids the 'shell not initialized' error
@@ -61,108 +56,13 @@ if [ -e "GFPGANv1.3.pth" ]; then mv GFPGANv1.3.pth ../models/gfpgan/; fi
 if [ -e "RealESRGAN_x4plus.pth" ]; then mv RealESRGAN_x4plus.pth ../models/realesrgan/; fi
 if [ -e "RealESRGAN_x4plus_anime_6B.pth" ]; then mv RealESRGAN_x4plus_anime_6B.pth ../models/realesrgan/; fi
 
-OS_NAME=$(uname -s)
-case "${OS_NAME}" in
-    Linux*)     OS_NAME="linux";;
-    Darwin*)    OS_NAME="macos";;
-    *)          echo "Unknown OS: $OS_NAME! This script runs only on Linux or Mac" && exit
-esac
-
-# Detect GPU types
-
-if grep -q amdgpu /proc/bus/pci/devices; then
-   echo AMD GPU detected
-   HAS_AMD=yes
+if ! python ../scripts/check_modules.py; then
+    read -p "Press any key to continue"
+    exit 1
 fi
 
-if grep -q nvidia /proc/bus/pci/devices; then
-   echo NVidia GPU detected
-   HAS_NVIDIA=yes
-fi
-
-
-
-# install torch and torchvision
-if python ../scripts/check_modules.py torch==$TORCH_VERSION torchvision==$TORCHVISION_VERSION; then
-    echo "torch and torchvision have already been installed."
-else
-    echo "Installing torch and torchvision.."
-
-    export PYTHONNOUSERSITE=1
-    export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
-
-    if python -m pip install --upgrade torch==$TORCH_VERSION torchvision==$TORCHVISION_VERSION ; then
-        echo "Installed."
-    else
-        fail "torch install failed"
-    fi
-fi
-
-python -c "from importlib.metadata import version; print('torch version:', version('torch'))"
-
-# install/upgrade sdkit
-if python ../scripts/check_modules.py sdkit sdkit.models ldm transformers numpy antlr4 gfpgan realesrgan ; then
-    echo "sdkit is already installed."
-
-    # skip sdkit upgrade if in developer-mode
-    if [ ! -e "../src/sdkit" ]; then
-        export PYTHONNOUSERSITE=1
-        export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
-
-        python -m pip install --upgrade sdkit==$SDKIT_VERSION -q
-    fi
-else
-    echo "Installing sdkit: https://pypi.org/project/sdkit/"
-
-    export PYTHONNOUSERSITE=1
-    export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
-
-    if python -m pip install sdkit==$SDKIT_VERSION ; then
-        echo "Installed."
-    else
-        fail "sdkit install failed"
-    fi
-fi
-
-python -c "from importlib.metadata import version; print('sdkit version:', version('sdkit'))"
-
-# upgrade stable-diffusion-sdkit
-python -m pip install --upgrade stable-diffusion-sdkit==$SD_VERSION -q
-python -c "from importlib.metadata import version; print('stable-diffusion version:', version('stable-diffusion-sdkit'))"
-
-# install rich
-if python ../scripts/check_modules.py rich; then
-    echo "rich has already been installed."
-else
-    echo "Installing rich.."
-
-    export PYTHONNOUSERSITE=1
-    export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
-
-    if python -m pip install rich ; then
-        echo "Installed."
-    else
-        fail "Install failed for rich"
-    fi
-fi
-
-if python ../scripts/check_modules.py uvicorn fastapi ; then
-    echo "Packages necessary for Easy Diffusion were already installed"
-else
-    printf "\n\nDownloading packages necessary for Easy Diffusion..\n\n"
-
-    export PYTHONNOUSERSITE=1
-    export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
-
-    if conda install -c conda-forge -y uvicorn fastapi ; then
-        echo "Installed. Testing.."
-    else
-        fail "'conda install uvicorn' failed"
-    fi
-
-    if ! command -v uvicorn &> /dev/null; then
-        fail "UI packages not found!"
-    fi
+if ! command -v uvicorn &> /dev/null; then
+    fail "UI packages not found!"
 fi
 
 if [ -f "../models/stable-diffusion/sd-v1-4.ckpt" ]; then

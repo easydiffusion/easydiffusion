@@ -7,12 +7,6 @@
 @copy sd-ui-files\scripts\bootstrap.bat scripts\ /Y
 @copy sd-ui-files\scripts\check_modules.py scripts\ /Y
 
-set TORCH_VERSION=2.0.0+cu117
-set TORCHVISION_VERSION=0.15.1+cu117
-set TORCH_INDEX_URL=https://download.pytorch.org/whl/cu117
-set SDKIT_VERSION=1.0.72
-set SD_VERSION=2.1.4
-
 if exist "%cd%\profile" (
     set USERPROFILE=%cd%\profile
 )
@@ -70,98 +64,17 @@ if exist "RealESRGAN_x4plus_anime_6B.pth" move RealESRGAN_x4plus_anime_6B.pth ..
 if not exist "%INSTALL_ENV_DIR%\DLLs\libssl-1_1-x64.dll"    copy "%INSTALL_ENV_DIR%\Library\bin\libssl-1_1-x64.dll"    "%INSTALL_ENV_DIR%\DLLs\"
 if not exist "%INSTALL_ENV_DIR%\DLLs\libcrypto-1_1-x64.dll" copy "%INSTALL_ENV_DIR%\Library\bin\libcrypto-1_1-x64.dll" "%INSTALL_ENV_DIR%\DLLs\"
 
-@rem install torch and torchvision
-call python ..\scripts\check_modules.py torch==%TORCH_VERSION% torchvision==%TORCHVISION_VERSION%
-if "%ERRORLEVEL%" EQU "0" (
-    echo "torch and torchvision have already been installed."
-) else (
-    echo "Installing torch and torchvision.."
-
-    @REM prevent from using packages from the user's home directory, to avoid conflicts
-    set PYTHONNOUSERSITE=1
-    set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
-
-    call python -m pip install --upgrade torch==%TORCH_VERSION% torchvision==%TORCHVISION_VERSION% --index-url %TORCH_INDEX_URL% || (
-        echo "Error installing torch. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
-        pause
-        exit /b
-    )
-)
-
-call python -c "from importlib.metadata import version; print('torch version:', version('torch'))"
-
+@rem install or upgrade the required modules
 set PATH=C:\Windows\System32;%PATH%
 
-@rem install/upgrade sdkit
-call python ..\scripts\check_modules.py sdkit sdkit.models ldm transformers numpy antlr4 gfpgan realesrgan
-if "%ERRORLEVEL%" EQU "0" (
-    echo "sdkit is already installed."
+@REM prevent from using packages from the user's home directory, to avoid conflicts
+set PYTHONNOUSERSITE=1
+set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 
-    @rem skip sdkit upgrade if in developer-mode
-    if not exist "..\src\sdkit" (
-        @REM prevent from using packages from the user's home directory, to avoid conflicts
-        set PYTHONNOUSERSITE=1
-        set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
-
-        call python -m pip install --upgrade sdkit==%SDKIT_VERSION% -q || (
-            echo "Error updating sdkit"
-        )
-    )
-) else (
-    echo "Installing sdkit: https://pypi.org/project/sdkit/"
-
-    @REM prevent from using packages from the user's home directory, to avoid conflicts
-    set PYTHONNOUSERSITE=1
-    set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
-
-    call python -m pip install sdkit==%SDKIT_VERSION% || (
-        echo "Error installing sdkit. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
-        pause
-        exit /b
-    )
-)
-
-call python -c "from importlib.metadata import version; print('sdkit version:', version('sdkit'))"
-
-@rem upgrade stable-diffusion-sdkit
-call python -m pip install --upgrade stable-diffusion-sdkit==%SD_VERSION% -q || (
-    echo "Error updating stable-diffusion-sdkit"
-)
-call python -c "from importlib.metadata import version; print('stable-diffusion version:', version('stable-diffusion-sdkit'))"
-
-@rem install rich
-call python ..\scripts\check_modules.py rich
-if "%ERRORLEVEL%" EQU "0" (
-    echo "rich has already been installed."
-) else (
-    echo "Installing rich.."
-
-    set PYTHONNOUSERSITE=1
-    set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
-
-    call python -m pip install rich || (
-        echo "Error installing rich. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
-        pause
-        exit /b
-    )
-)
-
-set PATH=C:\Windows\System32;%PATH%
-
-call python ..\scripts\check_modules.py uvicorn fastapi
-@if "%ERRORLEVEL%" EQU "0" (
-    echo "Packages necessary for Easy Diffusion were already installed"
-) else (
-    @echo. & echo "Downloading packages necessary for Easy Diffusion..." & echo.
-
-    set PYTHONNOUSERSITE=1
-    set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
-
-    @call conda install -c conda-forge -y uvicorn fastapi || (
-        echo "Error installing the packages necessary for Easy Diffusion. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!"
-        pause
-        exit /b
-    )
+call python ..\scripts\check_modules.py
+if "%ERRORLEVEL%" NEQ "0" (
+    pause
+    exit /b
 )
 
 call WHERE uvicorn > .tmp
