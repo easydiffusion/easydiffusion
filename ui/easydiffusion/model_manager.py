@@ -245,6 +245,7 @@ def getModels():
         except MaliciousModelException as e:
             models["scan-error"] = e
 
+    log.info(f"[green]Scanning all model folders for models...[/]")
     # custom models
     listModels(model_type="stable-diffusion")
     listModels(model_type="vae")
