@@ -68,6 +68,20 @@ case "${OS_NAME}" in
     *)          echo "Unknown OS: $OS_NAME! This script runs only on Linux or Mac" && exit
 esac
 
+# Detect GPU types
+
+if grep -q amdgpu /proc/bus/pci/devices; then
+   echo AMD GPU detected
+   HAS_AMD=yes
+fi
+
+if grep -q nvidia /proc/bus/pci/devices; then
+   echo NVidia GPU detected
+   HAS_NVIDIA=yes
+fi
+
+
+
 # install torch and torchvision
 if python ../scripts/check_modules.py torch==$TORCH_VERSION torchvision==$TORCHVISION_VERSION; then
     echo "torch and torchvision have already been installed."
@@ -143,7 +157,7 @@ else
     if conda install -c conda-forge -y uvicorn fastapi ; then
         echo "Installed. Testing.."
     else
-        fail "'conda install uvicorn' failed" 
+        fail "'conda install uvicorn' failed"
     fi
 
     if ! command -v uvicorn &> /dev/null; then
@@ -173,7 +187,7 @@ else
     if [ -f "../models/stable-diffusion/sd-v1-4.ckpt" ]; then
         model_size=`filesize "../models/stable-diffusion/sd-v1-4.ckpt"`
         if [ ! "$model_size" == "4265380512" ]; then
-	    fail "The downloaded model file was invalid! Bytes downloaded: $model_size"
+            fail "The downloaded model file was invalid! Bytes downloaded: $model_size"
         fi
     else
         fail "Error downloading the data files (weights) for Stable Diffusion"
