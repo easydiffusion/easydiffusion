@@ -1,5 +1,9 @@
 """
 This script checks and installs the required modules.
+
+TODO - Maybe replace the bulk of this script with a call to `pip install -f requirements.txt`, with
+a custom index URL depending on the platform.
+
 """
 
 import os
@@ -9,8 +13,8 @@ import platform
 os_name = platform.system()
 
 modules_to_check = {
-    "torch": ("1.13.1", "2.0.0"),
-    "torchvision": ("0.14.1", "0.15.1"),
+    "torch": ("1.11.0", "1.13.1", "2.0.0"),
+    "torchvision": ("0.12.0", "0.14.1", "0.15.1"),
     "sdkit": "1.0.72",
     "stable-diffusion-sdkit": "2.1.4",
     "rich": "12.6.0",
