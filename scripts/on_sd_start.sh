@@ -162,8 +162,11 @@ if [ -f "../models/stable-diffusion/sd-v1-4.ckpt" ]; then
     fi
 fi
 
-if [ ! -f "../models/stable-diffusion/sd-v1-4.ckpt" ]; then
-    echo "Downloading data files (weights) for Stable Diffusion.."
+
+if find "../models/stable-diffusion/" -name "*.ckpt" -or -name "*.safetensors" > /dev/null; then
+    echo "Found existing model file(s)."
+else
+    echo "Downloading data files (weights) for Stable Diffusion..."
 
     curl -L -k https://huggingface.co/CompVis/stable-diffusion-v-1-4-original/resolve/main/sd-v1-4.ckpt > ../models/stable-diffusion/sd-v1-4.ckpt
 
