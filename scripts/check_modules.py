@@ -60,7 +60,7 @@ def init():
 ### utilities
 
 
-def get_allowed_versions(module_name: str, allowed_versions: tuple[str]):
+def get_allowed_versions(module_name: str, allowed_versions: tuple):
     allowed_versions = (allowed_versions,) if isinstance(allowed_versions, str) else allowed_versions
     latest_version = allowed_versions[-1]
 
