@@ -57,7 +57,7 @@ def init():
             except:
                 fail(model_type)
 
-            print(model_type, "model(s) found.")
+        print(model_type, "model(s) found.")
 
 
 ### utilities
