@@ -6,6 +6,7 @@ from sdkit.utils import hash_file_quick
 import os
 import shutil
 from glob import glob
+import traceback
 
 models_base_dir = os.path.abspath(os.path.join("..", "models"))
 
@@ -55,6 +56,7 @@ def init():
             try:
                 download_if_necessary(model_type, model["file_name"], model["model_id"])
             except:
+                traceback.print_exc()
                 fail(model_type)
 
         print(model_type, "model(s) found.")

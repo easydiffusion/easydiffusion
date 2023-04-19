@@ -11,6 +11,7 @@ a custom index URL depending on the platform.
 import os
 from importlib.metadata import version as pkg_version
 import platform
+import traceback
 
 os_name = platform.system()
 
@@ -58,6 +59,7 @@ def init():
             try:
                 install(module_name, latest_version)
             except:
+                traceback.print_exc()
                 fail(module_name)
 
         print(f"{module_name}: {version(module_name)}")
