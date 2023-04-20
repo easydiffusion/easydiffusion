@@ -23,6 +23,7 @@ modules_to_check = {
     "rich": "12.6.0",
     "uvicorn": "0.19.0",
     "fastapi": "0.85.1",
+    "xformers": "0.0.16",
 }
 
 
