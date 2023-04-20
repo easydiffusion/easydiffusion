@@ -51,9 +51,9 @@
         }
         appConfig = await appConfig.json()
 
-        const updateBranch = appConfig.update_branch || 'main'
+        const notesBranch = (appConfig.update_branch !== "beta" ? "main" : "beta")
 
-        let releaseNotes = await fetch(`https://raw.githubusercontent.com/cmdr2/stable-diffusion-ui/${updateBranch}/CHANGES.md`)
+        let releaseNotes = await fetch(`https://raw.githubusercontent.com/cmdr2/stable-diffusion-ui/${notesBranch}/CHANGES.md`)
         if (!releaseNotes.ok) {
             console.error('[release-notes] Failed to get CHANGES.md.')
             return
