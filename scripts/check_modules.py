@@ -35,7 +35,7 @@ def version(module_name: str) -> str:
 
 
 def install(module_name: str, module_version: str):
-    if module_name == "xformers" and os_name == "Darwin":  # xformers is not available on mac
+    if module_name == "xformers" and (os_name == "Darwin" or is_amd_on_linux()):
         return
 
     index_url = None
@@ -87,11 +87,8 @@ def apply_torch_install_overrides(module_version: str):
     if os_name == "Windows":
         module_version += "+cu117"
         index_url = "https://download.pytorch.org/whl/cu117"
-    elif os_name == "Linux":
-        with open("/proc/bus/pci/devices", "r") as f:
-            device_info = f.read()
-            if "amdgpu" in device_info and "nvidia" not in device_info:
-                index_url = "https://download.pytorch.org/whl/rocm5.4.2"
+    elif is_amd_on_linux():
+        index_url = "https://download.pytorch.org/whl/rocm5.4.2"
 
     return module_version, index_url
 
@@ -105,6 +102,16 @@ def include_cuda_versions(module_versions: tuple) -> tuple:
     allowed_versions += tuple(f"{v}+rocm5.4.2" for v in module_versions)
 
     return allowed_versions
+
+
+def is_amd_on_linux():
+    if os_name == "Linux":
+        with open("/proc/bus/pci/devices", "r") as f:
+            device_info = f.read()
+            if "amdgpu" in device_info and "nvidia" not in device_info:
+                return True
+
+    return False
 
 
 def fail(module_name):
