@@ -18,7 +18,7 @@ os_name = platform.system()
 modules_to_check = {
     "torch": ("1.11.0", "1.13.1", "2.0.0"),
     "torchvision": ("0.12.0", "0.14.1", "0.15.1"),
-    "sdkit": "1.0.75",
+    "sdkit": "1.0.76",
     "stable-diffusion-sdkit": "2.1.4",
     "rich": "12.6.0",
     "uvicorn": "0.19.0",
@@ -34,6 +34,9 @@ def version(module_name: str) -> str:
 
 
 def install(module_name: str, module_version: str):
+    if module_name == "xformers" and os_name == "Darwin":  # xformers is not available on mac
+        return
+
     index_url = None
     if module_name in ("torch", "torchvision"):
         module_version, index_url = apply_torch_install_overrides(module_version)
