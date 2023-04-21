@@ -79,7 +79,6 @@ async function loadUIPlugins() {
 
 /* PLUGIN MANAGER */
 /* plugin tab */
-//document.querySelector('.tab-container #tab-news')?.insertAdjacentHTML('beforebegin', `
 document.querySelector('.tab-container')?.insertAdjacentHTML('beforeend', `
     <span id="tab-plugin" class="tab">
         <span><i class="fa fa-puzzle-piece icon"></i> Plugins</span>
@@ -101,12 +100,122 @@ if (tabPlugin) {
 
 const plugin = document.querySelector('#plugin')
 plugin.innerHTML = `
-<div id="plugin-manager" class="tab-content-inner">
-    <h1>Plugin Manager</h1>
-    <div class="plugin-manager-intro">Changes take effect after reloading the page<br /></div>
-    <div class="parameters-table"></div>
-</div>`
-const pluginsTable = document.querySelector("#plugin-manager .parameters-table")
+    <div id="plugin-manager" class="tab-content-inner">
+        <i id="plugin-notification-button" class="fa-solid fa-message">
+            <span class="plugin-notification-pill" id="notification-pill" style="display: none">!</span>
+        </i>
+        <div id="plugin-notification-list" style="display: none">
+            <h1>Notifications</h1>
+            <div class="plugin-manager-intro">The latest plugin updates are listed below</div>
+            <div class="notifications-table"></div>
+            <div class="no-notification">No new notifications</div>
+        </div>
+        <div id="plugin-manager-section">
+            <h1>Plugin Manager</h1>
+            <div class="plugin-manager-intro">Changes take effect after reloading the page</div>
+            <div class="plugins-table"></div>
+        </div>
+    </div>
+    `
+const pluginsTable = document.querySelector("#plugin-manager-section .plugins-table")
+const pluginNotificationTable = document.querySelector("#plugin-notification-list .notifications-table")
+const pluginNoNotification = document.querySelector("#plugin-notification-list .no-notification")
+
+/* notification center */
+const pluginNotificationButton = document.getElementById("plugin-notification-button");
+const pluginNotificationList = document.getElementById("plugin-notification-list");
+const notificationPill = document.getElementById("notification-pill");
+const pluginManagerSection = document.getElementById("plugin-manager-section");
+let pluginNotifications;
+
+// Add event listener to show/hide the action center
+pluginNotificationButton.addEventListener("click", function() {
+    // Hide the notification pill when the action center is opened
+    notificationPill.style.display = "none"
+    pluginNotifications.lastUpdated = Date.now()
+
+    // save the notifications
+    setStorageData('notifications', JSON.stringify(pluginNotifications))
+    
+    renderPluginNotifications()
+
+    if (pluginNotificationList.style.display === "none") {
+        pluginNotificationList.style.display = "block"
+        pluginManagerSection.style.display = "none"
+    } else {
+        pluginNotificationList.style.display = "none"
+        pluginManagerSection.style.display = "block"
+    }
+})
+
+document.addEventListener("tabClick", (e) => {
+    if (e.detail.name == 'plugin') {
+        pluginNotificationList.style.display = "none"
+        pluginManagerSection.style.display = "block"
+    }
+})
+
+async function addPluginNotification(pluginNotifications, messageText, error) {
+    const now = Date.now()
+    pluginNotifications.entries.unshift({ date: now, text: messageText, error: error }); // add new entry to the beginning of the array
+    if (pluginNotifications.entries.length > 50) {
+        pluginNotifications.entries.length = 50 // limit array length to 50 entries
+    }
+    pluginNotifications.lastUpdated = now
+    notificationPill.style.display = "block"
+    // save the notifications
+    await setStorageData('notifications', JSON.stringify(pluginNotifications))
+}
+
+function timeAgo(inputDate) {
+    const now = new Date();
+    const date = new Date(inputDate);
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    const units = [
+        { name: 'year', seconds: 31536000 },
+        { name: 'month', seconds: 2592000 },
+        { name: 'week', seconds: 604800 },
+        { name: 'day', seconds: 86400 },
+        { name: 'hour', seconds: 3600 },
+        { name: 'minute', seconds: 60 },
+        { name: 'second', seconds: 1 }
+    ];
+
+    for (const unit of units) {
+        const unitValue = Math.floor(diffInSeconds / unit.seconds);
+        if (unitValue > 0) {
+            return `${unitValue} ${unit.name}${unitValue > 1 ? 's' : ''} ago`;
+        }
+    }
+
+    return 'just now';
+}
+
+function renderPluginNotifications() {
+    pluginNotificationTable.innerHTML = ''
+
+    if (pluginNotifications.entries?.length > 0) {
+        pluginNoNotification.style.display = "none"
+        pluginNotificationTable.style.display = "block"
+    }
+    else
+    {
+        pluginNoNotification.style.display = "block"
+        pluginNotificationTable.style.display = "none"
+    }
+    for (let i = 0; i < pluginNotifications.entries?.length; i++) {
+        const date = pluginNotifications.entries[i].date
+        const text = pluginNotifications.entries[i].text
+        const error = pluginNotifications.entries[i].error
+        const newRow = document.createElement('div')
+        
+        newRow.innerHTML = `
+            <div${error === true ? ' class="notification-error"' : ''}>${text}</div>
+            <div><small>${timeAgo(date)}</small></div>
+        `;
+        pluginNotificationTable.appendChild(newRow)
+     }
+}
 
 /* search box */
 function filterPlugins() {
@@ -177,7 +286,6 @@ function showToast(message, duration = 5000, error = false) {
     if (duration === null || duration === undefined) {
         duration = 5000
     }
-    
     const toast = document.createElement("div");
     toast.classList.add("plugin-toast");
     if (error === true) {
@@ -185,6 +293,7 @@ function showToast(message, duration = 5000, error = false) {
     }
     toast.innerHTML = message;
     document.body.appendChild(toast);
+    addPluginNotification(pluginNotifications, message, error)
 
     // Set the position of the toast on the screen
     const toastCount = document.querySelectorAll(".plugin-toast").length;
@@ -333,12 +442,12 @@ async function initPluginTable(plugins) {
                 if (plugin.enabled) {
                     const pluginSource = await getDocument(plugin.url);
                     if (pluginSource !== null) {
-                        warningElement?.classList.remove("hide");
                         // Store the current scroll position before navigating away
                         const currentPosition = window.pageYOffset;
                         initPluginTable(plugins)
                         // When returning to the page, set the scroll position to the stored value
                         window.scrollTo(0, currentPosition);
+                        warningElement?.classList.remove("hide");
                         plugin.code = pluginSource
                         console.log(`Plugin ${plugin.name} installed`);
                         showToast("Plugin " + plugin.name + " installed");
@@ -541,7 +650,7 @@ async function initPlugins(refreshPlugins = false) {
         // try and load plugins from local cache
         plugins = await getStorageData('plugins')
         if (plugins !== undefined) {
-            plugins = JSON.parse(await getStorageData('plugins'))
+            plugins = JSON.parse(plugins)
 
             // remove duplicate entries if any (should not happen)
             plugins = deduplicatePluginsById(plugins)
@@ -561,6 +670,20 @@ async function initPlugins(refreshPlugins = false) {
         {
             plugins = []
             pluginsLoaded = false
+        }
+        
+        // load the notifications
+        pluginNotifications = await getStorageData('notifications')
+        if (pluginNotifications !== undefined) {
+            pluginNotifications = JSON.parse(pluginNotifications)
+            if (pluginNotifications.lastUpdated <= pluginNotifications.entries[0].date) {
+                notificationPill.style.display = "block";
+            }
+        }
+        else
+        {
+            pluginNotifications = {};
+            pluginNotifications.entries = [];
         }
     }
 
@@ -617,6 +740,7 @@ async function initPlugins(refreshPlugins = false) {
     }
     initPluginsInProgress = false
 }
+setTimeout(initPlugins, 1000);
 
 function updateCompatIssueIds() {
     // Loop through each plugin
@@ -738,7 +862,7 @@ async function downloadPlugins(pluginCatalog, plugins, refreshPlugins) {
             const pluginSource = await getDocument(plugin.url);
             if (pluginSource !== null && pluginSource !== existingPlugin.code) {
                 console.log(`Plugin ${plugin.name} updated`);
-                showToast("Plugin " + plugin.name + " updated", 20000);
+                showToast("Plugin " + plugin.name + " updated", 5000);
                 // Update the corresponding plugin
                 const updatedPlugin = {
                     ...existingPlugin,
