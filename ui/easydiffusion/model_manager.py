@@ -49,6 +49,7 @@ def load_default_models(context: Context):
         except Exception as e:
             log.error(f"[red]Error while loading {model_type} model: {context.model_paths[model_type]}[/red]")
             log.exception(e)
+            del context.model_paths[model_type]
 
 def unload_all(context: Context):
     for model_type in KNOWN_MODEL_TYPES:
@@ -245,6 +246,7 @@ def getModels():
         except MaliciousModelException as e:
             models["scan-error"] = e
 
+    log.info(f"[green]Scanning all model folders for models...[/]")
     # custom models
     listModels(model_type="stable-diffusion")
     listModels(model_type="vae")
