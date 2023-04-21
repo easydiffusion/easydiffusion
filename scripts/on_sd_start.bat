@@ -4,7 +4,6 @@
 @REM Note to self: Please rewrite this in Python. For the sake of your own sanity.
 
 @copy sd-ui-files\scripts\on_env_start.bat scripts\ /Y
-@copy sd-ui-files\scripts\bootstrap.bat scripts\ /Y
 @copy sd-ui-files\scripts\check_modules.py scripts\ /Y
 @copy sd-ui-files\scripts\check_models.py scripts\ /Y
 
