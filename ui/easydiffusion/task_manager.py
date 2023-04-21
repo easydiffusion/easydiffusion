@@ -317,6 +317,9 @@ def thread_render(device):
             def step_callback():
                 global current_state_error
 
+                task_cache.keep(id(task), TASK_TTL)
+                session_cache.keep(task.task_data.session_id, TASK_TTL)
+
                 if (
                     isinstance(current_state_error, SystemExit)
                     or isinstance(current_state_error, StopAsyncIteration)
