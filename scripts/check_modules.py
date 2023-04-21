@@ -45,7 +45,7 @@ def install(module_name: str, module_version: str):
     install_cmd = f"python -m pip install --upgrade {module_name}=={module_version}"
     if index_url:
         install_cmd += f" --index-url {index_url}"
-    if module_name == "sdkit":
+    if module_name == "sdkit" and version("sdkit") is not None:
         install_cmd += " -q"
 
     print(">", install_cmd)
