@@ -305,6 +305,7 @@ DIV.no-notification {
 /* NOTIFICATION CENTER */
 #plugin-notification-button {
     float: right;
+    margin-top: 30px;
 }
 
 #plugin-notification-button:hover {
