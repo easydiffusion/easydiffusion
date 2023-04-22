@@ -95,6 +95,7 @@ let initImageClearBtn = document.querySelector('.init_image_clear')
 let promptStrengthContainer = document.querySelector('#prompt_strength_container')
 
 let initialText = document.querySelector("#initial-text")
+let versionText = document.querySelector("#version")
 let previewTools = document.querySelector("#preview-tools")
 let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
 let showDownloadPopupBtn = document.querySelector("#show-download-popup")
@@ -104,6 +105,7 @@ let saveAllZipToggle = document.querySelector("#zip_toggle")
 let saveAllTreeToggle = document.querySelector("#tree_toggle")
 let saveAllJSONToggle = document.querySelector("#json_toggle")
 let saveAllFoldersOption = document.querySelector("#download-add-folders")
+let splashScreenPopup = document.querySelector("#splash-screen")
 
 let maskSetting = document.querySelector('#enable_mask')
 
@@ -1796,6 +1798,19 @@ function resumeClient() {
         resumeBtn.addEventListener("click", playbuttonclick)
     })
 }
+
+function splashScreen(force = false) {
+    const splashVersion = splashScreenPopup.dataset['version']
+    const lastSplash = localStorage.getItem("lastSplashScreenVersion") || 0
+    if (testDiffusers.checked) {
+        if (force || lastSplash < splashVersion) {
+            splashScreenPopup.classList.add("active")
+            localStorage.setItem("lastSplashScreenVersion", splashVersion)
+        }
+    }
+}
+
+document.getElementById("logo_img").addEventListener("click", (e) => { splashScreen(true) })
 
 promptField.addEventListener("input", debounce( renameMakeImageButton, 1000) )
 

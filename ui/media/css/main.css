@@ -1292,6 +1292,24 @@ body.wait-pause {
    100% { border: solid 12px var(--accent-color); }
 }
 
+#splash-screen div {
+   text-align: left;
+   max-width: 70vw;
+}
+
+#splash-screen .splash-img {
+   float: right;
+   box-shadow: none;
+   margin-left: 6px;
+}
+
+#splash-screen tt {
+   font-family: monospace;
+   background: var(--input-background-color);
+   padding: 1px 4px 1px 4px;
+   border-radius: 5px;
+}
+
 .jconfirm.jconfirm-modern .jconfirm-box div.jconfirm-title-c {
     color: var(--button-text-color);
 }
