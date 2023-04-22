@@ -11,9 +11,9 @@ Does not require technical knowledge, does not require pre-installed software. 1
 Click the download button for your operating system:
 
 <p float="left">
-  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.24/Easy-Diffusion-Windows.exe"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-win.png" width="200" /></a>
-  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.24/Easy-Diffusion-Linux.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-linux.png" width="200" /></a>
-  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.24/Easy-Diffusion-Mac.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-mac.png" width="200" /></a>
+  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.33/Easy-Diffusion-Windows.exe"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-win.png" width="200" /></a>
+  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.33/Easy-Diffusion-Linux.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-linux.png" width="200" /></a>
+  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.33/Easy-Diffusion-Mac.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-mac.png" width="200" /></a>
 </p>
 
 The installer will take care of whatever is needed. If you face any problems, you can join the friendly [Discord community](https://discord.com/invite/u9yhsFmEkB) and ask for assistance.
