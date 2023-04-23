@@ -466,6 +466,8 @@ async function initPluginTable(plugins) {
                     initPluginTable(plugins)
                     // When returning to the page, set the scroll position to the stored value
                     window.scrollTo(0, currentPosition);
+                    console.log(`Plugin ${plugin.name} uninstalled`);
+                    showToast("Plugin " + plugin.name + " uninstalled");
                 }
                 await setStorageData('plugins', JSON.stringify(plugins))
             })
