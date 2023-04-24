@@ -8,7 +8,7 @@
 @copy sd-ui-files\scripts\check_models.py scripts\ /Y
 
 if exist "%cd%\profile" (
-    set USERPROFILE=%cd%\profile
+    set HF_HOME=%cd%\profile\.cache\huggingface
 )
 
 @rem set the correct installer path (current vs legacy)
