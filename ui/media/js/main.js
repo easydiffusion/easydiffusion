@@ -107,6 +107,19 @@ let saveAllFoldersOption = document.querySelector("#download-add-folders")
 
 let maskSetting = document.querySelector('#enable_mask')
 
+let latentUpscalerField = document.querySelector("#latent_upscaler_field")
+let latentUpscalerOptions = document.querySelector("#latent_upscaler_options")
+let latentUpscalerPrompt = document.querySelector("#latent_upscaler_prompt")
+let latentUpscalerNegativePrompt = document.querySelector("#latent_upscaler_negative_prompt")
+let latentUpscalerPrompts = document.querySelector("#latent_upscaler_prompts")
+let latentUpscalerPromptsField = document.querySelector("#latent_upscaler_prompts_field")
+let latentUpscalerGuidanceScaleSlider = document.querySelector('#latent_upscaler_guidance_scale_slider')
+let latentUpscalerGuidanceScaleField = document.querySelector('#latent_upscaler_guidance_scale')
+let latentUpscalerSeed = document.querySelector('#latent_upscaler_seed')
+let latentUpscalerImgSeed = document.querySelector('#latent_upscaler_img_seed')
+let latentUpscalerNumInferenceSteps = document.querySelector('#latent_upscaler_num_inference_steps')
+let latentUpscalerGuidanceScale = document.querySelector('#latent_upscaler_guidance_scale')
+
 const processOrder = document.querySelector('#process_order_toggle')
 
 let imagePreview = document.querySelector("#preview")
@@ -1138,7 +1151,6 @@ function getCurrentUserRequest() {
             guidance_scale: parseFloat(guidanceScaleField.value),
             width: parseInt(widthField.value),
             height: parseInt(heightField.value),
-            // allow_nsfw: allowNSFWField.checked,
             vram_usage_level: vramUsageLevelField.value,
             sampler_name: samplerField.value,
             //render_device: undefined, // Set device affinity. Prefer this device, but wont activate.
@@ -1188,6 +1200,15 @@ function getCurrentUserRequest() {
     if (testDiffusers.checked && loraModelField.value) {
         newTask.reqBody.use_lora_model = loraModelField.value
         newTask.reqBody.lora_alpha = parseFloat(loraAlphaField.value)
+    }
+    if (testDiffusers.checked && latentUpscalerField.checked) {
+        newTask.reqBody.use_latent_upscaler = {
+            seed:                 latentUpscalerImgSeed.checked ? seed : latentUpscalerSeed.value,
+            num_inference_steps:  latentUpscalerNumInferenceSteps.value,
+            guidance_scale:       latentUpscalerGuidanceScale.value,
+            prompt:               latentUpscalerPromptsField.checked ? latentUpscalerPrompt.value : newTask.reqBody.original_prompt,
+            negative_prompt:      latentUpscalerPromptsField.checked ? latentUpscalerNegativePrompt.value: negativePromptField.value
+        }
     }
     return newTask
 }
@@ -1830,6 +1851,49 @@ window.addEventListener("beforeunload", function(e) {
         return true;
     }
 });
+
+/****** Latent Upscaler *****/
+
+latentUpscalerField.addEventListener('change', (e) => {
+    if (latentUpscalerField.checked) {
+        latentUpscalerOptions.classList.remove('displayNone')
+    } else {
+        latentUpscalerOptions.classList.add('displayNone')
+    }
+})
+
+latentUpscalerPromptsField.addEventListener('change', (e) => {
+    if (latentUpscalerPromptsField.checked) {
+        latentUpscalerPrompts.classList.remove('displayNone')
+    } else {
+        latentUpscalerPrompts.classList.add('displayNone')
+    }
+})
+
+/*--- Guidance ---*/
+function updateLatentUpscaleGuidanceScale() {
+    latentUpscalerGuidanceScaleField.value = latentUpscalerGuidanceScaleSlider.value / 10
+    latentUpscalerGuidanceScaleField.dispatchEvent(new Event("change"))
+}
+
+function updateLatentUpscaleGuidanceScaleSlider() {
+    if (latentUpscalerGuidanceScaleField.value < 0) {
+        latentUpscalerGuidanceScaleField.value = 0
+    } else if (latentUpscalerGuidanceScaleField.value > 50) {
+        latentUpscalerGuidanceScaleField.value = 50
+    }
+
+    latentUpscalerGuidanceScaleSlider.value = latentUpscalerGuidanceScaleField.value * 10
+    latentUpscalerGuidanceScaleSlider.dispatchEvent(new Event("change"))
+}
+
+latentUpscalerGuidanceScaleSlider.addEventListener('input', updateLatentUpscaleGuidanceScale)
+latentUpscalerGuidanceScaleField.addEventListener('input', updateLatentUpscaleGuidanceScaleSlider)
+updateLatentUpscaleGuidanceScale()
+
+
+
+/***************************************/
 
 createCollapsibles()
 prettifyInputs(document);

@@ -52,7 +52,16 @@ const SETTINGS_IDS_LIST = [
     "auto_scroll",
     "zip_toggle",
     "tree_toggle",
-    "json_toggle"
+    "json_toggle",
+    "latent_upscaler_field",
+    "latent_upscaler_seed",
+    "latent_upscaler_img_seed",
+    "latent_upscaler_num_inference_steps",
+    "latent_upscaler_guidance_scale",
+    "latent_upscaler_prompts_field",
+    "latent_upscaler_prompt",
+    "latent_upscaler_negative_prompt"
+   
 ]
 
 const IGNORE_BY_DEFAULT = [

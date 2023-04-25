@@ -106,6 +106,7 @@ def reload_models_if_necessary(context: Context, task_data: TaskData):
         "gfpgan": task_data.use_face_correction,
         "realesrgan": task_data.use_upscale,
         "nsfw_checker": True if task_data.block_nsfw else None,
+        "latent_upscaler": True if task_data.use_latent_upscaler else None,
         "lora": task_data.use_lora_model,
     }
     models_to_reload = {
@@ -256,6 +257,8 @@ def getModels():
 
     if models_scanned > 0:
         log.info(f"[green]Scanned {models_scanned} models. Nothing infected[/]")
+    else:
+        log.info("[green]No new models found[/]")
 
     # legacy
     custom_weight_path = os.path.join(app.SD_DIR, "custom-model.ckpt")

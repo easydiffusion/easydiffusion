@@ -139,17 +139,22 @@ def filter_images(task_data: TaskData, images: list, user_stopped):
         return images
 
     filters_to_apply = []
+    options = {}
     if task_data.block_nsfw:
         filters_to_apply.append("nsfw_checker")
+    if task_data.use_latent_upscaler:
+        filters_to_apply.append("latent_upscaler")
+        options['latent_upscaler_options'] = task_data
     if task_data.use_face_correction and "gfpgan" in task_data.use_face_correction.lower():
         filters_to_apply.append("gfpgan")
     if task_data.use_upscale and "realesrgan" in task_data.use_upscale.lower():
         filters_to_apply.append("realesrgan")
+        options['scale'] = task_data.upscale_amount
 
     if len(filters_to_apply) == 0:
         return images
 
-    return apply_filters(context, filters_to_apply, images, scale=task_data.upscale_amount)
+    return apply_filters(context, filters_to_apply, images, **options)
 
 
 def construct_response(images: list, seeds: list, task_data: TaskData, base_seed: int):
