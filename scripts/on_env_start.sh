@@ -4,6 +4,8 @@ source ./scripts/functions.sh
 
 printf "\n\nEasy Diffusion\n\n"
 
+export PYTHONNOUSERSITE=y
+
 if [ -f "scripts/config.sh" ]; then
     source scripts/config.sh
 fi
