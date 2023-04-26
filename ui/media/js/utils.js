@@ -781,7 +781,7 @@ Array.prototype.addEventListener = function(method, callback) {
         return
     }
 
-    console.debug('creating tab: ', request)
+    // console.debug('creating tab: ', request)
 
     if (request.css) {
         document.querySelector('body').insertAdjacentElement(
