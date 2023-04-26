@@ -12,6 +12,16 @@ if exist "scripts\user_config.bat" (
     @call scripts\user_config.bat
 )
 
+if exist "stable-diffusion\env" (
+    @set PYTHONPATH=%PYTHONPATH%;%cd%\stable-diffusion\env\lib\site-packages
+)
+
+if exist "scripts\get_config.py" (
+    @FOR /F "tokens=* USEBACKQ" %%F IN (`python scripts\get_config.py --default=main update_branch`) DO (
+        @SET update_branch=%%F
+    )
+)
+
 if "%update_branch%"=="" (
     set update_branch=main
 )
@@ -58,6 +68,7 @@ if "%update_branch%"=="" (
 @copy sd-ui-files\scripts\on_sd_start.bat scripts\ /Y
 @copy sd-ui-files\scripts\check_modules.py scripts\ /Y
 @copy sd-ui-files\scripts\check_models.py scripts\ /Y
+@copy sd-ui-files\scripts\get_config.py scripts\ /Y
 @copy "sd-ui-files\scripts\Start Stable Diffusion UI.cmd" . /Y
 @copy "sd-ui-files\scripts\Developer Console.cmd" . /Y
 

@@ -101,51 +101,6 @@ def setConfig(config):
     except:
         log.error(traceback.format_exc())
 
-    try:  # config.bat
-        config_bat_path = os.path.join(CONFIG_DIR, "config.bat")
-        config_bat = []
-
-        if "update_branch" in config:
-            config_bat.append(f"@set update_branch={config['update_branch']}")
-
-        config_bat.append(f"@set SD_UI_BIND_PORT={config['net']['listen_port']}")
-        bind_ip = "0.0.0.0" if config["net"]["listen_to_network"] else "127.0.0.1"
-        config_bat.append(f"@set SD_UI_BIND_IP={bind_ip}")
-
-        # Preserve these variables if they are set
-        for var in PRESERVE_CONFIG_VARS:
-            if os.getenv(var) is not None:
-                config_bat.append(f"@set {var}={os.getenv(var)}")
-
-        if len(config_bat) > 0:
-            with open(config_bat_path, "w", encoding="utf-8") as f:
-                f.write("\n".join(config_bat))
-    except:
-        log.error(traceback.format_exc())
-
-    try:  # config.sh
-        config_sh_path = os.path.join(CONFIG_DIR, "config.sh")
-        config_sh = ["#!/bin/bash"]
-
-        if "update_branch" in config:
-            config_sh.append(f"export update_branch={config['update_branch']}")
-
-        config_sh.append(f"export SD_UI_BIND_PORT={config['net']['listen_port']}")
-        bind_ip = "0.0.0.0" if config["net"]["listen_to_network"] else "127.0.0.1"
-        config_sh.append(f"export SD_UI_BIND_IP={bind_ip}")
-
-        # Preserve these variables if they are set
-        for var in PRESERVE_CONFIG_VARS:
-            if os.getenv(var) is not None:
-                config_bat.append(f'export {var}="{shlex.quote(os.getenv(var))}"')
-
-        if len(config_sh) > 1:
-            with open(config_sh_path, "w", encoding="utf-8") as f:
-                f.write("\n".join(config_sh))
-    except:
-        log.error(traceback.format_exc())
-
-
 def save_to_config(ckpt_model_name, vae_model_name, hypernetwork_model_name, vram_usage_level):
     config = getConfig()
     if "model" not in config:
