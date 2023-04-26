@@ -720,9 +720,140 @@ Array.prototype.addEventListener = function(method, callback) {
     const originalFunction = this[method]
     if (originalFunction) {
         this[method] = function() {
-            console.log(`Array.${method}()`, arguments)
             originalFunction.apply(this, arguments)
             callback.apply(this, arguments)
         }
     }
+}
+
+/**
+ * @typedef {object} TabOpenDetails
+ * @property {HTMLElement} contentElement
+ * @property {HTMLElement} labelElement
+ * @property {number} timesOpened
+ * @property {boolean} firstOpen
+ */
+
+/**
+ * @typedef {object} CreateTabRequest
+ * @property {string} id
+ * @property {string | Node | (() => (string | Node))} label
+ * Label text or an HTML element
+ * @property {string} icon
+ * @property {string | Node | Promise<string | Node> | (() => (string | Node | Promise<string | Node>)) | undefined} content
+ * HTML string or HTML element
+ * @property {((TabOpenDetails, Event) => (undefined | string | Node | Promise<string | Node>)) | undefined} onOpen
+ * If an HTML string or HTML element is returned, then that will replace the tab content
+ * @property {string | undefined} css
+ */
+
+/**
+ * @param {CreateTabRequest} request
+ */
+ function createTab(request) {
+    if (!request?.id) {
+        console.error('createTab() error - id is required', Error().stack)
+        return
+    }
+
+    if (!request.label) {
+        console.error('createTab() error - label is required', Error().stack)
+        return
+    }
+
+    if (!request.icon) {
+        console.error('createTab() error - icon is required', Error().stack)
+        return
+    }
+
+    if (!request.content && !request.onOpen) {
+        console.error('createTab() error - content or onOpen required', Error().stack)
+        return
+    }
+
+    const tabsContainer = document.querySelector('.tab-container')
+    if (!tabsContainer) {
+        return
+    }
+
+    const tabsContentWrapper = document.querySelector('#tab-content-wrapper')
+    if (!tabsContentWrapper) {
+        return
+    }
+
+    console.debug('creating tab: ', request)
+
+    if (request.css) {
+        document.querySelector('body').insertAdjacentElement(
+            'beforeend',
+            createElement('style', { id: `tab-${request.id}-css` }, undefined, request.css),
+        )
+    }
+
+    const label = typeof request.label === 'function' ? request.label() : request.label
+    const labelElement = label instanceof Node ? label : createElement('span', undefined, undefined, label)
+
+    const tab = createElement(
+        'span',
+        { id: `tab-${request.id}`, 'data-times-opened': 0 },
+        ['tab'],
+        createElement(
+            'span',
+            undefined,
+            undefined,
+            [
+                createElement(
+                    'i',
+                    { style: 'margin-right: 0.25em' },
+                    ['fa-solid', `${request.icon.startsWith('fa-') ? '' : 'fa-'}${request.icon}`, 'icon'],
+                ),
+                labelElement,
+            ],
+        )
+    )
+
+
+    tabsContainer.insertAdjacentElement('beforeend', tab)
+
+    const wrapper = createElement('div', { id: request.id }, ['tab-content-inner'], 'Loading..')
+
+    const tabContent = createElement('div', { id: `tab-content-${request.id}` }, ['tab-content'], wrapper)
+    tabsContentWrapper.insertAdjacentElement('beforeend', tabContent)
+
+    linkTabContents(tab)
+
+    function replaceContent(resultFactory) {
+        if (resultFactory === undefined || resultFactory === null) {
+            return
+        }
+        const result = typeof resultFactory === 'function' ? resultFactory() : resultFactory
+        if (result instanceof Promise) {
+            result.then(replaceContent)
+        } else if (result instanceof Node) {
+            wrapper.replaceChildren(result)
+        } else {
+            wrapper.innerHTML = result
+        }
+    }
+
+    replaceContent(request.content)
+
+    tab.addEventListener('click', (e) => {
+        const timesOpened = +(tab.dataset.timesOpened || 0) + 1
+        tab.dataset.timesOpened = timesOpened
+
+        if (request.onOpen) {
+            const result = request.onOpen(
+                {
+                    contentElement: wrapper,
+                    labelElement,
+                    timesOpened,
+                    firstOpen: timesOpened === 1,
+                },
+                e,
+            )
+
+            replaceContent(result)
+        }
+    })
 }
