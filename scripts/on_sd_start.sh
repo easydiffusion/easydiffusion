@@ -5,6 +5,7 @@ cp sd-ui-files/scripts/on_env_start.sh scripts/
 cp sd-ui-files/scripts/bootstrap.sh scripts/
 cp sd-ui-files/scripts/check_modules.py scripts/
 cp sd-ui-files/scripts/check_models.py scripts/
+cp sd-ui-files/scripts/get_config.py scripts/
 
 source ./scripts/functions.sh
 
@@ -74,8 +75,17 @@ python --version
 
 cd ..
 export SD_UI_PATH=`pwd`/ui
+export ED_BIND_PORT="$( python scripts/get_config.py --default=9000 net listen_port )"
+case "$( python scripts/get_config.py --default=False net listen_to_network )" in
+    "True")
+        export ED_BIND_IP=0.0.0.0
+        ;;
+    "False")
+        export ED_BIND_IP=127.0.0.1
+        ;;
+esac
 cd stable-diffusion
 
-uvicorn main:server_api --app-dir "$SD_UI_PATH" --port ${SD_UI_BIND_PORT:-9000} --host ${SD_UI_BIND_IP:-0.0.0.0} --log-level error
+uvicorn main:server_api --app-dir "$SD_UI_PATH" --port "$ED_BIND_PORT" --host "$ED_BIND_IP" --log-level error
 
 read -p "Press any key to continue"

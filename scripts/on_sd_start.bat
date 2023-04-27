@@ -6,9 +6,10 @@
 @copy sd-ui-files\scripts\on_env_start.bat scripts\ /Y
 @copy sd-ui-files\scripts\check_modules.py scripts\ /Y
 @copy sd-ui-files\scripts\check_models.py scripts\ /Y
+@copy sd-ui-files\scripts\get_config.py scripts\ /Y
 
 if exist "%cd%\profile" (
-    set USERPROFILE=%cd%\profile
+    set HF_HOME=%cd%\profile\.cache\huggingface
 )
 
 @rem set the correct installer path (current vs legacy)
@@ -103,14 +104,25 @@ call python --version
 
 @cd ..
 @set SD_UI_PATH=%cd%\ui
+
+@FOR /F "tokens=* USEBACKQ" %%F IN (`python scripts\get_config.py --default=9000 net listen_port`) DO (
+    @SET ED_BIND_PORT=%%F
+)
+
+@FOR /F "tokens=* USEBACKQ" %%F IN (`python scripts\get_config.py --default=False net listen_to_network`) DO (
+    if "%%F" EQU "True" (
+        @SET ED_BIND_IP=0.0.0.0    
+    ) else (
+        @SET ED_BIND_IP=127.0.0.1
+    )
+)
+
 @cd stable-diffusion
 
 @rem set any overrides
 set HF_HUB_DISABLE_SYMLINKS_WARNING=true
 
-@if NOT DEFINED SD_UI_BIND_PORT set SD_UI_BIND_PORT=9000
-@if NOT DEFINED SD_UI_BIND_IP set SD_UI_BIND_IP=0.0.0.0
-@uvicorn main:server_api --app-dir "%SD_UI_PATH%" --port %SD_UI_BIND_PORT% --host %SD_UI_BIND_IP% --log-level error
+@uvicorn main:server_api --app-dir "%SD_UI_PATH%" --port %ED_BIND_PORT% --host %ED_BIND_IP% --log-level error
 
 
 @pause
