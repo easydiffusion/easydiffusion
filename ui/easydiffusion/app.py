@@ -81,12 +81,8 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
             config["net"] = {}
         if os.getenv("SD_UI_BIND_PORT") is not None:
             config["net"]["listen_port"] = int(os.getenv("SD_UI_BIND_PORT"))
-        else:
-            config["net"]["listen_port"] = 9000
         if os.getenv("SD_UI_BIND_IP") is not None:
             config["net"]["listen_to_network"] = os.getenv("SD_UI_BIND_IP") == "0.0.0.0"
-        else:
-            config["net"]["listen_to_network"] = True
         return config
     except Exception as e:
         log.warn(traceback.format_exc())
@@ -188,7 +184,7 @@ def getIPConfig():
 def open_browser():
     config = getConfig()
     ui = config.get("ui", {})
-    net = config.get("net", {"listen_port": 9000})
+    net = config.get("net", {})
     port = net.get("listen_port", 9000)
     if ui.get("open_browser_on_start", True):
         import webbrowser
