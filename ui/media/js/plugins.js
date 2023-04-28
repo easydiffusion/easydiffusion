@@ -38,7 +38,7 @@ const PLUGINS = {
         function webp() {
             return (reqBody) => new SD.RenderTask(reqBody)
         }
-    )
+    ),
 }
 PLUGINS.OUTPUTS_FORMATS.register = function(...args) {
     const service = ServiceContainer.prototype.register.apply(this, args)

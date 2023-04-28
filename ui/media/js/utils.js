@@ -111,7 +111,7 @@ function tryLoadOldCollapsibles() {
     const old_map = {
         advancedPanelOpen: "editor-settings",
         modifiersPanelOpen: "editor-modifiers",
-        negativePromptPanelOpen: "editor-inputs-prompt"
+        negativePromptPanelOpen: "editor-inputs-prompt",
     }
     if (localStorage.getItem(Object.keys(old_map)[0])) {
         let result = {}
@@ -195,7 +195,7 @@ function BraceExpander() {
             ? bracePair(tkns, iPosn + 1, n, lst)
             : {
                   close: iPosn,
-                  commas: lst
+                  commas: lst,
               }
     }
 
@@ -207,7 +207,7 @@ function BraceExpander() {
                 ? dctSofar
                 : {
                       fn: and,
-                      args: []
+                      args: [],
                   },
             head = tkns[0],
             tail = head ? tkns.slice(1) : [],
@@ -217,7 +217,7 @@ function BraceExpander() {
         return andTree(
             {
                 fn: and,
-                args: dctParse.args.concat(lstOR ? orTree(dctParse, lstOR[0], dctBrace.commas) : head)
+                args: dctParse.args.concat(lstOR ? orTree(dctParse, lstOR[0], dctBrace.commas) : head),
             },
             lstOR ? lstOR[1] : tail
         )
@@ -238,7 +238,7 @@ function BraceExpander() {
                 })
                 .map(function(ts) {
                     return ts.length > 1 ? andTree(null, ts)[0] : ts[0]
-                })
+                }),
         }
     }
 
@@ -344,11 +344,11 @@ function PromiseSource() {
     const srcPromise = new Promise((resolve, reject) => {
         Object.defineProperties(this, {
             resolve: { value: resolve, writable: false },
-            reject: { value: reject, writable: false }
+            reject: { value: reject, writable: false },
         })
     })
     Object.defineProperties(this, {
-        promise: { value: makeQuerablePromise(srcPromise), writable: false }
+        promise: { value: makeQuerablePromise(srcPromise), writable: false },
     })
 }
 
@@ -471,20 +471,20 @@ function makeQuerablePromise(promise) {
     )
     Object.defineProperties(qurPro, {
         isResolved: {
-            get: () => isResolved
+            get: () => isResolved,
         },
         resolvedValue: {
-            get: () => resolvedValue
+            get: () => resolvedValue,
         },
         isPending: {
-            get: () => isPending
+            get: () => isPending,
         },
         isRejected: {
-            get: () => isRejected
+            get: () => isRejected,
         },
         rejectReason: {
-            get: () => rejectReason
-        }
+            get: () => rejectReason,
+        },
     })
     return qurPro
 }
@@ -790,9 +790,9 @@ function createTab(request) {
             createElement("i", { style: "margin-right: 0.25em" }, [
                 "fa-solid",
                 `${request.icon.startsWith("fa-") ? "" : "fa-"}${request.icon}`,
-                "icon"
+                "icon",
             ]),
-            labelElement
+            labelElement,
         ])
     )
 
@@ -831,7 +831,7 @@ function createTab(request) {
                     contentElement: wrapper,
                     labelElement,
                     timesOpened,
-                    firstOpen: timesOpened === 1
+                    firstOpen: timesOpened === 1,
                 },
                 e
             )

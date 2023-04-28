@@ -30,14 +30,14 @@ function initTheme() {
                 THEMES.push({
                     key: theme_key,
                     name: getThemeName(theme_key),
-                    rule: rule
+                    rule: rule,
                 })
             }
             if (selector && selector == ":root") {
                 DEFAULT_THEME = {
                     key: "theme-default",
                     name: "Default",
-                    rule: rule
+                    rule: rule,
                 }
             }
         })

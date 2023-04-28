@@ -106,7 +106,7 @@ jasmineRequire.HtmlReporter = function(j$) {
                     createDom("a", {
                         className: "jasmine-title",
                         href: "http://jasmine.github.io/",
-                        target: "_blank"
+                        target: "_blank",
                     }),
                     createDom("span", { className: "jasmine-version" }, j$.version)
                 ),
@@ -163,7 +163,7 @@ jasmineRequire.HtmlReporter = function(j$) {
                 createDom("li", {
                     className: this.displaySpecInCorrectFormat(result),
                     id: "spec_" + result.id,
-                    title: result.fullName
+                    title: result.fullName,
                 })
             )
 
@@ -246,7 +246,7 @@ jasmineRequire.HtmlReporter = function(j$) {
                         "a",
                         {
                             title: "randomized with seed " + order.seed,
-                            href: seedHref(order.seed)
+                            href: seedHref(order.seed),
                         },
                         order.seed
                     )
@@ -428,7 +428,7 @@ jasmineRequire.HtmlReporter = function(j$) {
                         createDom(
                             "li",
                             {
-                                className: "jasmine-suite-detail jasmine-" + resultNode.result.status
+                                className: "jasmine-suite-detail jasmine-" + resultNode.result.status,
                             },
                             createDom("a", { href: specHref(resultNode.result) }, resultNode.result.description)
                         )
@@ -454,7 +454,7 @@ jasmineRequire.HtmlReporter = function(j$) {
                             "li",
                             {
                                 className: "jasmine-" + resultNode.result.status,
-                                id: "spec-" + resultNode.result.id
+                                id: "spec-" + resultNode.result.id,
                             },
                             createDom("a", { href: specHref(resultNode.result) }, specDescription)
                         )
@@ -477,7 +477,7 @@ jasmineRequire.HtmlReporter = function(j$) {
                         createDom("input", {
                             className: "jasmine-fail-fast",
                             id: "jasmine-fail-fast",
-                            type: "checkbox"
+                            type: "checkbox",
                         }),
                         createDom(
                             "label",
@@ -491,7 +491,7 @@ jasmineRequire.HtmlReporter = function(j$) {
                         createDom("input", {
                             className: "jasmine-throw",
                             id: "jasmine-throw-failures",
-                            type: "checkbox"
+                            type: "checkbox",
                         }),
                         createDom(
                             "label",
@@ -505,7 +505,7 @@ jasmineRequire.HtmlReporter = function(j$) {
                         createDom("input", {
                             className: "jasmine-random",
                             id: "jasmine-random-order",
-                            type: "checkbox"
+                            type: "checkbox",
                         }),
                         createDom(
                             "label",
@@ -519,7 +519,7 @@ jasmineRequire.HtmlReporter = function(j$) {
                         createDom("input", {
                             className: "jasmine-disabled",
                             id: "jasmine-hide-disabled",
-                            type: "checkbox"
+                            type: "checkbox",
                         }),
                         createDom(
                             "label",
@@ -608,7 +608,7 @@ jasmineRequire.HtmlReporter = function(j$) {
                         message: warning,
                         stack: result.deprecationWarnings[i].stack,
                         runnableName: result.fullName,
-                        runnableType: runnableType
+                        runnableType: runnableType,
                     })
                 }
             }

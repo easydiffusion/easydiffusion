@@ -8,7 +8,7 @@ var ParameterType = {
     select: "select",
     select_multiple: "select_multiple",
     slider: "slider",
-    custom: "custom"
+    custom: "custom",
 }
 
 /**
@@ -36,10 +36,10 @@ var PARAMETERS = [
             // Note: options expanded dynamically
             {
                 value: "theme-default",
-                label: "Default"
-            }
+                label: "Default",
+            },
         ],
-        icon: "fa-palette"
+        icon: "fa-palette",
     },
     {
         id: "save_to_disk",
@@ -47,7 +47,7 @@ var PARAMETERS = [
         label: "Auto-Save Images",
         note: "automatically saves images to the specified location",
         icon: "fa-download",
-        default: false
+        default: false,
     },
     {
         id: "diskPath",
@@ -55,7 +55,7 @@ var PARAMETERS = [
         label: "Save Location",
         render: (parameter) => {
             return `<input id="${parameter.id}" name="${parameter.id}" size="30" disabled>`
-        }
+        },
     },
     {
         id: "metadata_output_format",
@@ -66,29 +66,29 @@ var PARAMETERS = [
         options: [
             {
                 value: "none",
-                label: "none"
+                label: "none",
             },
             {
                 value: "txt",
-                label: "txt"
+                label: "txt",
             },
             {
                 value: "json",
-                label: "json"
+                label: "json",
             },
             {
                 value: "embed",
-                label: "embed"
+                label: "embed",
             },
             {
                 value: "embed,txt",
-                label: "embed & txt"
+                label: "embed & txt",
             },
             {
                 value: "embed,json",
-                label: "embed & json"
-            }
-        ]
+                label: "embed & json",
+            },
+        ],
     },
     {
         id: "block_nsfw",
@@ -96,7 +96,7 @@ var PARAMETERS = [
         label: "Block NSFW images",
         note: "blurs out NSFW images",
         icon: "fa-land-mine-on",
-        default: false
+        default: false,
     },
     {
         id: "sound_toggle",
@@ -104,7 +104,7 @@ var PARAMETERS = [
         label: "Enable Sound",
         note: "plays a sound on task completion",
         icon: "fa-volume-low",
-        default: true
+        default: true,
     },
     {
         id: "process_order_toggle",
@@ -112,7 +112,7 @@ var PARAMETERS = [
         label: "Process newest jobs first",
         note: "reverse the normal processing order",
         icon: "fa-arrow-down-short-wide",
-        default: false
+        default: false,
     },
     {
         id: "ui_open_browser_on_start",
@@ -121,7 +121,7 @@ var PARAMETERS = [
         note: "starts the default browser on startup",
         icon: "fa-window-restore",
         default: true,
-        saveInAppConfig: true
+        saveInAppConfig: true,
     },
     {
         id: "vram_usage_level",
@@ -137,8 +137,8 @@ var PARAMETERS = [
         options: [
             { value: "balanced", label: "Balanced" },
             { value: "high", label: "High" },
-            { value: "low", label: "Low" }
-        ]
+            { value: "low", label: "Low" },
+        ],
     },
     {
         id: "use_cpu",
@@ -146,20 +146,20 @@ var PARAMETERS = [
         label: "Use CPU (not GPU)",
         note: "warning: this will be *very* slow",
         icon: "fa-microchip",
-        default: false
+        default: false,
     },
     {
         id: "auto_pick_gpus",
         type: ParameterType.checkbox,
         label: "Automatically pick the GPUs (experimental)",
-        default: false
+        default: false,
     },
     {
         id: "use_gpus",
         type: ParameterType.select_multiple,
         label: "GPUs to use (experimental)",
         note: "to process in parallel",
-        default: false
+        default: false,
     },
     {
         id: "auto_save_settings",
@@ -167,7 +167,7 @@ var PARAMETERS = [
         label: "Auto-Save Settings",
         note: "restores settings on browser load",
         icon: "fa-gear",
-        default: true
+        default: true,
     },
     {
         id: "confirm_dangerous_actions",
@@ -176,7 +176,7 @@ var PARAMETERS = [
         note:
             "Actions that might lead to data loss must either be clicked with the shift key pressed, or confirmed in an 'Are you sure?' dialog",
         icon: "fa-check-double",
-        default: true
+        default: true,
     },
     {
         id: "listen_to_network",
@@ -185,7 +185,7 @@ var PARAMETERS = [
         note: "Other devices on your network can access this web page",
         icon: "fa-network-wired",
         default: true,
-        saveInAppConfig: true
+        saveInAppConfig: true,
     },
     {
         id: "listen_port",
@@ -196,7 +196,7 @@ var PARAMETERS = [
         render: (parameter) => {
             return `<input id="${parameter.id}" name="${parameter.id}" size="6" value="9000" onkeypress="preventNonNumericalInput(event)">`
         },
-        saveInAppConfig: true
+        saveInAppConfig: true,
     },
     {
         id: "use_beta_channel",
@@ -205,7 +205,7 @@ var PARAMETERS = [
         note:
             "Get the latest features immediately (but could be less stable). Please restart the program after changing this.",
         icon: "fa-fire",
-        default: false
+        default: false,
     },
     {
         id: "test_diffusers",
@@ -215,8 +215,8 @@ var PARAMETERS = [
             "<b>Experimental! Can have bugs!</b> Use upcoming features (like LoRA) in our new engine. Please press Save, then restart the program after changing this.",
         icon: "fa-bolt",
         default: false,
-        saveInAppConfig: true
-    }
+        saveInAppConfig: true,
+    },
 ]
 
 function getParameterSettingsEntry(id) {
@@ -309,7 +309,7 @@ function initParameters(parameters) {
             [
                 createElement("div", undefined, undefined, icon),
                 createElement("div", undefined, undefined, [labelElement, ...noteElements]),
-                elementWrapper
+                elementWrapper,
             ]
         )
         parametersTable.appendChild(newrow)
@@ -353,9 +353,9 @@ async function changeAppConfig(configDelta) {
         let res = await fetch("/app_config", {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             },
-            body: JSON.stringify(configDelta)
+            body: JSON.stringify(configDelta),
         })
         res = await res.json()
 
@@ -607,7 +607,7 @@ saveSettingsBtn.addEventListener("click", function() {
 
     const updateAppConfigRequest = {
         render_devices: getCurrentRenderDeviceSelection(),
-        update_branch: updateBranch
+        update_branch: updateBranch,
     }
 
     Array.from(parametersTable.children).forEach((parameterRow) => {

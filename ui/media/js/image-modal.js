@@ -65,7 +65,7 @@ const imageModal = (function() {
 
     const state = {
         previous: undefined,
-        next: undefined
+        next: undefined,
     }
 
     const clear = () => {

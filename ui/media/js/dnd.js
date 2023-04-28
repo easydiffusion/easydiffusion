@@ -44,7 +44,7 @@ const TASK_MAPPING = {
             promptField.value = prompt
         },
         readUI: () => promptField.value,
-        parse: (val) => val
+        parse: (val) => val,
     },
     negative_prompt: {
         name: "Negative Prompt",
@@ -52,7 +52,7 @@ const TASK_MAPPING = {
             negativePromptField.value = negative_prompt
         },
         readUI: () => negativePromptField.value,
-        parse: (val) => val
+        parse: (val) => val,
     },
     active_tags: {
         name: "Image Modifiers",
@@ -60,7 +60,7 @@ const TASK_MAPPING = {
             refreshModifiersState(active_tags)
         },
         readUI: () => activeTags.map((x) => x.name),
-        parse: (val) => val
+        parse: (val) => val,
     },
     inactive_tags: {
         name: "Inactive Image Modifiers",
@@ -68,7 +68,7 @@ const TASK_MAPPING = {
             refreshInactiveTags(inactive_tags)
         },
         readUI: () => activeTags.filter((tag) => tag.inactive === true).map((x) => x.name),
-        parse: (val) => val
+        parse: (val) => val,
     },
     width: {
         name: "Width",
@@ -80,7 +80,7 @@ const TASK_MAPPING = {
             }
         },
         readUI: () => parseInt(widthField.value),
-        parse: (val) => parseInt(val)
+        parse: (val) => parseInt(val),
     },
     height: {
         name: "Height",
@@ -92,7 +92,7 @@ const TASK_MAPPING = {
             }
         },
         readUI: () => parseInt(heightField.value),
-        parse: (val) => parseInt(val)
+        parse: (val) => parseInt(val),
     },
     seed: {
         name: "Seed",
@@ -109,7 +109,7 @@ const TASK_MAPPING = {
             seedField.value = seed
         },
         readUI: () => parseInt(seedField.value), // just return the value the user is seeing in the UI
-        parse: (val) => parseInt(val)
+        parse: (val) => parseInt(val),
     },
     num_inference_steps: {
         name: "Steps",
@@ -117,7 +117,7 @@ const TASK_MAPPING = {
             numInferenceStepsField.value = num_inference_steps
         },
         readUI: () => parseInt(numInferenceStepsField.value),
-        parse: (val) => parseInt(val)
+        parse: (val) => parseInt(val),
     },
     guidance_scale: {
         name: "Guidance Scale",
@@ -126,7 +126,7 @@ const TASK_MAPPING = {
             updateGuidanceScaleSlider()
         },
         readUI: () => parseFloat(guidanceScaleField.value),
-        parse: (val) => parseFloat(val)
+        parse: (val) => parseFloat(val),
     },
     prompt_strength: {
         name: "Prompt Strength",
@@ -135,7 +135,7 @@ const TASK_MAPPING = {
             updatePromptStrengthSlider()
         },
         readUI: () => parseFloat(promptStrengthField.value),
-        parse: (val) => parseFloat(val)
+        parse: (val) => parseFloat(val),
     },
 
     init_image: {
@@ -144,7 +144,7 @@ const TASK_MAPPING = {
             initImagePreview.src = init_image
         },
         readUI: () => initImagePreview.src,
-        parse: (val) => val
+        parse: (val) => val,
     },
     mask: {
         name: "Mask",
@@ -156,7 +156,7 @@ const TASK_MAPPING = {
             maskSetting.checked = Boolean(mask)
         },
         readUI: () => (maskSetting.checked ? imageInpainter.getImg() : undefined),
-        parse: (val) => val
+        parse: (val) => val,
     },
     preserve_init_image_color_profile: {
         name: "Preserve Color Profile",
@@ -164,7 +164,7 @@ const TASK_MAPPING = {
             applyColorCorrectionField.checked = parseBoolean(preserve_init_image_color_profile)
         },
         readUI: () => applyColorCorrectionField.checked,
-        parse: (val) => parseBoolean(val)
+        parse: (val) => parseBoolean(val),
     },
 
     use_face_correction: {
@@ -186,7 +186,7 @@ const TASK_MAPPING = {
             //useFaceCorrectionField.checked = parseBoolean(use_face_correction)
         },
         readUI: () => (useFaceCorrectionField.checked ? gfpganModelField.value : undefined),
-        parse: (val) => val
+        parse: (val) => val,
     },
     use_upscale: {
         name: "Use Upscaling",
@@ -207,7 +207,7 @@ const TASK_MAPPING = {
             }
         },
         readUI: () => (useUpscalingField.checked ? upscaleModelField.value : undefined),
-        parse: (val) => val
+        parse: (val) => val,
     },
     upscale_amount: {
         name: "Upscale By",
@@ -215,7 +215,7 @@ const TASK_MAPPING = {
             upscaleAmountField.value = upscale_amount
         },
         readUI: () => upscaleAmountField.value,
-        parse: (val) => val
+        parse: (val) => val,
     },
     sampler_name: {
         name: "Sampler",
@@ -223,7 +223,7 @@ const TASK_MAPPING = {
             samplerField.value = sampler_name
         },
         readUI: () => samplerField.value,
-        parse: (val) => val
+        parse: (val) => val,
     },
     use_stable_diffusion_model: {
         name: "Stable Diffusion model",
@@ -238,7 +238,7 @@ const TASK_MAPPING = {
             }
         },
         readUI: () => stableDiffusionModelField.value,
-        parse: (val) => val
+        parse: (val) => val,
     },
     use_vae_model: {
         name: "VAE model",
@@ -254,7 +254,7 @@ const TASK_MAPPING = {
             vaeModelField.value = use_vae_model
         },
         readUI: () => vaeModelField.value,
-        parse: (val) => val
+        parse: (val) => val,
     },
     use_lora_model: {
         name: "LoRA model",
@@ -272,7 +272,7 @@ const TASK_MAPPING = {
             loraModelField.value = use_lora_model
         },
         readUI: () => loraModelField.value,
-        parse: (val) => val
+        parse: (val) => val,
     },
     lora_alpha: {
         name: "LoRA Strength",
@@ -281,7 +281,7 @@ const TASK_MAPPING = {
             updateLoraAlphaSlider()
         },
         readUI: () => parseFloat(loraAlphaField.value),
-        parse: (val) => parseFloat(val)
+        parse: (val) => parseFloat(val),
     },
     use_hypernetwork_model: {
         name: "Hypernetwork model",
@@ -302,7 +302,7 @@ const TASK_MAPPING = {
             hypernetworkModelField.dispatchEvent(new Event("change"))
         },
         readUI: () => hypernetworkModelField.value,
-        parse: (val) => val
+        parse: (val) => val,
     },
     hypernetwork_strength: {
         name: "Hypernetwork Strength",
@@ -311,7 +311,7 @@ const TASK_MAPPING = {
             updateHypernetworkStrengthSlider()
         },
         readUI: () => parseFloat(hypernetworkStrengthField.value),
-        parse: (val) => parseFloat(val)
+        parse: (val) => parseFloat(val),
     },
 
     num_outputs: {
@@ -320,7 +320,7 @@ const TASK_MAPPING = {
             numOutputsParallelField.value = num_outputs
         },
         readUI: () => parseInt(numOutputsParallelField.value),
-        parse: (val) => val
+        parse: (val) => val,
     },
 
     use_cpu: {
@@ -329,7 +329,7 @@ const TASK_MAPPING = {
             useCPUField.checked = use_cpu
         },
         readUI: () => useCPUField.checked,
-        parse: (val) => val
+        parse: (val) => val,
     },
 
     stream_image_progress: {
@@ -338,7 +338,7 @@ const TASK_MAPPING = {
             streamImageProgressField.checked = parseInt(numOutputsTotalField.value) > 50 ? false : stream_image_progress
         },
         readUI: () => streamImageProgressField.checked,
-        parse: (val) => Boolean(val)
+        parse: (val) => Boolean(val),
     },
     show_only_filtered_image: {
         name: "Show only the corrected/upscaled image",
@@ -346,7 +346,7 @@ const TASK_MAPPING = {
             showOnlyFilteredImageField.checked = show_only_filtered_image
         },
         readUI: () => showOnlyFilteredImageField.checked,
-        parse: (val) => Boolean(val)
+        parse: (val) => Boolean(val),
     },
     output_format: {
         name: "Output Format",
@@ -354,7 +354,7 @@ const TASK_MAPPING = {
             outputFormatField.value = output_format
         },
         readUI: () => outputFormatField.value,
-        parse: (val) => val
+        parse: (val) => val,
     },
     save_to_disk_path: {
         name: "Save to disk path",
@@ -363,8 +363,8 @@ const TASK_MAPPING = {
             diskPathField.value = save_to_disk_path
         },
         readUI: () => diskPathField.value,
-        parse: (val) => val
-    }
+        parse: (val) => val,
+    },
 }
 
 function restoreTaskToUI(task, fieldsToSkip) {
@@ -445,7 +445,7 @@ function readUI() {
     return {
         numOutputsTotal: parseInt(numOutputsTotalField.value),
         seed: TASK_MAPPING["seed"].readUI(),
-        reqBody: reqBody
+        reqBody: reqBody,
     }
 }
 function getModelPath(filename, extensions) {
@@ -485,7 +485,7 @@ const TASK_TEXT_MAPPING = {
     negative_prompt: "Negative Prompt",
     use_stable_diffusion_model: "Stable Diffusion model",
     use_hypernetwork_model: "Hypernetwork model",
-    hypernetwork_strength: "Hypernetwork Strength"
+    hypernetwork_strength: "Hypernetwork Strength",
 }
 function parseTaskFromText(str) {
     const taskReqBody = {}

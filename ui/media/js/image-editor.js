@@ -8,15 +8,15 @@ const IMAGE_EDITOR_BUTTONS = [
         icon: "fa-regular fa-circle-xmark",
         handler: (editor) => {
             editor.hide()
-        }
+        },
     },
     {
         name: "Save",
         icon: "fa-solid fa-floppy-disk",
         handler: (editor) => {
             editor.saveImage()
-        }
-    }
+        },
+    },
 ]
 
 const defaultToolBegin = (editor, ctx, x, y, is_overlay = false) => {
@@ -46,7 +46,7 @@ const IMAGE_EDITOR_TOOLS = [
         cursor: "url(/media/images/fa-pencil.svg) 0 24, pointer",
         begin: defaultToolBegin,
         move: defaultToolMove,
-        end: defaultToolEnd
+        end: defaultToolEnd,
     },
     {
         id: "erase",
@@ -76,7 +76,7 @@ const IMAGE_EDITOR_TOOLS = [
         },
         setBrush: (editor, layer) => {
             layer.ctx.globalCompositeOperation = "destination-out"
-        }
+        },
     },
     {
         id: "fill",
@@ -91,7 +91,7 @@ const IMAGE_EDITOR_TOOLS = [
             }
         },
         move: toolDoNothing,
-        end: toolDoNothing
+        end: toolDoNothing,
     },
     {
         id: "colorpicker",
@@ -106,14 +106,14 @@ const IMAGE_EDITOR_TOOLS = [
                 editor.custom_color_input.value = rgbToHex({
                     r: drawn_rgb[0] * drawn_opacity + img_rgb[0] * (1 - drawn_opacity),
                     g: drawn_rgb[1] * drawn_opacity + img_rgb[1] * (1 - drawn_opacity),
-                    b: drawn_rgb[2] * drawn_opacity + img_rgb[2] * (1 - drawn_opacity)
+                    b: drawn_rgb[2] * drawn_opacity + img_rgb[2] * (1 - drawn_opacity),
                 })
                 editor.custom_color_input.dispatchEvent(new Event("change"))
             }
         },
         move: toolDoNothing,
-        end: toolDoNothing
-    }
+        end: toolDoNothing,
+    },
 ]
 
 const IMAGE_EDITOR_ACTIONS = [
@@ -151,7 +151,7 @@ const IMAGE_EDITOR_ACTIONS = [
 
             el.click()
         },
-        trackHistory: true
+        trackHistory: true,
     },
     {
         id: "fill_all",
@@ -163,7 +163,7 @@ const IMAGE_EDITOR_ACTIONS = [
             editor.ctx_current.fill()
             editor.setBrush()
         },
-        trackHistory: true
+        trackHistory: true,
     },
     {
         id: "clear",
@@ -173,7 +173,7 @@ const IMAGE_EDITOR_ACTIONS = [
             editor.ctx_current.clearRect(0, 0, editor.width, editor.height)
             imageEditor.setImage(null, editor.width, editor.height) // properly reset the drawing canvas
         },
-        trackHistory: true
+        trackHistory: true,
     },
     {
         id: "undo",
@@ -182,7 +182,7 @@ const IMAGE_EDITOR_ACTIONS = [
         handler: (editor) => {
             editor.history.undo()
         },
-        trackHistory: false
+        trackHistory: false,
     },
     {
         id: "redo",
@@ -191,8 +191,8 @@ const IMAGE_EDITOR_ACTIONS = [
         handler: (editor) => {
             editor.history.redo()
         },
-        trackHistory: false
-    }
+        trackHistory: false,
+    },
 ]
 
 var IMAGE_EDITOR_SECTIONS = [
@@ -210,7 +210,7 @@ var IMAGE_EDITOR_SECTIONS = [
             sub_element.appendChild(icon)
             sub_element.append(tool_info.name)
             element.appendChild(sub_element)
-        }
+        },
     },
     {
         name: "color",
@@ -257,7 +257,7 @@ var IMAGE_EDITOR_SECTIONS = [
             "#c0c0c0",
             "#838383",
             "#525252",
-            "#000000"
+            "#000000",
         ],
         initElement: (element, option) => {
             if (option == "custom") {
@@ -277,7 +277,7 @@ var IMAGE_EDITOR_SECTIONS = [
         getCustom: (editor) => {
             var input = editor.popup.querySelector(".image_editor_color input")
             return input.value
-        }
+        },
     },
     {
         name: "brush_size",
@@ -290,7 +290,7 @@ var IMAGE_EDITOR_SECTIONS = [
             element.style.height = option + "px"
             element.style["margin-right"] = "2px"
             element.style["border-radius"] = (option / 2).toFixed() + "px"
-        }
+        },
     },
     {
         name: "opacity",
@@ -299,7 +299,7 @@ var IMAGE_EDITOR_SECTIONS = [
         options: [0, 0.2, 0.4, 0.6, 0.8],
         initElement: (element, option) => {
             element.style.background = `repeating-conic-gradient(rgba(0, 0, 0, ${option}) 0% 25%, rgba(255, 255, 255, ${option}) 0% 50%) 50% / 10px 10px`
-        }
+        },
     },
     {
         name: "sharpness",
@@ -317,8 +317,8 @@ var IMAGE_EDITOR_SECTIONS = [
             sub_element.style["border-radius"] = `${size}px`
             element.style.background = "none"
             element.appendChild(sub_element)
-        }
-    }
+        },
+    },
 ]
 
 class EditorHistory {
@@ -343,7 +343,7 @@ class EditorHistory {
     pushAction(action) {
         this.push({
             type: "action",
-            id: action
+            id: action,
         })
     }
     editBegin(x, y) {
@@ -351,7 +351,7 @@ class EditorHistory {
             type: "edit",
             id: this.editor.getOptionValue("tool"),
             options: Object.assign({}, this.editor.options),
-            points: [{ x: x, y: y }]
+            points: [{ x: x, y: y }],
         }
     }
     editMove(x, y) {
@@ -441,7 +441,7 @@ class ImageEditor {
             this.layers[name] = {
                 name: name,
                 canvas: canvas,
-                ctx: canvas.getContext("2d")
+                ctx: canvas.getContext("2d"),
             }
         })
 
@@ -739,7 +739,7 @@ class ImageEditor {
             touchstart: "mousedown",
             touchmove: "mousemove",
             touchend: "mouseup",
-            touchcancel: "mouseup"
+            touchcancel: "mouseup",
         }
         if (type in touchmap) {
             type = touchmap[type]
@@ -824,7 +824,7 @@ function hexToRgb(hex) {
         ? {
               r: parseInt(result[1], 16),
               g: parseInt(result[2], 16),
-              b: parseInt(result[3], 16)
+              b: parseInt(result[3], 16),
           }
         : null
 }
@@ -842,14 +842,14 @@ function flood_fill(editor, the_canvas_context, x, y, color) {
         r: pixels.data[linear_cords],
         g: pixels.data[linear_cords + 1],
         b: pixels.data[linear_cords + 2],
-        a: pixels.data[linear_cords + 3]
+        a: pixels.data[linear_cords + 3],
     }
 
     var opacity = color.a / 255
     var new_color = {
         r: parseInt(color.r * opacity + original_color.r * (1 - opacity)),
         g: parseInt(color.g * opacity + original_color.g * (1 - opacity)),
-        b: parseInt(color.b * opacity + original_color.b * (1 - opacity))
+        b: parseInt(color.b * opacity + original_color.b * (1 - opacity)),
     }
 
     if (
@@ -869,8 +869,8 @@ function flood_fill(editor, the_canvas_context, x, y, color) {
         while (
             y-- >= 0 &&
             pixelCompare(pixels.data[linear_cords], original_color.r) &&
-                pixelCompare(pixels.data[linear_cords + 1], original_color.g) &&
-                pixelCompare(pixels.data[linear_cords + 2], original_color.b)
+            pixelCompare(pixels.data[linear_cords + 1], original_color.g) &&
+            pixelCompare(pixels.data[linear_cords + 2], original_color.b)
         ) {
             linear_cords -= editor.width * 4
         }
@@ -882,8 +882,8 @@ function flood_fill(editor, the_canvas_context, x, y, color) {
         while (
             y++ < editor.height &&
             pixelCompare(pixels.data[linear_cords], original_color.r) &&
-                pixelCompare(pixels.data[linear_cords + 1], original_color.g) &&
-                pixelCompare(pixels.data[linear_cords + 2], original_color.b)
+            pixelCompare(pixels.data[linear_cords + 1], original_color.g) &&
+            pixelCompare(pixels.data[linear_cords + 2], original_color.b)
         ) {
             pixels.data[linear_cords] = new_color.r
             pixels.data[linear_cords + 1] = new_color.g

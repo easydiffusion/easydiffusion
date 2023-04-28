@@ -32,8 +32,8 @@
             this.#fetchOptions = Object.assign(
                 {
                     headers: {
-                        "Content-Type": "application/json"
-                    }
+                        "Content-Type": "application/json",
+                    },
                 },
                 options
             )
@@ -197,7 +197,7 @@
         EVENT_TASK_END,
         EVENT_TASK_ERROR,
 
-        EVENT_UNEXPECTED_RESPONSE
+        EVENT_UNEXPECTED_RESPONSE,
     ]
     Object.freeze(EVENTS_TYPES)
     const eventSource = new GenericEventSource(EVENTS_TYPES)
@@ -211,7 +211,7 @@
         loadingModel: "LoadingModel",
         online: "Online",
         rendering: "Rendering",
-        unavailable: "Unavailable"
+        unavailable: "Unavailable",
     }
     Object.freeze(ServerStates)
 
@@ -332,7 +332,7 @@
         processing: "processing",
         stopped: "stopped",
         completed: "completed",
-        failed: "failed"
+        failed: "failed",
     }
     Object.freeze(TaskStatus)
 
@@ -340,7 +340,7 @@
         TaskStatus.init,
         TaskStatus.pending,
         TaskStatus.waiting,
-        TaskStatus.processing
+        TaskStatus.processing,
         //Don't add status that are final.
     ]
 
@@ -466,10 +466,10 @@
                     res = await fetch(url, {
                         method: "POST",
                         headers: {
-                            "Content-Type": "application/json"
+                            "Content-Type": "application/json",
                         },
                         body: JSON.stringify(this._reqBody),
-                        signal: abortSignal
+                        signal: abortSignal,
                     })
                     // status_code 503, already a task running.
                 } while (res.status === 503 && (await asyncDelay(RETRY_DELAY_IF_SERVER_IS_BUSY)))
@@ -758,7 +758,7 @@
         stream_image_progress: "boolean",
         show_only_filtered_image: "boolean",
         output_format: "string",
-        output_quality: "number"
+        output_quality: "number",
     }
     const TASK_DEFAULTS = {
         sampler_name: "plms",
@@ -774,7 +774,7 @@
         block_nsfw: false,
         output_format: "png",
         output_quality: 75,
-        output_lossless: false
+        output_lossless: false,
     }
     const TASK_OPTIONAL = {
         device: "string",
@@ -786,7 +786,7 @@
         use_vae_model: "string",
         use_hypernetwork_model: "string",
         hypernetwork_strength: "number",
-        output_lossless: "boolean"
+        output_lossless: "boolean",
     }
 
     // Higer values will result in...
@@ -941,7 +941,7 @@
                     callback: function() {
                         return progressCallback?.call(this, {})
                     },
-                    status: TaskStatus.processing
+                    status: TaskStatus.processing,
                 })
             } catch (e) {
                 this.abort(err)
@@ -1086,9 +1086,9 @@
             let systemInfo = {
                 devices: {
                     all: {},
-                    active: {}
+                    active: {},
                 },
-                hosts: []
+                hosts: [],
             }
             try {
                 const res = await fetch("/get/system_info")
@@ -1117,7 +1117,7 @@
     async function getModels() {
         let models = {
             "stable-diffusion": [],
-            vae: []
+            vae: [],
         }
         try {
             const res = await fetch("/get/models")
@@ -1147,7 +1147,7 @@
             const inputPendingOptions = {
                 // Report mouse/pointer move events when queue is empty.
                 // Delay idle after mouse moves stops.
-                includeContinuous: Boolean(task_queue.size <= 0 && concurrent_generators.size <= 0)
+                includeContinuous: Boolean(task_queue.size <= 0 && concurrent_generators.size <= 0),
             }
             if (navigator.scheduling.isInputPending(inputPendingOptions)) {
                 // Browser/User still active.
@@ -1217,7 +1217,7 @@
                 eventSource.fireEvent(EVENT_TASK_ERROR, {
                     task,
                     generator,
-                    reason: cTsk?.promise?.rejectReason || task.exception
+                    reason: cTsk?.promise?.rejectReason || task.exception,
                 })
                 task_queue.delete(task)
                 continue
@@ -1313,21 +1313,21 @@
 
         render: (...args) => RenderTask.run(...args),
         filter: (...args) => FilterTask.run(...args),
-        waitUntil
+        waitUntil,
     }
 
     Object.defineProperties(SD, {
         serverState: {
             configurable: false,
-            get: () => serverState
+            get: () => serverState,
         },
         isAvailable: {
             configurable: false,
-            get: () => isServerAvailable()
+            get: () => isServerAvailable(),
         },
         serverCapacity: {
             configurable: false,
-            get: () => getServerCapacity()
+            get: () => getServerCapacity(),
         },
         sessionId: {
             configurable: false,
@@ -1337,21 +1337,21 @@
                     throw new Error("Can't set sessionId to undefined.")
                 }
                 sessionId = val
-            }
+            },
         },
         MAX_SEED_VALUE: {
             configurable: false,
-            get: () => MAX_SEED_VALUE
+            get: () => MAX_SEED_VALUE,
         },
         activeTasks: {
             configurable: false,
-            get: () => task_queue
-        }
+            get: () => task_queue,
+        },
     })
     Object.defineProperties(getGlobal(), {
         SD: {
             configurable: false,
-            get: () => SD
+            get: () => SD,
         },
         sessionId: {
             //TODO Remove in the future in favor of SD.sessionId
@@ -1365,7 +1365,7 @@
                 console.warn("Deprecated window.sessionId has been replaced with SD.sessionId.")
                 console.trace()
                 SD.sessionId = val
-            }
-        }
+            },
+        },
     })
 })()

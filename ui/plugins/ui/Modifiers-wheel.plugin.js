@@ -18,7 +18,7 @@
     })
 
     observer.observe(editorModifierTagsList, {
-        childList: true
+        childList: true,
     })
 
     function ModifierMouseWheel(target) {

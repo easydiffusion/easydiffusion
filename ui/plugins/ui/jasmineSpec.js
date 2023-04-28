@@ -9,11 +9,11 @@ beforeEach(function() {
             return {
                 compare: function(actual, expected) {
                     return {
-                        pass: expected.includes(actual)
+                        pass: expected.includes(actual),
                     }
-                }
+                },
             }
-        }
+        },
     })
 })
 describe("stable-diffusion-ui", function() {
@@ -116,7 +116,7 @@ describe("stable-diffusion-ui", function() {
                     value["foo"] = "bar"
                 }
                 return { value, done }
-            }
+            },
         })
         const gen2 = SD.Task.asGenerator({
             generator: gen1,
@@ -128,7 +128,7 @@ describe("stable-diffusion-ui", function() {
                     value.test = 2 * value.test
                 }
                 return { value, done }
-            }
+            },
         })
         expect(await SD.Task.enqueue(gen2)).toEqual({ test: 32, foo: "bar" })
     })
@@ -153,7 +153,7 @@ describe("stable-diffusion-ui", function() {
                         expect(typeof missing).toBe("undefined")
                         return { foo: "bar" }
                     },
-                    dependencies: ["ctx", "missing", "one", "foo"]
+                    dependencies: ["ctx", "missing", "one", "foo"],
                 }
             )
             const fooObj = cont.get("foo")
@@ -180,7 +180,7 @@ describe("stable-diffusion-ui", function() {
         let res = await fetch("/render", {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             },
             body: JSON.stringify({
                 prompt: "a photograph of an astronaut riding a horse",
@@ -199,8 +199,8 @@ describe("stable-diffusion-ui", function() {
                 show_only_filtered_image: true,
                 output_format: "jpeg",
 
-                session_id: JASMINE_SESSION_ID
-            })
+                session_id: JASMINE_SESSION_ID,
+            }),
         })
         expect(res.ok).toBeTruthy()
         const renderRequest = await res.json()
@@ -283,7 +283,7 @@ describe("stable-diffusion-ui", function() {
                     show_only_filtered_image: false,
                     //"use_face_correction": 'GFPGANv1.3',
                     use_upscale: "RealESRGAN_x4plus",
-                    session_id: JASMINE_SESSION_ID
+                    session_id: JASMINE_SESSION_ID,
                 },
                 function(event) {
                     console.log(this, event)
@@ -314,7 +314,7 @@ describe("stable-diffusion-ui", function() {
                 height: 128,
                 seed: SD.MAX_SEED_VALUE,
                 num_inference_steps: 10,
-                session_id: JASMINE_SESSION_ID
+                session_id: JASMINE_SESSION_ID,
             })
             expect(renderTask.status).toBe(SD.TaskStatus.init)
 
@@ -326,7 +326,7 @@ describe("stable-diffusion-ui", function() {
 
             await renderTask.waitUntil({
                 state: SD.TaskStatus.processing,
-                callback: () => console.log("Waiting for render task to start...")
+                callback: () => console.log("Waiting for render task to start..."),
             })
             expect(renderTask.status).toBe(SD.TaskStatus.processing)
 
@@ -362,7 +362,7 @@ describe("stable-diffusion-ui", function() {
                 show_only_filtered_image: false,
                 //"use_face_correction": 'GFPGANv1.3',
                 use_upscale: "RealESRGAN_x4plus",
-                session_id: JASMINE_SESSION_ID
+                session_id: JASMINE_SESSION_ID,
             })
             await renderTask.enqueue(function(event) {
                 console.log(this, event)

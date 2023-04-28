@@ -106,7 +106,7 @@ function createModifierGroup(modifierGroup, initiallyExpanded, removeBy) {
                         name: modifierName,
                         element: modifierCard.cloneNode(true),
                         originElement: modifierCard,
-                        previews: modifierPreviews
+                        previews: modifierPreviews,
                     })
                     toggleCardState(trimmedName, true)
                 }
@@ -198,7 +198,7 @@ function refreshModifiersState(newTags, inactiveTags) {
                         activeTags.push({
                             name: tag,
                             element: imageModifierCard,
-                            originElement: modifierCard
+                            originElement: modifierCard,
                         })
                     }
                     modifierCard.classList.add(activeCardClass)
@@ -224,7 +224,7 @@ function refreshModifiersState(newTags, inactiveTags) {
             activeTags.push({
                 name: tag,
                 element: modifierCard,
-                originElement: undefined // no origin element for missing tags
+                originElement: undefined, // no origin element for missing tags
             })
         }
     })

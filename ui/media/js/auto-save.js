@@ -52,7 +52,7 @@ const SETTINGS_IDS_LIST = [
     "auto_scroll",
     "zip_toggle",
     "tree_toggle",
-    "json_toggle"
+    "json_toggle",
 ]
 
 const IGNORE_BY_DEFAULT = ["prompt"]
@@ -62,7 +62,7 @@ const SETTINGS_SECTIONS = [
     { id: "editor-inputs", name: "Prompt" },
     { id: "editor-settings", name: "Image Settings" },
     { id: "system-settings", name: "System Settings" },
-    { id: "container", name: "Other" }
+    { id: "container", name: "Other" },
 ]
 
 async function initSettings() {
@@ -81,7 +81,7 @@ async function initSettings() {
             label: getSettingLabel(element),
             default: getSetting(element),
             value: getSetting(element),
-            ignore: IGNORE_BY_DEFAULT.includes(id)
+            ignore: IGNORE_BY_DEFAULT.includes(id),
         }
         element.addEventListener("input", settingChangeHandler)
         element.addEventListener("change", settingChangeHandler)
@@ -139,7 +139,7 @@ function saveSettings() {
         return {
             key: setting.key,
             value: setting.value,
-            ignore: setting.ignore
+            ignore: setting.ignore,
         }
     })
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(saved_settings))
@@ -265,7 +265,7 @@ function tryLoadOldSettings() {
     // load v1 auto-save.js settings
     var old_map = {
         guidance_scale_slider: "guidance_scale",
-        prompt_strength_slider: "prompt_strength"
+        prompt_strength_slider: "prompt_strength",
     }
     var settings_key_v1 = "user_settings"
     var saved_settings_text = localStorage.getItem(settings_key_v1)
@@ -300,7 +300,7 @@ function tryLoadOldSettings() {
         showOnlyFilteredImage: "show_only_filtered_image",
         streamImageProgress: "stream_image_progress",
         outputFormat: "output_format",
-        autoSaveSettings: "auto_save_settings"
+        autoSaveSettings: "auto_save_settings",
     }
     Object.keys(individual_settings_map).forEach((localStorageKey) => {
         var localStorageValue = localStorage.getItem(localStorageKey)

@@ -16,7 +16,7 @@
         stopSpecOnExpectationFailure: "true",
         stopOnSpecFailure: "false",
         random: "false",
-        hideDisabled: "false"
+        hideDisabled: "false",
     }
     const optStr = Object.entries(options)
         .map(([key, val]) => `${key}=${val}`)

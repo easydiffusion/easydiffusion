@@ -48,6 +48,6 @@
 
                 return marked.parse(releaseNotes)
             }
-        }
+        },
     })
 })()
