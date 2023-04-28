@@ -2,3 +2,8 @@
 *.py
 *.json
 *.html
+/*
+!/ui
+/ui/easydiffusion
+!/ui/plugins
+!/ui/media
