@@ -5,6 +5,7 @@ import socket
 import sys
 import traceback
 import urllib
+import warnings
 
 from easydiffusion import task_manager
 from easydiffusion.utils import log
@@ -86,6 +87,9 @@ def init():
     os.makedirs(USER_UI_PLUGINS_DIR, exist_ok=True)
     os.makedirs(USER_SERVER_PLUGINS_DIR, exist_ok=True)
 
+    # https://pytorch.org/docs/stable/storage.html
+    warnings.filterwarnings('ignore', category=UserWarning, message='TypedStorage is deprecated')
+    
     load_server_plugins()
 
     update_render_threads()
