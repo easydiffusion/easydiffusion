@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "prettier": "prettier --write \"./**/*.js\""
+    "prettier-fix": "npx prettier --write ui/**",
+    "prettier-check": "npx prettier --check ui/**"
   },
   "devDependencies": {
     "prettier": "^1.19.1"

@@ -1,8 +1,4 @@
 *.min.*
 *.py
-/*
-!/ui
-/ui/easydiffusion
-/ui/hotfix
-!/ui/plugins
-!/ui/media
+*.json
+*.html
