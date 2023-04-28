@@ -1,7 +1,7 @@
 {
   "scripts": {
-    "prettier-fix": "npx prettier --write ui/**",
-    "prettier-check": "npx prettier --check ui/**"
+    "prettier-fix": "npx prettier --write -c ui",
+    "prettier-check": "npx prettier --check -c ui"
   },
   "devDependencies": {
     "prettier": "^1.19.1"
