@@ -13,4 +13,4 @@ jobs:
     - uses: actionsx/prettier@v2
       with:
         # prettier CLI arguments.
-        args: --check "./**/*.js" --config .prettierrc.json
+        args: --print-width 120 --tab-width 4 --no-semi --arrow-parens always --trailing-comma es5 --check "./**/*.js"
