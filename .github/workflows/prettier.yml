@@ -13,4 +13,4 @@ jobs:
     - uses: actionsx/prettier@v2
       with:
         # prettier CLI arguments.
-        args: --check \"./**/*.js\" --config .prettierrc.json
+        args: --check "./**/*.js" --config .prettierrc.json
