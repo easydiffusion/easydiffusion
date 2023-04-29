@@ -10,13 +10,7 @@ jobs:
     steps:
     - name: Check out repo
       uses: actions/checkout@v2
-    - uses: actions/cache@v2
-      name: Configure npm caching
+    - uses: actionsx/prettier@v2
       with:
-        path: ~/.npm
-        key: ${{ runner.os }}-npm-${{ hashFiles('**/workflows/prettier.yml') }}
-        restore-keys: |
-          ${{ runner.os }}-npm-
-    - name: Run prettier
-      run: |-
-        npm run prettier-check
+        # prettier CLI arguments.
+        args: --check \"./**/*.js\" --config .prettierrc.json
