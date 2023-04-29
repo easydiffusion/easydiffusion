@@ -1,9 +1,9 @@
 {
   "scripts": {
-    "prettier-fix": "npx prettier --write \"./**/*.js\" --config .prettierrc.json",
-    "prettier-check": "npx prettier --check \"./**/*.js\" --config .prettierrc.json"
+    "prettier-fix": "npx prettier --write \"./**/*.js\"",
+    "prettier-check": "npx prettier --check \"./**/*.js\""
   },
   "devDependencies": {
-    "prettier": "^1.19.1"
+    "prettier": "1.19.1"
   }
 }
