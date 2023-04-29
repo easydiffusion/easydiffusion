@@ -19,7 +19,7 @@ jobs:
           ${{ runner.os }}-npm-
     - name: Run prettier
       run: |-
-        npm run prettier-write
+        npm run prettier-fix
     - name: Print the diff
       run: git diff; git reset --hard
     - name: Run prettier
