@@ -14,7 +14,5 @@ jobs:
       with:
         # prettier CLI arguments.
         args: --print-width 120 --tab-width 4 --no-semi --arrow-parens always --trailing-comma es5 --write "./**/*.js"
-    - uses: technote-space/get-diff-action@v6
-      with:
-        PATTERNS: |
-          +(ui)/**/*.js
+    - name: Get Diff
+      run: git diff
