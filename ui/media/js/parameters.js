@@ -181,7 +181,7 @@ var PARAMETERS = [
     {
         id: "listen_to_network",
         type: ParameterType.checkbox,
-        label: "Make Stable Diffusion available on your network",
+        label: "Make Stable Diffusion available on your network- Please restart the program after changing this.",
         note: "Other devices on your network can access this web page",
         icon: "fa-network-wired",
         default: true,
@@ -191,7 +191,7 @@ var PARAMETERS = [
         id: "listen_port",
         type: ParameterType.custom,
         label: "Network port",
-        note: "Port that this server listens to. The '9000' part in 'http://localhost:9000'",
+        note: "Port that this server listens to. The '9000' part in 'http://localhost:9000'. Please restart the program after changing this.",
         icon: "fa-anchor",
         render: (parameter) => {
             return `<input id="${parameter.id}" name="${parameter.id}" size="6" value="9000" onkeypress="preventNonNumericalInput(event)">`
