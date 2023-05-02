@@ -17,6 +17,7 @@ from sdkit.utils import (
     img_to_base64_str,
     img_to_buffer,
     latent_samples_to_images,
+    get_device_usage,
 )
 
 context = Context()  # thread-local
@@ -39,6 +40,9 @@ def init(device):
     context.test_diffusers = (
         app_config.get("test_diffusers", False) and app_config.get("update_branch", "main") != "main"
     )
+
+    log.info("Device usage during initialization:")
+    get_device_usage(device, log_info=True)
 
     device_manager.device_init(context, device)
 
