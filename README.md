@@ -17,9 +17,11 @@ Click the download button for your operating system:
 </p>
 
 **Hardware requirements:**
-- **Windows:** NVIDIA graphics card, or run on your CPU
-- **Linux:** NVIDIA or AMD graphics card, or run on your CPU
-- **Mac:** M1 or M2, or run on your CPU
+- **Windows:** NVIDIA graphics card, or run on your CPU.
+- **Linux:** NVIDIA or AMD graphics card, or run on your CPU.
+- **Mac:** M1 or M2, or run on your CPU.
+- Minimum 8 GB of system RAM.
+- Atleast 25 GB of space on the hard disk.
 
 The installer will take care of whatever is needed. If you face any problems, you can join the friendly [Discord community](https://discord.com/invite/u9yhsFmEkB) and ask for assistance.
 
@@ -112,14 +114,6 @@ Useful for judging (and stopping) an image quickly, without waiting for it to fi
 ## Task Queue
 ![Screenshot of task queue](https://user-images.githubusercontent.com/844287/217043984-0b35f73b-1318-47cb-9eed-a2a91b430490.png)
 
-
-
-# System Requirements
-1. Windows 10/11, or Linux. Experimental support for Mac is coming soon.
-2. An NVIDIA graphics card, preferably with 4GB or more of VRAM. If you don't have a compatible graphics card, it'll automatically run in the slower "CPU Mode".
-3. Minimum 8 GB of RAM and 25GB of disk space.
-
-You don't need to install or struggle with Python, Anaconda, Docker etc. The installer will take care of whatever is needed.
 
 ----
 
