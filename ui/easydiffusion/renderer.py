@@ -42,7 +42,7 @@ def init(device):
     )
 
     log.info("Device usage during initialization:")
-    get_device_usage(device, log_info=True)
+    get_device_usage(device, log_info=True, process_usage_only=False)
 
     device_manager.device_init(context, device)
 
