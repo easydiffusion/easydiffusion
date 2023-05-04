@@ -70,6 +70,14 @@
     max-height: calc(100vh - (var(--popup-padding) * 2) - 4px);
 }
 
+#viewFullSizeImgModal img:not(.natural-zoom) {
+    cursor: grab;
+}
+
+#viewFullSizeImgModal .grabbing img:not(.natural-zoom) {
+    cursor: grabbing;
+}
+
 #viewFullSizeImgModal .content > div::-webkit-scrollbar-track, #viewFullSizeImgModal .content > div::-webkit-scrollbar-corner {
     background: rgba(0, 0, 0, .5)
 }

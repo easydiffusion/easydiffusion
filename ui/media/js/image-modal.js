@@ -63,15 +63,73 @@ const imageModal = (function() {
         setZoomLevel(imageContainer.querySelector("img")?.classList?.contains("natural-zoom"))
     )
 
-    const state = {
+    const initialState = () => ({
         previous: undefined,
         next: undefined,
+
+        start: {
+            x: 0,
+            y: 0,
+        },
+
+        scroll: {
+            x: 0,
+            y: 0,
+        },
+    })
+
+    const state = initialState()
+
+    // Allow grabbing the image to scroll
+    const stopGrabbing = (e) => {
+        if(imageContainer.classList.contains("grabbing")) {
+            imageContainer.classList.remove("grabbing")
+            e?.preventDefault()
+            console.log(`stopGrabbing()`, e)
+        }
+    }
+
+    const addImageGrabbing = (image) => {
+        image?.addEventListener('mousedown', (e) => {
+            if (!image.classList.contains("natural-zoom")) {
+                e.stopPropagation()
+                e.stopImmediatePropagation()
+                e.preventDefault()
+
+                imageContainer.classList.add("grabbing")
+                state.start.x = e.pageX - imageContainer.offsetLeft
+                state.scroll.x = imageContainer.scrollLeft
+                state.start.y = e.pageY - imageContainer.offsetTop
+                state.scroll.y = imageContainer.scrollTop
+            }
+        })
+
+        image?.addEventListener('mouseup', stopGrabbing)
+        image?.addEventListener('mouseleave', stopGrabbing)
+        image?.addEventListener('mousemove', (e) => {
+            if(imageContainer.classList.contains("grabbing")) {
+                e.stopPropagation()
+                e.stopImmediatePropagation()
+                e.preventDefault()
+
+                // Might need to increase this multiplier based on the image size to window size ratio
+                // The default 1:1 is pretty slow
+                const multiplier = 1.0
+
+                const deltaX = e.pageX - imageContainer.offsetLeft - state.start.x
+                imageContainer.scrollLeft = state.scroll.x - (deltaX * multiplier)
+                const deltaY = e.pageY - imageContainer.offsetTop - state.start.y
+                imageContainer.scrollTop = state.scroll.y - (deltaY * multiplier)
+            }
+        })
     }
 
     const clear = () => {
         imageContainer.innerHTML = ""
 
-        Object.keys(state).forEach((key) => delete state[key])
+        Object.entries(initialState()).forEach(([key, value]) => state[key] = value)
+
+        stopGrabbing()
     }
 
     const close = () => {
@@ -95,6 +153,7 @@ const imageModal = (function() {
         const src = typeof options === "string" ? options : options.src
 
         const imgElem = createElement("img", { src }, "natural-zoom")
+        addImageGrabbing(imgElem)
         imageContainer.appendChild(imgElem)
         modalElem.classList.add("active")
         document.body.style.overflow = "hidden"
