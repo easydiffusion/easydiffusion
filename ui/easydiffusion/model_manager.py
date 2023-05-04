@@ -3,11 +3,17 @@ import os
 from easydiffusion import app
 from easydiffusion.types import TaskData
 from easydiffusion.utils import log
-
 from sdkit import Context
-from sdkit.models import load_model, unload_model, scan_model
+from sdkit.models import load_model, scan_model, unload_model
 
-KNOWN_MODEL_TYPES = ["stable-diffusion", "vae", "hypernetwork", "gfpgan", "realesrgan", "lora"]
+KNOWN_MODEL_TYPES = [
+    "stable-diffusion",
+    "vae",
+    "hypernetwork",
+    "gfpgan",
+    "realesrgan",
+    "lora",
+]
 MODEL_EXTENSIONS = {
     "stable-diffusion": [".ckpt", ".safetensors"],
     "vae": [".vae.pt", ".ckpt", ".safetensors"],
@@ -44,12 +50,14 @@ def load_default_models(context: Context):
             load_model(
                 context,
                 model_type,
-                scan_model = context.model_paths[model_type] != None and not context.model_paths[model_type].endswith('.safetensors')
+                scan_model=context.model_paths[model_type] != None
+                and not context.model_paths[model_type].endswith(".safetensors"),
             )
         except Exception as e:
             log.error(f"[red]Error while loading {model_type} model: {context.model_paths[model_type]}[/red]")
             log.exception(e)
             del context.model_paths[model_type]
+
 
 def unload_all(context: Context):
     for model_type in KNOWN_MODEL_TYPES:
@@ -170,13 +178,23 @@ def is_malicious_model(file_path):
         if scan_result.issues_count > 0 or scan_result.infected_files > 0:
             log.warn(
                 ":warning: [bold red]Scan %s: %d scanned, %d issue, %d infected.[/bold red]"
-                % (file_path, scan_result.scanned_files, scan_result.issues_count, scan_result.infected_files)
+                % (
+                    file_path,
+                    scan_result.scanned_files,
+                    scan_result.issues_count,
+                    scan_result.infected_files,
+                )
             )
             return True
         else:
             log.debug(
                 "Scan %s: [green]%d scanned, %d issue, %d infected.[/green]"
-                % (file_path, scan_result.scanned_files, scan_result.issues_count, scan_result.infected_files)
+                % (
+                    file_path,
+                    scan_result.scanned_files,
+                    scan_result.issues_count,
+                    scan_result.infected_files,
+                )
             )
             return False
     except Exception as e:
@@ -204,13 +222,13 @@ def getModels():
 
     class MaliciousModelException(Exception):
         "Raised when picklescan reports a problem with a model"
-        pass
 
     def scan_directory(directory, suffixes, directoriesFirst: bool = True):
         nonlocal models_scanned
         tree = []
         for entry in sorted(
-            os.scandir(directory), key=lambda entry: (entry.is_file() == directoriesFirst, entry.name.lower())
+            os.scandir(directory),
+            key=lambda entry: (entry.is_file() == directoriesFirst, entry.name.lower()),
         ):
             if entry.is_file():
                 matching_suffix = list(filter(lambda s: entry.name.endswith(s), suffixes))

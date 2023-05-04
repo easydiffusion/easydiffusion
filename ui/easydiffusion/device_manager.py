@@ -1,9 +1,9 @@
 import os
 import platform
-import torch
-import traceback
 import re
+import traceback
 
+import torch
 from easydiffusion.utils import log
 
 """
@@ -98,8 +98,8 @@ def auto_pick_devices(currently_active_devices):
             continue
 
         mem_free, mem_total = torch.cuda.mem_get_info(device)
-        mem_free /= float(10**9)
-        mem_total /= float(10**9)
+        mem_free /= float(10 ** 9)
+        mem_total /= float(10 ** 9)
         device_name = torch.cuda.get_device_name(device)
         log.debug(
             f"{device} detected: {device_name} - Memory (free/total): {round(mem_free, 2)}Gb / {round(mem_total, 2)}Gb"
@@ -118,7 +118,10 @@ def auto_pick_devices(currently_active_devices):
     #    These already-running devices probably aren't terrible, since they were picked in the past.
     #    Worst case, the user can restart the program and that'll get rid of them.
     devices = list(
-        filter((lambda x: x["mem_free"] > mem_free_threshold or x["device"] in currently_active_devices), devices)
+        filter(
+            (lambda x: x["mem_free"] > mem_free_threshold or x["device"] in currently_active_devices),
+            devices,
+        )
     )
     devices = list(map(lambda x: x["device"], devices))
     return devices
@@ -178,7 +181,7 @@ def get_max_vram_usage_level(device):
     else:
         return "high"
 
-    mem_total /= float(10**9)
+    mem_total /= float(10 ** 9)
     if mem_total < 4.5:
         return "low"
     elif mem_total < 6.5:
@@ -220,7 +223,7 @@ def is_device_compatible(device):
     # Memory check
     try:
         _, mem_total = torch.cuda.mem_get_info(device)
-        mem_total /= float(10**9)
+        mem_total /= float(10 ** 9)
         if mem_total < 3.0:
             if is_device_compatible.history.get(device) == None:
                 log.warn(f"GPU {device} with less than 3 GB of VRAM is not compatible with Stable Diffusion")

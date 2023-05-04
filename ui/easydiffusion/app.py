@@ -1,17 +1,16 @@
+import json
+import logging
 import os
 import socket
 import sys
-import json
 import traceback
-import logging
-import shlex
 import urllib
-from rich.logging import RichHandler
-
-from sdkit.utils import log as sdkit_log  # hack, so we can overwrite the log config
+import warnings
 
 from easydiffusion import task_manager
 from easydiffusion.utils import log
+from rich.logging import RichHandler
+from sdkit.utils import log as sdkit_log  # hack, so we can overwrite the log config
 
 # Remove all handlers associated with the root logger object.
 for handler in logging.root.handlers[:]:
@@ -55,15 +54,42 @@ APP_CONFIG_DEFAULTS = {
     },
 }
 
-IMAGE_EXTENSIONS = [".png", ".apng", ".jpg", ".jpeg", ".jfif", ".pjpeg", ".pjp", ".jxl", ".gif", ".webp", ".avif", ".svg"]
+IMAGE_EXTENSIONS = [
+    ".png",
+    ".apng",
+    ".jpg",
+    ".jpeg",
+    ".jfif",
+    ".pjpeg",
+    ".pjp",
+    ".jxl",
+    ".gif",
+    ".webp",
+    ".avif",
+    ".svg",
+]
 CUSTOM_MODIFIERS_DIR = os.path.abspath(os.path.join(SD_DIR, "..", "modifiers"))
-CUSTOM_MODIFIERS_PORTRAIT_EXTENSIONS=[".portrait", "_portrait", " portrait", "-portrait"]
-CUSTOM_MODIFIERS_LANDSCAPE_EXTENSIONS=[".landscape", "_landscape", " landscape", "-landscape"]
+CUSTOM_MODIFIERS_PORTRAIT_EXTENSIONS = [
+    ".portrait",
+    "_portrait",
+    " portrait",
+    "-portrait",
+]
+CUSTOM_MODIFIERS_LANDSCAPE_EXTENSIONS = [
+    ".landscape",
+    "_landscape",
+    " landscape",
+    "-landscape",
+]
+
 
 def init():
     os.makedirs(USER_UI_PLUGINS_DIR, exist_ok=True)
     os.makedirs(USER_SERVER_PLUGINS_DIR, exist_ok=True)
 
+    # https://pytorch.org/docs/stable/storage.html
+    warnings.filterwarnings('ignore', category=UserWarning, message='TypedStorage is deprecated')
+    
     load_server_plugins()
 
     update_render_threads()
@@ -84,7 +110,7 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
         if os.getenv("SD_UI_BIND_IP") is not None:
             config["net"]["listen_to_network"] = os.getenv("SD_UI_BIND_IP") == "0.0.0.0"
         return config
-    except Exception as e:
+    except Exception:
         log.warn(traceback.format_exc())
         return default_val
 
@@ -96,6 +122,7 @@ def setConfig(config):
             json.dump(config, f)
     except:
         log.error(traceback.format_exc())
+
 
 def save_to_config(ckpt_model_name, vae_model_name, hypernetwork_model_name, vram_usage_level):
     config = getConfig()
@@ -191,11 +218,12 @@ def open_browser():
 
         webbrowser.open(f"http://localhost:{port}")
 
+
 def get_image_modifiers():
     modifiers_json_path = os.path.join(SD_UI_DIR, "modifiers.json")
 
     modifier_categories = {}
-    original_category_order=[]
+    original_category_order = []
     with open(modifiers_json_path, "r", encoding="utf-8") as f:
         modifiers_file = json.load(f)
 
@@ -205,14 +233,14 @@ def get_image_modifiers():
 
         # convert modifiers from a list of objects to a dict of dicts
         for category_item in modifiers_file:
-            category_name = category_item['category']
+            category_name = category_item["category"]
             original_category_order.append(category_name)
             category = {}
-            for modifier_item in category_item['modifiers']:
+            for modifier_item in category_item["modifiers"]:
                 modifier = {}
-                for preview_item in modifier_item['previews']:
-                    modifier[preview_item['name']] = preview_item['path']
-                category[modifier_item['modifier']] = modifier
+                for preview_item in modifier_item["previews"]:
+                    modifier[preview_item["name"]] = preview_item["path"]
+                category[modifier_item["modifier"]] = modifier
             modifier_categories[category_name] = category
 
     def scan_directory(directory_path: str, category_name="Modifiers"):
@@ -225,12 +253,27 @@ def get_image_modifiers():
                 modifier_name = entry.name[: -len(file_extension[0])]
                 modifier_path = f"custom/{entry.path[len(CUSTOM_MODIFIERS_DIR) + 1:]}"
                 # URL encode path segments
-                modifier_path = "/".join(map(lambda segment: urllib.parse.quote(segment), modifier_path.split("/")))
+                modifier_path = "/".join(
+                    map(
+                        lambda segment: urllib.parse.quote(segment),
+                        modifier_path.split("/"),
+                    )
+                )
                 is_portrait = True
                 is_landscape = True
 
-                portrait_extension = list(filter(lambda e: modifier_name.lower().endswith(e), CUSTOM_MODIFIERS_PORTRAIT_EXTENSIONS))
-                landscape_extension = list(filter(lambda e: modifier_name.lower().endswith(e), CUSTOM_MODIFIERS_LANDSCAPE_EXTENSIONS))
+                portrait_extension = list(
+                    filter(
+                        lambda e: modifier_name.lower().endswith(e),
+                        CUSTOM_MODIFIERS_PORTRAIT_EXTENSIONS,
+                    )
+                )
+                landscape_extension = list(
+                    filter(
+                        lambda e: modifier_name.lower().endswith(e),
+                        CUSTOM_MODIFIERS_LANDSCAPE_EXTENSIONS,
+                    )
+                )
 
                 if len(portrait_extension) > 0:
                     is_landscape = False
@@ -238,24 +281,24 @@ def get_image_modifiers():
                 elif len(landscape_extension) > 0:
                     is_portrait = False
                     modifier_name = modifier_name[: -len(landscape_extension[0])]
-                
-                if (category_name not in modifier_categories):
+
+                if category_name not in modifier_categories:
                     modifier_categories[category_name] = {}
-                
+
                 category = modifier_categories[category_name]
 
-                if (modifier_name not in category):
+                if modifier_name not in category:
                     category[modifier_name] = {}
 
-                if (is_portrait or "portrait" not in category[modifier_name]):
+                if is_portrait or "portrait" not in category[modifier_name]:
                     category[modifier_name]["portrait"] = modifier_path
-                
-                if (is_landscape or "landscape" not in category[modifier_name]):
+
+                if is_landscape or "landscape" not in category[modifier_name]:
                     category[modifier_name]["landscape"] = modifier_path
             elif entry.is_dir():
                 scan_directory(
                     entry.path,
-                    entry.name if directory_path==CUSTOM_MODIFIERS_DIR else f"{category_name}/{entry.name}",
+                    entry.name if directory_path == CUSTOM_MODIFIERS_DIR else f"{category_name}/{entry.name}",
                 )
 
     scan_directory(CUSTOM_MODIFIERS_DIR)
@@ -268,12 +311,12 @@ def get_image_modifiers():
     # convert the modifiers back into a list of objects
     modifier_categories_list = []
     for category_name in [*original_category_order, *custom_categories]:
-        category = { 'category': category_name, 'modifiers': [] }
+        category = {"category": category_name, "modifiers": []}
         for modifier_name in sorted(modifier_categories[category_name].keys(), key=str.casefold):
-            modifier = { 'modifier': modifier_name, 'previews': [] }
+            modifier = {"modifier": modifier_name, "previews": []}
             for preview_name, preview_path in modifier_categories[category_name][modifier_name].items():
-                modifier['previews'].append({ 'name': preview_name, 'path': preview_path })
-            category['modifiers'].append(modifier)
+                modifier["previews"].append({"name": preview_name, "path": preview_path})
+            category["modifiers"].append(modifier)
         modifier_categories_list.append(category)
 
     return modifier_categories_list
