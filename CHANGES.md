@@ -2,7 +2,7 @@
 
 ## v2.5
 ### Major Changes
-- **Nearly twice as fast** - significantly faster speed of image generation. We're now pretty close to automatic1111's speed. Code contributions are welcome to make our project even faster: https://github.com/easydiffusion/sdkit/#is-it-fast
+- **Nearly twice as fast** - significantly faster speed of image generation. Code contributions are welcome to make our project even faster: https://github.com/easydiffusion/sdkit/#is-it-fast
 - **Mac M1/M2 support** - Experimental support for Mac M1/M2. Thanks @michaelgallacher, @JeLuf and vishae.
 - **Full support for Stable Diffusion 2.1 (including CPU)** - supports loading v1.4 or v2.0 or v2.1 models seamlessly. No need to enable "Test SD2", and no need to add `sd2_` to your SD 2.0 model file names. Works on CPU as well.
 - **Memory optimized Stable Diffusion 2.1** - you can now use Stable Diffusion 2.1 models, with the same low VRAM optimizations that we've always had for SD 1.4. Please note, the SD 2.0 and 2.1 models require more GPU and System RAM, as compared to the SD 1.4 and 1.5 models.
@@ -21,7 +21,11 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.35 - 3 May 2023 - (beta-only) First round of VRAM Optimizations for the "Test Diffusers" version. This change significantly reduces the amount of VRAM used by the diffusers version during image generation. The VRAM usage is still not equal to the "non-diffusers" version, but more optimizations are coming soon.
+* 2.5.34 - 22 Apr 2023 - Don't start the browser in an incognito new profile (on Windows). Thanks @JeLuf.
+* 2.5.33 - 21 Apr 2023 - Install PyTorch 2.0 on new installations (on Windows and Linux).
 * 2.5.32 - 19 Apr 2023 - Automatically check for black images, and set full-precision if necessary (for attn). This means custom models based on Stable Diffusion v2.1 will just work, without needing special command-line arguments or editing of yaml config files.
+* 2.5.32 - 18 Apr 2023 - Automatic support for AMD graphics cards on Linux. Thanks @DianaNites and @JeLuf.
 * 2.5.31 - 10 Apr 2023 - Reduce VRAM usage while upscaling.
 * 2.5.31 - 6 Apr 2023 - Allow seeds upto `4,294,967,295`. Thanks @ogmaresca.
 * 2.5.31 - 6 Apr 2023 - Buttons to show the previous/next image in the image popup. Thanks @ogmaresca.
