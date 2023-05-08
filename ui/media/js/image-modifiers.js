@@ -246,7 +246,7 @@ function refreshInactiveTags(inactiveTags) {
     overlays.forEach((i) => {
         let modifierName = i.parentElement.getElementsByClassName("modifier-card-label")[0].getElementsByTagName("p")[0]
             .dataset.fullName
-        if (inactiveTags?.find((element) => element === modifierName) !== undefined) {
+        if (inactiveTags?.find((element) => trimModifiers(element) === modifierName) !== undefined) {
             i.parentElement.classList.add("modifier-toggle-inactive")
         }
     })
