@@ -33,7 +33,7 @@
     --input-height: 18px;
 	--tertiary-background-color: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (2 * var(--value-step))));
     --tertiary-border-color: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) + (3 * var(--value-step))));
-    --tertiary-color: var(--input-text-color)
+    --tertiary-color: var(--input-text-color);
 
     /* Main theme color, hex color fallback. */
     --theme-color-fallback: #673AB6;

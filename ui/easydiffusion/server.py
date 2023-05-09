@@ -2,37 +2,39 @@
 Notes:
     async endpoints always run on the main thread. Without they run on the thread pool.
 """
+import datetime
+import mimetypes
 import os
 import traceback
-import datetime
 from typing import List, Union
 
+from easydiffusion import app, model_manager, task_manager
+from easydiffusion.types import GenerateImageRequest, MergeRequest, TaskData
+from easydiffusion.utils import log
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Extra
 from starlette.responses import FileResponse, JSONResponse, StreamingResponse
-from pydantic import BaseModel
-
-from easydiffusion import app, model_manager, task_manager
-from easydiffusion.types import TaskData, GenerateImageRequest, MergeRequest
-from easydiffusion.utils import log
-
-import mimetypes
 
 log.info(f"started in {app.SD_DIR}")
 log.info(f"started at {datetime.datetime.now():%x %X}")
 
 server_api = FastAPI()
 
-NOCACHE_HEADERS = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
+NOCACHE_HEADERS = {
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    "Pragma": "no-cache",
+    "Expires": "0",
+}
 
 
 class NoCacheStaticFiles(StaticFiles):
     def __init__(self, directory: str):
         # follow_symlink is only available on fastapi >= 0.92.0
-        if (os.path.islink(directory)):
-            super().__init__(directory = os.path.realpath(directory))
+        if os.path.islink(directory):
+            super().__init__(directory=os.path.realpath(directory))
         else:
-            super().__init__(directory = directory)
+            super().__init__(directory=directory)
 
     def is_not_modified(self, response_headers, request_headers) -> bool:
         if "content-type" in response_headers and (
@@ -44,18 +46,19 @@ class NoCacheStaticFiles(StaticFiles):
         return super().is_not_modified(response_headers, request_headers)
 
 
-class SetAppConfigRequest(BaseModel):
+class SetAppConfigRequest(BaseModel, extra=Extra.allow):
     update_branch: str = None
     render_devices: Union[List[str], List[int], str, int] = None
     model_vae: str = None
     ui_open_browser_on_start: bool = None
     listen_to_network: bool = None
     listen_port: int = None
+    test_diffusers: bool = False
 
 
 def init():
     mimetypes.init()
-    mimetypes.add_type('text/css', '.css')
+    mimetypes.add_type("text/css", ".css")
 
     if os.path.isdir(app.CUSTOM_MODIFIERS_DIR):
         server_api.mount(
@@ -64,11 +67,17 @@ def init():
             name="custom-thumbnails",
         )
 
-    server_api.mount("/media", NoCacheStaticFiles(directory=os.path.join(app.SD_UI_DIR, "media")), name="media")
+    server_api.mount(
+        "/media",
+        NoCacheStaticFiles(directory=os.path.join(app.SD_UI_DIR, "media")),
+        name="media",
+    )
 
     for plugins_dir, dir_prefix in app.UI_PLUGINS_SOURCES:
         server_api.mount(
-            f"/plugins/{dir_prefix}", NoCacheStaticFiles(directory=plugins_dir), name=f"plugins-{dir_prefix}"
+            f"/plugins/{dir_prefix}",
+            NoCacheStaticFiles(directory=plugins_dir),
+            name=f"plugins-{dir_prefix}",
         )
 
     @server_api.post("/app_config")
@@ -132,6 +141,13 @@ def set_app_config_internal(req: SetAppConfigRequest):
         if "net" not in config:
             config["net"] = {}
         config["net"]["listen_port"] = int(req.listen_port)
+
+    config["test_diffusers"] = req.test_diffusers
+
+    for property, property_value in req.dict().items():
+        if property_value is not None and property not in req.__fields__:
+            config[property] = property_value
+
     try:
         app.setConfig(config)
 
@@ -238,8 +254,8 @@ def render_internal(req: dict):
 
 def model_merge_internal(req: dict):
     try:
-        from sdkit.train import merge_models
         from easydiffusion.utils.save_utils import filename_regex
+        from sdkit.train import merge_models
 
         mergeReq: MergeRequest = MergeRequest.parse_obj(req)
 
@@ -247,7 +263,11 @@ def model_merge_internal(req: dict):
             model_manager.resolve_model_to_use(mergeReq.model0, "stable-diffusion"),
             model_manager.resolve_model_to_use(mergeReq.model1, "stable-diffusion"),
             mergeReq.ratio,
-            os.path.join(app.MODELS_DIR, "stable-diffusion", filename_regex.sub("_", mergeReq.out_path)),
+            os.path.join(
+                app.MODELS_DIR,
+                "stable-diffusion",
+                filename_regex.sub("_", mergeReq.out_path),
+            ),
             mergeReq.use_fp16,
         )
         return JSONResponse({"status": "OK"}, headers=NOCACHE_HEADERS)

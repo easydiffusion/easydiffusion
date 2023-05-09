@@ -235,7 +235,7 @@ Section "MainSection" SEC01
   NScurl::http get "https://huggingface.co/CompVis/stable-diffusion-v-1-4-original/resolve/main/sd-v1-4.ckpt" "$INSTDIR\models\stable-diffusion\sd-v1-4.ckpt" /CANCEL /INSIST /END
 
   DetailPrint 'Downloading the GFPGAN model...'
-  NScurl::http get "https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.3.pth" "$INSTDIR\models\gfpgan\GFPGANv1.3.pth" /CANCEL /INSIST /END
+  NScurl::http get "https://github.com/TencentARC/GFPGAN/releases/download/v1.3.4/GFPGANv1.4.pth" "$INSTDIR\models\gfpgan\GFPGANv1.4.pth" /CANCEL /INSIST /END
 
   DetailPrint 'Downloading the RealESRGAN_x4plus model...'
   NScurl::http get "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth" "$INSTDIR\models\realesrgan\RealESRGAN_x4plus.pth" /CANCEL /INSIST /END

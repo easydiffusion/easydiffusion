@@ -3,17 +3,24 @@ import os
 from easydiffusion import app
 from easydiffusion.types import TaskData
 from easydiffusion.utils import log
-
 from sdkit import Context
-from sdkit.models import load_model, unload_model, scan_model
+from sdkit.models import load_model, scan_model, unload_model
 
-KNOWN_MODEL_TYPES = ["stable-diffusion", "vae", "hypernetwork", "gfpgan", "realesrgan"]
+KNOWN_MODEL_TYPES = [
+    "stable-diffusion",
+    "vae",
+    "hypernetwork",
+    "gfpgan",
+    "realesrgan",
+    "lora",
+]
 MODEL_EXTENSIONS = {
     "stable-diffusion": [".ckpt", ".safetensors"],
     "vae": [".vae.pt", ".ckpt", ".safetensors"],
     "hypernetwork": [".pt", ".safetensors"],
     "gfpgan": [".pth"],
     "realesrgan": [".pth"],
+    "lora": [".ckpt", ".safetensors"],
 }
 DEFAULT_MODELS = {
     "stable-diffusion": [  # needed to support the legacy installations
@@ -23,7 +30,7 @@ DEFAULT_MODELS = {
     "gfpgan": ["GFPGANv1.3"],
     "realesrgan": ["RealESRGAN_x4plus"],
 }
-MODELS_TO_LOAD_ON_START = ["stable-diffusion", "vae", "hypernetwork"]
+MODELS_TO_LOAD_ON_START = ["stable-diffusion", "vae", "hypernetwork", "lora"]
 
 known_models = {}
 
@@ -40,11 +47,16 @@ def load_default_models(context: Context):
     for model_type in MODELS_TO_LOAD_ON_START:
         context.model_paths[model_type] = resolve_model_to_use(model_type=model_type)
         try:
-            load_model(context, model_type)
+            load_model(
+                context,
+                model_type,
+                scan_model=context.model_paths[model_type] != None
+                and not context.model_paths[model_type].endswith(".safetensors"),
+            )
         except Exception as e:
             log.error(f"[red]Error while loading {model_type} model: {context.model_paths[model_type]}[/red]")
-            log.error(f"[red]Error: {e}[/red]")
-            log.error(f"[red]Consider removing the model from the model folder.[red]")
+            log.exception(e)
+            del context.model_paths[model_type]
 
 
 def unload_all(context: Context):
@@ -102,6 +114,7 @@ def reload_models_if_necessary(context: Context, task_data: TaskData):
         "gfpgan": task_data.use_face_correction,
         "realesrgan": task_data.use_upscale,
         "nsfw_checker": True if task_data.block_nsfw else None,
+        "lora": task_data.use_lora_model,
     }
     models_to_reload = {
         model_type: path
@@ -125,6 +138,7 @@ def resolve_model_paths(task_data: TaskData):
     )
     task_data.use_vae_model = resolve_model_to_use(task_data.use_vae_model, model_type="vae")
     task_data.use_hypernetwork_model = resolve_model_to_use(task_data.use_hypernetwork_model, model_type="hypernetwork")
+    task_data.use_lora_model = resolve_model_to_use(task_data.use_lora_model, model_type="lora")
 
     if task_data.use_face_correction:
         task_data.use_face_correction = resolve_model_to_use(task_data.use_face_correction, "gfpgan")
@@ -164,13 +178,23 @@ def is_malicious_model(file_path):
         if scan_result.issues_count > 0 or scan_result.infected_files > 0:
             log.warn(
                 ":warning: [bold red]Scan %s: %d scanned, %d issue, %d infected.[/bold red]"
-                % (file_path, scan_result.scanned_files, scan_result.issues_count, scan_result.infected_files)
+                % (
+                    file_path,
+                    scan_result.scanned_files,
+                    scan_result.issues_count,
+                    scan_result.infected_files,
+                )
             )
             return True
         else:
             log.debug(
                 "Scan %s: [green]%d scanned, %d issue, %d infected.[/green]"
-                % (file_path, scan_result.scanned_files, scan_result.issues_count, scan_result.infected_files)
+                % (
+                    file_path,
+                    scan_result.scanned_files,
+                    scan_result.issues_count,
+                    scan_result.infected_files,
+                )
             )
             return False
     except Exception as e:
@@ -184,11 +208,13 @@ def getModels():
             "stable-diffusion": "sd-v1-4",
             "vae": "",
             "hypernetwork": "",
+            "lora": "",
         },
         "options": {
             "stable-diffusion": ["sd-v1-4"],
             "vae": [],
             "hypernetwork": [],
+            "lora": [],
         },
     }
 
@@ -196,13 +222,13 @@ def getModels():
 
     class MaliciousModelException(Exception):
         "Raised when picklescan reports a problem with a model"
-        pass
 
     def scan_directory(directory, suffixes, directoriesFirst: bool = True):
         nonlocal models_scanned
         tree = []
         for entry in sorted(
-            os.scandir(directory), key=lambda entry: (entry.is_file() == directoriesFirst, entry.name.lower())
+            os.scandir(directory),
+            key=lambda entry: (entry.is_file() == directoriesFirst, entry.name.lower()),
         ):
             if entry.is_file():
                 matching_suffix = list(filter(lambda s: entry.name.endswith(s), suffixes))
@@ -238,11 +264,13 @@ def getModels():
         except MaliciousModelException as e:
             models["scan-error"] = e
 
+    log.info(f"[green]Scanning all model folders for models...[/]")
     # custom models
     listModels(model_type="stable-diffusion")
     listModels(model_type="vae")
     listModels(model_type="hypernetwork")
     listModels(model_type="gfpgan")
+    listModels(model_type="lora")
 
     if models_scanned > 0:
         log.info(f"[green]Scanned {models_scanned} models. Nothing infected[/]")

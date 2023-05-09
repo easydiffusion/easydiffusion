@@ -2,7 +2,7 @@
 
 ## v2.5
 ### Major Changes
-- **Nearly twice as fast** - significantly faster speed of image generation. We're now pretty close to automatic1111's speed. Code contributions are welcome to make our project even faster: https://github.com/easydiffusion/sdkit/#is-it-fast
+- **Nearly twice as fast** - significantly faster speed of image generation. Code contributions are welcome to make our project even faster: https://github.com/easydiffusion/sdkit/#is-it-fast
 - **Mac M1/M2 support** - Experimental support for Mac M1/M2. Thanks @michaelgallacher, @JeLuf and vishae.
 - **Full support for Stable Diffusion 2.1 (including CPU)** - supports loading v1.4 or v2.0 or v2.1 models seamlessly. No need to enable "Test SD2", and no need to add `sd2_` to your SD 2.0 model file names. Works on CPU as well.
 - **Memory optimized Stable Diffusion 2.1** - you can now use Stable Diffusion 2.1 models, with the same low VRAM optimizations that we've always had for SD 1.4. Please note, the SD 2.0 and 2.1 models require more GPU and System RAM, as compared to the SD 1.4 and 1.5 models.
@@ -21,6 +21,25 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.35 - 3 May 2023 - (beta-only) First round of VRAM Optimizations for the "Test Diffusers" version. This change significantly reduces the amount of VRAM used by the diffusers version during image generation. The VRAM usage is still not equal to the "non-diffusers" version, but more optimizations are coming soon.
+* 2.5.34 - 22 Apr 2023 - Don't start the browser in an incognito new profile (on Windows). Thanks @JeLuf.
+* 2.5.33 - 21 Apr 2023 - Install PyTorch 2.0 on new installations (on Windows and Linux).
+* 2.5.32 - 19 Apr 2023 - Automatically check for black images, and set full-precision if necessary (for attn). This means custom models based on Stable Diffusion v2.1 will just work, without needing special command-line arguments or editing of yaml config files.
+* 2.5.32 - 18 Apr 2023 - Automatic support for AMD graphics cards on Linux. Thanks @DianaNites and @JeLuf.
+* 2.5.31 - 10 Apr 2023 - Reduce VRAM usage while upscaling.
+* 2.5.31 - 6 Apr 2023 - Allow seeds upto `4,294,967,295`. Thanks @ogmaresca.
+* 2.5.31 - 6 Apr 2023 - Buttons to show the previous/next image in the image popup. Thanks @ogmaresca.
+* 2.5.30 - 5 Apr 2023 - Fix a bug where the JPEG image quality wasn't being respected when embedding the metadata into it. Thanks @JeLuf.
+* 2.5.30 - 1 Apr 2023 - (beta-only) Slider to control the strength of the LoRA model.
+* 2.5.30 - 28 Mar 2023 - Refactor task entry config to use a generating method. Added ability for plugins to easily add to this. Removed confusing sentence from `contributing.md`
+* 2.5.30 - 28 Mar 2023 - Allow the user to undo the deletion of tasks or images, instead of showing a pop-up each time. The new `Undo` button will be present at the top of the UI. Thanks @JeLuf.
+* 2.5.30 - 28 Mar 2023 - Support saving lossless WEBP images. Thanks @ogmaresca.
+* 2.5.30 - 28 Mar 2023 - Lots of bug fixes for the UI (Read LoRA flag in metadata files, new prompt weight format with scrollwheel, fix overflow with lots of tabs, clear button in image editor, shorter filenames in download). Thanks @patriceac, @JeLuf and @ogmaresca.
+* 2.5.29 - 27 Mar 2023 - (beta-only) Fix a bug where some non-square images would fail while inpainting with a `The size of tensor a must match size of tensor b` error.
+* 2.5.29 - 27 Mar 2023 - (beta-only) Fix the `incorrect number of channels` error, when given a PNG image with an alpha channel in `Test Diffusers`.
+* 2.5.29 - 27 Mar 2023 - (beta-only) Fix broken inpainting in `Test Diffusers`.
+* 2.5.28 - 24 Mar 2023 - (beta-only) Support for weighted prompts and long prompt lengths (not limited to 77 tokens). This change requires enabling the `Test Diffusers` setting in beta (in the Settings tab), and restarting the program.
+* 2.5.27 - 21 Mar 2023 - (beta-only) LoRA support, accessible by enabling the `Test Diffusers` setting (in the Settings tab in the UI). This change switches the internal engine to diffusers (if the `Test Diffusers` setting is enabled). If the `Test Diffusers` flag is disabled, it'll have no impact for the user.
 * 2.5.26 - 15 Mar 2023 - Allow styling the buttons displayed on an image. Update the API to allow multiple buttons and text labels in a single row. Thanks @ogmaresca.
 * 2.5.26 - 15 Mar 2023 - View images in full-screen, by either clicking on the image, or clicking the "Full screen" icon next to the Seed number on the image. Thanks @ogmaresca for the internal API.
 * 2.5.25 - 14 Mar 2023 - Button to download all the images, and all the metadata as a zip file. This is available at the top of the UI, as well as on each image. Thanks @JeLuf.
