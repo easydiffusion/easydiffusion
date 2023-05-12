@@ -23,6 +23,7 @@ Our focus continues to remain on an easy installation experience, and an easy us
 ### Detailed changelog
 * 2.5.36 - 11 May 2023 - (beta-only) More VRAM optimizations for "low" VRAM usage mode.
 * 2.5.36 - 10 May 2023 - (beta-only) Bug fix for "meta" error when using a LoRA in 'low' VRAM usage mode.
+* 2.5.35 - 8 May 2023 - Allow dragging a zoomed-in image (after opening an image with the "expand" button). Thanks @ogmaresca.
 * 2.5.35 - 3 May 2023 - (beta-only) First round of VRAM Optimizations for the "Test Diffusers" version. This change significantly reduces the amount of VRAM used by the diffusers version during image generation. The VRAM usage is still not equal to the "non-diffusers" version, but more optimizations are coming soon.
 * 2.5.34 - 22 Apr 2023 - Don't start the browser in an incognito new profile (on Windows). Thanks @JeLuf.
 * 2.5.33 - 21 Apr 2023 - Install PyTorch 2.0 on new installations (on Windows and Linux).
