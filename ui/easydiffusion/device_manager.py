@@ -165,6 +165,7 @@ def needs_to_force_full_precision(context):
         and (
             " 1660" in device_name
             or " 1650" in device_name
+            or " 1630" in device_name
             or " t400" in device_name
             or " t550" in device_name
             or " t600" in device_name
