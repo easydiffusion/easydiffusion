@@ -23,7 +23,7 @@
             img.addEventListener(
                 "load",
                 function() {
-                    img.closest(".imageTaskContainer").scrollIntoView()
+                    img?.closest(".imageTaskContainer").scrollIntoView()
                 },
                 { once: true }
             )
