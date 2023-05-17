@@ -107,11 +107,12 @@ def resolve_model_to_use(model_name: str = None, model_type: str = None):
 
 
 def reload_models_if_necessary(context: Context, task_data: TaskData):
+    face_correction_model = "codeformer" if "codeformer" in task_data.use_face_correction.lower() else "gfpgan"
     model_paths_in_req = {
         "stable-diffusion": task_data.use_stable_diffusion_model,
         "vae": task_data.use_vae_model,
         "hypernetwork": task_data.use_hypernetwork_model,
-        "gfpgan": task_data.use_face_correction,
+        face_correction_model: task_data.use_face_correction,
         "realesrgan": task_data.use_upscale,
         "nsfw_checker": True if task_data.block_nsfw else None,
         "lora": task_data.use_lora_model,

@@ -158,7 +158,9 @@ def filter_images(task_data: TaskData, images: list, user_stopped):
     filters_to_apply = []
     if task_data.block_nsfw:
         filters_to_apply.append("nsfw_checker")
-    if task_data.use_face_correction and "gfpgan" in task_data.use_face_correction.lower():
+    if task_data.use_face_correction and "codeformer" in task_data.use_face_correction.lower():
+        filters_to_apply.append("codeformer")
+    elif task_data.use_face_correction and "gfpgan" in task_data.use_face_correction.lower():
         filters_to_apply.append("gfpgan")
     if task_data.use_upscale and "realesrgan" in task_data.use_upscale.lower():
         filters_to_apply.append("realesrgan")
