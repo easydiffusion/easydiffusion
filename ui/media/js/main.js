@@ -692,6 +692,9 @@ function makeImage() {
     if (guidanceScaleField.value == "") {
         guidanceScaleField.value = guidanceScaleSlider.value / 10
     }
+    if (hypernetworkStrengthField.value == "") {
+        hypernetworkStrengthField.value = hypernetworkStrengthSlider.value / 100
+    }
     const taskTemplate = getCurrentUserRequest()
     const newTaskRequests = getPrompts().map((prompt) =>
         Object.assign({}, taskTemplate, {

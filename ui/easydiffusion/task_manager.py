@@ -7,7 +7,7 @@ Notes:
 import json
 import traceback
 
-TASK_TTL = 15 * 60  # seconds, Discard last session's task timeout
+TASK_TTL = 30 * 60  # seconds, Discard last session's task timeout
 
 import queue
 import threading
@@ -398,8 +398,8 @@ def get_devices():
             return {"name": device_manager.get_processor_name()}
 
         mem_free, mem_total = torch.cuda.mem_get_info(device)
-        mem_free /= float(10 ** 9)
-        mem_total /= float(10 ** 9)
+        mem_free /= float(10**9)
+        mem_total /= float(10**9)
 
         return {
             "name": torch.cuda.get_device_name(device),
