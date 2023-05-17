@@ -22,6 +22,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.36 - 16 May 2023 - (beta-only) More VRAM optimizations for "balanced" VRAM usage mode.
 * 2.5.36 - 11 May 2023 - (beta-only) More VRAM optimizations for "low" VRAM usage mode.
 * 2.5.36 - 10 May 2023 - (beta-only) Bug fix for "meta" error when using a LoRA in 'low' VRAM usage mode.
 * 2.5.35 - 8 May 2023 - Allow dragging a zoomed-in image (after opening an image with the "expand" button). Thanks @ogmaresca.
