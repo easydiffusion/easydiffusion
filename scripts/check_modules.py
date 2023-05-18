@@ -130,10 +130,13 @@ def include_cuda_versions(module_versions: tuple) -> tuple:
 
 def is_amd_on_linux():
     if os_name == "Linux":
-        with open("/proc/bus/pci/devices", "r") as f:
-            device_info = f.read()
-            if "amdgpu" in device_info and "nvidia" not in device_info:
-                return True
+        try:
+            with open("/proc/bus/pci/devices", "r") as f:
+                device_info = f.read()
+                if "amdgpu" in device_info and "nvidia" not in device_info:
+                    return True
+        except:
+            return False
 
     return False
 
