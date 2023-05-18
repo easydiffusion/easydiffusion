@@ -13,6 +13,11 @@ const taskConfigSetup = {
         num_inference_steps: "Inference Steps",
         guidance_scale: "Guidance Scale",
         use_stable_diffusion_model: "Model",
+        clip_skip: {
+            label: "Clip Skip",
+            visible: ({ reqBody }) => reqBody?.clip_skip,
+            value: ({ reqBody }) => "yes",
+        },
         use_vae_model: {
             label: "VAE",
             visible: ({ reqBody }) => reqBody?.use_vae_model !== undefined && reqBody?.use_vae_model.trim() !== "",
@@ -82,6 +87,7 @@ let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
 let upscaleAmountField = document.querySelector("#upscale_amount")
 let stableDiffusionModelField = new ModelDropdown(document.querySelector("#stable_diffusion_model"), "stable-diffusion")
+let clipSkipField = document.querySelector("#clip_skip")
 let vaeModelField = new ModelDropdown(document.querySelector("#vae_model"), "vae", "None")
 let hypernetworkModelField = new ModelDropdown(document.querySelector("#hypernetwork_model"), "hypernetwork", "None")
 let hypernetworkStrengthSlider = document.querySelector("#hypernetwork_strength_slider")
@@ -1224,6 +1230,7 @@ function getCurrentUserRequest() {
             sampler_name: samplerField.value,
             //render_device: undefined, // Set device affinity. Prefer this device, but wont activate.
             use_stable_diffusion_model: stableDiffusionModelField.value,
+            clip_skip: clipSkipField.checked,
             use_vae_model: vaeModelField.value,
             stream_progress_updates: true,
             stream_image_progress: numOutputsTotal > 50 ? false : streamImageProgressField.checked,

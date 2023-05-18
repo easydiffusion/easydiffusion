@@ -122,7 +122,7 @@ def reload_models_if_necessary(context: Context, task_data: TaskData):
         if context.model_paths.get(model_type) != path
     }
 
-    if set_vram_optimizations(context):  # reload SD
+    if set_vram_optimizations(context) or set_clip_skip(context, task_data):  # reload SD
         models_to_reload["stable-diffusion"] = model_paths_in_req["stable-diffusion"]
 
     for model_type, model_path_in_req in models_to_reload.items():
@@ -152,6 +152,16 @@ def set_vram_optimizations(context: Context):
 
     if vram_usage_level != context.vram_usage_level:
         context.vram_usage_level = vram_usage_level
+        return True
+
+    return False
+
+
+def set_clip_skip(context: Context, task_data: TaskData):
+    clip_skip = task_data.clip_skip
+
+    if clip_skip != context.clip_skip:
+        context.clip_skip = clip_skip
         return True
 
     return False
