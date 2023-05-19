@@ -109,11 +109,18 @@ call python --version
     @SET ED_BIND_PORT=%%F
 )
 
-@FOR /F "tokens=* USEBACKQ" %%F IN (`python scripts\get_config.py --default=False net listen_to_network`) DO (
-    if "%%F" EQU "True" (
-        @SET ED_BIND_IP=0.0.0.0    
-    ) else (
-        @SET ED_BIND_IP=127.0.0.1
+@FOR /F "tokens=* USEBACKQ" %%F IN (`python scripts\get_config.py --default=notaddressed net listen_address`) DO (
+    @SET ED_BIND_PORT=%%F
+)
+
+if %ED_BIND_PORT% EQU "notaddressed" (
+
+    @FOR /F "tokens=* USEBACKQ" %%F IN (`python scripts\get_config.py --default=False net listen_to_network`) DO (
+        if "%%F" EQU "True" (
+            @SET ED_BIND_IP=0.0.0.0
+        ) else (
+            @SET ED_BIND_IP=127.0.0.1
+        )
     )
 )
 
