@@ -72,7 +72,7 @@ def make_images(
 
 
 def print_task_info(req: GenerateImageRequest, task_data: TaskData):
-    req_str = pprint.pformat(get_printable_request(req)).replace("[", "\[")
+    req_str = pprint.pformat(get_printable_request(req, task_data)).replace("[", "\[")
     task_str = pprint.pformat(task_data.dict()).replace("[", "\[")
     log.info(f"request: {req_str}")
     log.info(f"task data: {task_str}")

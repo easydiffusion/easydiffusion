@@ -37,6 +37,7 @@ function parseBoolean(stringValue) {
     }
 }
 
+// keep in sync with `ui/easydiffusion/utils/save_utils.py`
 const TASK_MAPPING = {
     prompt: {
         name: "Prompt",
