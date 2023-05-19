@@ -76,14 +76,18 @@ python --version
 cd ..
 export SD_UI_PATH=`pwd`/ui
 export ED_BIND_PORT="$( python scripts/get_config.py --default=9000 net listen_port )"
-case "$( python scripts/get_config.py --default=False net listen_to_network )" in
-    "True")
-        export ED_BIND_IP=0.0.0.0
-        ;;
-    "False")
-        export ED_BIND_IP=127.0.0.1
-        ;;
-esac
+export ED_BIND_IP="$( python scripts/get_config.py --default='notaddressed' net listen_address )"
+
+if [ "$ED_BIND_IP" == "notaddressed" ]; then
+    case "$( python scripts/get_config.py --default=False net listen_to_network )" in
+        "True")
+            export ED_BIND_IP=0.0.0.0
+            ;;
+        "False")
+            export ED_BIND_IP=127.0.0.1
+            ;;
+    esac
+fi
 cd stable-diffusion
 
 uvicorn main:server_api --app-dir "$SD_UI_PATH" --port "$ED_BIND_PORT" --host "$ED_BIND_IP" --log-level error
