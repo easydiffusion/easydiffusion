@@ -397,6 +397,7 @@ async function getAppConfig() {
             document.querySelector("#lora_model_container").style.display = testDiffusers.checked ? "" : "none"
             document.querySelector("#lora_alpha_container").style.display =
                 testDiffusers.checked && loraModelField.value !== "" ? "" : "none"
+            document.querySelector("#clip_skip_config").classList.remove("displayNone")
         }
 
         console.log("get config status response", config)
