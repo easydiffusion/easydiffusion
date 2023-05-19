@@ -240,6 +240,14 @@ const TASK_MAPPING = {
         readUI: () => stableDiffusionModelField.value,
         parse: (val) => val,
     },
+    clip_skip: {
+        name: "Clip Skip",
+        setUI: (value) => {
+            clip_skip.checked = value
+        },
+        readUI: () => clip_skip.checked,
+        parse: (val) => Boolean(val),
+    },
     use_vae_model: {
         name: "VAE model",
         setUI: (use_vae_model) => {

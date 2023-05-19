@@ -406,6 +406,7 @@ async function getAppConfig() {
             document.querySelectorAll("#sampler_name option.k_diffusion-only").forEach(option => {
                 option.disabled = true
             })
+            document.querySelector("#clip_skip_config").classList.remove("displayNone")
         }
 
         console.log("get config status response", config)

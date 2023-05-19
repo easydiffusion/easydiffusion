@@ -30,7 +30,7 @@
             <h1>
                 <img id="logo_img" src="/media/images/icon-512x512.png" >
                 Easy Diffusion
-                <small>v2.5.36 <span id="updateBranchLabel"></span></small>
+                <small>v2.5.37 <span id="updateBranchLabel"></span></small>
             </h1>
         </div>
         <div id="server-status">
@@ -135,10 +135,13 @@
                         <button id="reload-models" class="secondaryButton reloadModels"><i class='fa-solid fa-rotate'></i></button>
                         <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Custom-Models" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about custom models</span></i></a>
                     </td></tr>
-                    <!-- <tr id="modelConfigSelection" class="pl-5"><td><label for="model_config">Model Config:</label></td><td>
-                        <select id="model_config" name="model_config">
-                        </select>
-                    </td></tr> -->
+                    <tr class="pl-5 displayNone" id="clip_skip_config">
+                        <td><label for="clip_skip">Clip Skip:</label></td>
+                        <td>
+                            <input id="clip_skip" name="clip_skip" type="checkbox">
+                            <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Clip-Skip" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about Clip Skip</span></i></a>
+                        </td>
+                    </tr>
                     <tr class="pl-5"><td><label for="vae_model">Custom VAE:</label></td><td>
                         <input id="vae_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
                         <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/VAE-Variational-Auto-Encoder" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about VAEs</span></i></a>
