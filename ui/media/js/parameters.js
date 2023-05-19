@@ -388,15 +388,24 @@ async function getAppConfig() {
         if (config.net && config.net.listen_port !== undefined) {
             listenPortField.value = config.net.listen_port
         }
-        if (config.test_diffusers === undefined || config.update_branch === "main") {
-            testDiffusers.checked = false
+
+        const testDiffusersEnabled = config.test_diffusers && config.update_branch !== "main"
+        testDiffusers.checked = testDiffusersEnabled
+
+        if (!testDiffusersEnabled) {
             document.querySelector("#lora_model_container").style.display = "none"
             document.querySelector("#lora_alpha_container").style.display = "none"
+
+            document.querySelectorAll("#sampler_name option.diffusers-only").forEach(option => {
+                option.style.display = "none"
+            })
         } else {
-            testDiffusers.checked = config.test_diffusers && config.update_branch !== "main"
-            document.querySelector("#lora_model_container").style.display = testDiffusers.checked ? "" : "none"
-            document.querySelector("#lora_alpha_container").style.display =
-                testDiffusers.checked && loraModelField.value !== "" ? "" : "none"
+            document.querySelector("#lora_model_container").style.display = ""
+            document.querySelector("#lora_alpha_container").style.display = loraModelField.value ? "" : "none"
+
+            document.querySelectorAll("#sampler_name option.k_diffusion-only").forEach(option => {
+                option.disabled = true
+            })
             document.querySelector("#clip_skip_config").classList.remove("displayNone")
         }
 
