@@ -181,8 +181,8 @@ var PARAMETERS = [
     {
         id: "listen_to_network",
         type: ParameterType.checkbox,
-        label: "Make Stable Diffusion available on your network. Please restart the program after changing this.",
-        note: "Other devices on your network can access this web page",
+        label: "Make Stable Diffusion available on your network",
+        note: "Other devices on your network can access this web page. Please restart the program after changing this.",
         icon: "fa-network-wired",
         default: true,
         saveInAppConfig: true,
