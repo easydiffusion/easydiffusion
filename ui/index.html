@@ -411,7 +411,7 @@
             <h1>Diffusers Tech Preview</h1>
             <p>The Diffusers Tech Preview allows early access to the new features based on <a href="https://huggingface.co/docs/diffusers/index" target="_blank">Diffusers</a>.</p>
             <p>The Preview is under active development. It is experimental! It does still have bugs and missing features!</p>
-            <p>New upcoming features in our new engine include:</p>
+            <h2>New upcoming features in our new engine</h2>
             <ul>
                 <li><a href="https://huggingface.co/blog/lora" target="_blank">LORA</a> support - Place LORA files in the <tt>models/lora</tt> folder.</li>
                 <li><a href="https://github.com/damian0815/compel/blob/main/Reference.md" target="_blank">Compel Prompt Parser</a> - New, more powerful parser. In short:
@@ -434,19 +434,20 @@
                 </li>
                 <li> More choices for img2img samplers</li>
                 <li> Support for inpainting models</li>
+                <li> <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Clip-Skip" target="_blank">Clip Skip</a> support allows to skip the last CLIP layer (recommended by some LORA models)</li>
+                <li> New samplers: DDPM and DEIS</li>
+                <li> Memory optimizations that allow the use of 2GB GPUs</li>
             </ul>
             <h2>Known issues</h2>
             <ul>
                 <li> Some LoRA consistently fail to load in EasyDiffusion</li>
                 <li> Some LoRA are far more sensitive to alpha (compared to a11)</li>
-                <li> hangs sometimes on "compel is ready", while making the token.</li>
+                <li> Hangs sometimes on "compel is ready", while making the token.</li>
                 <li> Some custom inpainting models don't work</li>
-
-                <li> these samplers don't work yet: Unipc SNR, Unipc TQ, Unipc SNR2, DPM++ 2s Ancestral, DPM++ SDE, DPM Fast, DPM Adaptive, DPM2</li>
-                <li> hypernetwork doesn't work</li>
-
-                <li> multi GPU - cuda:1 and cuda:0 conflict</li>
-                <li> the time remaining in browser differs from the one in the console</li>
+                <li> These samplers don't work yet: Unipc SNR, Unipc TQ, Unipc SNR2, DPM++ 2s Ancestral, DPM++ SDE, DPM Fast, DPM Adaptive, DPM2</li>
+                <li> Hypernetwork doesn't work</li>
+                <li> Multi GPU - cuda:1 and cuda:0 conflict</li>
+                <li> The time remaining in browser differs from the one in the console</li>
             </ul>
         </div>
     </div>
