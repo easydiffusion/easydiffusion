@@ -1,5 +1,5 @@
 # Easy Diffusion 2.5
-### The easiest way to install and use [Stable Diffusion](https://github.com/CompVis/stable-diffusion) on your own computer.
+### The easiest way to install and use [Stable Diffusion](https://github.com/CompVis/stable-diffusion) on your computer.
 
 Does not require technical knowledge, does not require pre-installed software. 1-click install, powerful features, friendly community.
 
@@ -15,6 +15,11 @@ Click the download button for your operating system:
   <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.24/Easy-Diffusion-Linux.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-linux.png" width="200" /></a>
   <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.24/Easy-Diffusion-Mac.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-mac.png" width="200" /></a>
 </p>
+
+**Hardware requirements:**
+- **Windows:** NVIDIA graphics card, or run on your CPU
+- **Linux:** NVIDIA or AMD graphics card, or run on your CPU
+- **Mac:** M1 or M2, or run on your CPU
 
 The installer will take care of whatever is needed. If you face any problems, you can join the friendly [Discord community](https://discord.com/invite/u9yhsFmEkB) and ask for assistance.
 
@@ -53,7 +58,7 @@ Just delete the `EasyDiffusion` folder to uninstall all the downloaded packages.
 
 ### Image generation
 - **Supports**: "*Text to Image*" and "*Image to Image*".
-- **19 Samplers**: `ddim`, `plms`, `heun`, `euler`, `euler_a`, `dpm2`, `dpm2_a`, `lms`, `dpm_solver_stability`, `dpmpp_2s_a`, `dpmpp_2m`, `dpmpp_sde`, `dpm_fast`, `dpm_adaptive`, `unipc_snr`, `unipc_tu`, `unipc_tq`, `unipc_snr_2`, `unipc_tu_2`.
+- **21 Samplers**: `ddim`, `plms`, `heun`, `euler`, `euler_a`, `dpm2`, `dpm2_a`, `lms`, `dpm_solver_stability`, `dpmpp_2s_a`, `dpmpp_2m`, `dpmpp_sde`, `dpm_fast`, `dpm_adaptive`, `ddpm`, `deis`, `unipc_snr`, `unipc_tu`, `unipc_tq`, `unipc_snr_2`, `unipc_tu_2`.
 - **In-Painting**: Specify areas of your image to paint into.
 - **Simple Drawing Tool**: Draw basic images to guide the AI, without needing an external drawing program.
 - **Face Correction (GFPGAN)**

@@ -2,28 +2,30 @@
 Notes:
     async endpoints always run on the main thread. Without they run on the thread pool.
 """
+import datetime
+import mimetypes
 import os
 import traceback
-import datetime
 from typing import List, Union
 
+from easydiffusion import app, model_manager, task_manager
+from easydiffusion.types import GenerateImageRequest, MergeRequest, TaskData
+from easydiffusion.utils import log
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-from starlette.responses import FileResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel, Extra
-
-from easydiffusion import app, model_manager, task_manager
-from easydiffusion.types import TaskData, GenerateImageRequest, MergeRequest
-from easydiffusion.utils import log
-
-import mimetypes
+from starlette.responses import FileResponse, JSONResponse, StreamingResponse
 
 log.info(f"started in {app.SD_DIR}")
 log.info(f"started at {datetime.datetime.now():%x %X}")
 
 server_api = FastAPI()
 
-NOCACHE_HEADERS = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
+NOCACHE_HEADERS = {
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    "Pragma": "no-cache",
+    "Expires": "0",
+}
 
 
 class NoCacheStaticFiles(StaticFiles):
@@ -65,11 +67,17 @@ def init():
             name="custom-thumbnails",
         )
 
-    server_api.mount("/media", NoCacheStaticFiles(directory=os.path.join(app.SD_UI_DIR, "media")), name="media")
+    server_api.mount(
+        "/media",
+        NoCacheStaticFiles(directory=os.path.join(app.SD_UI_DIR, "media")),
+        name="media",
+    )
 
     for plugins_dir, dir_prefix in app.UI_PLUGINS_SOURCES:
         server_api.mount(
-            f"/plugins/{dir_prefix}", NoCacheStaticFiles(directory=plugins_dir), name=f"plugins-{dir_prefix}"
+            f"/plugins/{dir_prefix}",
+            NoCacheStaticFiles(directory=plugins_dir),
+            name=f"plugins-{dir_prefix}",
         )
 
     @server_api.post("/app_config")
@@ -246,8 +254,8 @@ def render_internal(req: dict):
 
 def model_merge_internal(req: dict):
     try:
-        from sdkit.train import merge_models
         from easydiffusion.utils.save_utils import filename_regex
+        from sdkit.train import merge_models
 
         mergeReq: MergeRequest = MergeRequest.parse_obj(req)
 
@@ -255,7 +263,11 @@ def model_merge_internal(req: dict):
             model_manager.resolve_model_to_use(mergeReq.model0, "stable-diffusion"),
             model_manager.resolve_model_to_use(mergeReq.model1, "stable-diffusion"),
             mergeReq.ratio,
-            os.path.join(app.MODELS_DIR, "stable-diffusion", filename_regex.sub("_", mergeReq.out_path)),
+            os.path.join(
+                app.MODELS_DIR,
+                "stable-diffusion",
+                filename_regex.sub("_", mergeReq.out_path),
+            ),
             mergeReq.use_fp16,
         )
         return JSONResponse({"status": "OK"}, headers=NOCACHE_HEADERS)

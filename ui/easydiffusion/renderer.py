@@ -1,21 +1,23 @@
-import queue
-import time
 import json
 import pprint
+import queue
+import time
 
 from easydiffusion import device_manager
-from easydiffusion.types import TaskData, Response, Image as ResponseImage, UserInitiatedStop, GenerateImageRequest
-from easydiffusion.utils import get_printable_request, save_images_to_disk, log
-
+from easydiffusion.types import GenerateImageRequest
+from easydiffusion.types import Image as ResponseImage
+from easydiffusion.types import Response, TaskData, UserInitiatedStop
+from easydiffusion.utils import get_printable_request, log, save_images_to_disk
 from sdkit import Context
-from sdkit.generate import generate_images
 from sdkit.filter import apply_filters
+from sdkit.generate import generate_images
 from sdkit.utils import (
-    img_to_buffer,
-    img_to_base64_str,
-    latent_samples_to_images,
     diffusers_latent_samples_to_images,
     gc,
+    img_to_base64_str,
+    img_to_buffer,
+    latent_samples_to_images,
+    get_device_usage,
 )
 
 context = Context()  # thread-local
@@ -39,18 +41,29 @@ def init(device):
         app_config.get("test_diffusers", False) and app_config.get("update_branch", "main") != "main"
     )
 
+    log.info("Device usage during initialization:")
+    get_device_usage(device, log_info=True, process_usage_only=False)
+
     device_manager.device_init(context, device)
 
 
 def make_images(
-    req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback
+    req: GenerateImageRequest,
+    task_data: TaskData,
+    data_queue: queue.Queue,
+    task_temp_images: list,
+    step_callback,
 ):
     context.stop_processing = False
     print_task_info(req, task_data)
 
     images, seeds = make_images_internal(req, task_data, data_queue, task_temp_images, step_callback)
 
-    res = Response(req, task_data, images=construct_response(images, seeds, task_data, base_seed=req.seed))
+    res = Response(
+        req,
+        task_data,
+        images=construct_response(images, seeds, task_data, base_seed=req.seed),
+    )
     res = res.json()
     data_queue.put(json.dumps(res))
     log.info("Task completed")
@@ -59,14 +72,18 @@ def make_images(
 
 
 def print_task_info(req: GenerateImageRequest, task_data: TaskData):
-    req_str = pprint.pformat(get_printable_request(req)).replace("[", "\[")
+    req_str = pprint.pformat(get_printable_request(req, task_data)).replace("[", "\[")
     task_str = pprint.pformat(task_data.dict()).replace("[", "\[")
     log.info(f"request: {req_str}")
     log.info(f"task data: {task_str}")
 
 
 def make_images_internal(
-    req: GenerateImageRequest, task_data: TaskData, data_queue: queue.Queue, task_temp_images: list, step_callback
+    req: GenerateImageRequest,
+    task_data: TaskData,
+    data_queue: queue.Queue,
+    task_temp_images: list,
+    step_callback,
 ):
     images, user_stopped = generate_images_internal(
         req,
@@ -155,7 +172,12 @@ def filter_images(task_data: TaskData, images: list, user_stopped):
 def construct_response(images: list, seeds: list, task_data: TaskData, base_seed: int):
     return [
         ResponseImage(
-            data=img_to_base64_str(img, task_data.output_format, task_data.output_quality, task_data.output_lossless),
+            data=img_to_base64_str(
+                img,
+                task_data.output_format,
+                task_data.output_quality,
+                task_data.output_lossless,
+            ),
             seed=seed,
         )
         for img, seed in zip(images, seeds)

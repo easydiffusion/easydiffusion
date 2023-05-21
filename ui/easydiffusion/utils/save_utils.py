@@ -1,14 +1,13 @@
 import os
-import time
 import re
+import time
+from datetime import datetime
+from functools import reduce
 
 from easydiffusion import app
-from easydiffusion.types import TaskData, GenerateImageRequest
-from functools import reduce
-from datetime import datetime
-
-from sdkit.utils import save_images, save_dicts
+from easydiffusion.types import GenerateImageRequest, TaskData
 from numpy import base_repr
+from sdkit.utils import save_dicts, save_images
 
 filename_regex = re.compile("[^a-zA-Z0-9._-]")
 img_number_regex = re.compile("([0-9]{5,})")
@@ -16,23 +15,24 @@ img_number_regex = re.compile("([0-9]{5,})")
 # keep in sync with `ui/media/js/dnd.js`
 TASK_TEXT_MAPPING = {
     "prompt": "Prompt",
+    "negative_prompt": "Negative Prompt",
+    "seed": "Seed",
+    "use_stable_diffusion_model": "Stable Diffusion model",
+    "clip_skip": "Clip Skip",
+    "use_vae_model": "VAE model",
+    "sampler_name": "Sampler",
     "width": "Width",
     "height": "Height",
-    "seed": "Seed",
     "num_inference_steps": "Steps",
     "guidance_scale": "Guidance Scale",
     "prompt_strength": "Prompt Strength",
+    "use_lora_model": "LoRA model",
+    "lora_alpha": "LoRA Strength",
+    "use_hypernetwork_model": "Hypernetwork model",
+    "hypernetwork_strength": "Hypernetwork Strength",
     "use_face_correction": "Use Face Correction",
     "use_upscale": "Use Upscaling",
     "upscale_amount": "Upscale By",
-    "sampler_name": "Sampler",
-    "negative_prompt": "Negative Prompt",
-    "use_stable_diffusion_model": "Stable Diffusion model",
-    "use_vae_model": "VAE model",
-    "use_hypernetwork_model": "Hypernetwork model",
-    "hypernetwork_strength": "Hypernetwork Strength",
-    "use_lora_model": "LoRA model",
-    "lora_alpha": "LoRA Strength",
 }
 
 time_placeholders = {
@@ -50,6 +50,7 @@ other_placeholders = {
     "$s": lambda req, task_data: str(req.seed),
 }
 
+
 class ImageNumber:
     _factory = None
     _evaluated = False
@@ -57,12 +58,14 @@ class ImageNumber:
     def __init__(self, factory):
         self._factory = factory
         self._evaluated = None
+
     def __call__(self) -> int:
         if self._evaluated is None:
             self._evaluated = self._factory()
         return self._evaluated
 
-def format_placeholders(format: str, req: GenerateImageRequest, task_data: TaskData, now = None):
+
+def format_placeholders(format: str, req: GenerateImageRequest, task_data: TaskData, now=None):
     if now is None:
         now = time.time()
 
@@ -75,9 +78,11 @@ def format_placeholders(format: str, req: GenerateImageRequest, task_data: TaskD
 
     return format
 
+
 def format_folder_name(format: str, req: GenerateImageRequest, task_data: TaskData):
     format = format_placeholders(format, req, task_data)
     return filename_regex.sub("_", format)
+
 
 def format_file_name(
     format: str,
@@ -88,18 +93,21 @@ def format_file_name(
     folder_img_number: ImageNumber,
 ):
     format = format_placeholders(format, req, task_data, now)
-    
+
     if "$n" in format:
         format = format.replace("$n", f"{folder_img_number():05}")
-    
+
     if "$tsb64" in format:
-        img_id = base_repr(int(now * 10000), 36)[-7:] + base_repr(int(batch_file_number), 36) # Base 36 conversion, 0-9, A-Z
+        img_id = base_repr(int(now * 10000), 36)[-7:] + base_repr(
+            int(batch_file_number), 36
+        )  # Base 36 conversion, 0-9, A-Z
         format = format.replace("$tsb64", img_id)
-    
+
     if "$ts" in format:
         format = format.replace("$ts", str(int(now * 1000) + batch_file_number))
 
     return filename_regex.sub("_", format)
+
 
 def save_images_to_disk(images: list, filtered_images: list, req: GenerateImageRequest, task_data: TaskData):
     now = time.time()
@@ -126,7 +134,7 @@ def save_images_to_disk(images: list, filtered_images: list, req: GenerateImageR
             output_lossless=task_data.output_lossless,
         )
         if task_data.metadata_output_format:
-            for metadata_output_format in task_data.metadata_output_format.split(','):
+            for metadata_output_format in task_data.metadata_output_format.split(","):
                 if metadata_output_format.lower() in ["json", "txt", "embed"]:
                     save_dicts(
                         metadata_entries,
@@ -142,7 +150,8 @@ def save_images_to_disk(images: list, filtered_images: list, req: GenerateImageR
             task_data,
             file_number,
             now=now,
-            suffix="filtered")
+            suffix="filtered",
+        )
 
         save_images(
             images,
@@ -171,27 +180,7 @@ def save_images_to_disk(images: list, filtered_images: list, req: GenerateImageR
 
 
 def get_metadata_entries_for_request(req: GenerateImageRequest, task_data: TaskData):
-    metadata = get_printable_request(req)
-    metadata.update(
-        {
-            "use_stable_diffusion_model": task_data.use_stable_diffusion_model,
-            "use_vae_model": task_data.use_vae_model,
-            "use_hypernetwork_model": task_data.use_hypernetwork_model,
-            "use_lora_model": task_data.use_lora_model,
-            "use_face_correction": task_data.use_face_correction,
-            "use_upscale": task_data.use_upscale,
-        }
-    )
-    if metadata["use_upscale"] is not None:
-        metadata["upscale_amount"] = task_data.upscale_amount
-    if task_data.use_hypernetwork_model is None:
-        del metadata["hypernetwork_strength"]
-    if task_data.use_lora_model is None:
-        if "lora_alpha" in metadata:
-            del metadata["lora_alpha"]
-        app_config = app.getConfig()
-        if not app_config.get("test_diffusers", False) and "use_lora_model" in metadata:
-            del metadata["use_lora_model"]
+    metadata = get_printable_request(req, task_data)
 
     # if text, format it in the text format expected by the UI
     is_txt_format = task_data.metadata_output_format.lower() == "txt"
@@ -205,12 +194,33 @@ def get_metadata_entries_for_request(req: GenerateImageRequest, task_data: TaskD
     return entries
 
 
-def get_printable_request(req: GenerateImageRequest):
-    metadata = req.dict()
-    del metadata["init_image"]
-    del metadata["init_image_mask"]
-    if req.init_image is None:
+def get_printable_request(req: GenerateImageRequest, task_data: TaskData):
+    req_metadata = req.dict()
+    task_data_metadata = task_data.dict()
+
+    # Save the metadata in the order defined in TASK_TEXT_MAPPING
+    metadata = {}
+    for key in TASK_TEXT_MAPPING.keys():
+        if key in req_metadata:
+            metadata[key] = req_metadata[key]
+        elif key in task_data_metadata:
+            metadata[key] = task_data_metadata[key]
+    
+    # Clean up the metadata
+    if req.init_image is None and "prompt_strength" in metadata:
         del metadata["prompt_strength"]
+    if task_data.use_upscale is None and "upscale_amount" in metadata:
+        del metadata["upscale_amount"]
+    if task_data.use_hypernetwork_model is None and "hypernetwork_strength" in metadata:
+        del metadata["hypernetwork_strength"]
+    if task_data.use_lora_model is None and "lora_alpha" in metadata:
+        del metadata["lora_alpha"]
+
+    app_config = app.getConfig()
+    if not app_config.get("test_diffusers", False):
+        for key in (x for x in ["use_lora_model", "lora_alpha", "clip_skip"] if x in metadata):
+            del metadata[key]
+
     return metadata
 
 
@@ -233,27 +243,28 @@ def make_filename_callback(
 
     return make_filename
 
+
 def _calculate_img_number(save_dir_path: str, task_data: TaskData):
     def get_highest_img_number(accumulator: int, file: os.DirEntry) -> int:
         if not file.is_file:
             return accumulator
-        
+
         if len(list(filter(lambda e: file.name.endswith(e), app.IMAGE_EXTENSIONS))) == 0:
             return accumulator
-        
+
         get_highest_img_number.number_of_images = get_highest_img_number.number_of_images + 1
-        
+
         number_match = img_number_regex.match(file.name)
         if not number_match:
             return accumulator
-        
-        file_number = number_match.group().lstrip('0')
-        
+
+        file_number = number_match.group().lstrip("0")
+
         # Handle 00000
         return int(file_number) if file_number else 0
-    
+
     get_highest_img_number.number_of_images = 0
-    
+
     highest_file_number = -1
 
     if os.path.isdir(save_dir_path):
@@ -267,13 +278,15 @@ def _calculate_img_number(save_dir_path: str, task_data: TaskData):
             _calculate_img_number.session_img_numbers[task_data.session_id],
             calculated_img_number,
         )
-    
+
     calculated_img_number = calculated_img_number + 1
-    
+
     _calculate_img_number.session_img_numbers[task_data.session_id] = calculated_img_number
     return calculated_img_number
 
+
 _calculate_img_number.session_img_numbers = {}
+
 
 def calculate_img_number(save_dir_path: str, task_data: TaskData):
     return ImageNumber(lambda: _calculate_img_number(save_dir_path, task_data))
