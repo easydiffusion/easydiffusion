@@ -181,8 +181,8 @@ var PARAMETERS = [
     {
         id: "listen_to_network",
         type: ParameterType.checkbox,
-        label: "Make Stable Diffusion available on your network. Please restart the program after changing this.",
-        note: "Other devices on your network can access this web page",
+        label: "Make Stable Diffusion available on your network",
+        note: "Other devices on your network can access this web page. Please restart the program after changing this.",
         icon: "fa-network-wired",
         default: true,
         saveInAppConfig: true,
@@ -586,7 +586,7 @@ async function getSystemInfo() {
             $("#use_gpus").val(activeDeviceIds)
         }
 
-        setDeviceInfo(devices)
+        document.dispatchEvent(new CustomEvent("system_info_update", { detail: devices}))
         setHostInfo(res["hosts"])
         let force = false
         if (res["enforce_output_dir"] !== undefined) {
@@ -657,3 +657,5 @@ saveSettingsBtn.addEventListener("click", function() {
     saveSettingsBtn.classList.add("active")
     Promise.all([savePromise, asyncDelay(300)]).then(() => saveSettingsBtn.classList.remove("active"))
 })
+
+document.addEventListener("system_info_update", (e) => setDeviceInfo(e.detail))
