@@ -1,5 +1,6 @@
 import os
 import argparse
+import sys
 
 # The config file is in the same directory as this script
 config_directory = os.path.dirname(__file__)
@@ -21,16 +22,16 @@ if os.path.isfile(config_yaml):
         try:
             config = yaml.safe_load(configfile)
         except Exception as e:
-            print(e)
-            exit()
+            print(e, file=sys.stderr)
+            config = {}
 elif os.path.isfile(config_json):
     import json
     with open(config_json, 'r') as configfile:
         try:
             config = json.load(configfile)
         except Exception as e:
-            print(e)
-            exit()
+            print(e, file=sys.stderr)
+            config = {}
 else:
     config = {}
 
