@@ -586,7 +586,7 @@ async function getSystemInfo() {
             $("#use_gpus").val(activeDeviceIds)
         }
 
-        setDeviceInfo(devices)
+        document.dispatchEvent(new CustomEvent("system_info_update", { detail: devices}))
         setHostInfo(res["hosts"])
         let force = false
         if (res["enforce_output_dir"] !== undefined) {
@@ -657,3 +657,5 @@ saveSettingsBtn.addEventListener("click", function() {
     saveSettingsBtn.classList.add("active")
     Promise.all([savePromise, asyncDelay(300)]).then(() => saveSettingsBtn.classList.remove("active"))
 })
+
+document.addEventListener("system_info_update", (e) => setDeviceInfo(e.detail))

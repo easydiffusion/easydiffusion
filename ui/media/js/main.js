@@ -239,7 +239,7 @@ function setServerStatus(event) {
             break
     }
     if (SD.serverState.devices) {
-        setDeviceInfo(SD.serverState.devices)
+        document.dispatchEvent(new CustomEvent("system_info_update", { detail: SD.serverState.devices}))
     }
 }
 
