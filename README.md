@@ -17,8 +17,8 @@ Click the download button for your operating system:
 </p>
 
 **Hardware requirements:**
-- **Windows:** NVIDIA graphics card, or run on your CPU.
-- **Linux:** NVIDIA or AMD graphics card, or run on your CPU.
+- **Windows:** NVIDIA graphics card (minimum 2 GB RAM), or run on your CPU.
+- **Linux:** NVIDIA or AMD graphics card (minimum 2 GB RAM), or run on your CPU.
 - **Mac:** M1 or M2, or run on your CPU.
 - Minimum 8 GB of system RAM.
 - Atleast 25 GB of space on the hard disk.
@@ -86,7 +86,7 @@ Just delete the `EasyDiffusion` folder to uninstall all the downloaded packages.
 
 ### Performance and security
 - **Fast**: Creates a 512x512 image with euler_a in 5 seconds, on an NVIDIA 3060 12GB.
-- **Low Memory Usage**: Create 512x512 images with less than 3 GB of GPU RAM, and 768x768 images with less than 4 GB of GPU RAM!
+- **Low Memory Usage**: Create 512x512 images with less than 2 GB of GPU RAM, and 768x768 images with less than 3 GB of GPU RAM!
 - **Use CPU setting**: If you don't have a compatible graphics card, but still want to run it on your CPU.
 - **Multi-GPU support**: Automatically spreads your tasks across multiple GPUs (if available), for faster performance!
 - **Auto scan for malicious models**: Uses picklescan to prevent malicious models.
