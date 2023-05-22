@@ -48,6 +48,7 @@ class TaskData(BaseModel):
     metadata_output_format: str = "txt"  # or "json"
     stream_image_progress: bool = False
     stream_image_progress_interval: int = 5
+    clip_skip: bool = False
 
 
 class MergeRequest(BaseModel):

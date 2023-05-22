@@ -37,6 +37,7 @@ function parseBoolean(stringValue) {
     }
 }
 
+// keep in sync with `ui/easydiffusion/utils/save_utils.py`
 const TASK_MAPPING = {
     prompt: {
         name: "Prompt",
@@ -239,6 +240,14 @@ const TASK_MAPPING = {
         },
         readUI: () => stableDiffusionModelField.value,
         parse: (val) => val,
+    },
+    clip_skip: {
+        name: "Clip Skip",
+        setUI: (value) => {
+            clip_skip.checked = value
+        },
+        readUI: () => clip_skip.checked,
+        parse: (val) => Boolean(val),
     },
     use_vae_model: {
         name: "VAE model",

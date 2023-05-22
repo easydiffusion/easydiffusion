@@ -98,8 +98,8 @@ def auto_pick_devices(currently_active_devices):
             continue
 
         mem_free, mem_total = torch.cuda.mem_get_info(device)
-        mem_free /= float(10 ** 9)
-        mem_total /= float(10 ** 9)
+        mem_free /= float(10**9)
+        mem_total /= float(10**9)
         device_name = torch.cuda.get_device_name(device)
         log.debug(
             f"{device} detected: {device_name} - Memory (free/total): {round(mem_free, 2)}Gb / {round(mem_total, 2)}Gb"
@@ -182,7 +182,7 @@ def get_max_vram_usage_level(device):
     else:
         return "high"
 
-    mem_total /= float(10 ** 9)
+    mem_total /= float(10**9)
     if mem_total < 4.5:
         return "low"
     elif mem_total < 6.5:
@@ -224,10 +224,10 @@ def is_device_compatible(device):
     # Memory check
     try:
         _, mem_total = torch.cuda.mem_get_info(device)
-        mem_total /= float(10 ** 9)
-        if mem_total < 3.0:
+        mem_total /= float(10**9)
+        if mem_total < 1.9:
             if is_device_compatible.history.get(device) == None:
-                log.warn(f"GPU {device} with less than 3 GB of VRAM is not compatible with Stable Diffusion")
+                log.warn(f"GPU {device} with less than 2 GB of VRAM is not compatible with Stable Diffusion")
                 is_device_compatible.history[device] = 1
             return False
     except RuntimeError as e:
