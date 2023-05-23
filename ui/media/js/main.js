@@ -86,6 +86,9 @@ let gfpganModelField = new ModelDropdown(document.querySelector("#gfpgan_model")
 let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
 let upscaleAmountField = document.querySelector("#upscale_amount")
+let latentUpscalerSettings = document.querySelector("#latent_upscaler_settings")
+let latentUpscalerStepsSlider = document.querySelector("#latent_upscaler_steps_slider")
+let latentUpscalerStepsField = document.querySelector("#latent_upscaler_steps")
 let stableDiffusionModelField = new ModelDropdown(document.querySelector("#stable_diffusion_model"), "stable-diffusion")
 let clipSkipField = document.querySelector("#clip_skip")
 let vaeModelField = new ModelDropdown(document.querySelector("#vae_model"), "vae", "None")
@@ -239,7 +242,7 @@ function setServerStatus(event) {
             break
     }
     if (SD.serverState.devices) {
-        document.dispatchEvent(new CustomEvent("system_info_update", { detail: SD.serverState.devices}))
+        document.dispatchEvent(new CustomEvent("system_info_update", { detail: SD.serverState.devices }))
     }
 }
 
@@ -1268,6 +1271,10 @@ function getCurrentUserRequest() {
     if (useUpscalingField.checked) {
         newTask.reqBody.use_upscale = upscaleModelField.value
         newTask.reqBody.upscale_amount = upscaleAmountField.value
+        if (upscaleModelField.value === "latent_upscaler") {
+            newTask.reqBody.upscale_amount = "2"
+            newTask.reqBody.latent_upscaler_steps = latentUpscalerStepsField.value
+        }
     }
     if (hypernetworkModelField.value) {
         newTask.reqBody.use_hypernetwork_model = hypernetworkModelField.value
@@ -1582,6 +1589,20 @@ useUpscalingField.addEventListener("change", function(e) {
     upscaleAmountField.disabled = !this.checked
 })
 
+function onUpscaleModelChange() {
+    let upscale4x = document.querySelector("#upscale_amount_4x")
+    if (upscaleModelField.value === "latent_upscaler") {
+        upscale4x.disabled = true
+        upscaleAmountField.value = "2"
+        latentUpscalerSettings.classList.remove("displayNone")
+    } else {
+        upscale4x.disabled = false
+        latentUpscalerSettings.classList.add("displayNone")
+    }
+}
+upscaleModelField.addEventListener("change", onUpscaleModelChange)
+onUpscaleModelChange()
+
 makeImageBtn.addEventListener("click", makeImage)
 
 document.onkeydown = function(e) {
@@ -1590,6 +1611,27 @@ document.onkeydown = function(e) {
         e.preventDefault()
     }
 }
+
+/********************* Latent Upscaler Steps **************************/
+function updateLatentUpscalerSteps() {
+    latentUpscalerStepsField.value = latentUpscalerStepsSlider.value
+    latentUpscalerStepsField.dispatchEvent(new Event("change"))
+}
+
+function updateLatentUpscalerStepsSlider() {
+    if (latentUpscalerStepsField.value < 1) {
+        latentUpscalerStepsField.value = 1
+    } else if (latentUpscalerStepsField.value > 50) {
+        latentUpscalerStepsField.value = 50
+    }
+
+    latentUpscalerStepsSlider.value = latentUpscalerStepsField.value
+    latentUpscalerStepsSlider.dispatchEvent(new Event("change"))
+}
+
+latentUpscalerStepsSlider.addEventListener("input", updateLatentUpscalerSteps)
+latentUpscalerStepsField.addEventListener("input", updateLatentUpscalerStepsSlider)
+updateLatentUpscalerSteps()
 
 /********************* Guidance **************************/
 function updateGuidanceScale() {
