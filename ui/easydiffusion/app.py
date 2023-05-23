@@ -10,6 +10,8 @@ import warnings
 from easydiffusion import task_manager
 from easydiffusion.utils import log
 from rich.logging import RichHandler
+from rich.console import Console
+from rich.panel import Panel
 from sdkit.utils import log as sdkit_log  # hack, so we can overwrite the log config
 
 # Remove all handlers associated with the root logger object.
@@ -213,10 +215,18 @@ def open_browser():
     ui = config.get("ui", {})
     net = config.get("net", {})
     port = net.get("listen_port", 9000)
+
     if ui.get("open_browser_on_start", True):
         import webbrowser
 
         webbrowser.open(f"http://localhost:{port}")
+
+    Console().print(Panel(
+        "\n" +
+        "[white]Easy Diffusion is ready to serve requests.\n\n" +
+        "A new browser tab should have been opened by now.\n" +
+        f"If not, please open your web browser and navigate to [bold yellow underline]http://localhost:{port}/\n",
+        title="Easy Diffusion is ready", style="bold yellow on blue"))
 
 
 def get_image_modifiers():
