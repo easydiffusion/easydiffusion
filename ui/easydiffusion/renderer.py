@@ -33,6 +33,7 @@ def init(device):
     context.stop_processing = False
     context.temp_images = {}
     context.partial_x_samples = None
+    context.model_load_errors = {}
 
     from easydiffusion import app
 
