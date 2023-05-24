@@ -261,20 +261,11 @@ function shiftOrConfirm(e, prompt, fn) {
     if (e.shiftKey || !confirmDangerousActionsField.checked) {
         fn(e)
     } else {
-        $.confirm({
-            theme: "modern",
-            title: prompt,
-            useBootstrap: false,
-            animateFromElement: false,
-            content:
-                '<small>Tip: To skip this dialog, use shift-click or disable the "Confirm dangerous actions" setting in the Settings tab.</small>',
-            buttons: {
-                yes: () => {
-                    fn(e)
-                },
-                cancel: () => {},
-            },
-        })
+        confirm(
+            '<small>Tip: To skip this dialog, use shift-click or disable the "Confirm dangerous actions" setting in the Settings tab.</small>',
+            prompt,
+            fn
+        )
     }
 }
 

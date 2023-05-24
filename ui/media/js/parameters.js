@@ -191,7 +191,8 @@ var PARAMETERS = [
         id: "listen_port",
         type: ParameterType.custom,
         label: "Network port",
-        note: "Port that this server listens to. The '9000' part in 'http://localhost:9000'. Please restart the program after changing this.",
+        note:
+            "Port that this server listens to. The '9000' part in 'http://localhost:9000'. Please restart the program after changing this.",
         icon: "fa-anchor",
         render: (parameter) => {
             return `<input id="${parameter.id}" name="${parameter.id}" size="6" value="9000" onkeypress="preventNonNumericalInput(event)">`
@@ -396,14 +397,14 @@ async function getAppConfig() {
             document.querySelector("#lora_model_container").style.display = "none"
             document.querySelector("#lora_alpha_container").style.display = "none"
 
-            document.querySelectorAll("#sampler_name option.diffusers-only").forEach(option => {
+            document.querySelectorAll("#sampler_name option.diffusers-only").forEach((option) => {
                 option.style.display = "none"
             })
         } else {
             document.querySelector("#lora_model_container").style.display = ""
             document.querySelector("#lora_alpha_container").style.display = loraModelField.value ? "" : "none"
 
-            document.querySelectorAll("#sampler_name option.k_diffusion-only").forEach(option => {
+            document.querySelectorAll("#sampler_name option.k_diffusion-only").forEach((option) => {
                 option.disabled = true
             })
             document.querySelector("#clip_skip_config").classList.remove("displayNone")
@@ -568,6 +569,16 @@ async function getSystemInfo() {
         if (allDeviceIds.length === 0) {
             useCPUField.checked = true
             useCPUField.disabled = true // no compatible GPUs, so make the CPU mandatory
+
+            getParameterSettingsEntry("use_cpu").addEventListener("click", function() {
+                alert(
+                    "Sorry, we could not find a compatible graphics card! Easy Diffusion supports graphics cards with minimum 2 GB of RAM. " +
+                        "Only NVIDIA cards are supported on Windows. NVIDIA and AMD cards are supported on Linux.<br/><br/>" +
+                        "If you have a compatible graphics card, please try updating to the latest drivers.<br/><br/>" +
+                        "Only the CPU can be used for generating images, without a compatible graphics card.",
+                    "No compatible graphics card found!"
+                )
+            })
         }
 
         autoPickGPUsField.checked = devices["config"] === "auto"
@@ -586,7 +597,7 @@ async function getSystemInfo() {
             $("#use_gpus").val(activeDeviceIds)
         }
 
-        document.dispatchEvent(new CustomEvent("system_info_update", { detail: devices}))
+        document.dispatchEvent(new CustomEvent("system_info_update", { detail: devices }))
         setHostInfo(res["hosts"])
         let force = false
         if (res["enforce_output_dir"] !== undefined) {
