@@ -336,6 +336,7 @@ def thread_render(device):
             current_state = ServerStates.LoadingModel
             model_manager.resolve_model_paths(task.task_data)
             model_manager.reload_models_if_necessary(renderer.context, task.task_data)
+            model_manager.fail_if_models_did_not_load(renderer.context)
 
             current_state = ServerStates.Rendering
             task.response = renderer.make_images(

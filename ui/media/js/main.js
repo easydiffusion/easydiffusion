@@ -86,6 +86,9 @@ let gfpganModelField = new ModelDropdown(document.querySelector("#gfpgan_model")
 let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
 let upscaleAmountField = document.querySelector("#upscale_amount")
+let latentUpscalerSettings = document.querySelector("#latent_upscaler_settings")
+let latentUpscalerStepsSlider = document.querySelector("#latent_upscaler_steps_slider")
+let latentUpscalerStepsField = document.querySelector("#latent_upscaler_steps")
 let stableDiffusionModelField = new ModelDropdown(document.querySelector("#stable_diffusion_model"), "stable-diffusion")
 let clipSkipField = document.querySelector("#clip_skip")
 let vaeModelField = new ModelDropdown(document.querySelector("#vae_model"), "vae", "None")
@@ -241,7 +244,7 @@ function setServerStatus(event) {
             break
     }
     if (SD.serverState.devices) {
-        setDeviceInfo(SD.serverState.devices)
+        document.dispatchEvent(new CustomEvent("system_info_update", { detail: SD.serverState.devices }))
     }
 }
 
@@ -260,20 +263,11 @@ function shiftOrConfirm(e, prompt, fn) {
     if (e.shiftKey || !confirmDangerousActionsField.checked) {
         fn(e)
     } else {
-        $.confirm({
-            theme: "modern",
-            title: prompt,
-            useBootstrap: false,
-            animateFromElement: false,
-            content:
-                '<small>Tip: To skip this dialog, use shift-click or disable the "Confirm dangerous actions" setting in the Settings tab.</small>',
-            buttons: {
-                yes: () => {
-                    fn(e)
-                },
-                cancel: () => {},
-            },
-        })
+        confirm(
+            '<small>Tip: To skip this dialog, use shift-click or disable the "Confirm dangerous actions" setting in the Settings tab.</small>',
+            prompt,
+            fn
+        )
     }
 }
 
@@ -295,6 +289,7 @@ function logError(msg, res, outputMsg) {
     logMsg(msg, "error", outputMsg)
 
     console.log("request error", res)
+    console.trace()
     setStatus("request", "error", "error")
 }
 
@@ -786,11 +781,6 @@ function getTaskUpdater(task, reqBody, outputContainer) {
                         }
                         msg += "</pre>"
                         logError(msg, event, outputMsg)
-                    } else {
-                        let msg = `Unexpected Read Error:<br/><pre>Error:${
-                            this.exception
-                        }<br/>EventInfo: ${JSON.stringify(event, undefined, 4)}</pre>`
-                        logError(msg, event, outputMsg)
                     }
                     break
             }
@@ -887,15 +877,15 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
                             1. If you have set an initial image, please try reducing its dimension to ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION} or smaller.<br/>
                             2. Try picking a lower level in the '<em>GPU Memory Usage</em>' setting (in the '<em>Settings</em>' tab).<br/>
                             3. Try generating a smaller image.<br/>`
-                } else if (msg.toLowerCase().includes("DefaultCPUAllocator: not enough memory")) {
+                } else if (msg.includes("DefaultCPUAllocator: not enough memory")) {
                     msg += `<br/><br/>
                             Reason: Your computer is running out of system RAM!
-                            <br/>
+                            <br/><br/>
                             <b>Suggestions</b>:
                             <br/>
                             1. Try closing unnecessary programs and browser tabs.<br/>
                             2. If that doesn't help, please increase your computer's virtual memory by following these steps for
-                             <a href="https://www.ibm.com/docs/en/opw/8.2.0?topic=tuning-optional-increasing-paging-file-size-windows-computers" target="_blank">Windows</a>, or
+                             <a href="https://www.ibm.com/docs/en/opw/8.2.0?topic=tuning-optional-increasing-paging-file-size-windows-computers" target="_blank">Windows</a> or
                              <a href="https://linuxhint.com/increase-swap-space-linux/" target="_blank">Linux</a>.<br/>
                             3. Try restarting your computer.<br/>`
                 }
@@ -1270,6 +1260,10 @@ function getCurrentUserRequest() {
     if (useUpscalingField.checked) {
         newTask.reqBody.use_upscale = upscaleModelField.value
         newTask.reqBody.upscale_amount = upscaleAmountField.value
+        if (upscaleModelField.value === "latent_upscaler") {
+            newTask.reqBody.upscale_amount = "2"
+            newTask.reqBody.latent_upscaler_steps = latentUpscalerStepsField.value
+        }
     }
     if (hypernetworkModelField.value) {
         newTask.reqBody.use_hypernetwork_model = hypernetworkModelField.value
@@ -1584,6 +1578,20 @@ useUpscalingField.addEventListener("change", function(e) {
     upscaleAmountField.disabled = !this.checked
 })
 
+function onUpscaleModelChange() {
+    let upscale4x = document.querySelector("#upscale_amount_4x")
+    if (upscaleModelField.value === "latent_upscaler") {
+        upscale4x.disabled = true
+        upscaleAmountField.value = "2"
+        latentUpscalerSettings.classList.remove("displayNone")
+    } else {
+        upscale4x.disabled = false
+        latentUpscalerSettings.classList.add("displayNone")
+    }
+}
+upscaleModelField.addEventListener("change", onUpscaleModelChange)
+onUpscaleModelChange()
+
 makeImageBtn.addEventListener("click", makeImage)
 
 document.onkeydown = function(e) {
@@ -1592,6 +1600,27 @@ document.onkeydown = function(e) {
         e.preventDefault()
     }
 }
+
+/********************* Latent Upscaler Steps **************************/
+function updateLatentUpscalerSteps() {
+    latentUpscalerStepsField.value = latentUpscalerStepsSlider.value
+    latentUpscalerStepsField.dispatchEvent(new Event("change"))
+}
+
+function updateLatentUpscalerStepsSlider() {
+    if (latentUpscalerStepsField.value < 1) {
+        latentUpscalerStepsField.value = 1
+    } else if (latentUpscalerStepsField.value > 50) {
+        latentUpscalerStepsField.value = 50
+    }
+
+    latentUpscalerStepsSlider.value = latentUpscalerStepsField.value
+    latentUpscalerStepsSlider.dispatchEvent(new Event("change"))
+}
+
+latentUpscalerStepsSlider.addEventListener("input", updateLatentUpscalerSteps)
+latentUpscalerStepsField.addEventListener("input", updateLatentUpscalerStepsSlider)
+updateLatentUpscalerSteps()
 
 /********************* Guidance **************************/
 function updateGuidanceScale() {

@@ -1346,6 +1346,12 @@ body.wait-pause {
     display:none !important;
 }
 
+#latent_upscaler_settings {
+    padding-top: 3pt;
+    padding-bottom: 3pt;
+    padding-left: 5pt;
+}
+
 /* TOAST NOTIFICATIONS */
 .toast-notification {
     position: fixed;
