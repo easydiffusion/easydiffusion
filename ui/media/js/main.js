@@ -296,6 +296,7 @@ function logError(msg, res, outputMsg) {
     logMsg(msg, "error", outputMsg)
 
     console.log("request error", res)
+    console.trace()
     setStatus("request", "error", "error")
 }
 
@@ -787,11 +788,6 @@ function getTaskUpdater(task, reqBody, outputContainer) {
                         }
                         msg += "</pre>"
                         logError(msg, event, outputMsg)
-                    } else {
-                        let msg = `Unexpected Read Error:<br/><pre>Error:${
-                            this.exception
-                        }<br/>EventInfo: ${JSON.stringify(event, undefined, 4)}</pre>`
-                        logError(msg, event, outputMsg)
                     }
                     break
             }
@@ -888,15 +884,15 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
                             1. If you have set an initial image, please try reducing its dimension to ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION} or smaller.<br/>
                             2. Try picking a lower level in the '<em>GPU Memory Usage</em>' setting (in the '<em>Settings</em>' tab).<br/>
                             3. Try generating a smaller image.<br/>`
-                } else if (msg.toLowerCase().includes("DefaultCPUAllocator: not enough memory")) {
+                } else if (msg.includes("DefaultCPUAllocator: not enough memory")) {
                     msg += `<br/><br/>
                             Reason: Your computer is running out of system RAM!
-                            <br/>
+                            <br/><br/>
                             <b>Suggestions</b>:
                             <br/>
                             1. Try closing unnecessary programs and browser tabs.<br/>
                             2. If that doesn't help, please increase your computer's virtual memory by following these steps for
-                             <a href="https://www.ibm.com/docs/en/opw/8.2.0?topic=tuning-optional-increasing-paging-file-size-windows-computers" target="_blank">Windows</a>, or
+                             <a href="https://www.ibm.com/docs/en/opw/8.2.0?topic=tuning-optional-increasing-paging-file-size-windows-computers" target="_blank">Windows</a> or
                              <a href="https://linuxhint.com/increase-swap-space-linux/" target="_blank">Linux</a>.<br/>
                             3. Try restarting your computer.<br/>`
                 }
