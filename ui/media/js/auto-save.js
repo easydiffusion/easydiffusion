@@ -25,6 +25,7 @@ const SETTINGS_IDS_LIST = [
     "prompt_strength",
     "hypernetwork_strength",
     "lora_alpha",
+    "tiling",
     "output_format",
     "output_quality",
     "output_lossless",

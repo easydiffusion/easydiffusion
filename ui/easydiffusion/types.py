@@ -23,6 +23,7 @@ class GenerateImageRequest(BaseModel):
     sampler_name: str = None  # "ddim", "plms", "heun", "euler", "euler_a", "dpm2", "dpm2_a", "lms"
     hypernetwork_strength: float = 0
     lora_alpha: float = 0
+    tiling: str = "none" # "none", "x", "y", "xy"
 
 
 class TaskData(BaseModel):

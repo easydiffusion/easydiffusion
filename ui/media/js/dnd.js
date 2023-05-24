@@ -249,6 +249,14 @@ const TASK_MAPPING = {
         readUI: () => clip_skip.checked,
         parse: (val) => Boolean(val),
     },
+    tiling: {
+        name: "Tiling",
+        setUI: (val) => {
+            tilingField.value = val
+        },
+        readUI: () => tilingField.value,
+        parse: (val) => val,
+    },
     use_vae_model: {
         name: "VAE model",
         setUI: (use_vae_model) => {
