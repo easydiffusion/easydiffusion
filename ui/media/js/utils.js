@@ -918,9 +918,7 @@ function confirm(msg, title, fn) {
         animateFromElement: false,
         content: msg,
         buttons: {
-            yes: () => {
-                fn(e)
-            },
+            yes: fn,
             cancel: () => {},
         },
     })

@@ -264,7 +264,7 @@ function shiftOrConfirm(e, prompt, fn) {
         confirm(
             '<small>Tip: To skip this dialog, use shift-click or disable the "Confirm dangerous actions" setting in the Settings tab.</small>',
             prompt,
-            fn
+            () => { fn(e) }
         )
     }
 }
