@@ -43,6 +43,7 @@ const TASK_MAPPING = {
         name: "Prompt",
         setUI: (prompt) => {
             promptField.value = prompt
+            promptField.dispatchEvent(new Event("input"))
         },
         readUI: () => promptField.value,
         parse: (val) => val,
@@ -79,6 +80,7 @@ const TASK_MAPPING = {
             if (!widthField.value) {
                 widthField.value = oldVal
             }
+            widthField.dispatchEvent(new Event("change"))
         },
         readUI: () => parseInt(widthField.value),
         parse: (val) => parseInt(val),
@@ -91,6 +93,7 @@ const TASK_MAPPING = {
             if (!heightField.value) {
                 heightField.value = oldVal
             }
+            heightField.dispatchEvent(new Event("change"))
         },
         readUI: () => parseInt(heightField.value),
         parse: (val) => parseInt(val),
