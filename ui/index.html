@@ -30,7 +30,7 @@
             <h1>
                 <img id="logo_img" src="/media/images/icon-512x512.png" >
                 Easy Diffusion
-                <small>v2.5.37 <span id="updateBranchLabel"></span></small>
+                <small>v2.5.38 <span id="updateBranchLabel"></span></small>
             </h1>
         </div>
         <div id="server-status">
@@ -258,14 +258,18 @@
                     <li class="pl-5">
                         <input id="use_upscale" name="use_upscale" type="checkbox"> <label for="use_upscale">Scale up by</label> 
                         <select id="upscale_amount" name="upscale_amount">
-                            <option value="2">2x</option>
-                            <option value="4" selected>4x</option>
+                            <option id="upscale_amount_2x" value="2">2x</option>
+                            <option id="upscale_amount_4x" value="4" selected>4x</option>
                         </select>
                         with 
                         <select id="upscale_model" name="upscale_model">
                             <option value="RealESRGAN_x4plus" selected>RealESRGAN_x4plus</option>
                             <option value="RealESRGAN_x4plus_anime_6B">RealESRGAN_x4plus_anime_6B</option>
+                            <option value="latent_upscaler">Latent Upscaler 2x</option>
                         </select>
+                        <div id="latent_upscaler_settings" class="displayNone">
+                            <label for="latent_upscaler_steps_slider">Upscaling Steps:</label></td><td> <input id="latent_upscaler_steps_slider" name="latent_upscaler_steps_slider" class="editor-slider" value="10" type="range" min="1" max="50"> <input id="latent_upscaler_steps" name="latent_upscaler_steps" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)">
+                        </div>
                     </li>
                     <li class="pl-5"><input id="show_only_filtered_image" name="show_only_filtered_image" type="checkbox" checked> <label for="show_only_filtered_image">Show only the corrected/upscaled image</label></li>
                     </ul></div>

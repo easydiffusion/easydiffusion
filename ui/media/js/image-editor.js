@@ -834,6 +834,7 @@ function pixelCompare(int1, int2) {
 }
 
 // adapted from https://ben.akrin.com/canvas_fill/fill_04.html
+// May 2023 - look at using a library instead of custom code: https://github.com/shaneosullivan/example-canvas-fill
 function flood_fill(editor, the_canvas_context, x, y, color) {
     pixel_stack = [{ x: x, y: y }]
     pixels = the_canvas_context.getImageData(0, 0, editor.width, editor.height)

@@ -53,15 +53,21 @@ def load_default_models(context: Context):
                 scan_model=context.model_paths[model_type] != None
                 and not context.model_paths[model_type].endswith(".safetensors"),
             )
+            if model_type in context.model_load_errors:
+                del context.model_load_errors[model_type]
         except Exception as e:
             log.error(f"[red]Error while loading {model_type} model: {context.model_paths[model_type]}[/red]")
             log.exception(e)
             del context.model_paths[model_type]
 
+            context.model_load_errors[model_type] = str(e)  # storing the entire Exception can lead to memory leaks
+
 
 def unload_all(context: Context):
     for model_type in KNOWN_MODEL_TYPES:
         unload_model(context, model_type)
+        if model_type in context.model_load_errors:
+            del context.model_load_errors[model_type]
 
 
 def resolve_model_to_use(model_name: str = None, model_type: str = None):
@@ -107,12 +113,15 @@ def resolve_model_to_use(model_name: str = None, model_type: str = None):
 
 
 def reload_models_if_necessary(context: Context, task_data: TaskData):
+    use_upscale_lower = task_data.use_upscale.lower() if task_data.use_upscale else ""
+
     model_paths_in_req = {
         "stable-diffusion": task_data.use_stable_diffusion_model,
         "vae": task_data.use_vae_model,
         "hypernetwork": task_data.use_hypernetwork_model,
         "gfpgan": task_data.use_face_correction,
-        "realesrgan": task_data.use_upscale,
+        "realesrgan": task_data.use_upscale if "realesrgan" in use_upscale_lower else None,
+        "latent_upscaler": True if task_data.use_upscale == "latent_upscaler" else None,
         "nsfw_checker": True if task_data.block_nsfw else None,
         "lora": task_data.use_lora_model,
     }
@@ -129,7 +138,14 @@ def reload_models_if_necessary(context: Context, task_data: TaskData):
         context.model_paths[model_type] = model_path_in_req
 
         action_fn = unload_model if context.model_paths[model_type] is None else load_model
-        action_fn(context, model_type, scan_model=False)  # we've scanned them already
+        try:
+            action_fn(context, model_type, scan_model=False)  # we've scanned them already
+            if model_type in context.model_load_errors:
+                del context.model_load_errors[model_type]
+        except Exception as e:
+            log.exception(e)
+            if action_fn == load_model:
+                context.model_load_errors[model_type] = str(e)  # storing the entire Exception can lead to memory leaks
 
 
 def resolve_model_paths(task_data: TaskData):
@@ -142,8 +158,16 @@ def resolve_model_paths(task_data: TaskData):
 
     if task_data.use_face_correction:
         task_data.use_face_correction = resolve_model_to_use(task_data.use_face_correction, "gfpgan")
-    if task_data.use_upscale:
+    if task_data.use_upscale and "realesrgan" in task_data.use_upscale.lower():
         task_data.use_upscale = resolve_model_to_use(task_data.use_upscale, "realesrgan")
+
+
+def fail_if_models_did_not_load(context: Context):
+    for model_type in KNOWN_MODEL_TYPES:
+        if model_type in context.model_load_errors:
+            e = context.model_load_errors[model_type]
+            raise Exception(f"Could not load the {model_type} model! Reason: " + e)
+            # concat 'e', don't use in format string (injection attack)
 
 
 def set_vram_optimizations(context: Context):

@@ -22,6 +22,8 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.38 - 24 May 2023 - Better reporting of errors, and show an explanation if the user cannot disable the "Use CPU" setting.
+* 2.5.38 - 23 May 2023 - Add Latent Upscaler as another option for upscaling images. Thanks @JeLuf for the implementation of the Latent Upscaler model.
 * 2.5.37 - 19 May 2023 - (beta-only) Two more samplers: DDPM and DEIS. Also disables the samplers that aren't working yet in the Diffusers version. Thanks @ogmaresca.
 * 2.5.37 - 19 May 2023 - (beta-only) Support CLIP-Skip. You can set this option under the models dropdown. Thanks @JeLuf.
 * 2.5.37 - 19 May 2023 - (beta-only) More VRAM optimizations for all modes in diffusers. The VRAM usage for diffusers in "low" and "balanced" should now be equal or less than the non-diffusers version. Performs softmax in half precision, like sdkit does.

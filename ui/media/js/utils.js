@@ -843,57 +843,83 @@ function createTab(request) {
 
 /* TOAST NOTIFICATIONS */
 function showToast(message, duration = 5000, error = false) {
-    const toast = document.createElement("div");
-    toast.classList.add("toast-notification");
+    const toast = document.createElement("div")
+    toast.classList.add("toast-notification")
     if (error === true) {
-        toast.classList.add("toast-notification-error");
+        toast.classList.add("toast-notification-error")
     }
-    toast.innerHTML = message;
-    document.body.appendChild(toast);
+    toast.innerHTML = message
+    document.body.appendChild(toast)
 
     // Set the position of the toast on the screen
-    const toastCount = document.querySelectorAll(".toast-notification").length;
-    const toastHeight = toast.offsetHeight;
+    const toastCount = document.querySelectorAll(".toast-notification").length
+    const toastHeight = toast.offsetHeight
     const previousToastsHeight = Array.from(document.querySelectorAll(".toast-notification"))
         .slice(0, -1) // exclude current toast
-        .reduce((totalHeight, toast) => totalHeight + toast.offsetHeight + 10, 0); // add 10 pixels for spacing
-    toast.style.bottom = `${10 + previousToastsHeight}px`;
-    toast.style.right = "10px";
+        .reduce((totalHeight, toast) => totalHeight + toast.offsetHeight + 10, 0) // add 10 pixels for spacing
+    toast.style.bottom = `${10 + previousToastsHeight}px`
+    toast.style.right = "10px"
 
     // Delay the removal of the toast until animation has completed
     const removeToast = () => {
-        toast.classList.add("hide");
+        toast.classList.add("hide")
         const removeTimeoutId = setTimeout(() => {
-            toast.remove();
+            toast.remove()
             // Adjust the position of remaining toasts
-            const remainingToasts = document.querySelectorAll(".toast-notification");
-            const removedToastBottom = toast.getBoundingClientRect().bottom;
-        
+            const remainingToasts = document.querySelectorAll(".toast-notification")
+            const removedToastBottom = toast.getBoundingClientRect().bottom
+
             remainingToasts.forEach((toast) => {
                 if (toast.getBoundingClientRect().bottom < removedToastBottom) {
-                    toast.classList.add("slide-down");
+                    toast.classList.add("slide-down")
                 }
-            });
-        
+            })
+
             // Wait for the slide-down animation to complete
             setTimeout(() => {
                 // Remove the slide-down class after the animation has completed
-                const slidingToasts = document.querySelectorAll(".slide-down");
+                const slidingToasts = document.querySelectorAll(".slide-down")
                 slidingToasts.forEach((toast) => {
-                    toast.classList.remove("slide-down");
-                });
-        
+                    toast.classList.remove("slide-down")
+                })
+
                 // Adjust the position of remaining toasts again, in case there are multiple toasts being removed at once
-                const remainingToastsDown = document.querySelectorAll(".toast-notification");
-                let heightSoFar = 0;
+                const remainingToastsDown = document.querySelectorAll(".toast-notification")
+                let heightSoFar = 0
                 remainingToastsDown.forEach((toast) => {
-                    toast.style.bottom = `${10 + heightSoFar}px`;
-                    heightSoFar += toast.offsetHeight + 10; // add 10 pixels for spacing
-                });
-            }, 0); // The duration of the slide-down animation (in milliseconds)
-        }, 500);
-    };
+                    toast.style.bottom = `${10 + heightSoFar}px`
+                    heightSoFar += toast.offsetHeight + 10 // add 10 pixels for spacing
+                })
+            }, 0) // The duration of the slide-down animation (in milliseconds)
+        }, 500)
+    }
 
     // Remove the toast after specified duration
-    setTimeout(removeToast, duration);
+    setTimeout(removeToast, duration)
+}
+
+function alert(msg, title) {
+    title = title || ""
+    $.alert({
+        theme: "modern",
+        title: title,
+        useBootstrap: false,
+        animateFromElement: false,
+        content: msg,
+    })
+}
+
+function confirm(msg, title, fn) {
+    title = title || ""
+    $.confirm({
+        theme: "modern",
+        title: title,
+        useBootstrap: false,
+        animateFromElement: false,
+        content: msg,
+        buttons: {
+            yes: fn,
+            cancel: () => {},
+        },
+    })
 }
