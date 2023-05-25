@@ -236,7 +236,7 @@
                         <td><label for="hypernetwork_strength_slider">Hypernetwork Strength:</label></td>
                         <td> <input id="hypernetwork_strength_slider" name="hypernetwork_strength_slider" class="editor-slider" value="100" type="range" min="0" max="100"> <input id="hypernetwork_strength" name="hypernetwork_strength" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"><br/></td>
                     </tr>
-                    <tr class="pl-5"><td><label for="tiling">Seamless tiling:</label></td><td>
+                    <tr id="tiling_container" class="pl-5"><td><label for="tiling">Seamless tiling:</label></td><td>
                         <select id="tiling" name="tiling">
                             <option value="none" selected>None</option>
                             <option value="x">Horizontal</option>
