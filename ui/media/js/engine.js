@@ -789,9 +789,10 @@
         use_hypernetwork_model: "string",
         hypernetwork_strength: "number",
         output_lossless: "boolean",
+        tiling: "string",
     }
 
-    // Higer values will result in...
+    // Higher values will result in...
     // pytorch_lightning/utilities/seed.py:60: UserWarning: X is not in bounds, numpy accepts from 0 to 4294967295
     const MAX_SEED_VALUE = 4294967295
 
