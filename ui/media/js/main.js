@@ -1955,7 +1955,7 @@ function tunnelUpdate(event) {
     if ("cloudflare" in event) {
         document.getElementById('cloudflare-off').classList.add("displayNone")
         document.getElementById('cloudflare-on').classList.remove("displayNone")
-        document.getElementById('cloudflare-address').innerHTML = event.cloudflare
+        cloudflareAddressField.innerHTML = event.cloudflare
         document.getElementById('toggle-cloudflare-tunnel').innerHTML = "Stop"
     } else {
         document.getElementById('cloudflare-on').classList.add("displayNone")

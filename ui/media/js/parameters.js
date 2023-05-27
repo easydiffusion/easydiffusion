@@ -233,7 +233,7 @@ var PARAMETERS = [
         note: `<span id="cloudflare-off">Create a VPN tunnel to share your Easy Diffusion instance with your friends. This will
                generate a web server address on the public Internet for your Easy Diffusion instance. </span>
                <div id="cloudflare-on" class="displayNone"><div>This Easy Diffusion server is available on the Internet using the
-               address:</div><div id="cloudflare-address"></div></div>
+               address:</div><div><div id="cloudflare-address"></div><button id="copy-cloudflare-address">Copy</button></div></div>
                <b>Anyone knowing this address can access your server.</b> The address of your server will change each time
                you share a session.<br>
                Uses <a href="https://try.cloudflare.com/" target="_blank">Cloudflare services</a>.`,
@@ -708,5 +708,13 @@ listenToNetworkField.addEventListener("change", debounce( ()=>{
 listenPortField.addEventListener("change", debounce( ()=>{
     saveSettingsBtn.click()
 }, 1000))
+
+let copyCloudflareAddressBtn = document.querySelector("#copy-cloudflare-address")
+let cloudflareAddressField = document.getElementById("cloudflare-address")
+
+copyCloudflareAddressBtn.addEventListener("click", (e) => {
+    navigator.clipboard.writeText(cloudflareAddressField.innerHTML)
+    showToast("Copied server address to clipboard")
+})
 
 document.addEventListener("system_info_update", (e) => setDeviceInfo(e.detail))
