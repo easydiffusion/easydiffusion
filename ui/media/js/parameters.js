@@ -12,6 +12,12 @@ var ParameterType = {
 }
 
 /**
+ * Element shortcuts
+ */
+let parametersTable = document.querySelector("#system-settings-table")
+let networkParametersTable = document.querySelector("#system-settings-network-table")
+
+/**
  * JSDoc style
  * @typedef {object} Parameter
  * @property {string} id
@@ -186,6 +192,7 @@ var PARAMETERS = [
         icon: "fa-network-wired",
         default: true,
         saveInAppConfig: true,
+        table: networkParametersTable,
     },
     {
         id: "listen_port",
@@ -198,6 +205,7 @@ var PARAMETERS = [
             return `<input id="${parameter.id}" name="${parameter.id}" size="6" value="9000" onkeypress="preventNonNumericalInput(event)">`
         },
         saveInAppConfig: true,
+        table: networkParametersTable,
     },
     {
         id: "use_beta_channel",
@@ -218,6 +226,21 @@ var PARAMETERS = [
         default: false,
         saveInAppConfig: true,
     },
+    {
+        id: "cloudflare",
+        type: ParameterType.custom,
+        label: "Cloudflare tunnel",
+        note: `<span id="cloudflare-off">Create a VPN tunnel to share your Easy Diffusion instance with your friends. This will
+               generate a web server address on the public Internet for your Easy Diffusion instance. </span>
+               <div id="cloudflare-on" class="displayNone"><div>This Easy Diffusion server is available on the Internet using the
+               address:</div><div id="cloudflare-address"></div></div>
+               <b>Anyone knowing this address can access your server.</b> The address of your server will change each time
+               you share a session.<br>
+               Uses <a href="https://try.cloudflare.com/" target="_blank">Cloudflare services</a>.`,
+        icon: ["fa-brands", "fa-cloudflare"],
+        render: () => '<button id="toggle-cloudflare-tunnel" class="primaryButton">Start</button>',
+        table: networkParametersTable,
+    }
 ]
 
 function getParameterSettingsEntry(id) {
@@ -266,7 +289,6 @@ function getParameterElement(parameter) {
     }
 }
 
-let parametersTable = document.querySelector("#system-settings .parameters-table")
 /**
  * fill in the system settings popup table
  * @param {Array<Parameter> | undefined} parameters
@@ -293,7 +315,10 @@ function initParameters(parameters) {
             noteElements.push(noteElement)
         }
 
-        const icon = parameter.icon ? [createElement("i", undefined, ["fa", parameter.icon])] : []
+        if (typeof(parameter.icon) == "string") {
+            parameter.icon = [parameter.icon]
+        }
+        const icon = parameter.icon ? [createElement("i", undefined, ["fa", ...parameter.icon])] : []
 
         const label = typeof parameter.label === "function" ? parameter.label(parameter) : parameter.label
         const labelElement = createElement("label", { for: parameter.id })
@@ -313,7 +338,13 @@ function initParameters(parameters) {
                 elementWrapper,
             ]
         )
-        parametersTable.appendChild(newrow)
+
+        let p = parametersTable
+        if (parameter.table) {
+            p = parameter.table
+        } 
+        p.appendChild(newrow)
+
         parameter.settingsEntry = newrow
     })
 }
@@ -665,8 +696,17 @@ saveSettingsBtn.addEventListener("click", function() {
     })
 
     const savePromise = changeAppConfig(updateAppConfigRequest)
+    showToast("Settings saved")
     saveSettingsBtn.classList.add("active")
     Promise.all([savePromise, asyncDelay(300)]).then(() => saveSettingsBtn.classList.remove("active"))
 })
+
+listenToNetworkField.addEventListener("change", debounce( ()=>{
+    saveSettingsBtn.click()
+}, 1000))
+
+listenPortField.addEventListener("change", debounce( ()=>{
+    saveSettingsBtn.click()
+}, 1000))
 
 document.addEventListener("system_info_update", (e) => setDeviceInfo(e.detail))

@@ -186,6 +186,7 @@
     const EVENT_TASK_START = "taskStart"
     const EVENT_TASK_END = "taskEnd"
     const EVENT_TASK_ERROR = "task_error"
+    const EVENT_PING = "ping"
     const EVENT_UNEXPECTED_RESPONSE = "unexpectedResponse"
     const EVENTS_TYPES = [
         EVENT_IDLE,
@@ -196,6 +197,7 @@
         EVENT_TASK_START,
         EVENT_TASK_END,
         EVENT_TASK_ERROR,
+        EVENT_PING,
 
         EVENT_UNEXPECTED_RESPONSE,
     ]
@@ -240,6 +242,7 @@
                 setServerStatus("error", "offline")
                 return false
             }
+
             // Set status
             switch (serverState.status) {
                 case ServerStates.init:
@@ -261,6 +264,7 @@
                     break
             }
             serverState.time = Date.now()
+            await eventSource.fireEvent(EVENT_PING, serverState)
             return true
         } catch (e) {
             console.error(e)

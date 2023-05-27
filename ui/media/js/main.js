@@ -1951,6 +1951,38 @@ resumeBtn.addEventListener("click", function() {
     document.body.classList.remove("wait-pause")
 })
 
+function tunnelUpdate(event) {
+    if ("cloudflare" in event) {
+        document.getElementById('cloudflare-off').classList.add("displayNone")
+        document.getElementById('cloudflare-on').classList.remove("displayNone")
+        document.getElementById('cloudflare-address').innerHTML = event.cloudflare
+        document.getElementById('toggle-cloudflare-tunnel').innerHTML = "Stop"
+    } else {
+        document.getElementById('cloudflare-on').classList.add("displayNone")
+        document.getElementById('cloudflare-off').classList.remove("displayNone")
+        document.getElementById('toggle-cloudflare-tunnel').innerHTML = "Start"
+    }
+}
+
+document.getElementById('toggle-cloudflare-tunnel').addEventListener("click", async function() {
+    let command = "stop"
+    if (document.getElementById('toggle-cloudflare-tunnel').innerHTML == "Start") {
+       command = "start"
+    }
+    showToast(`Cloudflare tunnel ${command} initiated. Please wait.`)
+
+    let res = await fetch("/tunnel/cloudflare/"+command, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
+    })
+    res = await res.json()
+
+    console.log(`Cloudflare tunnel ${command} result:`, res)
+})
+
 /* Pause function */
 document.querySelectorAll(".tab").forEach(linkTabContents)
 

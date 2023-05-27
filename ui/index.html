@@ -347,9 +347,15 @@
         <div id="tab-content-settings" class="tab-content">
             <div id="system-settings" class="tab-content-inner">
                 <h1>System Settings</h1>
-                <div class="parameters-table"></div>
+                <div class="parameters-table" id="system-settings-table"></div>
                 <br/>
                 <button id="save-system-settings-btn" class="primaryButton">Save</button>
+                <br/><br/>
+                <div id="share-easy-diffusion">
+                   <h3><i class="fa fa-user-group"></i> Share Easy Diffusion</h3>
+                   <div class="parameters-table" id="system-settings-network-table">
+                   </div>
+                </div>
                 <br/><br/>
                 <div>
                     <h3><i class="fa fa-microchip icon"></i> System Info</h3>
@@ -525,7 +531,8 @@ async function init() {
     SD.init({
         events: {
             statusChange: setServerStatus,
-            idle: onIdle
+            idle: onIdle,
+            ping: tunnelUpdate
         }
     })
 
