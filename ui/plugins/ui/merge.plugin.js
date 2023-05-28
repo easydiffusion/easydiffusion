@@ -403,16 +403,19 @@
                 // Batch main loop
                 for (let i = 0; i < iterations; i++) {
                     let alpha = (start + i * step) / 100
-                    switch (document.querySelector("#merge-interpolation").value) {
-                        case "SmoothStep":
-                            alpha = smoothstep(alpha)
-                            break
-                        case "SmootherStep":
-                            alpha = smootherstep(alpha)
-                            break
-                        case "SmoothestStep":
-                            alpha = smootheststep(alpha)
-                            break
+
+                    if (isTabActive(tabSettingsBatch)) {
+                        switch (document.querySelector("#merge-interpolation").value) {
+                            case "SmoothStep":
+                                alpha = smoothstep(alpha)
+                                break
+                            case "SmootherStep":
+                                alpha = smootherstep(alpha)
+                                break
+                            case "SmoothestStep":
+                                alpha = smootheststep(alpha)
+                                break
+                        }
                     }
                     addLogMessage(`merging batch job ${i + 1}/${iterations}, alpha = ${alpha.toFixed(5)}...`)
 
@@ -420,7 +423,8 @@
                     request["out_path"] += "-" + alpha.toFixed(5) + "." + document.querySelector("#merge-format").value
                     addLogMessage(`&nbsp;&nbsp;filename: ${request["out_path"]}`)
 
-                    request["ratio"] = alpha
+                    // sdkit documentation: "ratio - the ratio of the second model. 1 means only the second model will be used."
+                    request["ratio"] = 1-alpha 
                     let res = await fetch("/model/merge", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
