@@ -220,6 +220,14 @@ const TASK_MAPPING = {
         readUI: () => upscaleAmountField.value,
         parse: (val) => val,
     },
+    latent_upscaler_steps: {
+        name: "Latent Upscaler Steps",
+        setUI: (latent_upscaler_steps) => {
+            latentUpscalerStepsField.value = latent_upscaler_steps
+        },
+        readUI: () => latentUpscalerStepsField.value,
+        parse: (val) => val,
+    },
     sampler_name: {
         name: "Sampler",
         setUI: (sampler_name) => {
