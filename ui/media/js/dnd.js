@@ -43,7 +43,6 @@ const TASK_MAPPING = {
         name: "Prompt",
         setUI: (prompt) => {
             promptField.value = prompt
-            promptField.dispatchEvent(new Event("input"))
         },
         readUI: () => promptField.value,
         parse: (val) => val,
@@ -422,6 +421,7 @@ function restoreTaskToUI(task, fieldsToSkip) {
     if (!("original_prompt" in task.reqBody)) {
         promptField.value = task.reqBody.prompt
     }
+    promptField.dispatchEvent(new Event("input"))
 
     // properly reset checkboxes
     if (!("use_face_correction" in task.reqBody)) {
