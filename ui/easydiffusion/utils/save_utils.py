@@ -219,7 +219,7 @@ def get_printable_request(req: GenerateImageRequest, task_data: TaskData):
         del metadata["hypernetwork_strength"]
     if task_data.use_lora_model is None and "lora_alpha" in metadata:
         del metadata["lora_alpha"]
-    if task_data.use_upscale is not "latent_upscaler" and "latent_upscaler_steps" in metadata:
+    if task_data.use_upscale != "latent_upscaler" and "latent_upscaler_steps" in metadata:
         del metadata["latent_upscaler_steps"]
 
     app_config = app.getConfig()
