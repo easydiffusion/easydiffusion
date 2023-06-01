@@ -79,6 +79,7 @@ const TASK_MAPPING = {
             if (!widthField.value) {
                 widthField.value = oldVal
             }
+            widthField.dispatchEvent(new Event("change"))
         },
         readUI: () => parseInt(widthField.value),
         parse: (val) => parseInt(val),
@@ -91,6 +92,7 @@ const TASK_MAPPING = {
             if (!heightField.value) {
                 heightField.value = oldVal
             }
+            heightField.dispatchEvent(new Event("change"))
         },
         readUI: () => parseInt(heightField.value),
         parse: (val) => parseInt(val),
@@ -172,16 +174,22 @@ const TASK_MAPPING = {
         name: "Use Face Correction",
         setUI: (use_face_correction) => {
             const oldVal = gfpganModelField.value
-            gfpganModelField.value = getModelPath(use_face_correction, [".pth"])
-            if (gfpganModelField.value) {
-                // Is a valid value for the field.
-                useFaceCorrectionField.checked = true
-                gfpganModelField.disabled = false
-            } else {
-                // Not a valid value, restore the old value and disable the filter.
+            console.log("use face correction", use_face_correction)
+            if (use_face_correction == null || use_face_correction == "None") {
                 gfpganModelField.disabled = true
-                gfpganModelField.value = oldVal
                 useFaceCorrectionField.checked = false
+            } else {
+                gfpganModelField.value = getModelPath(use_face_correction, [".pth"])
+                if (gfpganModelField.value) {
+                    // Is a valid value for the field.
+                    useFaceCorrectionField.checked = true
+                    gfpganModelField.disabled = false
+                } else {
+                    // Not a valid value, restore the old value and disable the filter.
+                    gfpganModelField.disabled = true
+                    gfpganModelField.value = oldVal
+                    useFaceCorrectionField.checked = false
+                }
             }
 
             //useFaceCorrectionField.checked = parseBoolean(use_face_correction)
@@ -218,6 +226,14 @@ const TASK_MAPPING = {
         readUI: () => upscaleAmountField.value,
         parse: (val) => val,
     },
+    latent_upscaler_steps: {
+        name: "Latent Upscaler Steps",
+        setUI: (latent_upscaler_steps) => {
+            latentUpscalerStepsField.value = latent_upscaler_steps
+        },
+        readUI: () => latentUpscalerStepsField.value,
+        parse: (val) => val,
+    },
     sampler_name: {
         name: "Sampler",
         setUI: (sampler_name) => {
@@ -248,6 +264,14 @@ const TASK_MAPPING = {
         },
         readUI: () => clip_skip.checked,
         parse: (val) => Boolean(val),
+    },
+    tiling: {
+        name: "Tiling",
+        setUI: (val) => {
+            tilingField.value = val
+        },
+        readUI: () => tilingField.value,
+        parse: (val) => val,
     },
     use_vae_model: {
         name: "VAE model",
@@ -411,6 +435,7 @@ function restoreTaskToUI(task, fieldsToSkip) {
     if (!("original_prompt" in task.reqBody)) {
         promptField.value = task.reqBody.prompt
     }
+    promptField.dispatchEvent(new Event("input"))
 
     // properly reset checkboxes
     if (!("use_face_correction" in task.reqBody)) {

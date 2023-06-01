@@ -30,7 +30,7 @@
             <h1>
                 <img id="logo_img" src="/media/images/icon-512x512.png" >
                 Easy Diffusion
-                <small>v2.5.38 <span id="updateBranchLabel"></span></small>
+                <small>v2.5.39 <span id="updateBranchLabel"></span></small>
             </h1>
         </div>
         <div id="server-status">
@@ -167,7 +167,7 @@
                             <option value="unipc_snr" class="k_diffusion-only">UniPC SNR</option>
                             <option value="unipc_tu">UniPC TU</option>
                             <option value="unipc_snr_2" class="k_diffusion-only">UniPC SNR 2</option>
-                            <option value="unipc_tu_2">UniPC TU 2</option>
+                            <option value="unipc_tu_2" class="k_diffusion-only">UniPC TU 2</option>
                             <option value="unipc_tq" class="k_diffusion-only">UniPC TQ</option>
                         </select>
                         <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/How-to-Use#samplers" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about samplers</span></i></a>
@@ -236,6 +236,15 @@
                         <td><label for="hypernetwork_strength_slider">Hypernetwork Strength:</label></td>
                         <td> <input id="hypernetwork_strength_slider" name="hypernetwork_strength_slider" class="editor-slider" value="100" type="range" min="0" max="100"> <input id="hypernetwork_strength" name="hypernetwork_strength" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"><br/></td>
                     </tr>
+                    <tr id="tiling_container" class="pl-5"><td><label for="tiling">Seamless Tiling:</label></td><td>
+                        <select id="tiling" name="tiling">
+                            <option value="none" selected>None</option>
+                            <option value="x">Horizontal</option>
+                            <option value="y">Vertical</option>
+                            <option value="xy">Both</option>
+                        </select>
+                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Seamless-Tiling" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about Seamless Tiling</span></i></a>
+                    </td></tr>
                     <tr class="pl-5"><td><label for="output_format">Output Format:</label></td><td>
                         <select id="output_format" name="output_format">
                             <option value="jpeg" selected>jpeg</option>
