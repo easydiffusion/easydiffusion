@@ -750,6 +750,7 @@
 
         sampler_name: "string",
         use_stable_diffusion_model: "string",
+        clip_skip: "boolean",
         num_inference_steps: "number",
         guidance_scale: "number",
 
@@ -763,6 +764,7 @@
     const TASK_DEFAULTS = {
         sampler_name: "plms",
         use_stable_diffusion_model: "sd-v1-4",
+        clip_skip: false,
         num_inference_steps: 50,
         guidance_scale: 7.5,
         negative_prompt: "",
@@ -787,9 +789,10 @@
         use_hypernetwork_model: "string",
         hypernetwork_strength: "number",
         output_lossless: "boolean",
+        tiling: "string",
     }
 
-    // Higer values will result in...
+    // Higher values will result in...
     // pytorch_lightning/utilities/seed.py:60: UserWarning: X is not in bounds, numpy accepts from 0 to 4294967295
     const MAX_SEED_VALUE = 4294967295
 

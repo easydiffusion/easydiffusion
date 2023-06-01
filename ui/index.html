@@ -30,7 +30,7 @@
             <h1>
                 <img id="logo_img" src="/media/images/icon-512x512.png" >
                 Easy Diffusion
-                <small>v2.5.35 <span id="updateBranchLabel"></span></small>
+                <small>v2.5.39 <span id="updateBranchLabel"></span></small>
             </h1>
         </div>
         <div id="server-status">
@@ -135,10 +135,13 @@
                         <button id="reload-models" class="secondaryButton reloadModels"><i class='fa-solid fa-rotate'></i></button>
                         <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Custom-Models" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about custom models</span></i></a>
                     </td></tr>
-                    <!-- <tr id="modelConfigSelection" class="pl-5"><td><label for="model_config">Model Config:</label></td><td>
-                        <select id="model_config" name="model_config">
-                        </select>
-                    </td></tr> -->
+                    <tr class="pl-5 displayNone" id="clip_skip_config">
+                        <td><label for="clip_skip">Clip Skip:</label></td>
+                        <td>
+                            <input id="clip_skip" name="clip_skip" type="checkbox">
+                            <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Clip-Skip" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about Clip Skip</span></i></a>
+                        </td>
+                    </tr>
                     <tr class="pl-5"><td><label for="vae_model">Custom VAE:</label></td><td>
                         <input id="vae_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
                         <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/VAE-Variational-Auto-Encoder" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about VAEs</span></i></a>
@@ -154,16 +157,18 @@
                             <option value="dpm2_a">DPM2 Ancestral</option>
                             <option value="lms">LMS</option>
                             <option value="dpm_solver_stability">DPM Solver (Stability AI)</option>
-                            <option value="dpmpp_2s_a">DPM++ 2s Ancestral (Karras)</option>
+                            <option value="dpmpp_2s_a" class="k_diffusion-only">DPM++ 2s Ancestral (Karras)</option>
                             <option value="dpmpp_2m">DPM++ 2m (Karras)</option>
-                            <option value="dpmpp_sde">DPM++ SDE (Karras)</option>
-                            <option value="dpm_fast">DPM Fast (Karras)</option>
-                            <option value="dpm_adaptive">DPM Adaptive (Karras)</option>
-                            <option value="unipc_snr">UniPC SNR</option>
+                            <option value="dpmpp_sde" class="k_diffusion-only">DPM++ SDE (Karras)</option>
+                            <option value="dpm_fast" class="k_diffusion-only">DPM Fast (Karras)</option>
+                            <option value="dpm_adaptive" class="k_diffusion-only">DPM Adaptive (Karras)</option>
+                            <option value="ddpm" class="diffusers-only">DDPM</option>
+                            <option value="deis" class="diffusers-only">DEIS</option>
+                            <option value="unipc_snr" class="k_diffusion-only">UniPC SNR</option>
                             <option value="unipc_tu">UniPC TU</option>
-                            <option value="unipc_snr_2">UniPC SNR 2</option>
-                            <option value="unipc_tu_2">UniPC TU 2</option>
-                            <option value="unipc_tq">UniPC TQ</option>
+                            <option value="unipc_snr_2" class="k_diffusion-only">UniPC SNR 2</option>
+                            <option value="unipc_tu_2" class="k_diffusion-only">UniPC TU 2</option>
+                            <option value="unipc_tq" class="k_diffusion-only">UniPC TQ</option>
                         </select>
                         <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/How-to-Use#samplers" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about samplers</span></i></a>
                     </td></tr>
@@ -231,6 +236,15 @@
                         <td><label for="hypernetwork_strength_slider">Hypernetwork Strength:</label></td>
                         <td> <input id="hypernetwork_strength_slider" name="hypernetwork_strength_slider" class="editor-slider" value="100" type="range" min="0" max="100"> <input id="hypernetwork_strength" name="hypernetwork_strength" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"><br/></td>
                     </tr>
+                    <tr id="tiling_container" class="pl-5"><td><label for="tiling">Seamless Tiling:</label></td><td>
+                        <select id="tiling" name="tiling">
+                            <option value="none" selected>None</option>
+                            <option value="x">Horizontal</option>
+                            <option value="y">Vertical</option>
+                            <option value="xy">Both</option>
+                        </select>
+                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Seamless-Tiling" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about Seamless Tiling</span></i></a>
+                    </td></tr>
                     <tr class="pl-5"><td><label for="output_format">Output Format:</label></td><td>
                         <select id="output_format" name="output_format">
                             <option value="jpeg" selected>jpeg</option>
@@ -253,14 +267,18 @@
                     <li class="pl-5">
                         <input id="use_upscale" name="use_upscale" type="checkbox"> <label for="use_upscale">Scale up by</label> 
                         <select id="upscale_amount" name="upscale_amount">
-                            <option value="2">2x</option>
-                            <option value="4" selected>4x</option>
+                            <option id="upscale_amount_2x" value="2">2x</option>
+                            <option id="upscale_amount_4x" value="4" selected>4x</option>
                         </select>
                         with 
                         <select id="upscale_model" name="upscale_model">
                             <option value="RealESRGAN_x4plus" selected>RealESRGAN_x4plus</option>
                             <option value="RealESRGAN_x4plus_anime_6B">RealESRGAN_x4plus_anime_6B</option>
+                            <option value="latent_upscaler">Latent Upscaler 2x</option>
                         </select>
+                        <div id="latent_upscaler_settings" class="displayNone">
+                            <label for="latent_upscaler_steps_slider">Upscaling Steps:</label></td><td> <input id="latent_upscaler_steps_slider" name="latent_upscaler_steps_slider" class="editor-slider" value="10" type="range" min="1" max="50"> <input id="latent_upscaler_steps" name="latent_upscaler_steps" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)">
+                        </div>
                     </li>
                     <li class="pl-5"><input id="show_only_filtered_image" name="show_only_filtered_image" type="checkbox" checked> <label for="show_only_filtered_image">Show only the corrected/upscaled image</label></li>
                     </ul></div>

@@ -17,9 +17,11 @@ Click the download button for your operating system:
 </p>
 
 **Hardware requirements:**
-- **Windows:** NVIDIA graphics card, or run on your CPU
-- **Linux:** NVIDIA or AMD graphics card, or run on your CPU
-- **Mac:** M1 or M2, or run on your CPU
+- **Windows:** NVIDIA graphics card (minimum 2 GB RAM), or run on your CPU.
+- **Linux:** NVIDIA or AMD graphics card (minimum 2 GB RAM), or run on your CPU.
+- **Mac:** M1 or M2, or run on your CPU.
+- Minimum 8 GB of system RAM.
+- Atleast 25 GB of space on the hard disk.
 
 The installer will take care of whatever is needed. If you face any problems, you can join the friendly [Discord community](https://discord.com/invite/u9yhsFmEkB) and ask for assistance.
 
@@ -58,7 +60,7 @@ Just delete the `EasyDiffusion` folder to uninstall all the downloaded packages.
 
 ### Image generation
 - **Supports**: "*Text to Image*" and "*Image to Image*".
-- **19 Samplers**: `ddim`, `plms`, `heun`, `euler`, `euler_a`, `dpm2`, `dpm2_a`, `lms`, `dpm_solver_stability`, `dpmpp_2s_a`, `dpmpp_2m`, `dpmpp_sde`, `dpm_fast`, `dpm_adaptive`, `unipc_snr`, `unipc_tu`, `unipc_tq`, `unipc_snr_2`, `unipc_tu_2`.
+- **21 Samplers**: `ddim`, `plms`, `heun`, `euler`, `euler_a`, `dpm2`, `dpm2_a`, `lms`, `dpm_solver_stability`, `dpmpp_2s_a`, `dpmpp_2m`, `dpmpp_sde`, `dpm_fast`, `dpm_adaptive`, `ddpm`, `deis`, `unipc_snr`, `unipc_tu`, `unipc_tq`, `unipc_snr_2`, `unipc_tu_2`.
 - **In-Painting**: Specify areas of your image to paint into.
 - **Simple Drawing Tool**: Draw basic images to guide the AI, without needing an external drawing program.
 - **Face Correction (GFPGAN)**
@@ -84,7 +86,7 @@ Just delete the `EasyDiffusion` folder to uninstall all the downloaded packages.
 
 ### Performance and security
 - **Fast**: Creates a 512x512 image with euler_a in 5 seconds, on an NVIDIA 3060 12GB.
-- **Low Memory Usage**: Create 512x512 images with less than 3 GB of GPU RAM, and 768x768 images with less than 4 GB of GPU RAM!
+- **Low Memory Usage**: Create 512x512 images with less than 2 GB of GPU RAM, and 768x768 images with less than 3 GB of GPU RAM!
 - **Use CPU setting**: If you don't have a compatible graphics card, but still want to run it on your CPU.
 - **Multi-GPU support**: Automatically spreads your tasks across multiple GPUs (if available), for faster performance!
 - **Auto scan for malicious models**: Uses picklescan to prevent malicious models.
@@ -112,14 +114,6 @@ Useful for judging (and stopping) an image quickly, without waiting for it to fi
 ## Task Queue
 ![Screenshot of task queue](https://user-images.githubusercontent.com/844287/217043984-0b35f73b-1318-47cb-9eed-a2a91b430490.png)
 
-
-
-# System Requirements
-1. Windows 10/11, or Linux. Experimental support for Mac is coming soon.
-2. An NVIDIA graphics card, preferably with 4GB or more of VRAM. If you don't have a compatible graphics card, it'll automatically run in the slower "CPU Mode".
-3. Minimum 8 GB of RAM and 25GB of disk space.
-
-You don't need to install or struggle with Python, Anaconda, Docker etc. The installer will take care of whatever is needed.
 
 ----
 

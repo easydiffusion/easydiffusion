@@ -18,7 +18,7 @@ os_name = platform.system()
 modules_to_check = {
     "torch": ("1.11.0", "1.13.1", "2.0.0"),
     "torchvision": ("0.12.0", "0.14.1", "0.15.1"),
-    "sdkit": "1.0.87",
+    "sdkit": "1.0.98",
     "stable-diffusion-sdkit": "2.1.4",
     "rich": "12.6.0",
     "uvicorn": "0.19.0",
@@ -130,10 +130,13 @@ def include_cuda_versions(module_versions: tuple) -> tuple:
 
 def is_amd_on_linux():
     if os_name == "Linux":
-        with open("/proc/bus/pci/devices", "r") as f:
-            device_info = f.read()
-            if "amdgpu" in device_info and "nvidia" not in device_info:
-                return True
+        try:
+            with open("/proc/bus/pci/devices", "r") as f:
+                device_info = f.read()
+                if "amdgpu" in device_info and "nvidia" not in device_info:
+                    return True
+        except:
+            return False
 
     return False
 

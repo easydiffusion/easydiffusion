@@ -53,15 +53,21 @@ def load_default_models(context: Context):
                 scan_model=context.model_paths[model_type] != None
                 and not context.model_paths[model_type].endswith(".safetensors"),
             )
+            if model_type in context.model_load_errors:
+                del context.model_load_errors[model_type]
         except Exception as e:
             log.error(f"[red]Error while loading {model_type} model: {context.model_paths[model_type]}[/red]")
             log.exception(e)
             del context.model_paths[model_type]
 
+            context.model_load_errors[model_type] = str(e)  # storing the entire Exception can lead to memory leaks
+
 
 def unload_all(context: Context):
     for model_type in KNOWN_MODEL_TYPES:
         unload_model(context, model_type)
+        if model_type in context.model_load_errors:
+            del context.model_load_errors[model_type]
 
 
 def resolve_model_to_use(model_name: str = None, model_type: str = None):
@@ -107,19 +113,17 @@ def resolve_model_to_use(model_name: str = None, model_type: str = None):
 
 
 def reload_models_if_necessary(context: Context, task_data: TaskData):
-    if hasattr(task_data, 'use_face_correction') and task_data.use_face_correction:
-        face_correction_model = "codeformer" if "codeformer" in task_data.use_face_correction.lower() else "gfpgan"
-        face_correction_value = task_data.use_face_correction
-    else:
-        face_correction_model = "gfpgan"
-        face_correction_value = None
+    face_fix_lower = task_data.use_face_correction.lower() if task_data.use_face_correction else ""
+    upscale_lower = task_data.use_upscale.lower() if task_data.use_upscale else ""
 
     model_paths_in_req = {
         "stable-diffusion": task_data.use_stable_diffusion_model,
         "vae": task_data.use_vae_model,
         "hypernetwork": task_data.use_hypernetwork_model,
-        face_correction_model: face_correction_value,
-        "realesrgan": task_data.use_upscale,
+        "codeformer": task_data.use_face_correction if "codeformer" in face_fix_lower else None,
+        "gfpgan": task_data.use_face_correction if "gfpgan" in face_fix_lower else None,
+        "realesrgan": task_data.use_upscale if "realesrgan" in upscale_lower else None,
+        "latent_upscaler": True if "latent_upscaler" in upscale_lower else None,
         "nsfw_checker": True if task_data.block_nsfw else None,
         "lora": task_data.use_lora_model,
     }
@@ -129,14 +133,21 @@ def reload_models_if_necessary(context: Context, task_data: TaskData):
         if context.model_paths.get(model_type) != path
     }
 
-    if set_vram_optimizations(context):  # reload SD
+    if set_vram_optimizations(context) or set_clip_skip(context, task_data):  # reload SD
         models_to_reload["stable-diffusion"] = model_paths_in_req["stable-diffusion"]
 
     for model_type, model_path_in_req in models_to_reload.items():
         context.model_paths[model_type] = model_path_in_req
 
         action_fn = unload_model if context.model_paths[model_type] is None else load_model
-        action_fn(context, model_type, scan_model=False)  # we've scanned them already
+        try:
+            action_fn(context, model_type, scan_model=False)  # we've scanned them already
+            if model_type in context.model_load_errors:
+                del context.model_load_errors[model_type]
+        except Exception as e:
+            log.exception(e)
+            if action_fn == load_model:
+                context.model_load_errors[model_type] = str(e)  # storing the entire Exception can lead to memory leaks
 
 
 def resolve_model_paths(task_data: TaskData):
@@ -149,8 +160,16 @@ def resolve_model_paths(task_data: TaskData):
 
     if task_data.use_face_correction:
         task_data.use_face_correction = resolve_model_to_use(task_data.use_face_correction, "gfpgan")
-    if task_data.use_upscale:
+    if task_data.use_upscale and "realesrgan" in task_data.use_upscale.lower():
         task_data.use_upscale = resolve_model_to_use(task_data.use_upscale, "realesrgan")
+
+
+def fail_if_models_did_not_load(context: Context):
+    for model_type in KNOWN_MODEL_TYPES:
+        if model_type in context.model_load_errors:
+            e = context.model_load_errors[model_type]
+            raise Exception(f"Could not load the {model_type} model! Reason: " + e)
+            # concat 'e', don't use in format string (injection attack)
 
 
 def set_vram_optimizations(context: Context):
@@ -159,6 +178,16 @@ def set_vram_optimizations(context: Context):
 
     if vram_usage_level != context.vram_usage_level:
         context.vram_usage_level = vram_usage_level
+        return True
+
+    return False
+
+
+def set_clip_skip(context: Context, task_data: TaskData):
+    clip_skip = task_data.clip_skip
+
+    if clip_skip != context.clip_skip:
+        context.clip_skip = clip_skip
         return True
 
     return False

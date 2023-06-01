@@ -4,6 +4,7 @@
 ### Major Changes
 - **Nearly twice as fast** - significantly faster speed of image generation. Code contributions are welcome to make our project even faster: https://github.com/easydiffusion/sdkit/#is-it-fast
 - **Mac M1/M2 support** - Experimental support for Mac M1/M2. Thanks @michaelgallacher, @JeLuf and vishae.
+- **AMD support for Linux** - Experimental support for AMD GPUs on Linux. Thanks @DianaNites and @JeLuf.
 - **Full support for Stable Diffusion 2.1 (including CPU)** - supports loading v1.4 or v2.0 or v2.1 models seamlessly. No need to enable "Test SD2", and no need to add `sd2_` to your SD 2.0 model file names. Works on CPU as well.
 - **Memory optimized Stable Diffusion 2.1** - you can now use Stable Diffusion 2.1 models, with the same low VRAM optimizations that we've always had for SD 1.4. Please note, the SD 2.0 and 2.1 models require more GPU and System RAM, as compared to the SD 1.4 and 1.5 models.
 - **11 new samplers!** - explore the new samplers, some of which can generate great images in less than 10 inference steps! We've added the Karras and UniPC samplers. Thanks @Schorny for the UniPC samplers.
@@ -21,6 +22,16 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.39 - 25 May 2023 - (beta-only) Seamless Tiling - make seamlessly tiled images, e.g. rock and grass textures. Thanks @JeLuf.
+* 2.5.38 - 24 May 2023 - Better reporting of errors, and show an explanation if the user cannot disable the "Use CPU" setting.
+* 2.5.38 - 23 May 2023 - Add Latent Upscaler as another option for upscaling images. Thanks @JeLuf for the implementation of the Latent Upscaler model.
+* 2.5.37 - 19 May 2023 - (beta-only) Two more samplers: DDPM and DEIS. Also disables the samplers that aren't working yet in the Diffusers version. Thanks @ogmaresca.
+* 2.5.37 - 19 May 2023 - (beta-only) Support CLIP-Skip. You can set this option under the models dropdown. Thanks @JeLuf.
+* 2.5.37 - 19 May 2023 - (beta-only) More VRAM optimizations for all modes in diffusers. The VRAM usage for diffusers in "low" and "balanced" should now be equal or less than the non-diffusers version. Performs softmax in half precision, like sdkit does.
+* 2.5.36 - 16 May 2023 - (beta-only) More VRAM optimizations for "balanced" VRAM usage mode.
+* 2.5.36 - 11 May 2023 - (beta-only) More VRAM optimizations for "low" VRAM usage mode.
+* 2.5.36 - 10 May 2023 - (beta-only) Bug fix for "meta" error when using a LoRA in 'low' VRAM usage mode.
+* 2.5.35 - 8 May 2023 - Allow dragging a zoomed-in image (after opening an image with the "expand" button). Thanks @ogmaresca.
 * 2.5.35 - 3 May 2023 - (beta-only) First round of VRAM Optimizations for the "Test Diffusers" version. This change significantly reduces the amount of VRAM used by the diffusers version during image generation. The VRAM usage is still not equal to the "non-diffusers" version, but more optimizations are coming soon.
 * 2.5.34 - 22 Apr 2023 - Don't start the browser in an incognito new profile (on Windows). Thanks @JeLuf.
 * 2.5.33 - 21 Apr 2023 - Install PyTorch 2.0 on new installations (on Windows and Linux).
