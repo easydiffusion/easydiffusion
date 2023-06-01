@@ -24,6 +24,9 @@ models_to_check = {
     "vae": [
         {"file_name": "vae-ft-mse-840000-ema-pruned.ckpt", "model_id": "vae-ft-mse-840000-ema-pruned"},
     ],
+    "codeformer": [
+        {"file_name": "codeformer.pth", "model_id": "codeformer-0.1.0"},
+    ],
 }
 MODEL_EXTENSIONS = {  # copied from easydiffusion/model_manager.py
     "stable-diffusion": [".ckpt", ".safetensors"],
@@ -32,6 +35,7 @@ MODEL_EXTENSIONS = {  # copied from easydiffusion/model_manager.py
     "gfpgan": [".pth"],
     "realesrgan": [".pth"],
     "lora": [".ckpt", ".safetensors"],
+    "codeformer": [".pth"],
 }
 
 

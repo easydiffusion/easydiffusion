@@ -13,6 +13,7 @@ KNOWN_MODEL_TYPES = [
     "gfpgan",
     "realesrgan",
     "lora",
+    "codeformer",
 ]
 MODEL_EXTENSIONS = {
     "stable-diffusion": [".ckpt", ".safetensors"],
@@ -21,6 +22,7 @@ MODEL_EXTENSIONS = {
     "gfpgan": [".pth"],
     "realesrgan": [".pth"],
     "lora": [".ckpt", ".safetensors"],
+    "codeformer": [".pth"],
 }
 DEFAULT_MODELS = {
     "stable-diffusion": [  # needed to support the legacy installations
@@ -133,6 +135,9 @@ def reload_models_if_necessary(context: Context, task_data: TaskData):
         if context.model_paths.get(model_type) != path
     }
 
+    if task_data.codeformer_upscale_faces and "realesrgan" not in models_to_reload.keys():
+        models_to_reload["realesrgan"] = resolve_model_to_use(DEFAULT_MODELS["realesrgan"][0], "realesrgan")
+
     if set_vram_optimizations(context) or set_clip_skip(context, task_data):  # reload SD
         models_to_reload["stable-diffusion"] = model_paths_in_req["stable-diffusion"]
 
@@ -159,7 +164,12 @@ def resolve_model_paths(task_data: TaskData):
     task_data.use_lora_model = resolve_model_to_use(task_data.use_lora_model, model_type="lora")
 
     if task_data.use_face_correction:
-        task_data.use_face_correction = resolve_model_to_use(task_data.use_face_correction, "gfpgan")
+        if "gfpgan" in task_data.use_face_correction.lower():
+            model_type = "gfpgan"
+        elif "codeformer" in task_data.use_face_correction.lower():
+            model_type = "codeformer"
+
+        task_data.use_face_correction = resolve_model_to_use(task_data.use_face_correction, model_type)
     if task_data.use_upscale and "realesrgan" in task_data.use_upscale.lower():
         task_data.use_upscale = resolve_model_to_use(task_data.use_upscale, "realesrgan")
 
@@ -240,17 +250,12 @@ def is_malicious_model(file_path):
 
 def getModels():
     models = {
-        "active": {
-            "stable-diffusion": "sd-v1-4",
-            "vae": "",
-            "hypernetwork": "",
-            "lora": "",
-        },
         "options": {
             "stable-diffusion": ["sd-v1-4"],
             "vae": [],
             "hypernetwork": [],
             "lora": [],
+            "codeformer": [],
         },
     }
 
@@ -307,6 +312,7 @@ def getModels():
     listModels(model_type="hypernetwork")
     listModels(model_type="gfpgan")
     listModels(model_type="lora")
+    listModels(model_type="codeformer")
 
     if models_scanned > 0:
         log.info(f"[green]Scanned {models_scanned} models. Nothing infected[/]")
