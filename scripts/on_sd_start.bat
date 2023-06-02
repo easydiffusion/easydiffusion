@@ -79,13 +79,6 @@ call WHERE uvicorn > .tmp
     @echo conda_sd_ui_deps_installed >> ..\scripts\install_status.txt
 )
 
-@rem Download the required models
-call python ..\scripts\check_models.py
-if "%ERRORLEVEL%" NEQ "0" (
-    pause
-    exit /b
-)
-
 @>nul findstr /m "sd_install_complete" ..\scripts\install_status.txt
 @if "%ERRORLEVEL%" NEQ "0" (
     @echo sd_weights_downloaded >> ..\scripts\install_status.txt

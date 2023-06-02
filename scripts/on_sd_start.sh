@@ -51,12 +51,6 @@ if ! command -v uvicorn &> /dev/null; then
     fail "UI packages not found!"
 fi
 
-# Download the required models
-if ! python ../scripts/check_models.py; then
-    read -p "Press any key to continue"
-    exit 1
-fi
-
 if [ `grep -c sd_install_complete ../scripts/install_status.txt` -gt "0" ]; then
     echo sd_weights_downloaded >> ../scripts/install_status.txt
     echo sd_install_complete >> ../scripts/install_status.txt

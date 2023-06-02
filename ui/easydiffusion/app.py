@@ -90,8 +90,8 @@ def init():
     os.makedirs(USER_SERVER_PLUGINS_DIR, exist_ok=True)
 
     # https://pytorch.org/docs/stable/storage.html
-    warnings.filterwarnings('ignore', category=UserWarning, message='TypedStorage is deprecated')
-    
+    warnings.filterwarnings("ignore", category=UserWarning, message="TypedStorage is deprecated")
+
     load_server_plugins()
 
     update_render_threads()
@@ -221,12 +221,41 @@ def open_browser():
 
         webbrowser.open(f"http://localhost:{port}")
 
-    Console().print(Panel(
-        "\n" +
-        "[white]Easy Diffusion is ready to serve requests.\n\n" +
-        "A new browser tab should have been opened by now.\n" +
-        f"If not, please open your web browser and navigate to [bold yellow underline]http://localhost:{port}/\n",
-        title="Easy Diffusion is ready", style="bold yellow on blue"))
+    Console().print(
+        Panel(
+            "\n"
+            + "[white]Easy Diffusion is ready to serve requests.\n\n"
+            + "A new browser tab should have been opened by now.\n"
+            + f"If not, please open your web browser and navigate to [bold yellow underline]http://localhost:{port}/\n",
+            title="Easy Diffusion is ready",
+            style="bold yellow on blue",
+        )
+    )
+
+
+def fail_and_die(fail_type: str, data: str):
+    suggestions = [
+        "Run this installer again.",
+        "If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB",
+        "If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues",
+    ]
+
+    if fail_type == "model_download":
+        fail_label = f"Error downloading the {data} model"
+        suggestions.insert(
+            1,
+            "If that doesn't fix it, please try to download the file manually. The address to download from, and the destination to save to are printed above this message.",
+        )
+    else:
+        fail_label = "Error while installing Easy Diffusion"
+
+    msg = [f"{fail_label}. Sorry about that, please try to:"]
+    for i, suggestion in enumerate(suggestions):
+        msg.append(f"{i+1}. {suggestion}")
+    msg.append("Thanks!")
+
+    print("\n".join(msg))
+    exit(1)
 
 
 def get_image_modifiers():
