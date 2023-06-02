@@ -317,6 +317,7 @@
             offsetY = height/2 - thisImage.height/2 - thisImage.height * Math.ceil( (height/2 - thisImage.height/2) / thisImage.height )
         }
         downloadTiledImage(thisImage, width, height, offsetX, offsetY, newtab)
+        downloadTiledImageDialog.close()
     }
 
     document.getElementById("dti-ok").addEventListener("click", onDownloadTiledImageClick)
