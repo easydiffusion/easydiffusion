@@ -34,6 +34,7 @@ def init(device):
     context.temp_images = {}
     context.partial_x_samples = None
     context.model_load_errors = {}
+    context.enable_codeformer = True
 
     from easydiffusion import app
 
@@ -160,7 +161,11 @@ def filter_images(req: GenerateImageRequest, task_data: TaskData, images: list, 
     filter_params = {}
     if task_data.block_nsfw:
         filters_to_apply.append("nsfw_checker")
-    if task_data.use_face_correction and "gfpgan" in task_data.use_face_correction.lower():
+    if task_data.use_face_correction and "codeformer" in task_data.use_face_correction.lower():
+        filters_to_apply.append("codeformer")
+
+        filter_params["upscale_faces"] = task_data.codeformer_upscale_faces
+    elif task_data.use_face_correction and "gfpgan" in task_data.use_face_correction.lower():
         filters_to_apply.append("gfpgan")
     if task_data.use_upscale:
         if "realesrgan" in task_data.use_upscale.lower():

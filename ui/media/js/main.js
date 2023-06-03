@@ -87,7 +87,7 @@ let promptStrengthField = document.querySelector("#prompt_strength")
 let samplerField = document.querySelector("#sampler_name")
 let samplerSelectionContainer = document.querySelector("#samplerSelection")
 let useFaceCorrectionField = document.querySelector("#use_face_correction")
-let gfpganModelField = new ModelDropdown(document.querySelector("#gfpgan_model"), "gfpgan")
+let gfpganModelField = new ModelDropdown(document.querySelector("#gfpgan_model"), ["codeformer", "gfpgan"])
 let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
 let upscaleAmountField = document.querySelector("#upscale_amount")
@@ -270,7 +270,9 @@ function shiftOrConfirm(e, prompt, fn) {
         confirm(
             '<small>Tip: To skip this dialog, use shift-click or disable the "Confirm dangerous actions" setting in the Settings tab.</small>',
             prompt,
-            () => { fn(e) }
+            () => {
+                fn(e)
+            }
         )
     }
 }
@@ -1261,6 +1263,10 @@ function getCurrentUserRequest() {
     }
     if (useFaceCorrectionField.checked) {
         newTask.reqBody.use_face_correction = gfpganModelField.value
+
+        if (gfpganModelField.value.includes("codeformer")) {
+            newTask.reqBody.codeformer_upscale_faces = document.querySelector("#codeformer_upscale_faces").checked
+        }
     }
     if (useUpscalingField.checked) {
         newTask.reqBody.use_upscale = upscaleModelField.value
@@ -1574,18 +1580,33 @@ metadataOutputFormatField.disabled = !saveToDiskField.checked
 gfpganModelField.disabled = !useFaceCorrectionField.checked
 useFaceCorrectionField.addEventListener("change", function(e) {
     gfpganModelField.disabled = !this.checked
+
+    onFixFaceModelChange()
 })
+
+function onFixFaceModelChange() {
+    let codeformerSettings = document.querySelector("#codeformer_settings")
+    if (gfpganModelField.value === "codeformer" && !gfpganModelField.disabled) {
+        codeformerSettings.classList.remove("displayNone")
+    } else {
+        codeformerSettings.classList.add("displayNone")
+    }
+}
+gfpganModelField.addEventListener("change", onFixFaceModelChange)
+onFixFaceModelChange()
 
 upscaleModelField.disabled = !useUpscalingField.checked
 upscaleAmountField.disabled = !useUpscalingField.checked
 useUpscalingField.addEventListener("change", function(e) {
     upscaleModelField.disabled = !this.checked
     upscaleAmountField.disabled = !this.checked
+
+    onUpscaleModelChange()
 })
 
 function onUpscaleModelChange() {
     let upscale4x = document.querySelector("#upscale_amount_4x")
-    if (upscaleModelField.value === "latent_upscaler") {
+    if (upscaleModelField.value === "latent_upscaler" && !upscaleModelField.disabled) {
         upscale4x.disabled = true
         upscaleAmountField.value = "2"
         latentUpscalerSettings.classList.remove("displayNone")

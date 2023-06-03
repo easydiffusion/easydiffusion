@@ -90,7 +90,12 @@ class ModelDropdown {
 
         if (modelsOptions !== undefined) {
             // reuse models from cache (only useful for plugins, which are loaded after models)
-            this.inputModels = modelsOptions[this.modelKey]
+            this.inputModels = []
+            let modelKeys = Array.isArray(this.modelKey) ? this.modelKey : [this.modelKey]
+            for (let i = 0; i < modelKeys.length; i++) {
+                let key = modelKeys[i]
+                this.inputModels.push(...modelsOptions[key])
+            }
             this.populateModels()
         }
         document.addEventListener(
@@ -98,6 +103,12 @@ class ModelDropdown {
             this.bind(function(e) {
                 // reload the models
                 this.inputModels = modelsOptions[this.modelKey]
+                this.inputModels = []
+                let modelKeys = Array.isArray(this.modelKey) ? this.modelKey : [this.modelKey]
+                for (let i = 0; i < modelKeys.length; i++) {
+                    let key = modelKeys[i]
+                    this.inputModels.push(...modelsOptions[key])
+                }
                 this.populateModels()
             }, this)
         )
