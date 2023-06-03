@@ -22,6 +22,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.40 - 3 Jun 2023 - Added CodeFormer as another option for fixing faces and eyes. CodeFormer tends to perform better than GFPGAN for many images. Thanks @patriceac for the implementation, and for contacting the CodeFormer team (who were supportive of it being integrated into Easy Diffusion).
 * 2.5.39 - 25 May 2023 - (beta-only) Seamless Tiling - make seamlessly tiled images, e.g. rock and grass textures. Thanks @JeLuf.
 * 2.5.38 - 24 May 2023 - Better reporting of errors, and show an explanation if the user cannot disable the "Use CPU" setting.
 * 2.5.38 - 23 May 2023 - Add Latent Upscaler as another option for upscaling images. Thanks @JeLuf for the implementation of the Latent Upscaler model.
