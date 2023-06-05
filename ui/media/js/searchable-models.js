@@ -94,7 +94,8 @@ class ModelDropdown {
             let modelKeys = Array.isArray(this.modelKey) ? this.modelKey : [this.modelKey]
             for (let i = 0; i < modelKeys.length; i++) {
                 let key = modelKeys[i]
-                this.inputModels.push(...modelsOptions[key])
+                let k = Array.isArray(modelsOptions[key]) ? modelsOptions[key] : [modelsOptions[key]]
+                this.inputModels.push(...k)
             }
             this.populateModels()
         }
@@ -107,7 +108,8 @@ class ModelDropdown {
                 let modelKeys = Array.isArray(this.modelKey) ? this.modelKey : [this.modelKey]
                 for (let i = 0; i < modelKeys.length; i++) {
                     let key = modelKeys[i]
-                    this.inputModels.push(...modelsOptions[key])
+                    let k = Array.isArray(modelsOptions[key]) ? modelsOptions[key] : [modelsOptions[key]]
+                    this.inputModels.push(...k)
                 }
                 this.populateModels()
             }, this)
