@@ -1725,10 +1725,10 @@ function updateLoraAlpha() {
 }
 
 function updateLoraAlphaSlider() {
-    if (loraAlphaField.value < 0) {
-        loraAlphaField.value = 0
-    } else if (loraAlphaField.value > 1) {
-        loraAlphaField.value = 1
+    if (loraAlphaField.value < -2) {
+        loraAlphaField.value = -2
+    } else if (loraAlphaField.value > 2) {
+        loraAlphaField.value = 2
     }
 
     loraAlphaSlider.value = loraAlphaField.value * 100
