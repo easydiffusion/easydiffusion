@@ -142,10 +142,12 @@ def reload_models_if_necessary(context: Context, task_data: TaskData):
         if context.model_paths.get(model_type) != path
     }
 
-    if task_data.codeformer_upscale_faces and "realesrgan" not in models_to_reload.keys():
-        models_to_reload["realesrgan"] = resolve_model_to_use(
-            DEFAULT_MODELS["realesrgan"][0]["file_name"], "realesrgan"
-        )
+    if task_data.codeformer_upscale_faces:
+        if "realesrgan" not in models_to_reload and "realesrgan" not in context.models:
+            default_realesrgan = DEFAULT_MODELS["realesrgan"][0]["file_name"]
+            models_to_reload["realesrgan"] = resolve_model_to_use(default_realesrgan, "realesrgan")
+        elif "realesrgan" in models_to_reload and models_to_reload["realesrgan"] is None:
+            del models_to_reload["realesrgan"]  # don't unload realesrgan
 
     if set_vram_optimizations(context) or set_clip_skip(context, task_data):  # reload SD
         models_to_reload["stable-diffusion"] = model_paths_in_req["stable-diffusion"]
