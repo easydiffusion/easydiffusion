@@ -72,7 +72,12 @@ def load_default_models(context: Context):
                 del context.model_load_errors[model_type]
         except Exception as e:
             log.error(f"[red]Error while loading {model_type} model: {context.model_paths[model_type]}[/red]")
-            log.exception(e)
+            if "DefaultCPUAllocator: not enough memory" in str(e):
+                log.error(
+                    f"[red]Your PC is low on system RAM. Please add some virtual memory (or swap space) by following the instructions at this link: https://www.ibm.com/docs/en/opw/8.2.0?topic=tuning-optional-increasing-paging-file-size-windows-computers[/red]"
+                )
+            else:
+                log.exception(e)
             del context.model_paths[model_type]
 
             context.model_load_errors[model_type] = str(e)  # storing the entire Exception can lead to memory leaks
