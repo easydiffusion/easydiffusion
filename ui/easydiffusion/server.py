@@ -15,6 +15,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Extra
 from starlette.responses import FileResponse, JSONResponse, StreamingResponse
+from pycloudflared import try_cloudflare
 
 log.info(f"started in {app.SD_DIR}")
 log.info(f"started at {datetime.datetime.now():%x %X}")
@@ -112,6 +113,14 @@ def init():
     @server_api.get("/image/tmp/{task_id:int}/{img_id:int}")
     def get_image(task_id: int, img_id: int):
         return get_image_internal(task_id, img_id)
+
+    @server_api.post("/tunnel/cloudflare/start")
+    def start_cloudflare_tunnel(req: dict):
+        return start_cloudflare_tunnel_internal(req)
+
+    @server_api.post("/tunnel/cloudflare/stop")
+    def stop_cloudflare_tunnel(req: dict):
+        return stop_cloudflare_tunnel_internal(req)
 
     @server_api.get("/")
     def read_root():
@@ -211,6 +220,8 @@ def ping_internal(session_id: str = None):
         session = task_manager.get_cached_session(session_id, update_ttl=True)
         response["tasks"] = {id(t): t.status for t in session.tasks}
     response["devices"] = task_manager.get_devices()
+    if cloudflare.address != None:
+        response["cloudflare"] = cloudflare.address
     return JSONResponse(response, headers=NOCACHE_HEADERS)
 
 
@@ -322,3 +333,46 @@ def get_image_internal(task_id: int, img_id: int):
         return StreamingResponse(img_data, media_type="image/jpeg")
     except KeyError as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+#---- Cloudflare Tunnel ----
+class CloudflareTunnel:
+    def __init__(self):
+        config = app.getConfig()
+        self.Urls = None
+        self.port = config["net"]["listen_port"]
+
+    def start(self):
+        self.Urls = try_cloudflare(self.port)
+
+    def stop(self):
+        if self.Urls != None:
+            try_cloudflare.terminate(self.port)
+            self.Urls = None
+
+    @property
+    def address(self):
+        if self.Urls != None:
+            return self.Urls.tunnel
+        else:
+            return None
+
+cloudflare = CloudflareTunnel()
+
+def start_cloudflare_tunnel_internal(req: dict):
+   try:
+      cloudflare.start()
+      log.info(f"- Started cloudflare tunnel. Using address: {cloudflare.address}")
+      return JSONResponse({"address":cloudflare.address})
+   except Exception as e:
+      log.error(str(e))
+      log.error(traceback.format_exc())
+      return HTTPException(status_code=500, detail=str(e))
+
+def stop_cloudflare_tunnel_internal(req: dict):
+   try:
+      cloudflare.stop()
+   except Exception as e:
+      log.error(str(e))
+      log.error(traceback.format_exc())
+      return HTTPException(status_code=500, detail=str(e))
+

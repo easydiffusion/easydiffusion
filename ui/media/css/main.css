@@ -1309,6 +1309,21 @@ body.wait-pause {
     padding-left: 5pt;
 }
 
+#cloudflare-address {
+    background-color: var(--background-color3);
+    padding: 6px;
+    border-radius: var(--input-border-radius);
+    border: var(--input-border-size) solid var(--input-border-color);
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
+    display: inline-block;
+}
+
+#copy-cloudflare-address {
+    padding: 4px 8px;
+    margin-left: 0.5em;
+}
+
 /* TOAST NOTIFICATIONS */
 .toast-notification {
     position: fixed;
