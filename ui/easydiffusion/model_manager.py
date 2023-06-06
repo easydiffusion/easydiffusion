@@ -123,6 +123,9 @@ def resolve_model_to_use(model_name: str = None, model_type: str = None):
                     )
                 return default_model_path
 
+    if model_name:
+        raise Exception(f"Could not find the desired model {model_name}! Is it present in the {model_dir} folder?")
+
     return None
 
 
