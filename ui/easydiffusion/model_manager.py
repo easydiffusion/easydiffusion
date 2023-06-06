@@ -60,7 +60,7 @@ def load_default_models(context: Context):
 
     # init default model paths
     for model_type in MODELS_TO_LOAD_ON_START:
-        context.model_paths[model_type] = resolve_model_to_use(model_type=model_type)
+        context.model_paths[model_type] = resolve_model_to_use(model_type=model_type, fail_if_not_found=False)
         try:
             load_model(
                 context,
@@ -90,7 +90,7 @@ def unload_all(context: Context):
             del context.model_load_errors[model_type]
 
 
-def resolve_model_to_use(model_name: str = None, model_type: str = None):
+def resolve_model_to_use(model_name: str = None, model_type: str = None, fail_if_not_found: bool = True):
     model_extensions = MODEL_EXTENSIONS.get(model_type, [])
     default_models = DEFAULT_MODELS.get(model_type, [])
     config = app.getConfig()
@@ -113,7 +113,7 @@ def resolve_model_to_use(model_name: str = None, model_type: str = None):
                 return os.path.abspath(model_name + model_extension)
 
     # Can't find requested model, check the default paths.
-    if model_type == "stable-diffusion":
+    if model_type == "stable-diffusion" and not fail_if_not_found:
         for default_model in default_models:
             default_model_path = os.path.join(model_dir, default_model["file_name"])
             if os.path.exists(default_model_path):
@@ -123,7 +123,7 @@ def resolve_model_to_use(model_name: str = None, model_type: str = None):
                     )
                 return default_model_path
 
-    if model_name:
+    if model_name and fail_if_not_found:
         raise Exception(f"Could not find the desired model {model_name}! Is it present in the {model_dir} folder?")
 
 
