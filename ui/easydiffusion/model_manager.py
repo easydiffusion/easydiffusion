@@ -126,8 +126,6 @@ def resolve_model_to_use(model_name: str = None, model_type: str = None):
     if model_name:
         raise Exception(f"Could not find the desired model {model_name}! Is it present in the {model_dir} folder?")
 
-    return None
-
 
 def reload_models_if_necessary(context: Context, task_data: TaskData):
     face_fix_lower = task_data.use_face_correction.lower() if task_data.use_face_correction else ""
