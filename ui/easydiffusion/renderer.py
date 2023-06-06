@@ -165,6 +165,7 @@ def filter_images(req: GenerateImageRequest, task_data: TaskData, images: list, 
         filters_to_apply.append("codeformer")
 
         filter_params["upscale_faces"] = task_data.codeformer_upscale_faces
+        filter_params["codeformer_fidelity"] = task_data.codeformer_fidelity
     elif task_data.use_face_correction and "gfpgan" in task_data.use_face_correction.lower():
         filters_to_apply.append("gfpgan")
     if task_data.use_upscale:

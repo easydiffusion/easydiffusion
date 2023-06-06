@@ -52,6 +52,7 @@ class TaskData(BaseModel):
     stream_image_progress_interval: int = 5
     clip_skip: bool = False
     codeformer_upscale_faces: bool = False
+    codeformer_fidelity: float = 0.5
 
 
 class MergeRequest(BaseModel):

@@ -1324,6 +1324,14 @@ body.wait-pause {
     margin-left: 0.5em;
 }
 
+.expandedSettingRow {
+    background: var(--background-color1);
+    width: 95%;
+    border-radius: 4pt;
+    margin-top: 5pt;
+    margin-bottom: 3pt;
+}
+
 /* TOAST NOTIFICATIONS */
 .toast-notification {
     position: fixed;

@@ -266,11 +266,12 @@
                     <div><ul>
                     <li><b class="settings-subheader">Render Settings</b></li>
                     <li class="pl-5"><input id="stream_image_progress" name="stream_image_progress" type="checkbox"> <label for="stream_image_progress">Show a live preview <small>(uses more VRAM, slower images)</small></label></li>
-                    <li class="pl-5">
+                    <li class="pl-5" id="use_face_correction_container">
                         <input id="use_face_correction" name="use_face_correction" type="checkbox"> <label for="use_face_correction">Fix incorrect faces and eyes</label> <div style="display:inline-block;"><input id="gfpgan_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" /></div>
-                        <div id="codeformer_settings" class="displayNone sub-settings">
-                            <input id="codeformer_upscale_faces" name="codeformer_upscale_faces" type="checkbox" checked><label for="codeformer_upscale_faces">Upscale Faces <small>(improves the resolution of faces)</small></label>
-                        </div>
+                        <table id="codeformer_settings" class="displayNone sub-settings">
+                            <tr class="pl-5"><td><label for="codeformer_fidelity_slider">Strength:</label></td><td><input id="codeformer_fidelity_slider" name="codeformer_fidelity_slider" class="editor-slider" value="10" type="range" min="0" max="10"> <input id="codeformer_fidelity" name="codeformer_fidelity" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"></td></tr>
+                            <tr class="pl-5"><td><label for="codeformer_upscale_faces">Upscale Faces:</label></td><td><input id="codeformer_upscale_faces" name="codeformer_upscale_faces" type="checkbox" checked> <label><small>(improves the resolution of faces)</small></label></td></tr>
+                        </table>
                     </li>
                     <li class="pl-5">
                         <input id="use_upscale" name="use_upscale" type="checkbox"> <label for="use_upscale">Scale up by</label> 
@@ -284,9 +285,9 @@
                             <option value="RealESRGAN_x4plus_anime_6B">RealESRGAN_x4plus_anime_6B</option>
                             <option value="latent_upscaler">Latent Upscaler 2x</option>
                         </select>
-                        <div id="latent_upscaler_settings" class="displayNone sub-settings">
-                            <label for="latent_upscaler_steps_slider">Upscaling Steps:</label></td><td> <input id="latent_upscaler_steps_slider" name="latent_upscaler_steps_slider" class="editor-slider" value="10" type="range" min="1" max="50"> <input id="latent_upscaler_steps" name="latent_upscaler_steps" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)">
-                        </div>
+                        <table id="latent_upscaler_settings" class="displayNone sub-settings">
+                            <tr class="pl-5"><td><label for="latent_upscaler_steps_slider">Upscaling Steps:</label></td><td><input id="latent_upscaler_steps_slider" name="latent_upscaler_steps_slider" class="editor-slider" value="10" type="range" min="1" max="50"> <input id="latent_upscaler_steps" name="latent_upscaler_steps" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"></td></tr>
+                        </table>
                     </li>
                     <li class="pl-5"><input id="show_only_filtered_image" name="show_only_filtered_image" type="checkbox" checked> <label for="show_only_filtered_image">Show only the corrected/upscaled image</label></li>
                     </ul></div>
