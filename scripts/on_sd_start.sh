@@ -4,7 +4,6 @@ cp sd-ui-files/scripts/functions.sh scripts/
 cp sd-ui-files/scripts/on_env_start.sh scripts/
 cp sd-ui-files/scripts/bootstrap.sh scripts/
 cp sd-ui-files/scripts/check_modules.py scripts/
-cp sd-ui-files/scripts/check_models.py scripts/
 cp sd-ui-files/scripts/get_config.py scripts/
 
 source ./scripts/functions.sh
