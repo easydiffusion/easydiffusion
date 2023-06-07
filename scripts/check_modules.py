@@ -26,6 +26,7 @@ modules_to_check = {
     "pycloudflared": "0.2.0",
     # "xformers": "0.0.16",
 }
+modules_to_log = ["torch", "torchvision", "sdkit", "stable-diffusion-sdkit"]
 
 
 def version(module_name: str) -> str:
@@ -90,7 +91,8 @@ def init():
                 traceback.print_exc()
                 fail(module_name)
 
-        print(f"{module_name}: {version(module_name)}")
+        if module_name in modules_to_log:
+            print(f"{module_name}: {version(module_name)}")
 
 
 ### utilities
