@@ -338,21 +338,22 @@ def get_image_internal(task_id: int, img_id: int):
 class CloudflareTunnel:
     def __init__(self):
         config = app.getConfig()
-        self.Urls = None
-        self.port = config["net"]["listen_port"]
+        self.urls = None
+        self.port = config.get("net", {}).get("listen_port")
 
     def start(self):
-        self.Urls = try_cloudflare(self.port)
+        if self.port:
+            self.urls = try_cloudflare(self.port)
 
     def stop(self):
-        if self.Urls != None:
+        if self.urls:
             try_cloudflare.terminate(self.port)
-            self.Urls = None
+            self.urls = None
 
     @property
     def address(self):
-        if self.Urls != None:
-            return self.Urls.tunnel
+        if self.urls:
+            return self.urls.tunnel
         else:
             return None
 
