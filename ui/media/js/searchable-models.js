@@ -103,7 +103,6 @@ class ModelDropdown {
             "refreshModels",
             this.bind(function(e) {
                 // reload the models
-                this.inputModels = modelsOptions[this.modelKey]
                 this.inputModels = []
                 let modelKeys = Array.isArray(this.modelKey) ? this.modelKey : [this.modelKey]
                 for (let i = 0; i < modelKeys.length; i++) {

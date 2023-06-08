@@ -2061,3 +2061,10 @@ prettifyInputs(document)
 // set the textbox as focused on start
 promptField.focus()
 promptField.selectionStart = promptField.value.length
+
+// use gfpgan as the default model for face restoration
+document.addEventListener("refreshModels", function() {
+    let gfpganIdx = gfpganModelField.inputModels.findIndex((e) => e.toLowerCase().startsWith("gfpgan"))
+    let gfpganElem = gfpganModelField.modelElements[gfpganIdx]
+    gfpganModelField.selectModelEntry(gfpganElem)
+})
