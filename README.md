@@ -23,6 +23,7 @@ Click the download button for your operating system:
 - Minimum 8 GB of system RAM.
 - Atleast 25 GB of space on the hard disk.
 
+
 The installer will take care of whatever is needed. If you face any problems, you can join the friendly [Discord community](https://discord.com/invite/u9yhsFmEkB) and ask for assistance.
 
 ## On Windows:
