@@ -87,7 +87,7 @@ let promptStrengthField = document.querySelector("#prompt_strength")
 let samplerField = document.querySelector("#sampler_name")
 let samplerSelectionContainer = document.querySelector("#samplerSelection")
 let useFaceCorrectionField = document.querySelector("#use_face_correction")
-let gfpganModelField = new ModelDropdown(document.querySelector("#gfpgan_model"), ["codeformer", "gfpgan"])
+let gfpganModelField = new ModelDropdown(document.querySelector("#gfpgan_model"), ["gfpgan", "codeformer"], "", false)
 let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
 let upscaleAmountField = document.querySelector("#upscale_amount")
@@ -2061,10 +2061,3 @@ prettifyInputs(document)
 // set the textbox as focused on start
 promptField.focus()
 promptField.selectionStart = promptField.value.length
-
-// use gfpgan as the default model for face restoration
-// document.addEventListener("refreshModels", function() {
-//     let gfpganIdx = gfpganModelField.inputModels.findIndex((e) => e.toLowerCase().startsWith("gfpgan"))
-//     let gfpganElem = gfpganModelField.modelElements[gfpganIdx]
-//     gfpganModelField.selectModelEntry(gfpganElem)
-// })
