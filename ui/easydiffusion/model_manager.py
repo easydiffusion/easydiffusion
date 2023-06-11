@@ -27,6 +27,7 @@ MODEL_EXTENSIONS = {
     "realesrgan": [".pth"],
     "lora": [".ckpt", ".safetensors"],
     "codeformer": [".pth"],
+    "embeddings": [".pt", ".bin"],
 }
 DEFAULT_MODELS = {
     "stable-diffusion": [
@@ -318,6 +319,7 @@ def getModels():
             "hypernetwork": [],
             "lora": [],
             "codeformer": ["codeformer"],
+            "embeddings": [],
         },
     }
 
@@ -374,6 +376,7 @@ def getModels():
     listModels(model_type="hypernetwork")
     listModels(model_type="gfpgan")
     listModels(model_type="lora")
+    listModels(model_type="embeddings")
 
     if models_scanned > 0:
         log.info(f"[green]Scanned {models_scanned} models. Nothing infected[/]")

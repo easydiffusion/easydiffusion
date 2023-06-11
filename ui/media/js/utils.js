@@ -923,3 +923,19 @@ function confirm(msg, title, fn) {
         },
     })
 }
+
+function insertAtCursor(field, text) {
+    if (field.selectionStart || field.selectionStart == "0") {
+        var startPos = field.selectionStart
+        var endPos = field.selectionEnd
+        var before = field.value.substring(0, startPos)
+        var after = field.value.substring(endPos, field.value.length)
+
+        if (!before.endsWith(" ")) { before += " " }
+        if (!after.startsWith(" ")) { after = " "+after }
+
+        field.value = before + text + after
+    } else {
+        field.value += text
+    }
+}

@@ -232,6 +232,12 @@
                             <input id="lora_alpha" name="lora_alpha" size="4" pattern="^-?[0-9]*\.?[0-9]*$" onkeypress="preventNonNumericalInput(event)"><br/>
                         </td>
                     </tr>
+                    <tr id="embedding_model_container" class="pl-5"><td><label for="embedding_model">Embedding:</label></td><td>
+                        <div id="first_embedding_model">
+                            <input id="embedding_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
+                            <span><i class="fa-solid fa-square-caret-up add-prompt help-btn"><span class="simple-tooltip top-left">Add keyword to prompt.<br>Shift-click for negative prompt.</span></i>&nbsp;<i class="fa-solid fa-square-plus add-new-input"></i></span>
+                        </div>
+                    </td></tr>
                     <tr class="pl-5"><td><label for="hypernetwork_model">Hypernetwork:</label></td><td>
                         <input id="hypernetwork_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
                     </td></tr>
@@ -537,6 +543,7 @@
 <script src="media/js/dnd.js"></script>
 <script src="media/js/image-editor.js"></script>
 <script src="media/js/image-modal.js"></script>
+<script src="media/js/embeddings.js"></script>
 <script>
 async function init() {
     await initSettings()
@@ -545,6 +552,7 @@ async function init() {
     await loadUIPlugins()
     await loadModifiers()
     await getSystemInfo()
+    await initEmbeddings()
 
     SD.init({
         events: {

@@ -1332,6 +1332,10 @@ body.wait-pause {
     margin-bottom: 3pt;
 }
 
+#embedding_model_container input {
+    width: 80%;
+}
+
 /* TOAST NOTIFICATIONS */
 .toast-notification {
     position: fixed;

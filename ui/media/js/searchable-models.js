@@ -350,6 +350,7 @@ class ModelDropdown {
 
     selectEntry(path) {
         if (path !== undefined) {
+            let found = false
             const entries = this.modelElements
 
             for (const elem of entries) {
@@ -357,8 +358,12 @@ class ModelDropdown {
                     this.saveCurrentSelection(elem, elem.innerText, elem.dataset.path)
                     this.highlightedModelEntry = elem
                     elem.scrollIntoView({ block: "nearest" })
+                    found = true
                     break
                 }
+            }
+            if (!found) {
+                showToast(`Model "${path}" not found. Is it installed?`)
             }
         }
 
