@@ -153,6 +153,10 @@ function permute(arr) {
     return permutations
 }
 
+function permuteNumber(arr) {
+    return Math.pow(2, arr.length)
+}
+
 // https://stackoverflow.com/a/8212878
 function millisecondsToStr(milliseconds) {
     function numberEnding(number) {
