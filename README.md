@@ -70,6 +70,7 @@ Just delete the `EasyDiffusion` folder to uninstall all the downloaded packages.
 - **Attention/Emphasis**: () in the prompt increases the model's attention to enclosed words, and [] decreases it.
 - **Weighted Prompts**: Use weights for specific words in your prompt to change their importance, e.g. `red:2.4 dragon:1.2`.
 - **Prompt Matrix**: Quickly create multiple variations of your prompt, e.g. `a photograph of an astronaut riding a horse | illustration | cinematic lighting`.
+- **Prompt Set**: Quickly create multiple variations of your prompt, e.g. `a photograph of an astronaut on the {moon,earth}`
 - **1-click Upscale/Face Correction**: Upscale or correct an image after it has been generated.
 - **Make Similar Images**: Click to generate multiple variations of a generated image.
 - **NSFW Setting**: A setting in the UI to control *NSFW content*.
