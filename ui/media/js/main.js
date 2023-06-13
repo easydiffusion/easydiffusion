@@ -1342,6 +1342,16 @@ function getPromptsNumber(prompts) {
         prompts = prompts.map((prompt) => prompt.trim())
         prompts = prompts.filter((prompt) => prompt !== "")
 
+        // estimate number of prompts
+        let estimatedNumberOfPrompts = 0
+        prompts.forEach((prompt) => {
+            estimatedNumberOfPrompts += (prompt.match(/{[^}]*}/g) || []).map((e) => e.match(/,/g).length + 1).reduce( (p,a) => p*a, 1) * (2**(prompt.match(/\|/g) || []).length) 
+        })
+
+        if (estimatedNumberOfPrompts >= 10000) {
+            return 10000
+        }
+
         promptsToMake = applySetOperator(prompts) // switched those around as Set grows in a linear fashion and permute in 2^n, and one has to be computed for the other to be calculated
         numberOfPrompts = applyPermuteOperatorNumber(promptsToMake)
     }
@@ -1613,9 +1623,15 @@ function renameMakeImageButton() {
         imageLabel = totalImages + " Images"
     }
     if (SD.activeTasks.size == 0) {
-        makeImageBtn.innerText = "Make " + imageLabel
+        if (totalImages >= 10000)
+            makeImageBtn.innerText = "Make tens of thousands of images"
+        else
+            makeImageBtn.innerText = "Make " + imageLabel
     } else {
-        makeImageBtn.innerText = "Enqueue Next " + imageLabel
+        if (totalImages >= 10000)
+            makeImageBtn.innerText = "Enqueue tens of thousands of images"
+        else
+            makeImageBtn.innerText = "Enqueue Next " + imageLabel
     }
 }
 numOutputsTotalField.addEventListener("change", renameMakeImageButton)
