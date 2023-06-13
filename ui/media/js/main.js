@@ -1230,6 +1230,7 @@ function getCurrentUserRequest() {
             sampler_name: samplerField.value,
             //render_device: undefined, // Set device affinity. Prefer this device, but wont activate.
             use_stable_diffusion_model: stableDiffusionModelField.value,
+            use_embeddings: embeddingsWidget.value,
             clip_skip: clipSkipField.checked,
             tiling: tilingField.value,
             use_vae_model: vaeModelField.value,

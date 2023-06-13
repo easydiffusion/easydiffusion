@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Set
 
 from pydantic import BaseModel
 
@@ -41,6 +41,7 @@ class TaskData(BaseModel):
     use_vae_model: str = None
     use_hypernetwork_model: str = None
     use_lora_model: str = None
+    use_embeddings: Set[str]
 
     show_only_filtered_image: bool = False
     block_nsfw: bool = False

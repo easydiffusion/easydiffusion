@@ -159,6 +159,23 @@ def reload_models_if_necessary(context: Context, task_data: TaskData):
     if set_vram_optimizations(context) or set_clip_skip(context, task_data):  # reload SD
         models_to_reload["stable-diffusion"] = model_paths_in_req["stable-diffusion"]
 
+    #--- Embeddings handling
+
+    # Does the request have embeddings?
+    if len(task_data.use_embeddings) != 0:
+        # Are the already loaded embeddings a subset of the new request's embeddings?
+        if set(context.model_paths.get("embeddings")).issubset(set(task_data.use_embeddings)):
+            # Load only the additional embeddings
+            models_to_reload["embeddings"] = set(task_data.use_embeddings) - set(context.model_paths.get("embeddings"))
+        else:
+            # We can't unload embeddings, so we need to reload the SD model
+            models_to_reload["stable-diffusion"] = model_paths_in_req["stable-diffusion"]
+            models_to_reload["embeddings"] = set(task_data.use_embeddings)
+    elif len(context.model_paths.get("embeddings")) != 0:
+        # Embeddings were loaded, but no embeddings are in this request.
+        models_to_reload["stable-diffusion"] = model_paths_in_req["stable-diffusion"]
+
+    #--- Load the models
     for model_type, model_path_in_req in models_to_reload.items():
         context.model_paths[model_type] = model_path_in_req
 
@@ -264,6 +281,16 @@ def set_clip_skip(context: Context, task_data: TaskData):
         return True
 
     return False
+
+def set_embeddings(context: Context, task_data: TaskData):
+    embeddings = task_data.use_embeddings
+
+    if set(embeddings).issubset(set(context.use_embeddings)):
+        context.use_embeddings = embeddings
+        return False
+
+    context.use_embeddings = embeddings
+    return True
 
 
 def make_model_folders():

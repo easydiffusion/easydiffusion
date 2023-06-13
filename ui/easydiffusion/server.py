@@ -228,6 +228,7 @@ def ping_internal(session_id: str = None):
 def render_internal(req: dict):
     try:
         # separate out the request data into rendering and task-specific data
+
         render_req: GenerateImageRequest = GenerateImageRequest.parse_obj(req)
         task_data: TaskData = TaskData.parse_obj(req)
 
