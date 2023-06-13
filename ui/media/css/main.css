@@ -1303,10 +1303,33 @@ body.wait-pause {
     display:none !important;
 }
 
-#latent_upscaler_settings {
+.sub-settings {
     padding-top: 3pt;
     padding-bottom: 3pt;
     padding-left: 5pt;
+}
+
+#cloudflare-address {
+    background-color: var(--background-color3);
+    padding: 6px;
+    border-radius: var(--input-border-radius);
+    border: var(--input-border-size) solid var(--input-border-color);
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
+    display: inline-block;
+}
+
+#copy-cloudflare-address {
+    padding: 4px 8px;
+    margin-left: 0.5em;
+}
+
+.expandedSettingRow {
+    background: var(--background-color1);
+    width: 95%;
+    border-radius: 4pt;
+    margin-top: 5pt;
+    margin-bottom: 3pt;
 }
 
 /* TOAST NOTIFICATIONS */
@@ -1322,7 +1345,7 @@ body.wait-pause {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     z-index: 9999;
     animation: slideInRight 0.5s ease forwards;
-    transition: bottom 0.5s ease; // Add a transition to smoothly reposition the toasts
+    transition: bottom 0.5s ease; /* Add a transition to smoothly reposition the toasts */
 }
 
 .toast-notification-error {

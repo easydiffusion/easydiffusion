@@ -39,6 +39,8 @@ if [ "$0" == "bash" ]; then
     export PYTHONPATH="$(pwd)/stable-diffusion/env/lib/python3.8/site-packages"
   fi
 
+  export PYTHONNOUSERSITE=y
+
   which python
   python --version
 

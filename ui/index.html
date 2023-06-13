@@ -30,7 +30,7 @@
             <h1>
                 <img id="logo_img" src="/media/images/icon-512x512.png" >
                 Easy Diffusion
-                <small>v2.5.39 <span id="updateBranchLabel"></span></small>
+                <small>v2.5.41 <span id="updateBranchLabel"></span></small>
             </h1>
         </div>
         <div id="server-status">
@@ -227,7 +227,10 @@
                     </td></tr>
                     <tr id="lora_alpha_container" class="pl-5">
                         <td><label for="lora_alpha_slider">LoRA Strength:</label></td>
-                        <td> <input id="lora_alpha_slider" name="lora_alpha_slider" class="editor-slider" value="50" type="range" min="0" max="100"> <input id="lora_alpha" name="lora_alpha" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"><br/></td>
+                        <td>
+                            <small>-2</small> <input id="lora_alpha_slider" name="lora_alpha_slider" class="editor-slider" value="50" type="range" min="-200" max="200"> <small>2</small> &nbsp;
+                            <input id="lora_alpha" name="lora_alpha" size="4" pattern="^-?[0-9]*\.?[0-9]*$" onkeypress="preventNonNumericalInput(event)"><br/>
+                        </td>
                     </tr>
                     <tr class="pl-5"><td><label for="hypernetwork_model">Hypernetwork:</label></td><td>
                         <input id="hypernetwork_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
@@ -263,7 +266,13 @@
                     <div><ul>
                     <li><b class="settings-subheader">Render Settings</b></li>
                     <li class="pl-5"><input id="stream_image_progress" name="stream_image_progress" type="checkbox"> <label for="stream_image_progress">Show a live preview <small>(uses more VRAM, slower images)</small></label></li>
-                    <li class="pl-5"><input id="use_face_correction" name="use_face_correction" type="checkbox"> <label for="use_face_correction">Fix incorrect faces and eyes</label> <div style="display:inline-block;"><input id="gfpgan_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" /></div></li>
+                    <li class="pl-5" id="use_face_correction_container">
+                        <input id="use_face_correction" name="use_face_correction" type="checkbox"> <label for="use_face_correction">Fix incorrect faces and eyes</label> <div style="display:inline-block;"><input id="gfpgan_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" /></div>
+                        <table id="codeformer_settings" class="displayNone sub-settings">
+                            <tr class="pl-5"><td><label for="codeformer_fidelity_slider">Strength:</label></td><td><input id="codeformer_fidelity_slider" name="codeformer_fidelity_slider" class="editor-slider" value="5" type="range" min="0" max="10"> <input id="codeformer_fidelity" name="codeformer_fidelity" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"></td></tr>
+                            <tr class="pl-5"><td><label for="codeformer_upscale_faces">Upscale Faces:</label></td><td><input id="codeformer_upscale_faces" name="codeformer_upscale_faces" type="checkbox" checked> <label><small>(improves the resolution of faces)</small></label></td></tr>
+                        </table>
+                    </li>
                     <li class="pl-5">
                         <input id="use_upscale" name="use_upscale" type="checkbox"> <label for="use_upscale">Scale up by</label> 
                         <select id="upscale_amount" name="upscale_amount">
@@ -276,9 +285,9 @@
                             <option value="RealESRGAN_x4plus_anime_6B">RealESRGAN_x4plus_anime_6B</option>
                             <option value="latent_upscaler">Latent Upscaler 2x</option>
                         </select>
-                        <div id="latent_upscaler_settings" class="displayNone">
-                            <label for="latent_upscaler_steps_slider">Upscaling Steps:</label></td><td> <input id="latent_upscaler_steps_slider" name="latent_upscaler_steps_slider" class="editor-slider" value="10" type="range" min="1" max="50"> <input id="latent_upscaler_steps" name="latent_upscaler_steps" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)">
-                        </div>
+                        <table id="latent_upscaler_settings" class="displayNone sub-settings">
+                            <tr class="pl-5"><td><label for="latent_upscaler_steps_slider">Upscaling Steps:</label></td><td><input id="latent_upscaler_steps_slider" name="latent_upscaler_steps_slider" class="editor-slider" value="10" type="range" min="1" max="50"> <input id="latent_upscaler_steps" name="latent_upscaler_steps" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"></td></tr>
+                        </table>
                     </li>
                     <li class="pl-5"><input id="show_only_filtered_image" name="show_only_filtered_image" type="checkbox" checked> <label for="show_only_filtered_image">Show only the corrected/upscaled image</label></li>
                     </ul></div>
@@ -356,9 +365,15 @@
         <div id="tab-content-settings" class="tab-content">
             <div id="system-settings" class="tab-content-inner">
                 <h1>System Settings</h1>
-                <div class="parameters-table"></div>
+                <div class="parameters-table" id="system-settings-table"></div>
                 <br/>
                 <button id="save-system-settings-btn" class="primaryButton">Save</button>
+                <br/><br/>
+                <div id="share-easy-diffusion">
+                   <h3><i class="fa fa-user-group"></i> Share Easy Diffusion</h3>
+                   <div class="parameters-table" id="system-settings-network-table">
+                   </div>
+                </div>
                 <br/><br/>
                 <div>
                     <h3><i class="fa fa-microchip icon"></i> System Info</h3>
@@ -534,7 +549,8 @@ async function init() {
     SD.init({
         events: {
             statusChange: setServerStatus,
-            idle: onIdle
+            idle: onIdle,
+            ping: tunnelUpdate
         }
     })
 

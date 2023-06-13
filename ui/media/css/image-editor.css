@@ -96,7 +96,7 @@
 
 .editor-controls-center {
 	/* background: var(--background-color2); */
-	flex: 1;
+	flex: 0;
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -105,6 +105,8 @@
 .editor-controls-center > div {
 	position: relative;
 	background: black;
+	margin: 20pt;
+	margin-top: 40pt;
 }
 
 .editor-controls-center canvas {
@@ -164,8 +166,10 @@
 	margin: var(--popup-margin);
 	padding: var(--popup-padding);
 	min-height: calc(99h - (2 * var(--popup-margin)));
-	max-width: none;
+	max-width: fit-content;
 	min-width: fit-content;
+	margin-left: auto;
+	margin-right: auto;
 }
 
 .image-editor-popup h1 {

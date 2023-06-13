@@ -87,13 +87,15 @@ let promptStrengthField = document.querySelector("#prompt_strength")
 let samplerField = document.querySelector("#sampler_name")
 let samplerSelectionContainer = document.querySelector("#samplerSelection")
 let useFaceCorrectionField = document.querySelector("#use_face_correction")
-let gfpganModelField = new ModelDropdown(document.querySelector("#gfpgan_model"), "gfpgan")
+let gfpganModelField = new ModelDropdown(document.querySelector("#gfpgan_model"), ["gfpgan", "codeformer"], "", false)
 let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
 let upscaleAmountField = document.querySelector("#upscale_amount")
 let latentUpscalerSettings = document.querySelector("#latent_upscaler_settings")
 let latentUpscalerStepsSlider = document.querySelector("#latent_upscaler_steps_slider")
 let latentUpscalerStepsField = document.querySelector("#latent_upscaler_steps")
+let codeformerFidelitySlider = document.querySelector("#codeformer_fidelity_slider")
+let codeformerFidelityField = document.querySelector("#codeformer_fidelity")
 let stableDiffusionModelField = new ModelDropdown(document.querySelector("#stable_diffusion_model"), "stable-diffusion")
 let clipSkipField = document.querySelector("#clip_skip")
 let tilingField = document.querySelector("#tiling")
@@ -270,7 +272,9 @@ function shiftOrConfirm(e, prompt, fn) {
         confirm(
             '<small>Tip: To skip this dialog, use shift-click or disable the "Confirm dangerous actions" setting in the Settings tab.</small>',
             prompt,
-            () => { fn(e) }
+            () => {
+                fn(e)
+            }
         )
     }
 }
@@ -1261,6 +1265,11 @@ function getCurrentUserRequest() {
     }
     if (useFaceCorrectionField.checked) {
         newTask.reqBody.use_face_correction = gfpganModelField.value
+
+        if (gfpganModelField.value.includes("codeformer")) {
+            newTask.reqBody.codeformer_upscale_faces = document.querySelector("#codeformer_upscale_faces").checked
+            newTask.reqBody.codeformer_fidelity = 1 - parseFloat(codeformerFidelityField.value)
+        }
     }
     if (useUpscalingField.checked) {
         newTask.reqBody.use_upscale = upscaleModelField.value
@@ -1574,24 +1583,43 @@ metadataOutputFormatField.disabled = !saveToDiskField.checked
 gfpganModelField.disabled = !useFaceCorrectionField.checked
 useFaceCorrectionField.addEventListener("change", function(e) {
     gfpganModelField.disabled = !this.checked
+
+    onFixFaceModelChange()
 })
+
+function onFixFaceModelChange() {
+    let codeformerSettings = document.querySelector("#codeformer_settings")
+    if (gfpganModelField.value === "codeformer" && !gfpganModelField.disabled) {
+        codeformerSettings.classList.remove("displayNone")
+        codeformerSettings.classList.add("expandedSettingRow")
+    } else {
+        codeformerSettings.classList.add("displayNone")
+        codeformerSettings.classList.remove("expandedSettingRow")
+    }
+}
+gfpganModelField.addEventListener("change", onFixFaceModelChange)
+onFixFaceModelChange()
 
 upscaleModelField.disabled = !useUpscalingField.checked
 upscaleAmountField.disabled = !useUpscalingField.checked
 useUpscalingField.addEventListener("change", function(e) {
     upscaleModelField.disabled = !this.checked
     upscaleAmountField.disabled = !this.checked
+
+    onUpscaleModelChange()
 })
 
 function onUpscaleModelChange() {
     let upscale4x = document.querySelector("#upscale_amount_4x")
-    if (upscaleModelField.value === "latent_upscaler") {
+    if (upscaleModelField.value === "latent_upscaler" && !upscaleModelField.disabled) {
         upscale4x.disabled = true
         upscaleAmountField.value = "2"
         latentUpscalerSettings.classList.remove("displayNone")
+        latentUpscalerSettings.classList.add("expandedSettingRow")
     } else {
         upscale4x.disabled = false
         latentUpscalerSettings.classList.add("displayNone")
+        latentUpscalerSettings.classList.remove("expandedSettingRow")
     }
 }
 upscaleModelField.addEventListener("change", onUpscaleModelChange)
@@ -1605,6 +1633,27 @@ document.onkeydown = function(e) {
         e.preventDefault()
     }
 }
+
+/********************* CodeFormer Fidelity **************************/
+function updateCodeformerFidelity() {
+    codeformerFidelityField.value = codeformerFidelitySlider.value / 10
+    codeformerFidelityField.dispatchEvent(new Event("change"))
+}
+
+function updateCodeformerFidelitySlider() {
+    if (codeformerFidelityField.value < 0) {
+        codeformerFidelityField.value = 0
+    } else if (codeformerFidelityField.value > 1) {
+        codeformerFidelityField.value = 1
+    }
+
+    codeformerFidelitySlider.value = codeformerFidelityField.value * 10
+    codeformerFidelitySlider.dispatchEvent(new Event("change"))
+}
+
+codeformerFidelitySlider.addEventListener("input", updateCodeformerFidelity)
+codeformerFidelityField.addEventListener("input", updateCodeformerFidelitySlider)
+updateCodeformerFidelity()
 
 /********************* Latent Upscaler Steps **************************/
 function updateLatentUpscalerSteps() {
@@ -1704,10 +1753,10 @@ function updateLoraAlpha() {
 }
 
 function updateLoraAlphaSlider() {
-    if (loraAlphaField.value < 0) {
-        loraAlphaField.value = 0
-    } else if (loraAlphaField.value > 1) {
-        loraAlphaField.value = 1
+    if (loraAlphaField.value < -2) {
+        loraAlphaField.value = -2
+    } else if (loraAlphaField.value > 2) {
+        loraAlphaField.value = 2
     }
 
     loraAlphaSlider.value = loraAlphaField.value * 100
@@ -1956,6 +2005,38 @@ resumeBtn.addEventListener("click", function() {
     pauseBtn.style.display = "inline"
     document.body.classList.remove("pause")
     document.body.classList.remove("wait-pause")
+})
+
+function tunnelUpdate(event) {
+    if ("cloudflare" in event) {
+        document.getElementById("cloudflare-off").classList.add("displayNone")
+        document.getElementById("cloudflare-on").classList.remove("displayNone")
+        cloudflareAddressField.innerHTML = event.cloudflare
+        document.getElementById("toggle-cloudflare-tunnel").innerHTML = "Stop"
+    } else {
+        document.getElementById("cloudflare-on").classList.add("displayNone")
+        document.getElementById("cloudflare-off").classList.remove("displayNone")
+        document.getElementById("toggle-cloudflare-tunnel").innerHTML = "Start"
+    }
+}
+
+document.getElementById("toggle-cloudflare-tunnel").addEventListener("click", async function() {
+    let command = "stop"
+    if (document.getElementById("toggle-cloudflare-tunnel").innerHTML == "Start") {
+        command = "start"
+    }
+    showToast(`Cloudflare tunnel ${command} initiated. Please wait.`)
+
+    let res = await fetch("/tunnel/cloudflare/" + command, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
+    })
+    res = await res.json()
+
+    console.log(`Cloudflare tunnel ${command} result:`, res)
 })
 
 /* Pause function */

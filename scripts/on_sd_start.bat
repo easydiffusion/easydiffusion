@@ -5,7 +5,6 @@
 
 @copy sd-ui-files\scripts\on_env_start.bat scripts\ /Y
 @copy sd-ui-files\scripts\check_modules.py scripts\ /Y
-@copy sd-ui-files\scripts\check_models.py scripts\ /Y
 @copy sd-ui-files\scripts\get_config.py scripts\ /Y
 
 if exist "%cd%\profile" (
@@ -77,13 +76,6 @@ call WHERE uvicorn > .tmp
 @>nul findstr /m "conda_sd_ui_deps_installed" ..\scripts\install_status.txt
 @if "%ERRORLEVEL%" NEQ "0" (
     @echo conda_sd_ui_deps_installed >> ..\scripts\install_status.txt
-)
-
-@rem Download the required models
-call python ..\scripts\check_models.py
-if "%ERRORLEVEL%" NEQ "0" (
-    pause
-    exit /b
 )
 
 @>nul findstr /m "sd_install_complete" ..\scripts\install_status.txt

@@ -38,6 +38,8 @@ class ModelDropdown {
     noneEntry //= ''
     modelFilterInitialized //= undefined
 
+    sorted //= true
+
     /* MIMIC A REGULAR INPUT FIELD */
     get parentElement() {
         return this.modelFilter.parentElement
@@ -83,21 +85,34 @@ class ModelDropdown {
 
     /* SEARCHABLE INPUT */
 
-    constructor(input, modelKey, noneEntry = "") {
+    constructor(input, modelKey, noneEntry = "", sorted = true) {
         this.modelFilter = input
         this.noneEntry = noneEntry
         this.modelKey = modelKey
+        this.sorted = sorted
 
         if (modelsOptions !== undefined) {
             // reuse models from cache (only useful for plugins, which are loaded after models)
-            this.inputModels = modelsOptions[this.modelKey]
+            this.inputModels = []
+            let modelKeys = Array.isArray(this.modelKey) ? this.modelKey : [this.modelKey]
+            for (let i = 0; i < modelKeys.length; i++) {
+                let key = modelKeys[i]
+                let k = Array.isArray(modelsOptions[key]) ? modelsOptions[key] : [modelsOptions[key]]
+                this.inputModels.push(...k)
+            }
             this.populateModels()
         }
         document.addEventListener(
             "refreshModels",
             this.bind(function(e) {
                 // reload the models
-                this.inputModels = modelsOptions[this.modelKey]
+                this.inputModels = []
+                let modelKeys = Array.isArray(this.modelKey) ? this.modelKey : [this.modelKey]
+                for (let i = 0; i < modelKeys.length; i++) {
+                    let key = modelKeys[i]
+                    let k = Array.isArray(modelsOptions[key]) ? modelsOptions[key] : [modelsOptions[key]]
+                    this.inputModels.push(...k)
+                }
                 this.populateModels()
             }, this)
         )
@@ -554,11 +569,15 @@ class ModelDropdown {
         })
 
         const childFolderNames = Array.from(foldersMap.keys())
-        this.sortStringArray(childFolderNames)
+        if (this.sorted) {
+            this.sortStringArray(childFolderNames)
+        }
         const folderElements = childFolderNames.map((name) => foldersMap.get(name))
 
         const modelNames = Array.from(modelsMap.keys())
-        this.sortStringArray(modelNames)
+        if (this.sorted) {
+            this.sortStringArray(modelNames)
+        }
         const modelElements = modelNames.map((name) => modelsMap.get(name))
 
         if (modelElements.length && folderName) {

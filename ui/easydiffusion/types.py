@@ -23,7 +23,7 @@ class GenerateImageRequest(BaseModel):
     sampler_name: str = None  # "ddim", "plms", "heun", "euler", "euler_a", "dpm2", "dpm2_a", "lms"
     hypernetwork_strength: float = 0
     lora_alpha: float = 0
-    tiling: str = "none" # "none", "x", "y", "xy"
+    tiling: str = "none"  # "none", "x", "y", "xy"
 
 
 class TaskData(BaseModel):
@@ -51,6 +51,8 @@ class TaskData(BaseModel):
     stream_image_progress: bool = False
     stream_image_progress_interval: int = 5
     clip_skip: bool = False
+    codeformer_upscale_faces: bool = False
+    codeformer_fidelity: float = 0.5
 
 
 class MergeRequest(BaseModel):
