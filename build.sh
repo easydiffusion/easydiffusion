@@ -2,7 +2,7 @@
 
 printf "Hi there, what you are running is meant for the developers of this project, not for users.\n\n"
 printf "If you only want to use the Stable Diffusion UI, you've downloaded the wrong file.\n"
-printf "Please download and follow the instructions at https://github.com/cmdr2/stable-diffusion-ui#installation\n\n"
+printf "Please download and follow the instructions at https://github.com/easydiffusion/easydiffusion#installation \n\n"
 printf "If you are actually a developer of this project, please type Y and press enter\n\n"
 
 read -p "Are you a developer of this project (Y/N) " yn

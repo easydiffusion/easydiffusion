@@ -38,7 +38,7 @@ else
     printf "\n\nDownloading Easy Diffusion..\n\n"
     printf "Using the $update_branch channel\n\n"
 
-    if git clone -b "$update_branch" https://github.com/cmdr2/stable-diffusion-ui.git sd-ui-files ; then
+    if git clone -b "$update_branch" https://github.com/easydiffusion/easydiffusion.git sd-ui-files ; then
         echo sd_ui_git_cloned >> scripts/install_status.txt
     else
         fail "git clone failed"

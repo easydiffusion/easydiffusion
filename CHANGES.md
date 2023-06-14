@@ -8,13 +8,13 @@
 - **Full support for Stable Diffusion 2.1 (including CPU)** - supports loading v1.4 or v2.0 or v2.1 models seamlessly. No need to enable "Test SD2", and no need to add `sd2_` to your SD 2.0 model file names. Works on CPU as well.
 - **Memory optimized Stable Diffusion 2.1** - you can now use Stable Diffusion 2.1 models, with the same low VRAM optimizations that we've always had for SD 1.4. Please note, the SD 2.0 and 2.1 models require more GPU and System RAM, as compared to the SD 1.4 and 1.5 models.
 - **11 new samplers!** - explore the new samplers, some of which can generate great images in less than 10 inference steps! We've added the Karras and UniPC samplers. Thanks @Schorny for the UniPC samplers.
-- **Model Merging** - You can now merge two models (`.ckpt` or `.safetensors`) and output `.ckpt` or `.safetensors` models, optionally in `fp16` precision. Details: https://github.com/cmdr2/stable-diffusion-ui/wiki/Model-Merging . Thanks @JeLuf.
+- **Model Merging** - You can now merge two models (`.ckpt` or `.safetensors`) and output `.ckpt` or `.safetensors` models, optionally in `fp16` precision. Details: https://github.com/easydiffusion/easydiffusion/wiki/Model-Merging . Thanks @JeLuf.
 - **Fast loading/unloading of VAEs** - No longer needs to reload the entire Stable Diffusion model, each time you change the VAE
 - **Database of known models** - automatically picks the right configuration for known models. E.g. we automatically detect and apply "v" parameterization (required for some SD 2.0 models), and "fp32" attention precision (required for some SD 2.1 models).
 - **Color correction for img2img** - an option to preserve the color profile (histogram) of the initial image. This is especially useful if you're getting red-tinted images after inpainting/masking.
 - **Three GPU Memory Usage Settings** - `High` (fastest, maximum VRAM usage), `Balanced` (default - almost as fast, significantly lower VRAM usage), `Low` (slowest, very low VRAM usage). The `Low` setting is applied automatically for GPUs with less than 4 GB of VRAM.
 - **Find models in sub-folders** - This allows you to organize your models into sub-folders inside `models/stable-diffusion`, instead of keeping them all in a single folder. Thanks @patriceac and @ogmaresca.
-- **Custom Modifier Categories** - Ability to create custom modifiers with thumbnails, and custom categories (and hierarchy of categories). Details: https://github.com/cmdr2/stable-diffusion-ui/wiki/Custom-Modifiers . Thanks @ogmaresca.
+- **Custom Modifier Categories** - Ability to create custom modifiers with thumbnails, and custom categories (and hierarchy of categories). Details: https://github.com/easydiffusion/easydiffusion/wiki/Custom-Modifiers . Thanks @ogmaresca.
 - **Embed metadata, or save as TXT/JSON** - You can now embed the metadata directly into the images, or save them as text or json files (choose in the Settings tab). Thanks @patriceac.
 - **Major rewrite of the code** - Most of the codebase has been reorganized and rewritten, to make it more manageable and easier for new developers to contribute features. We've separated our core engine into a new project called `sdkit`, which allows anyone to easily integrate Stable Diffusion (and related modules like GFPGAN etc) into their programming projects (via a simple `pip install sdkit`): https://github.com/easydiffusion/sdkit/
 - **Name change** - Last, and probably the least, the UI is now called "Easy Diffusion". It indicates the focus of this project - an easy way for people to play with Stable Diffusion.
@@ -67,7 +67,7 @@ Our focus continues to remain on an easy installation experience, and an easy us
 * 2.5.24 - 11 Mar 2023 - Button to load an image mask from a file.
 * 2.5.24 - 10 Mar 2023 - Logo change. Image credit: @lazlo_vii.
 * 2.5.23 - 8 Mar 2023 - Experimental support for Mac M1/M2. Thanks @michaelgallacher, @JeLuf and vishae!
-* 2.5.23 - 8 Mar 2023 - Ability to create custom modifiers with thumbnails, and custom categories (and hierarchy of categories). More details - https://github.com/cmdr2/stable-diffusion-ui/wiki/Custom-Modifiers . Thanks @ogmaresca.
+* 2.5.23 - 8 Mar 2023 - Ability to create custom modifiers with thumbnails, and custom categories (and hierarchy of categories). More details - https://github.com/easydiffusion/easydiffusion/wiki/Custom-Modifiers . Thanks @ogmaresca.
 * 2.5.22 - 28 Feb 2023 - Minor styling changes to UI buttons, and the models dropdown.
 * 2.5.22 - 28 Feb 2023 - Lots of UI-related bug fixes. Thanks @patriceac.
 * 2.5.21 - 22 Feb 2023 - An option to control the size of the image thumbnails. You can use the `Display options` in the top-right corner to change this. Thanks @JeLuf.
@@ -92,7 +92,7 @@ Our focus continues to remain on an easy installation experience, and an easy us
 * 2.5.14 - 3 Feb 2023 - Fix the 'Make Similar Images' button, which was producing incorrect images (weren't very similar).
 * 2.5.13 - 1 Feb 2023 - Fix the remaining GPU memory leaks, including a better fix (more comprehensive) for the change in 2.5.12 (27 Jan).
 * 2.5.12 - 27 Jan 2023 - Fix a memory leak, which made the UI unresponsive after an out-of-memory error. The allocated memory is now freed-up after an error.
-* 2.5.11 - 25 Jan 2023 - UI for Merging Models. Thanks @JeLuf. More info: https://github.com/cmdr2/stable-diffusion-ui/wiki/Model-Merging
+* 2.5.11 - 25 Jan 2023 - UI for Merging Models. Thanks @JeLuf. More info: https://github.com/easydiffusion/easydiffusion/wiki/Model-Merging
 * 2.5.10 - 24 Jan 2023 - Reduce the VRAM usage for img2img in 'balanced' mode (without reducing the rendering speed), to make it similar to v2.4 of this UI.
 * 2.5.9 - 23 Jan 2023 - Fix a bug where img2img would produce poorer-quality images for the same settings, as compared to version 2.4 of this UI.
 * 2.5.9 - 23 Jan 2023 - Reduce the VRAM usage for 'balanced' mode (without reducing the rendering speed), to make it similar to v2.4 of the UI.
@@ -121,8 +121,8 @@ Our focus continues to remain on an easy installation experience, and an easy us
 - **Automatic scanning for malicious model files** - using `picklescan`, and support for `safetensor` model format. Thanks @JeLuf
 - **Image Editor** - for drawing simple images for guiding the AI. Thanks @mdiller
 - **Use pre-trained hypernetworks** - for improving the quality of images. Thanks @C0bra5
-- **Support for custom VAE models**. You can place your VAE files in the `models/vae` folder, and refresh the browser page to use them. More info: https://github.com/cmdr2/stable-diffusion-ui/wiki/VAE-Variational-Auto-Encoder
-- **Experimental support for multiple GPUs!** It should work automatically. Just open one browser tab per GPU, and spread your tasks across your GPUs. For e.g. open our UI in two browser tabs if you have two GPUs. You can customize which GPUs it should use in the "Settings" tab, otherwise let it automatically pick the best GPUs. Thanks @madrang . More info: https://github.com/cmdr2/stable-diffusion-ui/wiki/Run-on-Multiple-GPUs
+- **Support for custom VAE models**. You can place your VAE files in the `models/vae` folder, and refresh the browser page to use them. More info: https://github.com/easydiffusion/easydiffusion/wiki/VAE-Variational-Auto-Encoder
+- **Experimental support for multiple GPUs!** It should work automatically. Just open one browser tab per GPU, and spread your tasks across your GPUs. For e.g. open our UI in two browser tabs if you have two GPUs. You can customize which GPUs it should use in the "Settings" tab, otherwise let it automatically pick the best GPUs. Thanks @madrang . More info: https://github.com/easydiffusion/easydiffusion/wiki/Run-on-Multiple-GPUs
 - **Cleaner UI design** - Show settings and help in new tabs, instead of dropdown popups (which were buggy). Thanks @mdiller
 - **Progress bar.** Thanks @mdiller
 - **Custom Image Modifiers** - You can now save your custom image modifiers! Your saved modifiers can include special characters like `{}, (), [], |`

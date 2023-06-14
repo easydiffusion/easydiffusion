@@ -3,7 +3,7 @@
 
 Does not require technical knowledge, does not require pre-installed software. 1-click install, powerful features, friendly community.
 
-[Installation guide](#installation) | [Troubleshooting guide](https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting) | <sub>[![Discord Server](https://img.shields.io/discord/1014774730907209781?label=Discord)](https://discord.com/invite/u9yhsFmEkB)</sub> <sup>(for support queries, and development discussions)</sup>
+[Installation guide](#installation) | [Troubleshooting guide](https://github.com/easydiffusion/easydiffusion/wiki/Troubleshooting) | <sub>[![Discord Server](https://img.shields.io/discord/1014774730907209781?label=Discord)](https://discord.com/invite/u9yhsFmEkB)</sub> <sup>(for support queries, and development discussions)</sup>
 
 ![t2i](https://raw.githubusercontent.com/Stability-AI/stablediffusion/main/assets/stable-samples/txt2img/768/merged-0006.png)
 
@@ -11,9 +11,9 @@ Does not require technical knowledge, does not require pre-installed software. 1
 Click the download button for your operating system:
 
 <p float="left">
-  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.24/Easy-Diffusion-Windows.exe"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-win.png" width="200" /></a>
-  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.24/Easy-Diffusion-Linux.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-linux.png" width="200" /></a>
-  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.24/Easy-Diffusion-Mac.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-mac.png" width="200" /></a>
+  <a href="https://github.com/easydiffusion/easydiffusion/releases/download/v2.5.24/Easy-Diffusion-Windows.exe"><img src="https://github.com/easydiffusion/easydiffusion/raw/main/media/download-win.png" width="200" /></a>
+  <a href="https://github.com/easydiffusion/easydiffusion/releases/download/v2.5.24/Easy-Diffusion-Linux.zip"><img src="https://github.com/easydiffusion/easydiffusion/raw/main/media/download-linux.png" width="200" /></a>
+  <a href="https://github.com/easydiffusion/easydiffusion/releases/download/v2.5.24/Easy-Diffusion-Mac.zip"><img src="https://github.com/easydiffusion/easydiffusion/raw/main/media/download-mac.png" width="200" /></a>
 </p>
 
 **Hardware requirements:**
@@ -83,7 +83,7 @@ Just delete the `EasyDiffusion` folder to uninstall all the downloaded packages.
 - **Use custom VAE models**
 - **Use pre-trained Hypernetworks**
 - **Use custom GFPGAN models**
-- **UI Plugins**: Choose from a growing list of [community-generated UI plugins](https://github.com/cmdr2/stable-diffusion-ui/wiki/UI-Plugins), or write your own plugin to add features to the project!
+- **UI Plugins**: Choose from a growing list of [community-generated UI plugins](https://github.com/easydiffusion/easydiffusion/wiki/UI-Plugins), or write your own plugin to add features to the project!
 
 ### Performance and security
 - **Fast**: Creates a 512x512 image with euler_a in 5 seconds, on an NVIDIA 3060 12GB.
@@ -119,10 +119,10 @@ Useful for judging (and stopping) an image quickly, without waiting for it to fi
 ----
 
 # How to use?
-Please refer to our [guide](https://github.com/cmdr2/stable-diffusion-ui/wiki/How-to-Use) to understand how to use the features in this UI.
+Please refer to our [guide](https://github.com/easydiffusion/easydiffusion/wiki/How-to-Use) to understand how to use the features in this UI.
 
 # Bugs reports and code contributions welcome
-If there are any problems or suggestions, please feel free to ask on the [discord server](https://discord.com/invite/u9yhsFmEkB) or [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues).
+If there are any problems or suggestions, please feel free to ask on the [discord server](https://discord.com/invite/u9yhsFmEkB) or [file an issue](https://github.com/easydiffusion/easydiffusion/issues).
 
 We could really use help on these aspects (click to view tasks that need your help):
 * [User Interface](https://github.com/users/cmdr2/projects/1/views/1)
