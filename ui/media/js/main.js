@@ -1416,7 +1416,7 @@ function applyPermuteOperatorNumber(prompts) { // prompts is array of input, tri
         promptMatrix = promptMatrix.filter((p) => p !== "")
 
         if (promptMatrix.length > 0) {
-            promptCounter *= permutePromptsNumber(promptMatrix)
+            promptCounter *= permuteNumber(promptMatrix)
         }
         numberOfPrompts += promptCounter
     })
@@ -1443,10 +1443,6 @@ function permutePrompts(promptBase, promptMatrix) {
     })
 
     return prompts
-}
-
-function permutePromptsNumber(promptMatrix) { // this should calculate how many different prompts can be made with the prompt matrix
-    return permuteNumber(promptMatrix)
 }
 
 // create a file name with embedded prompt and metadata
@@ -1624,12 +1620,12 @@ function renameMakeImageButton() {
     }
     if (SD.activeTasks.size == 0) {
         if (totalImages >= 10000)
-            makeImageBtn.innerText = "Make tens of thousands of images"
+            makeImageBtn.innerText = "Make 10000+ images"
         else
             makeImageBtn.innerText = "Make " + imageLabel
     } else {
         if (totalImages >= 10000)
-            makeImageBtn.innerText = "Enqueue tens of thousands of images"
+            makeImageBtn.innerText = "Enqueue 10000+ images"
         else
             makeImageBtn.innerText = "Enqueue Next " + imageLabel
     }
