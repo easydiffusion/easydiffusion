@@ -649,6 +649,7 @@ async function getSystemInfo() {
 }
 
 saveSettingsBtn.addEventListener("click", function() {
+    console.log("listenPortField.value", listenPortField.value)
     if (listenPortField.value == "") {
         alert("The network port field must not be empty.")
         return
@@ -664,7 +665,8 @@ saveSettingsBtn.addEventListener("click", function() {
         update_branch: updateBranch,
     }
 
-    Array.from(parametersTable.children).forEach((parameterRow) => {
+    //Array.from(parametersTable.children).forEach((parameterRow) => {
+    document.querySelectorAll('#system-settings [data-setting-id]').forEach((parameterRow) => {
         if (parameterRow.dataset.saveInAppConfig === "true") {
             const parameterElement =
                 document.getElementById(parameterRow.dataset.settingId) ||
