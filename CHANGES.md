@@ -22,6 +22,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.41 - 19 Jun 2023 - Another fix for multi-gpu rendering (in all VRAM usage modes).
 * 2.5.41 - 13 Jun 2023 - Fix multi-gpu bug with "low" VRAM usage mode while generating images.
 * 2.5.41 - 12 Jun 2023 - Fix multi-gpu bug with CodeFormer.
 * 2.5.41 - 6 Jun 2023 - Allow changing the strength of CodeFormer, and slightly improved styling of the CodeFormer options.
