@@ -22,6 +22,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.41 - 20 Jun 2023 - Automatically fix black images if fp32 attention precision is required in diffusers.
 * 2.5.41 - 19 Jun 2023 - Another fix for multi-gpu rendering (in all VRAM usage modes).
 * 2.5.41 - 13 Jun 2023 - Fix multi-gpu bug with "low" VRAM usage mode while generating images.
 * 2.5.41 - 12 Jun 2023 - Fix multi-gpu bug with CodeFormer.
