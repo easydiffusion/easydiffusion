@@ -2,6 +2,8 @@
 
 echo "Opening Stable Diffusion UI - Developer Console.." & echo.
 
+cd %cd%
+
 set PATH=C:\Windows\System32;%PATH%
 
 @rem set legacy and new installer's PATH, if they exist
