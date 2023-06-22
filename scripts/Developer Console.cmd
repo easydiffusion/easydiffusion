@@ -22,6 +22,8 @@ call where conda
 call conda --version
 
 echo.
+echo COMSPEC=%COMSPEC%
+echo.
 
 @rem activate the legacy environment (if present) and set PYTHONPATH
 if exist "installer_files\env" (
