@@ -22,6 +22,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.41 - 24 Jun 2023 - (beta-only) Fix a recent regression where the LoRA would not get applied when changing SD models.
 * 2.5.41 - 23 Jun 2023 - Fix a regression where latent upscaler stopped working on PCs without a graphics card.
 * 2.5.41 - 20 Jun 2023 - Automatically fix black images if fp32 attention precision is required in diffusers.
 * 2.5.41 - 19 Jun 2023 - Another fix for multi-gpu rendering (in all VRAM usage modes).
