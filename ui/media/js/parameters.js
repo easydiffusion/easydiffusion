@@ -649,7 +649,6 @@ async function getSystemInfo() {
 }
 
 saveSettingsBtn.addEventListener("click", function() {
-    console.log("listenPortField.value", listenPortField.value)
     if (listenPortField.value == "") {
         alert("The network port field must not be empty.")
         return
