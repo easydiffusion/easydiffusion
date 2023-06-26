@@ -106,7 +106,6 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
     config_yaml_path = os.path.join(CONFIG_DIR, "config.yaml")
     if os.path.isfile(config_yaml_path):
         try:
-            log.info("Loading config.yaml")
             with open(config_yaml_path, "r", encoding="utf-8") as f:
                 config = yaml.load(f)
             if "net" not in config:
@@ -114,7 +113,7 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
                 if os.getenv("SD_UI_BIND_PORT") is not None:
                     config["net"]["listen_port"] = int(os.getenv("SD_UI_BIND_PORT"))
                 else:
-                    config['net']['listen_port'] = 9000
+                    config["net"]["listen_port"] = 9000
                 if os.getenv("SD_UI_BIND_IP") is not None:
                     config["net"]["listen_to_network"] = os.getenv("SD_UI_BIND_IP") == "0.0.0.0"
                 else:
@@ -143,10 +142,10 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
 
 
 def setConfig(config):
-    try: # config.yaml
-        config_yaml_path = os.path.join(CONFIG_DIR, 'config.yaml')
+    try:  # config.yaml
+        config_yaml_path = os.path.join(CONFIG_DIR, "config.yaml")
         yaml.indent(mapping=2, sequence=4, offset=2)
-        with open(config_yaml_path, 'w', encoding='utf-8') as f:
+        with open(config_yaml_path, "w", encoding="utf-8") as f:
             yaml.dump(config, f)
     except:
         log.error(traceback.format_exc())
