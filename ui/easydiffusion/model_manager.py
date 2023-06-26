@@ -1,10 +1,14 @@
 import os
+import shutil
+from glob import glob
+import traceback
 
 from easydiffusion import app
 from easydiffusion.types import TaskData
 from easydiffusion.utils import log
 from sdkit import Context
-from sdkit.models import load_model, scan_model, unload_model
+from sdkit.models import load_model, scan_model, unload_model, download_model, get_model_info_from_db
+from sdkit.utils import hash_file_quick
 
 KNOWN_MODEL_TYPES = [
     "stable-diffusion",
@@ -13,6 +17,7 @@ KNOWN_MODEL_TYPES = [
     "gfpgan",
     "realesrgan",
     "lora",
+    "codeformer",
 ]
 MODEL_EXTENSIONS = {
     "stable-diffusion": [".ckpt", ".safetensors"],
@@ -21,14 +26,22 @@ MODEL_EXTENSIONS = {
     "gfpgan": [".pth"],
     "realesrgan": [".pth"],
     "lora": [".ckpt", ".safetensors"],
+    "codeformer": [".pth"],
 }
 DEFAULT_MODELS = {
-    "stable-diffusion": [  # needed to support the legacy installations
-        "custom-model",  # only one custom model file was supported initially, creatively named 'custom-model'
-        "sd-v1-4",  # Default fallback.
+    "stable-diffusion": [
+        {"file_name": "sd-v1-4.ckpt", "model_id": "1.4"},
     ],
-    "gfpgan": ["GFPGANv1.3"],
-    "realesrgan": ["RealESRGAN_x4plus"],
+    "gfpgan": [
+        {"file_name": "GFPGANv1.4.pth", "model_id": "1.4"},
+    ],
+    "realesrgan": [
+        {"file_name": "RealESRGAN_x4plus.pth", "model_id": "x4plus"},
+        {"file_name": "RealESRGAN_x4plus_anime_6B.pth", "model_id": "x4plus_anime_6"},
+    ],
+    "vae": [
+        {"file_name": "vae-ft-mse-840000-ema-pruned.ckpt", "model_id": "vae-ft-mse-840000-ema-pruned"},
+    ],
 }
 MODELS_TO_LOAD_ON_START = ["stable-diffusion", "vae", "hypernetwork", "lora"]
 
@@ -37,6 +50,8 @@ known_models = {}
 
 def init():
     make_model_folders()
+    migrate_legacy_model_location()  # if necessary
+    download_default_models_if_necessary()
     getModels()  # run this once, to cache the picklescan results
 
 
@@ -45,7 +60,7 @@ def load_default_models(context: Context):
 
     # init default model paths
     for model_type in MODELS_TO_LOAD_ON_START:
-        context.model_paths[model_type] = resolve_model_to_use(model_type=model_type)
+        context.model_paths[model_type] = resolve_model_to_use(model_type=model_type, fail_if_not_found=False)
         try:
             load_model(
                 context,
@@ -53,23 +68,34 @@ def load_default_models(context: Context):
                 scan_model=context.model_paths[model_type] != None
                 and not context.model_paths[model_type].endswith(".safetensors"),
             )
+            if model_type in context.model_load_errors:
+                del context.model_load_errors[model_type]
         except Exception as e:
             log.error(f"[red]Error while loading {model_type} model: {context.model_paths[model_type]}[/red]")
-            log.exception(e)
+            if "DefaultCPUAllocator: not enough memory" in str(e):
+                log.error(
+                    f"[red]Your PC is low on system RAM. Please add some virtual memory (or swap space) by following the instructions at this link: https://www.ibm.com/docs/en/opw/8.2.0?topic=tuning-optional-increasing-paging-file-size-windows-computers[/red]"
+                )
+            else:
+                log.exception(e)
             del context.model_paths[model_type]
+
+            context.model_load_errors[model_type] = str(e)  # storing the entire Exception can lead to memory leaks
 
 
 def unload_all(context: Context):
     for model_type in KNOWN_MODEL_TYPES:
         unload_model(context, model_type)
+        if model_type in context.model_load_errors:
+            del context.model_load_errors[model_type]
 
 
-def resolve_model_to_use(model_name: str = None, model_type: str = None):
+def resolve_model_to_use(model_name: str = None, model_type: str = None, fail_if_not_found: bool = True):
     model_extensions = MODEL_EXTENSIONS.get(model_type, [])
     default_models = DEFAULT_MODELS.get(model_type, [])
     config = app.getConfig()
 
-    model_dirs = [os.path.join(app.MODELS_DIR, model_type), app.SD_DIR]
+    model_dir = os.path.join(app.MODELS_DIR, model_type)
     if not model_name:  # When None try user configured model.
         # config = getConfig()
         if "model" in config and model_type in config["model"]:
@@ -77,42 +103,42 @@ def resolve_model_to_use(model_name: str = None, model_type: str = None):
 
     if model_name:
         # Check models directory
-        models_dir_path = os.path.join(app.MODELS_DIR, model_type, model_name)
+        model_path = os.path.join(model_dir, model_name)
+        if os.path.exists(model_path):
+            return model_path
         for model_extension in model_extensions:
-            if os.path.exists(models_dir_path + model_extension):
-                return models_dir_path + model_extension
+            if os.path.exists(model_path + model_extension):
+                return model_path + model_extension
             if os.path.exists(model_name + model_extension):
                 return os.path.abspath(model_name + model_extension)
 
-    # Default locations
-    if model_name in default_models:
-        default_model_path = os.path.join(app.SD_DIR, model_name)
-        for model_extension in model_extensions:
-            if os.path.exists(default_model_path + model_extension):
-                return default_model_path + model_extension
-
     # Can't find requested model, check the default paths.
-    for default_model in default_models:
-        for model_dir in model_dirs:
-            default_model_path = os.path.join(model_dir, default_model)
-            for model_extension in model_extensions:
-                if os.path.exists(default_model_path + model_extension):
-                    if model_name is not None:
-                        log.warn(
-                            f"Could not find the configured custom model {model_name}{model_extension}. Using the default one: {default_model_path}{model_extension}"
-                        )
-                    return default_model_path + model_extension
+    if model_type == "stable-diffusion" and not fail_if_not_found:
+        for default_model in default_models:
+            default_model_path = os.path.join(model_dir, default_model["file_name"])
+            if os.path.exists(default_model_path):
+                if model_name is not None:
+                    log.warn(
+                        f"Could not find the configured custom model {model_name}. Using the default one: {default_model_path}"
+                    )
+                return default_model_path
 
-    return None
+    if model_name and fail_if_not_found:
+        raise Exception(f"Could not find the desired model {model_name}! Is it present in the {model_dir} folder?")
 
 
 def reload_models_if_necessary(context: Context, task_data: TaskData):
+    face_fix_lower = task_data.use_face_correction.lower() if task_data.use_face_correction else ""
+    upscale_lower = task_data.use_upscale.lower() if task_data.use_upscale else ""
+
     model_paths_in_req = {
         "stable-diffusion": task_data.use_stable_diffusion_model,
         "vae": task_data.use_vae_model,
         "hypernetwork": task_data.use_hypernetwork_model,
-        "gfpgan": task_data.use_face_correction,
-        "realesrgan": task_data.use_upscale,
+        "codeformer": task_data.use_face_correction if "codeformer" in face_fix_lower else None,
+        "gfpgan": task_data.use_face_correction if "gfpgan" in face_fix_lower else None,
+        "realesrgan": task_data.use_upscale if "realesrgan" in upscale_lower else None,
+        "latent_upscaler": True if "latent_upscaler" in upscale_lower else None,
         "nsfw_checker": True if task_data.block_nsfw else None,
         "lora": task_data.use_lora_model,
     }
@@ -122,14 +148,28 @@ def reload_models_if_necessary(context: Context, task_data: TaskData):
         if context.model_paths.get(model_type) != path
     }
 
-    if set_vram_optimizations(context):  # reload SD
+    if task_data.codeformer_upscale_faces:
+        if "realesrgan" not in models_to_reload and "realesrgan" not in context.models:
+            default_realesrgan = DEFAULT_MODELS["realesrgan"][0]["file_name"]
+            models_to_reload["realesrgan"] = resolve_model_to_use(default_realesrgan, "realesrgan")
+        elif "realesrgan" in models_to_reload and models_to_reload["realesrgan"] is None:
+            del models_to_reload["realesrgan"]  # don't unload realesrgan
+
+    if set_vram_optimizations(context) or set_clip_skip(context, task_data):  # reload SD
         models_to_reload["stable-diffusion"] = model_paths_in_req["stable-diffusion"]
 
     for model_type, model_path_in_req in models_to_reload.items():
         context.model_paths[model_type] = model_path_in_req
 
         action_fn = unload_model if context.model_paths[model_type] is None else load_model
-        action_fn(context, model_type, scan_model=False)  # we've scanned them already
+        try:
+            action_fn(context, model_type, scan_model=False)  # we've scanned them already
+            if model_type in context.model_load_errors:
+                del context.model_load_errors[model_type]
+        except Exception as e:
+            log.exception(e)
+            if action_fn == load_model:
+                context.model_load_errors[model_type] = str(e)  # storing the entire Exception can lead to memory leaks
 
 
 def resolve_model_paths(task_data: TaskData):
@@ -141,9 +181,47 @@ def resolve_model_paths(task_data: TaskData):
     task_data.use_lora_model = resolve_model_to_use(task_data.use_lora_model, model_type="lora")
 
     if task_data.use_face_correction:
-        task_data.use_face_correction = resolve_model_to_use(task_data.use_face_correction, "gfpgan")
-    if task_data.use_upscale:
+        if "gfpgan" in task_data.use_face_correction.lower():
+            model_type = "gfpgan"
+        elif "codeformer" in task_data.use_face_correction.lower():
+            model_type = "codeformer"
+            download_if_necessary("codeformer", "codeformer.pth", "codeformer-0.1.0")
+
+        task_data.use_face_correction = resolve_model_to_use(task_data.use_face_correction, model_type)
+    if task_data.use_upscale and "realesrgan" in task_data.use_upscale.lower():
         task_data.use_upscale = resolve_model_to_use(task_data.use_upscale, "realesrgan")
+
+
+def fail_if_models_did_not_load(context: Context):
+    for model_type in KNOWN_MODEL_TYPES:
+        if model_type in context.model_load_errors:
+            e = context.model_load_errors[model_type]
+            raise Exception(f"Could not load the {model_type} model! Reason: " + e)
+
+
+def download_default_models_if_necessary():
+    for model_type, models in DEFAULT_MODELS.items():
+        for model in models:
+            try:
+                download_if_necessary(model_type, model["file_name"], model["model_id"])
+            except:
+                traceback.print_exc()
+                app.fail_and_die(fail_type="model_download", data=model_type)
+
+        print(model_type, "model(s) found.")
+
+
+def download_if_necessary(model_type: str, file_name: str, model_id: str):
+    model_path = os.path.join(app.MODELS_DIR, model_type, file_name)
+    expected_hash = get_model_info_from_db(model_type=model_type, model_id=model_id)["quick_hash"]
+
+    other_models_exist = any_model_exists(model_type)
+    known_model_exists = os.path.exists(model_path)
+    known_model_is_corrupt = known_model_exists and hash_file_quick(model_path) != expected_hash
+
+    if known_model_is_corrupt or (not other_models_exist and not known_model_exists):
+        print("> download", model_type, model_id)
+        download_model(model_type, model_id, download_base_dir=app.MODELS_DIR)
 
 
 def set_vram_optimizations(context: Context):
@@ -152,6 +230,36 @@ def set_vram_optimizations(context: Context):
 
     if vram_usage_level != context.vram_usage_level:
         context.vram_usage_level = vram_usage_level
+        return True
+
+    return False
+
+
+def migrate_legacy_model_location():
+    'Move the models inside the legacy "stable-diffusion" folder, to their respective folders'
+
+    for model_type, models in DEFAULT_MODELS.items():
+        for model in models:
+            file_name = model["file_name"]
+            legacy_path = os.path.join(app.SD_DIR, file_name)
+            if os.path.exists(legacy_path):
+                shutil.move(legacy_path, os.path.join(app.MODELS_DIR, model_type, file_name))
+
+
+def any_model_exists(model_type: str) -> bool:
+    extensions = MODEL_EXTENSIONS.get(model_type, [])
+    for ext in extensions:
+        if any(glob(f"{app.MODELS_DIR}/{model_type}/**/*{ext}", recursive=True)):
+            return True
+
+    return False
+
+
+def set_clip_skip(context: Context, task_data: TaskData):
+    clip_skip = task_data.clip_skip
+
+    if clip_skip != context.clip_skip:
+        context.clip_skip = clip_skip
         return True
 
     return False
@@ -204,17 +312,12 @@ def is_malicious_model(file_path):
 
 def getModels():
     models = {
-        "active": {
-            "stable-diffusion": "sd-v1-4",
-            "vae": "",
-            "hypernetwork": "",
-            "lora": "",
-        },
         "options": {
             "stable-diffusion": ["sd-v1-4"],
             "vae": [],
             "hypernetwork": [],
             "lora": [],
+            "codeformer": ["codeformer"],
         },
     }
 
@@ -274,10 +377,5 @@ def getModels():
 
     if models_scanned > 0:
         log.info(f"[green]Scanned {models_scanned} models. Nothing infected[/]")
-
-    # legacy
-    custom_weight_path = os.path.join(app.SD_DIR, "custom-model.ckpt")
-    if os.path.exists(custom_weight_path):
-        models["options"]["stable-diffusion"].append("custom-model")
 
     return models

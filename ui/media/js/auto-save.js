@@ -13,6 +13,7 @@ const SETTINGS_IDS_LIST = [
     "num_outputs_total",
     "num_outputs_parallel",
     "stable_diffusion_model",
+    "clip_skip",
     "vae_model",
     "hypernetwork_model",
     "lora_model",
@@ -24,6 +25,7 @@ const SETTINGS_IDS_LIST = [
     "prompt_strength",
     "hypernetwork_strength",
     "lora_alpha",
+    "tiling",
     "output_format",
     "output_quality",
     "output_lossless",
@@ -33,6 +35,7 @@ const SETTINGS_IDS_LIST = [
     "gfpgan_model",
     "use_upscale",
     "upscale_amount",
+    "latent_upscaler_steps",
     "block_nsfw",
     "show_only_filtered_image",
     "upscale_model",
@@ -168,6 +171,22 @@ function loadSettings() {
             }
         })
         CURRENTLY_LOADING_SETTINGS = false
+    } else if (localStorage.length < 2) {
+        // localStorage is too short for OldSettings
+        // So this is likely the first time Easy Diffusion is running.
+        // Initialize vram_usage_level based on the available VRAM
+        function initGPUProfile(event) {
+            if (    "detail" in event 
+                && "active" in event.detail
+                && "cuda:0" in event.detail.active
+                && event.detail.active["cuda:0"].mem_total <4.5 )
+            {
+               vramUsageLevelField.value = "low"
+               vramUsageLevelField.dispatchEvent(new Event("change"))
+            }
+            document.removeEventListener("system_info_update", initGPUProfile)
+        }
+        document.addEventListener("system_info_update", initGPUProfile)
     } else {
         CURRENTLY_LOADING_SETTINGS = true
         tryLoadOldSettings()

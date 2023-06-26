@@ -12,6 +12,12 @@ var ParameterType = {
 }
 
 /**
+ * Element shortcuts
+ */
+let parametersTable = document.querySelector("#system-settings-table")
+let networkParametersTable = document.querySelector("#system-settings-network-table")
+
+/**
  * JSDoc style
  * @typedef {object} Parameter
  * @property {string} id
@@ -181,22 +187,25 @@ var PARAMETERS = [
     {
         id: "listen_to_network",
         type: ParameterType.checkbox,
-        label: "Make Stable Diffusion available on your network. Please restart the program after changing this.",
-        note: "Other devices on your network can access this web page",
+        label: "Make Stable Diffusion available on your network",
+        note: "Other devices on your network can access this web page. Please restart the program after changing this.",
         icon: "fa-network-wired",
         default: true,
         saveInAppConfig: true,
+        table: networkParametersTable,
     },
     {
         id: "listen_port",
         type: ParameterType.custom,
         label: "Network port",
-        note: "Port that this server listens to. The '9000' part in 'http://localhost:9000'. Please restart the program after changing this.",
+        note:
+            "Port that this server listens to. The '9000' part in 'http://localhost:9000'. Please restart the program after changing this.",
         icon: "fa-anchor",
         render: (parameter) => {
             return `<input id="${parameter.id}" name="${parameter.id}" size="6" value="9000" onkeypress="preventNonNumericalInput(event)">`
         },
         saveInAppConfig: true,
+        table: networkParametersTable,
     },
     {
         id: "use_beta_channel",
@@ -217,6 +226,21 @@ var PARAMETERS = [
         default: false,
         saveInAppConfig: true,
     },
+    {
+        id: "cloudflare",
+        type: ParameterType.custom,
+        label: "Cloudflare tunnel",
+        note: `<span id="cloudflare-off">Create a VPN tunnel to share your Easy Diffusion instance with your friends. This will
+               generate a web server address on the public Internet for your Easy Diffusion instance. </span>
+               <div id="cloudflare-on" class="displayNone"><div>This Easy Diffusion server is available on the Internet using the
+               address:</div><div><div id="cloudflare-address"></div><button id="copy-cloudflare-address">Copy</button></div></div>
+               <b>Anyone knowing this address can access your server.</b> The address of your server will change each time
+               you share a session.<br>
+               Uses <a href="https://try.cloudflare.com/" target="_blank">Cloudflare services</a>.`,
+        icon: ["fa-brands", "fa-cloudflare"],
+        render: () => '<button id="toggle-cloudflare-tunnel" class="primaryButton">Start</button>',
+        table: networkParametersTable,
+    }
 ]
 
 function getParameterSettingsEntry(id) {
@@ -265,7 +289,6 @@ function getParameterElement(parameter) {
     }
 }
 
-let parametersTable = document.querySelector("#system-settings .parameters-table")
 /**
  * fill in the system settings popup table
  * @param {Array<Parameter> | undefined} parameters
@@ -292,7 +315,10 @@ function initParameters(parameters) {
             noteElements.push(noteElement)
         }
 
-        const icon = parameter.icon ? [createElement("i", undefined, ["fa", parameter.icon])] : []
+        if (typeof(parameter.icon) == "string") {
+            parameter.icon = [parameter.icon]
+        }
+        const icon = parameter.icon ? [createElement("i", undefined, ["fa", ...parameter.icon])] : []
 
         const label = typeof parameter.label === "function" ? parameter.label(parameter) : parameter.label
         const labelElement = createElement("label", { for: parameter.id })
@@ -312,7 +338,13 @@ function initParameters(parameters) {
                 elementWrapper,
             ]
         )
-        parametersTable.appendChild(newrow)
+
+        let p = parametersTable
+        if (parameter.table) {
+            p = parameter.table
+        } 
+        p.appendChild(newrow)
+
         parameter.settingsEntry = newrow
     })
 }
@@ -388,15 +420,27 @@ async function getAppConfig() {
         if (config.net && config.net.listen_port !== undefined) {
             listenPortField.value = config.net.listen_port
         }
-        if (config.test_diffusers === undefined || config.update_branch === "main") {
-            testDiffusers.checked = false
+
+        const testDiffusersEnabled = config.test_diffusers && config.update_branch !== "main"
+        testDiffusers.checked = testDiffusersEnabled
+
+        if (!testDiffusersEnabled) {
             document.querySelector("#lora_model_container").style.display = "none"
             document.querySelector("#lora_alpha_container").style.display = "none"
+            document.querySelector("#tiling_container").style.display = "none"
+
+            document.querySelectorAll("#sampler_name option.diffusers-only").forEach((option) => {
+                option.style.display = "none"
+            })
         } else {
-            testDiffusers.checked = config.test_diffusers && config.update_branch !== "main"
-            document.querySelector("#lora_model_container").style.display = testDiffusers.checked ? "" : "none"
-            document.querySelector("#lora_alpha_container").style.display =
-                testDiffusers.checked && loraModelField.value !== "" ? "" : "none"
+            document.querySelector("#lora_model_container").style.display = ""
+            document.querySelector("#lora_alpha_container").style.display = loraModelField.value ? "" : "none"
+            document.querySelector("#tiling_container").style.display = ""
+
+            document.querySelectorAll("#sampler_name option.k_diffusion-only").forEach((option) => {
+                option.disabled = true
+            })
+            document.querySelector("#clip_skip_config").classList.remove("displayNone")
         }
 
         console.log("get config status response", config)
@@ -558,6 +602,16 @@ async function getSystemInfo() {
         if (allDeviceIds.length === 0) {
             useCPUField.checked = true
             useCPUField.disabled = true // no compatible GPUs, so make the CPU mandatory
+
+            getParameterSettingsEntry("use_cpu").addEventListener("click", function() {
+                alert(
+                    "Sorry, we could not find a compatible graphics card! Easy Diffusion supports graphics cards with minimum 2 GB of RAM. " +
+                        "Only NVIDIA cards are supported on Windows. NVIDIA and AMD cards are supported on Linux.<br/><br/>" +
+                        "If you have a compatible graphics card, please try updating to the latest drivers.<br/><br/>" +
+                        "Only the CPU can be used for generating images, without a compatible graphics card.",
+                    "No compatible graphics card found!"
+                )
+            })
         }
 
         autoPickGPUsField.checked = devices["config"] === "auto"
@@ -576,7 +630,7 @@ async function getSystemInfo() {
             $("#use_gpus").val(activeDeviceIds)
         }
 
-        setDeviceInfo(devices)
+        document.dispatchEvent(new CustomEvent("system_info_update", { detail: devices }))
         setHostInfo(res["hosts"])
         let force = false
         if (res["enforce_output_dir"] !== undefined) {
@@ -610,7 +664,7 @@ saveSettingsBtn.addEventListener("click", function() {
         update_branch: updateBranch,
     }
 
-    Array.from(parametersTable.children).forEach((parameterRow) => {
+    document.querySelectorAll('#system-settings [data-setting-id]').forEach((parameterRow) => {
         if (parameterRow.dataset.saveInAppConfig === "true") {
             const parameterElement =
                 document.getElementById(parameterRow.dataset.settingId) ||
@@ -644,6 +698,25 @@ saveSettingsBtn.addEventListener("click", function() {
     })
 
     const savePromise = changeAppConfig(updateAppConfigRequest)
+    showToast("Settings saved")
     saveSettingsBtn.classList.add("active")
     Promise.all([savePromise, asyncDelay(300)]).then(() => saveSettingsBtn.classList.remove("active"))
 })
+
+listenToNetworkField.addEventListener("change", debounce( ()=>{
+    saveSettingsBtn.click()
+}, 1000))
+
+listenPortField.addEventListener("change", debounce( ()=>{
+    saveSettingsBtn.click()
+}, 1000))
+
+let copyCloudflareAddressBtn = document.querySelector("#copy-cloudflare-address")
+let cloudflareAddressField = document.getElementById("cloudflare-address")
+
+copyCloudflareAddressBtn.addEventListener("click", (e) => {
+    navigator.clipboard.writeText(cloudflareAddressField.innerHTML)
+    showToast("Copied server address to clipboard")
+})
+
+document.addEventListener("system_info_update", (e) => setDeviceInfo(e.detail))

@@ -13,6 +13,16 @@ const taskConfigSetup = {
         num_inference_steps: "Inference Steps",
         guidance_scale: "Guidance Scale",
         use_stable_diffusion_model: "Model",
+        clip_skip: {
+            label: "Clip Skip",
+            visible: ({ reqBody }) => reqBody?.clip_skip,
+            value: ({ reqBody }) => "yes",
+        },
+        tiling: {
+            label: "Tiling",
+            visible: ({ reqBody }) => reqBody?.tiling != "none",
+            value: ({ reqBody }) => reqBody?.tiling,
+        },
         use_vae_model: {
             label: "VAE",
             visible: ({ reqBody }) => reqBody?.use_vae_model !== undefined && reqBody?.use_vae_model.trim() !== "",
@@ -77,11 +87,18 @@ let promptStrengthField = document.querySelector("#prompt_strength")
 let samplerField = document.querySelector("#sampler_name")
 let samplerSelectionContainer = document.querySelector("#samplerSelection")
 let useFaceCorrectionField = document.querySelector("#use_face_correction")
-let gfpganModelField = new ModelDropdown(document.querySelector("#gfpgan_model"), "gfpgan")
+let gfpganModelField = new ModelDropdown(document.querySelector("#gfpgan_model"), ["gfpgan", "codeformer"], "", false)
 let useUpscalingField = document.querySelector("#use_upscale")
 let upscaleModelField = document.querySelector("#upscale_model")
 let upscaleAmountField = document.querySelector("#upscale_amount")
+let latentUpscalerSettings = document.querySelector("#latent_upscaler_settings")
+let latentUpscalerStepsSlider = document.querySelector("#latent_upscaler_steps_slider")
+let latentUpscalerStepsField = document.querySelector("#latent_upscaler_steps")
+let codeformerFidelitySlider = document.querySelector("#codeformer_fidelity_slider")
+let codeformerFidelityField = document.querySelector("#codeformer_fidelity")
 let stableDiffusionModelField = new ModelDropdown(document.querySelector("#stable_diffusion_model"), "stable-diffusion")
+let clipSkipField = document.querySelector("#clip_skip")
+let tilingField = document.querySelector("#tiling")
 let vaeModelField = new ModelDropdown(document.querySelector("#vae_model"), "vae", "None")
 let hypernetworkModelField = new ModelDropdown(document.querySelector("#hypernetwork_model"), "hypernetwork", "None")
 let hypernetworkStrengthSlider = document.querySelector("#hypernetwork_strength_slider")
@@ -112,6 +129,7 @@ let initImageClearBtn = document.querySelector(".init_image_clear")
 let promptStrengthContainer = document.querySelector("#prompt_strength_container")
 
 let initialText = document.querySelector("#initial-text")
+let versionText = document.querySelector("#version")
 let previewTools = document.querySelector("#preview-tools")
 let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
 let showDownloadPopupBtn = document.querySelector("#show-download-popup")
@@ -121,6 +139,7 @@ let saveAllZipToggle = document.querySelector("#zip_toggle")
 let saveAllTreeToggle = document.querySelector("#tree_toggle")
 let saveAllJSONToggle = document.querySelector("#json_toggle")
 let saveAllFoldersOption = document.querySelector("#download-add-folders")
+let splashScreenPopup = document.querySelector("#splash-screen")
 
 let maskSetting = document.querySelector("#enable_mask")
 
@@ -233,7 +252,7 @@ function setServerStatus(event) {
             break
     }
     if (SD.serverState.devices) {
-        setDeviceInfo(SD.serverState.devices)
+        document.dispatchEvent(new CustomEvent("system_info_update", { detail: SD.serverState.devices }))
     }
 }
 
@@ -252,20 +271,13 @@ function shiftOrConfirm(e, prompt, fn) {
     if (e.shiftKey || !confirmDangerousActionsField.checked) {
         fn(e)
     } else {
-        $.confirm({
-            theme: "modern",
-            title: prompt,
-            useBootstrap: false,
-            animateFromElement: false,
-            content:
-                '<small>Tip: To skip this dialog, use shift-click or disable the "Confirm dangerous actions" setting in the Settings tab.</small>',
-            buttons: {
-                yes: () => {
-                    fn(e)
-                },
-                cancel: () => {},
-            },
-        })
+        confirm(
+            '<small>Tip: To skip this dialog, use shift-click or disable the "Confirm dangerous actions" setting in the Settings tab.</small>',
+            prompt,
+            () => {
+                fn(e)
+            }
+        )
     }
 }
 
@@ -287,6 +299,7 @@ function logError(msg, res, outputMsg) {
     logMsg(msg, "error", outputMsg)
 
     console.log("request error", res)
+    console.trace()
     setStatus("request", "error", "error")
 }
 
@@ -778,11 +791,6 @@ function getTaskUpdater(task, reqBody, outputContainer) {
                         }
                         msg += "</pre>"
                         logError(msg, event, outputMsg)
-                    } else {
-                        let msg = `Unexpected Read Error:<br/><pre>Error:${
-                            this.exception
-                        }<br/>EventInfo: ${JSON.stringify(event, undefined, 4)}</pre>`
-                        logError(msg, event, outputMsg)
                     }
                     break
             }
@@ -879,15 +887,15 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
                             1. If you have set an initial image, please try reducing its dimension to ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION} or smaller.<br/>
                             2. Try picking a lower level in the '<em>GPU Memory Usage</em>' setting (in the '<em>Settings</em>' tab).<br/>
                             3. Try generating a smaller image.<br/>`
-                } else if (msg.toLowerCase().includes("DefaultCPUAllocator: not enough memory")) {
+                } else if (msg.includes("DefaultCPUAllocator: not enough memory")) {
                     msg += `<br/><br/>
                             Reason: Your computer is running out of system RAM!
-                            <br/>
+                            <br/><br/>
                             <b>Suggestions</b>:
                             <br/>
                             1. Try closing unnecessary programs and browser tabs.<br/>
                             2. If that doesn't help, please increase your computer's virtual memory by following these steps for
-                             <a href="https://www.ibm.com/docs/en/opw/8.2.0?topic=tuning-optional-increasing-paging-file-size-windows-computers" target="_blank">Windows</a>, or
+                             <a href="https://www.ibm.com/docs/en/opw/8.2.0?topic=tuning-optional-increasing-paging-file-size-windows-computers" target="_blank">Windows</a> or
                              <a href="https://linuxhint.com/increase-swap-space-linux/" target="_blank">Linux</a>.<br/>
                             3. Try restarting your computer.<br/>`
                 }
@@ -1224,6 +1232,8 @@ function getCurrentUserRequest() {
             sampler_name: samplerField.value,
             //render_device: undefined, // Set device affinity. Prefer this device, but wont activate.
             use_stable_diffusion_model: stableDiffusionModelField.value,
+            clip_skip: clipSkipField.checked,
+            tiling: tilingField.value,
             use_vae_model: vaeModelField.value,
             stream_progress_updates: true,
             stream_image_progress: numOutputsTotal > 50 ? false : streamImageProgressField.checked,
@@ -1257,10 +1267,19 @@ function getCurrentUserRequest() {
     }
     if (useFaceCorrectionField.checked) {
         newTask.reqBody.use_face_correction = gfpganModelField.value
+
+        if (gfpganModelField.value.includes("codeformer")) {
+            newTask.reqBody.codeformer_upscale_faces = document.querySelector("#codeformer_upscale_faces").checked
+            newTask.reqBody.codeformer_fidelity = 1 - parseFloat(codeformerFidelityField.value)
+        }
     }
     if (useUpscalingField.checked) {
         newTask.reqBody.use_upscale = upscaleModelField.value
         newTask.reqBody.upscale_amount = upscaleAmountField.value
+        if (upscaleModelField.value === "latent_upscaler") {
+            newTask.reqBody.upscale_amount = "2"
+            newTask.reqBody.latent_upscaler_steps = latentUpscalerStepsField.value
+        }
     }
     if (hypernetworkModelField.value) {
         newTask.reqBody.use_hypernetwork_model = hypernetworkModelField.value
@@ -1310,6 +1329,53 @@ function getPrompts(prompts) {
     return promptsToMake
 }
 
+function getPromptsNumber(prompts) {
+    if (typeof prompts === "undefined") {
+        prompts = promptField.value
+    }
+    if (prompts.trim() === "" && activeTags.length === 0) {
+        return [""]
+    }
+
+    let promptsToMake = []
+    let numberOfPrompts = 0
+    if (prompts.trim() !== "") { // this needs to stay sort of the same, as the prompts have to be passed through to the other functions
+        prompts = prompts.split("\n")
+        prompts = prompts.map((prompt) => prompt.trim())
+        prompts = prompts.filter((prompt) => prompt !== "")
+
+        // estimate number of prompts
+        let estimatedNumberOfPrompts = 0
+        prompts.forEach((prompt) => {
+            estimatedNumberOfPrompts += (prompt.match(/{[^}]*}/g) || []).map((e) => e.match(/,/g).length + 1).reduce( (p,a) => p*a, 1) * (2**(prompt.match(/\|/g) || []).length) 
+        })
+
+        if (estimatedNumberOfPrompts >= 10000) {
+            return 10000
+        }
+
+        promptsToMake = applySetOperator(prompts) // switched those around as Set grows in a linear fashion and permute in 2^n, and one has to be computed for the other to be calculated
+        numberOfPrompts = applyPermuteOperatorNumber(promptsToMake)
+    }
+    const newTags = activeTags.filter((tag) => tag.inactive === undefined || tag.inactive === false)
+    if (newTags.length > 0) {
+        const promptTags = newTags.map((x) => x.name).join(", ")
+        if (numberOfPrompts > 0) {
+            // promptsToMake = promptsToMake.map((prompt) => `${prompt}, ${promptTags}`)
+            // nothing changes, as all prompts just get modified
+        } else {
+            // promptsToMake.push(promptTags)
+            numberOfPrompts = 1
+        }
+    }
+
+    // Why is this applied twice? It does not do anything here, as everything should have already been done earlier
+    // promptsToMake = applyPermuteOperator(promptsToMake)
+    // promptsToMake = applySetOperator(promptsToMake)
+
+    return numberOfPrompts
+}
+
 function applySetOperator(prompts) {
     let promptsToMake = []
     let braceExpander = new BraceExpander()
@@ -1321,7 +1387,7 @@ function applySetOperator(prompts) {
     return promptsToMake
 }
 
-function applyPermuteOperator(prompts) {
+function applyPermuteOperator(prompts) { // prompts is array of input, trimmed, filtered and split by \n
     let promptsToMake = []
     prompts.forEach((prompt) => {
         let promptMatrix = prompt.split("|")
@@ -1338,6 +1404,26 @@ function applyPermuteOperator(prompts) {
     })
 
     return promptsToMake
+}
+
+// returns how many prompts would have to be made with the given prompts
+function applyPermuteOperatorNumber(prompts) { // prompts is array of input, trimmed, filtered and split by \n
+    let numberOfPrompts = 0
+    prompts.forEach((prompt) => {
+        let promptCounter = 1
+        let promptMatrix = prompt.split("|")
+        promptMatrix.shift()
+        
+        promptMatrix = promptMatrix.map((p) => p.trim())
+        promptMatrix = promptMatrix.filter((p) => p !== "")
+
+        if (promptMatrix.length > 0) {
+            promptCounter *= permuteNumber(promptMatrix)
+        }
+        numberOfPrompts += promptCounter
+    })
+
+    return numberOfPrompts
 }
 
 function permutePrompts(promptBase, promptMatrix) {
@@ -1529,15 +1615,21 @@ heightField.addEventListener("change", onDimensionChange)
 
 function renameMakeImageButton() {
     let totalImages =
-        Math.max(parseInt(numOutputsTotalField.value), parseInt(numOutputsParallelField.value)) * getPrompts().length
+        Math.max(parseInt(numOutputsTotalField.value), parseInt(numOutputsParallelField.value)) * getPromptsNumber()
     let imageLabel = "Image"
     if (totalImages > 1) {
         imageLabel = totalImages + " Images"
     }
     if (SD.activeTasks.size == 0) {
-        makeImageBtn.innerText = "Make " + imageLabel
+        if (totalImages >= 10000)
+            makeImageBtn.innerText = "Make 10000+ images"
+        else
+            makeImageBtn.innerText = "Make " + imageLabel
     } else {
-        makeImageBtn.innerText = "Enqueue Next " + imageLabel
+        if (totalImages >= 10000)
+            makeImageBtn.innerText = "Enqueue 10000+ images"
+        else
+            makeImageBtn.innerText = "Enqueue Next " + imageLabel
     }
 }
 numOutputsTotalField.addEventListener("change", renameMakeImageButton)
@@ -1566,14 +1658,47 @@ metadataOutputFormatField.disabled = !saveToDiskField.checked
 gfpganModelField.disabled = !useFaceCorrectionField.checked
 useFaceCorrectionField.addEventListener("change", function(e) {
     gfpganModelField.disabled = !this.checked
+
+    onFixFaceModelChange()
 })
+
+function onFixFaceModelChange() {
+    let codeformerSettings = document.querySelector("#codeformer_settings")
+    if (gfpganModelField.value === "codeformer" && !gfpganModelField.disabled) {
+        codeformerSettings.classList.remove("displayNone")
+        codeformerSettings.classList.add("expandedSettingRow")
+    } else {
+        codeformerSettings.classList.add("displayNone")
+        codeformerSettings.classList.remove("expandedSettingRow")
+    }
+}
+gfpganModelField.addEventListener("change", onFixFaceModelChange)
+onFixFaceModelChange()
 
 upscaleModelField.disabled = !useUpscalingField.checked
 upscaleAmountField.disabled = !useUpscalingField.checked
 useUpscalingField.addEventListener("change", function(e) {
     upscaleModelField.disabled = !this.checked
     upscaleAmountField.disabled = !this.checked
+
+    onUpscaleModelChange()
 })
+
+function onUpscaleModelChange() {
+    let upscale4x = document.querySelector("#upscale_amount_4x")
+    if (upscaleModelField.value === "latent_upscaler" && !upscaleModelField.disabled) {
+        upscale4x.disabled = true
+        upscaleAmountField.value = "2"
+        latentUpscalerSettings.classList.remove("displayNone")
+        latentUpscalerSettings.classList.add("expandedSettingRow")
+    } else {
+        upscale4x.disabled = false
+        latentUpscalerSettings.classList.add("displayNone")
+        latentUpscalerSettings.classList.remove("expandedSettingRow")
+    }
+}
+upscaleModelField.addEventListener("change", onUpscaleModelChange)
+onUpscaleModelChange()
 
 makeImageBtn.addEventListener("click", makeImage)
 
@@ -1583,6 +1708,48 @@ document.onkeydown = function(e) {
         e.preventDefault()
     }
 }
+
+/********************* CodeFormer Fidelity **************************/
+function updateCodeformerFidelity() {
+    codeformerFidelityField.value = codeformerFidelitySlider.value / 10
+    codeformerFidelityField.dispatchEvent(new Event("change"))
+}
+
+function updateCodeformerFidelitySlider() {
+    if (codeformerFidelityField.value < 0) {
+        codeformerFidelityField.value = 0
+    } else if (codeformerFidelityField.value > 1) {
+        codeformerFidelityField.value = 1
+    }
+
+    codeformerFidelitySlider.value = codeformerFidelityField.value * 10
+    codeformerFidelitySlider.dispatchEvent(new Event("change"))
+}
+
+codeformerFidelitySlider.addEventListener("input", updateCodeformerFidelity)
+codeformerFidelityField.addEventListener("input", updateCodeformerFidelitySlider)
+updateCodeformerFidelity()
+
+/********************* Latent Upscaler Steps **************************/
+function updateLatentUpscalerSteps() {
+    latentUpscalerStepsField.value = latentUpscalerStepsSlider.value
+    latentUpscalerStepsField.dispatchEvent(new Event("change"))
+}
+
+function updateLatentUpscalerStepsSlider() {
+    if (latentUpscalerStepsField.value < 1) {
+        latentUpscalerStepsField.value = 1
+    } else if (latentUpscalerStepsField.value > 50) {
+        latentUpscalerStepsField.value = 50
+    }
+
+    latentUpscalerStepsSlider.value = latentUpscalerStepsField.value
+    latentUpscalerStepsSlider.dispatchEvent(new Event("change"))
+}
+
+latentUpscalerStepsSlider.addEventListener("input", updateLatentUpscalerSteps)
+latentUpscalerStepsField.addEventListener("input", updateLatentUpscalerStepsSlider)
+updateLatentUpscalerSteps()
 
 /********************* Guidance **************************/
 function updateGuidanceScale() {
@@ -1661,10 +1828,10 @@ function updateLoraAlpha() {
 }
 
 function updateLoraAlphaSlider() {
-    if (loraAlphaField.value < 0) {
-        loraAlphaField.value = 0
-    } else if (loraAlphaField.value > 1) {
-        loraAlphaField.value = 1
+    if (loraAlphaField.value < -2) {
+        loraAlphaField.value = -2
+    } else if (loraAlphaField.value > 2) {
+        loraAlphaField.value = 2
     }
 
     loraAlphaSlider.value = loraAlphaField.value * 100
@@ -1898,6 +2065,21 @@ function resumeClient() {
     })
 }
 
+
+function splashScreen(force = false) {
+    const splashVersion = splashScreenPopup.dataset['version']
+    const lastSplash = localStorage.getItem("lastSplashScreenVersion") || 0
+    if (testDiffusers.checked) {
+        if (force || lastSplash < splashVersion) {
+            splashScreenPopup.classList.add("active")
+            localStorage.setItem("lastSplashScreenVersion", splashVersion)
+        }
+    }
+}
+
+
+document.getElementById("logo_img").addEventListener("click", (e) => { splashScreen(true) })
+
 promptField.addEventListener("input", debounce(renameMakeImageButton, 1000))
 
 pauseBtn.addEventListener("click", function() {
@@ -1913,6 +2095,38 @@ resumeBtn.addEventListener("click", function() {
     pauseBtn.style.display = "inline"
     document.body.classList.remove("pause")
     document.body.classList.remove("wait-pause")
+})
+
+function tunnelUpdate(event) {
+    if ("cloudflare" in event) {
+        document.getElementById("cloudflare-off").classList.add("displayNone")
+        document.getElementById("cloudflare-on").classList.remove("displayNone")
+        cloudflareAddressField.innerHTML = event.cloudflare
+        document.getElementById("toggle-cloudflare-tunnel").innerHTML = "Stop"
+    } else {
+        document.getElementById("cloudflare-on").classList.add("displayNone")
+        document.getElementById("cloudflare-off").classList.remove("displayNone")
+        document.getElementById("toggle-cloudflare-tunnel").innerHTML = "Start"
+    }
+}
+
+document.getElementById("toggle-cloudflare-tunnel").addEventListener("click", async function() {
+    let command = "stop"
+    if (document.getElementById("toggle-cloudflare-tunnel").innerHTML == "Start") {
+        command = "start"
+    }
+    showToast(`Cloudflare tunnel ${command} initiated. Please wait.`)
+
+    let res = await fetch("/tunnel/cloudflare/" + command, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
+    })
+    res = await res.json()
+
+    console.log(`Cloudflare tunnel ${command} result:`, res)
 })
 
 /* Pause function */

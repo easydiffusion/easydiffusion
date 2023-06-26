@@ -1,6 +1,6 @@
 Congrats on downloading Stable Diffusion UI, version 2!
 
-If you haven't downloaded Stable Diffusion UI yet, please download from https://github.com/cmdr2/stable-diffusion-ui#installation
+If you haven't downloaded Stable Diffusion UI yet, please download from https://github.com/easydiffusion/easydiffusion#installation
 
 After downloading, to install please follow these instructions:
 
@@ -16,9 +16,9 @@ To start the UI in the future, please run the same command mentioned above.
 
 
 If you have any problems, please:
-1. Try the troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting
+1. Try the troubleshooting steps at https://github.com/easydiffusion/easydiffusion/wiki/Troubleshooting
 2. Or, seek help from the community at https://discord.com/invite/u9yhsFmEkB
-3. Or, file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues
+3. Or, file an issue at https://github.com/easydiffusion/easydiffusion/issues
 
 Thanks
 cmdr2 (and contributors to the project)

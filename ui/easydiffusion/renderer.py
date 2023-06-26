@@ -7,10 +7,12 @@ from easydiffusion import device_manager
 from easydiffusion.types import GenerateImageRequest
 from easydiffusion.types import Image as ResponseImage
 from easydiffusion.types import Response, TaskData, UserInitiatedStop
+from easydiffusion.model_manager import DEFAULT_MODELS, resolve_model_to_use
 from easydiffusion.utils import get_printable_request, log, save_images_to_disk
 from sdkit import Context
 from sdkit.filter import apply_filters
 from sdkit.generate import generate_images
+from sdkit.models import load_model
 from sdkit.utils import (
     diffusers_latent_samples_to_images,
     gc,
@@ -33,6 +35,8 @@ def init(device):
     context.stop_processing = False
     context.temp_images = {}
     context.partial_x_samples = None
+    context.model_load_errors = {}
+    context.enable_codeformer = True
 
     from easydiffusion import app
 
@@ -72,7 +76,7 @@ def make_images(
 
 
 def print_task_info(req: GenerateImageRequest, task_data: TaskData):
-    req_str = pprint.pformat(get_printable_request(req)).replace("[", "\[")
+    req_str = pprint.pformat(get_printable_request(req, task_data)).replace("[", "\[")
     task_str = pprint.pformat(task_data.dict()).replace("[", "\[")
     log.info(f"request: {req_str}")
     log.info(f"task data: {task_str}")
@@ -95,7 +99,7 @@ def make_images_internal(
         task_data.stream_image_progress_interval,
     )
     gc(context)
-    filtered_images = filter_images(task_data, images, user_stopped)
+    filtered_images = filter_images(req, task_data, images, user_stopped)
 
     if task_data.save_to_disk_path is not None:
         save_images_to_disk(images, filtered_images, req, task_data)
@@ -151,22 +155,55 @@ def generate_images_internal(
     return images, user_stopped
 
 
-def filter_images(task_data: TaskData, images: list, user_stopped):
+def filter_images(req: GenerateImageRequest, task_data: TaskData, images: list, user_stopped):
     if user_stopped:
         return images
 
-    filters_to_apply = []
     if task_data.block_nsfw:
-        filters_to_apply.append("nsfw_checker")
-    if task_data.use_face_correction and "gfpgan" in task_data.use_face_correction.lower():
-        filters_to_apply.append("gfpgan")
-    if task_data.use_upscale and "realesrgan" in task_data.use_upscale.lower():
-        filters_to_apply.append("realesrgan")
+        images = apply_filters(context, "nsfw_checker", images)
 
-    if len(filters_to_apply) == 0:
-        return images
+    if task_data.use_face_correction and "codeformer" in task_data.use_face_correction.lower():
+        default_realesrgan = DEFAULT_MODELS["realesrgan"][0]["file_name"]
+        prev_realesrgan_path = None
+        if task_data.codeformer_upscale_faces and default_realesrgan not in context.model_paths["realesrgan"]:
+            prev_realesrgan_path = context.model_paths["realesrgan"]
+            context.model_paths["realesrgan"] = resolve_model_to_use(default_realesrgan, "realesrgan")
+            load_model(context, "realesrgan")
 
-    return apply_filters(context, filters_to_apply, images, scale=task_data.upscale_amount)
+        try:
+            images = apply_filters(
+                context,
+                "codeformer",
+                images,
+                upscale_faces=task_data.codeformer_upscale_faces,
+                codeformer_fidelity=task_data.codeformer_fidelity,
+            )
+        finally:
+            if prev_realesrgan_path:
+                context.model_paths["realesrgan"] = prev_realesrgan_path
+                load_model(context, "realesrgan")
+    elif task_data.use_face_correction and "gfpgan" in task_data.use_face_correction.lower():
+        images = apply_filters(context, "gfpgan", images)
+
+    if task_data.use_upscale:
+        if "realesrgan" in task_data.use_upscale.lower():
+            images = apply_filters(context, "realesrgan", images, scale=task_data.upscale_amount)
+        elif task_data.use_upscale == "latent_upscaler":
+            images = apply_filters(
+                context,
+                "latent_upscaler",
+                images,
+                scale=task_data.upscale_amount,
+                latent_upscaler_options={
+                    "prompt": req.prompt,
+                    "negative_prompt": req.negative_prompt,
+                    "seed": req.seed,
+                    "num_inference_steps": task_data.latent_upscaler_steps,
+                    "guidance_scale": 0,
+                },
+            )
+
+    return images
 
 
 def construct_response(images: list, seeds: list, task_data: TaskData, base_seed: int):

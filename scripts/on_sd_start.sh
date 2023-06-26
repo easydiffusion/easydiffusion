@@ -4,7 +4,6 @@ cp sd-ui-files/scripts/functions.sh scripts/
 cp sd-ui-files/scripts/on_env_start.sh scripts/
 cp sd-ui-files/scripts/bootstrap.sh scripts/
 cp sd-ui-files/scripts/check_modules.py scripts/
-cp sd-ui-files/scripts/check_models.py scripts/
 cp sd-ui-files/scripts/get_config.py scripts/
 
 source ./scripts/functions.sh
@@ -49,12 +48,6 @@ fi
 
 if ! command -v uvicorn &> /dev/null; then
     fail "UI packages not found!"
-fi
-
-# Download the required models
-if ! python ../scripts/check_models.py; then
-    read -p "Press any key to continue"
-    exit 1
 fi
 
 if [ `grep -c sd_install_complete ../scripts/install_status.txt` -gt "0" ]; then
