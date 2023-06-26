@@ -18,13 +18,15 @@ os_name = platform.system()
 modules_to_check = {
     "torch": ("1.11.0", "1.13.1", "2.0.0"),
     "torchvision": ("0.12.0", "0.14.1", "0.15.1"),
-    "sdkit": "1.0.97",
+    "sdkit": "1.0.112",
     "stable-diffusion-sdkit": "2.1.4",
     "rich": "12.6.0",
     "uvicorn": "0.19.0",
     "fastapi": "0.85.1",
+    "pycloudflared": "0.2.0",
     # "xformers": "0.0.16",
 }
+modules_to_log = ["torch", "torchvision", "sdkit", "stable-diffusion-sdkit"]
 
 
 def version(module_name: str) -> str:
@@ -89,7 +91,8 @@ def init():
                 traceback.print_exc()
                 fail(module_name)
 
-        print(f"{module_name}: {version(module_name)}")
+        if module_name in modules_to_log:
+            print(f"{module_name}: {version(module_name)}")
 
 
 ### utilities

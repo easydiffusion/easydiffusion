@@ -402,12 +402,12 @@ function debounce(func, wait, immediate) {
 
 function preventNonNumericalInput(e) {
     e = e || window.event
-    let charCode = typeof e.which == "undefined" ? e.keyCode : e.which
-    let charStr = String.fromCharCode(charCode)
-    let re = e.target.getAttribute("pattern") || "^[0-9]+$"
-    re = new RegExp(re)
+    const charCode = typeof e.which == "undefined" ? e.keyCode : e.which
+    const charStr = String.fromCharCode(charCode)
+    const newInputValue = `${e.target.value}${charStr}`
+    const re = new RegExp(e.target.getAttribute("pattern") || "^[0-9]+$")
 
-    if (!charStr.match(re)) {
+    if (!re.test(charStr) && !re.test(newInputValue)) {
         e.preventDefault()
     }
 }
@@ -918,9 +918,7 @@ function confirm(msg, title, fn) {
         animateFromElement: false,
         content: msg,
         buttons: {
-            yes: () => {
-                fn(e)
-            },
+            yes: fn,
             cancel: () => {},
         },
     })
