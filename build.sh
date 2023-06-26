@@ -29,6 +29,7 @@ mkdir -p dist/linux-mac/stable-diffusion-ui/scripts
 cp scripts/on_env_start.sh dist/linux-mac/stable-diffusion-ui/scripts/
 cp scripts/bootstrap.sh dist/linux-mac/stable-diffusion-ui/scripts/
 cp scripts/functions.sh dist/linux-mac/stable-diffusion-ui/scripts/
+cp scripts/config.yaml.sample dist/linux-mac/stable-diffusion-ui/scripts/config.yaml
 cp scripts/start.sh dist/linux-mac/stable-diffusion-ui/
 cp LICENSE dist/linux-mac/stable-diffusion-ui/
 cp "CreativeML Open RAIL-M License" dist/linux-mac/stable-diffusion-ui/
