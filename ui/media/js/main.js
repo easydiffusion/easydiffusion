@@ -1347,7 +1347,7 @@ function getPromptsNumber(prompts) {
         // estimate number of prompts
         let estimatedNumberOfPrompts = 0
         prompts.forEach((prompt) => {
-            estimatedNumberOfPrompts += (prompt.match(/{[^}]*}/g) || []).map((e) => e.match(/,/g).length + 1).reduce( (p,a) => p*a, 1) * (2**(prompt.match(/\|/g) || []).length) 
+            estimatedNumberOfPrompts += (prompt.match(/{[^}]*}/g) || []).map((e) => (e.match(/,/g) || []).length + 1).reduce( (p,a) => p*a, 1) * (2**(prompt.match(/\|/g) || []).length)
         })
 
         if (estimatedNumberOfPrompts >= 10000) {
