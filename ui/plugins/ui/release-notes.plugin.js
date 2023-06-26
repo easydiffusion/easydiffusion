@@ -4,7 +4,7 @@
         PLUGINS.SELFTEST["release-notes"] = function() {
             it("should be able to fetch CHANGES.md", async function() {
                 let releaseNotes = await fetch(
-                    `https://raw.githubusercontent.com/cmdr2/stable-diffusion-ui/main/CHANGES.md`
+                    `https://raw.githubusercontent.com/easydiffusion/easydiffusion/main/CHANGES.md`
                 )
                 expect(releaseNotes.status).toBe(200)
             })
@@ -36,7 +36,7 @@
                 const updateBranch = appConfig.update_branch || "main"
 
                 let releaseNotes = await fetch(
-                    `https://raw.githubusercontent.com/cmdr2/stable-diffusion-ui/${updateBranch}/CHANGES.md`
+                    `https://raw.githubusercontent.com/easydiffusion/easydiffusion/${updateBranch}/CHANGES.md`
                 )
                 if (!releaseNotes.ok) {
                     console.error("[release-notes] Failed to get CHANGES.md.")

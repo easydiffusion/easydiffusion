@@ -1329,6 +1329,53 @@ function getPrompts(prompts) {
     return promptsToMake
 }
 
+function getPromptsNumber(prompts) {
+    if (typeof prompts === "undefined") {
+        prompts = promptField.value
+    }
+    if (prompts.trim() === "" && activeTags.length === 0) {
+        return [""]
+    }
+
+    let promptsToMake = []
+    let numberOfPrompts = 0
+    if (prompts.trim() !== "") { // this needs to stay sort of the same, as the prompts have to be passed through to the other functions
+        prompts = prompts.split("\n")
+        prompts = prompts.map((prompt) => prompt.trim())
+        prompts = prompts.filter((prompt) => prompt !== "")
+
+        // estimate number of prompts
+        let estimatedNumberOfPrompts = 0
+        prompts.forEach((prompt) => {
+            estimatedNumberOfPrompts += (prompt.match(/{[^}]*}/g) || []).map((e) => e.match(/,/g).length + 1).reduce( (p,a) => p*a, 1) * (2**(prompt.match(/\|/g) || []).length) 
+        })
+
+        if (estimatedNumberOfPrompts >= 10000) {
+            return 10000
+        }
+
+        promptsToMake = applySetOperator(prompts) // switched those around as Set grows in a linear fashion and permute in 2^n, and one has to be computed for the other to be calculated
+        numberOfPrompts = applyPermuteOperatorNumber(promptsToMake)
+    }
+    const newTags = activeTags.filter((tag) => tag.inactive === undefined || tag.inactive === false)
+    if (newTags.length > 0) {
+        const promptTags = newTags.map((x) => x.name).join(", ")
+        if (numberOfPrompts > 0) {
+            // promptsToMake = promptsToMake.map((prompt) => `${prompt}, ${promptTags}`)
+            // nothing changes, as all prompts just get modified
+        } else {
+            // promptsToMake.push(promptTags)
+            numberOfPrompts = 1
+        }
+    }
+
+    // Why is this applied twice? It does not do anything here, as everything should have already been done earlier
+    // promptsToMake = applyPermuteOperator(promptsToMake)
+    // promptsToMake = applySetOperator(promptsToMake)
+
+    return numberOfPrompts
+}
+
 function applySetOperator(prompts) {
     let promptsToMake = []
     let braceExpander = new BraceExpander()
@@ -1340,7 +1387,7 @@ function applySetOperator(prompts) {
     return promptsToMake
 }
 
-function applyPermuteOperator(prompts) {
+function applyPermuteOperator(prompts) { // prompts is array of input, trimmed, filtered and split by \n
     let promptsToMake = []
     prompts.forEach((prompt) => {
         let promptMatrix = prompt.split("|")
@@ -1357,6 +1404,26 @@ function applyPermuteOperator(prompts) {
     })
 
     return promptsToMake
+}
+
+// returns how many prompts would have to be made with the given prompts
+function applyPermuteOperatorNumber(prompts) { // prompts is array of input, trimmed, filtered and split by \n
+    let numberOfPrompts = 0
+    prompts.forEach((prompt) => {
+        let promptCounter = 1
+        let promptMatrix = prompt.split("|")
+        promptMatrix.shift()
+        
+        promptMatrix = promptMatrix.map((p) => p.trim())
+        promptMatrix = promptMatrix.filter((p) => p !== "")
+
+        if (promptMatrix.length > 0) {
+            promptCounter *= permuteNumber(promptMatrix)
+        }
+        numberOfPrompts += promptCounter
+    })
+
+    return numberOfPrompts
 }
 
 function permutePrompts(promptBase, promptMatrix) {
@@ -1548,15 +1615,21 @@ heightField.addEventListener("change", onDimensionChange)
 
 function renameMakeImageButton() {
     let totalImages =
-        Math.max(parseInt(numOutputsTotalField.value), parseInt(numOutputsParallelField.value)) * getPrompts().length
+        Math.max(parseInt(numOutputsTotalField.value), parseInt(numOutputsParallelField.value)) * getPromptsNumber()
     let imageLabel = "Image"
     if (totalImages > 1) {
         imageLabel = totalImages + " Images"
     }
     if (SD.activeTasks.size == 0) {
-        makeImageBtn.innerText = "Make " + imageLabel
+        if (totalImages >= 10000)
+            makeImageBtn.innerText = "Make 10000+ images"
+        else
+            makeImageBtn.innerText = "Make " + imageLabel
     } else {
-        makeImageBtn.innerText = "Enqueue Next " + imageLabel
+        if (totalImages >= 10000)
+            makeImageBtn.innerText = "Enqueue 10000+ images"
+        else
+            makeImageBtn.innerText = "Enqueue Next " + imageLabel
     }
 }
 numOutputsTotalField.addEventListener("change", renameMakeImageButton)
