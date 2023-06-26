@@ -237,7 +237,7 @@ def fail_and_die(fail_type: str, data: str):
     suggestions = [
         "Run this installer again.",
         "If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB",
-        "If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues",
+        "If that doesn't solve the problem, please file an issue at https://github.com/easydiffusion/easydiffusion/issues",
     ]
 
     if fail_type == "model_download":

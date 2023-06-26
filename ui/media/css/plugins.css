@@ -1,0 +1,288 @@
+.plugins-table {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.plugins-table > div {
+    background: var(--background-color2);
+    display: flex;
+    padding: 0px 4px;
+}
+
+.plugins-table > div > div {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.plugins-table small {
+    color: rgb(153, 153, 153);
+}
+
+.plugins-table > div > div:nth-child(1) {
+    font-size: 20px;
+    width: 45px;
+}
+
+.plugins-table > div > div:nth-child(2) {
+    flex: 1;
+    flex-direction: column;
+    text-align: left;
+    justify-content: center;
+    align-items: start;
+    gap: 4px;
+}
+
+.plugins-table > div > div:nth-child(3) {
+    text-align: right;
+}
+
+.plugins-table > div:first-child {
+    border-radius: 12px 12px 0px 0px;
+}
+
+.plugins-table > div:last-child {
+    border-radius: 0px 0px 12px 12px;
+}
+
+.notifications-table {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.notifications-table > div {
+    background: var(--background-color2);
+    display: flex;
+    padding: 0px 4px;
+}
+
+.notifications-table > div > div {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notifications-table small {
+    color: rgb(153, 153, 153);
+}
+
+.notifications-table > div > div:nth-child(1) {
+    flex: 1;
+    flex-direction: column;
+    text-align: left;
+    justify-content: center;
+    align-items: start;
+    gap: 4px;
+}
+
+.notifications-table > div > div:nth-child(2) {
+    width: auto;
+}
+
+.notifications-table > div:first-child {
+    border-radius: 12px 12px 0px 0px;
+}
+
+.notifications-table > div:last-child {
+    border-radius: 0px 0px 12px 12px;
+}
+
+.notification-error {
+    color: red;
+}
+
+DIV.no-notification {
+    padding-top: 16px;
+    font-style: italic;
+}
+
+.plugin-manager-intro {
+    margin: 0 0 16px 0;
+}
+
+#plugin-filter {
+    box-sizing: border-box;
+    width: 100%;
+    margin: 4px 0 6px 0;
+    padding: 10px;
+}
+
+#refresh-plugins {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0px;
+}
+
+#refresh-plugins a {
+    cursor: pointer;
+}
+
+#refresh-plugins a:active {
+    transition-duration: 0.1s;
+    position: relative;
+    top: 1px;
+    left: 1px;
+}
+
+.plugin-installed-locally {
+    font-style: italic;
+    font-size: small;
+}
+
+.plugin-source {
+    font-size: x-small;
+}
+
+.plugin-warning {
+    color: orange;
+    font-size: smaller;
+}
+
+.plugin-warning.hide {
+    display: none;
+}
+
+.plugin-warning ul {
+    list-style: square;
+    margin: 0 0 8px 16px;
+    padding: 0;
+}
+
+.plugin-warning li {
+    margin-left: 8px;
+    padding: 0;
+}
+
+/* MODAL DIALOG */
+#pluginDialog-input-dialog {
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+
+.pluginDialog-dialog-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(32, 33, 36, 50%);
+}
+
+.pluginDialog-dialog-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 600px;
+    background: var(--background-color2);
+    border: solid 1px var(--background-color3);
+    border-radius: 6px;
+    box-shadow: 0px 0px 30px black;
+}
+
+.pluginDialog-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+}
+
+.pluginDialog-dialog-header h2 {
+    margin: 0;
+}
+
+.pluginDialog-dialog-close-button {
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 1;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.pluginDialog-dialog-close-button:hover {
+    color: #555;
+}
+
+.pluginDialog-dialog-content {
+    padding: 0 16px 0 16px;
+}
+
+.pluginDialog-dialog-content textarea {
+    width: 100%;
+    height: 300px;
+    border-radius: var(--input-border-radius);
+    padding: 4px;
+    accent-color: var(--accent-color);
+    background: var(--input-background-color);
+    border: var(--input-border-size) solid var(--input-border-color);
+    color: var(--input-text-color);
+    font-size: 9pt;
+    resize: none;
+}
+
+.pluginDialog-dialog-buttons {
+    display: flex;
+    justify-content: flex-end;
+    padding: 16px;
+}
+
+.pluginDialog-dialog-buttons button {
+    margin-left: 8px;
+    padding: 8px 16px;
+    font-size: 16px;
+    border-radius: 4px;
+    /*background: var(--accent-color);*/
+    /*border: var(--primary-button-border);*/
+    /*color: rgb(255, 221, 255);*/
+    background-color: #3071a9;
+    border: none;
+    cursor: pointer;
+}
+
+.pluginDialog-dialog-buttons button:hover {
+    /*background: hsl(var(--accent-hue), 100%, 50%);*/
+    background-color: #428bca;
+}
+
+/* NOTIFICATION CENTER */
+#plugin-notification-button {
+    float: right;
+    margin-top: 30px;
+}
+
+#plugin-notification-button:hover {
+    background: unset;
+}
+
+#plugin-notification-button:active {
+    transition-duration: 0.1s;
+    position: relative;
+    top: 1px;
+    left: 1px;
+}
+
+.plugin-notification-pill {
+    background-color: red;
+    border-radius: 50%;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    height: 12px;
+    line-height: 12px;
+    position: relative;
+    right: -8px;
+    text-align: center;
+    top: -20px;
+    width: 12px;
+}
