@@ -2,28 +2,31 @@
 Notes:
     async endpoints always run on the main thread. Without they run on the thread pool.
 """
+import datetime
+import mimetypes
 import os
 import traceback
-import datetime
 from typing import List, Union
 
+from easydiffusion import app, model_manager, task_manager
+from easydiffusion.types import GenerateImageRequest, MergeRequest, TaskData
+from easydiffusion.utils import log
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Extra
 from starlette.responses import FileResponse, JSONResponse, StreamingResponse
-from pydantic import BaseModel
-
-from easydiffusion import app, model_manager, task_manager
-from easydiffusion.types import TaskData, GenerateImageRequest, MergeRequest
-from easydiffusion.utils import log
-
-import mimetypes
+from pycloudflared import try_cloudflare
 
 log.info(f"started in {app.SD_DIR}")
 log.info(f"started at {datetime.datetime.now():%x %X}")
 
 server_api = FastAPI()
 
-NOCACHE_HEADERS = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
+NOCACHE_HEADERS = {
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    "Pragma": "no-cache",
+    "Expires": "0",
+}
 
 
 class NoCacheStaticFiles(StaticFiles):
@@ -44,7 +47,7 @@ class NoCacheStaticFiles(StaticFiles):
         return super().is_not_modified(response_headers, request_headers)
 
 
-class SetAppConfigRequest(BaseModel):
+class SetAppConfigRequest(BaseModel, extra=Extra.allow):
     update_branch: str = None
     render_devices: Union[List[str], List[int], str, int] = None
     model_vae: str = None
@@ -65,11 +68,17 @@ def init():
             name="custom-thumbnails",
         )
 
-    server_api.mount("/media", NoCacheStaticFiles(directory=os.path.join(app.SD_UI_DIR, "media")), name="media")
+    server_api.mount(
+        "/media",
+        NoCacheStaticFiles(directory=os.path.join(app.SD_UI_DIR, "media")),
+        name="media",
+    )
 
     for plugins_dir, dir_prefix in app.UI_PLUGINS_SOURCES:
         server_api.mount(
-            f"/plugins/{dir_prefix}", NoCacheStaticFiles(directory=plugins_dir), name=f"plugins-{dir_prefix}"
+            f"/plugins/{dir_prefix}",
+            NoCacheStaticFiles(directory=plugins_dir),
+            name=f"plugins-{dir_prefix}",
         )
 
     @server_api.post("/app_config")
@@ -105,6 +114,14 @@ def init():
     def get_image(task_id: int, img_id: int):
         return get_image_internal(task_id, img_id)
 
+    @server_api.post("/tunnel/cloudflare/start")
+    def start_cloudflare_tunnel(req: dict):
+        return start_cloudflare_tunnel_internal(req)
+
+    @server_api.post("/tunnel/cloudflare/stop")
+    def stop_cloudflare_tunnel(req: dict):
+        return stop_cloudflare_tunnel_internal(req)
+
     @server_api.get("/")
     def read_root():
         return FileResponse(os.path.join(app.SD_UI_DIR, "index.html"), headers=NOCACHE_HEADERS)
@@ -135,6 +152,10 @@ def set_app_config_internal(req: SetAppConfigRequest):
         config["net"]["listen_port"] = int(req.listen_port)
 
     config["test_diffusers"] = req.test_diffusers
+
+    for property, property_value in req.dict().items():
+        if property_value is not None and property not in req.__fields__:
+            config[property] = property_value
 
     try:
         app.setConfig(config)
@@ -199,6 +220,8 @@ def ping_internal(session_id: str = None):
         session = task_manager.get_cached_session(session_id, update_ttl=True)
         response["tasks"] = {id(t): t.status for t in session.tasks}
     response["devices"] = task_manager.get_devices()
+    if cloudflare.address != None:
+        response["cloudflare"] = cloudflare.address
     return JSONResponse(response, headers=NOCACHE_HEADERS)
 
 
@@ -242,8 +265,8 @@ def render_internal(req: dict):
 
 def model_merge_internal(req: dict):
     try:
-        from sdkit.train import merge_models
         from easydiffusion.utils.save_utils import filename_regex
+        from sdkit.train import merge_models
 
         mergeReq: MergeRequest = MergeRequest.parse_obj(req)
 
@@ -251,7 +274,11 @@ def model_merge_internal(req: dict):
             model_manager.resolve_model_to_use(mergeReq.model0, "stable-diffusion"),
             model_manager.resolve_model_to_use(mergeReq.model1, "stable-diffusion"),
             mergeReq.ratio,
-            os.path.join(app.MODELS_DIR, "stable-diffusion", filename_regex.sub("_", mergeReq.out_path)),
+            os.path.join(
+                app.MODELS_DIR,
+                "stable-diffusion",
+                filename_regex.sub("_", mergeReq.out_path),
+            ),
             mergeReq.use_fp16,
         )
         return JSONResponse({"status": "OK"}, headers=NOCACHE_HEADERS)
@@ -306,3 +333,47 @@ def get_image_internal(task_id: int, img_id: int):
         return StreamingResponse(img_data, media_type="image/jpeg")
     except KeyError as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+#---- Cloudflare Tunnel ----
+class CloudflareTunnel:
+    def __init__(self):
+        config = app.getConfig()
+        self.urls = None
+        self.port = config.get("net", {}).get("listen_port")
+
+    def start(self):
+        if self.port:
+            self.urls = try_cloudflare(self.port)
+
+    def stop(self):
+        if self.urls:
+            try_cloudflare.terminate(self.port)
+            self.urls = None
+
+    @property
+    def address(self):
+        if self.urls:
+            return self.urls.tunnel
+        else:
+            return None
+
+cloudflare = CloudflareTunnel()
+
+def start_cloudflare_tunnel_internal(req: dict):
+   try:
+      cloudflare.start()
+      log.info(f"- Started cloudflare tunnel. Using address: {cloudflare.address}")
+      return JSONResponse({"address":cloudflare.address})
+   except Exception as e:
+      log.error(str(e))
+      log.error(traceback.format_exc())
+      return HTTPException(status_code=500, detail=str(e))
+
+def stop_cloudflare_tunnel_internal(req: dict):
+   try:
+      cloudflare.stop()
+   except Exception as e:
+      log.error(str(e))
+      log.error(traceback.format_exc())
+      return HTTPException(status_code=500, detail=str(e))
+

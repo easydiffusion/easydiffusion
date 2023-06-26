@@ -1,9 +1,9 @@
 # Easy Diffusion 2.5
-### The easiest way to install and use [Stable Diffusion](https://github.com/CompVis/stable-diffusion) on your own computer.
+### The easiest way to install and use [Stable Diffusion](https://github.com/CompVis/stable-diffusion) on your computer.
 
 Does not require technical knowledge, does not require pre-installed software. 1-click install, powerful features, friendly community.
 
-[Installation guide](#installation) | [Troubleshooting guide](https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting) | <sub>[![Discord Server](https://img.shields.io/discord/1014774730907209781?label=Discord)](https://discord.com/invite/u9yhsFmEkB)</sub> <sup>(for support queries, and development discussions)</sup>
+[Installation guide](#installation) | [Troubleshooting guide](https://github.com/easydiffusion/easydiffusion/wiki/Troubleshooting) | <sub>[![Discord Server](https://img.shields.io/discord/1014774730907209781?label=Discord)](https://discord.com/invite/u9yhsFmEkB)</sub> <sup>(for support queries, and development discussions)</sup>
 
 ![t2i](https://raw.githubusercontent.com/Stability-AI/stablediffusion/main/assets/stable-samples/txt2img/768/merged-0006.png)
 
@@ -11,10 +11,17 @@ Does not require technical knowledge, does not require pre-installed software. 1
 Click the download button for your operating system:
 
 <p float="left">
-  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.24/Easy-Diffusion-Windows.exe"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-win.png" width="200" /></a>
-  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.24/Easy-Diffusion-Linux.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-linux.png" width="200" /></a>
-  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.24/Easy-Diffusion-Mac.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-mac.png" width="200" /></a>
+  <a href="https://github.com/easydiffusion/easydiffusion/releases/download/v2.5.24/Easy-Diffusion-Windows.exe"><img src="https://github.com/easydiffusion/easydiffusion/raw/main/media/download-win.png" width="200" /></a>
+  <a href="https://github.com/easydiffusion/easydiffusion/releases/download/v2.5.24/Easy-Diffusion-Linux.zip"><img src="https://github.com/easydiffusion/easydiffusion/raw/main/media/download-linux.png" width="200" /></a>
+  <a href="https://github.com/easydiffusion/easydiffusion/releases/download/v2.5.24/Easy-Diffusion-Mac.zip"><img src="https://github.com/easydiffusion/easydiffusion/raw/main/media/download-mac.png" width="200" /></a>
 </p>
+
+**Hardware requirements:**
+- **Windows:** NVIDIA graphics card (minimum 2 GB RAM), or run on your CPU.
+- **Linux:** NVIDIA or AMD graphics card (minimum 2 GB RAM), or run on your CPU.
+- **Mac:** M1 or M2, or run on your CPU.
+- Minimum 8 GB of system RAM.
+- Atleast 25 GB of space on the hard disk.
 
 The installer will take care of whatever is needed. If you face any problems, you can join the friendly [Discord community](https://discord.com/invite/u9yhsFmEkB) and ask for assistance.
 
@@ -53,7 +60,7 @@ Just delete the `EasyDiffusion` folder to uninstall all the downloaded packages.
 
 ### Image generation
 - **Supports**: "*Text to Image*" and "*Image to Image*".
-- **19 Samplers**: `ddim`, `plms`, `heun`, `euler`, `euler_a`, `dpm2`, `dpm2_a`, `lms`, `dpm_solver_stability`, `dpmpp_2s_a`, `dpmpp_2m`, `dpmpp_sde`, `dpm_fast`, `dpm_adaptive`, `unipc_snr`, `unipc_tu`, `unipc_tq`, `unipc_snr_2`, `unipc_tu_2`.
+- **21 Samplers**: `ddim`, `plms`, `heun`, `euler`, `euler_a`, `dpm2`, `dpm2_a`, `lms`, `dpm_solver_stability`, `dpmpp_2s_a`, `dpmpp_2m`, `dpmpp_sde`, `dpm_fast`, `dpm_adaptive`, `ddpm`, `deis`, `unipc_snr`, `unipc_tu`, `unipc_tq`, `unipc_snr_2`, `unipc_tu_2`.
 - **In-Painting**: Specify areas of your image to paint into.
 - **Simple Drawing Tool**: Draw basic images to guide the AI, without needing an external drawing program.
 - **Face Correction (GFPGAN)**
@@ -63,6 +70,7 @@ Just delete the `EasyDiffusion` folder to uninstall all the downloaded packages.
 - **Attention/Emphasis**: () in the prompt increases the model's attention to enclosed words, and [] decreases it.
 - **Weighted Prompts**: Use weights for specific words in your prompt to change their importance, e.g. `red:2.4 dragon:1.2`.
 - **Prompt Matrix**: Quickly create multiple variations of your prompt, e.g. `a photograph of an astronaut riding a horse | illustration | cinematic lighting`.
+- **Prompt Set**: Quickly create multiple variations of your prompt, e.g. `a photograph of an astronaut on the {moon,earth}`
 - **1-click Upscale/Face Correction**: Upscale or correct an image after it has been generated.
 - **Make Similar Images**: Click to generate multiple variations of a generated image.
 - **NSFW Setting**: A setting in the UI to control *NSFW content*.
@@ -75,11 +83,11 @@ Just delete the `EasyDiffusion` folder to uninstall all the downloaded packages.
 - **Use custom VAE models**
 - **Use pre-trained Hypernetworks**
 - **Use custom GFPGAN models**
-- **UI Plugins**: Choose from a growing list of [community-generated UI plugins](https://github.com/cmdr2/stable-diffusion-ui/wiki/UI-Plugins), or write your own plugin to add features to the project!
+- **UI Plugins**: Choose from a growing list of [community-generated UI plugins](https://github.com/easydiffusion/easydiffusion/wiki/UI-Plugins), or write your own plugin to add features to the project!
 
 ### Performance and security
 - **Fast**: Creates a 512x512 image with euler_a in 5 seconds, on an NVIDIA 3060 12GB.
-- **Low Memory Usage**: Create 512x512 images with less than 3 GB of GPU RAM, and 768x768 images with less than 4 GB of GPU RAM!
+- **Low Memory Usage**: Create 512x512 images with less than 2 GB of GPU RAM, and 768x768 images with less than 3 GB of GPU RAM!
 - **Use CPU setting**: If you don't have a compatible graphics card, but still want to run it on your CPU.
 - **Multi-GPU support**: Automatically spreads your tasks across multiple GPUs (if available), for faster performance!
 - **Auto scan for malicious models**: Uses picklescan to prevent malicious models.
@@ -108,21 +116,13 @@ Useful for judging (and stopping) an image quickly, without waiting for it to fi
 ![Screenshot of task queue](https://user-images.githubusercontent.com/844287/217043984-0b35f73b-1318-47cb-9eed-a2a91b430490.png)
 
 
-
-# System Requirements
-1. Windows 10/11, or Linux. Experimental support for Mac is coming soon.
-2. An NVIDIA graphics card, preferably with 4GB or more of VRAM. If you don't have a compatible graphics card, it'll automatically run in the slower "CPU Mode".
-3. Minimum 8 GB of RAM and 25GB of disk space.
-
-You don't need to install or struggle with Python, Anaconda, Docker etc. The installer will take care of whatever is needed.
-
 ----
 
 # How to use?
-Please refer to our [guide](https://github.com/cmdr2/stable-diffusion-ui/wiki/How-to-Use) to understand how to use the features in this UI.
+Please refer to our [guide](https://github.com/easydiffusion/easydiffusion/wiki/How-to-Use) to understand how to use the features in this UI.
 
 # Bugs reports and code contributions welcome
-If there are any problems or suggestions, please feel free to ask on the [discord server](https://discord.com/invite/u9yhsFmEkB) or [file an issue](https://github.com/cmdr2/stable-diffusion-ui/issues).
+If there are any problems or suggestions, please feel free to ask on the [discord server](https://discord.com/invite/u9yhsFmEkB) or [file an issue](https://github.com/easydiffusion/easydiffusion/issues).
 
 We could really use help on these aspects (click to view tasks that need your help):
 * [User Interface](https://github.com/users/cmdr2/projects/1/views/1)

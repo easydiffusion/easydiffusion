@@ -1,14 +1,16 @@
 .modifier-card {
+    position: relative;
+    box-sizing: content-box; /* fixes border misalignment */
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
     transition: 0.1s;
     border-radius: 7px;
     margin: 3pt 3pt;
     float: left;
-    width: 8em;
-    height: 11.5em;
+    width: 6em;
+    height: 9.5em;
     display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: 8em 3.5em;
+    grid-template-rows: 6em 3.5em;
     gap: 0px 0px;
     grid-auto-flow: row;
     grid-template-areas:
@@ -16,81 +18,70 @@
         "modifier-card-container";
     border: 2px solid rgba(255, 255, 255, .05);
     cursor: pointer;
-}
-.modifier-card-size_5 {
-    width: 18em;
-    grid-template-rows: 18em 3.5em;
-    height: 21.5em;
-}
-.modifier-card-size_5 .modifier-card-image-overlay {
-    font-size: 8em;
-}
-.modifier-card-size_4 {
-    width: 14em;
-    grid-template-rows: 14em 3.5em;
-    height: 17.5em;
-}
-.modifier-card-size_4 .modifier-card-image-overlay {
-    font-size: 7em;
+    z-index: 2;
 }
 .modifier-card-size_3 {
-    width: 11em;
-    grid-template-rows: 11em 3.5em;
-    height: 14.5em;
-}
-.modifier-card-size_3 .modifier-card-image-overlay {
-    font-size: 6em;
-}
-.modifier-card-size_2 {
     width: 10em;
     grid-template-rows: 10em 3.5em;
     height: 13.5em;
 }
-.modifier-card-size_2 .modifier-card-image-overlay {
+.modifier-card-size_3 .modifier-card-image-overlay {
     font-size: 6em;
 }
-.modifier-card-size_1 {
+.modifier-card-size_3 .modifier-card-label {
+    font-size: 1.2em;
+}
+.modifier-card-size_2 {
     width: 9em;
     grid-template-rows: 9em 3.5em;
     height: 12.5em;
 }
-.modifier-card-size_1 .modifier-card-image-overlay {
+.modifier-card-size_2 .modifier-card-image-overlay {
     font-size: 5em;
 }
-.modifier-card-size_-1 {
+.modifier-card-size_2 .modifier-card-label {
+    font-size: 1.1em;
+}
+.modifier-card-size_1 {
     width: 7em;
     grid-template-rows: 7em 3.5em;
     height: 10.5em;
 }
-.modifier-card-size_-1 .modifier-card-image-overlay {
+.modifier-card-size_1 .modifier-card-image-overlay {
     font-size: 4em;
 }
-.modifier-card-size_-2 {
-    width: 6em;
-    grid-template-rows: 6em 3.5em;
-    height: 9.5em;
-}
-.modifier-card-size_-2 .modifier-card-image-overlay {
-    font-size: 3em;
-}
-.modifier-card-size_-3 {
+.modifier-card-size_-1 {
     width: 5em;
     grid-template-rows: 5em 3.5em;
     height: 8.5em;
 }
-.modifier-card-size_-3 .modifier-card-image-overlay {
+.modifier-card-size_-1 .modifier-card-image-overlay {
     font-size: 3em;
 }
-.modifier-card-size_-3 .modifier-card-label {
-    font-size: 0.8em;
+.modifier-card-size_-1 .modifier-card-label {
+    font-size: 0.9em;
+}
+.modifier-card-size_-2 {
+    width: 4em;
+    grid-template-rows: 3.5em 3em;
+    height: 6.5em;
+}
+.modifier-card-size_-2 .modifier-card-image-overlay {
+    font-size: 2em;
+}
+.modifier-card-size_-2 .modifier-card-label {
+    font-size: 0.7em;
 }
 .modifier-card-tiny {
-    width: 6em;
-    height: 9.5em;
-    grid-template-rows: 6em 3.5em;
+    width: 5em;
+    grid-template-rows: 5em 3.5em;
+    height: 8.5em;
 }
 .modifier-card-tiny .modifier-card-image-overlay {
     font-size: 4em;
+}
+.modifier-card-tiny .modifier-card-label {
+    font-size: 0.9em;
 }
 .modifier-card:hover {
     transform: scale(1.05);
@@ -115,6 +106,7 @@
 }
 .modifier-card-image-container * {
     position: absolute;
+    text-align: center;
 }
 .modifier-card-container {
     text-align: center;
@@ -131,6 +123,7 @@
 .modifier-card-label {
     padding: 4px;
     word-break: break-word;
+    text-transform: capitalize;
 }
 .modifier-card-image-overlay {
     width: inherit;
@@ -140,7 +133,7 @@
     position: absolute;
     border-radius: 5px 5px 0 0;
     opacity: 0;
-    font-size: 5em;
+    font-size: 4em;
     font-weight: 900;
     color: rgb(255 255 255 / 50%);
     display: flex;
@@ -152,6 +145,9 @@
     height: inherit;
     position: absolute;
     z-index: 3;
+}
+.modifier-card-active .modifier-card-overlay {
+    background-color: rgb(169 78 241 / 40%);
 }
 .modifier-card:hover > .modifier-card-image-container .modifier-card-image-overlay {
     opacity: 1;
@@ -171,53 +167,24 @@
     border: 2px solid rgb(179 82 255 / 94%);
     box-shadow: 0 0px 10px 0 rgb(170 0 229 / 58%);
 }
-.tooltip {
-    position: relative;
-    display: inline-block;
-}
-.tooltip .tooltip-text {
-    visibility: hidden;
-    width: 120px;
-    background: rgb(101,97,181);
-    background: linear-gradient(180deg, rgba(101,97,181,1) 0%, rgba(47,45,85,1) 100%);
-    color: #fff;
-    text-align: center;
-    border-radius: 6px;
-    padding: 5px;
-    position: absolute;
-    z-index: 1;
-    top: 105%;
-    left: 39%;
-    margin-left: -60px;
-    opacity: 0;
-    transition: opacity 0.3s;
-    border: 2px solid rgb(90 100 177 / 94%);
-    box-shadow: 0px 10px 20px 5px rgb(11 0 58 / 55%);
-    width: 10em;
-}
-.tooltip .tooltip-text::after {
-    content: "";
-    position: absolute;
-    top: -0.9em;
-    left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: transparent transparent rgb(90 100 177 / 94%) transparent;
-}
-.tooltip:hover .tooltip-text {
-    visibility: visible;
-    opacity: 1;
-}
 #modifier-card-size-slider {
     width: 6em;
     margin-bottom: 0.5em;
     vertical-align: middle;
 }
-#modifier-settings-btn {
-    float: right;
-}
 #modifier-settings-config textarea {
     width: 90%;
     height: 150px;
+}
+.modifier-card .hidden {
+    display: none;
+}
+.support-long-label .modifier-card-overlay:hover ~ .modifier-card-container .modifier-card-label {
+    font-size: 0.7em;
+}
+.support-long-label .modifier-card-overlay:hover ~ .modifier-card-container .long-label {
+    display: block;
+}
+.support-long-label .modifier-card-overlay:hover ~ .modifier-card-container .regular-label {
+    display: none;
 }

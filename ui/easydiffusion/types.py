@@ -1,5 +1,6 @@
-from pydantic import BaseModel
 from typing import Any
+
+from pydantic import BaseModel
 
 
 class GenerateImageRequest(BaseModel):
@@ -22,6 +23,7 @@ class GenerateImageRequest(BaseModel):
     sampler_name: str = None  # "ddim", "plms", "heun", "euler", "euler_a", "dpm2", "dpm2_a", "lms"
     hypernetwork_strength: float = 0
     lora_alpha: float = 0
+    tiling: str = "none"  # "none", "x", "y", "xy"
 
 
 class TaskData(BaseModel):
@@ -31,8 +33,9 @@ class TaskData(BaseModel):
     vram_usage_level: str = "balanced"  # or "low" or "medium"
 
     use_face_correction: str = None  # or "GFPGANv1.3"
-    use_upscale: str = None  # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B"
+    use_upscale: str = None  # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B" or "latent_upscaler"
     upscale_amount: int = 4  # or 2
+    latent_upscaler_steps: int = 10
     use_stable_diffusion_model: str = "sd-v1-4"
     # use_stable_diffusion_config: str = "v1-inference"
     use_vae_model: str = None
@@ -47,6 +50,9 @@ class TaskData(BaseModel):
     metadata_output_format: str = "txt"  # or "json"
     stream_image_progress: bool = False
     stream_image_progress_interval: int = 5
+    clip_skip: bool = False
+    codeformer_upscale_faces: bool = False
+    codeformer_fidelity: float = 0.5
 
 
 class MergeRequest(BaseModel):

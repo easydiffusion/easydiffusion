@@ -1,9 +1,9 @@
 import os
 import platform
-import torch
-import traceback
 import re
+import traceback
 
+import torch
 from easydiffusion.utils import log
 
 """
@@ -118,7 +118,10 @@ def auto_pick_devices(currently_active_devices):
     #    These already-running devices probably aren't terrible, since they were picked in the past.
     #    Worst case, the user can restart the program and that'll get rid of them.
     devices = list(
-        filter((lambda x: x["mem_free"] > mem_free_threshold or x["device"] in currently_active_devices), devices)
+        filter(
+            (lambda x: x["mem_free"] > mem_free_threshold or x["device"] in currently_active_devices),
+            devices,
+        )
     )
     devices = list(map(lambda x: x["device"], devices))
     return devices
@@ -162,6 +165,7 @@ def needs_to_force_full_precision(context):
         and (
             " 1660" in device_name
             or " 1650" in device_name
+            or " 1630" in device_name
             or " t400" in device_name
             or " t550" in device_name
             or " t600" in device_name
@@ -221,9 +225,9 @@ def is_device_compatible(device):
     try:
         _, mem_total = torch.cuda.mem_get_info(device)
         mem_total /= float(10**9)
-        if mem_total < 3.0:
+        if mem_total < 1.9:
             if is_device_compatible.history.get(device) == None:
-                log.warn(f"GPU {device} with less than 3 GB of VRAM is not compatible with Stable Diffusion")
+                log.warn(f"GPU {device} with less than 2 GB of VRAM is not compatible with Stable Diffusion")
                 is_device_compatible.history[device] = 1
             return False
     except RuntimeError as e:

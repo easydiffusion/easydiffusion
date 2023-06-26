@@ -7,16 +7,18 @@ Notes:
 import json
 import traceback
 
-TASK_TTL = 15 * 60  # seconds, Discard last session's task timeout
+TASK_TTL = 30 * 60  # seconds, Discard last session's task timeout
 
-import torch
-import queue, threading, time, weakref
+import queue
+import threading
+import time
+import weakref
 from typing import Any, Hashable
 
+import torch
 from easydiffusion import device_manager
-from easydiffusion.types import TaskData, GenerateImageRequest
+from easydiffusion.types import GenerateImageRequest, TaskData
 from easydiffusion.utils import log
-
 from sdkit.utils import gc
 
 THREAD_NAME_PREFIX = ""
@@ -167,7 +169,7 @@ class DataCache:
             raise Exception("DataCache.put" + ERR_LOCK_FAILED)
         try:
             self._base[key] = (self._get_ttl_time(ttl), value)
-        except Exception as e:
+        except Exception:
             log.error(traceback.format_exc())
             return False
         else:
@@ -264,7 +266,7 @@ def thread_get_next_task():
 def thread_render(device):
     global current_state, current_state_error
 
-    from easydiffusion import renderer, model_manager
+    from easydiffusion import model_manager, renderer
 
     try:
         renderer.init(device)
@@ -317,6 +319,9 @@ def thread_render(device):
             def step_callback():
                 global current_state_error
 
+                task_cache.keep(id(task), TASK_TTL)
+                session_cache.keep(task.task_data.session_id, TASK_TTL)
+
                 if (
                     isinstance(current_state_error, SystemExit)
                     or isinstance(current_state_error, StopAsyncIteration)
@@ -331,10 +336,15 @@ def thread_render(device):
             current_state = ServerStates.LoadingModel
             model_manager.resolve_model_paths(task.task_data)
             model_manager.reload_models_if_necessary(renderer.context, task.task_data)
+            model_manager.fail_if_models_did_not_load(renderer.context)
 
             current_state = ServerStates.Rendering
             task.response = renderer.make_images(
-                task.render_request, task.task_data, task.buffer_queue, task.temp_images, step_callback
+                task.render_request,
+                task.task_data,
+                task.buffer_queue,
+                task.temp_images,
+                step_callback,
             )
             # Before looping back to the generator, mark cache as still alive.
             task_cache.keep(id(task), TASK_TTL)

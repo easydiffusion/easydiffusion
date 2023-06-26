@@ -15,9 +15,9 @@ fail() {
 
 Error downloading Stable Diffusion UI. Sorry about that, please try to:
  1. Run this installer again.
- 2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting
+ 2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/easydiffusion/easydiffusion/wiki/Troubleshooting
  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB
- 4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues
+ 4. If that doesn't solve the problem, please file an issue at https://github.com/easydiffusion/easydiffusion/issues
 
 Thanks!
 
@@ -31,7 +31,7 @@ EOF
 filesize() {
     case "$(uname -s)" in
         Linux*)     stat -c "%s" $1;;
-        Darwin*)    stat -f "%z" $1;;
+        Darwin*)    /usr/bin/stat -f "%z" $1;;
         *)          echo "Unknown OS: $OS_NAME! This script runs only on Linux or Mac" && exit
     esac
 }

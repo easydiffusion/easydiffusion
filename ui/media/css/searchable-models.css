@@ -58,7 +58,7 @@
     font-size: 10pt;
     font-weight: normal;
     transition: none;
-    transition:property: none;
+    transition-property: none;
     cursor: default;
 }
 
