@@ -36,8 +36,9 @@ call git --version
 
 call where conda
 call conda --version
+echo .
+echo COMSPEC=%COMSPEC%
 
 @rem Download the rest of the installer and UI
 call scripts\on_env_start.bat
-
 @pause
