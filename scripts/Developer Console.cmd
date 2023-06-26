@@ -2,7 +2,7 @@
 
 echo "Opening Stable Diffusion UI - Developer Console.." & echo.
 
-cd %cd%
+cd /d %~dp0
 
 set PATH=C:\Windows\System32;%PATH%
 
