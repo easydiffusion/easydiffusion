@@ -184,7 +184,7 @@ code {
 #editor label {
     font-weight: normal;
 }
-#editor h4 {
+.dialog-header h4 {
     margin: 0px;
     white-space: nowrap;
 }
@@ -326,7 +326,7 @@ button#resume {
     max-height: 100%;
     flex: 1;
 }
-#editor-modifiers-header {
+.dialog-header {
     background-color: var(--background-color4);
     padding: 0.5em;
     border-bottom: 1px solid rgb(255 255 255 / 10%);
@@ -369,7 +369,7 @@ button#resume {
     flex-direction: column;
     grid-gap: 0.1em;
 }
-#modifiers-header-left span {
+.dialog-header-left span {
     font-size: 0.8em;
     color: rgb(127 127 127);
     font-weight: 200;
@@ -467,6 +467,24 @@ button#resume {
     -moz-user-select: none;
     -ms-user-select: none;
 }
+
+dialog {
+    background: var(--background-color2);
+    color: var(--text-color);
+    border-radius: 6px;
+    border: 2px solid rgb(255 255 255 / 10%);
+    padding: 0px;
+}
+
+dialog::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+dialog > div {
+    padding: 0.5em;
+}
+
+
 img {
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
 }

@@ -16,9 +16,10 @@ let modifierSettingsBtn = document.querySelector("#modifier-settings-btn")
 let modifiersContainerSizeBtn = document.querySelector("#modifiers-container-size-btn")
 let modifiersCloseBtn = document.querySelector("#modifiers-close-button")
 let modifiersCollapsiblesBtn = document.querySelector("#modifiers-action-collapsibles-btn")
-let modifierSettingsOverlay = document.querySelector("#modifier-settings-config")
+let modifierSettingsDialog = document.querySelector("#modifier-settings-config")
 let customModifiersTextBox = document.querySelector("#custom-modifiers-input")
 let customModifierEntriesToolbar = document.querySelector("#editor-modifiers-entries-toolbar")
+let modifierSettingsCloseBtn = document.querySelector("#modifier-settings-close-button")
 
 const modifierThumbnailPath = "media/modifier-thumbnails"
 const activeCardClass = "modifier-card-active"
@@ -415,7 +416,7 @@ function hideModifierContainer() {
 function checkIfClickedOutsideDropdownElem(e) {
     const clickedElement = e.target
 
-    const clickedInsideSpecificElems = [modifierDropdown, editorModifiersContainer, modifierSettingsOverlay].some((div) => 
+    const clickedInsideSpecificElems = [modifierDropdown, editorModifiersContainer, modifierSettingsDialog].some((div) => 
         div && (div.contains(clickedElement) || div === clickedElement))
 
     if (!clickedInsideSpecificElems && !modifierPanelFreezed) {
@@ -452,17 +453,17 @@ customModifiersTextBox.addEventListener("change", saveCustomModifiers)
 modifierCardSizeSlider.onchange = () => resizeModifierCards(modifierCardSizeSlider.value)
 previewImageField.onchange = () => changePreviewImages(previewImageField.value)
 
-modifierSettingsOverlay.addEventListener("keydown", function(e) {
+modifierSettingsDialog.addEventListener("keydown", function(e) {
     switch (e.key) {
         case "Escape": // Escape to cancel
             customModifiersTextBox.value = customModifiersInitialContent // undo the changes
-            modifierSettingsOverlay.classList.remove("active")
+            modifierSettingsDialog.close()
             e.stopPropagation()
             break
         case "Enter":
             if (e.ctrlKey) {
                 // Ctrl+Enter to confirm
-                modifierSettingsOverlay.classList.remove("active")
+                modifierSettingsDialog.close()
                 e.stopPropagation()
                 break
             }
@@ -538,7 +539,7 @@ modifiersContainerSizeBtn.addEventListener("click", (e) => {
 })
 
 modifierSettingsBtn.addEventListener("click", (e) => {
-    modifierSettingsOverlay.classList.add("active")
+    modifierSettingsDialog.showModal()
     customModifiersTextBox.setSelectionRange(0, 0)
     customModifiersTextBox.focus()
     customModifiersInitialContent = customModifiersTextBox.value // preserve the initial content
@@ -551,11 +552,25 @@ modifiersCloseBtn.addEventListener("click", (e) => {
 
 // prevents the modifier panel closing at the same time as the settings overlay
 new MutationObserver(() => {
-    const isActive = modifierSettingsOverlay.classList.contains("active")
+    const isActive = modifierSettingsDialog.open
 
     if (!isActive) {
         modifierPanelFreezed = true
 
         setTimeout(() => modifierPanelFreezed = false, 25)
     }
-}).observe(modifierSettingsOverlay, { attributes: true })
+}).observe(modifierSettingsDialog, { attributes: true })
+
+modifierSettingsCloseBtn.addEventListener("click", (e) => {
+    modifierSettingsDialog.close()    
+})
+
+modifierSettingsDialog.addEventListener('click', function (event) {
+    var rect = modifierSettingsDialog.getBoundingClientRect();
+    var isInDialog=(rect.top <= event.clientY && event.clientY <= rect.top + rect.height
+      && rect.left <= event.clientX && event.clientX <= rect.left + rect.width);
+    if (!isInDialog) {
+        modifierSettingsDialog.close();
+    }
+});
+

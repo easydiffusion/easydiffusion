@@ -30,7 +30,15 @@
     // ---- Add HTML
     document.getElementById('container').lastElementChild.insertAdjacentHTML("afterend",
         `<dialog id="download-tiled-image-dialog">
-            <h1>Download tiled image</h1>
+           <div class="dialog-header">
+               <div class="dialog-header-left">
+                   <h4>Download tiled image</h4>
+                   <span>Generate a larger image from this tile</span>
+               </div>
+               <div id="modifier-settings-header-right">
+                   <i id="downnload-tiled-close-button" class="fa-solid fa-xmark fa-lg"></i>
+               </div>
+           </div>
             <div class="download-tiled-image dtim-container">
                 <div class="download-tiled-image-top">
                     <div class="tab-container">
@@ -130,6 +138,7 @@
 
     // ---- Close popup
     document.getElementById("dti-cancel").addEventListener("click", (e) => downloadTiledImageDialog.close())
+    document.getElementById("downnload-tiled-close-button").addEventListener("click", (e) => downloadTiledImageDialog.close())
     downloadTiledImageDialog.addEventListener('click', function (event) {
         var rect = downloadTiledImageDialog.getBoundingClientRect();
         var isInDialog=(rect.top <= event.clientY && event.clientY <= rect.top + rect.height
@@ -142,18 +151,6 @@
     // ---- Stylesheet
     const styleSheet = document.createElement("style")
     styleSheet.textContent = `
-        dialog {
-          background: var(--background-color2);
-          color: var(--text-color);
-          border-radius: 7px;
-          border: 1px solid var(--background-color3);
-        }
-
-        dialog::backdrop {
-          background: rgba(0, 0, 0, 0.5);
-        }
-
-
         button[disabled] {
           opacity: 0.5;
         }
