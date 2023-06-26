@@ -86,7 +86,7 @@ async function loadUIPlugins() {
 /* PLUGIN MANAGER */
 /* plugin tab */
 document.querySelector('.tab-container')?.insertAdjacentHTML('beforeend', `
-    <span id="tab-plugin" class="tab">
+    <span id="tab-plugin" class="tab" style="display: none">
         <span><i class="fa fa-puzzle-piece icon"></i> Plugins</span>
     </span>
 `)
