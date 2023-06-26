@@ -63,8 +63,38 @@
                         <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Writing-prompts#negative-prompts" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top">Click to learn more about Negative Prompts</span></i></a>
                         <small>(optional)</small>
                     </label>
+                    <label for="image-modifiers" data-active="false" id="image-modifier-dropdown">
+                        Image Modifiers
+                        <small>(optional)</small>
+                    </label>
                     <div class="collapsible-content">
                         <textarea id="negative_prompt" name="negative_prompt" placeholder="list the things to remove from the image (e.g. fog, green)"></textarea>
+                    </div>
+                    <div id="editor-modifiers">
+                        <div id="editor-modifiers-header">
+                            <div id="modifiers-header-left">
+                                <h4>Image Modifiers</h4>
+                                <span>(drawing style, camera, etc.)</span>
+                            </div>
+                            <div id="modifiers-header-right">
+                                <i id="modifier-settings-btn" class="fa-solid fa-gear section-button">
+                                    <span class="simple-tooltip left">
+                                        Add Custom Modifiers
+                                    </span>
+                                </i>
+                                <i id="modifiers-container-size-btn" class="fa-solid fa-expand"></i>
+                                <i id="modifiers-close-button" class="fa-solid fa-xmark fa-lg"></i>
+                            </div>
+                        </div>
+                        <div id="editor-modifiers-subheader">
+                            <div id="modifiers-action-collapsibles-btn">
+                                <i class="modifiers-action-icon fa-solid fa-square-plus"></i> 
+                                <span class="modifiers-action-text">
+                                    Expand Categories
+                                </span>
+                            </div>
+                        </div>
+                        <div id="editor-modifiers-entries" class="collapsible-content"></div>
                     </div>
                 </div>
 
@@ -102,7 +132,7 @@
                 </div>
 
                 <div id="editor-inputs-tags-container" class="row">
-                    <label>Image Modifiers <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">click an Image Modifier to remove it, right-click to temporarily disable it, use Ctrl+Mouse Wheel to adjust its weight</span></i></label>
+                    <label>Image Modifiers <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">Click an Image Modifier to remove it, right-click to temporarily disable it, use Ctrl+Mouse Wheel to adjust its weight</span></i></label>
                     <div id="editor-inputs-tags-list"></div>
                 </div>
 
@@ -291,29 +321,6 @@
                     </li>
                     <li class="pl-5"><input id="show_only_filtered_image" name="show_only_filtered_image" type="checkbox" checked> <label for="show_only_filtered_image">Show only the corrected/upscaled image</label></li>
                     </ul></div>
-                </div>
-            </div>
-
-            <div id="editor-modifiers" class="panel-box">
-                <h4 class="collapsible">
-                    Image Modifiers (art styles, tags etc)
-                    <i id="modifier-settings-btn" class="fa-solid fa-gear section-button">
-                        <span class="simple-tooltip left">
-                            Add Custom Modifiers
-                        </span>
-                    </i>
-                </h4>
-                <div id="editor-modifiers-entries" class="collapsible-content">
-                    <div id="editor-modifiers-entries-toolbar">
-                        <label for="preview-image">Image Style:</label>
-                        <select id="preview-image" name="preview-image" value="portrait">
-                            <option value="portrait" selected="">Face</option>
-                            <option value="landscape">Landscape</option>
-                        </select>
-                        &nbsp;
-                        <label for="modifier-card-size-slider">Thumbnail Size:</label>
-                        <input id="modifier-card-size-slider" name="modifier-card-size-slider" value="0" type="range" min="-3" max="5">
-                    </div>
                 </div>
             </div>
         </div>
@@ -522,6 +529,16 @@
             <p>Set your custom modifiers (one per line)</p>
             <textarea id="custom-modifiers-input" placeholder="Enter your custom modifiers, one-per-line" spellcheck="false"></textarea>
             <p><small><b>Tip:</b> You can include special characters like {} () [] and |. You can also put multiple comma-separated phrases in a single line, to make a single modifier that combines all of those.</small></p>
+            <div id="editor-modifiers-entries-toolbar">
+                <label for="preview-image">Image Style:</label>
+                <select id="preview-image" name="preview-image" value="portrait">
+                    <option value="portrait" selected="">Face</option>
+                    <option value="landscape">Landscape</option>
+                </select>
+                &nbsp;
+                <label for="modifier-card-size-slider">Thumbnail Size:</label>
+                <input id="modifier-card-size-slider" name="modifier-card-size-slider" value="0" type="range" min="-2" max="3">
+            </div>
         </div>
     </div>
 
