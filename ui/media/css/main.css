@@ -300,7 +300,7 @@ button#resume {
     display: none;
     background: var(--background-color1);
     border: solid 1px var(--background-color3);
-    z-index: 999;
+    z-index: 1999;
     border-radius: 6px;
     box-shadow: 0px 0px 30px black;
     border: 2px solid rgb(255 255 255 / 10%);
