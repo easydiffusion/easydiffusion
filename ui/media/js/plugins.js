@@ -1,7 +1,7 @@
 const PLUGIN_API_VERSION = "1.0"
 
-const PLUGIN_CATALOG = 'https://raw.githubusercontent.com/patriceac/Easy-Diffusion-Plugins/main/plugins.json'
-const PLUGIN_CATALOG_GITHUB = 'https://github.com/patriceac/Easy-Diffusion-Plugins/blob/main/plugins.json'
+const PLUGIN_CATALOG = 'https://raw.githubusercontent.com/easydiffusion/easydiffusion-plugins/main/plugins.json'
+const PLUGIN_CATALOG_GITHUB = 'https://github.com/easydiffusion/easydiffusion-plugins/blob/main/plugins.json'
 
 const PLUGINS = {
     /**
