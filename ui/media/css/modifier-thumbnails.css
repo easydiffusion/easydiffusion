@@ -173,6 +173,8 @@
     vertical-align: middle;
 }
 #modifier-settings-config textarea {
+    margin-left: 5%;
+    margin-top: 2ex;
     width: 90%;
     height: 150px;
 }
