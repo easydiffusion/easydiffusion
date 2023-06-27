@@ -875,7 +875,7 @@ div.img-preview img {
 #editor-settings {
     min-width: 350px;
 }
-#editor-settings h4 {
+.panel-box > h4 {
     margin: 0;
 }
 
