@@ -304,6 +304,12 @@ button#resume {
     border-radius: 6px;
     box-shadow: 0px 0px 30px black;
     border: 2px solid rgb(255 255 255 / 10%);
+    margin-top: 150pt;
+}
+@media screen and (max-height: 500px) {
+    #editor-modifiers {
+        margin-top: 50pt;
+    }
 }
 #editor-modifiers.active {
     display: flex;
@@ -317,6 +323,7 @@ button#resume {
     bottom: 0px !important;
     left: 0px !important;
     right: 0px !important;
+    margin: 0px !important;
     max-width: unset !important;
     max-height: unset !important;
     border: 0px !important;
