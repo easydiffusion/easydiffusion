@@ -182,10 +182,12 @@ def update_render_threads():
 def getUIPlugins():
     plugins = []
 
+    file_names = set()
     for plugins_dir, dir_prefix in UI_PLUGINS_SOURCES:
         for file in os.listdir(plugins_dir):
-            if file.endswith(".plugin.js"):
+            if file.endswith(".plugin.js") and file not in file_names:
                 plugins.append(f"/plugins/{dir_prefix}/{file}")
+                file_names.add(file)
 
     return plugins
 
