@@ -522,6 +522,17 @@
                     Expand Categories
                 </span>
             </div>
+            <div>
+                <label for="preview-image">Image Style:</label>
+                <select id="preview-image" name="preview-image" value="portrait">
+                    <option value="portrait" selected="">Face</option>
+                    <option value="landscape">Landscape</option>
+                </select>
+            </div>
+            <div>
+                <label for="modifier-card-size-slider">Thumbnail Size:</label>
+                <input id="modifier-card-size-slider" name="modifier-card-size-slider" value="0" type="range" min="-2" max="3">
+            </div>
         </div>
         <div id="editor-modifiers-entries" class="collapsible-content"></div>
     </div>
@@ -529,7 +540,7 @@
     <dialog id="modifier-settings-config">
         <div id="modifier-settings-header" class="dialog-header">
             <div id="modifier-settings-header-left" class="dialog-header-left">
-                <h4>Modifier Settings</h4>
+                <h4>Custom Modifiers</h4>
                 <span>Set your custom modifiers (one per line)</span>
             </div>
             <div id="modifier-settings-header-right">
@@ -542,16 +553,6 @@
                 <b>Tip:</b> You can include special characters like {} () [] and |. You can also put multiple comma-separated
                 phrases in a single line, to make a single modifier that combines all of those.
             </small>
-        </div>
-        <div id="editor-modifiers-entries-toolbar">
-            <label for="preview-image">Image Style:</label>
-            <select id="preview-image" name="preview-image" value="portrait">
-                <option value="portrait" selected="">Face</option>
-                <option value="landscape">Landscape</option>
-            </select>
-            &nbsp;
-            <label for="modifier-card-size-slider">Thumbnail Size:</label>
-            <input id="modifier-card-size-slider" name="modifier-card-size-slider" value="0" type="range" min="-2" max="3">
         </div>
     </dialog>
 
