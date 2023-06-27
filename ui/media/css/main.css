@@ -868,6 +868,9 @@ div.img-preview img {
 #editor-settings {
     min-width: 350px;
 }
+#editor-settings h4 {
+    margin: 0;
+}
 
 #editor-settings-entries {
     display: flex;
