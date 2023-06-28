@@ -565,12 +565,5 @@ modifierSettingsCloseBtn.addEventListener("click", (e) => {
     modifierSettingsDialog.close()    
 })
 
-modifierSettingsDialog.addEventListener('mousedown', function (event) {
-    var rect = modifierSettingsDialog.getBoundingClientRect();
-    var isInDialog=(rect.top <= event.clientY && event.clientY <= rect.top + rect.height
-      && rect.left <= event.clientX && event.clientX <= rect.left + rect.width);
-    if (!isInDialog) {
-        modifierSettingsDialog.close();
-    }
-});
+modalDialogCloseOnBackdropClick(modifierSettingsDialog)
 

@@ -132,9 +132,10 @@ let initialText = document.querySelector("#initial-text")
 let versionText = document.querySelector("#version")
 let previewTools = document.querySelector("#preview-tools")
 let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
-let showDownloadPopupBtn = document.querySelector("#show-download-popup")
-let saveAllImagesPopup = document.querySelector("#download-images-popup")
+let showDownloadDialogBtn = document.querySelector("#show-download-dialog")
+let saveAllImagesDialog = document.querySelector("#download-images-dialog")
 let saveAllImagesBtn = document.querySelector("#save-all-images")
+let saveAllImagesCloseBtn = document.querySelector("#download-images-close-button")
 let saveAllZipToggle = document.querySelector("#zip_toggle")
 let saveAllTreeToggle = document.querySelector("#tree_toggle")
 let saveAllJSONToggle = document.querySelector("#json_toggle")
@@ -1503,9 +1504,9 @@ clearAllPreviewsBtn.addEventListener("click", (e) => {
 })
 
 /* Download images popup */
-showDownloadPopupBtn.addEventListener("click", (e) => {
-    saveAllImagesPopup.classList.add("active")
-})
+showDownloadDialogBtn.addEventListener("click", (e) => { saveAllImagesDialog.showModal() }) 
+saveAllImagesCloseBtn.addEventListener("click", (e) => { saveAllImagesDialog.close() })
+modalDialogCloseOnBackdropClick(saveAllImagesDialog)
 
 saveAllZipToggle.addEventListener("change", (e) => {
     if (saveAllZipToggle.checked) {

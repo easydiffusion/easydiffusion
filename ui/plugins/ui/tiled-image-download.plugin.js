@@ -35,7 +35,7 @@
                    <h4>Download tiled image</h4>
                    <span>Generate a larger image from this tile</span>
                </div>
-               <div id="modifier-settings-header-right">
+               <div id="download-header-right">
                    <i id="downnload-tiled-close-button" class="fa-solid fa-xmark fa-lg"></i>
                </div>
            </div>
@@ -139,14 +139,7 @@
     // ---- Close popup
     document.getElementById("dti-cancel").addEventListener("click", (e) => downloadTiledImageDialog.close())
     document.getElementById("downnload-tiled-close-button").addEventListener("click", (e) => downloadTiledImageDialog.close())
-    downloadTiledImageDialog.addEventListener('click', function (event) {
-        var rect = downloadTiledImageDialog.getBoundingClientRect();
-        var isInDialog=(rect.top <= event.clientY && event.clientY <= rect.top + rect.height
-          && rect.left <= event.clientX && event.clientX <= rect.left + rect.width);
-        if (!isInDialog) {
-            downloadTiledImageDialog.close();
-        }
-    });
+    modalDialogCloseOnBackdropClick(downloadTiledImageDialog)
 
     // ---- Stylesheet
     const styleSheet = document.createElement("style")
