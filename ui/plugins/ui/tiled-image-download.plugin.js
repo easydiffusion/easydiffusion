@@ -140,6 +140,7 @@
     document.getElementById("dti-cancel").addEventListener("click", (e) => downloadTiledImageDialog.close())
     document.getElementById("downnload-tiled-close-button").addEventListener("click", (e) => downloadTiledImageDialog.close())
     modalDialogCloseOnBackdropClick(downloadTiledImageDialog)
+    makeDialogDraggable(downloadTiledImageDialog)
 
     // ---- Stylesheet
     const styleSheet = document.createElement("style")

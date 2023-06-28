@@ -566,4 +566,5 @@ modifierSettingsCloseBtn.addEventListener("click", (e) => {
 })
 
 modalDialogCloseOnBackdropClick(modifierSettingsDialog)
+makeDialogDraggable(modifierSettingsDialog)
 

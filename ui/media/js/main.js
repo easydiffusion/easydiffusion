@@ -1507,6 +1507,7 @@ clearAllPreviewsBtn.addEventListener("click", (e) => {
 showDownloadDialogBtn.addEventListener("click", (e) => { saveAllImagesDialog.showModal() }) 
 saveAllImagesCloseBtn.addEventListener("click", (e) => { saveAllImagesDialog.close() })
 modalDialogCloseOnBackdropClick(saveAllImagesDialog)
+makeDialogDraggable(saveAllImagesDialog)
 
 saveAllZipToggle.addEventListener("change", (e) => {
     if (saveAllZipToggle.checked) {

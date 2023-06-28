@@ -1066,3 +1066,48 @@ function modalDialogCloseOnBackdropClick(dialog) {
         }
     })
 }
+
+function makeDialogDraggable(element) {
+    element.querySelector(".dialog-header").addEventListener('mousedown', (function() {
+        let deltaX=0
+        let deltaY=0
+        let dragStartX=0
+        let dragStartY=0
+        let oldTop=0
+        let oldLeft=0
+
+        function dlgDragStart(e) {
+            e = e || window.event;
+            const d = e.target.closest("dialog")
+            e.preventDefault();
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            oldTop = parseInt(d.style.top)
+            oldLeft = parseInt(d.style.left)
+            if (isNaN(oldTop)) { oldTop=0 }
+            if (isNaN(oldLeft)) { oldLeft=0 }
+            console.log(oldTop, oldLeft)
+            document.addEventListener('mouseup', dlgDragClose);
+            document.addEventListener('mousemove', dlgDrag);
+        }
+
+        function dlgDragClose(e) {
+            document.removeEventListener('mouseup', dlgDragClose);
+            document.removeEventListener('mousemove', dlgDrag);
+        }
+
+        function dlgDrag(e) {
+            e = e || window.event;
+            const d = e.target.closest("dialog")
+            e.preventDefault();
+            deltaX = dragStartX - e.clientX;
+            deltaY = dragStartY - e.clientY;
+            d.style.left = `${oldLeft-2*deltaX}px`
+            d.style.top  = `${oldTop-2*deltaY}px`
+        }
+
+        return dlgDragStart
+    })() )
+}
+
+
