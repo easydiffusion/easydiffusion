@@ -1144,10 +1144,7 @@ function getTaskUpdater(task, reqBody, outputContainer) {
                 stepUpdate.total_steps * (batchCount - task.batchesDone) // Initial value at (unstarted task count * Nbr of steps)
             )
             const percent = Math.min(100, 100 * (overallStepCount / totalSteps)).toFixed(0)
-            if (SHOW_PROGRESS) {
-                document.title = `${percent}% - Easy Diffusion` 
-            }
-
+            
             const timeTaken = stepUpdate.step_time // sec
             const stepsRemaining = Math.max(0, totalSteps - overallStepCount)
             const timeRemaining = timeTaken < 0 ? "" : millisecondsToStr(stepsRemaining * timeTaken * 1000)
@@ -1289,6 +1286,15 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
         playSound()
     }
     if (SHOW_PROGRESS) {
+        updateTitle()
+    }
+}
+
+function updateTitle() {
+    let img_remaining = [...document.querySelectorAll("div .imageTaskContainer").entries()].map(c => htmlTaskMap.get(c[1])).filter(task => task.isProcessing).map(task => task.numOutputsTotal - Math.max(0, (task.batchesDone - 1) * task.reqBody.num_outputs)).reduce((total, value) => total + value, 0);
+    if (img_remaining > 0) {
+        document.title = `${img_remaining} - Easy Diffusion`;
+    } else {
         document.title = "Completed - Easy Diffusion"
     }
 }
@@ -1384,6 +1390,9 @@ async function onTaskStart(task) {
     renderButtons.style.display = "flex"
     renameMakeImageButton()
     updateInitialText()
+    if (SHOW_PROGRESS) {
+        updateTitle();
+    }
 }
 
 /* Hover effect for the init image in the task list */
