@@ -153,6 +153,10 @@ function permute(arr) {
     return permutations
 }
 
+function permuteNumber(arr) {
+    return Math.pow(2, arr.length)
+}
+
 // https://stackoverflow.com/a/8212878
 function millisecondsToStr(milliseconds) {
     function numberEnding(number) {
@@ -841,6 +845,7 @@ function createTab(request) {
     })
 }
 
+
 /* TOAST NOTIFICATIONS */
 function showToast(message, duration = 5000, error = false) {
     const toast = document.createElement("div")
@@ -922,4 +927,131 @@ function confirm(msg, title, fn) {
             cancel: () => {},
         },
     })
+}
+
+
+/* STORAGE MANAGEMENT */
+// Request persistent storage
+async function requestPersistentStorage() {
+    if (navigator.storage && navigator.storage.persist) {
+        const isPersisted = await navigator.storage.persist();
+        console.log(`Persisted storage granted: ${isPersisted}`);
+    }
+}
+requestPersistentStorage()
+
+// Open a database
+async function openDB() {
+    return new Promise((resolve, reject) => {
+        let request = indexedDB.open("EasyDiffusionSettingsDatabase", 1);
+        request.addEventListener("upgradeneeded", function () {
+            let db = request.result;
+            db.createObjectStore("EasyDiffusionSettings", { keyPath: "id" });
+        });
+        request.addEventListener("success", function () {
+            resolve(request.result);
+        });
+        request.addEventListener("error", function () {
+            reject(request.error);
+        });
+    });
+}
+
+// Function to write data to the object store
+async function setStorageData(key, value) {
+    return openDB().then(db => {
+        let tx = db.transaction("EasyDiffusionSettings", "readwrite");
+        let store = tx.objectStore("EasyDiffusionSettings");
+        let data = { id: key, value: value };
+        return new Promise((resolve, reject) => {
+            let request = store.put(data);
+            request.addEventListener("success", function () {
+                resolve(request.result);
+            });
+            request.addEventListener("error", function () {
+                reject(request.error);
+            });
+        });
+    });
+}
+
+// Function to retrieve data from the object store
+async function getStorageData(key) {
+    return openDB().then(db => {
+        let tx = db.transaction("EasyDiffusionSettings", "readonly");
+        let store = tx.objectStore("EasyDiffusionSettings");
+        return new Promise((resolve, reject) => {
+            let request = store.get(key);
+            request.addEventListener("success", function () {
+                if (request.result) {
+                    resolve(request.result.value);
+                } else {
+                    // entry not found
+                    resolve();
+                }
+            });
+            request.addEventListener("error", function () {
+                reject(request.error);
+            });
+        });
+    });
+}
+
+// indexedDB debug functions
+async function getAllKeys() {
+    return openDB().then(db => {
+        let tx = db.transaction("EasyDiffusionSettings", "readonly");
+        let store = tx.objectStore("EasyDiffusionSettings");
+        let keys = [];
+        return new Promise((resolve, reject) => {
+            store.openCursor().onsuccess = function (event) {
+                let cursor = event.target.result;
+                if (cursor) {
+                    keys.push(cursor.key);
+                    cursor.continue();
+                } else {
+                    resolve(keys);
+                }
+            };
+        });
+    });
+}
+
+async function logAllStorageKeys() {
+    try {
+        let keys = await getAllKeys();
+        console.log("All keys:", keys);
+        for (const k of keys) {
+            console.log(k, await getStorageData(k))
+        }
+    } catch (error) {
+        console.error("Error retrieving keys:", error);
+    }
+}
+
+// USE WITH CARE - THIS MAY DELETE ALL ENTRIES
+async function deleteKeys(keyToDelete) {
+    let confirmationMessage = keyToDelete
+        ? `This will delete the template with key "${keyToDelete}". Continue?`
+        : "This will delete ALL templates. Continue?";
+    if (confirm(confirmationMessage)) {
+        return openDB().then(db => {
+            let tx = db.transaction("EasyDiffusionSettings", "readwrite");
+            let store = tx.objectStore("EasyDiffusionSettings");
+            return new Promise((resolve, reject) => {
+                store.openCursor().onsuccess = function (event) {
+                    let cursor = event.target.result;
+                    if (cursor) {
+                        if (!keyToDelete || cursor.key === keyToDelete) {
+                            cursor.delete();
+                        }
+                        cursor.continue();
+                    } else {
+                        // refresh the dropdown and resolve
+                        resolve();
+                    }
+                };
+            });
+        });
+    }
 }

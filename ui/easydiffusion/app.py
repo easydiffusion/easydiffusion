@@ -4,6 +4,9 @@ import os
 import socket
 import sys
 import traceback
+import shlex
+from ruamel.yaml import YAML
+
 import urllib
 import warnings
 
@@ -13,6 +16,8 @@ from rich.logging import RichHandler
 from rich.console import Console
 from rich.panel import Panel
 from sdkit.utils import log as sdkit_log  # hack, so we can overwrite the log config
+
+yaml = YAML()
 
 # Remove all handlers associated with the root logger object.
 for handler in logging.root.handlers[:]:
@@ -98,30 +103,50 @@ def init():
 
 
 def getConfig(default_val=APP_CONFIG_DEFAULTS):
-    try:
-        config_json_path = os.path.join(CONFIG_DIR, "config.json")
-        if not os.path.exists(config_json_path):
-            config = default_val
-        else:
-            with open(config_json_path, "r", encoding="utf-8") as f:
-                config = json.load(f)
-        if "net" not in config:
-            config["net"] = {}
-        if os.getenv("SD_UI_BIND_PORT") is not None:
-            config["net"]["listen_port"] = int(os.getenv("SD_UI_BIND_PORT"))
-        if os.getenv("SD_UI_BIND_IP") is not None:
-            config["net"]["listen_to_network"] = os.getenv("SD_UI_BIND_IP") == "0.0.0.0"
-        return config
-    except Exception:
-        log.warn(traceback.format_exc())
-        return default_val
+    config_yaml_path = os.path.join(CONFIG_DIR, "config.yaml")
+    if os.path.isfile(config_yaml_path):
+        try:
+            with open(config_yaml_path, "r", encoding="utf-8") as f:
+                config = yaml.load(f)
+            if "net" not in config:
+                config["net"] = {}
+                if os.getenv("SD_UI_BIND_PORT") is not None:
+                    config["net"]["listen_port"] = int(os.getenv("SD_UI_BIND_PORT"))
+                else:
+                    config["net"]["listen_port"] = 9000
+                if os.getenv("SD_UI_BIND_IP") is not None:
+                    config["net"]["listen_to_network"] = os.getenv("SD_UI_BIND_IP") == "0.0.0.0"
+                else:
+                    config["net"]["listen_to_network"] = True
+            return config
+        except Exception as e:
+            log.warn(traceback.format_exc())
+            return default_val
+    else:
+        try:
+            config_json_path = os.path.join(CONFIG_DIR, "config.json")
+            if not os.path.exists(config_json_path):
+                return default_val
+            else:
+                log.info("Converting old json config file to yaml")
+                with open(config_json_path, "r", encoding="utf-8") as f:
+                    config = json.load(f)
+                # Save config in new format
+                setConfig(config)
+                os.rename(config_json_path, config_json_path + ".bak")
+                log.info("Saved old config.json as config.json.bak")
+                return getConfig(default_val)
+        except Exception as e:
+            log.warn(traceback.format_exc())
+            return default_val
 
 
 def setConfig(config):
-    try:  # config.json
-        config_json_path = os.path.join(CONFIG_DIR, "config.json")
-        with open(config_json_path, "w", encoding="utf-8") as f:
-            json.dump(config, f)
+    try:  # config.yaml
+        config_yaml_path = os.path.join(CONFIG_DIR, "config.yaml")
+        yaml.indent(mapping=2, sequence=4, offset=2)
+        with open(config_yaml_path, "w", encoding="utf-8") as f:
+            yaml.dump(config, f)
     except:
         log.error(traceback.format_exc())
 
@@ -157,10 +182,12 @@ def update_render_threads():
 def getUIPlugins():
     plugins = []
 
+    file_names = set()
     for plugins_dir, dir_prefix in UI_PLUGINS_SOURCES:
         for file in os.listdir(plugins_dir):
-            if file.endswith(".plugin.js"):
+            if file.endswith(".plugin.js") and file not in file_names:
                 plugins.append(f"/plugins/{dir_prefix}/{file}")
+                file_names.add(file)
 
     return plugins
 
@@ -237,7 +264,7 @@ def fail_and_die(fail_type: str, data: str):
     suggestions = [
         "Run this installer again.",
         "If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB",
-        "If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues",
+        "If that doesn't solve the problem, please file an issue at https://github.com/easydiffusion/easydiffusion/issues",
     ]
 
     if fail_type == "model_download":

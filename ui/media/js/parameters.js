@@ -664,7 +664,7 @@ saveSettingsBtn.addEventListener("click", function() {
         update_branch: updateBranch,
     }
 
-    Array.from(parametersTable.children).forEach((parameterRow) => {
+    document.querySelectorAll('#system-settings [data-setting-id]').forEach((parameterRow) => {
         if (parameterRow.dataset.saveInAppConfig === "true") {
             const parameterElement =
                 document.getElementById(parameterRow.dataset.settingId) ||

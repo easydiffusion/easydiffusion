@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="/media/css/image-editor.css">
     <link rel="stylesheet" href="/media/css/searchable-models.css">
     <link rel="stylesheet" href="/media/css/image-modal.css">
+    <link rel="stylesheet" href="/media/css/plugins.css">
     <link rel="manifest" href="/media/manifest.webmanifest">
     <script src="/media/js/jquery-3.6.1.min.js"></script>
     <script src="/media/js/jquery-confirm.min.js"></script>
@@ -30,7 +31,7 @@
             <h1>
                 <img id="logo_img" src="/media/images/icon-512x512.png" >
                 Easy Diffusion
-                <small>v2.5.41 <span id="updateBranchLabel"></span></small>
+                <small><span id="version">v2.5.42</span> <span id="updateBranchLabel"></span></small>
             </h1>
         </div>
         <div id="server-status">
@@ -60,7 +61,11 @@
                     <input id="prompt_from_file" name="prompt_from_file" type="file" /> <!-- hidden -->
                     <label for="negative_prompt" class="collapsible" id="negative_prompt_handle">
                         Negative Prompt
-                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Writing-prompts#negative-prompts" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top">Click to learn more about Negative Prompts</span></i></a>
+                        <a href="https://github.com/easydiffusion/easydiffusion/wiki/Writing-prompts#negative-prompts" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top">Click to learn more about Negative Prompts</span></i></a>
+                        <small>(optional)</small>
+                    </label>
+                    <label for="image-modifiers" data-active="false" id="image-modifier-dropdown">
+                        Image Modifiers
                         <small>(optional)</small>
                     </label>
                     <div class="collapsible-content">
@@ -102,7 +107,7 @@
                 </div>
 
                 <div id="editor-inputs-tags-container" class="row">
-                    <label>Image Modifiers <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">click an Image Modifier to remove it, right-click to temporarily disable it, use Ctrl+Mouse Wheel to adjust its weight</span></i></label>
+                    <label>Image Modifiers <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">Click an Image Modifier to remove it, right-click to temporarily disable it, use Ctrl+Mouse Wheel to adjust its weight</span></i></label>
                     <div id="editor-inputs-tags-list"></div>
                 </div>
 
@@ -133,18 +138,18 @@
                     <tr class="pl-5"><td><label for="stable_diffusion_model">Model:</label></td><td class="model-input">
                         <input id="stable_diffusion_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
                         <button id="reload-models" class="secondaryButton reloadModels"><i class='fa-solid fa-rotate'></i></button>
-                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Custom-Models" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about custom models</span></i></a>
+                        <a href="https://github.com/easydiffusion/easydiffusion/wiki/Custom-Models" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about custom models</span></i></a>
                     </td></tr>
                     <tr class="pl-5 displayNone" id="clip_skip_config">
                         <td><label for="clip_skip">Clip Skip:</label></td>
                         <td>
                             <input id="clip_skip" name="clip_skip" type="checkbox">
-                            <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Clip-Skip" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about Clip Skip</span></i></a>
+                            <a href="https://github.com/easydiffusion/easydiffusion/wiki/Clip-Skip" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about Clip Skip</span></i></a>
                         </td>
                     </tr>
                     <tr class="pl-5"><td><label for="vae_model">Custom VAE:</label></td><td>
                         <input id="vae_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
-                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/VAE-Variational-Auto-Encoder" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about VAEs</span></i></a>
+                        <a href="https://github.com/easydiffusion/easydiffusion/wiki/VAE-Variational-Auto-Encoder" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about VAEs</span></i></a>
                     </td></tr>
                     <tr id="samplerSelection" class="pl-5"><td><label for="sampler_name">Sampler:</label></td><td>
                         <select id="sampler_name" name="sampler_name">
@@ -170,7 +175,7 @@
                             <option value="unipc_tu_2" class="k_diffusion-only">UniPC TU 2</option>
                             <option value="unipc_tq" class="k_diffusion-only">UniPC TQ</option>
                         </select>
-                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/How-to-Use#samplers" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about samplers</span></i></a>
+                        <a href="https://github.com/easydiffusion/easydiffusion/wiki/How-to-Use#samplers" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about samplers</span></i></a>
                     </td></tr>
                     <tr class="pl-5"><td><label>Image Size: </label></td><td>
                         <select id="width" name="width" value="512">
@@ -246,7 +251,7 @@
                             <option value="y">Vertical</option>
                             <option value="xy">Both</option>
                         </select>
-                        <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Seamless-Tiling" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about Seamless Tiling</span></i></a>
+                        <a href="https://github.com/easydiffusion/easydiffusion/wiki/Seamless-Tiling" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about Seamless Tiling</span></i></a>
                     </td></tr>
                     <tr class="pl-5"><td><label for="output_format">Output Format:</label></td><td>
                         <select id="output_format" name="output_format">
@@ -294,28 +299,7 @@
                 </div>
             </div>
 
-            <div id="editor-modifiers" class="panel-box">
-                <h4 class="collapsible">
-                    Image Modifiers (art styles, tags etc)
-                    <i id="modifier-settings-btn" class="fa-solid fa-gear section-button">
-                        <span class="simple-tooltip left">
-                            Add Custom Modifiers
-                        </span>
-                    </i>
-                </h4>
-                <div id="editor-modifiers-entries" class="collapsible-content">
-                    <div id="editor-modifiers-entries-toolbar">
-                        <label for="preview-image">Image Style:</label>
-                        <select id="preview-image" name="preview-image" value="portrait">
-                            <option value="portrait" selected="">Face</option>
-                            <option value="landscape">Landscape</option>
-                        </select>
-                        &nbsp;
-                        <label for="modifier-card-size-slider">Thumbnail Size:</label>
-                        <input id="modifier-card-size-slider" name="modifier-card-size-slider" value="0" type="range" min="-3" max="5">
-                    </div>
-                </div>
-            </div>
+            <label><small><b>Note:</b> The Image Modifiers section has moved to the <code>+ Image Modifiers</code> button at the top, just below the Prompt textbox.</small></label>
         </div>
 
         <div id="preview" class="col-free">
@@ -398,23 +382,23 @@
                         <ul id="help-links">
                             <li><span class="help-section">Using the software</span>
                             <ul>
-                                <li> <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/How-To-Use" target="_blank"><i class="fa-solid fa-book fa-fw"></i> How to use</a>
-                                <li> <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/UI-Overview" target="_blank"><i class="fa-solid fa-list fa-fw"></i> UI Overview</a>
-                                <li> <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Writing-Prompts" target="_blank"><i class="fa-solid fa-pen-to-square fa-fw"></i> Writing prompts</a>
-                                <li> <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Inpainting" target="_blank"><i class="fa-solid fa-paintbrush fa-fw"></i> Inpainting</a>
-                                <li> <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Run-on-Multiple-GPUs" target="_blank"><i class="fa-solid fa-paintbrush fa-fw"></i> Run on Multiple GPUs</a>
+                                <li> <a href="https://github.com/easydiffusion/easydiffusion/wiki/How-To-Use" target="_blank"><i class="fa-solid fa-book fa-fw"></i> How to use</a>
+                                <li> <a href="https://github.com/easydiffusion/easydiffusion/wiki/UI-Overview" target="_blank"><i class="fa-solid fa-list fa-fw"></i> UI Overview</a>
+                                <li> <a href="https://github.com/easydiffusion/easydiffusion/wiki/Writing-Prompts" target="_blank"><i class="fa-solid fa-pen-to-square fa-fw"></i> Writing prompts</a>
+                                <li> <a href="https://github.com/easydiffusion/easydiffusion/wiki/Inpainting" target="_blank"><i class="fa-solid fa-paintbrush fa-fw"></i> Inpainting</a>
+                                <li> <a href="https://github.com/easydiffusion/easydiffusion/wiki/Run-on-Multiple-GPUs" target="_blank"><i class="fa-solid fa-paintbrush fa-fw"></i> Run on Multiple GPUs</a>
                             </ul>
   
                             <li><span class="help-section">Installation</span>
                             <ul>
-                                <li> <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" target="_blank"><i class="fa-solid fa-circle-question fa-fw"></i> Troubleshooting</a>
+                                <li> <a href="https://github.com/easydiffusion/easydiffusion/wiki/Troubleshooting" target="_blank"><i class="fa-solid fa-circle-question fa-fw"></i> Troubleshooting</a>
                             </ul>
   
                             <li><span class="help-section">Downloadable Content</span>
                             <ul>
-                                <li> <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Custom-Models" target="_blank"><i class="fa-solid fa-images fa-fw"></i> Custom Models</a>
-                                <li> <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/UI-Plugins" target="_blank"><i class="fa-solid fa-puzzle-piece fa-fw"></i> UI Plugins</a>
-                                <li> <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/VAE-Variational-Auto-Encoder" target="_blank"><i class="fa-solid fa-hand-sparkles fa-fw"></i> VAE Variational Auto Encoder</a>
+                                <li> <a href="https://github.com/easydiffusion/easydiffusion/wiki/Custom-Models" target="_blank"><i class="fa-solid fa-images fa-fw"></i> Custom Models</a>
+                                <li> <a href="https://github.com/easydiffusion/easydiffusion/wiki/UI-Plugins" target="_blank"><i class="fa-solid fa-puzzle-piece fa-fw"></i> UI Plugins</a>
+                                <li> <a href="https://github.com/easydiffusion/easydiffusion/wiki/VAE-Variational-Auto-Encoder" target="_blank"><i class="fa-solid fa-hand-sparkles fa-fw"></i> VAE Variational Auto Encoder</a>
                             </ul>
                         </ul>
                     </div>
@@ -424,7 +408,7 @@
                         <ul id="community-links">
                             <li><a href="https://discord.com/invite/u9yhsFmEkB" target="_blank"><i class="fa-brands fa-discord fa-fw"></i> Discord user community</a></li>
                             <li><a href="https://www.reddit.com/r/StableDiffusionUI/" target="_blank"><i class="fa-brands fa-reddit fa-fw"></i> Reddit community</a></li>
-                            <li><a href="https://github.com/cmdr2/stable-diffusion-ui" target="_blank"><i class="fa-brands fa-github fa-fw"></i> Source code on GitHub</a></li>
+                            <li><a href="https://github.com/easydiffusion/easydiffusion" target="_blank"><i class="fa-brands fa-github fa-fw"></i> Source code on GitHub</a></li>
                         </ul>
                     </div>
                 </div>
@@ -432,6 +416,53 @@
         </div>
     </div>
     
+    <div class="popup" id="splash-screen" data-version="1">
+        <div>
+            <i class="close-button fa-solid fa-xmark"></i>
+            <img class="splash-img" src="/media/images/icon-512x512.png" width="128" height="128">
+            <h1>Diffusers Tech Preview</h1>
+            <p>The Diffusers Tech Preview allows early access to the new features based on <a href="https://huggingface.co/docs/diffusers/index" target="_blank">Diffusers</a>.</p>
+            <p>This is under active development, and is missing a few features. It is experimental! Please report any bugs to the #beta channel in our <a href="https://discord.gg/QUcNZufQNZ" target="_blank">Discord</a> server!</p>
+            <h2>New upcoming features in our new engine</h2>
+            <ul>
+                <li><a href="https://huggingface.co/blog/lora" target="_blank">LORA</a> support - Place LORA files in the <tt>models/lora</tt> folder.</li>
+                <li><a href="https://github.com/damian0815/compel/blob/main/Reference.md" target="_blank">Compel Prompt Parser</a> - New, more powerful parser. In short:
+                    <ul>
+                        <li> no limit to the length of prompts (i.e. long prompts are supported)</li>
+                        <li> Use <tt>+</tt> and <tt>-</tt> to increase/decrease the weight. E.g. <tt>apple</tt>, <tt>apple+</tt>, <tt>apple++</tt>, <tt>apple+++</tt>,
+                             or <tt>apple-</tt>, <tt>apple--</tt> for different weights.</li>
+                        <li> Use exact weights - 0.0 to 1.0 reduces the weight, 1.0 to 2.0 increases the weight.
+                             Think of it like a multiplier, like 1.5x or 0.5x: E.g. <tt>(apple)0.8 falling from a tree</tt>,
+                             <tt>(apple)1.5 falling from a tree</tt>, <tt>(apple falling)1.4 from a tree</tt></li>
+                        <li> You can group tokens together using parentheses/round-brackets. E.g. <tt>(apple falling)++
+                             from a tree</tt>. Nested parentheses are supported.</li>
+                    </ul>
+                    This clarifies a few things:
+                    <ul>
+                        <li> colon (<tt>:</tt>) is NOT used for blending. Neither is it used for weights. It has no impact and
+                             will be considered a part of the prompt.</li>
+                        <li> <tt>(())</tt> and <tt>[]</tt> do not affect the prompt's weights.</li>
+                    </ul>
+                </li>
+                <li> More choices for img2img samplers</li>
+                <li> Support for official inpainting models</li>
+		<li> Generate images that tile seamlessly</li>
+                <li> <a href="https://github.com/cmdr2/stable-diffusion-ui/wiki/Clip-Skip" target="_blank">Clip Skip</a> support allows to skip the last CLIP layer (recommended by some LORA models)</li>
+                <li> New samplers: DDPM and DEIS</li>
+                <li> Memory optimizations that allow the use of 2GB GPUs</li>
+            </ul>
+            <h2>Known issues</h2>
+            <ul>
+                <li> Some LoRA consistently fail to load in EasyDiffusion</li>
+                <li> Some LoRA are far more sensitive to alpha (compared to a11)</li>
+                <li> Hangs sometimes on "compel is ready", while making the token.</li>
+                <li> Some custom inpainting models don't work</li>
+                <li> These samplers don't work yet: Unipc SNR, Unipc TQ, Unipc SNR2, DPM++ 2s Ancestral, DPM++ SDE, DPM Fast, DPM Adaptive, DPM2</li>
+                <li> Hypernetwork doesn't work</li>
+                <li> The time remaining in browser differs from the one in the console</li>
+            </ul>
+        </div>
+    </div>
 
     <div class="popup" id="download-images-popup">
         <div>
@@ -468,15 +499,62 @@
         </div>
     </div>
 
-    <div id="modifier-settings-config" class="popup" tabindex="0">
-        <div>
-            <i class="close-button fa-solid fa-xmark"></i>
-            <h1>Modifier Settings</h1>
-            <p>Set your custom modifiers (one per line)</p>
-            <textarea id="custom-modifiers-input" placeholder="Enter your custom modifiers, one-per-line" spellcheck="false"></textarea>
-            <p><small><b>Tip:</b> You can include special characters like {} () [] and |. You can also put multiple comma-separated phrases in a single line, to make a single modifier that combines all of those.</small></p>
+    <div id="editor-modifiers">
+        <div id="editor-modifiers-header" class="dialog-header">
+            <div id="modifiers-header-left" class="dialog-header-left">
+                <h4>Image Modifiers</h4>
+                <span>(drawing style, camera, etc.)</span>
+            </div>
+            <div id="modifiers-header-right">
+                <i id="modifier-settings-btn" class="fa-solid fa-gear section-button">
+                    <span class="simple-tooltip left">
+                        Add Custom Modifiers
+                    </span>
+                </i>
+                <i id="modifiers-container-size-btn" class="fa-solid fa-expand"></i>
+                <i id="modifiers-close-button" class="fa-solid fa-xmark fa-lg"></i>
+            </div>
         </div>
+        <div id="editor-modifiers-subheader">
+            <div id="modifiers-action-collapsibles-btn">
+                <i class="modifiers-action-icon fa-solid fa-square-plus"></i>
+                <span class="modifiers-action-text">
+                    Expand Categories
+                </span>
+            </div>
+            <div>
+                <label for="preview-image">Image Style:</label>
+                <select id="preview-image" name="preview-image" value="portrait">
+                    <option value="portrait" selected="">Face</option>
+                    <option value="landscape">Landscape</option>
+                </select>
+            </div>
+            <div>
+                <label for="modifier-card-size-slider">Thumbnail Size:</label>
+                <input id="modifier-card-size-slider" name="modifier-card-size-slider" value="0" type="range" min="-2" max="3">
+            </div>
+        </div>
+        <div id="editor-modifiers-entries" class="collapsible-content"></div>
     </div>
+
+    <dialog id="modifier-settings-config">
+        <div id="modifier-settings-header" class="dialog-header">
+            <div id="modifier-settings-header-left" class="dialog-header-left">
+                <h4>Custom Modifiers</h4>
+                <span>Set your custom modifiers (one per line)</span>
+            </div>
+            <div id="modifier-settings-header-right">
+                <i id="modifier-settings-close-button" class="fa-solid fa-xmark fa-lg"></i>
+            </div>
+        </div>
+        <textarea id="custom-modifiers-input" placeholder="Enter your custom modifiers, one-per-line" spellcheck="false"></textarea>
+        <div>
+            <small>
+                <b>Tip:</b> You can include special characters like {} () [] and |. You can also put multiple comma-separated
+                phrases in a single line, to make a single modifier that combines all of those.
+            </small>
+        </div>
+    </dialog>
 
     <div id="image-editor" class="popup image-editor-popup">
         <div>
@@ -514,10 +592,10 @@
     <div id="footer">
         <div class="line-separator">&nbsp;</div>
         <p>If you found this project useful and want to help keep it alive, please <a href="https://ko-fi.com/cmdr2_stablediffusion_ui" target="_blank"><img src="/media/images/kofi.png" id="coffeeButton"></a> to help cover the cost of development and maintenance! Thank you for your support!</p>
-        <p>Please feel free to join the <a href="https://discord.com/invite/u9yhsFmEkB" target="_blank">discord community</a> or <a href="https://github.com/cmdr2/stable-diffusion-ui/issues" target="_blank">file an issue</a> if you have any problems or suggestions in using this interface.</p>
+        <p>Please feel free to join the <a href="https://discord.com/invite/u9yhsFmEkB" target="_blank">discord community</a> or <a href="https://github.com/easydiffusion/easydiffusion/issues" target="_blank">file an issue</a> if you have any problems or suggestions in using this interface.</p>
         <div id="footer-legal">
             <p><b>Disclaimer:</b> The authors of this project are not responsible for any content generated using this interface.</p>
-            <p>This license of this software forbids you from sharing any content that violates any laws, produce any harm to a person, disseminate any personal information that would be meant for harm, <br/>spread misinformation and target vulnerable groups. For the full list of restrictions please read <a href="https://github.com/cmdr2/stable-diffusion-ui/blob/main/LICENSE" target="_blank">the license</a>.</p>
+            <p>This license of this software forbids you from sharing any content that violates any laws, produce any harm to a person, disseminate any personal information that would be meant for harm, <br/>spread misinformation and target vulnerable groups. For the full list of restrictions please read <a href="https://github.com/easydiffusion/easydiffusion/blob/main/LICENSE" target="_blank">the license</a>.</p>
             <p>By using this software, you consent to the terms and conditions of the license.</p>
         </div>
     </div>
@@ -526,13 +604,13 @@
 <script src="media/js/utils.js"></script>
 <script src="media/js/engine.js"></script>
 <script src="media/js/parameters.js"></script>
-<script src="media/js/plugins.js"></script>
 
 <script src="media/js/image-modifiers.js"></script>
 <script src="media/js/auto-save.js"></script>
 
 <script src="media/js/searchable-models.js"></script>
 <script src="media/js/main.js"></script>
+<script src="media/js/plugins.js"></script>
 <script src="media/js/themes.js"></script>
 <script src="media/js/dnd.js"></script>
 <script src="media/js/image-editor.js"></script>
@@ -545,6 +623,7 @@ async function init() {
     await loadUIPlugins()
     await loadModifiers()
     await getSystemInfo()
+    // await initPlugins()
 
     SD.init({
         events: {
@@ -553,6 +632,7 @@ async function init() {
             ping: tunnelUpdate
         }
     })
+    splashScreen()
 
     // playSound()
 }

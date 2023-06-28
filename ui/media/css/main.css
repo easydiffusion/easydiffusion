@@ -14,10 +14,10 @@ body {
     color: var(--text-color);
 }
 a {
-    color: rgb(0, 102, 204);
+    color: var(--link-color);
 }
 a:visited {
-    color: rgb(0, 102, 204);
+    color: var(--link-color);
 }
 label {
     font-size: 10pt;
@@ -144,7 +144,7 @@ code {
     opacity: 0;
 }
 .imgPreviewItemClearBtn:hover {
-    background: rgb(177, 27, 0);
+    background: var(--button-hover-background);
 }
 .imgContainer:hover > .imgItemInfo {
     opacity: 1;
@@ -184,7 +184,7 @@ code {
 #editor label {
     font-weight: normal;
 }
-#editor h4 {
+.dialog-header h4 {
     margin: 0px;
     white-space: nowrap;
 }
@@ -192,7 +192,7 @@ code {
     width: 100%;
 }
 .settings-box label small {
-    color: rgb(153, 153, 153);
+    color: var(--small-label-color);
     margin-right: 10px;
 }
 #preview {
@@ -211,10 +211,6 @@ code {
 #makeImage {
     border-radius: 6px;
 }
-#editor-modifiers h5 {
-    padding: 5pt 0;
-    margin: 0;
-}
 #makeImage {
     flex: 0 0 70px;
     background: var(--accent-color);
@@ -224,11 +220,11 @@ code {
     height: 30pt;
 }
 #makeImage:hover {
-    background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
+    background: var(--button-hover-background);
 }
 #stopImage {
     flex: 0 0 70px;
-    background: rgb(132, 8, 0);
+    background: var(--secondary-button-background);
     border: 2px solid rgb(122, 29, 0);
     color: rgb(255, 221, 255);
     height: 30pt;
@@ -236,7 +232,7 @@ code {
     flex-grow: 2;
 }
 #stopImage:hover {
-    background: rgb(177, 27, 0);
+    background: var(--secondary-button-hover-background);
 }
 #undo {
     float: right;
@@ -284,14 +280,218 @@ button#resume {
 .collapsible:not(.active) ~ .collapsible-content  {
     display: none !important;
 }
+#image-modifier-dropdown {
+    margin-left: 1em;
+    position: relative;
+    cursor: pointer;
+}
+#image-modifier-dropdown[data-active="true"]::before {
+    content: "➖";
+}
+#image-modifier-dropdown[data-active="false"]::before {
+    content: "➕";
+}
 #editor-modifiers {
-    overflow-y: auto;
+    max-width: 75vw;
+    min-width: 50vw;
+    max-height: fit-content;
+    overflow-y: hidden;
     overflow-x: hidden;
+    display: none;
+    background: var(--background-color1);
+    border: solid 1px var(--background-color3);
+    z-index: 1999;
+    border-radius: 6px;
+    box-shadow: 0px 0px 30px black;
+    border: 2px solid rgb(255 255 255 / 10%);
+    margin-top: 150pt;
+}
+@media screen and (max-height: 500px) {
+    #editor-modifiers {
+        margin-top: 50pt;
+    }
+}
+#editor-modifiers.active {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    left: 5vw;
+}
+.modifiers-maximized {
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0px !important;
+    left: 0px !important;
+    right: 0px !important;
+    margin: 0px !important;
+    max-width: unset !important;
+    max-height: unset !important;
+    border: 0px !important;
+    border-radius: 0px !important;
+}
+.modifiers-maximized #editor-modifiers-entries {
+    max-height: 100%;
+    flex: 1;
+}
+.dialog-header {
+    background-color: var(--background-color4);
+    padding: 0.5em;
+    border-bottom: 1px solid rgb(255 255 255 / 10%);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+#editor-modifiers-subheader {
+    background-color: var(--background-color4);
+    padding: 0.5em;
+    border-bottom: 1px solid rgb(255 255 255 / 10%);
+    display: flex;
+    align-items: center;
+    grid-gap: 0.8em;
+    flex-direction: row;
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    transition: all 0.1s ease;
+}
+#editor-modifiers-subheader::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.02);
+    opacity: 1;
+    pointer-events: none;
+}
+#modifiers-header-left {
+    display: flex;
+    flex-direction: column;
+    grid-gap: 0.1em;
+}
+.dialog-header-left span {
+    font-size: 0.8em;
+    color: rgb(127 127 127);
+    font-weight: 200;
+}
+#modifiers-header-right {
+    display: flex;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    grid-gap: 0.8em;
+    margin-right: 0.3em;
+}
+
+#editor-modifiers-subheader i,
+#modifiers-header-right i {
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+}
+#modifiers-header-right .section-button,
+#editor-modifiers-subheader .section-button {
+    margin-top: 0.3em;
+}
+#modifiers-action-collapsibles-btn {
+    display: flex;
+    grid-gap: 0.5em;
+    cursor: pointer;
+}
+.modifiers-action-text {
+    font-size: 0.8em;
+    color: rgb(192 192 192);
+}
+#modifiers-expand-btn {
+    z-index: 2;
+}
+#modifiers-expand-btn .simple-tooltip {
+    background-color: var(--background-color3);
+    border-radius: 50px;
+}
+.modifier-category .collapsible {
+    position: relative;
+}
+.modifier-category .collapsible::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.1);
+    opacity: 0;
+    transition: opacity 0.1s ease;
+    pointer-events: none;
+}
+.modifier-category:hover .collapsible::after {
+    opacity: 1;
+    pointer-events: none;
+}
+#editor-modifiers-entries {
+    overflow: auto scroll;
+    max-height: 50vh;
+    height: fit-content;
+    margin-bottom: 0.1em;
+    padding-left: 0px;
+}
+#editor-modifiers-entries .collapsible {
+    transition: opacity 0.1s ease;
+    padding-left: 0.5em;
+}
+#editor-modifiers-entries .modifier-category:nth-child(odd) .collapsible::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.02);
+    opacity: 1;
+    pointer-events: none;
 }
 #editor-modifiers .editor-modifiers-leaf {
     padding-top: 10pt;
     padding-bottom: 10pt;
 }
+#editor-modifiers h5 {
+    padding: 5pt 0;
+    margin: 0;
+    position: sticky;
+    top: -2px;
+    z-index: 10;
+    background-color: var(--background-color3);
+    border-bottom: 1px solid rgb(255 255 255 / 4%);
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+dialog {
+    background: var(--background-color2);
+    color: var(--text-color);
+    border-radius: 6px;
+    border: 2px solid rgb(255 255 255 / 10%);
+    padding: 0px;
+}
+
+dialog::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+dialog > div {
+    padding: 0.5em;
+}
+
+
 img {
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
 }
@@ -310,6 +510,9 @@ div.img-preview img {
     margin-top: 5pt;
     display: none;
 }
+#editor-inputs-tags-list {
+    max-height: 30em;
+}
 #server-status {
     position: absolute;
     right: 16px;
@@ -318,11 +521,11 @@ div.img-preview img {
 }
 #server-status-color {
     font-size: 14pt;
-    color: rgb(200, 139, 0);
+    color: var(--status-orange);
     display: inline;
 }
 #server-status-msg {
-    color: rgb(200, 139, 0);
+    color: var(--status-orange);
     padding-left: 2pt;
     font-size: 10pt;
 }
@@ -529,14 +732,14 @@ div.img-preview img {
     padding: 3pt 6pt;
 }
 .secondaryButton {
-    background: rgb(132, 8, 0);
+    background: var(--secondary-button-background);
     border: 1px solid rgb(122, 29, 0);
     color: rgb(255, 221, 255);
     padding: 3pt 6pt;
     border-radius: 5px;
 }
 .secondaryButton:hover {
-    background: rgb(177, 27, 0);
+    background: var(--secondary-button-hover-background);
 }
 .tertiaryButton {
     background: var(--tertiary-background-color);
@@ -546,12 +749,12 @@ div.img-preview img {
     border-radius: 5px;
 }
 .tertiaryButton:hover {
-    background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
+    background: var(--button-hover-background);
     color: var(--accent-text-color);
 }
 .tertiaryButton.pressed {
     border-style: inset;
-    background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
+    background: var(--button-hover-background);
     color: var(--accent-text-color);
 }
 .useSettings {
@@ -672,6 +875,9 @@ div.img-preview img {
 #editor-settings {
     min-width: 350px;
 }
+.panel-box > h4 {
+    margin: 0;
+}
 
 #editor-settings-entries {
     display: flex;
@@ -771,14 +977,13 @@ input::file-selector-button,
 button:hover,
 .button:hover {
   transition-duration: 0.1s;
-  background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
+  background: var(--button-hover-background);
 }
 
 input::file-selector-button {
     padding: 0px 4px;
     height: 19px;
 }
-
 
 .input-toggle {
     display: inline-block;
@@ -1083,12 +1288,13 @@ input::file-selector-button {
 /* POPUPS */
 .popup:not(.active) {
     visibility: hidden;
+    overflow-x: hidden; /* fix overflow from body */
     opacity: 0;
 }
 
 .popup {
     position: absolute;
-    background: rgba(32, 33, 36, 50%);
+    background: var(--backdrop-color);
     top: 0px;
     left: 0px;
     right: 0px;
@@ -1290,6 +1496,49 @@ body.wait-pause {
      0% { border: solid 12px var(--accent-color); }
     50% { border: solid 12px var(--background-color1); }
    100% { border: solid 12px var(--accent-color); }
+}
+
+#splash-screen div {
+   text-align: left;
+   max-width: 70vw;
+}
+
+#splash-screen .splash-img {
+   float: right;
+   box-shadow: none;
+   margin-left: 6px;
+}
+
+#splash-screen tt {
+   font-family: monospace;
+   background: var(--input-background-color);
+   padding: 1px 4px 1px 4px;
+   border-radius: 5px;
+}
+
+#splash-screen li {
+   margin-bottom: 6px;
+}
+
+#splash-screen a
+{
+  color: #ccf;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+#splash-screen a[href^="http"]::after,
+#splash-screen a[href^="https://"]::after
+{
+  content: "";
+  width: 11px;
+  height: 11px;
+  margin-left: 4px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='lightblue' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z'/%3E%3Cpath fill-rule='evenodd' d='M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z'/%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  display: inline-block;
 }
 
 .jconfirm.jconfirm-modern .jconfirm-box div.jconfirm-title-c {
