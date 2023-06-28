@@ -1086,7 +1086,6 @@ function makeDialogDraggable(element) {
             oldLeft = parseInt(d.style.left)
             if (isNaN(oldTop)) { oldTop=0 }
             if (isNaN(oldLeft)) { oldLeft=0 }
-            console.log(oldTop, oldLeft)
             document.addEventListener('mouseup', dlgDragClose);
             document.addEventListener('mousemove', dlgDrag);
         }
