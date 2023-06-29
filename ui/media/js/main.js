@@ -1043,6 +1043,7 @@ function makeImage() {
     newTaskRequests.forEach(setEmbeddings)
     newTaskRequests.forEach(createTask)
 
+    updateTitle()
     updateInitialText()
 }
 
@@ -1143,7 +1144,7 @@ function getTaskUpdater(task, reqBody, outputContainer) {
                 stepUpdate.total_steps * (batchCount - task.batchesDone) // Initial value at (unstarted task count * Nbr of steps)
             )
             const percent = Math.min(100, 100 * (overallStepCount / totalSteps)).toFixed(0)
-            
+
             const timeTaken = stepUpdate.step_time // sec
             const stepsRemaining = Math.max(0, totalSteps - overallStepCount)
             const timeRemaining = timeTaken < 0 ? "" : millisecondsToStr(stepsRemaining * timeTaken * 1000)
@@ -1151,6 +1152,7 @@ function getTaskUpdater(task, reqBody, outputContainer) {
             outputMsg.style.display = "block"
             progressBarInner.style.width = `${percent}%`
 
+            updateTitle()
             if (stepUpdate.output) {
                 showImages(reqBody, stepUpdate, outputContainer, true)
             }
@@ -1176,7 +1178,9 @@ function abortTask(task) {
             console.error(e)
         }
     })
-    document.title = "Stopped - Easy Diffusion"
+    if (task.batchesDone > 0) {
+        document.title = "Stopped - Easy Diffusion"
+    }
 }
 
 function onTaskErrorHandler(task, reqBody, instance, reason) {
@@ -1385,7 +1389,6 @@ async function onTaskStart(task) {
     renderButtons.style.display = "flex"
     renameMakeImageButton()
     updateInitialText()
-    updateTitle();
 }
 
 /* Hover effect for the init image in the task list */
