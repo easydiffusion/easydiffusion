@@ -62,7 +62,6 @@ const taskConfigSetup = {
 
 let imageCounter = 0
 let imageRequest = []
-let SHOW_PROGRESS = true
 
 let promptField = document.querySelector("#prompt")
 let promptsFromFileSelector = document.querySelector("#prompt_from_file")
@@ -1177,9 +1176,7 @@ function abortTask(task) {
             console.error(e)
         }
     })
-    if (SHOW_PROGRESS) {
-        document.title = "Stopped - Easy Diffusion"
-    }
+    document.title = "Stopped - Easy Diffusion"
 }
 
 function onTaskErrorHandler(task, reqBody, instance, reason) {
@@ -1285,9 +1282,7 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
     if (isSoundEnabled()) {
         playSound()
     }
-    if (SHOW_PROGRESS) {
-        updateTitle()
-    }
+    updateTitle()
 }
 
 function updateTitle() {
@@ -1390,9 +1385,7 @@ async function onTaskStart(task) {
     renderButtons.style.display = "flex"
     renameMakeImageButton()
     updateInitialText()
-    if (SHOW_PROGRESS) {
-        updateTitle();
-    }
+    updateTitle();
 }
 
 /* Hover effect for the init image in the task list */
