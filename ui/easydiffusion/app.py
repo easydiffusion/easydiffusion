@@ -18,8 +18,6 @@ from rich.console import Console
 from rich.panel import Panel
 from sdkit.utils import log as sdkit_log  # hack, so we can overwrite the log config
 
-yaml = YAML()
-
 # Remove all handlers associated with the root logger object.
 for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
@@ -107,6 +105,7 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
     config_yaml_path = os.path.join(CONFIG_DIR, "config.yaml")
     if os.path.isfile(config_yaml_path):
         try:
+            yaml = YAML()
             with open(config_yaml_path, "r", encoding="utf-8") as f:
                 config = yaml.load(f)
             if "net" not in config:
@@ -145,6 +144,7 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
 def setConfig(config):
     try:  # config.yaml
         config_yaml_path = os.path.join(CONFIG_DIR, "config.yaml")
+        yaml = YAML()
         yaml.indent(mapping=2, sequence=4, offset=2)
         with open(config_yaml_path, "w", encoding="utf-8") as f:
             yaml.dump(config, f)
