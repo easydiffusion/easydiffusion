@@ -139,8 +139,11 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
                 config = json.load(f)
             # Save config in new format
             setConfig(config)
-            shutil.move(config_json_path, config_json_path + ".bak")
-            log.info("Saved old config.json as config.json.bak")
+
+            with open(config_json_path, "w") as f:
+                f.write("Moved to config.yaml inside the Easy Diffusion folder. You can open it in any text editor.")
+                # intentionally writing invalid json, to alert any scripts that depend on this file
+
             return getConfig(default_val)
         except Exception as e:
             log.warn(traceback.format_exc())
