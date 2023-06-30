@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import shutil
 import socket
 import sys
 import traceback
@@ -133,7 +134,7 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
                     config = json.load(f)
                 # Save config in new format
                 setConfig(config)
-                os.rename(config_json_path, config_json_path + ".bak")
+                shutil.move(config_json_path, config_json_path + ".bak")
                 log.info("Saved old config.json as config.json.bak")
                 return getConfig(default_val)
         except Exception as e:
