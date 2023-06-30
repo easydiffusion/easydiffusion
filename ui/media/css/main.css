@@ -485,7 +485,7 @@ dialog {
 }
 
 dialog::backdrop {
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--backdrop-color);
 }
 
 dialog > div {
@@ -1448,8 +1448,16 @@ button#save-system-settings-btn {
     line-height: 200%;
 }
 
-#download-images-popup .parameters-table > div {
+#download-images-dialog .parameters-table > div {
     background: var(--background-color1);
+}
+
+.center {
+    text-align: center;
+}
+
+.fa-xmark {
+    cursor: pointer;;
 }
 
 /* SCROLLBARS */
