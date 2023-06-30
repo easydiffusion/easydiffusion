@@ -2200,6 +2200,10 @@ embeddingsSearchBox.addEventListener("input", (e) => {
     updateEmbeddingsList(embeddingsSearchBox.value)
 })
 
+if (testDiffusers.checked) {
+    document.getElementById("embeddings-container").classList.remove("displayNone")
+}
+
 /* Pause function */
 document.querySelectorAll(".tab").forEach(linkTabContents)
 
