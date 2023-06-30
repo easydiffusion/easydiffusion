@@ -158,8 +158,12 @@ def setConfig(config):
 
                 config = commented_config
         yaml.indent(mapping=2, sequence=4, offset=2)
-        with open(config_yaml_path, "w", encoding="utf-8") as f:
+
+        try:
+            f = open(config_yaml_path, "w", encoding="utf-8")
             yaml.dump(config, f)
+        finally:
+            f.close()  # do this explicitly to avoid NUL bytes (rare bug when using 'with')
     except:
         log.error(traceback.format_exc())
 
