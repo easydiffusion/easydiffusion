@@ -1,10 +1,11 @@
 import os
 import argparse
 import sys
+import shutil
 
 # The config file is in the same directory as this script
 config_directory = os.path.dirname(__file__)
-config_yaml = os.path.join(config_directory, "config.yaml")
+config_yaml = os.path.join(config_directory, "..", "config.yaml")
 config_json = os.path.join(config_directory, "config.json")
 
 parser = argparse.ArgumentParser(description='Get values from config file')
@@ -15,6 +16,10 @@ parser.add_argument('key', metavar='key', nargs='+',
 
 args = parser.parse_args()
 
+# migrate the old config yaml location
+config_legacy_yaml = os.path.join(config_directory, "config.yaml")
+if os.path.isfile(config_legacy_yaml):
+    shutil.move(config_legacy_yaml, config_yaml)
 
 if os.path.isfile(config_yaml):
     from ruamel.yaml import YAML
