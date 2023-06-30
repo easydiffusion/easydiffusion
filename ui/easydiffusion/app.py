@@ -100,7 +100,22 @@ def init():
 def getConfig(default_val=APP_CONFIG_DEFAULTS):
     try:
         config_json_path = os.path.join(CONFIG_DIR, "config.json")
-        if not os.path.exists(config_json_path):
+
+        # compatibility with upcoming yaml changes, switching from beta to main
+        config_yaml_path = os.path.join(CONFIG_DIR, "config.yaml")
+        if os.path.exists(config_yaml_path):
+            try:
+                import yaml
+
+                with open(config_yaml_path, "r", encoding="utf-8") as f:
+                    config = yaml.safe_load(f)
+
+                setConfig(config)  # save to config.json
+                os.remove(config_yaml_path)  # delete the yaml file
+            except:
+                log.warn(traceback.format_exc())
+                config = default_val
+        elif not os.path.exists(config_json_path):
             config = default_val
         else:
             with open(config_json_path, "r", encoding="utf-8") as f:
