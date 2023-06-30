@@ -142,7 +142,7 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
 
             with open(config_json_path + ".txt", "w") as f:
                 f.write("Moved to config.yaml inside the Easy Diffusion folder. You can open it in any text editor.")
-                # intentionally writing invalid json, to alert any scripts that depend on this file
+            os.remove(config_json_path)
 
             return getConfig(default_val)
         except Exception as e:
