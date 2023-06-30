@@ -17,10 +17,11 @@ args = parser.parse_args()
 
 
 if os.path.isfile(config_yaml):
-    import yaml
+    from ruamel.yaml import YAML
+    yaml = YAML(typ='safe')
     with open(config_yaml, 'r') as configfile:
         try:
-            config = yaml.safe_load(configfile)
+            config = yaml.load(configfile)
         except Exception as e:
             print(e, file=sys.stderr)
             config = {}

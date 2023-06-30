@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import shutil
 import socket
 import sys
 import traceback
@@ -16,8 +17,6 @@ from rich.logging import RichHandler
 from rich.console import Console
 from rich.panel import Panel
 from sdkit.utils import log as sdkit_log  # hack, so we can overwrite the log config
-
-yaml = YAML()
 
 # Remove all handlers associated with the root logger object.
 for handler in logging.root.handlers[:]:
@@ -106,6 +105,7 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
     config_yaml_path = os.path.join(CONFIG_DIR, "config.yaml")
     if os.path.isfile(config_yaml_path):
         try:
+            yaml = YAML()
             with open(config_yaml_path, "r", encoding="utf-8") as f:
                 config = yaml.load(f)
             if "net" not in config:
@@ -127,15 +127,15 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
             config_json_path = os.path.join(CONFIG_DIR, "config.json")
             if not os.path.exists(config_json_path):
                 return default_val
-            else:
-                log.info("Converting old json config file to yaml")
-                with open(config_json_path, "r", encoding="utf-8") as f:
-                    config = json.load(f)
-                # Save config in new format
-                setConfig(config)
-                os.rename(config_json_path, config_json_path + ".bak")
-                log.info("Saved old config.json as config.json.bak")
-                return getConfig(default_val)
+
+            log.info("Converting old json config file to yaml")
+            with open(config_json_path, "r", encoding="utf-8") as f:
+                config = json.load(f)
+            # Save config in new format
+            setConfig(config)
+            shutil.move(config_json_path, config_json_path + ".bak")
+            log.info("Saved old config.json as config.json.bak")
+            return getConfig(default_val)
         except Exception as e:
             log.warn(traceback.format_exc())
             return default_val
@@ -144,6 +144,19 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
 def setConfig(config):
     try:  # config.yaml
         config_yaml_path = os.path.join(CONFIG_DIR, "config.yaml")
+        yaml = YAML()
+
+        if not hasattr(config, "_yaml_comment"):
+            config_yaml_sample_path = os.path.join(CONFIG_DIR, "config.yaml.sample")
+
+            if os.path.exists(config_yaml_sample_path):
+                with open(config_yaml_sample_path, "r", encoding="utf-8") as f:
+                    commented_config = yaml.load(f)
+
+                for k in config:
+                    commented_config[k] = config[k]
+
+                config = commented_config
         yaml.indent(mapping=2, sequence=4, offset=2)
         with open(config_yaml_path, "w", encoding="utf-8") as f:
             yaml.dump(config, f)
