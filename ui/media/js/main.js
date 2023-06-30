@@ -2202,6 +2202,10 @@ embeddingsSearchBox.addEventListener("input", (e) => {
     updateEmbeddingsList(embeddingsSearchBox.value)
 })
 
+modalDialogCloseOnBackdropClick(embeddingsDialog)
+makeDialogDraggable(embeddingsDialog)
+
+
 if (testDiffusers.checked) {
     document.getElementById("embeddings-container").classList.remove("displayNone")
 }
