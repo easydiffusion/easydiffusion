@@ -1575,6 +1575,7 @@ body.wait-pause {
     margin-top: 0.2em;
     margin-bottom: 0.2em;
     display: inline-block;
+    width: 80%;
 }
 
 #copy-cloudflare-address {
