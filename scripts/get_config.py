@@ -16,6 +16,8 @@ parser.add_argument('key', metavar='key', nargs='+',
 
 args = parser.parse_args()
 
+config = None
+
 # migrate the old config yaml location
 config_legacy_yaml = os.path.join(config_directory, "config.yaml")
 if os.path.isfile(config_legacy_yaml):
@@ -29,7 +31,6 @@ if os.path.isfile(config_yaml):
             config = yaml.load(configfile)
         except Exception as e:
             print(e, file=sys.stderr)
-            config = {}
 elif os.path.isfile(config_json):
     import json
     with open(config_json, 'r') as configfile:
@@ -37,8 +38,8 @@ elif os.path.isfile(config_json):
             config = json.load(configfile)
         except Exception as e:
             print(e, file=sys.stderr)
-            config = {}
-else:
+
+if config is None:
     config = {}
 
 for k in args.key:
