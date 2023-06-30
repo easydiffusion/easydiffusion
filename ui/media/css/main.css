@@ -485,7 +485,7 @@ dialog {
 }
 
 dialog::backdrop {
-    background: var(--backdrop-color);
+    background: rgba(32, 33, 36, 50%);
 }
 
 dialog > div {
@@ -1295,7 +1295,7 @@ input::file-selector-button {
 
 .popup {
     position: absolute;
-    background: var(--backdrop-color);
+    background: rgba(32, 33, 36, 50%);
     top: 0px;
     left: 0px;
     right: 0px;

@@ -1,4 +1,4 @@
-:root, ::backdrop {
+:root {
     --main-hue: 222;
 	--main-saturation: 4%;
 	--value-base: 13%;
@@ -45,7 +45,6 @@
     --status-orange: rgb(200, 139, 0);
     --status-green: green;
     --status-red: red;
-    --backdrop-color: rgba(32, 33, 36, 50%);
 }
 
 .theme-light {
