@@ -160,10 +160,17 @@ def setConfig(config):
         yaml.indent(mapping=2, sequence=4, offset=2)
 
         try:
-            f = open(config_yaml_path, "w", encoding="utf-8")
+            f = open(config_yaml_path + ".tmp", "w", encoding="utf-8")
             yaml.dump(config, f)
         finally:
-            f.close()  # do this explicitly to avoid NUL bytes (rare bug when using 'with')
+            f.close()  # do this explicitly to avoid NUL bytes (possible rare bug when using 'with')
+
+        # verify that the new file is valid, and only then overwrite the old config file
+        # helps prevent the rare NUL bytes error from corrupting the config file
+        yaml = YAML()
+        with open(config_yaml_path + ".tmp", "r", encoding="utf-8") as f:
+            yaml.load(f)
+        shutil.move(config_yaml_path + ".tmp", config_yaml_path)
     except:
         log.error(traceback.format_exc())
 
