@@ -363,7 +363,7 @@ function changePreviewImages(val) {
                 preview = previews.landscape
             }
 
-            if (preview != null) {
+            if (preview) {
                 previewImage.src = `${modifierThumbnailPath}/${preview}`
                 previewImage.setAttribute("preview-type", val)
             }
