@@ -128,15 +128,15 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
             config_json_path = os.path.join(CONFIG_DIR, "config.json")
             if not os.path.exists(config_json_path):
                 return default_val
-            else:
-                log.info("Converting old json config file to yaml")
-                with open(config_json_path, "r", encoding="utf-8") as f:
-                    config = json.load(f)
-                # Save config in new format
-                setConfig(config)
-                shutil.move(config_json_path, config_json_path + ".bak")
-                log.info("Saved old config.json as config.json.bak")
-                return getConfig(default_val)
+
+            log.info("Converting old json config file to yaml")
+            with open(config_json_path, "r", encoding="utf-8") as f:
+                config = json.load(f)
+            # Save config in new format
+            setConfig(config)
+            shutil.move(config_json_path, config_json_path + ".bak")
+            log.info("Saved old config.json as config.json.bak")
+            return getConfig(default_val)
         except Exception as e:
             log.warn(traceback.format_exc())
             return default_val
