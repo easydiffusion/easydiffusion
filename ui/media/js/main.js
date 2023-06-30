@@ -1179,7 +1179,7 @@ function abortTask(task) {
         }
     })
     if (task.batchesDone > 0) {
-        document.title = "Stopped - Easy Diffusion"
+        document.title = "Easy Diffusion"
     }
 }
 
@@ -1290,7 +1290,10 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
 }
 
 function updateTitle() {
-    let img_remaining = [...document.querySelectorAll("div .imageTaskContainer").entries()].map(c => htmlTaskMap.get(c[1])).filter(task => task.isProcessing).map(task => task.numOutputsTotal - Math.max(0, (task.batchesDone - 1) * task.reqBody.num_outputs)).reduce((total, value) => total + value, 0);
+    let all_tasks = [...document.querySelectorAll("div .imageTaskContainer").entries()].map(c => htmlTaskMap.get(c[1]))
+    let tasks_to_be_run = all_tasks.filter(task => task.isProcessing)
+    let img_remaining_per_task = tasks_to_be_run.map(task => task.numOutputsTotal - Math.max(0, (task.batchesDone - 1) * task.reqBody.num_outputs))
+    let img_remaining = img_remaining_per_task.reduce((total, value) => total + value, 0);
     if (img_remaining > 0) {
         document.title = `${img_remaining} - Easy Diffusion`;
     } else {
