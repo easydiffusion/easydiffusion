@@ -1071,3 +1071,58 @@ async function deleteKeys(keyToDelete) {
         });
     }
 }
+
+function modalDialogCloseOnBackdropClick(dialog) {
+    dialog.addEventListener('mousedown', function (event) {
+        var rect = dialog.getBoundingClientRect()
+        var isInDialog=(rect.top <= event.clientY && event.clientY <= rect.top + rect.height
+          && rect.left <= event.clientX && event.clientX <= rect.left + rect.width)
+        if (!isInDialog) {
+            dialog.close()
+        }
+    })
+}
+
+function makeDialogDraggable(element) {
+    element.querySelector(".dialog-header").addEventListener('mousedown', (function() {
+        let deltaX=0
+        let deltaY=0
+        let dragStartX=0
+        let dragStartY=0
+        let oldTop=0
+        let oldLeft=0
+
+        function dlgDragStart(e) {
+            e = e || window.event;
+            const d = e.target.closest("dialog")
+            e.preventDefault();
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            oldTop = parseInt(d.style.top)
+            oldLeft = parseInt(d.style.left)
+            if (isNaN(oldTop)) { oldTop=0 }
+            if (isNaN(oldLeft)) { oldLeft=0 }
+            document.addEventListener('mouseup', dlgDragClose);
+            document.addEventListener('mousemove', dlgDrag);
+        }
+
+        function dlgDragClose(e) {
+            document.removeEventListener('mouseup', dlgDragClose);
+            document.removeEventListener('mousemove', dlgDrag);
+        }
+
+        function dlgDrag(e) {
+            e = e || window.event;
+            const d = e.target.closest("dialog")
+            e.preventDefault();
+            deltaX = dragStartX - e.clientX;
+            deltaY = dragStartY - e.clientY;
+            d.style.left = `${oldLeft-2*deltaX}px`
+            d.style.top  = `${oldTop-2*deltaY}px`
+        }
+
+        return dlgDragStart
+    })() )
+}
+
+

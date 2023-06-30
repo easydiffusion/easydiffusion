@@ -102,7 +102,13 @@ def init():
 
 
 def getConfig(default_val=APP_CONFIG_DEFAULTS):
-    config_yaml_path = os.path.join(CONFIG_DIR, "config.yaml")
+    config_yaml_path = os.path.join(CONFIG_DIR, "..", "config.yaml")
+
+    # migrate the old config yaml location
+    config_legacy_yaml = os.path.join(CONFIG_DIR, "config.yaml")
+    if os.path.isfile(config_legacy_yaml):
+        shutil.move(config_legacy_yaml, config_yaml_path)
+
     if os.path.isfile(config_yaml_path):
         try:
             yaml = YAML()
@@ -133,8 +139,11 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
                 config = json.load(f)
             # Save config in new format
             setConfig(config)
-            shutil.move(config_json_path, config_json_path + ".bak")
-            log.info("Saved old config.json as config.json.bak")
+
+            with open(config_json_path + ".txt", "w") as f:
+                f.write("Moved to config.yaml inside the Easy Diffusion folder. You can open it in any text editor.")
+            os.remove(config_json_path)
+
             return getConfig(default_val)
         except Exception as e:
             log.warn(traceback.format_exc())
@@ -143,7 +152,7 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
 
 def setConfig(config):
     try:  # config.yaml
-        config_yaml_path = os.path.join(CONFIG_DIR, "config.yaml")
+        config_yaml_path = os.path.join(CONFIG_DIR, "..", "config.yaml")
         yaml = YAML()
 
         if not hasattr(config, "_yaml_comment"):
@@ -158,8 +167,19 @@ def setConfig(config):
 
                 config = commented_config
         yaml.indent(mapping=2, sequence=4, offset=2)
-        with open(config_yaml_path, "w", encoding="utf-8") as f:
+
+        try:
+            f = open(config_yaml_path + ".tmp", "w", encoding="utf-8")
             yaml.dump(config, f)
+        finally:
+            f.close()  # do this explicitly to avoid NUL bytes (possible rare bug when using 'with')
+
+        # verify that the new file is valid, and only then overwrite the old config file
+        # helps prevent the rare NUL bytes error from corrupting the config file
+        yaml = YAML()
+        with open(config_yaml_path + ".tmp", "r", encoding="utf-8") as f:
+            yaml.load(f)
+        shutil.move(config_yaml_path + ".tmp", config_yaml_path)
     except:
         log.error(traceback.format_exc())
 
