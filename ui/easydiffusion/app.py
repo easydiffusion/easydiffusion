@@ -145,6 +145,18 @@ def setConfig(config):
     try:  # config.yaml
         config_yaml_path = os.path.join(CONFIG_DIR, "config.yaml")
         yaml = YAML()
+
+        if not hasattr(config, "_yaml_comment"):
+            config_yaml_sample_path = os.path.join(CONFIG_DIR, "config.yaml.sample")
+
+            if os.path.exists(config_yaml_sample_path):
+                with open(config_yaml_sample_path, "r", encoding="utf-8") as f:
+                    commented_config = yaml.load(f)
+
+                for k in config:
+                    commented_config[k] = config[k]
+
+                config = commented_config
         yaml.indent(mapping=2, sequence=4, offset=2)
         with open(config_yaml_path, "w", encoding="utf-8") as f:
             yaml.dump(config, f)

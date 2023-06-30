@@ -68,6 +68,7 @@ if "%update_branch%"=="" (
 @copy sd-ui-files\scripts\on_sd_start.bat scripts\ /Y
 @copy sd-ui-files\scripts\check_modules.py scripts\ /Y
 @copy sd-ui-files\scripts\get_config.py scripts\ /Y
+@copy sd-ui-files\scripts\config.yaml.sample scripts\ /Y
 @copy "sd-ui-files\scripts\Start Stable Diffusion UI.cmd" . /Y
 @copy "sd-ui-files\scripts\Developer Console.cmd" . /Y
 
