@@ -722,6 +722,8 @@ class ImageEditor {
                 let toolIndex = IMAGE_EDITOR_TOOLS.findIndex( t => t.hotkey ==event.key )
                 if (toolIndex != -1) {
                     this.selectOption("tool", toolIndex)
+                    event.stopPropagation()
+                    event.preventDefault()
                 }
             }
         }
