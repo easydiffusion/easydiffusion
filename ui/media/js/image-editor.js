@@ -212,7 +212,7 @@ var IMAGE_EDITOR_SECTIONS = [
             var icon = document.createElement("i")
             tool_info.icon.split(" ").forEach((c) => icon.classList.add(c))
             sub_element.appendChild(icon)
-            var label_element = document.createElement("span")
+            var label_element = document.createElement("div")
             label_element.classList.add("image-editor-button-label")
             label_element.textContent=tool_info.name
             sub_element.appendChild(label_element)
@@ -792,7 +792,6 @@ class ImageEditor {
         return this.options && section_name in this.options ? this.options[section_name] : section.default
     }
     selectOption(section_name, option_index) {
-        console.log("SELECT", section_name, option_index)
         var section = IMAGE_EDITOR_SECTIONS.find((s) => s.name == section_name)
         var value = section.options[option_index]
         this.options[section_name] = value == "custom" ? section.getCustom(this) : value

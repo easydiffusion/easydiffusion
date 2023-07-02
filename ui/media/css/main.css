@@ -1611,6 +1611,14 @@ body.wait-pause {
     color: red;
 }
 
+.image-editor-button-label {
+    display: inline-block;
+}
+
+.image-editor-button-label::first-letter {
+    text-decoration: underline;
+}
+
 @keyframes slideInRight {
     from {
         right: -300px;
@@ -1642,6 +1650,3 @@ body.wait-pause {
     }
 }
 
-.image-editor-button-label::first-letter {
-    text-decoration: underline;
-}
