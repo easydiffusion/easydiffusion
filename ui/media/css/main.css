@@ -1640,3 +1640,7 @@ body.wait-pause {
         bottom: 0;
     }
 }
+
+.image-editor-button-label::first-letter {
+    text-decoration: underline;
+}
