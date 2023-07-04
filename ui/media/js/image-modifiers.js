@@ -18,7 +18,7 @@ let modifiersCloseBtn = document.querySelector("#modifiers-close-button")
 let modifiersCollapsiblesBtn = document.querySelector("#modifiers-action-collapsibles-btn")
 let modifierSettingsDialog = document.querySelector("#modifier-settings-config")
 let customModifiersTextBox = document.querySelector("#custom-modifiers-input")
-let customModifierEntriesToolbar = document.querySelector("#editor-modifiers-entries-toolbar")
+let customModifierEntriesToolbar = document.querySelector("#editor-modifiers-subheader")
 let modifierSettingsCloseBtn = document.querySelector("#modifier-settings-close-button")
 
 const modifierThumbnailPath = "media/modifier-thumbnails"
