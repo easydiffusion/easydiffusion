@@ -138,7 +138,7 @@ let initialText = document.querySelector("#initial-text")
 let versionText = document.querySelector("#version")
 let previewTools = document.querySelector("#preview-tools")
 let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
-let showDownloadDialogBtn = document.querySelector("#show-download-dialog")
+let showDownloadDialogBtn = document.querySelector("#show-download-popup")
 let saveAllImagesDialog = document.querySelector("#download-images-dialog")
 let saveAllImagesBtn = document.querySelector("#save-all-images")
 let saveAllImagesCloseBtn = document.querySelector("#download-images-close-button")
@@ -2109,7 +2109,7 @@ function tunnelUpdate(event) {
     if ("cloudflare" in event) {
         document.getElementById("cloudflare-off").classList.add("displayNone")
         document.getElementById("cloudflare-on").classList.remove("displayNone")
-        cloudflareAddressField.innerHTML = event.cloudflare
+        cloudflareAddressField.value = event.cloudflare
         document.getElementById("toggle-cloudflare-tunnel").innerHTML = "Stop"
     } else {
         document.getElementById("cloudflare-on").classList.add("displayNone")
