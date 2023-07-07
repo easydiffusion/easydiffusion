@@ -2176,12 +2176,12 @@ function updateEmbeddingsList(filter="") {
                 if (!negativePromptField.value.endsWith(" ")) {
                     pad = " "
                 }
-                negativePromptField += pad + text
+                negativePromptField.value += pad + text
             } else {
                 if (!promptField.value.endsWith(" ")) {
                     pad = " "
                 }
-                promptField += pad + text
+                promptField.value += pad + text
             }
         }
     }
