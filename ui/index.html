@@ -624,7 +624,7 @@
 <script>
 async function init() {
     await initSettings()
-    await getModels()
+    await getModels(false)
     await getAppConfig()
     await loadUIPlugins()
     await loadModifiers()
@@ -639,6 +639,9 @@ async function init() {
         }
     })
     splashScreen()
+
+    // load models again, but scan for malicious this time
+    await getModels(true)
 
     // playSound()
 }

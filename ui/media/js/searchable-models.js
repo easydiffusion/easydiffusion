@@ -627,9 +627,9 @@ class ModelDropdown {
 }
 
 /* (RE)LOAD THE MODELS */
-async function getModels() {
+async function getModels(scanForMalicious = true) {
     try {
-        modelsCache = await SD.getModels()
+        modelsCache = await SD.getModels(scanForMalicious)
         modelsOptions = modelsCache["options"]
         if ("scan-error" in modelsCache) {
             // let previewPane = document.getElementById('tab-content-wrapper')
@@ -667,4 +667,4 @@ async function getModels() {
 }
 
 // reload models button
-document.querySelector("#reload-models").addEventListener("click", getModels)
+document.querySelector("#reload-models").addEventListener("click", () => getModels())

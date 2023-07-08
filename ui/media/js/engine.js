@@ -1121,13 +1121,13 @@
         return systemInfo.hosts
     }
 
-    async function getModels() {
+    async function getModels(scanForMalicious = true) {
         let models = {
             "stable-diffusion": [],
             vae: [],
         }
         try {
-            const res = await fetch("/get/models")
+            const res = await fetch("/get/models?scan_for_malicious=" + scanForMalicious)
             if (!res.ok) {
                 console.error("Invalid response fetching models", res.statusText)
                 return models

@@ -52,7 +52,6 @@ def init():
     make_model_folders()
     migrate_legacy_model_location()  # if necessary
     download_default_models_if_necessary()
-    getModels()  # run this once, to cache the picklescan results
 
 
 def load_default_models(context: Context):
@@ -310,7 +309,7 @@ def is_malicious_model(file_path):
     return False
 
 
-def getModels():
+def getModels(scan_for_malicious: bool = True):
     models = {
         "options": {
             "stable-diffusion": ["sd-v1-4"],
@@ -343,9 +342,10 @@ def getModels():
                 mod_time = known_models[entry.path] if entry.path in known_models else -1
                 if mod_time != mtime:
                     models_scanned += 1
-                    if is_malicious_model(entry.path):
+                    if scan_for_malicious and is_malicious_model(entry.path):
                         raise MaliciousModelException(entry.path)
-                known_models[entry.path] = mtime
+                if scan_for_malicious:
+                    known_models[entry.path] = mtime
                 tree.append(entry.name[: -len(matching_suffix)])
             elif entry.is_dir():
                 scan = scan_directory(entry.path, suffixes, directoriesFirst=False)
@@ -365,9 +365,10 @@ def getModels():
         try:
             models["options"][model_type] = scan_directory(models_dir, model_extensions)
         except MaliciousModelException as e:
-            models["scan-error"] = e
+            models["scan-error"] = str(e)
 
-    log.info(f"[green]Scanning all model folders for models...[/]")
+    if scan_for_malicious:
+        log.info(f"[green]Scanning all model folders for models...[/]")
     # custom models
     listModels(model_type="stable-diffusion")
     listModels(model_type="vae")
@@ -375,7 +376,7 @@ def getModels():
     listModels(model_type="gfpgan")
     listModels(model_type="lora")
 
-    if models_scanned > 0:
+    if scan_for_malicious and models_scanned > 0:
         log.info(f"[green]Scanned {models_scanned} models. Nothing infected[/]")
 
     return models

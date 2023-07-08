@@ -86,8 +86,8 @@ def init():
         return set_app_config_internal(req)
 
     @server_api.get("/get/{key:path}")
-    def read_web_data(key: str = None):
-        return read_web_data_internal(key)
+    def read_web_data(key: str = None, scan_for_malicious: bool = True):
+        return read_web_data_internal(key, scan_for_malicious=scan_for_malicious)
 
     @server_api.get("/ping")  # Get server and optionally session status.
     def ping(session_id: str = None):
@@ -179,7 +179,7 @@ def update_render_devices_in_config(config, render_devices):
     config["render_devices"] = render_devices
 
 
-def read_web_data_internal(key: str = None):
+def read_web_data_internal(key: str = None, **kwargs):
     if not key:  # /get without parameters, stable-diffusion easter egg.
         raise HTTPException(status_code=418, detail="StableDiffusion is drawing a teapot!")  # HTTP418 I'm a teapot
     elif key == "app_config":
@@ -198,7 +198,8 @@ def read_web_data_internal(key: str = None):
         system_info["devices"]["config"] = config.get("render_devices", "auto")
         return JSONResponse(system_info, headers=NOCACHE_HEADERS)
     elif key == "models":
-        return JSONResponse(model_manager.getModels(), headers=NOCACHE_HEADERS)
+        scan_for_malicious = kwargs.get("scan_for_malicious", True)
+        return JSONResponse(model_manager.getModels(scan_for_malicious), headers=NOCACHE_HEADERS)
     elif key == "modifiers":
         return JSONResponse(app.get_image_modifiers(), headers=NOCACHE_HEADERS)
     elif key == "ui_plugins":
@@ -334,7 +335,8 @@ def get_image_internal(task_id: int, img_id: int):
     except KeyError as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-#---- Cloudflare Tunnel ----
+
+# ---- Cloudflare Tunnel ----
 class CloudflareTunnel:
     def __init__(self):
         config = app.getConfig()
@@ -357,23 +359,25 @@ class CloudflareTunnel:
         else:
             return None
 
+
 cloudflare = CloudflareTunnel()
 
+
 def start_cloudflare_tunnel_internal(req: dict):
-   try:
-      cloudflare.start()
-      log.info(f"- Started cloudflare tunnel. Using address: {cloudflare.address}")
-      return JSONResponse({"address":cloudflare.address})
-   except Exception as e:
-      log.error(str(e))
-      log.error(traceback.format_exc())
-      return HTTPException(status_code=500, detail=str(e))
+    try:
+        cloudflare.start()
+        log.info(f"- Started cloudflare tunnel. Using address: {cloudflare.address}")
+        return JSONResponse({"address": cloudflare.address})
+    except Exception as e:
+        log.error(str(e))
+        log.error(traceback.format_exc())
+        return HTTPException(status_code=500, detail=str(e))
+
 
 def stop_cloudflare_tunnel_internal(req: dict):
-   try:
-      cloudflare.stop()
-   except Exception as e:
-      log.error(str(e))
-      log.error(traceback.format_exc())
-      return HTTPException(status_code=500, detail=str(e))
-
+    try:
+        cloudflare.stop()
+    except Exception as e:
+        log.error(str(e))
+        log.error(traceback.format_exc())
+        return HTTPException(status_code=500, detail=str(e))

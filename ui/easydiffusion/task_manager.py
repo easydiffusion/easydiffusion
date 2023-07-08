@@ -473,16 +473,16 @@ def start_render_thread(device):
         render_threads.append(rthread)
     finally:
         manager_lock.release()
-    timeout = DEVICE_START_TIMEOUT
-    while not rthread.is_alive() or not rthread in weak_thread_data or not "device" in weak_thread_data[rthread]:
-        if rthread in weak_thread_data and "error" in weak_thread_data[rthread]:
-            log.error(f"{rthread}, {device}, error: {weak_thread_data[rthread]['error']}")
-            return False
-        if timeout <= 0:
-            return False
-        timeout -= 1
-        time.sleep(1)
-    return True
+    # timeout = DEVICE_START_TIMEOUT
+    # while not rthread.is_alive() or not rthread in weak_thread_data or not "device" in weak_thread_data[rthread]:
+    #     if rthread in weak_thread_data and "error" in weak_thread_data[rthread]:
+    #         log.error(f"{rthread}, {device}, error: {weak_thread_data[rthread]['error']}")
+    #         return False
+    #     if timeout <= 0:
+    #         return False
+    #     timeout -= 1
+    #     time.sleep(1)
+    # return True
 
 
 def stop_render_thread(device):
@@ -535,12 +535,12 @@ def update_render_threads(render_devices, active_devices):
         if not start_render_thread(device):
             log.warn(f"{device} failed to start.")
 
-    if is_alive() <= 0:  # No running devices, probably invalid user config.
-        raise EnvironmentError(
-            'ERROR: No active render devices! Please verify the "render_devices" value in config.json'
-        )
+    # if is_alive() <= 0:  # No running devices, probably invalid user config.
+    #     raise EnvironmentError(
+    #         'ERROR: No active render devices! Please verify the "render_devices" value in config.json'
+    #     )
 
-    log.debug(f"active devices: {get_devices()['active']}")
+    # log.debug(f"active devices: {get_devices()['active']}")
 
 
 def shutdown_event():  # Signal render thread to close on shutdown

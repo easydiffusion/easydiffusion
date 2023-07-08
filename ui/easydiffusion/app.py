@@ -96,6 +96,8 @@ def init():
     # https://pytorch.org/docs/stable/storage.html
     warnings.filterwarnings("ignore", category=UserWarning, message="TypedStorage is deprecated")
 
+
+def init_render_threads():
     load_server_plugins()
 
     update_render_threads()
@@ -278,6 +280,8 @@ def open_browser():
 
     if ui.get("open_browser_on_start", True):
         import webbrowser
+
+        log.info("Opening browser..")
 
         webbrowser.open(f"http://localhost:{port}")
 
