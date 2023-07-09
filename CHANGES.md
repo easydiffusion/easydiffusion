@@ -22,6 +22,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.43 - 9 Jul 2023 - (beta-only) Support for loading Textual Inversion embeddings. You can find the option in the Image Settings panel. Thanks @JeLuf.
 * 2.5.43 - 9 Jul 2023 - Improve the startup time of the UI.
 * 2.5.42 - 4 Jul 2023 - Keyboard shortcuts for the Image Editor. Thanks @JeLuf.
 * 2.5.42 - 28 Jun 2023 - Allow dropping images from folders to use as an Initial Image.
