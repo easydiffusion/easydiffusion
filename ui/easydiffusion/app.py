@@ -110,7 +110,7 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
     if os.path.isfile(config_legacy_yaml):
         shutil.move(config_legacy_yaml, config_yaml_path)
 
-    def set_default_config(config: dict):
+    def set_config_on_startup(config: dict):
         if (getConfig.__config_on_startup is None):
             getConfig.__config_on_startup = copy.deepcopy(config)
         config["config_on_startup"] = getConfig.__config_on_startup
@@ -131,12 +131,12 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
                 else:
                     config["net"]["listen_to_network"] = True
 
-            set_default_config(config)
+            set_config_on_startup(config)
 
             return config
         except Exception as e:
             log.warn(traceback.format_exc())
-            set_default_config(default_val)
+            set_config_on_startup(default_val)
             return default_val
     else:
         try:
@@ -157,7 +157,7 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
             return getConfig(default_val)
         except Exception as e:
             log.warn(traceback.format_exc())
-            set_default_config(default_val)
+            set_config_on_startup(default_val)
             return default_val
 
 getConfig.__config_on_startup = None
