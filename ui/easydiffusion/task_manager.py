@@ -482,7 +482,7 @@ def start_render_thread(device):
     #         return False
     #     timeout -= 1
     #     time.sleep(1)
-    # return True
+    return True
 
 
 def stop_render_thread(device):
