@@ -1292,7 +1292,13 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
 function updateTitle() {
     let all_tasks = [...document.querySelectorAll("div .imageTaskContainer").entries()].map(c => htmlTaskMap.get(c[1]))
     let tasks_to_be_run = all_tasks.filter(task => task.isProcessing)
-    let img_remaining_per_task = tasks_to_be_run.map(task => task.numOutputsTotal - Math.max(0, (task.batchesDone - 1) * task.reqBody.num_outputs))
+    let img_remaining_per_task = tasks_to_be_run.map(task => { return task.numOutputsTotal - Math.max(0, (task.instances || []).reduce((total, value) => {
+        if (value.status === 'completed') {
+            return total + 1
+        } else {
+            return total
+        }
+    }, 0) * task.reqBody.num_outputs) } )
     let img_remaining = img_remaining_per_task.reduce((total, value) => total + value, 0);
     if (img_remaining > 0) {
         document.title = `${img_remaining} - Easy Diffusion`;
