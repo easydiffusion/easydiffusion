@@ -1851,7 +1851,10 @@ loraAlphaField.addEventListener("input", updateLoraAlphaSlider)
 updateLoraAlpha()
 
 function updateLoraAlphaContainer() {
-    document.querySelector("#lora_alpha_container").style.display = loraModelField.value === "" ? "none" : ""
+    const loraModelContainer = document.querySelector("#lora_model_container")
+    if (loraModelContainer && window.getComputedStyle(loraModelContainer).display !== "none") {
+        document.querySelector("#lora_alpha_container").style.display = loraModelField.value === "" ? "none" : ""
+    }
 }
 loraModelField.addEventListener("change", updateLoraAlphaContainer)
 updateLoraAlphaContainer()

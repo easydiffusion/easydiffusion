@@ -5,7 +5,7 @@ import shutil
 import socket
 import sys
 import traceback
-import shlex
+import copy
 from ruamel.yaml import YAML
 
 import urllib
@@ -102,7 +102,6 @@ def init_render_threads():
 
     update_render_threads()
 
-
 def getConfig(default_val=APP_CONFIG_DEFAULTS):
     config_yaml_path = os.path.join(CONFIG_DIR, "..", "config.yaml")
 
@@ -110,6 +109,11 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
     config_legacy_yaml = os.path.join(CONFIG_DIR, "config.yaml")
     if os.path.isfile(config_legacy_yaml):
         shutil.move(config_legacy_yaml, config_yaml_path)
+
+    def set_default_config(config: dict):
+        if (getConfig.__config_on_startup is None):
+            getConfig.__config_on_startup = copy.deepcopy(config)
+        config["config_on_startup"] = getConfig.__config_on_startup
 
     if os.path.isfile(config_yaml_path):
         try:
@@ -126,9 +130,13 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
                     config["net"]["listen_to_network"] = os.getenv("SD_UI_BIND_IP") == "0.0.0.0"
                 else:
                     config["net"]["listen_to_network"] = True
+
+            set_default_config(config)
+
             return config
         except Exception as e:
             log.warn(traceback.format_exc())
+            set_default_config(default_val)
             return default_val
     else:
         try:
@@ -149,7 +157,10 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
             return getConfig(default_val)
         except Exception as e:
             log.warn(traceback.format_exc())
+            set_default_config(default_val)
             return default_val
+
+getConfig.__config_on_startup = None
 
 
 def setConfig(config):

@@ -1676,3 +1676,16 @@ body.wait-pause {
 #embeddings-list::-webkit-scrollbar-thumb {
   background: var(--background-color3);
 }
+
+.diffusers-disabled-on-startup .diffusers-restart-needed {
+    font-size: 0;
+}
+
+.diffusers-disabled-on-startup .diffusers-restart-needed * {
+    display: none;
+}
+
+.diffusers-disabled-on-startup .diffusers-restart-needed::after {
+    content: "Restart needed";
+    font-size: 10pt;
+}
