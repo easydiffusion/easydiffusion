@@ -22,6 +22,11 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.42 - 4 Jul 2023 - Keyboard shortcuts for the Image Editor. Thanks @JeLuf.
+* 2.5.42 - 28 Jun 2023 - Allow dropping images from folders to use as an Initial Image.
+* 2.5.42 - 26 Jun 2023 - Show a popup for Image Modifiers, allowing a larger screen space, better UX on mobile screens, and more room for us to develop and improve the Image Modifiers panel. Thanks @Hakorr.
+* 2.5.42 - 26 Jun 2023 - (beta-only) Show a welcome screen for users of the diffusers beta, with instructions on how to use the new prompt syntax, and known bugs. Thanks @JeLuf.
+* 2.5.42 - 26 Jun 2023 - Use YAML files for config. You can now edit the `config.yaml` file (using a text editor, like Notepad). This file is present inside the Easy Diffusion folder, and is easier to read and edit (for humans) than JSON. Thanks @JeLuf.
 * 2.5.41 - 24 Jun 2023 - (beta-only) Fix broken inpainting in low VRAM usage mode.
 * 2.5.41 - 24 Jun 2023 - (beta-only) Fix a recent regression where the LoRA would not get applied when changing SD models.
 * 2.5.41 - 23 Jun 2023 - Fix a regression where latent upscaler stopped working on PCs without a graphics card.
