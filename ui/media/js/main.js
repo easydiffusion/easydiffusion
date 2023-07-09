@@ -116,6 +116,12 @@ let streamImageProgressField = document.querySelector("#stream_image_progress")
 let thumbnailSizeField = document.querySelector("#thumbnail_size-input")
 let autoscrollBtn = document.querySelector("#auto_scroll_btn")
 let autoScroll = document.querySelector("#auto_scroll")
+let embeddingsButton = document.querySelector("#embeddings-button")
+let embeddingsDialog = document.querySelector("#embeddings-dialog")
+let embeddingsDialogCloseBtn = embeddingsDialog.querySelector("#embeddings-dialog-close-button")
+let embeddingsSearchBox = document.querySelector("#embeddings-search-box")
+let embeddingsList = document.querySelector("#embeddings-list")
+let embeddingsModeField = document.querySelector("#embeddings-mode")
 
 let makeImageBtn = document.querySelector("#makeImage")
 let stopImageBtn = document.querySelector("#stopImage")
@@ -2130,6 +2136,79 @@ document.getElementById("toggle-cloudflare-tunnel").addEventListener("click", as
 
     console.log(`Cloudflare tunnel ${command} result:`, res)
 })
+
+/* Embeddings */
+
+function updateEmbeddingsList(filter="") {
+    function html(model, prefix="", filter="") {
+        filter = filter.toLowerCase()
+        let toplevel=""
+        let folders=""
+       
+        model?.forEach( m => {
+            if (typeof(m) == "string") {
+                if (m.toLowerCase().search(filter)!=-1) {
+                    toplevel += `<button data-embedding="${m}">${m}</button> `
+                }
+            } else {
+                let subdir = html(m[1], prefix+m[0]+"/", filter)
+                if (subdir != "") {
+                   folders += `<h4>${prefix}${m[0]}</h4>` + subdir
+                }
+            }
+        })
+        return toplevel + folders
+    }
+
+    function onButtonClick(e) {
+        let text = e.target.dataset["embedding"]
+        console.log(e.shiftKey, text)
+
+        if (embeddingsModeField.value == "insert") {
+            if (e.shiftKey) {
+                insertAtCursor(negativePromptField, text)
+            } else {
+                insertAtCursor(promptField, text)
+            }
+        } else {
+            let pad=""
+            if (e.shiftKey) {
+                if (!negativePromptField.value.endsWith(" ")) {
+                    pad = " "
+                }
+                negativePromptField.value += pad + text
+            } else {
+                if (!promptField.value.endsWith(" ")) {
+                    pad = " "
+                }
+                promptField.value += pad + text
+            }
+        }
+    }
+
+    embeddingsList.innerHTML = html(modelsOptions.embeddings, "", filter)
+    embeddingsList.querySelectorAll("button").forEach( (b) => { b.addEventListener("click", onButtonClick)})
+}
+
+embeddingsButton.addEventListener("click", () => { 
+    updateEmbeddingsList()
+    embeddingsSearchBox.value=""
+    embeddingsDialog.showModal() 
+})
+embeddingsDialogCloseBtn.addEventListener("click", (e) => {
+    embeddingsDialog.close()
+})
+embeddingsSearchBox.addEventListener("input", (e) => {
+    updateEmbeddingsList(embeddingsSearchBox.value)
+})
+
+modalDialogCloseOnBackdropClick(embeddingsDialog)
+makeDialogDraggable(embeddingsDialog)
+
+
+if (testDiffusers.checked) {
+    document.getElementById("embeddings-container").classList.remove("displayNone")
+}
 
 /* Pause function */
 document.querySelectorAll(".tab").forEach(linkTabContents)

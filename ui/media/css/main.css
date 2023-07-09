@@ -1650,3 +1650,29 @@ body.wait-pause {
     }
 }
 
+#embeddings-button {
+    background-color: var(--background-color3);
+}
+
+#embeddings-button:hover {
+    background-color: var(--button-hover-background);
+}
+
+#embeddings-dialog {
+    overflow: clip;
+}
+
+#embeddings-list {
+    height: 70vH;
+    width: 40vW;
+    overflow-y: scroll;
+}
+
+#embeddings-list button {
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+#embeddings-list::-webkit-scrollbar-thumb {
+  background: var(--background-color3);
+}

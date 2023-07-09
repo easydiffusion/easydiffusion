@@ -27,6 +27,7 @@ MODEL_EXTENSIONS = {
     "realesrgan": [".pth"],
     "lora": [".ckpt", ".safetensors"],
     "codeformer": [".pth"],
+    "embeddings": [".pt", ".bin", ".safetensors"],
 }
 DEFAULT_MODELS = {
     "stable-diffusion": [
@@ -56,6 +57,9 @@ def init():
 
 def load_default_models(context: Context):
     set_vram_optimizations(context)
+
+    config = app.getConfig()
+    context.embeddings_path = os.path.join(app.MODELS_DIR, "embeddings")
 
     # init default model paths
     for model_type in MODELS_TO_LOAD_ON_START:
@@ -317,6 +321,7 @@ def getModels(scan_for_malicious: bool = True):
             "hypernetwork": [],
             "lora": [],
             "codeformer": ["codeformer"],
+            "embeddings": [],
         },
     }
 
@@ -375,6 +380,7 @@ def getModels(scan_for_malicious: bool = True):
     listModels(model_type="hypernetwork")
     listModels(model_type="gfpgan")
     listModels(model_type="lora")
+    listModels(model_type="embeddings")
 
     if scan_for_malicious and models_scanned > 0:
         log.info(f"[green]Scanned {models_scanned} models. Nothing infected[/]")
