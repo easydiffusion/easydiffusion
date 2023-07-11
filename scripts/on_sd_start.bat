@@ -115,7 +115,7 @@ call python --version
 @rem set any overrides
 set HF_HUB_DISABLE_SYMLINKS_WARNING=true
 
-@uvicorn main:server_api --app-dir "%SD_UI_PATH%" --port %ED_BIND_PORT% --host %ED_BIND_IP% --log-level error
+@python -m uvicorn main:server_api --app-dir "%SD_UI_PATH%" --port %ED_BIND_PORT% --host %ED_BIND_IP% --log-level error
 
 
 @pause
