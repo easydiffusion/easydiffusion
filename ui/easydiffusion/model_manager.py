@@ -8,7 +8,7 @@ from easydiffusion.types import TaskData
 from easydiffusion.utils import log
 from sdkit import Context
 from sdkit.models import load_model, scan_model, unload_model, download_model, get_model_info_from_db
-from sdkit.utils import hash_file_quick
+from sdkit.utils import hash_file_quick, get_embedding_token
 
 KNOWN_MODEL_TYPES = [
     "stable-diffusion",
@@ -330,7 +330,7 @@ def getModels(scan_for_malicious: bool = True):
     class MaliciousModelException(Exception):
         "Raised when picklescan reports a problem with a model"
 
-    def scan_directory(directory, suffixes, directoriesFirst: bool = True):
+    def scan_directory(directory, suffixes, directoriesFirst: bool = True, nameFilter = None):
         nonlocal models_scanned
         tree = []
         for entry in sorted(
@@ -351,15 +351,19 @@ def getModels(scan_for_malicious: bool = True):
                         raise MaliciousModelException(entry.path)
                 if scan_for_malicious:
                     known_models[entry.path] = mtime
-                tree.append(entry.name[: -len(matching_suffix)])
+
+                name = entry.name[: -len(matching_suffix)]
+                if callable(nameFilter):
+                    name = nameFilter(name)
+                tree.append(name)
             elif entry.is_dir():
-                scan = scan_directory(entry.path, suffixes, directoriesFirst=False)
+                scan = scan_directory(entry.path, suffixes, directoriesFirst=False, nameFilter=nameFilter)
 
                 if len(scan) != 0:
                     tree.append((entry.name, scan))
         return tree
 
-    def listModels(model_type):
+    def listModels(model_type, nameFilter = None):
         nonlocal models_scanned
 
         model_extensions = MODEL_EXTENSIONS.get(model_type, [])
@@ -368,7 +372,7 @@ def getModels(scan_for_malicious: bool = True):
             os.makedirs(models_dir)
 
         try:
-            models["options"][model_type] = scan_directory(models_dir, model_extensions)
+            models["options"][model_type] = scan_directory(models_dir, model_extensions, nameFilter=nameFilter)
         except MaliciousModelException as e:
             models["scan-error"] = str(e)
 
@@ -380,7 +384,7 @@ def getModels(scan_for_malicious: bool = True):
     listModels(model_type="hypernetwork")
     listModels(model_type="gfpgan")
     listModels(model_type="lora")
-    listModels(model_type="embeddings")
+    listModels(model_type="embeddings", nameFilter=get_embedding_token)
 
     if scan_for_malicious and models_scanned > 0:
         log.info(f"[green]Scanned {models_scanned} models. Nothing infected[/]")
