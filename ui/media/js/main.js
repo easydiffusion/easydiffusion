@@ -828,7 +828,6 @@ function getTaskUpdater(task, reqBody, outputContainer) {
             const stepsRemaining = Math.max(0, totalSteps - overallStepCount)
             const timeRemaining = timeTaken < 0 ? "" : millisecondsToStr(stepsRemaining * timeTaken * 1000)
             outputMsg.innerHTML = `Batch ${task.batchesDone} of ${batchCount}. Generating image(s): ${percent}%. Time remaining (approx): ${timeRemaining}`
-            outputMsg.style.display = "inline-block"
             progressBarInner.style.width = `${percent}%`
 
             if (stepUpdate.output) {
@@ -1129,7 +1128,7 @@ function createTask(task) {
     taskEntry.id = `imageTaskContainer-${Date.now()}`
     taskEntry.className = "imageTaskContainer"
     taskEntry.innerHTML = ` <div class="header-content panel collapsible active">
-                                <i style="float:right;" class="drag-handle fa-solid fa-grip"></i>
+                                <i class="drag-handle fa-solid fa-grip"></i>
                                 <div class="taskStatusLabel">Enqueued</div>
                                 <div class="preview-prompt"></div>
                                 <div class="taskConfig">${taskConfig}</div>
