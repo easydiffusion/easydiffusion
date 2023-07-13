@@ -72,7 +72,7 @@ export SD_UI_PATH=`pwd`/ui
 export ED_BIND_PORT="$( python scripts/get_config.py --default=9000 net listen_port )"
 case "$( python scripts/get_config.py --default=False net listen_to_network )" in
     "True")
-        export ED_BIND_IP=$( python scripts/get_config.py --default=0.0.0.0) net bind_ip)
+        export ED_BIND_IP=$( python scripts/get_config.py --default=0.0.0.0 net bind_ip)
         ;;
     "False")
         export ED_BIND_IP=127.0.0.1
