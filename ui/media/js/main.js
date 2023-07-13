@@ -2186,7 +2186,17 @@ function updateEmbeddingsList(filter="") {
         }
     }
 
-    embeddingsList.innerHTML = html(modelsOptions.embeddings, "", filter)
+    // Remove after fixing https://github.com/huggingface/diffusers/issues/3922
+    let warning = ""
+    if (vramUsageLevelField.value == "low") {
+        warning = `
+            <div style="border-color: var(--accent-color); border-width: 4px; border-radius: 1em; border-style: solid; background: black; text-align: center; padding: 1em; margin: 1em; ">
+                <i class="fa fa-fire" style="color:#f7630c;"></i> Warning: Your GPU memory profile is set to "Low". Embeddings currently only work in "Balanced" mode!
+            </div>`
+    }
+    // END of remove block
+
+    embeddingsList.innerHTML = warning + html(modelsOptions.embeddings, "", filter)
     embeddingsList.querySelectorAll("button").forEach( (b) => { b.addEventListener("click", onButtonClick)})
 }
 
