@@ -104,18 +104,21 @@ call python --version
 
 @FOR /F "tokens=* USEBACKQ" %%F IN (`python scripts\get_config.py --default=False net listen_to_network`) DO (
     if "%%F" EQU "True" (
-        @SET ED_BIND_IP=0.0.0.0    
+        @FOR /F "tokens=* USEBACKQ" %%G IN (`python scripts\get_config.py --default=0.0.0.0 net bind_ip`) DO (
+            @SET ED_BIND_IP=%%G
+        )
     ) else (
         @SET ED_BIND_IP=127.0.0.1
     )
 )
+
 
 @cd stable-diffusion
 
 @rem set any overrides
 set HF_HUB_DISABLE_SYMLINKS_WARNING=true
 
-@uvicorn main:server_api --app-dir "%SD_UI_PATH%" --port %ED_BIND_PORT% --host %ED_BIND_IP% --log-level error
+@python -m uvicorn main:server_api --app-dir "%SD_UI_PATH%" --port %ED_BIND_PORT% --host %ED_BIND_IP% --log-level error
 
 
 @pause
