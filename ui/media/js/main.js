@@ -103,9 +103,6 @@ let vaeModelField = new ModelDropdown(document.querySelector("#vae_model"), "vae
 let hypernetworkModelField = new ModelDropdown(document.querySelector("#hypernetwork_model"), "hypernetwork", "None")
 let hypernetworkStrengthSlider = document.querySelector("#hypernetwork_strength_slider")
 let hypernetworkStrengthField = document.querySelector("#hypernetwork_strength")
-let loraModelField = new ModelDropdown(document.querySelector("#lora_model"), "lora", "None")
-let loraAlphaSlider = document.querySelector("#lora_alpha_slider")
-let loraAlphaField = document.querySelector("#lora_alpha")
 let outputFormatField = document.querySelector("#output_format")
 let outputLosslessField = document.querySelector("#output_lossless")
 let outputLosslessContainer = document.querySelector("#output_lossless_container")
@@ -158,6 +155,8 @@ let imagePreviewContent = document.querySelector("#preview-content")
 let undoButton = document.querySelector("#undo")
 let undoBuffer = []
 const UNDO_LIMIT = 20
+
+let loraModels = []
 
 imagePreview.addEventListener("drop", function(ev) {
     const data = ev.dataTransfer?.getData("text/plain")
@@ -1292,11 +1291,29 @@ function getCurrentUserRequest() {
         newTask.reqBody.use_hypernetwork_model = hypernetworkModelField.value
         newTask.reqBody.hypernetwork_strength = parseFloat(hypernetworkStrengthField.value)
     }
-    if (testDiffusers.checked && loraModelField.value) {
-        newTask.reqBody.use_lora_model = loraModelField.value
-        newTask.reqBody.lora_alpha = parseFloat(loraAlphaField.value)
+    if (testDiffusers.checked) {
+        let [modelNames, modelStrengths] = getModelInfo(loraModels)
+
+        if (modelNames.length > 0) {
+            modelNames = modelNames.length == 1 ? modelNames[0] : modelNames
+            modelStrengths = modelStrengths.length == 1 ? modelStrengths[0] : modelStrengths
+
+            newTask.reqBody.use_lora_model = modelNames
+            newTask.reqBody.lora_alpha = modelStrengths
+        }
     }
     return newTask
+}
+
+function getModelInfo(models) {
+    let modelInfo = models.map((e) => [e[0].value, e[1].value])
+    modelInfo = modelInfo.filter((e) => e[0].trim() !== "")
+    modelInfo = modelInfo.map((e) => [e[0], parseFloat(e[1])])
+
+    let modelNames = modelInfo.map((e) => e[0])
+    let modelStrengths = modelInfo.map((e) => e[1])
+
+    return [modelNames, modelStrengths]
 }
 
 function getPrompts(prompts) {
@@ -1836,33 +1853,6 @@ function updateHypernetworkStrengthContainer() {
 hypernetworkModelField.addEventListener("change", updateHypernetworkStrengthContainer)
 updateHypernetworkStrengthContainer()
 
-/********************* LoRA alpha **********************/
-function updateLoraAlpha() {
-    loraAlphaField.value = loraAlphaSlider.value / 100
-    loraAlphaField.dispatchEvent(new Event("change"))
-}
-
-function updateLoraAlphaSlider() {
-    if (loraAlphaField.value < -2) {
-        loraAlphaField.value = -2
-    } else if (loraAlphaField.value > 2) {
-        loraAlphaField.value = 2
-    }
-
-    loraAlphaSlider.value = loraAlphaField.value * 100
-    loraAlphaSlider.dispatchEvent(new Event("change"))
-}
-
-loraAlphaSlider.addEventListener("input", updateLoraAlpha)
-loraAlphaField.addEventListener("input", updateLoraAlphaSlider)
-updateLoraAlpha()
-
-function updateLoraAlphaContainer() {
-    document.querySelector("#lora_alpha_container").style.display = loraModelField.value === "" ? "none" : ""
-}
-loraModelField.addEventListener("change", updateLoraAlphaContainer)
-updateLoraAlphaContainer()
-
 /********************* JPEG/WEBP Quality **********************/
 function updateOutputQuality() {
     outputQualityField.value = 0 | outputQualitySlider.value
@@ -2250,3 +2240,43 @@ prettifyInputs(document)
 // set the textbox as focused on start
 promptField.focus()
 promptField.selectionStart = promptField.value.length
+
+// multi-models
+function addModelEntry(i, modelContainer, modelsList, modelType, defaultValue, minStrength, maxStrength, strengthStep) {
+    let nameId = modelType + "_model_" + i
+    let strengthId = modelType + "_alpha_" + i
+
+    const modelEntry = document.createElement("div")
+    modelEntry.className = "model_entry"
+    modelEntry.innerHTML = `
+        <input id="${nameId}" class="model_name" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
+        <input id="${strengthId}" class="model_strength" type="number" max="${maxStrength}" min="${minStrength}" step="${strengthStep}" style="width: 50pt" value="${defaultValue}" pattern="^-?[0-9]*\.?[0-9]*$" onkeypress="preventNonNumericalInput(event)"><br/>
+    `
+
+    let modelName = new ModelDropdown(modelEntry.querySelector(".model_name"), modelType, "None")
+    let modelStrength = modelEntry.querySelector(".model_strength")
+
+    modelContainer.appendChild(modelEntry)
+    modelsList.push([modelName, modelStrength])
+}
+
+function createLoRAEntries() {
+    let container = document.querySelector("#lora_model_container .model_entries")
+    for (let i = 0; i < 3; i++) {
+        addModelEntry(i, container, loraModels, "lora", 0.5, -2, 2, 0.02)
+    }
+}
+createLoRAEntries()
+
+// chrome-like spinners only on hover
+function showSpinnerOnlyOnHover(e) {
+    e.addEventListener("mouseenter", () => {
+        e.setAttribute("type", "number")
+    })
+    e.addEventListener("mouseleave", () => {
+        e.removeAttribute("type")
+    })
+    e.removeAttribute("type")
+}
+
+document.querySelectorAll("input[type=number]").forEach(showSpinnerOnlyOnHover)

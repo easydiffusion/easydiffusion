@@ -1678,3 +1678,7 @@ body.wait-pause {
 #embeddings-list::-webkit-scrollbar-thumb {
   background: var(--background-color3);
 }
+
+.model_entry .model_name {
+    width: 70%;
+}

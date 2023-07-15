@@ -16,7 +16,9 @@ const SETTINGS_IDS_LIST = [
     "clip_skip",
     "vae_model",
     "hypernetwork_model",
-    "lora_model",
+    "lora_model_0",
+    "lora_model_1",
+    "lora_model_2",
     "sampler_name",
     "width",
     "height",
@@ -24,7 +26,9 @@ const SETTINGS_IDS_LIST = [
     "guidance_scale",
     "prompt_strength",
     "hypernetwork_strength",
-    "lora_alpha",
+    "lora_alpha_0",
+    "lora_alpha_1",
+    "lora_alpha_2",
     "tiling",
     "output_format",
     "output_quality",
@@ -176,13 +180,14 @@ function loadSettings() {
         // So this is likely the first time Easy Diffusion is running.
         // Initialize vram_usage_level based on the available VRAM
         function initGPUProfile(event) {
-            if (    "detail" in event 
-                && "active" in event.detail
-                && "cuda:0" in event.detail.active
-                && event.detail.active["cuda:0"].mem_total <4.5 )
-            {
-               vramUsageLevelField.value = "low"
-               vramUsageLevelField.dispatchEvent(new Event("change"))
+            if (
+                "detail" in event &&
+                "active" in event.detail &&
+                "cuda:0" in event.detail.active &&
+                event.detail.active["cuda:0"].mem_total < 4.5
+            ) {
+                vramUsageLevelField.value = "low"
+                vramUsageLevelField.dispatchEvent(new Event("change"))
             }
             document.removeEventListener("system_info_update", initGPUProfile)
         }

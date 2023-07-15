@@ -225,18 +225,14 @@
                         <label for="height"><small>(height)</small></label>
                         <div id="small_image_warning" class="displayNone">Small image sizes can cause bad image quality</div>
                     </td></tr>
-                    <tr class="pl-5"><td><label for="num_inference_steps">Inference Steps:</label></td><td> <input id="num_inference_steps" name="num_inference_steps" size="4" value="25" onkeypress="preventNonNumericalInput(event)"></td></tr>
+                    <tr class="pl-5"><td><label for="num_inference_steps">Inference Steps:</label></td><td> <input id="num_inference_steps" name="num_inference_steps" type="number" min="1" step="1" style="width: 42pt" value="25" onkeypress="preventNonNumericalInput(event)"></td></tr>
                     <tr class="pl-5"><td><label for="guidance_scale_slider">Guidance Scale:</label></td><td> <input id="guidance_scale_slider" name="guidance_scale_slider" class="editor-slider" value="75" type="range" min="11" max="500"> <input id="guidance_scale" name="guidance_scale" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"></td></tr>
                     <tr id="prompt_strength_container" class="pl-5"><td><label for="prompt_strength_slider">Prompt Strength:</label></td><td> <input id="prompt_strength_slider" name="prompt_strength_slider" class="editor-slider" value="80" type="range" min="0" max="99"> <input id="prompt_strength" name="prompt_strength" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"><br/></td></tr>
-                    <tr id="lora_model_container" class="pl-5"><td><label for="lora_model">LoRA:</label></td><td>
-                        <input id="lora_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
-                    </td></tr>
-                    <tr id="lora_alpha_container" class="pl-5">
-                        <td><label for="lora_alpha_slider">LoRA Strength:</label></td>
+                    <tr id="lora_model_container" class="pl-5">
                         <td>
-                            <small>-2</small> <input id="lora_alpha_slider" name="lora_alpha_slider" class="editor-slider" value="50" type="range" min="-200" max="200"> <small>2</small> &nbsp;
-                            <input id="lora_alpha" name="lora_alpha" size="4" pattern="^-?[0-9]*\.?[0-9]*$" onkeypress="preventNonNumericalInput(event)"><br/>
+                            <label for="lora_model">LoRA:</label>
                         </td>
+                        <td class="model_entries"></td>
                     </tr>
                     <tr class="pl-5"><td><label for="hypernetwork_model">Hypernetwork:</label></td><td>
                         <input id="hypernetwork_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
