@@ -292,6 +292,11 @@ const TASK_MAPPING = {
     use_lora_model: {
         name: "LoRA model",
         setUI: (use_lora_model) => {
+            // create rows
+            for (let i = loraModels.length; i < use_lora_model.length; i++) {
+                createLoraEntry()
+            }
+
             use_lora_model.forEach((model_name, i) => {
                 let field = loraModels[i][0]
                 const oldVal = field.value
@@ -304,9 +309,13 @@ const TASK_MAPPING = {
             })
 
             // clear the remaining entries
+            let container = document.querySelector("#lora_model_container .model_entries")
             for (let i = use_lora_model.length; i < loraModels.length; i++) {
-                loraModels[i][0].value = ""
+                let modelEntry = loraModels[i][2]
+                container.removeChild(modelEntry)
             }
+
+            loraModels.splice(use_lora_model.length)
         },
         readUI: () => {
             let values = loraModels.map((e) => e[0].value)
@@ -323,15 +332,23 @@ const TASK_MAPPING = {
     lora_alpha: {
         name: "LoRA Strength",
         setUI: (lora_alpha) => {
+            for (let i = loraModels.length; i < lora_alpha.length; i++) {
+                createLoraEntry()
+            }
+
             lora_alpha.forEach((model_strength, i) => {
                 let field = loraModels[i][1]
                 field.value = model_strength
             })
 
             // clear the remaining entries
+            let container = document.querySelector("#lora_model_container .model_entries")
             for (let i = lora_alpha.length; i < loraModels.length; i++) {
-                loraModels[i][1].value = 0
+                let modelEntry = loraModels[i][2]
+                container.removeChild(modelEntry)
             }
+
+            loraModels.splice(lora_alpha.length)
         },
         readUI: () => {
             let models = loraModels.filter((e) => e[0].value.trim() !== "")

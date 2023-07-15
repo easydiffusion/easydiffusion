@@ -2242,41 +2242,69 @@ promptField.focus()
 promptField.selectionStart = promptField.value.length
 
 // multi-models
-function addModelEntry(i, modelContainer, modelsList, modelType, defaultValue, strengthStep) {
-    let nameId = modelType + "_model_" + i
-    let strengthId = modelType + "_alpha_" + i
+let modelCount = 0
 
-    const modelEntry = document.createElement("div")
-    modelEntry.className = "model_entry"
-    modelEntry.innerHTML = `
+function addModelEntry(modelContainer, modelsList, modelType, defaultValue, strengthStep) {
+    let idx = modelCount++
+    let nameId = modelType + "_model_" + idx
+    let strengthId = modelType + "_alpha_" + idx
+
+    const modelElement = document.createElement("div")
+    modelElement.className = "model_entry"
+    modelElement.innerHTML = `
         <input id="${nameId}" class="model_name" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
-        <input id="${strengthId}" class="model_strength" type="number" step="${strengthStep}" style="width: 50pt" value="${defaultValue}" pattern="^-?[0-9]*\.?[0-9]*$" onkeypress="preventNonNumericalInput(event)"><br/>
+        <input id="${strengthId}" class="model_strength" type="number" step="${strengthStep}" style="width: 50pt" value="${defaultValue}" pattern="^-?[0-9]*\.?[0-9]*$" onkeypress="preventNonNumericalInput(event)">
     `
+    modelContainer.appendChild(modelElement)
 
-    let modelName = new ModelDropdown(modelEntry.querySelector(".model_name"), modelType, "None")
-    let modelStrength = modelEntry.querySelector(".model_strength")
+    let modelName = new ModelDropdown(modelElement.querySelector(".model_name"), modelType, "None")
+    let modelStrength = modelElement.querySelector(".model_strength")
+    let entry = [modelName, modelStrength, modelElement]
 
-    modelContainer.appendChild(modelEntry)
-    modelsList.push([modelName, modelStrength])
-}
+    let removeBtn = document.createElement("button")
+    removeBtn.innerHTML = '<i class="fa-solid fa-minus"></i>'
 
-function createLoRAEntries() {
-    let container = document.querySelector("#lora_model_container .model_entries")
-    for (let i = 0; i < 3; i++) {
-        addModelEntry(i, container, loraModels, "lora", 0.5, 0.02)
+    if (modelsList.length === 0) {
+        removeBtn.classList.add("displayNone")
     }
+
+    removeBtn.addEventListener("click", function() {
+        let entryIdx = modelsList.indexOf(entry)
+        modelsList.splice(entryIdx, 1)
+        modelContainer.removeChild(modelElement)
+    })
+
+    modelElement.appendChild(removeBtn)
+
+    modelsList.push(entry)
+
+    return modelElement
 }
-createLoRAEntries()
+
+function createLoraEntry() {
+    let container = document.querySelector("#lora_model_container .model_entries")
+    return addModelEntry(container, loraModels, "lora", 0.5, 0.02)
+}
+
+function createLoraEntries() {
+    let firstEntry = createLoraEntry()
+
+    let addLoraBtn = document.querySelector("#lora_model_container .add_model_entry")
+    addLoraBtn.addEventListener("click", () => {
+        createLoraEntry()
+    })
+}
+createLoraEntries()
 
 // chrome-like spinners only on hover
-function showSpinnerOnlyOnHover(e) {
-    e.addEventListener("mouseenter", () => {
-        e.setAttribute("type", "number")
-    })
-    e.addEventListener("mouseleave", () => {
-        e.removeAttribute("type")
-    })
-    e.removeAttribute("type")
-}
+// function showSpinnerOnlyOnHover(e) {
+//     e.addEventListener("mouseenter", () => {
+//         e.setAttribute("type", "number")
+//     })
+//     e.addEventListener("mouseleave", () => {
+//         e.removeAttribute("type")
+//     })
+//     e.removeAttribute("type")
+// }
 
-document.querySelectorAll("input[type=number]").forEach(showSpinnerOnlyOnHover)
+// document.querySelectorAll("input[type=number]").forEach(showSpinnerOnlyOnHover)
