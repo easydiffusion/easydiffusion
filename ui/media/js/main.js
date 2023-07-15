@@ -1346,7 +1346,8 @@ function getPromptsNumber(prompts) {
 
     let promptsToMake = []
     let numberOfPrompts = 0
-    if (prompts.trim() !== "") { // this needs to stay sort of the same, as the prompts have to be passed through to the other functions
+    if (prompts.trim() !== "") {
+        // this needs to stay sort of the same, as the prompts have to be passed through to the other functions
         prompts = prompts.split("\n")
         prompts = prompts.map((prompt) => prompt.trim())
         prompts = prompts.filter((prompt) => prompt !== "")
@@ -1354,7 +1355,11 @@ function getPromptsNumber(prompts) {
         // estimate number of prompts
         let estimatedNumberOfPrompts = 0
         prompts.forEach((prompt) => {
-            estimatedNumberOfPrompts += (prompt.match(/{[^}]*}/g) || []).map((e) => (e.match(/,/g) || []).length + 1).reduce( (p,a) => p*a, 1) * (2**(prompt.match(/\|/g) || []).length)
+            estimatedNumberOfPrompts +=
+                (prompt.match(/{[^}]*}/g) || [])
+                    .map((e) => (e.match(/,/g) || []).length + 1)
+                    .reduce((p, a) => p * a, 1) *
+                2 ** (prompt.match(/\|/g) || []).length
         })
 
         if (estimatedNumberOfPrompts >= 10000) {
@@ -1394,7 +1399,8 @@ function applySetOperator(prompts) {
     return promptsToMake
 }
 
-function applyPermuteOperator(prompts) { // prompts is array of input, trimmed, filtered and split by \n
+function applyPermuteOperator(prompts) {
+    // prompts is array of input, trimmed, filtered and split by \n
     let promptsToMake = []
     prompts.forEach((prompt) => {
         let promptMatrix = prompt.split("|")
@@ -1414,13 +1420,14 @@ function applyPermuteOperator(prompts) { // prompts is array of input, trimmed, 
 }
 
 // returns how many prompts would have to be made with the given prompts
-function applyPermuteOperatorNumber(prompts) { // prompts is array of input, trimmed, filtered and split by \n
+function applyPermuteOperatorNumber(prompts) {
+    // prompts is array of input, trimmed, filtered and split by \n
     let numberOfPrompts = 0
     prompts.forEach((prompt) => {
         let promptCounter = 1
         let promptMatrix = prompt.split("|")
         promptMatrix.shift()
-        
+
         promptMatrix = promptMatrix.map((p) => p.trim())
         promptMatrix = promptMatrix.filter((p) => p !== "")
 
@@ -1510,8 +1517,12 @@ clearAllPreviewsBtn.addEventListener("click", (e) => {
 })
 
 /* Download images popup */
-showDownloadDialogBtn.addEventListener("click", (e) => { saveAllImagesDialog.showModal() }) 
-saveAllImagesCloseBtn.addEventListener("click", (e) => { saveAllImagesDialog.close() })
+showDownloadDialogBtn.addEventListener("click", (e) => {
+    saveAllImagesDialog.showModal()
+})
+saveAllImagesCloseBtn.addEventListener("click", (e) => {
+    saveAllImagesDialog.close()
+})
 modalDialogCloseOnBackdropClick(saveAllImagesDialog)
 makeDialogDraggable(saveAllImagesDialog)
 
@@ -1629,15 +1640,11 @@ function renameMakeImageButton() {
         imageLabel = totalImages + " Images"
     }
     if (SD.activeTasks.size == 0) {
-        if (totalImages >= 10000)
-            makeImageBtn.innerText = "Make 10000+ images"
-        else
-            makeImageBtn.innerText = "Make " + imageLabel
+        if (totalImages >= 10000) makeImageBtn.innerText = "Make 10000+ images"
+        else makeImageBtn.innerText = "Make " + imageLabel
     } else {
-        if (totalImages >= 10000)
-            makeImageBtn.innerText = "Enqueue 10000+ images"
-        else
-            makeImageBtn.innerText = "Enqueue Next " + imageLabel
+        if (totalImages >= 10000) makeImageBtn.innerText = "Enqueue 10000+ images"
+        else makeImageBtn.innerText = "Enqueue Next " + imageLabel
     }
 }
 numOutputsTotalField.addEventListener("change", renameMakeImageButton)
@@ -2073,9 +2080,8 @@ function resumeClient() {
     })
 }
 
-
 function splashScreen(force = false) {
-    const splashVersion = splashScreenPopup.dataset['version']
+    const splashVersion = splashScreenPopup.dataset["version"]
     const lastSplash = localStorage.getItem("lastSplashScreenVersion") || 0
     if (testDiffusers.checked) {
         if (force || lastSplash < splashVersion) {
@@ -2085,8 +2091,9 @@ function splashScreen(force = false) {
     }
 }
 
-
-document.getElementById("logo_img").addEventListener("click", (e) => { splashScreen(true) })
+document.getElementById("logo_img").addEventListener("click", (e) => {
+    splashScreen(true)
+})
 
 promptField.addEventListener("input", debounce(renameMakeImageButton, 1000))
 
@@ -2139,21 +2146,21 @@ document.getElementById("toggle-cloudflare-tunnel").addEventListener("click", as
 
 /* Embeddings */
 
-function updateEmbeddingsList(filter="") {
-    function html(model, prefix="", filter="") {
+function updateEmbeddingsList(filter = "") {
+    function html(model, prefix = "", filter = "") {
         filter = filter.toLowerCase()
-        let toplevel=""
-        let folders=""
-       
-        model?.forEach( m => {
-            if (typeof(m) == "string") {
-                if (m.toLowerCase().search(filter)!=-1) {
+        let toplevel = ""
+        let folders = ""
+
+        model?.forEach((m) => {
+            if (typeof m == "string") {
+                if (m.toLowerCase().search(filter) != -1) {
                     toplevel += `<button data-embedding="${m}">${m}</button> `
                 }
             } else {
-                let subdir = html(m[1], prefix+m[0]+"/", filter)
+                let subdir = html(m[1], prefix + m[0] + "/", filter)
                 if (subdir != "") {
-                   folders += `<h4>${prefix}${m[0]}</h4>` + subdir
+                    folders += `<h4>${prefix}${m[0]}</h4>` + subdir
                 }
             }
         })
@@ -2171,7 +2178,7 @@ function updateEmbeddingsList(filter="") {
                 insertAtCursor(promptField, text)
             }
         } else {
-            let pad=""
+            let pad = ""
             if (e.shiftKey) {
                 if (!negativePromptField.value.endsWith(" ")) {
                     pad = " "
@@ -2197,13 +2204,15 @@ function updateEmbeddingsList(filter="") {
     // END of remove block
 
     embeddingsList.innerHTML = warning + html(modelsOptions.embeddings, "", filter)
-    embeddingsList.querySelectorAll("button").forEach( (b) => { b.addEventListener("click", onButtonClick)})
+    embeddingsList.querySelectorAll("button").forEach((b) => {
+        b.addEventListener("click", onButtonClick)
+    })
 }
 
-embeddingsButton.addEventListener("click", () => { 
+embeddingsButton.addEventListener("click", () => {
     updateEmbeddingsList()
-    embeddingsSearchBox.value=""
-    embeddingsDialog.showModal() 
+    embeddingsSearchBox.value = ""
+    embeddingsDialog.showModal()
 })
 embeddingsDialogCloseBtn.addEventListener("click", (e) => {
     embeddingsDialog.close()
@@ -2214,7 +2223,6 @@ embeddingsSearchBox.addEventListener("input", (e) => {
 
 modalDialogCloseOnBackdropClick(embeddingsDialog)
 makeDialogDraggable(embeddingsDialog)
-
 
 if (testDiffusers.checked) {
     document.getElementById("embeddings-container").classList.remove("displayNone")
