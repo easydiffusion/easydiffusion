@@ -3,7 +3,7 @@
  * @readonly
  * @enum {string}
  */
- var ParameterType = {
+var ParameterType = {
     checkbox: "checkbox",
     select: "select",
     select_multiple: "select_multiple",
