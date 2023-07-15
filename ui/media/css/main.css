@@ -6,6 +6,7 @@
 html {
     position: relative;
     overscroll-behavior-y: none;
+    color-scheme: dark !important;
 }
 
 body {
