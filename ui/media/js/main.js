@@ -2242,7 +2242,7 @@ promptField.focus()
 promptField.selectionStart = promptField.value.length
 
 // multi-models
-function addModelEntry(i, modelContainer, modelsList, modelType, defaultValue, minStrength, maxStrength, strengthStep) {
+function addModelEntry(i, modelContainer, modelsList, modelType, defaultValue, strengthStep) {
     let nameId = modelType + "_model_" + i
     let strengthId = modelType + "_alpha_" + i
 
@@ -2250,7 +2250,7 @@ function addModelEntry(i, modelContainer, modelsList, modelType, defaultValue, m
     modelEntry.className = "model_entry"
     modelEntry.innerHTML = `
         <input id="${nameId}" class="model_name" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
-        <input id="${strengthId}" class="model_strength" type="number" max="${maxStrength}" min="${minStrength}" step="${strengthStep}" style="width: 50pt" value="${defaultValue}" pattern="^-?[0-9]*\.?[0-9]*$" onkeypress="preventNonNumericalInput(event)"><br/>
+        <input id="${strengthId}" class="model_strength" type="number" step="${strengthStep}" style="width: 50pt" value="${defaultValue}" pattern="^-?[0-9]*\.?[0-9]*$" onkeypress="preventNonNumericalInput(event)"><br/>
     `
 
     let modelName = new ModelDropdown(modelEntry.querySelector(".model_name"), modelType, "None")
@@ -2263,7 +2263,7 @@ function addModelEntry(i, modelContainer, modelsList, modelType, defaultValue, m
 function createLoRAEntries() {
     let container = document.querySelector("#lora_model_container .model_entries")
     for (let i = 0; i < 3; i++) {
-        addModelEntry(i, container, loraModels, "lora", 0.5, -2, 2, 0.02)
+        addModelEntry(i, container, loraModels, "lora", 0.5, 0.02)
     }
 }
 createLoRAEntries()
