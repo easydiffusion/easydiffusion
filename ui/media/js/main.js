@@ -2269,14 +2269,14 @@ function createLoRAEntries() {
 createLoRAEntries()
 
 // chrome-like spinners only on hover
-function showSpinnerOnlyOnHover(e) {
-    e.addEventListener("mouseenter", () => {
-        e.setAttribute("type", "number")
-    })
-    e.addEventListener("mouseleave", () => {
-        e.removeAttribute("type")
-    })
-    e.removeAttribute("type")
-}
+// function showSpinnerOnlyOnHover(e) {
+//     e.addEventListener("mouseenter", () => {
+//         e.setAttribute("type", "number")
+//     })
+//     e.addEventListener("mouseleave", () => {
+//         e.removeAttribute("type")
+//     })
+//     e.removeAttribute("type")
+// }
 
-document.querySelectorAll("input[type=number]").forEach(showSpinnerOnlyOnHover)
+// document.querySelectorAll("input[type=number]").forEach(showSpinnerOnlyOnHover)
