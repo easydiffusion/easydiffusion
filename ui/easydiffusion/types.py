@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List, Union
 
 from pydantic import BaseModel
 
@@ -22,7 +22,7 @@ class GenerateImageRequest(BaseModel):
 
     sampler_name: str = None  # "ddim", "plms", "heun", "euler", "euler_a", "dpm2", "dpm2_a", "lms"
     hypernetwork_strength: float = 0
-    lora_alpha: float = 0
+    lora_alpha: Union[float, List[float]] = 0
     tiling: str = "none"  # "none", "x", "y", "xy"
 
 
@@ -32,15 +32,14 @@ class TaskData(BaseModel):
     save_to_disk_path: str = None
     vram_usage_level: str = "balanced"  # or "low" or "medium"
 
-    use_face_correction: str = None  # or "GFPGANv1.3"
-    use_upscale: str = None  # or "RealESRGAN_x4plus" or "RealESRGAN_x4plus_anime_6B" or "latent_upscaler"
+    use_face_correction: Union[str, List[str]] = None  # or "GFPGANv1.3"
+    use_upscale: Union[str, List[str]] = None
     upscale_amount: int = 4  # or 2
     latent_upscaler_steps: int = 10
-    use_stable_diffusion_model: str = "sd-v1-4"
-    # use_stable_diffusion_config: str = "v1-inference"
-    use_vae_model: str = None
-    use_hypernetwork_model: str = None
-    use_lora_model: str = None
+    use_stable_diffusion_model: Union[str, List[str]] = "sd-v1-4"
+    use_vae_model: Union[str, List[str]] = None
+    use_hypernetwork_model: Union[str, List[str]] = None
+    use_lora_model: Union[str, List[str]] = None
 
     show_only_filtered_image: bool = False
     block_nsfw: bool = False
