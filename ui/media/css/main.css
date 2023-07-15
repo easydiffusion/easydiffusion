@@ -906,6 +906,10 @@ div.img-preview img {
     white-space: nowrap;
 }
 
+#editor-settings-entries table {
+    width: 93%;
+}
+
 #negative_prompt {
     width: 100%;
 }
@@ -1680,5 +1684,5 @@ body.wait-pause {
 }
 
 .model_entry .model_name {
-    width: 70%;
+    width: 65%;
 }
