@@ -13,6 +13,7 @@ body {
     font-size: 11pt;
     background-color: var(--background-color1);
     color: var(--text-color);
+    overscroll-behavior-y: contain;
 }
 a {
     color: var(--link-color);
