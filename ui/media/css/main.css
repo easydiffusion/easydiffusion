@@ -5,6 +5,8 @@
 
 html {
     position: relative;
+    overscroll-behavior-y: none;
+    color-scheme: dark !important;
 }
 
 body {
@@ -1675,6 +1677,10 @@ body.wait-pause {
 
 #embeddings-list::-webkit-scrollbar-thumb {
   background: var(--background-color3);
+}
+
+.model_entry .model_name {
+    width: 70%;
 }
 
 .diffusers-disabled-on-startup .diffusers-restart-needed {

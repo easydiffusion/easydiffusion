@@ -41,6 +41,10 @@ call python --version
 
 echo PYTHONPATH=%PYTHONPATH%
 
+if exist "%cd%\profile" (
+    set HF_HOME=%cd%\profile\.cache\huggingface
+)
+
 @rem done
 echo.
 

@@ -436,7 +436,6 @@ async function getAppConfig() {
 
         if (!testDiffusersEnabled) {
             document.querySelector("#lora_model_container").style.display = "none"
-            document.querySelector("#lora_alpha_container").style.display = "none"
             document.querySelector("#tiling_container").style.display = "none"
 
             document.querySelectorAll("#sampler_name option.diffusers-only").forEach((option) => {
@@ -444,7 +443,6 @@ async function getAppConfig() {
             })
         } else {
             document.querySelector("#lora_model_container").style.display = ""
-            document.querySelector("#lora_alpha_container").style.display = loraModelField.value ? "" : "none"
             document.querySelector("#tiling_container").style.display = ""
 
             document.querySelectorAll("#sampler_name option.k_diffusion-only").forEach((option) => {
