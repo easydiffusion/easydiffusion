@@ -900,6 +900,10 @@ div.img-preview img {
     white-space: nowrap;
 }
 
+#editor-settings-entries table {
+    width: 93%;
+}
+
 #negative_prompt {
     width: 100%;
 }
@@ -1666,7 +1670,7 @@ body.wait-pause {
 }
 
 .model_entry .model_name {
-    width: 70%;
+    width: 65%;
 }
 
 .split-toolbar {  display: grid;
@@ -1691,4 +1695,17 @@ body.wait-pause {
 
 #negative-embeddings-button {
     float: right;
+}
+
+.diffusers-disabled-on-startup .diffusers-restart-needed {
+    font-size: 0;
+}
+
+.diffusers-disabled-on-startup .diffusers-restart-needed * {
+    display: none;
+}
+
+.diffusers-disabled-on-startup .diffusers-restart-needed::after {
+    content: "Please restart Easy Diffusion!";
+    font-size: 10pt;
 }

@@ -22,6 +22,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 2.5.45 - 16 Jul 2023 - (beta-only) Fix the image quality of LoRAs, which had degraded in v2.5.44.
 * 2.5.44 - 15 Jul 2023 - (beta-only) Support for multiple LoRA files.
 * 2.5.43 - 9 Jul 2023 - (beta-only) Support for loading Textual Inversion embeddings. You can find the option in the Image Settings panel. Thanks @JeLuf.
 * 2.5.43 - 9 Jul 2023 - Improve the startup time of the UI.

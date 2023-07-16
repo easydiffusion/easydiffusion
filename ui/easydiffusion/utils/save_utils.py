@@ -192,7 +192,14 @@ def get_metadata_entries_for_request(req: GenerateImageRequest, task_data: TaskD
     # if text, format it in the text format expected by the UI
     is_txt_format = task_data.metadata_output_format and "txt" in task_data.metadata_output_format.lower().split(",")
     if is_txt_format:
-        metadata = {TASK_TEXT_MAPPING[key]: val for key, val in metadata.items() if key in TASK_TEXT_MAPPING}
+        def format_value(value):
+            if isinstance(value, list):
+                return ", ".join([ str(it) for it in value ])
+            return value
+
+        metadata = {
+            TASK_TEXT_MAPPING[key]: format_value(val) for key, val in metadata.items() if key in TASK_TEXT_MAPPING
+        }
 
     entries = [metadata.copy() for _ in range(req.num_outputs)]
     for i, entry in enumerate(entries):
@@ -232,7 +239,7 @@ def get_printable_request(req: GenerateImageRequest, task_data: TaskData):
                         used_embeddings.extend(scan_directory(entry.path))
                 return used_embeddings
             used_embeddings = scan_directory(os.path.join(app.MODELS_DIR, "embeddings"))
-            metadata["use_embedding_models"] = ", ".join(used_embeddings) if len(used_embeddings) > 0 else None
+            metadata["use_embedding_models"] = used_embeddings if len(used_embeddings) > 0 else None
     
     # Clean up the metadata
     if req.init_image is None and "prompt_strength" in metadata:
