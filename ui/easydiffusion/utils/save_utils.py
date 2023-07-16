@@ -9,7 +9,7 @@ from functools import reduce
 from easydiffusion import app
 from easydiffusion.types import GenerateImageRequest, TaskData
 from numpy import base_repr
-from sdkit.utils import save_dicts, save_images
+from sdkit.utils import save_dicts, save_images, get_embedding_token
 
 filename_regex = re.compile("[^a-zA-Z0-9._-]")
 img_number_regex = re.compile("([0-9]{5,})")
@@ -228,11 +228,11 @@ def get_printable_request(req: GenerateImageRequest, task_data: TaskData):
                 used_embeddings = []
                 for entry in os.scandir(directory_path):
                     if entry.is_file():
-                        entry_extension = os.path.splitext(entry.name)[1]
-                        if entry_extension not in embeddings_extensions:
+                        # Check if the filename has the right extension
+                        if not any(map(lambda ext: entry.name.endswith(ext), embeddings_extensions)):
                             continue
 
-                        embedding_name_regex = regex.compile(r"(^|[\s,])" + regex.escape(os.path.splitext(entry.name)[0]) + r"([+-]*$|[\s,]|[+-]+[\s,])")
+                        embedding_name_regex = regex.compile(r"(^|[\s,])" + regex.escape(get_embedding_token(entry.name)) + r"([+-]*$|[\s,]|[+-]+[\s,])")
                         if embedding_name_regex.search(req.prompt) or embedding_name_regex.search(req.negative_prompt):
                             used_embeddings.append(entry.path)
                     elif entry.is_dir():
