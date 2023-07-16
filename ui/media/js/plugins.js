@@ -76,10 +76,21 @@ async function loadUIPlugins() {
         }
         const plugins = await res.json()
         const loadingPromises = plugins.map(loadScript)
-        return await Promise.allSettled(loadingPromises)
+        let x = await Promise.allSettled(loadingPromises)
+
+        runPluginHacks()
+
+        return x
     } catch (e) {
         console.log("error fetching plugin paths", e)
     }
+}
+
+function runPluginHacks() {
+    // hacks to make existing plugins work when changing the interface
+
+    // 16 Jul 2023 - v2.5.45 - hack for rabbit hole, lora field
+    window.LORA_slider = document.querySelector("#lora_model_container .model_strength")
 }
 
 
