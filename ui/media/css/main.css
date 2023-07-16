@@ -1696,6 +1696,6 @@ body.wait-pause {
 }
 
 .diffusers-disabled-on-startup .diffusers-restart-needed::after {
-    content: "Restart needed";
+    content: "Please restart Easy Diffusion!";
     font-size: 10pt;
 }
