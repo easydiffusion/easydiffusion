@@ -1684,7 +1684,17 @@ body.wait-pause {
 }
 
 .model_entry .model_name {
-    width: 65%;
+    width: 73%;
+}
+
+.model_entry {
+    position: relative;
+}
+
+.model_entry .remove_model_btn {
+    position: absolute;
+    left: -23pt;
+    top: 4pt;
 }
 
 .diffusers-disabled-on-startup .diffusers-restart-needed {

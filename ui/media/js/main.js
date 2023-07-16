@@ -2262,6 +2262,8 @@ function addModelEntry(modelContainer, modelsList, modelType, defaultValue, stre
     let entry = [modelName, modelStrength, modelElement]
 
     let removeBtn = document.createElement("button")
+    removeBtn.className = "remove_model_btn"
+    removeBtn.setAttribute("title", "Remove model")
     removeBtn.innerHTML = '<i class="fa-solid fa-minus"></i>'
 
     if (modelsList.length === 0) {
