@@ -288,12 +288,6 @@ button#resume {
     position: relative;
     cursor: pointer;
 }
-#image-modifier-dropdown[data-active="true"]::before {
-    content: "➖";
-}
-#image-modifier-dropdown[data-active="false"]::before {
-    content: "➕";
-}
 #editor-modifiers {
     max-width: 75vw;
     min-width: 50vw;
@@ -1145,7 +1139,7 @@ input::file-selector-button {
     position: relative;
 }
 
-#promptsFromFileBtn {
+.smallButton {
     font-size: 9pt;
     display: inline;
     padding: 2pt;
@@ -1652,14 +1646,6 @@ body.wait-pause {
     }
 }
 
-#embeddings-button {
-    background-color: var(--background-color3);
-}
-
-#embeddings-button:hover {
-    background-color: var(--button-hover-background);
-}
-
 #embeddings-dialog {
     overflow: clip;
 }
@@ -1676,9 +1662,33 @@ body.wait-pause {
 }
 
 #embeddings-list::-webkit-scrollbar-thumb {
-  background: var(--background-color3);
+    background: var(--background-color3);
 }
 
 .model_entry .model_name {
     width: 70%;
+}
+
+.split-toolbar {  display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
+    gap: 0px 0px;
+    grid-auto-flow: row;
+    grid-template-areas: "toolbar-left toolbar-right";
+}
+
+.toolbar-left {
+    justify-self: start;
+    align-self: center;
+    grid-area: toolbar-left;
+}
+
+.toolbar-right {
+    justify-self: end;
+    align-self: center;
+    grid-area: toolbar-right;
+}
+
+#negative-embeddings-button {
+    float: right;
 }
