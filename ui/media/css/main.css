@@ -1686,3 +1686,16 @@ body.wait-pause {
 .model_entry .model_name {
     width: 65%;
 }
+
+.diffusers-disabled-on-startup .diffusers-restart-needed {
+    font-size: 0;
+}
+
+.diffusers-disabled-on-startup .diffusers-restart-needed * {
+    display: none;
+}
+
+.diffusers-disabled-on-startup .diffusers-restart-needed::after {
+    content: "Restart needed";
+    font-size: 10pt;
+}

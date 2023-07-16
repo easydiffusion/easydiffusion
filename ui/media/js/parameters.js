@@ -424,6 +424,16 @@ async function getAppConfig() {
         const testDiffusersEnabled = config.test_diffusers && config.update_branch !== "main"
         testDiffusers.checked = testDiffusersEnabled
 
+        if (config.config_on_startup) {
+            if (config.config_on_startup?.test_diffusers && config.update_branch !== "main") {
+                document.body.classList.add("diffusers-enabled-on-startup");
+                document.body.classList.remove("diffusers-disabled-on-startup");
+            } else {
+                document.body.classList.add("diffusers-disabled-on-startup");
+                document.body.classList.remove("diffusers-enabled-on-startup");
+            }
+        }
+
         if (!testDiffusersEnabled) {
             document.querySelector("#lora_model_container").style.display = "none"
             document.querySelector("#tiling_container").style.display = "none"
