@@ -2,6 +2,7 @@ import os
 import shutil
 from glob import glob
 import traceback
+from typing import Union
 
 from easydiffusion import app
 from easydiffusion.types import TaskData
@@ -93,7 +94,14 @@ def unload_all(context: Context):
             del context.model_load_errors[model_type]
 
 
-def resolve_model_to_use(model_name: str = None, model_type: str = None, fail_if_not_found: bool = True):
+def resolve_model_to_use(model_name: Union[str, list] = None, model_type: str = None, fail_if_not_found: bool = True):
+    model_names = model_name if isinstance(model_name, list) else [model_name]
+    model_paths = [resolve_model_to_use_single(m, model_type, fail_if_not_found) for m in model_names]
+
+    return model_paths[0] if len(model_paths) == 1 else model_paths
+
+
+def resolve_model_to_use_single(model_name: str = None, model_type: str = None, fail_if_not_found: bool = True):
     model_extensions = MODEL_EXTENSIONS.get(model_type, [])
     default_models = DEFAULT_MODELS.get(model_type, [])
     config = app.getConfig()

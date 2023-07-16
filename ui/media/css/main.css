@@ -5,6 +5,8 @@
 
 html {
     position: relative;
+    overscroll-behavior-y: none;
+    color-scheme: dark !important;
 }
 
 body {
@@ -904,6 +906,10 @@ div.img-preview img {
     white-space: nowrap;
 }
 
+#editor-settings-entries table {
+    width: 93%;
+}
+
 #negative_prompt {
     width: 100%;
 }
@@ -1675,4 +1681,21 @@ body.wait-pause {
 
 #embeddings-list::-webkit-scrollbar-thumb {
   background: var(--background-color3);
+}
+
+.model_entry .model_name {
+    width: 65%;
+}
+
+.diffusers-disabled-on-startup .diffusers-restart-needed {
+    font-size: 0;
+}
+
+.diffusers-disabled-on-startup .diffusers-restart-needed * {
+    display: none;
+}
+
+.diffusers-disabled-on-startup .diffusers-restart-needed::after {
+    content: "Please restart Easy Diffusion!";
+    font-size: 10pt;
 }

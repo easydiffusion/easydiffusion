@@ -292,29 +292,75 @@ const TASK_MAPPING = {
     use_lora_model: {
         name: "LoRA model",
         setUI: (use_lora_model) => {
-            const oldVal = loraModelField.value
-            use_lora_model =
-                use_lora_model === undefined || use_lora_model === null || use_lora_model === "None"
-                    ? ""
-                    : use_lora_model
-
-            if (use_lora_model !== "") {
-                use_lora_model = getModelPath(use_lora_model, [".ckpt", ".safetensors"])
-                use_lora_model = use_lora_model !== "" ? use_lora_model : oldVal
+            // create rows
+            for (let i = loraModels.length; i < use_lora_model.length; i++) {
+                createLoraEntry()
             }
-            loraModelField.value = use_lora_model
+
+            use_lora_model.forEach((model_name, i) => {
+                let field = loraModels[i][0]
+                const oldVal = field.value
+
+                if (model_name !== "") {
+                    model_name = getModelPath(model_name, [".ckpt", ".safetensors"])
+                    model_name = model_name !== "" ? model_name : oldVal
+                }
+                field.value = model_name
+            })
+
+            // clear the remaining entries
+            let container = document.querySelector("#lora_model_container .model_entries")
+            for (let i = use_lora_model.length; i < loraModels.length; i++) {
+                let modelEntry = loraModels[i][2]
+                container.removeChild(modelEntry)
+            }
+
+            loraModels.splice(use_lora_model.length)
         },
-        readUI: () => loraModelField.value,
-        parse: (val) => val,
+        readUI: () => {
+            let values = loraModels.map((e) => e[0].value)
+            values = values.filter((e) => e.trim() !== "")
+            values = values.length > 0 ? values : "None"
+            return values
+        },
+        parse: (val) => {
+            val = !val || val === "None" ? "" : val
+            val = Array.isArray(val) ? val : [val]
+            return val
+        },
     },
     lora_alpha: {
         name: "LoRA Strength",
         setUI: (lora_alpha) => {
-            loraAlphaField.value = lora_alpha
-            updateLoraAlphaSlider()
+            for (let i = loraModels.length; i < lora_alpha.length; i++) {
+                createLoraEntry()
+            }
+
+            lora_alpha.forEach((model_strength, i) => {
+                let field = loraModels[i][1]
+                field.value = model_strength
+            })
+
+            // clear the remaining entries
+            let container = document.querySelector("#lora_model_container .model_entries")
+            for (let i = lora_alpha.length; i < loraModels.length; i++) {
+                let modelEntry = loraModels[i][2]
+                container.removeChild(modelEntry)
+            }
+
+            loraModels.splice(lora_alpha.length)
         },
-        readUI: () => parseFloat(loraAlphaField.value),
-        parse: (val) => parseFloat(val),
+        readUI: () => {
+            let models = loraModels.filter((e) => e[0].value.trim() !== "")
+            let values = models.map((e) => e[1].value)
+            values = values.length > 0 ? values : 0
+            return values
+        },
+        parse: (val) => {
+            val = Array.isArray(val) ? val : [val]
+            val = val.map((e) => parseFloat(e))
+            return val
+        },
     },
     use_hypernetwork_model: {
         name: "Hypernetwork model",
@@ -426,8 +472,11 @@ function restoreTaskToUI(task, fieldsToSkip) {
     }
 
     if (!("use_lora_model" in task.reqBody)) {
-        loraModelField.value = ""
-        loraModelField.dispatchEvent(new Event("change"))
+        loraModels.forEach((e) => {
+            e[0].value = ""
+            e[1].value = 0
+            e[0].dispatchEvent(new Event("change"))
+        })
     }
 
     // restore the original prompt if provided (e.g. use settings), fallback to prompt as needed (e.g. copy/paste or d&d)
