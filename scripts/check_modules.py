@@ -18,7 +18,7 @@ os_name = platform.system()
 modules_to_check = {
     "torch": ("1.11.0", "1.13.1", "2.0.0"),
     "torchvision": ("0.12.0", "0.14.1", "0.15.1"),
-    "sdkit": "1.0.130",
+    "sdkit": "1.0.131",
     "stable-diffusion-sdkit": "2.1.4",
     "rich": "12.6.0",
     "uvicorn": "0.19.0",
