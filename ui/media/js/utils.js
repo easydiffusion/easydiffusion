@@ -129,6 +129,31 @@ function tryLoadOldCollapsibles() {
     return null
 }
 
+function collapseAll(selector) {
+    const collapsibleElems = document.querySelectorAll(selector); // needs to have ";"
+
+    [...collapsibleElems].forEach((elem) => {
+        const isActive =  elem.classList.contains("active")
+
+        if(isActive) {
+            elem?.click()
+        }
+    })
+}
+
+function expandAll(selector) {
+    const collapsibleElems = document.querySelectorAll(selector); // needs to have ";"
+
+    [...collapsibleElems].forEach((elem) => {
+        const isActive =  elem.classList.contains("active")
+
+        if (!isActive) {
+            elem?.click()
+        }
+    })
+}
+
+
 function permute(arr) {
     let permutations = []
     let n = arr.length

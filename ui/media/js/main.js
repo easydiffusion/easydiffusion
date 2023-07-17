@@ -119,6 +119,7 @@ let embeddingsDialogCloseBtn = embeddingsDialog.querySelector("#embeddings-dialo
 let embeddingsSearchBox = document.querySelector("#embeddings-search-box")
 let embeddingsList = document.querySelector("#embeddings-list")
 let embeddingsModeField = document.querySelector("#embeddings-mode")
+let embeddingsCollapsiblesBtn = document.querySelector("#embeddings-action-collapsibles-btn")
 
 let makeImageBtn = document.querySelector("#makeImage")
 let stopImageBtn = document.querySelector("#stopImage")
@@ -2150,7 +2151,7 @@ function updateEmbeddingsList(filter = "") {
             } else {
                 let subdir = html(m[1], prefix + m[0] + "/", filter)
                 if (subdir != "") {
-                    folders += `<h4>${prefix}${m[0]}</h4>` + subdir
+                    folders += `<div class="embedding-category"><h4 class="collapsible">${prefix}${m[0]}</h4><div class="collapsible-content">` + subdir + '</div></div>'
                 }
             }
         })
@@ -2159,7 +2160,6 @@ function updateEmbeddingsList(filter = "") {
 
     function onButtonClick(e) {
         let text = e.target.dataset["embedding"]
-        console.log(e.shiftKey, text)
 
         if (embeddingsModeField.value == "insert") {
             if (e.shiftKey) {
@@ -2197,6 +2197,10 @@ function updateEmbeddingsList(filter = "") {
     embeddingsList.querySelectorAll("button").forEach((b) => {
         b.addEventListener("click", onButtonClick)
     })
+    createCollapsibles(embeddingsList)
+    if (filter != "") {
+        embeddingsExpandAll()
+    }
 }
 
 embeddingsButton.addEventListener("click", () => {
@@ -2213,6 +2217,51 @@ embeddingsSearchBox.addEventListener("input", (e) => {
 
 modalDialogCloseOnBackdropClick(embeddingsDialog)
 makeDialogDraggable(embeddingsDialog)
+
+const collapseText = "Collapse Categories"
+const expandText = "Expand Categories"
+
+const collapseIconClasses = ["fa-solid", "fa-square-minus"]
+const expandIconClasses = ["fa-solid", "fa-square-plus"]
+
+function embeddingsCollapseAll() {
+    const btnElem = embeddingsCollapsiblesBtn
+
+    const iconElem = btnElem.querySelector(".embeddings-action-icon")
+    const textElem = btnElem.querySelector(".embeddings-action-text")
+    collapseAll("#embeddings-list .collapsible")
+
+    collapsiblesBtnState = false
+
+    collapseIconClasses.forEach((c) => iconElem.classList.remove(c))
+    expandIconClasses.forEach((c) => iconElem.classList.add(c))
+
+    textElem.innerText = expandText
+}
+
+function embeddingsExpandAll() {
+    const btnElem = embeddingsCollapsiblesBtn
+
+    const iconElem = btnElem.querySelector(".embeddings-action-icon")
+    const textElem = btnElem.querySelector(".embeddings-action-text")
+    expandAll("#embeddings-list .collapsible")
+
+    collapsiblesBtnState = true
+
+    expandIconClasses.forEach((c) => iconElem.classList.remove(c))
+    collapseIconClasses.forEach((c) => iconElem.classList.add(c))
+
+    textElem.innerText = collapseText
+}
+
+embeddingsCollapsiblesBtn.addEventListener("click", (e) => {
+    if (collapsiblesBtnState) {
+        embeddingsCollapseAll()
+    } else {
+        embeddingsExpandAll()
+    }
+})
+
 
 if (testDiffusers.checked) {
     document.getElementById("embeddings-container").classList.remove("displayNone")
