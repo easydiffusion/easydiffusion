@@ -904,6 +904,22 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
                              <a href="https://www.ibm.com/docs/en/opw/8.2.0?topic=tuning-optional-increasing-paging-file-size-windows-computers" target="_blank">Windows</a> or
                              <a href="https://linuxhint.com/increase-swap-space-linux/" target="_blank">Linux</a>.<br/>
                             3. Try restarting your computer.<br/>`
+                } else if (msg.includes("RuntimeError: output with shape [320, 320] doesn't match the broadcast shape")) {
+                    msg += `<br/><br/>
+                            <b>Reason</b>: You tried to use a LORA that was trained for a different Stable Diffusion model version!
+                            <br/><br/>
+                            <b>Suggestions</b>:
+                            <br/>
+                            Try to use a different model or a different LORA.`
+                } else if (msg.includes("Tensor on device cuda:0 is not on the expected device meta")) {
+                    msg += `<br/><br/>
+                            <b>Reason</b>: Due to some software issues, embeddings currently don't work with the "Low" memory profile.
+                            <br/><br/>
+                            <b>Suggestions</b>:
+                            <br/>
+                            1. Set the memory profile to "Balanced"<br/>
+                            2. Remove the embeddings from the prompt and the negative prompt<br/>
+                            3. Check whether the plugins you're using change the memory profile automatically.`
                 }
             } else {
                 msg = `Unexpected Read Error:<br/><pre>StepUpdate: ${JSON.stringify(stepUpdate, undefined, 4)}</pre>`
