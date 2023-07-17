@@ -10,8 +10,6 @@ git commit -m "%commit_message%"
 echo.
 echo Pushing to remote...
 
-git push lpjhelder lpjninguem
-
 echo.
 echo Done!
 pause
