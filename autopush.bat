@@ -10,7 +10,7 @@ git commit -m "%commit_message%"
 echo.
 echo Pushing to remote...
 
-git push my_remote my_branch
+git push lpjhelder lpjninguem
 
 echo.
 echo Done!
