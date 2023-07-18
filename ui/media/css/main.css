@@ -1670,6 +1670,10 @@ body.wait-pause {
     background: var(--button-text-color);
     font-weight: 700;
 }
+#embeddings-list button:hover {
+    background: var(--accent-color);
+    color: var(--button-text-color);
+}
 
 #embeddings-list .collapsible {
     background: var(--background-color3);
