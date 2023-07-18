@@ -114,11 +114,15 @@ let thumbnailSizeField = document.querySelector("#thumbnail_size-input")
 let autoscrollBtn = document.querySelector("#auto_scroll_btn")
 let autoScroll = document.querySelector("#auto_scroll")
 let embeddingsButton = document.querySelector("#embeddings-button")
+let negativeEmbeddingsButton = document.querySelector("#negative-embeddings-button")
 let embeddingsDialog = document.querySelector("#embeddings-dialog")
 let embeddingsDialogCloseBtn = embeddingsDialog.querySelector("#embeddings-dialog-close-button")
 let embeddingsSearchBox = document.querySelector("#embeddings-search-box")
 let embeddingsList = document.querySelector("#embeddings-list")
 let embeddingsModeField = document.querySelector("#embeddings-mode")
+
+let positiveEmbeddingText = document.querySelector("#positive-embedding-text")
+let negativeEmbeddingText = document.querySelector("#negative-embedding-text")
 let embeddingsCollapsiblesBtn = document.querySelector("#embeddings-action-collapsibles-btn")
 
 let makeImageBtn = document.querySelector("#makeImage")
@@ -2176,16 +2180,17 @@ function updateEmbeddingsList(filter = "") {
 
     function onButtonClick(e) {
         let text = e.target.dataset["embedding"]
+        const insertIntoNegative = e.shiftKey || positiveEmbeddingText.classList.contains("displayNone")
 
         if (embeddingsModeField.value == "insert") {
-            if (e.shiftKey) {
+            if (insertIntoNegative) {
                 insertAtCursor(negativePromptField, text)
             } else {
                 insertAtCursor(promptField, text)
             }
         } else {
             let pad = ""
-            if (e.shiftKey) {
+            if (insertIntoNegative) {
                 if (!negativePromptField.value.endsWith(" ")) {
                     pad = " "
                 }
@@ -2219,10 +2224,20 @@ function updateEmbeddingsList(filter = "") {
     }
 }
 
-embeddingsButton.addEventListener("click", () => {
+function showEmbeddingDialog() {
     updateEmbeddingsList()
     embeddingsSearchBox.value = ""
     embeddingsDialog.showModal()
+}
+embeddingsButton.addEventListener("click", () => {
+    positiveEmbeddingText.classList.remove("displayNone")
+    negativeEmbeddingText.classList.add("displayNone")
+    showEmbeddingDialog()
+})
+negativeEmbeddingsButton.addEventListener("click", () => {
+    positiveEmbeddingText.classList.add("displayNone")
+    negativeEmbeddingText.classList.remove("displayNone")
+    showEmbeddingDialog()
 })
 embeddingsDialogCloseBtn.addEventListener("click", (e) => {
     embeddingsDialog.close()

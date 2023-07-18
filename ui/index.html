@@ -56,7 +56,15 @@
         <div id="editor">
             <div id="editor-inputs">
                 <div id="editor-inputs-prompt" class="row">
-                    <label for="prompt"><b>Enter Prompt</b></label> <small>or</small> <button id="promptsFromFileBtn" class="tertiaryButton">Load from a file</button>
+                    <div id="prompt-toolbar" class="split-toolbar">
+                        <div id="prompt-toolbar-left" class="toolbar-left">
+                            <label for="prompt"><b>Enter Prompt</b></label> <small>or</small> <button id="promptsFromFileBtn" class="tertiaryButton smallButton">Load from a file</button>
+                        </div>
+                        <div id="prompt-toolbar-right" class="toolbar-right">
+                            <button id="image-modifier-dropdown" class="tertiaryButton smallButton">+ Image Modifiers</button>
+                            <button id="embeddings-button" class="tertiaryButton smallButton displayNone">+ Embedding</button>
+                        </div>
+                    </div>
                     <textarea id="prompt" class="col-free">a photograph of an astronaut riding a horse</textarea>
                     <input id="prompt_from_file" name="prompt_from_file" type="file" /> <!-- hidden -->
                     <label for="negative_prompt" class="collapsible" id="negative_prompt_handle">
@@ -64,10 +72,7 @@
                         <a href="https://github.com/easydiffusion/easydiffusion/wiki/Writing-prompts#negative-prompts" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top">Click to learn more about Negative Prompts</span></i></a>
                         <small>(optional)</small>
                     </label>
-                    <label for="image-modifiers" data-active="false" id="image-modifier-dropdown">
-                        Image Modifiers
-                        <small>(optional)</small>
-                    </label>
+                    <button id="negative-embeddings-button" class="tertiaryButton smallButton displayNone">+ Embedding</button>
                     <div class="collapsible-content">
                         <textarea id="negative_prompt" name="negative_prompt" placeholder="list the things to remove from the image (e.g. fog, green)"></textarea>
                     </div>
@@ -243,12 +248,6 @@
                     <tr id="hypernetwork_strength_container" class="pl-5">
                         <td><label for="hypernetwork_strength_slider">Hypernetwork Strength:</label></td>
                         <td> <input id="hypernetwork_strength_slider" name="hypernetwork_strength_slider" class="editor-slider" value="100" type="range" min="0" max="100"> <input id="hypernetwork_strength" name="hypernetwork_strength" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)"><br/></td>
-                    </tr>
-                    <tr id="embeddings-container" class="pl-5 displayNone">
-                        <td><label for="embeddings-button">Embedding:</label></td>
-                        <td class="diffusers-restart-needed">
-                            <button id="embeddings-button" class="tertiaryButton">Add embedding to prompt</button>
-                        </td>
                     </tr>
                     <tr id="tiling_container" class="pl-5">
                         <td><label for="tiling">Seamless Tiling:</label></td>
@@ -575,7 +574,10 @@
         <div id="embeddings-dialog-header" class="dialog-header">
             <div id="embeddings-dialog-header-left" class="dialog-header-left">
                 <h4>Embeddings</h4>
-                <span>Add embeddings to the prompt (click) or negative prompt (shift-click)</span>
+                <span>
+                    <span class="displayNone" id="positive-embedding-text"> Add embeddings to the prompt (click) or negative prompt (shift-click)</span>
+                    <span class="displayNone" id="negative-embedding-text"> Add embeddings to the negative prompt</span>
+                <span>
             </div>
             <div id="embeddings-dialog-header-right">
                 <i id="embeddings-dialog-close-button" class="fa-solid fa-xmark fa-lg"></i>

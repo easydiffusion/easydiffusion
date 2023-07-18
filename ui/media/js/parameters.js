@@ -449,7 +449,8 @@ async function getAppConfig() {
                 option.disabled = true
             })
             document.querySelector("#clip_skip_config").classList.remove("displayNone")
-            document.querySelector("#embeddings-container").classList.remove("displayNone")
+            document.querySelector("#embeddings-button").classList.remove("displayNone")
+            document.querySelector("#negative-embeddings-button").classList.remove("displayNone")
         }
 
         console.log("get config status response", config)
