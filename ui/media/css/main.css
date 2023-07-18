@@ -1665,8 +1665,10 @@ body.wait-pause {
 }
 
 #embeddings-list button {
-    margin-top: 2px;
-    margin-bottom: 2px;
+    margin: 2px;
+    color: var(--button-color);
+    background: var(--button-text-color);
+    font-weight: 700;
 }
 
 #embeddings-list .collapsible {
