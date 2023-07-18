@@ -120,8 +120,10 @@ let embeddingsDialogCloseBtn = embeddingsDialog.querySelector("#embeddings-dialo
 let embeddingsSearchBox = document.querySelector("#embeddings-search-box")
 let embeddingsList = document.querySelector("#embeddings-list")
 let embeddingsModeField = document.querySelector("#embeddings-mode")
+
 let positiveEmbeddingText = document.querySelector("#positive-embedding-text")
 let negativeEmbeddingText = document.querySelector("#negative-embedding-text")
+let embeddingsCollapsiblesBtn = document.querySelector("#embeddings-action-collapsibles-btn")
 
 let makeImageBtn = document.querySelector("#makeImage")
 let stopImageBtn = document.querySelector("#stopImage")
@@ -907,6 +909,22 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
                              <a href="https://www.ibm.com/docs/en/opw/8.2.0?topic=tuning-optional-increasing-paging-file-size-windows-computers" target="_blank">Windows</a> or
                              <a href="https://linuxhint.com/increase-swap-space-linux/" target="_blank">Linux</a>.<br/>
                             3. Try restarting your computer.<br/>`
+                } else if (msg.includes("RuntimeError: output with shape [320, 320] doesn't match the broadcast shape")) {
+                    msg += `<br/><br/>
+                            <b>Reason</b>: You tried to use a LORA that was trained for a different Stable Diffusion model version!
+                            <br/><br/>
+                            <b>Suggestions</b>:
+                            <br/>
+                            Try to use a different model or a different LORA.`
+                } else if (msg.includes("Tensor on device cuda:0 is not on the expected device meta")) {
+                    msg += `<br/><br/>
+                            <b>Reason</b>: Due to some software issues, embeddings currently don't work with the "Low" memory profile.
+                            <br/><br/>
+                            <b>Suggestions</b>:
+                            <br/>
+                            1. Set the memory profile to "Balanced"<br/>
+                            2. Remove the embeddings from the prompt and the negative prompt<br/>
+                            3. Check whether the plugins you're using change the memory profile automatically.`
                 }
             } else {
                 msg = `Unexpected Read Error:<br/><pre>StepUpdate: ${JSON.stringify(stepUpdate, undefined, 4)}</pre>`
@@ -2153,7 +2171,7 @@ function updateEmbeddingsList(filter = "") {
             } else {
                 let subdir = html(m[1], prefix + m[0] + "/", filter)
                 if (subdir != "") {
-                    folders += `<h4>${prefix}${m[0]}</h4>` + subdir
+                    folders += `<div class="embedding-category"><h4 class="collapsible">${prefix}${m[0]}</h4><div class="collapsible-content">` + subdir + '</div></div>'
                 }
             }
         })
@@ -2200,6 +2218,10 @@ function updateEmbeddingsList(filter = "") {
     embeddingsList.querySelectorAll("button").forEach((b) => {
         b.addEventListener("click", onButtonClick)
     })
+    createCollapsibles(embeddingsList)
+    if (filter != "") {
+        embeddingsExpandAll()
+    }
 }
 
 function showEmbeddingDialog() {
@@ -2226,6 +2248,51 @@ embeddingsSearchBox.addEventListener("input", (e) => {
 
 modalDialogCloseOnBackdropClick(embeddingsDialog)
 makeDialogDraggable(embeddingsDialog)
+
+const collapseText = "Collapse Categories"
+const expandText = "Expand Categories"
+
+const collapseIconClasses = ["fa-solid", "fa-square-minus"]
+const expandIconClasses = ["fa-solid", "fa-square-plus"]
+
+function embeddingsCollapseAll() {
+    const btnElem = embeddingsCollapsiblesBtn
+
+    const iconElem = btnElem.querySelector(".embeddings-action-icon")
+    const textElem = btnElem.querySelector(".embeddings-action-text")
+    collapseAll("#embeddings-list .collapsible")
+
+    collapsiblesBtnState = false
+
+    collapseIconClasses.forEach((c) => iconElem.classList.remove(c))
+    expandIconClasses.forEach((c) => iconElem.classList.add(c))
+
+    textElem.innerText = expandText
+}
+
+function embeddingsExpandAll() {
+    const btnElem = embeddingsCollapsiblesBtn
+
+    const iconElem = btnElem.querySelector(".embeddings-action-icon")
+    const textElem = btnElem.querySelector(".embeddings-action-text")
+    expandAll("#embeddings-list .collapsible")
+
+    collapsiblesBtnState = true
+
+    expandIconClasses.forEach((c) => iconElem.classList.remove(c))
+    collapseIconClasses.forEach((c) => iconElem.classList.add(c))
+
+    textElem.innerText = collapseText
+}
+
+embeddingsCollapsiblesBtn.addEventListener("click", (e) => {
+    if (collapsiblesBtnState) {
+        embeddingsCollapseAll()
+    } else {
+        embeddingsExpandAll()
+    }
+})
+
 
 if (testDiffusers.checked) {
     document.getElementById("embeddings-container").classList.remove("displayNone")
@@ -2275,6 +2342,8 @@ function addModelEntry(modelContainer, modelsList, modelType, defaultValue, stre
     let entry = [modelName, modelStrength, modelElement]
 
     let removeBtn = document.createElement("button")
+    removeBtn.className = "remove_model_btn"
+    removeBtn.setAttribute("title", "Remove model")
     removeBtn.innerHTML = '<i class="fa-solid fa-minus"></i>'
 
     if (modelsList.length === 0) {
