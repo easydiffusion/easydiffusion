@@ -1156,4 +1156,45 @@ function makeDialogDraggable(element) {
     })() )
 }
 
+// saveObjectToBucket
+// - Save objects on the EasyDiffusion server
+// Plugin authors: Please prefix your pathes with "plugin/" plus your plugin name
+// If you store images on the server, you can then access them as 
+//   <img src="/bucket/plugin/my_plugin/image.png">
+//
+function saveObjectToBucket(obj, path) {
+    if (typeof(obj) == "object") {
+        obj = JSON.stringify(obj)
+    }
+    const formData = new FormData()
+    formData.append('file', obj)
+
+    fetch('/bucket/'+path, {
+      method: 'POST',
+      headers: { 'Accept': 'application/json' },
+      body: formData
+    })
+      .then(response => response.json())
+      .then(data => {
+        // Handle the response data
+        console.log(data)
+      })
+      .catch(error => {
+        // Handle any errors
+        throw new Error(error)
+      })
+}
+
+// loadObjectFromBucket
+// - retrieve a previously stored JSON object
+async function loadObjectFromBucket(path) {
+  try {
+    const response = await fetch("/bucket/"+path);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(error);
+    throw new Error('Failed to load JSON from URL');
+  }
+}
 

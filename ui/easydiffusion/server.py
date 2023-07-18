@@ -8,10 +8,10 @@ import os
 import traceback
 from typing import List, Union
 
-from easydiffusion import app, model_manager, task_manager
+from easydiffusion import app, model_manager, task_manager, bucket_manager
 from easydiffusion.types import GenerateImageRequest, MergeRequest, TaskData
 from easydiffusion.utils import log
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Extra
 from starlette.responses import FileResponse, JSONResponse, StreamingResponse
@@ -125,6 +125,18 @@ def init():
     @server_api.get("/")
     def read_root():
         return FileResponse(os.path.join(app.SD_UI_DIR, "index.html"), headers=NOCACHE_HEADERS)
+
+    @server_api.get("/bucket/{obj_path:path}")
+    def bucket_get_object(obj_path: str):
+        return bucket_manager.get_object(obj_path)
+
+    @server_api.post("/bucket/{obj_path:path}")
+    def bucket_post_object(obj_path: str, file: bytes = File()):
+        return bucket_manager.post_object(obj_path, file)
+
+    @server_api.delete("/bucket/{obj_path:path}")
+    def bucket_delete_object(obj_path: str):
+        return bucket_manager.delete_object(obj_path)
 
     @server_api.on_event("shutdown")
     def shutdown_event():  # Signal render thread to close on shutdown
