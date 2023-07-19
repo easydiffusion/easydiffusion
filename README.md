@@ -132,6 +132,15 @@ We could really use help on these aspects (click to view tasks that need your he
 
 If you have any code contributions in mind, please feel free to say Hi to us on the [discord server](https://discord.com/invite/u9yhsFmEkB). We use the Discord server for development-related discussions, and for helping users.
 
+# Credits
+* Stable Diffusion: https://github.com/Stability-AI/stablediffusion
+* CodeFormer: https://github.com/sczhou/CodeFormer (license: https://github.com/sczhou/CodeFormer/blob/master/LICENSE)
+* GFPGAN: https://github.com/TencentARC/GFPGAN
+* RealESRGAN: https://github.com/xinntao/Real-ESRGAN
+* k-diffusion: https://github.com/crowsonkb/k-diffusion
+* Code contributors and artists on the cmdr2 UI: https://github.com/cmdr2/stable-diffusion-ui and Discord (https://discord.com/invite/u9yhsFmEkB)
+* Lots of contributors on the internet
+
 # Disclaimer
 The authors of this project are not responsible for any content generated using this interface.
 
