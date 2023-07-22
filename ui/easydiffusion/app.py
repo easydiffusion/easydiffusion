@@ -183,7 +183,8 @@ def setConfig(config):
                 config = commented_config
         yaml.indent(mapping=2, sequence=4, offset=2)
 
-        del config["config_on_startup"]
+        if "config_on_startup" in config:
+            del config["config_on_startup"]
 
         try:
             f = open(config_yaml_path + ".tmp", "w", encoding="utf-8")
