@@ -409,7 +409,6 @@ async function getAppConfig() {
             useBetaChannelField.checked = true
             document.querySelector("#updateBranchLabel").innerText = "(beta)"
         } else {
-            console.log("None-Beta")
             getParameterSettingsEntry("test_diffusers").classList.add("displayNone")
         }
         if (config.ui && config.ui.open_browser_on_start === false) {
