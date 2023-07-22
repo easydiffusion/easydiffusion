@@ -102,6 +102,7 @@ def init_render_threads():
 
     update_render_threads()
 
+
 def getConfig(default_val=APP_CONFIG_DEFAULTS):
     config_yaml_path = os.path.join(CONFIG_DIR, "..", "config.yaml")
 
@@ -111,9 +112,9 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
         shutil.move(config_legacy_yaml, config_yaml_path)
 
     def set_config_on_startup(config: dict):
-        if (getConfig.__config_on_startup is None):
-            getConfig.__config_on_startup = copy.deepcopy(config)
-        config["config_on_startup"] = getConfig.__config_on_startup
+        if getConfig.__test_diffusers_on_startup is None:
+            getConfig.__test_diffusers_on_startup = config.get("test_diffusers", False)
+        config["config_on_startup"] = {"test_diffusers": getConfig.__test_diffusers_on_startup}
 
     if os.path.isfile(config_yaml_path):
         try:
@@ -160,7 +161,8 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
             set_config_on_startup(default_val)
             return default_val
 
-getConfig.__config_on_startup = None
+
+getConfig.__test_diffusers_on_startup = None
 
 
 def setConfig(config):
@@ -180,6 +182,8 @@ def setConfig(config):
 
                 config = commented_config
         yaml.indent(mapping=2, sequence=4, offset=2)
+
+        del config["config_on_startup"]
 
         try:
             f = open(config_yaml_path + ".tmp", "w", encoding="utf-8")
