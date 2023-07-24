@@ -446,7 +446,7 @@ async function getAppConfig() {
             document.querySelector("#tiling_container").style.display = ""
 
             document.querySelectorAll("#sampler_name option.k_diffusion-only").forEach((option) => {
-                option.disabled = true
+                option.style.display = "none"
             })
             document.querySelector("#clip_skip_config").classList.remove("displayNone")
             document.querySelector("#embeddings-button").classList.remove("displayNone")
