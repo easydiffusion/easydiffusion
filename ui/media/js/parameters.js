@@ -409,7 +409,7 @@ async function getAppConfig() {
             useBetaChannelField.checked = true
             document.querySelector("#updateBranchLabel").innerText = "(beta)"
         } else {
-            getParameterSettingsEntry("test_diffusers").style.display = "none"
+            getParameterSettingsEntry("test_diffusers").classList.add("displayNone")
         }
         if (config.ui && config.ui.open_browser_on_start === false) {
             uiOpenBrowserOnStartField.checked = false
@@ -743,3 +743,11 @@ navigator.permissions.query({ name: "clipboard-write" }).then(function(result) {
 })
 
 document.addEventListener("system_info_update", (e) => setDeviceInfo(e.detail))
+
+useBetaChannelField.addEventListener('change', (e) => {
+    if (e.target.checked) { 
+        getParameterSettingsEntry("test_diffusers").classList.remove('displayNone') 
+    } else { 
+        getParameterSettingsEntry("test_diffusers").classList.add('displayNone')
+    }
+})
