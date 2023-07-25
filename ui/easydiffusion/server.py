@@ -8,7 +8,7 @@ import os
 import traceback
 from typing import List, Union
 
-from easydiffusion import app, model_manager, task_manager, bucket_manager
+from easydiffusion import app, model_manager, task_manager
 from easydiffusion.types import GenerateImageRequest, MergeRequest, TaskData
 from easydiffusion.utils import log
 from fastapi import FastAPI, HTTPException

@@ -25,6 +25,7 @@ modules_to_check = {
     "fastapi": "0.85.1",
     "pycloudflared": "0.2.0",
     "ruamel.yaml": "0.17.21",
+    "sqlalchemy": "2.0.19",
     # "xformers": "0.0.16",
 }
 modules_to_log = ["torch", "torchvision", "sdkit", "stable-diffusion-sdkit"]
