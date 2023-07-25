@@ -36,6 +36,7 @@ SD_UI_DIR = os.getenv("SD_UI_PATH", None)
 
 CONFIG_DIR = os.path.abspath(os.path.join(SD_UI_DIR, "..", "scripts"))
 MODELS_DIR = os.path.abspath(os.path.join(SD_DIR, "..", "models"))
+BUCKET_DIR = os.path.abspath(os.path.join(SD_DIR, "..", "bucket"))
 
 USER_PLUGINS_DIR = os.path.abspath(os.path.join(SD_DIR, "..", "plugins"))
 CORE_PLUGINS_DIR = os.path.abspath(os.path.join(SD_UI_DIR, "plugins"))
