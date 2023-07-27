@@ -26,6 +26,7 @@ modules_to_check = {
     "pycloudflared": "0.2.0",
     "ruamel.yaml": "0.17.21",
     "sqlalchemy": "2.0.19",
+    "python-multipart": "0.0.6",
     # "xformers": "0.0.16",
 }
 modules_to_log = ["torch", "torchvision", "sdkit", "stable-diffusion-sdkit"]

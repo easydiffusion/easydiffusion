@@ -13,7 +13,6 @@ class BucketFileCreate(BucketFileBase):
 
 
 class BucketFile(BucketFileBase):
-    id: int
     bucket_id: int
 
     class Config:

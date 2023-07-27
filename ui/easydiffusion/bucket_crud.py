@@ -29,8 +29,9 @@ def get_bucketfiles(db: Session, skip: int = 0, limit: int = 100):
 
 def create_bucketfile(db: Session, bucketfile: bucket_schemas.BucketFileCreate, bucket_id: int):
     db_bucketfile = bucket_models.BucketFile(**bucketfile.dict(), bucket_id=bucket_id)
-    db.add(db_bucketfile)
+    db.merge(db_bucketfile)
     db.commit()
-    db.refresh(db_bucketfile)
+    from pprint import pprint
+    db_bucketfile = db.query(bucket_models.BucketFile).filter(bucket_models.BucketFile.bucket_id==bucket_id, bucket_models.BucketFile.filename==bucketfile.filename).first()
     return db_bucketfile
 
