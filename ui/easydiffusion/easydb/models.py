@@ -1,7 +1,7 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, BLOB
 from sqlalchemy.orm import relationship
 
-from easydiffusion.bucket_database import BucketBase
+from easydiffusion.easydb.database import BucketBase
 
 
 class Bucket(BucketBase):
