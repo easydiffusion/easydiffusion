@@ -659,6 +659,7 @@ function enqueueImageVariationTask(req, img, reqDiff) {
 function onUpscaleClick(req, img) {
     enqueueImageVariationTask(req, img, {
         use_upscale: upscaleModelField.value,
+        upscale_amount: upscaleAmountField.value,
     })
 }
 
