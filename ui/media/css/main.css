@@ -1753,3 +1753,20 @@ body.wait-pause {
     content: "Please restart Easy Diffusion!";
     font-size: 10pt;
 }
+
+.imgContainer .spinner {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    padding: 0;
+
+    background: var(--background-color3);
+    opacity: 0.8;
+    border-radius: 5px;
+    padding: 4pt;
+}
+.imgContainer .spinnerStatus {
+    font-size: 10pt;
+}

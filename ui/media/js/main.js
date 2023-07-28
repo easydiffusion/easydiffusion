@@ -5,6 +5,9 @@ const MIN_GPUS_TO_SHOW_SELECTION = 2
 const IMAGE_REGEX = new RegExp("data:image/[A-Za-z]+;base64")
 const htmlTaskMap = new WeakMap()
 
+const spinnerPacmanHtml =
+    '<div class="loadingio-spinner-bean-eater-x0y3u8qky4n"><div class="ldio-8f673ktaleu"><div><div></div><div></div><div></div></div><div><div></div><div></div><div></div></div></div></div>'
+
 const taskConfigSetup = {
     taskConfig: {
         seed: { value: ({ seed }) => seed, label: "Seed" },
@@ -412,6 +415,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                     </div>
                     <button class="imgPreviewItemClearBtn image_clear_btn"><i class="fa-solid fa-xmark"></i></button>
                     <span class="img_bottom_label"></span>
+                    <div class="spinner displayNone"><center>${spinnerPacmanHtml}</center><div class="spinnerStatus"></div></div>
                 </div>
             `
             outputContainer.appendChild(imageItemElem)
@@ -488,6 +492,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             const imageSeedLabel = imageItemElem.querySelector(".imgSeedLabel")
             imageSeedLabel.innerText = "Seed: " + req.seed
 
+            const imageUndoBuffer = []
             let buttons = [
                 { text: "Use as Input", on_click: onUseAsInputClick },
                 [
@@ -505,8 +510,9 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                 { text: "Make Similar Images", on_click: onMakeSimilarClick },
                 { text: "Draw another 25 steps", on_click: onContinueDrawingClick },
                 [
-                    { text: "Upscale", on_click: onUpscaleClick, filter: (req, img) => !req.use_upscale },
-                    { text: "Fix Faces", on_click: onFixFacesClick, filter: (req, img) => !req.use_face_correction },
+                    { text: "Undo", on_click: onUndoFilter },
+                    { text: "Upscale", on_click: onUpscaleClick },
+                    { text: "Fix Faces", on_click: onFixFacesClick },
                 ],
             ]
 
@@ -515,6 +521,13 @@ function showImages(reqBody, res, outputContainer, livePreview) {
 
             const imgItemInfo = imageItemElem.querySelector(".imgItemInfo")
             const img = imageItemElem.querySelector("img")
+            const spinner = imageItemElem.querySelector(".spinner")
+            const spinnerStatus = imageItemElem.querySelector(".spinnerStatus")
+            const tools = {
+                spinner: spinner,
+                spinnerStatus: spinnerStatus,
+                undoBuffer: imageUndoBuffer,
+            }
             const createButton = function(btnInfo) {
                 if (Array.isArray(btnInfo)) {
                     const wrapper = document.createElement("div")
@@ -540,8 +553,12 @@ function showImages(reqBody, res, outputContainer, livePreview) {
 
                 if (btnInfo.on_click || !isLabel) {
                     newButton.addEventListener("click", function(event) {
-                        btnInfo.on_click(req, img, event)
+                        btnInfo.on_click.bind(newButton)(req, img, event, tools)
                     })
+                    if (btnInfo.on_click === onUndoFilter) {
+                        tools["undoButton"] = newButton
+                        newButton.classList.add("displayNone")
+                    }
                 }
 
                 if (btnInfo.class !== undefined) {
@@ -656,16 +673,64 @@ function enqueueImageVariationTask(req, img, reqDiff) {
     createTask(newTaskRequest)
 }
 
-function onUpscaleClick(req, img) {
-    enqueueImageVariationTask(req, img, {
-        use_upscale: upscaleModelField.value,
+function applyInlineFilter(filterName, path, filterParams, img, statusText, tools) {
+    const filterReq = {
+        image: img.src,
+        filter: filterName,
+        model_paths: {},
+        filter_params: filterParams,
+    }
+    filterReq.model_paths[filterName] = path
+
+    tools.spinnerStatus.innerText = statusText
+    tools.spinner.classList.remove("displayNone")
+
+    SD.filter(filterReq, (e) => {
+        if (e.status === "succeeded") {
+            let prevImg = img.src
+            img.src = e.output[0]
+            tools.spinner.classList.add("displayNone")
+            tools.undoButton.classList.remove("displayNone")
+
+            if (prevImg.length > 0) {
+                tools.undoBuffer.push(prevImg)
+            }
+        } else if (e.status == "failed") {
+            alert("Error running upscale: " + e.detail)
+            tools.spinner.classList.add("displayNone")
+        }
     })
 }
 
-function onFixFacesClick(req, img) {
-    enqueueImageVariationTask(req, img, {
-        use_face_correction: gfpganModelField.value,
-    })
+function onUndoFilter(req, img, e, tools) {
+    if (tools.undoBuffer.length === 0) {
+        this.classList.add("displayNone")
+        return
+    }
+
+    let src = tools.undoBuffer.pop()
+    if (src.length > 0) {
+        img.src = src
+    }
+
+    if (tools.undoBuffer.length === 0) {
+        this.classList.add("displayNone")
+    }
+}
+
+function onUpscaleClick(req, img, e, tools) {
+    let path = upscaleModelField.value
+    let scale = parseInt(upscaleAmountField.value)
+    let filterName = path.toLowerCase().includes("realesrgan") ? "realesrgan" : "latent_upscaler"
+    let statusText = "Upscaling by " + scale + "x using " + filterName
+    applyInlineFilter(filterName, path, { scale: scale }, img, statusText, tools)
+}
+
+function onFixFacesClick(req, img, e, tools) {
+    let path = gfpganModelField.value
+    let filterName = path.toLowerCase().includes("gfpgan") ? "gfpgan" : "codeformer"
+    let statusText = "Fixing faces with " + filterName
+    applyInlineFilter(filterName, path, {}, img, statusText, tools)
 }
 
 function onContinueDrawingClick(req, img) {
@@ -909,7 +974,9 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
                              <a href="https://www.ibm.com/docs/en/opw/8.2.0?topic=tuning-optional-increasing-paging-file-size-windows-computers" target="_blank">Windows</a> or
                              <a href="https://linuxhint.com/increase-swap-space-linux/" target="_blank">Linux</a>.<br/>
                             3. Try restarting your computer.<br/>`
-                } else if (msg.includes("RuntimeError: output with shape [320, 320] doesn't match the broadcast shape")) {
+                } else if (
+                    msg.includes("RuntimeError: output with shape [320, 320] doesn't match the broadcast shape")
+                ) {
                     msg += `<br/><br/>
                             <b>Reason</b>: You tried to use a LORA that was trained for a different Stable Diffusion model version!
                             <br/><br/>
@@ -2171,7 +2238,10 @@ function updateEmbeddingsList(filter = "") {
             } else {
                 let subdir = html(m[1], prefix + m[0] + "/", filter)
                 if (subdir != "") {
-                    folders += `<div class="embedding-category"><h4 class="collapsible">${prefix}${m[0]}</h4><div class="collapsible-content">` + subdir + '</div></div>'
+                    folders +=
+                        `<div class="embedding-category"><h4 class="collapsible">${prefix}${m[0]}</h4><div class="collapsible-content">` +
+                        subdir +
+                        "</div></div>"
                 }
             }
         })
@@ -2292,7 +2362,6 @@ embeddingsCollapsiblesBtn.addEventListener("click", (e) => {
         embeddingsExpandAll()
     }
 })
-
 
 if (testDiffusers.checked) {
     document.getElementById("embeddings-container").classList.remove("displayNone")
