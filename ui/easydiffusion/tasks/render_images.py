@@ -3,70 +3,109 @@ import pprint
 import queue
 import time
 
-from easydiffusion import device_manager
-from easydiffusion.types import GenerateImageRequest
+from easydiffusion import model_manager, runtime
+from easydiffusion.types import GenerateImageRequest, ModelsData, OutputFormatData
 from easydiffusion.types import Image as ResponseImage
-from easydiffusion.types import Response, TaskData, UserInitiatedStop
-from easydiffusion.model_manager import DEFAULT_MODELS, resolve_model_to_use
+from easydiffusion.types import GenerateImageResponse, TaskData, UserInitiatedStop
 from easydiffusion.utils import get_printable_request, log, save_images_to_disk
-from sdkit import Context
-from sdkit.filter import apply_filters
 from sdkit.generate import generate_images
-from sdkit.models import load_model
 from sdkit.utils import (
     diffusers_latent_samples_to_images,
     gc,
     img_to_base64_str,
     img_to_buffer,
     latent_samples_to_images,
-    get_device_usage,
 )
 
-context = Context()  # thread-local
-"""
-runtime data (bound locally to this thread), for e.g. device, references to loaded models, optimization flags etc
-"""
+from .task import Task
+from .filter_images import filter_images
 
 
-def init(device):
-    """
-    Initializes the fields that will be bound to this runtime's context, and sets the current torch device
-    """
-    context.stop_processing = False
-    context.temp_images = {}
-    context.partial_x_samples = None
-    context.model_load_errors = {}
-    context.enable_codeformer = True
+class RenderTask(Task):
+    "For image generation"
 
-    from easydiffusion import app
+    def __init__(
+        self, req: GenerateImageRequest, task_data: TaskData, models_data: ModelsData, output_format: OutputFormatData
+    ):
+        super().__init__(task_data.session_id)
 
-    app_config = app.getConfig()
-    context.test_diffusers = (
-        app_config.get("test_diffusers", False) and app_config.get("update_branch", "main") != "main"
-    )
+        task_data.request_id = self.id
+        self.render_request: GenerateImageRequest = req  # Initial Request
+        self.task_data: TaskData = task_data
+        self.models_data = models_data
+        self.output_format = output_format
+        self.temp_images: list = [None] * req.num_outputs * (1 if task_data.show_only_filtered_image else 2)
 
-    log.info("Device usage during initialization:")
-    get_device_usage(device, log_info=True, process_usage_only=False)
+    def run(self):
+        "Runs the image generation task on the assigned thread"
 
-    device_manager.device_init(context, device)
+        from easydiffusion import task_manager
+
+        context = runtime.context
+
+        def step_callback():
+            task_manager.keep_task_alive(self)
+            task_manager.current_state = task_manager.ServerStates.Rendering
+
+            if isinstance(task_manager.current_state_error, (SystemExit, StopAsyncIteration)) or isinstance(
+                self.error, StopAsyncIteration
+            ):
+                context.stop_processing = True
+                if isinstance(task_manager.current_state_error, StopAsyncIteration):
+                    self.error = task_manager.current_state_error
+                    task_manager.current_state_error = None
+                    log.info(f"Session {self.session_id} sent cancel signal for task {self.id}")
+
+        task_manager.current_state = task_manager.ServerStates.LoadingModel
+        model_manager.resolve_model_paths(self.models_data)
+
+        models_to_force_reload = []
+        if runtime.set_vram_optimizations(context) or self.has_clip_skip_changed(context):
+            models_to_force_reload.append("stable-diffusion")
+
+        model_manager.reload_models_if_necessary(context, self.models_data, models_to_force_reload)
+        model_manager.fail_if_models_did_not_load(context)
+
+        task_manager.current_state = task_manager.ServerStates.Rendering
+        self.response = make_images(
+            context,
+            self.render_request,
+            self.task_data,
+            self.models_data,
+            self.output_format,
+            self.buffer_queue,
+            self.temp_images,
+            step_callback,
+        )
+
+    def has_clip_skip_changed(self, context):
+        if not context.test_diffusers:
+            return False
+
+        model = context.models["stable-diffusion"]
+        new_clip_skip = self.models_data.model_params.get("stable-diffusion", {}).get("clip_skip", False)
+        return model["clip_skip"] != new_clip_skip
 
 
 def make_images(
+    context,
     req: GenerateImageRequest,
     task_data: TaskData,
+    models_data: ModelsData,
+    output_format: OutputFormatData,
     data_queue: queue.Queue,
     task_temp_images: list,
     step_callback,
 ):
     context.stop_processing = False
-    print_task_info(req, task_data)
+    print_task_info(req, task_data, models_data, output_format)
 
-    images, seeds = make_images_internal(req, task_data, data_queue, task_temp_images, step_callback)
+    images, seeds = make_images_internal(
+        context, req, task_data, models_data, output_format, data_queue, task_temp_images, step_callback
+    )
 
-    res = Response(
-        req,
-        task_data,
-        images=construct_response(images, seeds, task_data, base_seed=req.seed),
+    res = GenerateImageResponse(
+        req, task_data, models_data, output_format, images=construct_response(images, seeds, output_format)
     )
     res = res.json()
     data_queue.put(json.dumps(res))
@@ -75,21 +114,32 @@ def make_images(
     return res
 
 
-def print_task_info(req: GenerateImageRequest, task_data: TaskData):
-    req_str = pprint.pformat(get_printable_request(req, task_data)).replace("[", "\[")
+def print_task_info(
+    req: GenerateImageRequest, task_data: TaskData, models_data: ModelsData, output_format: OutputFormatData
+):
+    req_str = pprint.pformat(get_printable_request(req, task_data, output_format)).replace("[", "\[")
     task_str = pprint.pformat(task_data.dict()).replace("[", "\[")
+    models_data = pprint.pformat(models_data.dict()).replace("[", "\[")
+    output_format = pprint.pformat(output_format.dict()).replace("[", "\[")
+
     log.info(f"request: {req_str}")
     log.info(f"task data: {task_str}")
+    # log.info(f"models data: {models_data}")
+    log.info(f"output format: {output_format}")
 
 
 def make_images_internal(
+    context,
     req: GenerateImageRequest,
     task_data: TaskData,
+    models_data: ModelsData,
+    output_format: OutputFormatData,
     data_queue: queue.Queue,
     task_temp_images: list,
     step_callback,
 ):
     images, user_stopped = generate_images_internal(
+        context,
         req,
         task_data,
         data_queue,
@@ -98,11 +148,14 @@ def make_images_internal(
         task_data.stream_image_progress,
         task_data.stream_image_progress_interval,
     )
+
     gc(context)
-    filtered_images = filter_images(req, task_data, images, user_stopped)
+
+    filters, filter_params = task_data.filters, task_data.filter_params
+    filtered_images = filter_images(context, images, filters, filter_params) if not user_stopped else images
 
     if task_data.save_to_disk_path is not None:
-        save_images_to_disk(images, filtered_images, req, task_data)
+        save_images_to_disk(images, filtered_images, req, task_data, output_format)
 
     seeds = [*range(req.seed, req.seed + len(images))]
     if task_data.show_only_filtered_image or filtered_images is images:
@@ -112,6 +165,7 @@ def make_images_internal(
 
 
 def generate_images_internal(
+    context,
     req: GenerateImageRequest,
     task_data: TaskData,
     data_queue: queue.Queue,
@@ -123,6 +177,7 @@ def generate_images_internal(
     context.temp_images.clear()
 
     callback = make_step_callback(
+        context,
         req,
         task_data,
         data_queue,
@@ -155,65 +210,14 @@ def generate_images_internal(
     return images, user_stopped
 
 
-def filter_images(req: GenerateImageRequest, task_data: TaskData, images: list, user_stopped):
-    if user_stopped:
-        return images
-
-    if task_data.block_nsfw:
-        images = apply_filters(context, "nsfw_checker", images)
-
-    if task_data.use_face_correction and "codeformer" in task_data.use_face_correction.lower():
-        default_realesrgan = DEFAULT_MODELS["realesrgan"][0]["file_name"]
-        prev_realesrgan_path = None
-        if task_data.codeformer_upscale_faces and default_realesrgan not in context.model_paths["realesrgan"]:
-            prev_realesrgan_path = context.model_paths["realesrgan"]
-            context.model_paths["realesrgan"] = resolve_model_to_use(default_realesrgan, "realesrgan")
-            load_model(context, "realesrgan")
-
-        try:
-            images = apply_filters(
-                context,
-                "codeformer",
-                images,
-                upscale_faces=task_data.codeformer_upscale_faces,
-                codeformer_fidelity=task_data.codeformer_fidelity,
-            )
-        finally:
-            if prev_realesrgan_path:
-                context.model_paths["realesrgan"] = prev_realesrgan_path
-                load_model(context, "realesrgan")
-    elif task_data.use_face_correction and "gfpgan" in task_data.use_face_correction.lower():
-        images = apply_filters(context, "gfpgan", images)
-
-    if task_data.use_upscale:
-        if "realesrgan" in task_data.use_upscale.lower():
-            images = apply_filters(context, "realesrgan", images, scale=task_data.upscale_amount)
-        elif task_data.use_upscale == "latent_upscaler":
-            images = apply_filters(
-                context,
-                "latent_upscaler",
-                images,
-                scale=task_data.upscale_amount,
-                latent_upscaler_options={
-                    "prompt": req.prompt,
-                    "negative_prompt": req.negative_prompt,
-                    "seed": req.seed,
-                    "num_inference_steps": task_data.latent_upscaler_steps,
-                    "guidance_scale": 0,
-                },
-            )
-
-    return images
-
-
-def construct_response(images: list, seeds: list, task_data: TaskData, base_seed: int):
+def construct_response(images: list, seeds: list, output_format: OutputFormatData):
     return [
         ResponseImage(
             data=img_to_base64_str(
                 img,
-                task_data.output_format,
-                task_data.output_quality,
-                task_data.output_lossless,
+                output_format.output_format,
+                output_format.output_quality,
+                output_format.output_lossless,
             ),
             seed=seed,
         )
@@ -222,6 +226,7 @@ def construct_response(images: list, seeds: list, task_data: TaskData, base_seed
 
 
 def make_step_callback(
+    context,
     req: GenerateImageRequest,
     task_data: TaskData,
     data_queue: queue.Queue,
@@ -242,7 +247,7 @@ def make_step_callback(
             images = latent_samples_to_images(context, x_samples)
 
         if task_data.block_nsfw:
-            images = apply_filters(context, "nsfw_checker", images)
+            images = filter_images(context, images, "nsfw_checker")
 
         for i, img in enumerate(images):
             buf = img_to_buffer(img, output_format="JPEG")

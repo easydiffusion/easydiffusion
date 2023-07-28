@@ -1047,17 +1047,22 @@
         }
     }
     class FilterTask extends Task {
-        constructor(options = {}) {}
+        constructor(options = {}) {
+            super(options)
+        }
         /** Send current task to server.
          * @param {*} [timeout=-1] Optional timeout value in ms
          * @returns the response from the render request.
          * @memberof Task
          */
         async post(timeout = -1) {
-            let jsonResponse = await super.post("/filter", timeout)
+            let res = await super.post("/filter", timeout)
             //this._setId(jsonResponse.task)
             this._setStatus(TaskStatus.waiting)
+
+            return res
         }
+        checkReqBody() {}
         enqueue(progressCallback) {
             return Task.enqueueNew(this, FilterTask, progressCallback)
         }
@@ -1067,6 +1072,20 @@
             }
             if (this.isStopped) {
                 return
+            }
+
+            this._setStatus(TaskStatus.pending)
+            progressCallback?.call(this, { reqBody: this._reqBody })
+            Object.freeze(this._reqBody)
+
+            // Post task request to backend
+            let renderRes = undefined
+            try {
+                renderRes = yield this.post()
+                yield progressCallback?.call(this, { renderResponse: renderRes })
+            } catch (e) {
+                yield progressCallback?.call(this, { detail: e.message })
+                throw e
             }
         }
         static start(task, progressCallback) {
