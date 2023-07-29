@@ -191,51 +191,22 @@
                         </select>
                         <a href="https://github.com/easydiffusion/easydiffusion/wiki/How-to-Use#samplers" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about samplers</span></i></a>
                     </td></tr>
-                    <tr class="pl-5"><td><label>Image Size: </label></td><td>
-                        <select id="width" name="width" value="512">
-                            <option value="128">128 (*)</option>
-                            <option value="192">192</option>
-                            <option value="256">256 (*)</option>
-                            <option value="320">320</option>
-                            <option value="384">384</option>
-                            <option value="448">448</option>
-                            <option value="512" selected>512 (*)</option>
-                            <option value="576">576</option>
-                            <option value="640">640</option>
-                            <option value="704">704</option>
-                            <option value="768">768 (*)</option>
-                            <option value="832">832</option>
-                            <option value="896">896</option>
-                            <option value="960">960</option>
-                            <option value="1024">1024 (*)</option>
-                            <option value="1280">1280</option>
-                            <option value="1536">1536</option>
-                            <option value="1792">1792</option>
-                            <option value="2048">2048</option>
-                        </select>
+                    <tr class="pl-5"><td><label>Image Size: </label></td><td id="image-size-options">
+                        <input id="width" name="width" type="number" min="128" value="512" onkeypress="preventNonNumericalInput(event)">
                         <label for="width"><small>(width)</small></label>
-                        <select id="height" name="height" value="512">
-                            <option value="128">128 (*)</option>
-                            <option value="192">192</option>
-                            <option value="256">256 (*)</option>
-                            <option value="320">320</option>
-                            <option value="384">384</option>
-                            <option value="448">448</option>
-                            <option value="512" selected>512 (*)</option>
-                            <option value="576">576</option>
-                            <option value="640">640</option>
-                            <option value="704">704</option>
-                            <option value="768">768 (*)</option>
-                            <option value="832">832</option>
-                            <option value="896">896</option>
-                            <option value="960">960</option>
-                            <option value="1024">1024 (*)</option>
-                            <option value="1280">1280</option>
-                            <option value="1536">1536</option>
-                            <option value="1792">1792</option>
-                            <option value="2048">2048</option>
-                        </select>
+                        <span id="swap-width-height" class="clickable smallButton" style="margin-left: 2px; margin-right:2px;"><i class="fa-solid fa-right-left"><span class="simple-tooltip top-left"> Swap width and height </span></i></span>
+                        <input id="height" name="height" type="number" min="128" value="512" onkeypress="preventNonNumericalInput(event)">
                         <label for="height"><small>(height)</small></label>
+                        <div id="recent-resolutions-container">
+                            <span id="recent-resolutions-button" class="clickable"><i class="fa-solid fa-sliders"><span class="simple-tooltip top-left"> Recent sizes </span></i></span>
+                            <div id="recent-resolutions-popup" class="displayNone">
+                                <small>Upscale:</small><br>
+                                <button id="upscale15" class="tertiaryButton smallButton">×1.5</button>&nbsp;<button id="upscale2" class="tertiaryButton smallButton">×2</button>&nbsp;<button id="upscale3" class="tertiaryButton smallButton">×3</button><br>
+                                <small>Recently&nbsp;used:</small><br>
+                                <div id="recent-resolution-list">
+                                </div>
+                            </div>
+                        </div>
                         <div id="small_image_warning" class="displayNone">Small image sizes can cause bad image quality</div>
                     </td></tr>
                     <tr class="pl-5"><td><label for="num_inference_steps">Inference Steps:</label></td><td> <input id="num_inference_steps" name="num_inference_steps" type="number" min="1" step="1" style="width: 42pt" value="25" onkeypress="preventNonNumericalInput(event)"></td></tr>

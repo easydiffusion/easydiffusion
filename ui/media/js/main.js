@@ -77,6 +77,13 @@ let randomSeedField = document.querySelector("#random_seed")
 let seedField = document.querySelector("#seed")
 let widthField = document.querySelector("#width")
 let heightField = document.querySelector("#height")
+let recentResolutionsButton = document.querySelector("#recent-resolutions-button")
+let recentResolutionsPopup = document.querySelector("#recent-resolutions-popup")
+let recentResolutionList = document.querySelector("#recent-resolution-list")
+let upscale15Button = document.querySelector("#upscale15")
+let upscale2Button = document.querySelector("#upscale2")
+let upscale3Button = document.querySelector("#upscale3")
+let swapWidthHeightButton = document.querySelector("#swap-width-height")
 let smallImageWarning = document.querySelector("#small_image_warning")
 let initImageSelector = document.querySelector("#init_image")
 let initImagePreview = document.querySelector("#init_image_preview")
@@ -2570,3 +2577,121 @@ createLoraEntries()
 // }
 
 // document.querySelectorAll("input[type=number]").forEach(showSpinnerOnlyOnHover)
+
+////////////////////////////// Image Size Widget //////////////////////////////////////////
+
+function roundToMultiple(number, n) {
+    if (n=="") { n=1 }
+    return Math.round(number / n) * n;
+}
+
+function upscaleImageSize(factor) {
+    let step = width.step
+    width.value  = roundToMultiple(width.value*factor, step)
+    height.value = roundToMultiple(height.value*factor, step)
+}
+
+
+function makeResolutionButtons() {
+    recentResolutionList.innerHTML = ""
+    recentResolutionsValues.forEach( el => {
+        let button = document.createElement("button")
+        button.classList.add("tertiaryButton")
+        button.style.width="8em"
+        button.innerHTML = `${el.w}&times;${el.h}`
+        button.addEventListener("click", () => {
+            width.value=el.w
+            height.value=el.h
+            width.dispatchEvent(new Event("change"))
+            height.dispatchEvent(new Event("change"))
+            recentResolutionsPopup.classList.add("displayNone")
+        })
+        recentResolutionList.appendChild(button)
+        recentResolutionList.appendChild(document.createElement("br"))
+    })
+    localStorage.recentResolutionsValues = JSON.stringify(recentResolutionsValues)
+}
+
+let recentResolutionsValues = []
+
+;(function() { ///// Init resolutions dropdown
+    upscale15Button.addEventListener("click", () => {
+        upscaleImageSize(1.5)
+        recentResolutionsPopup.classList.add("displayNone")
+    })
+
+    upscale2Button.addEventListener("click", () => {
+        upscaleImageSize(2)
+        recentResolutionsPopup.classList.add("displayNone")
+    })
+
+    upscale3Button.addEventListener("click", () => {
+        upscaleImageSize(3)
+        recentResolutionsPopup.classList.add("displayNone")
+    })
+
+    width.addEventListener("change", () => {
+        let w = width.value
+        width.value = roundToMultiple(w, width.step)
+        if (w!=width.value) {
+            showToast(`Rounded width to the closest multiple of ${width.step}.`)
+        }
+    })
+
+    height.addEventListener("change", () => {
+        let h = height.value
+        height.value = roundToMultiple(h, height.step)
+        if (h!=height.value) {
+            showToast(`Rounded height to the closest multiple of ${height.step}.`)
+        }
+    })
+
+    makeImageBtn.addEventListener("click", () => {
+        let w = width.value
+        let h = height.value
+
+        recentResolutionsValues = recentResolutionsValues.filter(el => (el.w!=w || el.h!=h))
+        recentResolutionsValues.unshift({w: w, h:h})
+        recentResolutionsValues = recentResolutionsValues.slice(0,8)
+
+        localStorage.recentResolutionsValues = JSON.stringify(recentResolutionsValues)
+        makeResolutionButtons()
+    })
+
+    let _jsonstring = localStorage.recentResolutionsValues
+    if (_jsonstring==undefined) {
+        recentResolutionsValues = [
+            {w:512,h:512},
+            {w:640,h:448},
+            {w:448,h:640},
+            {w:512,h:768},
+            {w:768,h:512},
+            {w:1024,h:768},
+            {w:768,h:1024},
+        ]
+        localStorage.recentResolutionsValues = JSON.stringify(recentResolutionsValues)
+    } else {
+        recentResolutionsValues = JSON.parse(localStorage.recentResolutionsValues)
+    }
+    makeResolutionButtons()
+
+    function processClick(e) {
+        if (!recentResolutionsPopup.contains(e.target)) {
+            recentResolutionsPopup.classList.add("displayNone")
+        }
+        document.removeEventListener("click", processClick)
+    }
+
+    recentResolutionsButton.addEventListener("click", (event) => {
+        recentResolutionsPopup.classList.toggle("displayNone")
+        event.stopPropagation()
+        document.addEventListener("click", processClick)
+    })
+
+    swapWidthHeightButton.addEventListener("click", (event) => {
+        let temp = width.value
+        width.value = height.value
+        height.value = temp
+    })
+})()
+
