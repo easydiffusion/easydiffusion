@@ -16,6 +16,7 @@ var ParameterType = {
  */
 let parametersTable = document.querySelector("#system-settings-table")
 let networkParametersTable = document.querySelector("#system-settings-network-table")
+let installExtrasTable = document.querySelector("#system-settings-install-extras-table")
 
 /**
  * JSDoc style
@@ -240,6 +241,17 @@ var PARAMETERS = [
         icon: ["fa-brands", "fa-cloudflare"],
         render: () => '<button id="toggle-cloudflare-tunnel" class="primaryButton">Start</button>',
         table: networkParametersTable,
+    },
+    {
+        id: "nvidia_tensorrt",
+        type: ParameterType.custom,
+        label: "NVIDIA TensorRT",
+        note: `Faster image generation by converting your Stable Diffusion models to the NVIDIA TensorRT format. You can choose the
+               models to convert. Requires an NVIDIA graphics card.<br/><br/>
+               <b>Early access version:</b> support for LoRA is still under development.`,
+        icon: "fa-angles-up",
+        render: () => '<button id="install-tensorrt" class="primaryButton">Install</button>',
+        table: installExtrasTable,
     },
 ]
 
@@ -582,6 +594,25 @@ function setDeviceInfo(devices) {
     systemInfoEl.querySelector("#system-info-cpu").innerText = cpu
     systemInfoEl.querySelector("#system-info-gpus-all").innerHTML = allGPUs.join("</br>")
     systemInfoEl.querySelector("#system-info-rendering-devices").innerHTML = activeGPUs.join("</br>")
+
+    // tensorRT
+    if (devices.active) {
+        console.log(devices.active)
+        let nvidiaGPUs = Object.keys(devices.active).filter((d) => {
+            let gpuName = devices.active[d].name
+            gpuName = gpuName.toLowerCase()
+            console.log(gpuName)
+            return (
+                gpuName.includes("nvidia") ||
+                gpuName.includes("geforce") ||
+                gpuName.includes("quadro") ||
+                gpuName.includes("tesla")
+            )
+        })
+        if (nvidiaGPUs.length > 0) {
+            document.querySelector("#install-extras-container").classList.remove("displayNone")
+        }
+    }
 }
 
 function setHostInfo(hosts) {
@@ -744,10 +775,10 @@ navigator.permissions.query({ name: "clipboard-write" }).then(function(result) {
 
 document.addEventListener("system_info_update", (e) => setDeviceInfo(e.detail))
 
-useBetaChannelField.addEventListener('change', (e) => {
-    if (e.target.checked) { 
-        getParameterSettingsEntry("test_diffusers").classList.remove('displayNone') 
-    } else { 
-        getParameterSettingsEntry("test_diffusers").classList.add('displayNone')
+useBetaChannelField.addEventListener("change", (e) => {
+    if (e.target.checked) {
+        getParameterSettingsEntry("test_diffusers").classList.remove("displayNone")
+    } else {
+        getParameterSettingsEntry("test_diffusers").classList.add("displayNone")
     }
 })
