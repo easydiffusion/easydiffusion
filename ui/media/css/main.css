@@ -1763,7 +1763,7 @@ body.wait-pause {
     padding: 0;
 
     background: var(--background-color3);
-    opacity: 0.8;
+    opacity: 0.95;
     border-radius: 5px;
     padding: 4pt;
 }

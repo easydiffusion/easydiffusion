@@ -163,6 +163,7 @@ let imagePreviewContent = document.querySelector("#preview-content")
 let undoButton = document.querySelector("#undo")
 let undoBuffer = []
 const UNDO_LIMIT = 20
+const MAX_IMG_UNDO_ENTRIES = 5
 
 let loraModels = []
 
@@ -493,6 +494,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             imageSeedLabel.innerText = "Seed: " + req.seed
 
             const imageUndoBuffer = []
+            const imageRedoBuffer = []
             let buttons = [
                 { text: "Use as Input", on_click: onUseAsInputClick },
                 [
@@ -510,7 +512,8 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                 { text: "Make Similar Images", on_click: onMakeSimilarClick },
                 { text: "Draw another 25 steps", on_click: onContinueDrawingClick },
                 [
-                    { text: "Undo", on_click: onUndoFilter },
+                    { html: '<i class="fa-solid fa-undo"></i> Undo', on_click: onUndoFilter },
+                    { html: '<i class="fa-solid fa-redo"></i> Redo', on_click: onRedoFilter },
                     { text: "Upscale", on_click: onUpscaleClick },
                     { text: "Fix Faces", on_click: onFixFacesClick },
                 ],
@@ -527,6 +530,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                 spinner: spinner,
                 spinnerStatus: spinnerStatus,
                 undoBuffer: imageUndoBuffer,
+                redoBuffer: imageRedoBuffer,
             }
             const createButton = function(btnInfo) {
                 if (Array.isArray(btnInfo)) {
@@ -557,6 +561,10 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                     })
                     if (btnInfo.on_click === onUndoFilter) {
                         tools["undoButton"] = newButton
+                        newButton.classList.add("displayNone")
+                    }
+                    if (btnInfo.on_click === onRedoFilter) {
+                        tools["redoButton"] = newButton
                         newButton.classList.add("displayNone")
                     }
                 }
@@ -690,10 +698,18 @@ function applyInlineFilter(filterName, path, filterParams, img, statusText, tool
             let prevImg = img.src
             img.src = e.output[0]
             tools.spinner.classList.add("displayNone")
-            tools.undoButton.classList.remove("displayNone")
 
             if (prevImg.length > 0) {
                 tools.undoBuffer.push(prevImg)
+                tools.redoBuffer = []
+
+                if (tools.undoBuffer.length > MAX_IMG_UNDO_ENTRIES) {
+                    let n = tools.undoBuffer.length
+                    tools.undoBuffer.splice(0, n - MAX_IMG_UNDO_ENTRIES)
+                }
+
+                tools.undoButton.classList.remove("displayNone")
+                tools.redoButton.classList.add("displayNone")
             }
         } else if (e.status == "failed") {
             alert("Error running upscale: " + e.detail)
@@ -702,20 +718,31 @@ function applyInlineFilter(filterName, path, filterParams, img, statusText, tool
     })
 }
 
-function onUndoFilter(req, img, e, tools) {
-    if (tools.undoBuffer.length === 0) {
-        this.classList.add("displayNone")
+function moveImageBetweenBuffers(img, fromBuffer, toBuffer, fromButton, toButton) {
+    if (fromBuffer.length === 0) {
         return
     }
 
-    let src = tools.undoBuffer.pop()
+    let src = fromBuffer.pop()
     if (src.length > 0) {
+        toBuffer.push(img.src)
         img.src = src
     }
 
-    if (tools.undoBuffer.length === 0) {
-        this.classList.add("displayNone")
+    if (fromBuffer.length === 0) {
+        fromButton.classList.add("displayNone")
     }
+    if (toBuffer.length > 0) {
+        toButton.classList.remove("displayNone")
+    }
+}
+
+function onUndoFilter(req, img, e, tools) {
+    moveImageBetweenBuffers(img, tools.undoBuffer, tools.redoBuffer, tools.undoButton, tools.redoButton)
+}
+
+function onRedoFilter(req, img, e, tools) {
+    moveImageBetweenBuffers(img, tools.redoBuffer, tools.undoBuffer, tools.redoButton, tools.undoButton)
 }
 
 function onUpscaleClick(req, img, e, tools) {
