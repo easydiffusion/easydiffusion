@@ -217,11 +217,11 @@ def convert_legacy_render_req_to_new(old_req: dict):
 
     # move the model params
     if model_paths["stable-diffusion"]:
-        model_params["stable-diffusion"] = {"clip_skip": bool(old_req["clip_skip"])}
+        model_params["stable-diffusion"] = {"clip_skip": bool(old_req.get("clip_skip", False))}
 
     # move the filter params
     if model_paths["realesrgan"]:
-        filter_params["realesrgan"] = {"scale": int(old_req["upscale_amount"])}
+        filter_params["realesrgan"] = {"scale": int(old_req.get("upscale_amount", 4))}
     if model_paths["latent_upscaler"]:
         filter_params["latent_upscaler"] = {
             "prompt": old_req["prompt"],
@@ -232,8 +232,8 @@ def convert_legacy_render_req_to_new(old_req: dict):
         }
     if model_paths["codeformer"]:
         filter_params["codeformer"] = {
-            "upscale_faces": bool(old_req["codeformer_upscale_faces"]),
-            "codeformer_fidelity": float(old_req["codeformer_fidelity"]),
+            "upscale_faces": bool(old_req.get("codeformer_upscale_faces", True)),
+            "codeformer_fidelity": float(old_req.get("codeformer_fidelity", 0.5)),
         }
 
     # set the filters
