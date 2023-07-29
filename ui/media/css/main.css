@@ -1785,3 +1785,23 @@ td#image-size-options small {
 .clickable {
     cursor: pointer;
 }
+
+.imgContainer .spinner {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    padding: 0;
+
+    background: var(--background-color3);
+    opacity: 0.95;
+    border-radius: 5px;
+    padding: 4pt;
+    border: 1px solid var(--button-color);
+    box-shadow: 0px 0px 4px black;
+}
+
+.imgContainer .spinnerStatus {
+    font-size: 10pt;
+}
