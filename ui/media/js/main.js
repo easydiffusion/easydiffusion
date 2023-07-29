@@ -80,6 +80,7 @@ let recentResolutionList = document.querySelector("#recent-resolution-list")
 let upscale15Button = document.querySelector("#upscale15")
 let upscale2Button = document.querySelector("#upscale2")
 let upscale3Button = document.querySelector("#upscale3")
+let swapWidthHeightButton = document.querySelector("#swap-width-height")
 let smallImageWarning = document.querySelector("#small_image_warning")
 let initImageSelector = document.querySelector("#init_image")
 let initImagePreview = document.querySelector("#init_image_preview")
@@ -2505,6 +2506,12 @@ let recentResolutionsValues = []
         recentResolutionsPopup.classList.toggle("displayNone")
         event.stopPropagation()
         document.addEventListener("click", processClick)
+    })
+
+    swapWidthHeightButton.addEventListener("click", (event) => {
+        let temp = width.value
+        width.value = height.value
+        height.value = temp
     })
 })()
 

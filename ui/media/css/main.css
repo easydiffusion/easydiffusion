@@ -1777,3 +1777,11 @@ div#recent-resolutions-popup {
 div#recent-resolutions-popup small {
     opacity: 0.7;
 }
+
+td#image-size-options small {
+    margin-right: 0px !important;
+}
+
+.clickable {
+    cursor: pointer;
+}
