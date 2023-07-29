@@ -11,7 +11,11 @@ from easydiffusion import app
 
 manifest = {
     "tensorrt": {
-        "install": ["nvidia-cudnn", "tensorrt-libs", "tensorrt"],
+        "install": [
+            "nvidia-cudnn --extra-index-url=https://pypi.ngc.nvidia.com --trusted-host pypi.ngc.nvidia.com",
+            "tensorrt-libs --extra-index-url=https://pypi.ngc.nvidia.com --trusted-host pypi.ngc.nvidia.com",
+            "tensorrt --extra-index-url=https://pypi.ngc.nvidia.com --trusted-host pypi.ngc.nvidia.com",
+        ],
         "uninstall": ["tensorrt"],
         # TODO also uninstall tensorrt-libs and nvidia-cudnn, but do it upon restarting (avoid 'file in use' error)
     }
@@ -29,6 +33,7 @@ if platform.system() == "Windows":
 
         wheels = []
         for p in packages:
+            p = p.split(" ")[0]
             f = next((f for f in files if f.startswith(p) and f.endswith((".whl", ".tar.gz"))), None)
             if f:
                 wheels.append(os.path.join(trt_dir, f))
