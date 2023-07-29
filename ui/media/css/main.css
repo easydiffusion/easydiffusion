@@ -1766,6 +1766,8 @@ body.wait-pause {
     opacity: 0.95;
     border-radius: 5px;
     padding: 4pt;
+    border: 1px solid var(--button-color);
+    box-shadow: 0px 0px 4px black;
 }
 .imgContainer .spinnerStatus {
     font-size: 10pt;
