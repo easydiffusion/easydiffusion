@@ -425,27 +425,11 @@ function checkIfClickedOutsideDropdownElem(e) {
 }
 
 function collapseAllModifierCategory() {
-    const collapsibleElems = editorModifierEntries.querySelectorAll(".modifier-category .collapsible"); // needs to have ";"
-
-    [...collapsibleElems].forEach((elem) => {
-        const isActive =  elem.classList.contains("active")
-
-        if(isActive) {
-            elem?.click()
-        }
-    })
+    collapseAll(".modifier-category .collapsible")
 }
 
 function expandAllModifierCategory() {
-    const collapsibleElems = editorModifierEntries.querySelectorAll(".modifier-category .collapsible"); // needs to have ";"
-
-    [...collapsibleElems].forEach((elem) => {
-        const isActive =  elem.classList.contains("active")
-
-        if (!isActive) {
-            elem?.click()
-        }
-    })
+    expandAll(".modifier-category .collapsible")
 }
 
 customModifiersTextBox.addEventListener("change", saveCustomModifiers)

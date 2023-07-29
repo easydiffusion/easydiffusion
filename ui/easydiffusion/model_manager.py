@@ -5,7 +5,7 @@ import traceback
 from typing import Union
 
 from easydiffusion import app
-from easydiffusion.types import TaskData
+from easydiffusion.types import ModelsData
 from easydiffusion.utils import log
 from sdkit import Context
 from sdkit.models import load_model, scan_model, unload_model, download_model, get_model_info_from_db
@@ -57,7 +57,9 @@ def init():
 
 
 def load_default_models(context: Context):
-    set_vram_optimizations(context)
+    from easydiffusion import runtime
+
+    runtime.set_vram_optimizations(context)
 
     config = app.getConfig()
     context.embeddings_path = os.path.join(app.MODELS_DIR, "embeddings")
@@ -138,43 +140,32 @@ def resolve_model_to_use_single(model_name: str = None, model_type: str = None, 
         raise Exception(f"Could not find the desired model {model_name}! Is it present in the {model_dir} folder?")
 
 
-def reload_models_if_necessary(context: Context, task_data: TaskData):
-    face_fix_lower = task_data.use_face_correction.lower() if task_data.use_face_correction else ""
-    upscale_lower = task_data.use_upscale.lower() if task_data.use_upscale else ""
-
-    model_paths_in_req = {
-        "stable-diffusion": task_data.use_stable_diffusion_model,
-        "vae": task_data.use_vae_model,
-        "hypernetwork": task_data.use_hypernetwork_model,
-        "codeformer": task_data.use_face_correction if "codeformer" in face_fix_lower else None,
-        "gfpgan": task_data.use_face_correction if "gfpgan" in face_fix_lower else None,
-        "realesrgan": task_data.use_upscale if "realesrgan" in upscale_lower else None,
-        "latent_upscaler": True if "latent_upscaler" in upscale_lower else None,
-        "nsfw_checker": True if task_data.block_nsfw else None,
-        "lora": task_data.use_lora_model,
-    }
+def reload_models_if_necessary(context: Context, models_data: ModelsData, models_to_force_reload: list = []):
     models_to_reload = {
         model_type: path
-        for model_type, path in model_paths_in_req.items()
+        for model_type, path in models_data.model_paths.items()
         if context.model_paths.get(model_type) != path
     }
 
-    if task_data.codeformer_upscale_faces:
+    if models_data.model_paths.get("codeformer"):
         if "realesrgan" not in models_to_reload and "realesrgan" not in context.models:
             default_realesrgan = DEFAULT_MODELS["realesrgan"][0]["file_name"]
             models_to_reload["realesrgan"] = resolve_model_to_use(default_realesrgan, "realesrgan")
         elif "realesrgan" in models_to_reload and models_to_reload["realesrgan"] is None:
             del models_to_reload["realesrgan"]  # don't unload realesrgan
 
-    if set_vram_optimizations(context) or set_clip_skip(context, task_data):  # reload SD
-        models_to_reload["stable-diffusion"] = model_paths_in_req["stable-diffusion"]
+    for model_type in models_to_force_reload:
+        if model_type not in models_data.model_paths:
+            continue
+        models_to_reload[model_type] = models_data.model_paths[model_type]
 
     for model_type, model_path_in_req in models_to_reload.items():
         context.model_paths[model_type] = model_path_in_req
 
         action_fn = unload_model if context.model_paths[model_type] is None else load_model
+        extra_params = models_data.model_params.get(model_type, {})
         try:
-            action_fn(context, model_type, scan_model=False)  # we've scanned them already
+            action_fn(context, model_type, scan_model=False, **extra_params)  # we've scanned them already
             if model_type in context.model_load_errors:
                 del context.model_load_errors[model_type]
         except Exception as e:
@@ -183,24 +174,15 @@ def reload_models_if_necessary(context: Context, task_data: TaskData):
                 context.model_load_errors[model_type] = str(e)  # storing the entire Exception can lead to memory leaks
 
 
-def resolve_model_paths(task_data: TaskData):
-    task_data.use_stable_diffusion_model = resolve_model_to_use(
-        task_data.use_stable_diffusion_model, model_type="stable-diffusion"
-    )
-    task_data.use_vae_model = resolve_model_to_use(task_data.use_vae_model, model_type="vae")
-    task_data.use_hypernetwork_model = resolve_model_to_use(task_data.use_hypernetwork_model, model_type="hypernetwork")
-    task_data.use_lora_model = resolve_model_to_use(task_data.use_lora_model, model_type="lora")
-
-    if task_data.use_face_correction:
-        if "gfpgan" in task_data.use_face_correction.lower():
-            model_type = "gfpgan"
-        elif "codeformer" in task_data.use_face_correction.lower():
-            model_type = "codeformer"
+def resolve_model_paths(models_data: ModelsData):
+    model_paths = models_data.model_paths
+    for model_type in model_paths:
+        if model_type in ("latent_upscaler", "nsfw_checker"):  # doesn't use model paths
+            continue
+        if model_type == "codeformer":
             download_if_necessary("codeformer", "codeformer.pth", "codeformer-0.1.0")
 
-        task_data.use_face_correction = resolve_model_to_use(task_data.use_face_correction, model_type)
-    if task_data.use_upscale and "realesrgan" in task_data.use_upscale.lower():
-        task_data.use_upscale = resolve_model_to_use(task_data.use_upscale, "realesrgan")
+        model_paths[model_type] = resolve_model_to_use(model_paths[model_type], model_type=model_type)
 
 
 def fail_if_models_did_not_load(context: Context):
@@ -235,17 +217,6 @@ def download_if_necessary(model_type: str, file_name: str, model_id: str):
         download_model(model_type, model_id, download_base_dir=app.MODELS_DIR)
 
 
-def set_vram_optimizations(context: Context):
-    config = app.getConfig()
-    vram_usage_level = config.get("vram_usage_level", "balanced")
-
-    if vram_usage_level != context.vram_usage_level:
-        context.vram_usage_level = vram_usage_level
-        return True
-
-    return False
-
-
 def migrate_legacy_model_location():
     'Move the models inside the legacy "stable-diffusion" folder, to their respective folders'
 
@@ -262,16 +233,6 @@ def any_model_exists(model_type: str) -> bool:
     for ext in extensions:
         if any(glob(f"{app.MODELS_DIR}/{model_type}/**/*{ext}", recursive=True)):
             return True
-
-    return False
-
-
-def set_clip_skip(context: Context, task_data: TaskData):
-    clip_skip = task_data.clip_skip
-
-    if clip_skip != context.clip_skip:
-        context.clip_skip = clip_skip
-        return True
 
     return False
 

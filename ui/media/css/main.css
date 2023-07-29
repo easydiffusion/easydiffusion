@@ -288,12 +288,6 @@ button#resume {
     position: relative;
     cursor: pointer;
 }
-#image-modifier-dropdown[data-active="true"]::before {
-    content: "➖";
-}
-#image-modifier-dropdown[data-active="false"]::before {
-    content: "➕";
-}
 #editor-modifiers {
     max-width: 75vw;
     min-width: 50vw;
@@ -1149,7 +1143,7 @@ input::file-selector-button {
     position: relative;
 }
 
-#promptsFromFileBtn {
+.smallButton {
     font-size: 9pt;
     display: inline;
     padding: 2pt;
@@ -1656,35 +1650,95 @@ body.wait-pause {
     }
 }
 
-#embeddings-button {
-    background-color: var(--background-color3);
-}
-
-#embeddings-button:hover {
-    background-color: var(--button-hover-background);
-}
-
 #embeddings-dialog {
     overflow: clip;
 }
 
 #embeddings-list {
     height: 70vH;
-    width: 40vW;
+    width: 50vW;
+    margin-left: 0px;
+    margin-right: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
     overflow-y: scroll;
 }
 
 #embeddings-list button {
-    margin-top: 2px;
-    margin-bottom: 2px;
+    margin: 2px;
+    color: var(--button-color);
+    background: var(--button-text-color);
+    font-weight: 700;
+}
+#embeddings-list button:hover {
+    background: var(--accent-color);
+    color: var(--button-text-color);
+}
+
+#embeddings-list .collapsible {
+    background: var(--background-color3);
+    margin: 0px;
+    padding: 0.5em;
+    position: sticky;
+}
+
+#embeddings-list .embedding-category:nth-child(odd) .collapsible::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.02);
+    opacity: 1;
+    pointer-events: none;
+}
+
+#embeddings-list .collapsible-content {
+    padding-top:    0.4em;
+    padding-bottom: 0.4em;
 }
 
 #embeddings-list::-webkit-scrollbar-thumb {
-  background: var(--background-color3);
+    background: var(--background-color3);
 }
 
 .model_entry .model_name {
-    width: 65%;
+    width: 73%;
+}
+
+.model_entry {
+    position: relative;
+}
+
+.model_entry .remove_model_btn {
+    position: absolute;
+    left: -23pt;
+    top: 4pt;
+}
+
+.split-toolbar {  display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
+    gap: 0px 0px;
+    grid-auto-flow: row;
+    grid-template-areas: "toolbar-left toolbar-right";
+}
+
+.toolbar-left {
+    justify-self: start;
+    align-self: center;
+    grid-area: toolbar-left;
+}
+
+.toolbar-right {
+    justify-self: end;
+    align-self: center;
+    grid-area: toolbar-right;
+}
+
+#negative-embeddings-button {
+    float: right;
 }
 
 .diffusers-disabled-on-startup .diffusers-restart-needed {
@@ -1697,5 +1751,24 @@ body.wait-pause {
 
 .diffusers-disabled-on-startup .diffusers-restart-needed::after {
     content: "Please restart Easy Diffusion!";
+    font-size: 10pt;
+}
+
+.imgContainer .spinner {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    padding: 0;
+
+    background: var(--background-color3);
+    opacity: 0.95;
+    border-radius: 5px;
+    padding: 4pt;
+    border: 1px solid var(--button-color);
+    box-shadow: 0px 0px 4px black;
+}
+.imgContainer .spinnerStatus {
     font-size: 10pt;
 }
