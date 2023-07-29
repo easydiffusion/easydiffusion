@@ -247,10 +247,10 @@ var PARAMETERS = [
         type: ParameterType.custom,
         label: "NVIDIA TensorRT",
         note: `Faster image generation by converting your Stable Diffusion models to the NVIDIA TensorRT format. You can choose the
-               models to convert. Requires an NVIDIA graphics card.<br/><br/>
+               models to convert. Download size: approximately 2 GB.<br/><br/>
                <b>Early access version:</b> support for LoRA is still under development.`,
         icon: "fa-angles-up",
-        render: () => '<button id="install-tensorrt" class="primaryButton">Install</button>',
+        render: () => '<button id="toggle-tensorrt-install" class="primaryButton">Install</button>',
         table: installExtrasTable,
     },
 ]
@@ -596,12 +596,10 @@ function setDeviceInfo(devices) {
     systemInfoEl.querySelector("#system-info-rendering-devices").innerHTML = activeGPUs.join("</br>")
 
     // tensorRT
-    if (devices.active) {
-        console.log(devices.active)
+    if (devices.active && testDiffusers.checked && devices.enable_trt === true) {
         let nvidiaGPUs = Object.keys(devices.active).filter((d) => {
             let gpuName = devices.active[d].name
             gpuName = gpuName.toLowerCase()
-            console.log(gpuName)
             return (
                 gpuName.includes("nvidia") ||
                 gpuName.includes("geforce") ||

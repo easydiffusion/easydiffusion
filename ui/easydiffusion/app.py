@@ -32,6 +32,8 @@ logging.basicConfig(
 
 SD_DIR = os.getcwd()
 
+ROOT_DIR = os.path.abspath(os.path.join(SD_DIR, ".."))
+
 SD_UI_DIR = os.getenv("SD_UI_PATH", None)
 
 CONFIG_DIR = os.path.abspath(os.path.join(SD_UI_DIR, "..", "scripts"))

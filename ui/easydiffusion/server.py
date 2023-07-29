@@ -8,7 +8,7 @@ import os
 import traceback
 from typing import List, Union
 
-from easydiffusion import app, model_manager, task_manager
+from easydiffusion import app, model_manager, task_manager, package_manager
 from easydiffusion.tasks import RenderTask, FilterTask
 from easydiffusion.types import (
     GenerateImageRequest,
@@ -135,6 +135,10 @@ def init():
     def stop_cloudflare_tunnel(req: dict):
         return stop_cloudflare_tunnel_internal(req)
 
+    @server_api.post("/package/{package_name:str}")
+    def modify_package(package_name: str, req: dict):
+        return modify_package_internal(package_name, req)
+
     @server_api.get("/")
     def read_root():
         return FileResponse(os.path.join(app.SD_UI_DIR, "index.html"), headers=NOCACHE_HEADERS)
@@ -226,16 +230,24 @@ def ping_internal(session_id: str = None):
         if task_manager.current_state_error:
             raise HTTPException(status_code=500, detail=str(task_manager.current_state_error))
         raise HTTPException(status_code=500, detail="Render thread is dead.")
+
     if task_manager.current_state_error and not isinstance(task_manager.current_state_error, StopAsyncIteration):
         raise HTTPException(status_code=500, detail=str(task_manager.current_state_error))
+
     # Alive
     response = {"status": str(task_manager.current_state)}
+
     if session_id:
         session = task_manager.get_cached_session(session_id, update_ttl=True)
         response["tasks"] = {id(t): t.status for t in session.tasks}
+
     response["devices"] = task_manager.get_devices()
+    response["packages_installed"] = package_manager.get_installed_packages()
+    response["packages_installing"] = package_manager.installing
+
     if cloudflare.address != None:
         response["cloudflare"] = cloudflare.address
+
     return JSONResponse(response, headers=NOCACHE_HEADERS)
 
 
@@ -419,6 +431,22 @@ def start_cloudflare_tunnel_internal(req: dict):
 def stop_cloudflare_tunnel_internal(req: dict):
     try:
         cloudflare.stop()
+    except Exception as e:
+        log.error(str(e))
+        log.error(traceback.format_exc())
+        return HTTPException(status_code=500, detail=str(e))
+
+
+def modify_package_internal(package_name: str, req: dict):
+    try:
+        cmd = req["command"]
+        if cmd not in ("install", "uninstall"):
+            raise RuntimeError(f"Unknown command: {cmd}")
+
+        cmd = getattr(package_manager, cmd)
+        cmd(package_name)
+
+        return JSONResponse({"status": "OK"}, headers=NOCACHE_HEADERS)
     except Exception as e:
         log.error(str(e))
         log.error(traceback.format_exc())

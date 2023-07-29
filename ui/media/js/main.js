@@ -275,24 +275,24 @@ function setServerStatus(event) {
 //   e      : MouseEvent
 //   prompt : Text to be shown as prompt. Should be a question to which "yes" is a good answer.
 //   fn     : function to be called if the user confirms the dialog or has the shift key pressed
+//   allowSkip: Allow skipping the dialog using the shift key or the confirm_dangerous_actions setting (default: true)
 //
 // If the user had the shift key pressed while clicking, the function fn will be executed.
 // If the setting "confirm_dangerous_actions" in the system settings is disabled, the function
 // fn will be executed.
 // Otherwise, a confirmation dialog is shown. If the user confirms, the function fn will also
 // be executed.
-function shiftOrConfirm(e, prompt, fn) {
+function shiftOrConfirm(e, prompt, fn, allowSkip = true) {
     e.stopPropagation()
-    if (e.shiftKey || !confirmDangerousActionsField.checked) {
+    let tip = allowSkip
+        ? '<small>Tip: To skip this dialog, use shift-click or disable the "Confirm dangerous actions" setting in the Settings tab.</small>'
+        : ""
+    if (allowSkip && (e.shiftKey || !confirmDangerousActionsField.checked)) {
         fn(e)
     } else {
-        confirm(
-            '<small>Tip: To skip this dialog, use shift-click or disable the "Confirm dangerous actions" setting in the Settings tab.</small>',
-            prompt,
-            () => {
-                fn(e)
-            }
-        )
+        confirm(tip, prompt, () => {
+            fn(e)
+        })
     }
 }
 
@@ -1417,6 +1417,11 @@ function getCurrentUserRequest() {
             newTask.reqBody.lora_alpha = modelStrengths
         }
     }
+    if (testDiffusers.checked && document.getElementById("toggle-tensorrt-install").innerHTML == "Uninstall") {
+        // TRT is installed
+        newTask.reqBody.convert_to_tensorrt = document.querySelector("#convert_to_tensorrt").checked
+    }
+
     return newTask
 }
 
@@ -2217,6 +2222,11 @@ resumeBtn.addEventListener("click", function() {
     document.body.classList.remove("wait-pause")
 })
 
+function onPing(event) {
+    tunnelUpdate(event)
+    packagesUpdate(event)
+}
+
 function tunnelUpdate(event) {
     if ("cloudflare" in event) {
         document.getElementById("cloudflare-off").classList.add("displayNone")
@@ -2227,6 +2237,23 @@ function tunnelUpdate(event) {
         document.getElementById("cloudflare-on").classList.add("displayNone")
         document.getElementById("cloudflare-off").classList.remove("displayNone")
         document.getElementById("toggle-cloudflare-tunnel").innerHTML = "Start"
+    }
+}
+
+function packagesUpdate(event) {
+    let trtBtn = document.getElementById("toggle-tensorrt-install")
+    let trtInstalled = "packages_installed" in event && "tensorrt" in event["packages_installed"]
+
+    if ("packages_installing" in event && event["packages_installing"].includes("tensorrt")) {
+        trtBtn.innerHTML = "Installing.."
+        trtBtn.disabled = true
+    } else {
+        trtBtn.innerHTML = trtInstalled ? "Uninstall" : "Install"
+        trtBtn.disabled = false
+    }
+
+    if (document.getElementById("toggle-tensorrt-install").innerHTML == "Uninstall") {
+        document.querySelector("#enable_trt_config").classList.remove("displayNone")
     }
 }
 
@@ -2247,6 +2274,63 @@ document.getElementById("toggle-cloudflare-tunnel").addEventListener("click", as
     res = await res.json()
 
     console.log(`Cloudflare tunnel ${command} result:`, res)
+})
+
+document.getElementById("toggle-tensorrt-install").addEventListener("click", function(e) {
+    if (this.disabled === true) {
+        return
+    }
+
+    let command = this.innerHTML.toLowerCase()
+    let self = this
+
+    shiftOrConfirm(
+        e,
+        "Are you sure you want to " + command + " TensorRT?",
+        async function() {
+            showToast(`TensorRT ${command} started. Please wait.`)
+
+            self.disabled = true
+
+            if (command === "install") {
+                self.innerHTML = "Installing.."
+            } else if (command === "uninstall") {
+                self.innerHTML = "Uninstalling.."
+            }
+
+            if (command === "installing..") {
+                alert("Already installing TensorRT!")
+                return
+            }
+            if (command !== "install" && command !== "uninstall") {
+                return
+            }
+
+            let res = await fetch("/package/tensorrt", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    command: command,
+                }),
+            })
+            res = await res.json()
+
+            self.disabled = false
+
+            if (res.status === "OK") {
+                alert("TensorRT " + command + "ed successfully!")
+                self.innerHTML = command === "install" ? "Uninstall" : "Install"
+            } else if (res.status_code === 500) {
+                alert("TensorselfRT failed to " + command + ": " + res.detail)
+                self.innerHTML = command === "install" ? "Install" : "Uninstall"
+            }
+
+            console.log(`Package ${command} result:`, res)
+        },
+        false
+    )
 })
 
 /* Embeddings */

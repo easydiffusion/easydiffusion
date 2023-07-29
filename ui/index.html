@@ -146,6 +146,14 @@
                         <button id="reload-models" class="secondaryButton reloadModels"><i class='fa-solid fa-rotate'></i></button>
                         <a href="https://github.com/easydiffusion/easydiffusion/wiki/Custom-Models" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about custom models</span></i></a>
                     </td></tr>
+                    <tr class="pl-5 displayNone" id="enable_trt_config">
+                        <td><label for="convert_to_tensorrt">Convert to TensorRT:</label></td>
+                        <td class="diffusers-restart-needed">
+                            <input id="convert_to_tensorrt" name="convert_to_tensorrt" type="checkbox">
+                            <a href="https://github.com/easydiffusion/easydiffusion/wiki/TensorRT" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about TensorRT</span></i></a>
+                            <label><small>Takes upto 20 mins the first time</small></label>
+                        </td>
+                    </tr>
                     <tr class="pl-5 displayNone" id="clip_skip_config">
                         <td><label for="clip_skip">Clip Skip:</label></td>
                         <td class="diffusers-restart-needed">
@@ -363,7 +371,7 @@
                 <div id="install-extras-container" class="displayNone">
                     <br/>
                     <div id="install-extras">
-                        <h3><i class="fa fa-bolt"></i> Accelerate Easy Diffusion</h3>
+                        <h3><i class="fa fa-cubes-stacked"></i> Optional Packages</h3>
                         <div class="parameters-table" id="system-settings-install-extras-table"></div>
                     </div>
                 </div>
@@ -677,7 +685,7 @@ async function init() {
         events: {
             statusChange: setServerStatus,
             idle: onIdle,
-            ping: tunnelUpdate
+            ping: onPing
         }
     })
     splashScreen()

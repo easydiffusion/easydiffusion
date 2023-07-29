@@ -60,7 +60,11 @@ class RenderTask(Task):
         model_manager.resolve_model_paths(self.models_data)
 
         models_to_force_reload = []
-        if runtime.set_vram_optimizations(context) or self.has_clip_skip_changed(context):
+        if (
+            runtime.set_vram_optimizations(context)
+            or self.has_param_changed(context, "clip_skip")
+            or self.has_param_changed(context, "convert_to_tensorrt")
+        ):
             models_to_force_reload.append("stable-diffusion")
 
         model_manager.reload_models_if_necessary(context, self.models_data, models_to_force_reload)
@@ -78,13 +82,15 @@ class RenderTask(Task):
             step_callback,
         )
 
-    def has_clip_skip_changed(self, context):
+    def has_param_changed(self, context, param_name):
         if not context.test_diffusers:
             return False
+        if "stable-diffusion" not in context.models or "params" not in context.models["stable-diffusion"]:
+            return True
 
         model = context.models["stable-diffusion"]
-        new_clip_skip = self.models_data.model_params.get("stable-diffusion", {}).get("clip_skip", False)
-        return model["clip_skip"] != new_clip_skip
+        new_val = self.models_data.model_params.get("stable-diffusion", {}).get(param_name, False)
+        return model["params"].get(param_name) != new_val
 
 
 def make_images(

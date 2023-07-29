@@ -217,7 +217,10 @@ def convert_legacy_render_req_to_new(old_req: dict):
 
     # move the model params
     if model_paths["stable-diffusion"]:
-        model_params["stable-diffusion"] = {"clip_skip": bool(old_req.get("clip_skip", False))}
+        model_params["stable-diffusion"] = {
+            "clip_skip": bool(old_req.get("clip_skip", False)),
+            "convert_to_tensorrt": bool(old_req.get("convert_to_tensorrt", False)),
+        }
 
     # move the filter params
     if model_paths["realesrgan"]:
