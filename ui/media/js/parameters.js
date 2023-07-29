@@ -441,6 +441,8 @@ async function getAppConfig() {
             document.querySelectorAll("#sampler_name option.diffusers-only").forEach((option) => {
                 option.style.display = "none"
             })
+            width.step=64
+            height.step=64
         } else {
             document.querySelector("#lora_model_container").style.display = ""
             document.querySelector("#tiling_container").style.display = ""
@@ -451,6 +453,8 @@ async function getAppConfig() {
             document.querySelector("#clip_skip_config").classList.remove("displayNone")
             document.querySelector("#embeddings-button").classList.remove("displayNone")
             document.querySelector("#negative-embeddings-button").classList.remove("displayNone")
+            width.step=8
+            height.step=8
         }
 
         console.log("get config status response", config)

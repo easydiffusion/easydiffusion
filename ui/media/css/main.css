@@ -1753,3 +1753,27 @@ body.wait-pause {
     content: "Please restart Easy Diffusion!";
     font-size: 10pt;
 }
+
+input#width, input#height {
+    width: 47pt;
+}
+
+div#recent-resolutions-container {
+    position: relative;
+    display:inline-block;
+}
+
+div#recent-resolutions-popup {
+    position: absolute;
+    right: 0px;
+    margin: 3px;
+    padding: 0.2em 1em 0.4em 1em;
+    z-index: 1;
+    background: var(--background-color3);
+    border-radius: 4px;
+    box-shadow: 0 20px 28px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
+}
+
+div#recent-resolutions-popup small {
+    opacity: 0.7;
+}
