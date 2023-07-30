@@ -49,6 +49,7 @@ const taskConfigSetup = {
         use_lora_model: { label: "Lora Model", visible: ({ reqBody }) => !!reqBody?.use_lora_model },
         lora_alpha: { label: "Lora Strength", visible: ({ reqBody }) => !!reqBody?.use_lora_model },
         preserve_init_image_color_profile: "Preserve Color Profile",
+        strict_mask_border: "Strict Mask Border",
     },
     pluginTaskConfig: {},
     getCSSKey: (key) =>
@@ -93,7 +94,9 @@ let initImageSizeBox = document.querySelector("#init_image_size_box")
 let maskImageSelector = document.querySelector("#mask")
 let maskImagePreview = document.querySelector("#mask_preview")
 let applyColorCorrectionField = document.querySelector("#apply_color_correction")
+let strictMaskBorderField = document.querySelector("#strict_mask_border")
 let colorCorrectionSetting = document.querySelector("#apply_color_correction_setting")
+let strictMaskBorderSetting = document.querySelector("#strict_mask_border_setting")
 let promptStrengthSlider = document.querySelector("#prompt_strength_slider")
 let promptStrengthField = document.querySelector("#prompt_strength")
 let samplerField = document.querySelector("#sampler_name")
@@ -1386,6 +1389,7 @@ function getCurrentUserRequest() {
         // }
         if (maskSetting.checked) {
             newTask.reqBody.mask = imageInpainter.getImg()
+            newTask.reqBody.strict_mask_border = strictMaskBorderField.checked
         }
         newTask.reqBody.preserve_init_image_color_profile = applyColorCorrectionField.checked
         if (!testDiffusers.checked) {
@@ -2091,6 +2095,7 @@ function img2imgLoad() {
     }
     initImagePreviewContainer.classList.add("has-image")
     colorCorrectionSetting.style.display = ""
+    strictMaskBorderSetting.style.display = maskSetting.checked ? "" : "none"
 
     initImageSizeBox.textContent = initImagePreview.naturalWidth + " x " + initImagePreview.naturalHeight
     imageEditor.setImage(this.src, initImagePreview.naturalWidth, initImagePreview.naturalHeight)
@@ -2108,6 +2113,7 @@ function img2imgUnload() {
     }
     initImagePreviewContainer.classList.remove("has-image")
     colorCorrectionSetting.style.display = "none"
+    strictMaskBorderSetting.style.display = "none"
     imageEditor.setImage(null, parseInt(widthField.value), parseInt(heightField.value))
 }
 initImagePreview.addEventListener("load", img2imgLoad)
@@ -2115,6 +2121,9 @@ initImageClearBtn.addEventListener("click", img2imgUnload)
 
 maskSetting.addEventListener("click", function() {
     onDimensionChange()
+})
+maskSetting.addEventListener("change", function() {
+    strictMaskBorderSetting.style.display = this.checked ? "" : "none"
 })
 
 promptsFromFileBtn.addEventListener("click", function() {
@@ -2583,27 +2592,28 @@ createLoraEntries()
 ////////////////////////////// Image Size Widget //////////////////////////////////////////
 
 function roundToMultiple(number, n) {
-    if (n=="") { n=1 }
-    return Math.round(number / n) * n;
+    if (n == "") {
+        n = 1
+    }
+    return Math.round(number / n) * n
 }
 
 function addImageSizeOption(size) {
-    let sizes = Object.values(widthField.options).map(o => o.value)
+    let sizes = Object.values(widthField.options).map((o) => o.value)
     if (!sizes.includes(String(size))) {
         sizes.push(String(size))
-        sizes.sort( (a,b) => Number(a)-Number(b) )
+        sizes.sort((a, b) => Number(a) - Number(b))
 
         let option = document.createElement("option")
         option.value = size
         option.text = `${size}`
-        
+
         widthField.add(option, sizes.indexOf(String(size)))
         heightField.add(option.cloneNode(true), sizes.indexOf(String(size)))
     }
-
 }
 
-function setImageWidthHeight(w,h) {
+function setImageWidthHeight(w, h) {
     let step = customWidthField.step
     w = roundToMultiple(w, step)
     h = roundToMultiple(h, step)
@@ -2611,8 +2621,8 @@ function setImageWidthHeight(w,h) {
     addImageSizeOption(w)
     addImageSizeOption(h)
 
-    widthField.value=w
-    heightField.value=h
+    widthField.value = w
+    heightField.value = h
     widthField.dispatchEvent(new Event("change"))
     heightField.dispatchEvent(new Event("change"))
 }
@@ -2620,25 +2630,26 @@ function setImageWidthHeight(w,h) {
 function enlargeImageSize(factor) {
     let step = customWidthField.step
 
-    let w = roundToMultiple(widthField.value*factor, step)
-    let h = roundToMultiple(heightField.value*factor, step)
+    let w = roundToMultiple(widthField.value * factor, step)
+    let h = roundToMultiple(heightField.value * factor, step)
     customWidthField.value = w
     customHeightField.value = h
 }
 
 let recentResolutionsValues = []
 
-;(function() { ///// Init resolutions dropdown
+;(function() {
+    ///// Init resolutions dropdown
     function makeResolutionButtons() {
         recentResolutionList.innerHTML = ""
-        recentResolutionsValues.forEach( el => {
+        recentResolutionsValues.forEach((el) => {
             let button = document.createElement("button")
             button.classList.add("tertiaryButton")
-            button.style.width="8em"
+            button.style.width = "8em"
             button.innerHTML = `${el.w}&times;${el.h}`
             button.addEventListener("click", () => {
-                customWidthField.value=el.w
-                customHeightField.value=el.h
+                customWidthField.value = el.w
+                customHeightField.value = el.h
                 hidePopup()
             })
             recentResolutionList.appendChild(button)
@@ -2665,7 +2676,7 @@ let recentResolutionsValues = []
     customWidthField.addEventListener("change", () => {
         let w = customWidthField.value
         customWidthField.value = roundToMultiple(w, customWidthField.step)
-        if (w!=customWidthField.value) {
+        if (w != customWidthField.value) {
             showToast(`Rounded width to the closest multiple of ${customWidthField.step}.`)
         }
     })
@@ -2673,7 +2684,7 @@ let recentResolutionsValues = []
     customHeightField.addEventListener("change", () => {
         let h = customHeightField.value
         customHeightField.value = roundToMultiple(h, customHeightField.step)
-        if (h!=customHeightField.value) {
+        if (h != customHeightField.value) {
             showToast(`Rounded height to the closest multiple of ${customHeightField.step}.`)
         }
     })
@@ -2682,24 +2693,24 @@ let recentResolutionsValues = []
         let w = widthField.value
         let h = heightField.value
 
-        recentResolutionsValues = recentResolutionsValues.filter(el => (el.w!=w || el.h!=h))
-        recentResolutionsValues.unshift({w: w, h:h})
-        recentResolutionsValues = recentResolutionsValues.slice(0,8)
+        recentResolutionsValues = recentResolutionsValues.filter((el) => el.w != w || el.h != h)
+        recentResolutionsValues.unshift({ w: w, h: h })
+        recentResolutionsValues = recentResolutionsValues.slice(0, 8)
 
         localStorage.recentResolutionsValues = JSON.stringify(recentResolutionsValues)
         makeResolutionButtons()
     })
 
     let _jsonstring = localStorage.recentResolutionsValues
-    if (_jsonstring==undefined) {
+    if (_jsonstring == undefined) {
         recentResolutionsValues = [
-            {w:512,h:512},
-            {w:640,h:448},
-            {w:448,h:640},
-            {w:512,h:768},
-            {w:768,h:512},
-            {w:1024,h:768},
-            {w:768,h:1024},
+            { w: 512, h: 512 },
+            { w: 640, h: 448 },
+            { w: 448, h: 640 },
+            { w: 512, h: 768 },
+            { w: 768, h: 512 },
+            { w: 1024, h: 768 },
+            { w: 768, h: 1024 },
         ]
         localStorage.recentResolutionsValues = JSON.stringify(recentResolutionsValues)
     } else {
@@ -2707,7 +2718,7 @@ let recentResolutionsValues = []
     }
     makeResolutionButtons()
 
-    recentResolutionsValues.forEach( val => {
+    recentResolutionsValues.forEach((val) => {
         addImageSizeOption(val.w)
         addImageSizeOption(val.h)
     })
@@ -2746,4 +2757,3 @@ let recentResolutionsValues = []
         heightField.value = temp
     })
 })()
-

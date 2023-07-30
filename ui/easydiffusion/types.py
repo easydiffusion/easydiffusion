@@ -21,6 +21,7 @@ class GenerateImageRequest(BaseModel):
     control_alpha: Union[float, List[float]] = None
     prompt_strength: float = 0.8
     preserve_init_image_color_profile = False
+    strict_mask_border = False
 
     sampler_name: str = None  # "ddim", "plms", "heun", "euler", "euler_a", "dpm2", "dpm2_a", "lms"
     hypernetwork_strength: float = 0
