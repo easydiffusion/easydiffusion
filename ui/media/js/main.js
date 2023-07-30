@@ -77,12 +77,14 @@ let randomSeedField = document.querySelector("#random_seed")
 let seedField = document.querySelector("#seed")
 let widthField = document.querySelector("#width")
 let heightField = document.querySelector("#height")
+let customWidthField = document.querySelector("#custom-width")
+let customHeightField = document.querySelector("#custom-height")
 let recentResolutionsButton = document.querySelector("#recent-resolutions-button")
 let recentResolutionsPopup = document.querySelector("#recent-resolutions-popup")
 let recentResolutionList = document.querySelector("#recent-resolution-list")
-let upscale15Button = document.querySelector("#upscale15")
-let upscale2Button = document.querySelector("#upscale2")
-let upscale3Button = document.querySelector("#upscale3")
+let enlarge15Button = document.querySelector("#enlarge15")
+let enlarge2Button = document.querySelector("#enlarge2")
+let enlarge3Button = document.querySelector("#enlarge3")
 let swapWidthHeightButton = document.querySelector("#swap-width-height")
 let smallImageWarning = document.querySelector("#small_image_warning")
 let initImageSelector = document.querySelector("#init_image")
@@ -2585,70 +2587,100 @@ function roundToMultiple(number, n) {
     return Math.round(number / n) * n;
 }
 
-function upscaleImageSize(factor) {
-    let step = width.step
-    width.value  = roundToMultiple(width.value*factor, step)
-    height.value = roundToMultiple(height.value*factor, step)
+function addImageSizeOption(size) {
+    let sizes = Object.values(widthField.options).map(o => o.value)
+    if (!sizes.includes(String(size))) {
+        sizes.push(String(size))
+        sizes.sort( (a,b) => Number(a)-Number(b) )
+
+        let option = document.createElement("option")
+        option.value = size
+        option.text = `${size}`
+        
+        widthField.add(option, sizes.indexOf(String(size)))
+        heightField.add(option.cloneNode(true), sizes.indexOf(String(size)))
+    }
+
 }
 
+function setImageWidthHeight(w,h) {
+    let step = customWidthField.step
+    w = roundToMultiple(w, step)
+    h = roundToMultiple(h, step)
 
-function makeResolutionButtons() {
-    recentResolutionList.innerHTML = ""
-    recentResolutionsValues.forEach( el => {
-        let button = document.createElement("button")
-        button.classList.add("tertiaryButton")
-        button.style.width="8em"
-        button.innerHTML = `${el.w}&times;${el.h}`
-        button.addEventListener("click", () => {
-            width.value=el.w
-            height.value=el.h
-            width.dispatchEvent(new Event("change"))
-            height.dispatchEvent(new Event("change"))
-            recentResolutionsPopup.classList.add("displayNone")
-        })
-        recentResolutionList.appendChild(button)
-        recentResolutionList.appendChild(document.createElement("br"))
-    })
-    localStorage.recentResolutionsValues = JSON.stringify(recentResolutionsValues)
+    addImageSizeOption(w)
+    addImageSizeOption(h)
+
+    widthField.value=w
+    heightField.value=h
+    widthField.dispatchEvent(new Event("change"))
+    heightField.dispatchEvent(new Event("change"))
+}
+
+function enlargeImageSize(factor) {
+    let step = customWidthField.step
+
+    let w = roundToMultiple(widthField.value*factor, step)
+    let h = roundToMultiple(heightField.value*factor, step)
+    customWidthField.value = w
+    customHeightField.value = h
 }
 
 let recentResolutionsValues = []
 
 ;(function() { ///// Init resolutions dropdown
-    upscale15Button.addEventListener("click", () => {
-        upscaleImageSize(1.5)
-        recentResolutionsPopup.classList.add("displayNone")
+    function makeResolutionButtons() {
+        recentResolutionList.innerHTML = ""
+        recentResolutionsValues.forEach( el => {
+            let button = document.createElement("button")
+            button.classList.add("tertiaryButton")
+            button.style.width="8em"
+            button.innerHTML = `${el.w}&times;${el.h}`
+            button.addEventListener("click", () => {
+                customWidthField.value=el.w
+                customHeightField.value=el.h
+                hidePopup()
+            })
+            recentResolutionList.appendChild(button)
+            recentResolutionList.appendChild(document.createElement("br"))
+        })
+        localStorage.recentResolutionsValues = JSON.stringify(recentResolutionsValues)
+    }
+
+    enlarge15Button.addEventListener("click", () => {
+        enlargeImageSize(1.5)
+        hidePopup()
     })
 
-    upscale2Button.addEventListener("click", () => {
-        upscaleImageSize(2)
-        recentResolutionsPopup.classList.add("displayNone")
+    enlarge2Button.addEventListener("click", () => {
+        enlargeImageSize(2)
+        hidePopup()
     })
 
-    upscale3Button.addEventListener("click", () => {
-        upscaleImageSize(3)
-        recentResolutionsPopup.classList.add("displayNone")
+    enlarge3Button.addEventListener("click", () => {
+        enlargeImageSize(3)
+        hidePopup()
     })
 
-    width.addEventListener("change", () => {
-        let w = width.value
-        width.value = roundToMultiple(w, width.step)
-        if (w!=width.value) {
-            showToast(`Rounded width to the closest multiple of ${width.step}.`)
+    customWidthField.addEventListener("change", () => {
+        let w = customWidthField.value
+        customWidthField.value = roundToMultiple(w, customWidthField.step)
+        if (w!=customWidthField.value) {
+            showToast(`Rounded width to the closest multiple of ${customWidthField.step}.`)
         }
     })
 
-    height.addEventListener("change", () => {
-        let h = height.value
-        height.value = roundToMultiple(h, height.step)
-        if (h!=height.value) {
-            showToast(`Rounded height to the closest multiple of ${height.step}.`)
+    customHeightField.addEventListener("change", () => {
+        let h = customHeightField.value
+        customHeightField.value = roundToMultiple(h, customHeightField.step)
+        if (h!=customHeightField.value) {
+            showToast(`Rounded height to the closest multiple of ${customHeightField.step}.`)
         }
     })
 
     makeImageBtn.addEventListener("click", () => {
-        let w = width.value
-        let h = height.value
+        let w = widthField.value
+        let h = heightField.value
 
         recentResolutionsValues = recentResolutionsValues.filter(el => (el.w!=w || el.h!=h))
         recentResolutionsValues.unshift({w: w, h:h})
@@ -2675,23 +2707,43 @@ let recentResolutionsValues = []
     }
     makeResolutionButtons()
 
+    recentResolutionsValues.forEach( val => {
+        addImageSizeOption(val.w)
+        addImageSizeOption(val.h)
+    })
+
     function processClick(e) {
         if (!recentResolutionsPopup.contains(e.target)) {
-            recentResolutionsPopup.classList.add("displayNone")
+            hidePopup()
         }
+    }
+
+    function showPopup() {
+        customWidthField.value = widthField.value
+        customHeightField.value = heightField.value
+        recentResolutionsPopup.classList.remove("displayNone")
+        document.addEventListener("click", processClick)
+    }
+
+    function hidePopup() {
+        recentResolutionsPopup.classList.add("displayNone")
+        setImageWidthHeight(customWidthField.value, customHeightField.value)
         document.removeEventListener("click", processClick)
     }
 
     recentResolutionsButton.addEventListener("click", (event) => {
-        recentResolutionsPopup.classList.toggle("displayNone")
-        event.stopPropagation()
-        document.addEventListener("click", processClick)
+        if (recentResolutionsPopup.classList.contains("displayNone")) {
+            showPopup()
+            event.stopPropagation()
+        } else {
+            hidePopup()
+        }
     })
 
     swapWidthHeightButton.addEventListener("click", (event) => {
-        let temp = width.value
-        width.value = height.value
-        height.value = temp
+        let temp = widthField.value
+        widthField.value = heightField.value
+        heightField.value = temp
     })
 })()
 

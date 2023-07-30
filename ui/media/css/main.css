@@ -1754,7 +1754,7 @@ body.wait-pause {
     font-size: 10pt;
 }
 
-input#width, input#height {
+input#custom-width, input#custom-height {
     width: 47pt;
 }
 
@@ -1780,6 +1780,18 @@ div#recent-resolutions-popup small {
 
 td#image-size-options small {
     margin-right: 0px !important;
+}
+
+td#image-size-options {
+    white-space: nowrap;
+}
+
+div#recent-resolution-list {
+    text-align: center;
+}
+
+div#enlarge-buttons {
+    text-align: center;
 }
 
 .clickable {
