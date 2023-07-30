@@ -17,7 +17,7 @@ from typing import Any, Hashable
 
 import torch
 from easydiffusion import device_manager
-from easydiffusion.types import GenerateImageRequest, TaskData
+from easydiffusion.tasks import Task
 from easydiffusion.utils import log
 from sdkit.utils import gc
 
@@ -27,6 +27,7 @@ LOCK_TIMEOUT = 15  # Maximum locking time in seconds before failing a task.
 # It's better to get an exception than a deadlock... ALWAYS use timeout in critical paths.
 
 DEVICE_START_TIMEOUT = 60  # seconds - Maximum time to wait for a render device to init.
+MAX_OVERLOAD_ALLOWED_RATIO = 2  # i.e. 2x pending tasks compared to the number of render threads
 
 
 class SymbolClass(type):  # Print nicely formatted Symbol names.
@@ -58,46 +59,6 @@ class ServerStates:
         pass
 
 
-class RenderTask:  # Task with output queue and completion lock.
-    def __init__(self, req: GenerateImageRequest, task_data: TaskData):
-        task_data.request_id = id(self)
-        self.render_request: GenerateImageRequest = req  # Initial Request
-        self.task_data: TaskData = task_data
-        self.response: Any = None  # Copy of the last reponse
-        self.render_device = None  # Select the task affinity. (Not used to change active devices).
-        self.temp_images: list = [None] * req.num_outputs * (1 if task_data.show_only_filtered_image else 2)
-        self.error: Exception = None
-        self.lock: threading.Lock = threading.Lock()  # Locks at task start and unlocks when task is completed
-        self.buffer_queue: queue.Queue = queue.Queue()  # Queue of JSON string segments
-
-    async def read_buffer_generator(self):
-        try:
-            while not self.buffer_queue.empty():
-                res = self.buffer_queue.get(block=False)
-                self.buffer_queue.task_done()
-                yield res
-        except queue.Empty as e:
-            yield
-
-    @property
-    def status(self):
-        if self.lock.locked():
-            return "running"
-        if isinstance(self.error, StopAsyncIteration):
-            return "stopped"
-        if self.error:
-            return "error"
-        if not self.buffer_queue.empty():
-            return "buffer"
-        if self.response:
-            return "completed"
-        return "pending"
-
-    @property
-    def is_pending(self):
-        return bool(not self.response and not self.error)
-
-
 # Temporary cache to allow to query tasks results for a short time after they are completed.
 class DataCache:
     def __init__(self):
@@ -123,8 +84,8 @@ class DataCache:
             # Remove Items
             for key in to_delete:
                 (_, val) = self._base[key]
-                if isinstance(val, RenderTask):
-                    log.debug(f"RenderTask {key} expired. Data removed.")
+                if isinstance(val, Task):
+                    log.debug(f"Task {key} expired. Data removed.")
                 elif isinstance(val, SessionState):
                     log.debug(f"Session {key} expired. Data removed.")
                 else:
@@ -220,8 +181,8 @@ class SessionState:
                 tasks.append(task)
         return tasks
 
-    def put(self, task, ttl=TASK_TTL):
-        task_id = id(task)
+    def put(self, task: Task, ttl=TASK_TTL):
+        task_id = task.id
         self._tasks_ids.append(task_id)
         if not task_cache.put(task_id, task, ttl):
             return False
@@ -230,11 +191,16 @@ class SessionState:
         return True
 
 
+def keep_task_alive(task: Task):
+    task_cache.keep(task.id, TASK_TTL)
+    session_cache.keep(task.session_id, TASK_TTL)
+
+
 def thread_get_next_task():
-    from easydiffusion import renderer
+    from easydiffusion import runtime
 
     if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT):
-        log.warn(f"Render thread on device: {renderer.context.device} failed to acquire manager lock.")
+        log.warn(f"Render thread on device: {runtime.context.device} failed to acquire manager lock.")
         return None
     if len(tasks_queue) <= 0:
         manager_lock.release()
@@ -242,7 +208,7 @@ def thread_get_next_task():
     task = None
     try:  # Select a render task.
         for queued_task in tasks_queue:
-            if queued_task.render_device and renderer.context.device != queued_task.render_device:
+            if queued_task.render_device and runtime.context.device != queued_task.render_device:
                 # Is asking for a specific render device.
                 if is_alive(queued_task.render_device) > 0:
                     continue  # requested device alive, skip current one.
@@ -251,7 +217,7 @@ def thread_get_next_task():
                     queued_task.error = Exception(queued_task.render_device + " is not currently active.")
                     task = queued_task
                     break
-            if not queued_task.render_device and renderer.context.device == "cpu" and is_alive() > 1:
+            if not queued_task.render_device and runtime.context.device == "cpu" and is_alive() > 1:
                 # not asking for any specific devices, cpu want to grab task but other render devices are alive.
                 continue  # Skip Tasks, don't run on CPU unless there is nothing else or user asked for it.
             task = queued_task
@@ -266,19 +232,19 @@ def thread_get_next_task():
 def thread_render(device):
     global current_state, current_state_error
 
-    from easydiffusion import model_manager, renderer
+    from easydiffusion import model_manager, runtime
 
     try:
-        renderer.init(device)
+        runtime.init(device)
 
         weak_thread_data[threading.current_thread()] = {
-            "device": renderer.context.device,
-            "device_name": renderer.context.device_name,
+            "device": runtime.context.device,
+            "device_name": runtime.context.device_name,
             "alive": True,
         }
 
         current_state = ServerStates.LoadingModel
-        model_manager.load_default_models(renderer.context)
+        model_manager.load_default_models(runtime.context)
 
         current_state = ServerStates.Online
     except Exception as e:
@@ -290,8 +256,8 @@ def thread_render(device):
         session_cache.clean()
         task_cache.clean()
         if not weak_thread_data[threading.current_thread()]["alive"]:
-            log.info(f"Shutting down thread for device {renderer.context.device}")
-            model_manager.unload_all(renderer.context)
+            log.info(f"Shutting down thread for device {runtime.context.device}")
+            model_manager.unload_all(runtime.context)
             return
         if isinstance(current_state_error, SystemExit):
             current_state = ServerStates.Unavailable
@@ -311,62 +277,31 @@ def thread_render(device):
             task.response = {"status": "failed", "detail": str(task.error)}
             task.buffer_queue.put(json.dumps(task.response))
             continue
-        log.info(f"Session {task.task_data.session_id} starting task {id(task)} on {renderer.context.device_name}")
+        log.info(f"Session {task.session_id} starting task {task.id} on {runtime.context.device_name}")
         if not task.lock.acquire(blocking=False):
             raise Exception("Got locked task from queue.")
         try:
+            task.run()
 
-            def step_callback():
-                global current_state_error
-
-                task_cache.keep(id(task), TASK_TTL)
-                session_cache.keep(task.task_data.session_id, TASK_TTL)
-
-                if (
-                    isinstance(current_state_error, SystemExit)
-                    or isinstance(current_state_error, StopAsyncIteration)
-                    or isinstance(task.error, StopAsyncIteration)
-                ):
-                    renderer.context.stop_processing = True
-                    if isinstance(current_state_error, StopAsyncIteration):
-                        task.error = current_state_error
-                        current_state_error = None
-                        log.info(f"Session {task.task_data.session_id} sent cancel signal for task {id(task)}")
-
-            current_state = ServerStates.LoadingModel
-            model_manager.resolve_model_paths(task.task_data)
-            model_manager.reload_models_if_necessary(renderer.context, task.task_data)
-            model_manager.fail_if_models_did_not_load(renderer.context)
-
-            current_state = ServerStates.Rendering
-            task.response = renderer.make_images(
-                task.render_request,
-                task.task_data,
-                task.buffer_queue,
-                task.temp_images,
-                step_callback,
-            )
             # Before looping back to the generator, mark cache as still alive.
-            task_cache.keep(id(task), TASK_TTL)
-            session_cache.keep(task.task_data.session_id, TASK_TTL)
+            keep_task_alive(task)
         except Exception as e:
             task.error = str(e)
             task.response = {"status": "failed", "detail": str(task.error)}
             task.buffer_queue.put(json.dumps(task.response))
             log.error(traceback.format_exc())
         finally:
-            gc(renderer.context)
+            gc(runtime.context)
             task.lock.release()
-        task_cache.keep(id(task), TASK_TTL)
-        session_cache.keep(task.task_data.session_id, TASK_TTL)
+
+        keep_task_alive(task)
+
         if isinstance(task.error, StopAsyncIteration):
-            log.info(f"Session {task.task_data.session_id} task {id(task)} cancelled!")
+            log.info(f"Session {task.session_id} task {task.id} cancelled!")
         elif task.error is not None:
-            log.info(f"Session {task.task_data.session_id} task {id(task)} failed!")
+            log.info(f"Session {task.session_id} task {task.id} failed!")
         else:
-            log.info(
-                f"Session {task.task_data.session_id} task {id(task)} completed by {renderer.context.device_name}."
-            )
+            log.info(f"Session {task.session_id} task {task.id} completed by {runtime.context.device_name}.")
         current_state = ServerStates.Online
 
 
@@ -437,6 +372,12 @@ def get_devices():
             devices["active"].update({device: get_device_info(device)})
     finally:
         manager_lock.release()
+
+    # temp until TRT releases
+    import os
+    from easydiffusion import app
+
+    devices["enable_trt"] = os.path.exists(os.path.join(app.ROOT_DIR, "tensorrt"))
 
     return devices
 
@@ -548,28 +489,27 @@ def shutdown_event():  # Signal render thread to close on shutdown
     current_state_error = SystemExit("Application shutting down.")
 
 
-def render(render_req: GenerateImageRequest, task_data: TaskData):
+def enqueue_task(task: Task):
     current_thread_count = is_alive()
     if current_thread_count <= 0:  # Render thread is dead
         raise ChildProcessError("Rendering thread has died.")
 
     # Alive, check if task in cache
-    session = get_cached_session(task_data.session_id, update_ttl=True)
+    session = get_cached_session(task.session_id, update_ttl=True)
     pending_tasks = list(filter(lambda t: t.is_pending, session.tasks))
-    if current_thread_count < len(pending_tasks):
+    if len(pending_tasks) > current_thread_count * MAX_OVERLOAD_ALLOWED_RATIO:
         raise ConnectionRefusedError(
-            f"Session {task_data.session_id} already has {len(pending_tasks)} pending tasks out of {current_thread_count}."
+            f"Session {task.session_id} already has {len(pending_tasks)} pending tasks, with {current_thread_count} workers."
         )
 
-    new_task = RenderTask(render_req, task_data)
-    if session.put(new_task, TASK_TTL):
+    if session.put(task, TASK_TTL):
         # Use twice the normal timeout for adding user requests.
         # Tries to force session.put to fail before tasks_queue.put would.
         if manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT * 2):
             try:
-                tasks_queue.append(new_task)
+                tasks_queue.append(task)
                 idle_event.set()
-                return new_task
+                return task
             finally:
                 manager_lock.release()
     raise RuntimeError("Failed to add task to cache.")

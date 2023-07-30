@@ -5,6 +5,9 @@ const MIN_GPUS_TO_SHOW_SELECTION = 2
 const IMAGE_REGEX = new RegExp("data:image/[A-Za-z]+;base64")
 const htmlTaskMap = new WeakMap()
 
+const spinnerPacmanHtml =
+    '<div class="loadingio-spinner-bean-eater-x0y3u8qky4n"><div class="ldio-8f673ktaleu"><div><div></div><div></div><div></div></div><div><div></div><div></div><div></div></div></div></div>'
+
 const taskConfigSetup = {
     taskConfig: {
         seed: { value: ({ seed }) => seed, label: "Seed" },
@@ -46,6 +49,7 @@ const taskConfigSetup = {
         use_lora_model: { label: "Lora Model", visible: ({ reqBody }) => !!reqBody?.use_lora_model },
         lora_alpha: { label: "Lora Strength", visible: ({ reqBody }) => !!reqBody?.use_lora_model },
         preserve_init_image_color_profile: "Preserve Color Profile",
+        strict_mask_border: "Strict Mask Border",
     },
     pluginTaskConfig: {},
     getCSSKey: (key) =>
@@ -74,6 +78,15 @@ let randomSeedField = document.querySelector("#random_seed")
 let seedField = document.querySelector("#seed")
 let widthField = document.querySelector("#width")
 let heightField = document.querySelector("#height")
+let customWidthField = document.querySelector("#custom-width")
+let customHeightField = document.querySelector("#custom-height")
+let recentResolutionsButton = document.querySelector("#recent-resolutions-button")
+let recentResolutionsPopup = document.querySelector("#recent-resolutions-popup")
+let recentResolutionList = document.querySelector("#recent-resolution-list")
+let enlarge15Button = document.querySelector("#enlarge15")
+let enlarge2Button = document.querySelector("#enlarge2")
+let enlarge3Button = document.querySelector("#enlarge3")
+let swapWidthHeightButton = document.querySelector("#swap-width-height")
 let smallImageWarning = document.querySelector("#small_image_warning")
 let initImageSelector = document.querySelector("#init_image")
 let initImagePreview = document.querySelector("#init_image_preview")
@@ -81,7 +94,9 @@ let initImageSizeBox = document.querySelector("#init_image_size_box")
 let maskImageSelector = document.querySelector("#mask")
 let maskImagePreview = document.querySelector("#mask_preview")
 let applyColorCorrectionField = document.querySelector("#apply_color_correction")
+let strictMaskBorderField = document.querySelector("#strict_mask_border")
 let colorCorrectionSetting = document.querySelector("#apply_color_correction_setting")
+let strictMaskBorderSetting = document.querySelector("#strict_mask_border_setting")
 let promptStrengthSlider = document.querySelector("#prompt_strength_slider")
 let promptStrengthField = document.querySelector("#prompt_strength")
 let samplerField = document.querySelector("#sampler_name")
@@ -160,6 +175,7 @@ let imagePreviewContent = document.querySelector("#preview-content")
 let undoButton = document.querySelector("#undo")
 let undoBuffer = []
 const UNDO_LIMIT = 20
+const MAX_IMG_UNDO_ENTRIES = 5
 
 let loraModels = []
 
@@ -271,24 +287,24 @@ function setServerStatus(event) {
 //   e      : MouseEvent
 //   prompt : Text to be shown as prompt. Should be a question to which "yes" is a good answer.
 //   fn     : function to be called if the user confirms the dialog or has the shift key pressed
+//   allowSkip: Allow skipping the dialog using the shift key or the confirm_dangerous_actions setting (default: true)
 //
 // If the user had the shift key pressed while clicking, the function fn will be executed.
 // If the setting "confirm_dangerous_actions" in the system settings is disabled, the function
 // fn will be executed.
 // Otherwise, a confirmation dialog is shown. If the user confirms, the function fn will also
 // be executed.
-function shiftOrConfirm(e, prompt, fn) {
+function shiftOrConfirm(e, prompt, fn, allowSkip = true) {
     e.stopPropagation()
-    if (e.shiftKey || !confirmDangerousActionsField.checked) {
+    let tip = allowSkip
+        ? '<small>Tip: To skip this dialog, use shift-click or disable the "Confirm dangerous actions" setting in the Settings tab.</small>'
+        : ""
+    if (allowSkip && (e.shiftKey || !confirmDangerousActionsField.checked)) {
         fn(e)
     } else {
-        confirm(
-            '<small>Tip: To skip this dialog, use shift-click or disable the "Confirm dangerous actions" setting in the Settings tab.</small>',
-            prompt,
-            () => {
-                fn(e)
-            }
-        )
+        confirm(tip, prompt, () => {
+            fn(e)
+        })
     }
 }
 
@@ -412,6 +428,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                     </div>
                     <button class="imgPreviewItemClearBtn image_clear_btn"><i class="fa-solid fa-xmark"></i></button>
                     <span class="img_bottom_label"></span>
+                    <div class="spinner displayNone"><center>${spinnerPacmanHtml}</center><div class="spinnerStatus"></div></div>
                 </div>
             `
             outputContainer.appendChild(imageItemElem)
@@ -488,6 +505,8 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             const imageSeedLabel = imageItemElem.querySelector(".imgSeedLabel")
             imageSeedLabel.innerText = "Seed: " + req.seed
 
+            const imageUndoBuffer = []
+            const imageRedoBuffer = []
             let buttons = [
                 { text: "Use as Input", on_click: onUseAsInputClick },
                 [
@@ -505,8 +524,10 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                 { text: "Make Similar Images", on_click: onMakeSimilarClick },
                 { text: "Draw another 25 steps", on_click: onContinueDrawingClick },
                 [
-                    { text: "Upscale", on_click: onUpscaleClick, filter: (req, img) => !req.use_upscale },
-                    { text: "Fix Faces", on_click: onFixFacesClick, filter: (req, img) => !req.use_face_correction },
+                    { html: '<i class="fa-solid fa-undo"></i> Undo', on_click: onUndoFilter },
+                    { html: '<i class="fa-solid fa-redo"></i> Redo', on_click: onRedoFilter },
+                    { text: "Upscale", on_click: onUpscaleClick },
+                    { text: "Fix Faces", on_click: onFixFacesClick },
                 ],
                 { text: "Use as Thumbnail", on_click: onUseAsThumbnailClick },
             ]
@@ -516,6 +537,14 @@ function showImages(reqBody, res, outputContainer, livePreview) {
 
             const imgItemInfo = imageItemElem.querySelector(".imgItemInfo")
             const img = imageItemElem.querySelector("img")
+            const spinner = imageItemElem.querySelector(".spinner")
+            const spinnerStatus = imageItemElem.querySelector(".spinnerStatus")
+            const tools = {
+                spinner: spinner,
+                spinnerStatus: spinnerStatus,
+                undoBuffer: imageUndoBuffer,
+                redoBuffer: imageRedoBuffer,
+            }
             const createButton = function(btnInfo) {
                 if (Array.isArray(btnInfo)) {
                     const wrapper = document.createElement("div")
@@ -541,8 +570,16 @@ function showImages(reqBody, res, outputContainer, livePreview) {
 
                 if (btnInfo.on_click || !isLabel) {
                     newButton.addEventListener("click", function(event) {
-                        btnInfo.on_click(req, img, event)
+                        btnInfo.on_click.bind(newButton)(req, img, event, tools)
                     })
+                    if (btnInfo.on_click === onUndoFilter) {
+                        tools["undoButton"] = newButton
+                        newButton.classList.add("displayNone")
+                    }
+                    if (btnInfo.on_click === onRedoFilter) {
+                        tools["redoButton"] = newButton
+                        newButton.classList.add("displayNone")
+                    }
                 }
 
                 if (btnInfo.class !== undefined) {
@@ -671,16 +708,86 @@ function enqueueImageVariationTask(req, img, reqDiff) {
     createTask(newTaskRequest)
 }
 
-function onUpscaleClick(req, img) {
-    enqueueImageVariationTask(req, img, {
-        use_upscale: upscaleModelField.value,
+function applyInlineFilter(filterName, path, filterParams, img, statusText, tools) {
+    const filterReq = {
+        image: img.src,
+        filter: filterName,
+        model_paths: {},
+        filter_params: filterParams,
+        output_format: outputFormatField.value,
+        output_quality: parseInt(outputQualityField.value),
+        output_lossless: outputLosslessField.checked,
+    }
+    filterReq.model_paths[filterName] = path
+
+    tools.spinnerStatus.innerText = statusText
+    tools.spinner.classList.remove("displayNone")
+
+    SD.filter(filterReq, (e) => {
+        if (e.status === "succeeded") {
+            let prevImg = img.src
+            img.src = e.output[0]
+            tools.spinner.classList.add("displayNone")
+
+            if (prevImg.length > 0) {
+                tools.undoBuffer.push(prevImg)
+                tools.redoBuffer = []
+
+                if (tools.undoBuffer.length > MAX_IMG_UNDO_ENTRIES) {
+                    let n = tools.undoBuffer.length
+                    tools.undoBuffer.splice(0, n - MAX_IMG_UNDO_ENTRIES)
+                }
+
+                tools.undoButton.classList.remove("displayNone")
+                tools.redoButton.classList.add("displayNone")
+            }
+        } else if (e.status == "failed") {
+            alert("Error running upscale: " + e.detail)
+            tools.spinner.classList.add("displayNone")
+        }
     })
 }
 
-function onFixFacesClick(req, img) {
-    enqueueImageVariationTask(req, img, {
-        use_face_correction: gfpganModelField.value,
-    })
+function moveImageBetweenBuffers(img, fromBuffer, toBuffer, fromButton, toButton) {
+    if (fromBuffer.length === 0) {
+        return
+    }
+
+    let src = fromBuffer.pop()
+    if (src.length > 0) {
+        toBuffer.push(img.src)
+        img.src = src
+    }
+
+    if (fromBuffer.length === 0) {
+        fromButton.classList.add("displayNone")
+    }
+    if (toBuffer.length > 0) {
+        toButton.classList.remove("displayNone")
+    }
+}
+
+function onUndoFilter(req, img, e, tools) {
+    moveImageBetweenBuffers(img, tools.undoBuffer, tools.redoBuffer, tools.undoButton, tools.redoButton)
+}
+
+function onRedoFilter(req, img, e, tools) {
+    moveImageBetweenBuffers(img, tools.redoBuffer, tools.undoBuffer, tools.redoButton, tools.undoButton)
+}
+
+function onUpscaleClick(req, img, e, tools) {
+    let path = upscaleModelField.value
+    let scale = parseInt(upscaleAmountField.value)
+    let filterName = path.toLowerCase().includes("realesrgan") ? "realesrgan" : "latent_upscaler"
+    let statusText = "Upscaling by " + scale + "x using " + filterName
+    applyInlineFilter(filterName, path, { scale: scale }, img, statusText, tools)
+}
+
+function onFixFacesClick(req, img, e, tools) {
+    let path = gfpganModelField.value
+    let filterName = path.toLowerCase().includes("gfpgan") ? "gfpgan" : "codeformer"
+    let statusText = "Fixing faces with " + filterName
+    applyInlineFilter(filterName, path, {}, img, statusText, tools)
 }
 
 function onContinueDrawingClick(req, img) {
@@ -924,7 +1031,9 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
                              <a href="https://www.ibm.com/docs/en/opw/8.2.0?topic=tuning-optional-increasing-paging-file-size-windows-computers" target="_blank">Windows</a> or
                              <a href="https://linuxhint.com/increase-swap-space-linux/" target="_blank">Linux</a>.<br/>
                             3. Try restarting your computer.<br/>`
-                } else if (msg.includes("RuntimeError: output with shape [320, 320] doesn't match the broadcast shape")) {
+                } else if (
+                    msg.includes("RuntimeError: output with shape [320, 320] doesn't match the broadcast shape")
+                ) {
                     msg += `<br/><br/>
                             <b>Reason</b>: You tried to use a LORA that was trained for a different Stable Diffusion model version!
                             <br/><br/>
@@ -1298,6 +1407,7 @@ function getCurrentUserRequest() {
         // }
         if (maskSetting.checked) {
             newTask.reqBody.mask = imageInpainter.getImg()
+            newTask.reqBody.strict_mask_border = strictMaskBorderField.checked
         }
         newTask.reqBody.preserve_init_image_color_profile = applyColorCorrectionField.checked
         if (!testDiffusers.checked) {
@@ -1338,6 +1448,11 @@ function getCurrentUserRequest() {
             newTask.reqBody.lora_alpha = modelStrengths
         }
     }
+    if (testDiffusers.checked && document.getElementById("toggle-tensorrt-install").innerHTML == "Uninstall") {
+        // TRT is installed
+        newTask.reqBody.convert_to_tensorrt = document.querySelector("#convert_to_tensorrt").checked
+    }
+
     return newTask
 }
 
@@ -1998,6 +2113,7 @@ function img2imgLoad() {
     }
     initImagePreviewContainer.classList.add("has-image")
     colorCorrectionSetting.style.display = ""
+    strictMaskBorderSetting.style.display = maskSetting.checked ? "" : "none"
 
     initImageSizeBox.textContent = initImagePreview.naturalWidth + " x " + initImagePreview.naturalHeight
     imageEditor.setImage(this.src, initImagePreview.naturalWidth, initImagePreview.naturalHeight)
@@ -2015,6 +2131,7 @@ function img2imgUnload() {
     }
     initImagePreviewContainer.classList.remove("has-image")
     colorCorrectionSetting.style.display = "none"
+    strictMaskBorderSetting.style.display = "none"
     imageEditor.setImage(null, parseInt(widthField.value), parseInt(heightField.value))
 }
 initImagePreview.addEventListener("load", img2imgLoad)
@@ -2022,6 +2139,9 @@ initImageClearBtn.addEventListener("click", img2imgUnload)
 
 maskSetting.addEventListener("click", function() {
     onDimensionChange()
+})
+maskSetting.addEventListener("change", function() {
+    strictMaskBorderSetting.style.display = this.checked ? "" : "none"
 })
 
 promptsFromFileBtn.addEventListener("click", function() {
@@ -2138,6 +2258,11 @@ resumeBtn.addEventListener("click", function() {
     document.body.classList.remove("wait-pause")
 })
 
+function onPing(event) {
+    tunnelUpdate(event)
+    packagesUpdate(event)
+}
+
 function tunnelUpdate(event) {
     if ("cloudflare" in event) {
         document.getElementById("cloudflare-off").classList.add("displayNone")
@@ -2148,6 +2273,23 @@ function tunnelUpdate(event) {
         document.getElementById("cloudflare-on").classList.add("displayNone")
         document.getElementById("cloudflare-off").classList.remove("displayNone")
         document.getElementById("toggle-cloudflare-tunnel").innerHTML = "Start"
+    }
+}
+
+function packagesUpdate(event) {
+    let trtBtn = document.getElementById("toggle-tensorrt-install")
+    let trtInstalled = "packages_installed" in event && "tensorrt" in event["packages_installed"]
+
+    if ("packages_installing" in event && event["packages_installing"].includes("tensorrt")) {
+        trtBtn.innerHTML = "Installing.."
+        trtBtn.disabled = true
+    } else {
+        trtBtn.innerHTML = trtInstalled ? "Uninstall" : "Install"
+        trtBtn.disabled = false
+    }
+
+    if (document.getElementById("toggle-tensorrt-install").innerHTML == "Uninstall") {
+        document.querySelector("#enable_trt_config").classList.remove("displayNone")
     }
 }
 
@@ -2168,6 +2310,63 @@ document.getElementById("toggle-cloudflare-tunnel").addEventListener("click", as
     res = await res.json()
 
     console.log(`Cloudflare tunnel ${command} result:`, res)
+})
+
+document.getElementById("toggle-tensorrt-install").addEventListener("click", function(e) {
+    if (this.disabled === true) {
+        return
+    }
+
+    let command = this.innerHTML.toLowerCase()
+    let self = this
+
+    shiftOrConfirm(
+        e,
+        "Are you sure you want to " + command + " TensorRT?",
+        async function() {
+            showToast(`TensorRT ${command} started. Please wait.`)
+
+            self.disabled = true
+
+            if (command === "install") {
+                self.innerHTML = "Installing.."
+            } else if (command === "uninstall") {
+                self.innerHTML = "Uninstalling.."
+            }
+
+            if (command === "installing..") {
+                alert("Already installing TensorRT!")
+                return
+            }
+            if (command !== "install" && command !== "uninstall") {
+                return
+            }
+
+            let res = await fetch("/package/tensorrt", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    command: command,
+                }),
+            })
+            res = await res.json()
+
+            self.disabled = false
+
+            if (res.status === "OK") {
+                alert("TensorRT " + command + "ed successfully!")
+                self.innerHTML = command === "install" ? "Uninstall" : "Install"
+            } else if (res.status_code === 500) {
+                alert("TensorselfRT failed to " + command + ": " + res.detail)
+                self.innerHTML = command === "install" ? "Install" : "Uninstall"
+            }
+
+            console.log(`Package ${command} result:`, res)
+        },
+        false
+    )
 })
 
 /* Embeddings */
@@ -2194,7 +2393,10 @@ function updateEmbeddingsList(filter = "") {
             } else {
                 let subdir = html(m[1], iconlist, prefix + m[0] + "/", filter)
                 if (subdir != "") {
-                    folders += `<div class="embedding-category"><h4 class="collapsible">${prefix}${m[0]}</h4><div class="collapsible-content">` + subdir + '</div></div>'
+                    folders +=
+                        `<div class="embedding-category"><h4 class="collapsible">${prefix}${m[0]}</h4><div class="collapsible-content">` +
+                        subdir +
+                        "</div></div>"
                 }
             }
         })
@@ -2320,7 +2522,6 @@ embeddingsCollapsiblesBtn.addEventListener("click", (e) => {
     }
 })
 
-
 if (testDiffusers.checked) {
     document.getElementById("embeddings-container").classList.remove("displayNone")
 }
@@ -2417,3 +2618,172 @@ createLoraEntries()
 // }
 
 // document.querySelectorAll("input[type=number]").forEach(showSpinnerOnlyOnHover)
+
+////////////////////////////// Image Size Widget //////////////////////////////////////////
+
+function roundToMultiple(number, n) {
+    if (n == "") {
+        n = 1
+    }
+    return Math.round(number / n) * n
+}
+
+function addImageSizeOption(size) {
+    let sizes = Object.values(widthField.options).map((o) => o.value)
+    if (!sizes.includes(String(size))) {
+        sizes.push(String(size))
+        sizes.sort((a, b) => Number(a) - Number(b))
+
+        let option = document.createElement("option")
+        option.value = size
+        option.text = `${size}`
+
+        widthField.add(option, sizes.indexOf(String(size)))
+        heightField.add(option.cloneNode(true), sizes.indexOf(String(size)))
+    }
+}
+
+function setImageWidthHeight(w, h) {
+    let step = customWidthField.step
+    w = roundToMultiple(w, step)
+    h = roundToMultiple(h, step)
+
+    addImageSizeOption(w)
+    addImageSizeOption(h)
+
+    widthField.value = w
+    heightField.value = h
+    widthField.dispatchEvent(new Event("change"))
+    heightField.dispatchEvent(new Event("change"))
+}
+
+function enlargeImageSize(factor) {
+    let step = customWidthField.step
+
+    let w = roundToMultiple(widthField.value * factor, step)
+    let h = roundToMultiple(heightField.value * factor, step)
+    customWidthField.value = w
+    customHeightField.value = h
+}
+
+let recentResolutionsValues = []
+
+;(function() {
+    ///// Init resolutions dropdown
+    function makeResolutionButtons() {
+        recentResolutionList.innerHTML = ""
+        recentResolutionsValues.forEach((el) => {
+            let button = document.createElement("button")
+            button.classList.add("tertiaryButton")
+            button.style.width = "8em"
+            button.innerHTML = `${el.w}&times;${el.h}`
+            button.addEventListener("click", () => {
+                customWidthField.value = el.w
+                customHeightField.value = el.h
+                hidePopup()
+            })
+            recentResolutionList.appendChild(button)
+            recentResolutionList.appendChild(document.createElement("br"))
+        })
+        localStorage.recentResolutionsValues = JSON.stringify(recentResolutionsValues)
+    }
+
+    enlarge15Button.addEventListener("click", () => {
+        enlargeImageSize(1.5)
+        hidePopup()
+    })
+
+    enlarge2Button.addEventListener("click", () => {
+        enlargeImageSize(2)
+        hidePopup()
+    })
+
+    enlarge3Button.addEventListener("click", () => {
+        enlargeImageSize(3)
+        hidePopup()
+    })
+
+    customWidthField.addEventListener("change", () => {
+        let w = customWidthField.value
+        customWidthField.value = roundToMultiple(w, customWidthField.step)
+        if (w != customWidthField.value) {
+            showToast(`Rounded width to the closest multiple of ${customWidthField.step}.`)
+        }
+    })
+
+    customHeightField.addEventListener("change", () => {
+        let h = customHeightField.value
+        customHeightField.value = roundToMultiple(h, customHeightField.step)
+        if (h != customHeightField.value) {
+            showToast(`Rounded height to the closest multiple of ${customHeightField.step}.`)
+        }
+    })
+
+    makeImageBtn.addEventListener("click", () => {
+        let w = widthField.value
+        let h = heightField.value
+
+        recentResolutionsValues = recentResolutionsValues.filter((el) => el.w != w || el.h != h)
+        recentResolutionsValues.unshift({ w: w, h: h })
+        recentResolutionsValues = recentResolutionsValues.slice(0, 8)
+
+        localStorage.recentResolutionsValues = JSON.stringify(recentResolutionsValues)
+        makeResolutionButtons()
+    })
+
+    let _jsonstring = localStorage.recentResolutionsValues
+    if (_jsonstring == undefined) {
+        recentResolutionsValues = [
+            { w: 512, h: 512 },
+            { w: 640, h: 448 },
+            { w: 448, h: 640 },
+            { w: 512, h: 768 },
+            { w: 768, h: 512 },
+            { w: 1024, h: 768 },
+            { w: 768, h: 1024 },
+        ]
+        localStorage.recentResolutionsValues = JSON.stringify(recentResolutionsValues)
+    } else {
+        recentResolutionsValues = JSON.parse(localStorage.recentResolutionsValues)
+    }
+    makeResolutionButtons()
+
+    recentResolutionsValues.forEach((val) => {
+        addImageSizeOption(val.w)
+        addImageSizeOption(val.h)
+    })
+
+    function processClick(e) {
+        if (!recentResolutionsPopup.contains(e.target)) {
+            hidePopup()
+        }
+    }
+
+    function showPopup() {
+        customWidthField.value = widthField.value
+        customHeightField.value = heightField.value
+        recentResolutionsPopup.classList.remove("displayNone")
+        document.addEventListener("click", processClick)
+    }
+
+    function hidePopup() {
+        recentResolutionsPopup.classList.add("displayNone")
+        setImageWidthHeight(customWidthField.value, customHeightField.value)
+        document.removeEventListener("click", processClick)
+    }
+
+    recentResolutionsButton.addEventListener("click", (event) => {
+        if (recentResolutionsPopup.classList.contains("displayNone")) {
+            showPopup()
+            event.stopPropagation()
+        } else {
+            hidePopup()
+        }
+    })
+
+    swapWidthHeightButton.addEventListener("click", (event) => {
+        let temp = widthField.value
+        widthField.value = heightField.value
+        heightField.value = temp
+    })
+})()

@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="/media/css/searchable-models.css">
     <link rel="stylesheet" href="/media/css/image-modal.css">
     <link rel="stylesheet" href="/media/css/plugins.css">
+    <link rel="stylesheet" href="/media/css/animations.css">
     <link rel="manifest" href="/media/manifest.webmanifest">
     <script src="/media/js/jquery-3.6.1.min.js"></script>
     <script src="/media/js/jquery-confirm.min.js"></script>
@@ -31,7 +32,7 @@
             <h1>
                 <img id="logo_img" src="/media/images/icon-512x512.png" >
                 Easy Diffusion
-                <small><span id="version">v2.5.45</span> <span id="updateBranchLabel"></span></small>
+                <small><span id="version">v2.5.47</span> <span id="updateBranchLabel"></span></small>
             </h1>
         </div>
         <div id="server-status">
@@ -108,6 +109,7 @@
                     </div>
 
                     <div id="apply_color_correction_setting" class="pl-5"><input id="apply_color_correction" name="apply_color_correction" type="checkbox"> <label for="apply_color_correction">Preserve color profile <small>(helps during inpainting)</small></label></div>
+                    <div id="strict_mask_border_setting" class="pl-5"><input id="strict_mask_border" name="strict_mask_border" type="checkbox"> <label for="strict_mask_border">Strict Mask Border <small>(won't modify outside the mask, but the mask border might be visible)</small></label></div>
 
                 </div>
 
@@ -145,6 +147,14 @@
                         <button id="reload-models" class="secondaryButton reloadModels"><i class='fa-solid fa-rotate'></i></button>
                         <a href="https://github.com/easydiffusion/easydiffusion/wiki/Custom-Models" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about custom models</span></i></a>
                     </td></tr>
+                    <tr class="pl-5 displayNone" id="enable_trt_config">
+                        <td><label for="convert_to_tensorrt">Convert to TensorRT:</label></td>
+                        <td class="diffusers-restart-needed">
+                            <input id="convert_to_tensorrt" name="convert_to_tensorrt" type="checkbox">
+                            <a href="https://github.com/easydiffusion/easydiffusion/wiki/TensorRT" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about TensorRT</span></i></a>
+                            <label><small>Takes upto 20 mins the first time</small></label>
+                        </td>
+                    </tr>
                     <tr class="pl-5 displayNone" id="clip_skip_config">
                         <td><label for="clip_skip">Clip Skip:</label></td>
                         <td class="diffusers-restart-needed">
@@ -171,7 +181,6 @@
                             <option value="dpmpp_2m">DPM++ 2m (Karras)</option>
                             <option value="dpmpp_2m_sde" class="diffusers-only">DPM++ 2m SDE (Karras)</option>
                             <option value="dpmpp_sde">DPM++ SDE (Karras)</option>
-                            <option value="dpm_fast" class="k_diffusion-only">DPM Fast (Karras)</option>
                             <option value="dpm_adaptive" class="k_diffusion-only">DPM Adaptive (Karras)</option>
                             <option value="ddpm" class="diffusers-only">DDPM</option>
                             <option value="deis" class="diffusers-only">DEIS</option>
@@ -183,15 +192,15 @@
                         </select>
                         <a href="https://github.com/easydiffusion/easydiffusion/wiki/How-to-Use#samplers" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about samplers</span></i></a>
                     </td></tr>
-                    <tr class="pl-5"><td><label>Image Size: </label></td><td>
+                    <tr class="pl-5"><td><label>Image Size: </label></td><td id="image-size-options">
                         <select id="width" name="width" value="512">
-                            <option value="128">128 (*)</option>
+                            <option value="128">128</option>
                             <option value="192">192</option>
-                            <option value="256">256 (*)</option>
+                            <option value="256">256</option>
                             <option value="320">320</option>
                             <option value="384">384</option>
                             <option value="448">448</option>
-                            <option value="512" selected>512 (*)</option>
+                            <option value="512" selected="">512 (*)</option>
                             <option value="576">576</option>
                             <option value="640">640</option>
                             <option value="704">704</option>
@@ -206,14 +215,15 @@
                             <option value="2048">2048</option>
                         </select>
                         <label for="width"><small>(width)</small></label>
+                        <span id="swap-width-height" class="clickable smallButton" style="margin-left: 2px; margin-right:2px;"><i class="fa-solid fa-right-left"><span class="simple-tooltip top-left"> Swap width and height </span></i></span>
                         <select id="height" name="height" value="512">
-                            <option value="128">128 (*)</option>
+                            <option value="128">128</option>
                             <option value="192">192</option>
-                            <option value="256">256 (*)</option>
+                            <option value="256">256</option>
                             <option value="320">320</option>
                             <option value="384">384</option>
                             <option value="448">448</option>
-                            <option value="512" selected>512 (*)</option>
+                            <option value="512" selected="">512 (*)</option>
                             <option value="576">576</option>
                             <option value="640">640</option>
                             <option value="704">704</option>
@@ -228,6 +238,22 @@
                             <option value="2048">2048</option>
                         </select>
                         <label for="height"><small>(height)</small></label>
+                        <div id="recent-resolutions-container">
+                            <span id="recent-resolutions-button" class="clickable"><i class="fa-solid fa-sliders"><span class="simple-tooltip top-left"> Recent sizes </span></i></span>
+                            <div id="recent-resolutions-popup" class="displayNone">
+                                <small>Custom size:</small><br>
+                                <input id="custom-width" name="custom-width" type="number" min="128" value="512" onkeypress="preventNonNumericalInput(event)">
+                                &times;
+                                <input id="custom-height" name="custom-height" type="number" min="128" value="512" onkeypress="preventNonNumericalInput(event)"><br>
+
+                                <small>Enlarge:</small><br>
+                                <div id="enlarge-buttons"><button id="enlarge15" class="tertiaryButton smallButton">×1.5</button>&nbsp;<button id="enlarge2" class="tertiaryButton smallButton">×2</button>&nbsp;<button id="enlarge3" class="tertiaryButton smallButton">×3</button></div>
+
+                                <small>Recently&nbsp;used:</small><br>
+                                <div id="recent-resolution-list">
+                                </div>
+                            </div>
+                        </div>
                         <div id="small_image_warning" class="displayNone">Small image sizes can cause bad image quality</div>
                     </td></tr>
                     <tr class="pl-5"><td><label for="num_inference_steps">Inference Steps:</label></td><td> <input id="num_inference_steps" name="num_inference_steps" type="number" min="1" step="1" style="width: 42pt" value="25" onkeypress="preventNonNumericalInput(event)"></td></tr>
@@ -360,6 +386,13 @@
                 <div class="parameters-table" id="system-settings-table"></div>
                 <br/>
                 <button id="save-system-settings-btn" class="primaryButton">Save</button>
+                <div id="install-extras-container" class="displayNone">
+                    <br/>
+                    <div id="install-extras">
+                        <h3><i class="fa fa-cubes-stacked"></i> Optional Packages</h3>
+                        <div class="parameters-table" id="system-settings-install-extras-table"></div>
+                    </div>
+                </div>
                 <br/><br/>
                 <div id="share-easy-diffusion">
                    <h3><i class="fa fa-user-group"></i> Share Easy Diffusion</h3>
@@ -670,7 +703,7 @@ async function init() {
         events: {
             statusChange: setServerStatus,
             idle: onIdle,
-            ping: tunnelUpdate
+            ping: onPing
         }
     })
     splashScreen()

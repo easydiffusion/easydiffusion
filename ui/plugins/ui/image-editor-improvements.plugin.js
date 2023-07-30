@@ -109,8 +109,10 @@
 
     imageObj.onload = function() {
         // Calculate the maximum cropped dimensions
-        const maxCroppedWidth = Math.floor(this.width / 64) * 64;
-        const maxCroppedHeight = Math.floor(this.height / 64) * 64;
+        const step = customWidthField.step
+
+        const maxCroppedWidth = Math.floor(this.width / step) * step;
+        const maxCroppedHeight = Math.floor(this.height / step) * step;
 
         canvas.width = maxCroppedWidth;
         canvas.height = maxCroppedHeight;
