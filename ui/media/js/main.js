@@ -699,6 +699,9 @@ function applyInlineFilter(filterName, path, filterParams, img, statusText, tool
         filter: filterName,
         model_paths: {},
         filter_params: filterParams,
+        output_format: outputFormatField.value,
+        output_quality: parseInt(outputQualityField.value),
+        output_lossless: outputLosslessField.checked,
     }
     filterReq.model_paths[filterName] = path
 
