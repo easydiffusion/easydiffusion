@@ -508,6 +508,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                     { text: "Upscale", on_click: onUpscaleClick, filter: (req, img) => !req.use_upscale },
                     { text: "Fix Faces", on_click: onFixFacesClick, filter: (req, img) => !req.use_face_correction },
                 ],
+                { text: "Use as Thumbnail", on_click: onUseAsThumbnailClick },
             ]
 
             // include the plugins
@@ -630,6 +631,20 @@ function onMakeSimilarClick(req, img) {
     delete newTaskRequest.reqBody.mask
 
     createTask(newTaskRequest)
+}
+
+function onUseAsThumbnailClick(req, img) {
+    console.log(req)
+    console.log(img)
+    let embedding = prompt("Embedding name")
+    fetch(img.src)
+      .then(response => response.blob())
+      .then(async function(blob) {
+          const formData  = new FormData()
+          formData.append("file", blob)
+          const response = await fetch(`bucket/embeddings/${embedding}.jpg`, { method: 'POST', body: formData });
+          console.log(response)
+      })
 }
 
 function enqueueImageVariationTask(req, img, reqDiff) {
@@ -2157,19 +2172,27 @@ document.getElementById("toggle-cloudflare-tunnel").addEventListener("click", as
 
 /* Embeddings */
 
+let icl = []
 function updateEmbeddingsList(filter = "") {
-    function html(model, prefix = "", filter = "") {
+    function html(model, iconlist = [], prefix = "", filter = "") {
         filter = filter.toLowerCase()
         let toplevel = ""
         let folders = ""
+        console.log(iconlist)
+        let embIcon = Object.assign({}, ...iconlist.map( x=> ({[x.toLowerCase().split('.').slice(0,-1).join('.')]:x})))
 
         model?.forEach((m) => {
             if (typeof m == "string") {
-                if (m.toLowerCase().search(filter) != -1) {
-                    toplevel += `<button data-embedding="${m}">${m}</button> `
+                let token=m.toLowerCase()
+                if (token.search(filter) != -1) {
+                    let img = '/media/images/noimg.png'
+                    if (token in embIcon) {
+                        img = `/bucket/embeddings/${embIcon[token]}`
+                    }
+                    toplevel += `<button data-embedding="${m}"><img src="${img}" height="128" width="128"><br>${m}</button> `
                 }
             } else {
-                let subdir = html(m[1], prefix + m[0] + "/", filter)
+                let subdir = html(m[1], iconlist, prefix + m[0] + "/", filter)
                 if (subdir != "") {
                     folders += `<div class="embedding-category"><h4 class="collapsible">${prefix}${m[0]}</h4><div class="collapsible-content">` + subdir + '</div></div>'
                 }
@@ -2179,7 +2202,7 @@ function updateEmbeddingsList(filter = "") {
     }
 
     function onButtonClick(e) {
-        let text = e.target.dataset["embedding"]
+        let text = e.target.closest("button").dataset["embedding"]
         const insertIntoNegative = e.shiftKey || positiveEmbeddingText.classList.contains("displayNone")
 
         if (embeddingsModeField.value == "insert") {
@@ -2214,14 +2237,18 @@ function updateEmbeddingsList(filter = "") {
     }
     // END of remove block
 
-    embeddingsList.innerHTML = warning + html(modelsOptions.embeddings, "", filter)
-    embeddingsList.querySelectorAll("button").forEach((b) => {
-        b.addEventListener("click", onButtonClick)
-    })
-    createCollapsibles(embeddingsList)
-    if (filter != "") {
-        embeddingsExpandAll()
-    }
+    fetch("/bucket/embeddings/")
+       .then(response => response.json())
+       .then(iconlist => {
+           embeddingsList.innerHTML = warning + html(modelsOptions.embeddings, iconlist, "", filter)
+           embeddingsList.querySelectorAll("button").forEach((b) => {
+               b.addEventListener("click", onButtonClick)
+           })
+           createCollapsibles(embeddingsList)
+           if (filter != "") {
+               embeddingsExpandAll()
+           }
+       })
 }
 
 function showEmbeddingDialog() {
