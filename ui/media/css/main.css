@@ -1665,8 +1665,14 @@ body.wait-pause {
 }
 
 #embeddings-list button {
-    margin-top: 2px;
-    margin-bottom: 2px;
+    margin: 2px;
+    color: var(--button-color);
+    background: var(--button-text-color);
+    font-weight: 700;
+}
+#embeddings-list button:hover {
+    background: var(--accent-color);
+    color: var(--button-text-color);
 }
 
 #embeddings-list .collapsible {
@@ -1745,5 +1751,69 @@ body.wait-pause {
 
 .diffusers-disabled-on-startup .diffusers-restart-needed::after {
     content: "Please restart Easy Diffusion!";
+    font-size: 10pt;
+}
+
+input#custom-width, input#custom-height {
+    width: 47pt;
+}
+
+div#recent-resolutions-container {
+    position: relative;
+    display:inline-block;
+}
+
+div#recent-resolutions-popup {
+    position: absolute;
+    right: 0px;
+    margin: 3px;
+    padding: 0.2em 1em 0.4em 1em;
+    z-index: 1;
+    background: var(--background-color3);
+    border-radius: 4px;
+    box-shadow: 0 20px 28px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
+}
+
+div#recent-resolutions-popup small {
+    opacity: 0.7;
+}
+
+td#image-size-options small {
+    margin-right: 0px !important;
+}
+
+td#image-size-options {
+    white-space: nowrap;
+}
+
+div#recent-resolution-list {
+    text-align: center;
+}
+
+div#enlarge-buttons {
+    text-align: center;
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+.imgContainer .spinner {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    padding: 0;
+
+    background: var(--background-color3);
+    opacity: 0.95;
+    border-radius: 5px;
+    padding: 4pt;
+    border: 1px solid var(--button-color);
+    box-shadow: 0px 0px 4px black;
+}
+
+.imgContainer .spinnerStatus {
     font-size: 10pt;
 }

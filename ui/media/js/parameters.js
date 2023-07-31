@@ -16,6 +16,7 @@ var ParameterType = {
  */
 let parametersTable = document.querySelector("#system-settings-table")
 let networkParametersTable = document.querySelector("#system-settings-network-table")
+let installExtrasTable = document.querySelector("#system-settings-install-extras-table")
 
 /**
  * JSDoc style
@@ -240,7 +241,18 @@ var PARAMETERS = [
         icon: ["fa-brands", "fa-cloudflare"],
         render: () => '<button id="toggle-cloudflare-tunnel" class="primaryButton">Start</button>',
         table: networkParametersTable,
-    }
+    },
+    {
+        id: "nvidia_tensorrt",
+        type: ParameterType.custom,
+        label: "NVIDIA TensorRT",
+        note: `Faster image generation by converting your Stable Diffusion models to the NVIDIA TensorRT format. You can choose the
+               models to convert. Download size: approximately 2 GB.<br/><br/>
+               <b>Early access version:</b> support for LoRA is still under development.`,
+        icon: "fa-angles-up",
+        render: () => '<button id="toggle-tensorrt-install" class="primaryButton">Install</button>',
+        table: installExtrasTable,
+    },
 ]
 
 function getParameterSettingsEntry(id) {
@@ -315,7 +327,7 @@ function initParameters(parameters) {
             noteElements.push(noteElement)
         }
 
-        if (typeof(parameter.icon) == "string") {
+        if (typeof parameter.icon == "string") {
             parameter.icon = [parameter.icon]
         }
         const icon = parameter.icon ? [createElement("i", undefined, ["fa", ...parameter.icon])] : []
@@ -342,7 +354,7 @@ function initParameters(parameters) {
         let p = parametersTable
         if (parameter.table) {
             p = parameter.table
-        } 
+        }
         p.appendChild(newrow)
 
         parameter.settingsEntry = newrow
@@ -409,7 +421,7 @@ async function getAppConfig() {
             useBetaChannelField.checked = true
             document.querySelector("#updateBranchLabel").innerText = "(beta)"
         } else {
-            getParameterSettingsEntry("test_diffusers").style.display = "none"
+            getParameterSettingsEntry("test_diffusers").classList.add("displayNone")
         }
         if (config.ui && config.ui.open_browser_on_start === false) {
             uiOpenBrowserOnStartField.checked = false
@@ -426,11 +438,11 @@ async function getAppConfig() {
 
         if (config.config_on_startup) {
             if (config.config_on_startup?.test_diffusers && config.update_branch !== "main") {
-                document.body.classList.add("diffusers-enabled-on-startup");
-                document.body.classList.remove("diffusers-disabled-on-startup");
+                document.body.classList.add("diffusers-enabled-on-startup")
+                document.body.classList.remove("diffusers-disabled-on-startup")
             } else {
-                document.body.classList.add("diffusers-disabled-on-startup");
-                document.body.classList.remove("diffusers-enabled-on-startup");
+                document.body.classList.add("diffusers-disabled-on-startup")
+                document.body.classList.remove("diffusers-enabled-on-startup")
             }
         }
 
@@ -441,16 +453,20 @@ async function getAppConfig() {
             document.querySelectorAll("#sampler_name option.diffusers-only").forEach((option) => {
                 option.style.display = "none"
             })
+            customWidthField.step=64
+            customHeightField.step=64
         } else {
             document.querySelector("#lora_model_container").style.display = ""
             document.querySelector("#tiling_container").style.display = ""
 
             document.querySelectorAll("#sampler_name option.k_diffusion-only").forEach((option) => {
-                option.disabled = true
+                option.style.display = "none"
             })
             document.querySelector("#clip_skip_config").classList.remove("displayNone")
             document.querySelector("#embeddings-button").classList.remove("displayNone")
             document.querySelector("#negative-embeddings-button").classList.remove("displayNone")
+            customWidthField.step=8
+            customHeightField.step=8
         }
 
         console.log("get config status response", config)
@@ -582,6 +598,23 @@ function setDeviceInfo(devices) {
     systemInfoEl.querySelector("#system-info-cpu").innerText = cpu
     systemInfoEl.querySelector("#system-info-gpus-all").innerHTML = allGPUs.join("</br>")
     systemInfoEl.querySelector("#system-info-rendering-devices").innerHTML = activeGPUs.join("</br>")
+
+    // tensorRT
+    if (devices.active && testDiffusers.checked && devices.enable_trt === true) {
+        let nvidiaGPUs = Object.keys(devices.active).filter((d) => {
+            let gpuName = devices.active[d].name
+            gpuName = gpuName.toLowerCase()
+            return (
+                gpuName.includes("nvidia") ||
+                gpuName.includes("geforce") ||
+                gpuName.includes("quadro") ||
+                gpuName.includes("tesla")
+            )
+        })
+        if (nvidiaGPUs.length > 0) {
+            document.querySelector("#install-extras-container").classList.remove("displayNone")
+        }
+    }
 }
 
 function setHostInfo(hosts) {
@@ -674,7 +707,7 @@ saveSettingsBtn.addEventListener("click", function() {
         update_branch: updateBranch,
     }
 
-    document.querySelectorAll('#system-settings [data-setting-id]').forEach((parameterRow) => {
+    document.querySelectorAll("#system-settings [data-setting-id]").forEach((parameterRow) => {
         if (parameterRow.dataset.saveInAppConfig === "true") {
             const parameterElement =
                 document.getElementById(parameterRow.dataset.settingId) ||
@@ -713,28 +746,41 @@ saveSettingsBtn.addEventListener("click", function() {
     Promise.all([savePromise, asyncDelay(300)]).then(() => saveSettingsBtn.classList.remove("active"))
 })
 
-listenToNetworkField.addEventListener("change", debounce( ()=>{
-    saveSettingsBtn.click()
-}, 1000))
+listenToNetworkField.addEventListener(
+    "change",
+    debounce(() => {
+        saveSettingsBtn.click()
+    }, 1000)
+)
 
-listenPortField.addEventListener("change", debounce( ()=>{
-    saveSettingsBtn.click()
-}, 1000))
+listenPortField.addEventListener(
+    "change",
+    debounce(() => {
+        saveSettingsBtn.click()
+    }, 1000)
+)
 
 let copyCloudflareAddressBtn = document.querySelector("#copy-cloudflare-address")
 let cloudflareAddressField = document.getElementById("cloudflare-address")
 
-navigator.permissions.query({ name: "clipboard-write" }).then(function (result) {
-   if (result.state === "granted") {
-       // you can read from the clipboard
-       copyCloudflareAddressBtn.addEventListener("click", (e) => {
-           navigator.clipboard.writeText(cloudflareAddressField.innerHTML)
-           showToast("Copied server address to clipboard")
-       })
-   } else {
-       copyCloudflareAddressBtn.classList.add("displayNone")
-   }
-});
-
+navigator.permissions.query({ name: "clipboard-write" }).then(function(result) {
+    if (result.state === "granted") {
+        // you can read from the clipboard
+        copyCloudflareAddressBtn.addEventListener("click", (e) => {
+            navigator.clipboard.writeText(cloudflareAddressField.innerHTML)
+            showToast("Copied server address to clipboard")
+        })
+    } else {
+        copyCloudflareAddressBtn.classList.add("displayNone")
+    }
+})
 
 document.addEventListener("system_info_update", (e) => setDeviceInfo(e.detail))
+
+useBetaChannelField.addEventListener("change", (e) => {
+    if (e.target.checked) {
+        getParameterSettingsEntry("test_diffusers").classList.remove("displayNone")
+    } else {
+        getParameterSettingsEntry("test_diffusers").classList.add("displayNone")
+    }
+})

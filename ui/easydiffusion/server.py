@@ -8,8 +8,17 @@ import os
 import traceback
 from typing import List, Union
 
-from easydiffusion import app, model_manager, task_manager
-from easydiffusion.types import GenerateImageRequest, MergeRequest, TaskData
+from easydiffusion import app, model_manager, task_manager, package_manager
+from easydiffusion.tasks import RenderTask, FilterTask
+from easydiffusion.types import (
+    GenerateImageRequest,
+    FilterImageRequest,
+    MergeRequest,
+    TaskData,
+    ModelsData,
+    OutputFormatData,
+    convert_legacy_render_req_to_new,
+)
 from easydiffusion.utils import log
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
@@ -97,6 +106,10 @@ def init():
     def render(req: dict):
         return render_internal(req)
 
+    @server_api.post("/filter")
+    def render(req: dict):
+        return filter_internal(req)
+
     @server_api.post("/model/merge")
     def model_merge(req: dict):
         print(req)
@@ -121,6 +134,10 @@ def init():
     @server_api.post("/tunnel/cloudflare/stop")
     def stop_cloudflare_tunnel(req: dict):
         return stop_cloudflare_tunnel_internal(req)
+
+    @server_api.post("/package/{package_name:str}")
+    def modify_package(package_name: str, req: dict):
+        return modify_package_internal(package_name, req)
 
     @server_api.get("/")
     def read_root():
@@ -213,24 +230,36 @@ def ping_internal(session_id: str = None):
         if task_manager.current_state_error:
             raise HTTPException(status_code=500, detail=str(task_manager.current_state_error))
         raise HTTPException(status_code=500, detail="Render thread is dead.")
+
     if task_manager.current_state_error and not isinstance(task_manager.current_state_error, StopAsyncIteration):
         raise HTTPException(status_code=500, detail=str(task_manager.current_state_error))
+
     # Alive
     response = {"status": str(task_manager.current_state)}
+
     if session_id:
         session = task_manager.get_cached_session(session_id, update_ttl=True)
         response["tasks"] = {id(t): t.status for t in session.tasks}
+
     response["devices"] = task_manager.get_devices()
+    response["packages_installed"] = package_manager.get_installed_packages()
+    response["packages_installing"] = package_manager.installing
+
     if cloudflare.address != None:
         response["cloudflare"] = cloudflare.address
+
     return JSONResponse(response, headers=NOCACHE_HEADERS)
 
 
 def render_internal(req: dict):
     try:
+        req = convert_legacy_render_req_to_new(req)
+
         # separate out the request data into rendering and task-specific data
         render_req: GenerateImageRequest = GenerateImageRequest.parse_obj(req)
         task_data: TaskData = TaskData.parse_obj(req)
+        models_data: ModelsData = ModelsData.parse_obj(req)
+        output_format: OutputFormatData = OutputFormatData.parse_obj(req)
 
         # Overwrite user specified save path
         config = app.getConfig()
@@ -240,28 +269,53 @@ def render_internal(req: dict):
         render_req.init_image_mask = req.get("mask")  # hack: will rename this in the HTTP API in a future revision
 
         app.save_to_config(
-            task_data.use_stable_diffusion_model,
-            task_data.use_vae_model,
-            task_data.use_hypernetwork_model,
+            models_data.model_paths.get("stable-diffusion"),
+            models_data.model_paths.get("vae"),
+            models_data.model_paths.get("hypernetwork"),
             task_data.vram_usage_level,
         )
 
         # enqueue the task
-        new_task = task_manager.render(render_req, task_data)
+        task = RenderTask(render_req, task_data, models_data, output_format)
+        return enqueue_task(task)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        log.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+def filter_internal(req: dict):
+    try:
+        session_id = req.get("session_id", "session")
+        filter_req: FilterImageRequest = FilterImageRequest.parse_obj(req)
+        models_data: ModelsData = ModelsData.parse_obj(req)
+        output_format: OutputFormatData = OutputFormatData.parse_obj(req)
+
+        # enqueue the task
+        task = FilterTask(filter_req, session_id, models_data, output_format)
+        return enqueue_task(task)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        log.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+def enqueue_task(task):
+    try:
+        task_manager.enqueue_task(task)
         response = {
             "status": str(task_manager.current_state),
             "queue": len(task_manager.tasks_queue),
-            "stream": f"/image/stream/{id(new_task)}",
-            "task": id(new_task),
+            "stream": f"/image/stream/{task.id}",
+            "task": task.id,
         }
         return JSONResponse(response, headers=NOCACHE_HEADERS)
     except ChildProcessError as e:  # Render thread is dead
         raise HTTPException(status_code=500, detail=f"Rendering thread has died.")  # HTTP500 Internal Server Error
     except ConnectionRefusedError as e:  # Unstarted task pending limit reached, deny queueing too many.
         raise HTTPException(status_code=503, detail=str(e))  # HTTP503 Service Unavailable
-    except Exception as e:
-        log.error(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 def model_merge_internal(req: dict):
@@ -377,6 +431,22 @@ def start_cloudflare_tunnel_internal(req: dict):
 def stop_cloudflare_tunnel_internal(req: dict):
     try:
         cloudflare.stop()
+    except Exception as e:
+        log.error(str(e))
+        log.error(traceback.format_exc())
+        return HTTPException(status_code=500, detail=str(e))
+
+
+def modify_package_internal(package_name: str, req: dict):
+    try:
+        cmd = req["command"]
+        if cmd not in ("install", "uninstall"):
+            raise RuntimeError(f"Unknown command: {cmd}")
+
+        cmd = getattr(package_manager, cmd)
+        cmd(package_name)
+
+        return JSONResponse({"status": "OK"}, headers=NOCACHE_HEADERS)
     except Exception as e:
         log.error(str(e))
         log.error(traceback.format_exc())
