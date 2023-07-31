@@ -164,6 +164,8 @@ let saveAllTreeToggle = document.querySelector("#tree_toggle")
 let saveAllJSONToggle = document.querySelector("#json_toggle")
 let saveAllFoldersOption = document.querySelector("#download-add-folders")
 let splashScreenPopup = document.querySelector("#splash-screen")
+let useAsThumbDialog = document.querySelector("#use-as-thumb-dialog")
+let useAsThumbImage = document.querySelector("#use-as-thumb-image")
 
 let maskSetting = document.querySelector("#enable_mask")
 
@@ -673,15 +675,20 @@ function onMakeSimilarClick(req, img) {
 function onUseAsThumbnailClick(req, img) {
     console.log(req)
     console.log(img)
-    let embedding = prompt("Embedding name")
-    fetch(img.src)
-      .then(response => response.blob())
-      .then(async function(blob) {
-          const formData  = new FormData()
-          formData.append("file", blob)
-          const response = await fetch(`bucket/embeddings/${embedding}.jpg`, { method: 'POST', body: formData });
-          console.log(response)
-      })
+
+    useAsThumbDialog.showModal()
+    useAsThumbImage.src = img.src
+
+    var croppr = new Croppr('#croppr', { aspectRatio: 1, minSize: [384,384,'px'], startSize:  [100, 100, '%'], returnMode:"real" })
+
+//    fetch(img.src)
+//      .then(response => response.blob())
+//      .then(async function(blob) {
+//          const formData  = new FormData()
+//          formData.append("file", blob)
+//          const response = await fetch(`bucket/embeddings/${embedding}.jpg`, { method: 'POST', body: formData });
+//          console.log(response)
+//      })
 }
 
 function enqueueImageVariationTask(req, img, reqDiff) {
@@ -2379,6 +2386,7 @@ function updateEmbeddingsList(filter = "") {
         let folders = ""
         console.log(iconlist)
         let embIcon = Object.assign({}, ...iconlist.map( x=> ({[x.toLowerCase().split('.').slice(0,-1).join('.')]:x})))
+        console.log(embIcon)
 
         model?.forEach((m) => {
             if (typeof m == "string") {
@@ -2388,7 +2396,12 @@ function updateEmbeddingsList(filter = "") {
                     if (token in embIcon) {
                         img = `/bucket/embeddings/${embIcon[token]}`
                     }
-                    toplevel += `<button data-embedding="${m}"><img src="${img}" height="128" width="128"><br>${m}</button> `
+                    if (iconlist.length==0) {
+                        img=""
+                    } else {
+                        img=`<img src="${img}" height="128" width="128"><br>`
+                    }
+                    toplevel += `<button data-embedding="${m}">${img}${m}</button> `
                 }
             } else {
                 let subdir = html(m[1], iconlist, prefix + m[0] + "/", filter)
@@ -2440,7 +2453,7 @@ function updateEmbeddingsList(filter = "") {
     // END of remove block
 
     fetch("/bucket/embeddings/")
-       .then(response => response.json())
+       .then(response => response.status==200 ? response.json(): [])
        .then(iconlist => {
            embeddingsList.innerHTML = warning + html(modelsOptions.embeddings, iconlist, "", filter)
            embeddingsList.querySelectorAll("button").forEach((b) => {

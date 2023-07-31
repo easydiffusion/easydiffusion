@@ -1741,6 +1741,32 @@ body.wait-pause {
     float: right;
 }
 
+.use-as-thumb-grid {  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: 1fr auto;
+  gap: 8px 8px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "uat-preview uat-select"
+    "uat-buttons uat-buttons";
+}
+
+.use-as-thumb-preview {
+  justify-self: center;
+  align-self: center;
+  grid-area: uat-preview;
+}
+
+.use-as-thumb-select { 
+    grid-area: uat-select;
+}
+
+.use-as-thumb-buttons {
+  justify-self: center;
+  grid-area: uat-buttons;
+}
+
+
 .diffusers-disabled-on-startup .diffusers-restart-needed {
     font-size: 0;
 }
