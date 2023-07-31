@@ -18,12 +18,14 @@
     <link rel="stylesheet" href="/media/css/image-modal.css">
     <link rel="stylesheet" href="/media/css/plugins.css">
     <link rel="stylesheet" href="/media/css/animations.css">
+    <link rel="stylesheet" href="/media/css/croppr.css" rel="stylesheet"/>
     <link rel="manifest" href="/media/manifest.webmanifest">
     <script src="/media/js/jquery-3.6.1.min.js"></script>
     <script src="/media/js/jquery-confirm.min.js"></script>
     <script src="/media/js/jszip.min.js"></script>
     <script src="/media/js/FileSaver.min.js"></script>
     <script src="/media/js/marked.min.js"></script>
+    <script src="/media/js/croppr.js"></script>
 </head>
 <body>
 <div id="container">
@@ -627,6 +629,35 @@
         </div>
         <div id="embeddings-list">
         </div>
+        </div>
+    </dialog>
+
+    <dialog id="use-as-thumb-dialog">
+        <div id="use-as-thumb-dialog-header" class="dialog-header">
+            <div id="use-as-thumb-dialog-header-left" class="dialog-header-left">
+                <h4>Use as thumbnail</h4>
+                <span>Use a pictures as thumbnail for embeddings, LORAs, etc.</span>
+            </div>
+            <div id="use-as-thumb-dialog-header-right">
+                <i id="use-as-thumb-dialog-close-button" class="fa-solid fa-xmark fa-lg"></i>
+            </div>
+        </div>
+        <div>
+            <div class="use-as-thumb-grid">
+                <div class="use-as-thumb-preview">
+                    <img id="use-as-thumb-image" src="/media/images/noimg.png" width="512" height="512">
+                </div>
+                <div class="use-as-thumb-select">
+                    <h4>Use the thumbnail for &hellip;</h4>
+                    <select size="8" multiple>
+                         <option>Embedding1</option>
+                    </select>
+                </div>
+                <div class="use-as-thumb-buttons">
+                    <button class="tertiaryButton">OK</button>
+                    <button class="tertiaryButton">Cancel</button>
+                </div>
+            </div>
         </div>
     </dialog>
 

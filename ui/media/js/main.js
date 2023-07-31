@@ -164,6 +164,8 @@ let saveAllTreeToggle = document.querySelector("#tree_toggle")
 let saveAllJSONToggle = document.querySelector("#json_toggle")
 let saveAllFoldersOption = document.querySelector("#download-add-folders")
 let splashScreenPopup = document.querySelector("#splash-screen")
+let useAsThumbDialog = document.querySelector("#use-as-thumb-dialog")
+let useAsThumbImage = document.querySelector("#use-as-thumb-image")
 
 let maskSetting = document.querySelector("#enable_mask")
 
@@ -529,6 +531,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                     { text: "Upscale", on_click: onUpscaleClick },
                     { text: "Fix Faces", on_click: onFixFacesClick },
                 ],
+                { text: "Use as Thumbnail", on_click: onUseAsThumbnailClick },
             ]
 
             // include the plugins
@@ -667,6 +670,25 @@ function onMakeSimilarClick(req, img) {
     delete newTaskRequest.reqBody.mask
 
     createTask(newTaskRequest)
+}
+
+function onUseAsThumbnailClick(req, img) {
+    console.log(req)
+    console.log(img)
+
+    useAsThumbDialog.showModal()
+    useAsThumbImage.src = img.src
+
+    var croppr = new Croppr('#croppr', { aspectRatio: 1, minSize: [384,384,'px'], startSize:  [100, 100, '%'], returnMode:"real" })
+
+//    fetch(img.src)
+//      .then(response => response.blob())
+//      .then(async function(blob) {
+//          const formData  = new FormData()
+//          formData.append("file", blob)
+//          const response = await fetch(`bucket/embeddings/${embedding}.jpg`, { method: 'POST', body: formData });
+//          console.log(response)
+//      })
 }
 
 function enqueueImageVariationTask(req, img, reqDiff) {
@@ -2356,19 +2378,33 @@ document.getElementById("toggle-tensorrt-install").addEventListener("click", fun
 
 /* Embeddings */
 
+let icl = []
 function updateEmbeddingsList(filter = "") {
-    function html(model, prefix = "", filter = "") {
+    function html(model, iconlist = [], prefix = "", filter = "") {
         filter = filter.toLowerCase()
         let toplevel = ""
         let folders = ""
+        console.log(iconlist)
+        let embIcon = Object.assign({}, ...iconlist.map( x=> ({[x.toLowerCase().split('.').slice(0,-1).join('.')]:x})))
+        console.log(embIcon)
 
         model?.forEach((m) => {
             if (typeof m == "string") {
-                if (m.toLowerCase().search(filter) != -1) {
-                    toplevel += `<button data-embedding="${m}">${m}</button> `
+                let token=m.toLowerCase()
+                if (token.search(filter) != -1) {
+                    let img = '/media/images/noimg.png'
+                    if (token in embIcon) {
+                        img = `/bucket/embeddings/${embIcon[token]}`
+                    }
+                    if (iconlist.length==0) {
+                        img=""
+                    } else {
+                        img=`<img src="${img}" height="128" width="128"><br>`
+                    }
+                    toplevel += `<button data-embedding="${m}">${img}${m}</button> `
                 }
             } else {
-                let subdir = html(m[1], prefix + m[0] + "/", filter)
+                let subdir = html(m[1], iconlist, prefix + m[0] + "/", filter)
                 if (subdir != "") {
                     folders +=
                         `<div class="embedding-category"><h4 class="collapsible">${prefix}${m[0]}</h4><div class="collapsible-content">` +
@@ -2381,7 +2417,7 @@ function updateEmbeddingsList(filter = "") {
     }
 
     function onButtonClick(e) {
-        let text = e.target.dataset["embedding"]
+        let text = e.target.closest("button").dataset["embedding"]
         const insertIntoNegative = e.shiftKey || positiveEmbeddingText.classList.contains("displayNone")
 
         if (embeddingsModeField.value == "insert") {
@@ -2416,14 +2452,18 @@ function updateEmbeddingsList(filter = "") {
     }
     // END of remove block
 
-    embeddingsList.innerHTML = warning + html(modelsOptions.embeddings, "", filter)
-    embeddingsList.querySelectorAll("button").forEach((b) => {
-        b.addEventListener("click", onButtonClick)
-    })
-    createCollapsibles(embeddingsList)
-    if (filter != "") {
-        embeddingsExpandAll()
-    }
+    fetch("/bucket/embeddings/")
+       .then(response => response.status==200 ? response.json(): [])
+       .then(iconlist => {
+           embeddingsList.innerHTML = warning + html(modelsOptions.embeddings, iconlist, "", filter)
+           embeddingsList.querySelectorAll("button").forEach((b) => {
+               b.addEventListener("click", onButtonClick)
+           })
+           createCollapsibles(embeddingsList)
+           if (filter != "") {
+               embeddingsExpandAll()
+           }
+       })
 }
 
 function showEmbeddingDialog() {

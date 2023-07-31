@@ -1,7 +1,7 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, BLOB
 from sqlalchemy.orm import relationship
 
-from easydiffusion.bucket_database import BucketBase
+from easydiffusion.easydb.database import BucketBase
 
 
 class Bucket(BucketBase):
@@ -16,10 +16,10 @@ class Bucket(BucketBase):
 class BucketFile(BucketBase):
     __tablename__ = "bucketfile"
 
-    id = Column(Integer, primary_key=True, index=True)
-    filename = Column(String, index=True)
+    filename = Column(String, index=True, primary_key=True)
+    bucket_id = Column(Integer, ForeignKey("bucket.id"), primary_key=True)
+
     data = Column(BLOB, index=False)
-    bucket_id = Column(Integer, ForeignKey("bucket.id"))
 
     bucket = relationship("Bucket", back_populates="bucketfiles")
 
