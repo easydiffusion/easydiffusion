@@ -1355,15 +1355,15 @@ function getCurrentUserRequest() {
     let numOutputsParallel = parseInt(numOutputsParallelField.value)
     const seed = randomSeedField.checked ? Math.floor(Math.random() * (2 ** 32 - 1)) : parseInt(seedField.value)
 
-    if (
-        testDiffusers.checked &&
-        document.getElementById("toggle-tensorrt-install").innerHTML == "Uninstall" &&
-        document.querySelector("#convert_to_tensorrt").checked
-    ) {
-        // TRT enabled
+    // if (
+    //     testDiffusers.checked &&
+    //     document.getElementById("toggle-tensorrt-install").innerHTML == "Uninstall" &&
+    //     document.querySelector("#convert_to_tensorrt").checked
+    // ) {
+    //     // TRT enabled
 
-        numOutputsParallel = 1 // force 1 parallel
-    }
+    //     numOutputsParallel = 1 // force 1 parallel
+    // }
 
     const newTask = {
         batchesDone: 0,
@@ -2394,8 +2394,8 @@ function packagesUpdate(event) {
             seedField.disabled = false
             stableDiffusionModelField.value = "sd-v1-4"
 
-            numOutputsParallelField.classList.add("displayNone")
-            document.querySelector("#num_outputs_parallel_label").classList.add("displayNone")
+            // numOutputsParallelField.classList.add("displayNone")
+            // document.querySelector("#num_outputs_parallel_label").classList.add("displayNone")
 
             trtSettingsForced = true
         }
