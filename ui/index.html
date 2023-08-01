@@ -151,7 +151,7 @@
                         <td><label for="convert_to_tensorrt">Enable TensorRT:</label></td>
                         <td class="diffusers-restart-needed">
                             <input id="convert_to_tensorrt" name="convert_to_tensorrt" type="checkbox">
-                            <label><small>Takes upto 20 mins the first time</small></label>
+                            <!-- <label><small>Takes upto 20 mins the first time</small></label> -->
                         </td>
                     </tr>
                     <tr class="pl-5 displayNone" id="clip_skip_config">
@@ -211,6 +211,8 @@
                             </select>
                             <br/>
                             <label for="controlnet_model"><small>Model:</small></label> <input id="controlnet_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
+                            <br/>
+                            <label><small>Will download the necessary models, the first time.</small></label>
                         </div>
                     </td></tr>
                     <tr class="pl-5"><td><label for="vae_model">Custom VAE:</label></td><td>

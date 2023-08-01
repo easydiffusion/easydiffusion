@@ -119,7 +119,7 @@ let codeformerFidelityField = document.querySelector("#codeformer_fidelity")
 let stableDiffusionModelField = new ModelDropdown(document.querySelector("#stable_diffusion_model"), "stable-diffusion")
 let clipSkipField = document.querySelector("#clip_skip")
 let tilingField = document.querySelector("#tiling")
-let controlnetModelField = new ModelDropdown(document.querySelector("#controlnet_model"), "controlnet", "None")
+let controlnetModelField = new ModelDropdown(document.querySelector("#controlnet_model"), "controlnet", "None", false)
 let vaeModelField = new ModelDropdown(document.querySelector("#vae_model"), "vae", "None")
 let hypernetworkModelField = new ModelDropdown(document.querySelector("#hypernetwork_model"), "hypernetwork", "None")
 let hypernetworkStrengthSlider = document.querySelector("#hypernetwork_strength_slider")
@@ -1879,6 +1879,37 @@ function onControlnetModelChange() {
 controlImagePreview.addEventListener("load", onControlnetModelChange)
 controlImagePreview.addEventListener("unload", onControlnetModelChange)
 onControlnetModelChange()
+
+function onControlImageFilterChange() {
+    let filterId = controlImageFilterField.value
+    if (filterId.includes("openpose")) {
+        controlnetModelField.value = "control_v11p_sd15_openpose"
+    } else if (filterId === "canny") {
+        controlnetModelField.value = "control_v11p_sd15_canny"
+    } else if (filterId === "mlsd") {
+        controlnetModelField.value = "control_v11p_sd15_mlsd"
+    } else if (filterId === "mlsd") {
+        controlnetModelField.value = "control_v11p_sd15_mlsd"
+    } else if (filterId.includes("scribble")) {
+        controlnetModelField.value = "control_v11p_sd15_scribble"
+    } else if (filterId.includes("softedge")) {
+        controlnetModelField.value = "control_v11p_sd15_softedge"
+    } else if (filterId === "normal_bae") {
+        controlnetModelField.value = "control_v11p_sd15_normalbae"
+    } else if (filterId.includes("depth")) {
+        controlnetModelField.value = "control_v11f1p_sd15_depth"
+    } else if (filterId === "lineart_anime") {
+        controlnetModelField.value = "control_v11p_sd15s2_lineart_anime"
+    } else if (filterId.includes("lineart")) {
+        controlnetModelField.value = "control_v11p_sd15_lineart"
+    } else if (filterId === "shuffle") {
+        controlnetModelField.value = "control_v11e_sd15_shuffle"
+    } else if (filterId === "segment") {
+        controlnetModelField.value = "control_v11p_sd15_seg"
+    }
+}
+controlImageFilterField.addEventListener("change", onControlImageFilterChange)
+onControlImageFilterChange()
 
 upscaleModelField.disabled = !useUpscalingField.checked
 upscaleAmountField.disabled = !useUpscalingField.checked
