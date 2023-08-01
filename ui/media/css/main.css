@@ -794,7 +794,7 @@ div.img-preview img {
     margin-bottom: 8px;
 }
 
-#init_image_preview_container:not(.has-image) #init_image_wrapper,
+#init_image_preview_container:not(.has-image) .preview_image_wrapper,
 #init_image_preview_container:not(.has-image) #inpaint_button_container  {
     display: none;
 }
@@ -831,14 +831,14 @@ div.img-preview img {
     gap: 8px;
 }
 
-#init_image_wrapper {
+.preview_image_wrapper {
     grid-row: span 3;
     position: relative;
     width: fit-content;
     max-height: 150px;
 }
 
-#init_image_preview {
+.image_preview {
     max-height: 150px;
     height: 100%;
     width: 100%;
@@ -1842,4 +1842,14 @@ div#enlarge-buttons {
 
 .imgContainer .spinnerStatus {
     font-size: 10pt;
+}
+
+#controlnet_model_container small {
+    color: var(--text-color)
+}
+#control_image {
+    width: 130pt;
+}
+#controlnet_model {
+    width: 77%;
 }

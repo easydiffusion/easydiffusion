@@ -93,6 +93,11 @@ let initImagePreview = document.querySelector("#init_image_preview")
 let initImageSizeBox = document.querySelector("#init_image_size_box")
 let maskImageSelector = document.querySelector("#mask")
 let maskImagePreview = document.querySelector("#mask_preview")
+let controlImageSelector = document.querySelector("#control_image")
+let controlImagePreview = document.querySelector("#control_image_preview")
+let controlImageClearBtn = document.querySelector(".control_image_clear")
+let controlImageContainer = document.querySelector("#control_image_wrapper")
+let controlImageFilterField = document.querySelector("#control_image_filter")
 let applyColorCorrectionField = document.querySelector("#apply_color_correction")
 let strictMaskBorderField = document.querySelector("#strict_mask_border")
 let colorCorrectionSetting = document.querySelector("#apply_color_correction_setting")
@@ -114,6 +119,7 @@ let codeformerFidelityField = document.querySelector("#codeformer_fidelity")
 let stableDiffusionModelField = new ModelDropdown(document.querySelector("#stable_diffusion_model"), "stable-diffusion")
 let clipSkipField = document.querySelector("#clip_skip")
 let tilingField = document.querySelector("#tiling")
+let controlnetModelField = new ModelDropdown(document.querySelector("#controlnet_model"), "controlnet", "None", false)
 let vaeModelField = new ModelDropdown(document.querySelector("#vae_model"), "vae", "None")
 let hypernetworkModelField = new ModelDropdown(document.querySelector("#hypernetwork_model"), "hypernetwork", "None")
 let hypernetworkStrengthSlider = document.querySelector("#hypernetwork_strength_slider")
@@ -1378,8 +1384,18 @@ function createTask(task) {
 
 function getCurrentUserRequest() {
     const numOutputsTotal = parseInt(numOutputsTotalField.value)
-    const numOutputsParallel = parseInt(numOutputsParallelField.value)
+    let numOutputsParallel = parseInt(numOutputsParallelField.value)
     const seed = randomSeedField.checked ? Math.floor(Math.random() * (2 ** 32 - 1)) : parseInt(seedField.value)
+
+    if (
+        testDiffusers.checked &&
+        document.getElementById("toggle-tensorrt-install").innerHTML == "Uninstall" &&
+        document.querySelector("#convert_to_tensorrt").checked
+    ) {
+        // TRT enabled
+
+        numOutputsParallel = 1 // force 1 parallel
+    }
 
     const newTask = {
         batchesDone: 0,
@@ -1468,6 +1484,13 @@ function getCurrentUserRequest() {
     if (testDiffusers.checked && document.getElementById("toggle-tensorrt-install").innerHTML == "Uninstall") {
         // TRT is installed
         newTask.reqBody.convert_to_tensorrt = document.querySelector("#convert_to_tensorrt").checked
+    }
+    if (controlnetModelField.value !== "" && IMAGE_REGEX.test(controlImagePreview.src)) {
+        newTask.reqBody.use_controlnet_model = controlnetModelField.value
+        newTask.reqBody.control_image = controlImagePreview.src
+        if (controlImageFilterField.value !== "") {
+            newTask.reqBody.control_filter_to_apply = controlImageFilterField.value
+        }
     }
 
     return newTask
@@ -1875,6 +1898,51 @@ function onFixFaceModelChange() {
 gfpganModelField.addEventListener("change", onFixFaceModelChange)
 onFixFaceModelChange()
 
+function onControlnetModelChange() {
+    let configBox = document.querySelector("#controlnet_config")
+    if (IMAGE_REGEX.test(controlImagePreview.src)) {
+        configBox.classList.remove("displayNone")
+        controlImageContainer.classList.remove("displayNone")
+    } else {
+        configBox.classList.add("displayNone")
+        controlImageContainer.classList.add("displayNone")
+    }
+}
+controlImagePreview.addEventListener("load", onControlnetModelChange)
+controlImagePreview.addEventListener("unload", onControlnetModelChange)
+onControlnetModelChange()
+
+function onControlImageFilterChange() {
+    let filterId = controlImageFilterField.value
+    if (filterId.includes("openpose")) {
+        controlnetModelField.value = "control_v11p_sd15_openpose"
+    } else if (filterId === "canny") {
+        controlnetModelField.value = "control_v11p_sd15_canny"
+    } else if (filterId === "mlsd") {
+        controlnetModelField.value = "control_v11p_sd15_mlsd"
+    } else if (filterId === "mlsd") {
+        controlnetModelField.value = "control_v11p_sd15_mlsd"
+    } else if (filterId.includes("scribble")) {
+        controlnetModelField.value = "control_v11p_sd15_scribble"
+    } else if (filterId.includes("softedge")) {
+        controlnetModelField.value = "control_v11p_sd15_softedge"
+    } else if (filterId === "normal_bae") {
+        controlnetModelField.value = "control_v11p_sd15_normalbae"
+    } else if (filterId.includes("depth")) {
+        controlnetModelField.value = "control_v11f1p_sd15_depth"
+    } else if (filterId === "lineart_anime") {
+        controlnetModelField.value = "control_v11p_sd15s2_lineart_anime"
+    } else if (filterId.includes("lineart")) {
+        controlnetModelField.value = "control_v11p_sd15_lineart"
+    } else if (filterId === "shuffle") {
+        controlnetModelField.value = "control_v11e_sd15_shuffle"
+    } else if (filterId === "segment") {
+        controlnetModelField.value = "control_v11p_sd15_seg"
+    }
+}
+controlImageFilterField.addEventListener("change", onControlImageFilterChange)
+onControlImageFilterChange()
+
 upscaleModelField.disabled = !useUpscalingField.checked
 upscaleAmountField.disabled = !useUpscalingField.checked
 useUpscalingField.addEventListener("change", function(e) {
@@ -2165,6 +2233,44 @@ promptsFromFileBtn.addEventListener("click", function() {
     promptsFromFileSelector.click()
 })
 
+function loadControlnetImageFromFile() {
+    if (controlImageSelector.files.length === 0) {
+        return
+    }
+
+    let reader = new FileReader()
+    let file = controlImageSelector.files[0]
+
+    reader.addEventListener("load", function(event) {
+        controlImagePreview.src = reader.result
+    })
+
+    if (file) {
+        reader.readAsDataURL(file)
+    }
+}
+controlImageSelector.addEventListener("change", loadControlnetImageFromFile)
+
+function controlImageLoad() {
+    let w = controlImagePreview.naturalWidth
+    let h = controlImagePreview.naturalHeight
+    addImageSizeOption(w)
+    addImageSizeOption(h)
+
+    widthField.value = w
+    heightField.value = h
+    widthField.dispatchEvent(new Event("change"))
+    heightField.dispatchEvent(new Event("change"))
+}
+controlImagePreview.addEventListener("load", controlImageLoad)
+
+function controlImageUnload() {
+    controlImageSelector.value = null
+    controlImagePreview.src = ""
+    controlImagePreview.dispatchEvent(new Event("unload"))
+}
+controlImageClearBtn.addEventListener("click", controlImageUnload)
+
 promptsFromFileSelector.addEventListener("change", async function() {
     if (promptsFromFileSelector.files.length === 0) {
         return
@@ -2293,6 +2399,8 @@ function tunnelUpdate(event) {
     }
 }
 
+let trtSettingsForced = false
+
 function packagesUpdate(event) {
     let trtBtn = document.getElementById("toggle-tensorrt-install")
     let trtInstalled = "packages_installed" in event && "tensorrt" in event["packages_installed"]
@@ -2307,6 +2415,22 @@ function packagesUpdate(event) {
 
     if (document.getElementById("toggle-tensorrt-install").innerHTML == "Uninstall") {
         document.querySelector("#enable_trt_config").classList.remove("displayNone")
+
+        if (!trtSettingsForced) {
+            // settings for demo
+            promptField.value = "Dragons fighting with a knight, castle, war scene, fantasy, cartoon, flames, HD"
+            seedField.value = 3187947173
+            widthField.value = 1024
+            heightField.value = 768
+            randomSeedField.checked = false
+            seedField.disabled = false
+            stableDiffusionModelField.value = "sd-v1-4"
+
+            numOutputsParallelField.classList.add("displayNone")
+            document.querySelector("#num_outputs_parallel_label").classList.add("displayNone")
+
+            trtSettingsForced = true
+        }
     }
 }
 
