@@ -552,17 +552,23 @@ class ModelDropdown {
                     this.createModelNodeList(`${folderName || ""}/${childFolderName}`, childModels, false)
                 )
             } else {
+                let modelId = model
+                let modelName = model
+                if (typeof model === "object") {
+                    modelId = Object.keys(model)[0]
+                    modelName = model[modelId]
+                }
                 const classes = ["model-file"]
                 if (isRootFolder) {
                     classes.push("in-root-folder")
                 }
                 // Remove the leading slash from the model path
-                const fullPath = folderName ? `${folderName.substring(1)}/${model}` : model
+                const fullPath = folderName ? `${folderName.substring(1)}/${modelId}` : modelId
                 modelsMap.set(
-                    model,
+                    modelId,
                     createElement("li", { "data-path": fullPath }, classes, [
                         createElement("i", undefined, ["fa-regular", "fa-file", "icon"]),
-                        model,
+                        modelName,
                     ])
                 )
             }
@@ -642,22 +648,6 @@ async function getModels(scanForMalicious = true) {
                 '</i> in your <tt>models/stable-diffusion</tt> folder is probably malware infected.</h2><h2>Please delete this file from the folder before proceeding!</h2>After deleting the file, reload this page.<br><br><button onClick="window.location.reload();">Reload Page</button>'
             makeImageBtn.disabled = true
         }
-
-        /* This code should no longer be needed. Commenting out for now, will cleanup later.
-        const sd_model_setting_key = "stable_diffusion_model"
-        const vae_model_setting_key = "vae_model"
-        const hypernetwork_model_key = "hypernetwork_model"
-
-        const stableDiffusionOptions = modelsOptions['stable-diffusion']
-        const vaeOptions = modelsOptions['vae']
-        const hypernetworkOptions = modelsOptions['hypernetwork']
-
-        // TODO: set default for model here too
-        SETTINGS[sd_model_setting_key].default = stableDiffusionOptions[0]
-        if (getSetting(sd_model_setting_key) == '' || SETTINGS[sd_model_setting_key].value == '') {
-            setSetting(sd_model_setting_key, stableDiffusionOptions[0])
-        }
-        */
 
         // notify ModelDropdown objects to refresh
         document.dispatchEvent(new Event("refreshModels"))

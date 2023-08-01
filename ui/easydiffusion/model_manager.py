@@ -290,11 +290,11 @@ def is_malicious_model(file_path):
 def getModels(scan_for_malicious: bool = True):
     models = {
         "options": {
-            "stable-diffusion": ["sd-v1-4"],
+            "stable-diffusion": [{"sd-v1-4": "SD 1.4"}],
             "vae": [],
             "hypernetwork": [],
             "lora": [],
-            "codeformer": ["codeformer"],
+            "codeformer": [{"codeformer": "CodeFormer"}],
             "embeddings": [],
             "controlnet": [],
         },
@@ -305,9 +305,9 @@ def getModels(scan_for_malicious: bool = True):
     class MaliciousModelException(Exception):
         "Raised when picklescan reports a problem with a model"
 
-    def scan_directory(directory, suffixes, directoriesFirst: bool = True):
+    def scan_directory(directory, suffixes, directoriesFirst: bool = True, default_entries=[]):
+        tree = list(default_entries)
         nonlocal models_scanned
-        tree = []
         for entry in sorted(
             os.scandir(directory),
             key=lambda entry: (entry.is_file() == directoriesFirst, entry.name.lower()),
@@ -326,7 +326,14 @@ def getModels(scan_for_malicious: bool = True):
                         raise MaliciousModelException(entry.path)
                 if scan_for_malicious:
                     known_models[entry.path] = mtime
-                tree.append(entry.name[: -len(matching_suffix)])
+                model_id = entry.name[: -len(matching_suffix)]
+                model_exists = False
+                for m in tree:  # allows default "named" models, like CodeFormer and known ControlNet models
+                    if (isinstance(m, str) and model_id == m) or (isinstance(m, dict) and model_id in m):
+                        model_exists = True
+                        break
+                if not model_exists:
+                    tree.append(model_id)
             elif entry.is_dir():
                 scan = scan_directory(entry.path, suffixes, directoriesFirst=False)
 
@@ -343,7 +350,8 @@ def getModels(scan_for_malicious: bool = True):
             os.makedirs(models_dir)
 
         try:
-            models["options"][model_type] = scan_directory(models_dir, model_extensions)
+            default_tree = models["options"].get(model_type, [])
+            models["options"][model_type] = scan_directory(models_dir, model_extensions, default_entries=default_tree)
         except MaliciousModelException as e:
             models["scan-error"] = str(e)
 
