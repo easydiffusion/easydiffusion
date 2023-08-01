@@ -2298,6 +2298,9 @@ function packagesUpdate(event) {
             seedField.disabled = false
             stableDiffusionModelField.value = "sd-v1-4"
 
+            numOutputsParallelField.classList.add("displayNone")
+            document.querySelector("#num_outputs_parallel_label").classList.add("displayNone")
+
             trtSettingsForced = true
         }
     }
