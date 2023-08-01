@@ -63,7 +63,7 @@ class RenderTask(Task):
         if (
             runtime.set_vram_optimizations(context)
             or self.has_param_changed(context, "clip_skip")
-            or self.has_param_changed(context, "convert_to_tensorrt")
+            or self.trt_needs_reload(context)
         ):
             models_to_force_reload.append("stable-diffusion")
 
@@ -91,6 +91,17 @@ class RenderTask(Task):
         model = context.models["stable-diffusion"]
         new_val = self.models_data.model_params.get("stable-diffusion", {}).get(param_name, False)
         return model["params"].get(param_name) != new_val
+
+    def trt_needs_reload(self, context):
+        if not self.has_param_changed(context, "convert_to_tensorrt"):
+            return False
+
+        model = context.models["stable-diffusion"]
+        pipe = model["default"]
+        if hasattr(pipe.unet, "_allocate_trt_buffers"):  # TRT already loaded
+            return False
+
+        return True
 
 
 def make_images(
@@ -148,6 +159,7 @@ def make_images_internal(
         context,
         req,
         task_data,
+        models_data,
         data_queue,
         task_temp_images,
         step_callback,
@@ -174,6 +186,7 @@ def generate_images_internal(
     context,
     req: GenerateImageRequest,
     task_data: TaskData,
+    models_data: ModelsData,
     data_queue: queue.Queue,
     task_temp_images: list,
     step_callback,
@@ -196,6 +209,15 @@ def generate_images_internal(
     try:
         if req.init_image is not None and not context.test_diffusers:
             req.sampler_name = "ddim"
+
+        if context.test_diffusers:
+            pipe = context.models["stable-diffusion"]["default"]
+            if hasattr(pipe.unet, "_allocate_trt_buffers"):
+                convert_to_trt = models_data.model_params["stable-diffusion"].get("convert_to_tensorrt", False)
+                pipe.unet.forward = pipe.unet._trt_forward if convert_to_trt else pipe.unet._non_trt_forward
+                # pipe.vae.decoder.forward = (
+                #     pipe.vae.decoder._trt_forward if convert_to_trt else pipe.vae.decoder._non_trt_forward
+                # )
 
         images = generate_images(context, callback=callback, **req.dict())
         user_stopped = False

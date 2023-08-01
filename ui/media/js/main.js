@@ -1346,8 +1346,18 @@ function createTask(task) {
 
 function getCurrentUserRequest() {
     const numOutputsTotal = parseInt(numOutputsTotalField.value)
-    const numOutputsParallel = parseInt(numOutputsParallelField.value)
+    let numOutputsParallel = parseInt(numOutputsParallelField.value)
     const seed = randomSeedField.checked ? Math.floor(Math.random() * (2 ** 32 - 1)) : parseInt(seedField.value)
+
+    if (
+        testDiffusers.checked &&
+        document.getElementById("toggle-tensorrt-install").innerHTML == "Uninstall" &&
+        document.querySelector("#convert_to_tensorrt").checked
+    ) {
+        // TRT enabled
+
+        numOutputsParallel = 1 // force 1 parallel
+    }
 
     const newTask = {
         batchesDone: 0,
