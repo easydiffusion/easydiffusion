@@ -248,7 +248,18 @@ var PARAMETERS = [
         label: "NVIDIA TensorRT",
         note: `Faster image generation by converting your Stable Diffusion models to the NVIDIA TensorRT format. You can choose the
                models to convert. Download size: approximately 2 GB.<br/><br/>
-               <b>Early access version:</b> support for LoRA is still under development.`,
+               <b>Early access version:</b> support for LoRA is still under development.
+               <div id="trt-build-config" class="displayNone">
+                    <h3>Build Config:</h3>
+                    Min batch size: <input id="trt-build-min-batch" type="number" min="1" value="1" /><br/>
+                    Max batch size: <input id="trt-build-max-batch" type="number" min="1" value="1" /><br/><br/>
+                    <b>Build for resolutions</b>:<br/>
+                    <input id="trt-build-res-512" type="checkbox" value="1" /> 512x512 to 768x768<br/>
+                    <input id="trt-build-res-768" type="checkbox" value="1" checked /> 768x768 to 1024x1024<br/>
+                    <input id="trt-build-res-1024" type="checkbox" value="1" /> 1024x1024 to 1280x1280<br/>
+                    <input id="trt-build-res-1280" type="checkbox" value="1" /> 1280x1280 to 1536x1536<br/>
+                    <input id="trt-build-res-1536" type="checkbox" value="1" /> 1536x1536 to 1792x1792<br/>
+               </div>`,
         icon: "fa-angles-up",
         render: () => '<button id="toggle-tensorrt-install" class="primaryButton">Install</button>',
         table: installExtrasTable,
@@ -453,8 +464,8 @@ async function getAppConfig() {
             document.querySelectorAll("#sampler_name option.diffusers-only").forEach((option) => {
                 option.style.display = "none"
             })
-            customWidthField.step=64
-            customHeightField.step=64
+            customWidthField.step = 64
+            customHeightField.step = 64
         } else {
             document.querySelector("#lora_model_container").style.display = ""
             document.querySelector("#tiling_container").style.display = ""
@@ -465,8 +476,8 @@ async function getAppConfig() {
             document.querySelector("#clip_skip_config").classList.remove("displayNone")
             document.querySelector("#embeddings-button").classList.remove("displayNone")
             document.querySelector("#negative-embeddings-button").classList.remove("displayNone")
-            customWidthField.step=8
-            customHeightField.step=8
+            customWidthField.step = 8
+            customHeightField.step = 8
         }
 
         console.log("get config status response", config)

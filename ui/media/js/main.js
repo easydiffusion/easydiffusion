@@ -1452,6 +1452,22 @@ function getCurrentUserRequest() {
     if (testDiffusers.checked && document.getElementById("toggle-tensorrt-install").innerHTML == "Uninstall") {
         // TRT is installed
         newTask.reqBody.convert_to_tensorrt = document.querySelector("#convert_to_tensorrt").checked
+        let trtBuildConfig = {
+            batch_size_range: [
+                parseInt(document.querySelector("#trt-build-min-batch").value),
+                parseInt(document.querySelector("#trt-build-max-batch").value),
+            ],
+            dimensions_range: [],
+        }
+
+        let sizes = [512, 768, 1024, 1280, 1536]
+        sizes.forEach((i) => {
+            let el = document.querySelector("#trt-build-res-" + i)
+            if (el.checked) {
+                trtBuildConfig["dimensions_range"].push([i, i + 256])
+            }
+        })
+        newTask.reqBody.trt_build_config = trtBuildConfig
     }
     if (controlnetModelField.value !== "" && IMAGE_REGEX.test(controlImagePreview.src)) {
         newTask.reqBody.use_controlnet_model = controlnetModelField.value
@@ -2383,6 +2399,7 @@ function packagesUpdate(event) {
 
     if (document.getElementById("toggle-tensorrt-install").innerHTML == "Uninstall") {
         document.querySelector("#enable_trt_config").classList.remove("displayNone")
+        document.querySelector("#trt-build-config").classList.remove("displayNone")
 
         if (!trtSettingsForced) {
             // settings for demo
