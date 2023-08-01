@@ -251,8 +251,7 @@ var PARAMETERS = [
                <b>Early access version:</b> support for LoRA is still under development.
                <div id="trt-build-config" class="displayNone">
                     <h3>Build Config:</h3>
-                    Min batch size: <input id="trt-build-min-batch" type="number" min="1" value="1" /><br/>
-                    Max batch size: <input id="trt-build-max-batch" type="number" min="1" value="1" /><br/><br/>
+                    Batch size: <input id="trt-build-batch" type="number" min="1" value="1" /><br/><br/>
                     <b>Build for resolutions</b>:<br/>
                     <input id="trt-build-res-512" type="checkbox" value="1" /> 512x512 to 768x768<br/>
                     <input id="trt-build-res-768" type="checkbox" value="1" checked /> 768x768 to 1024x1024<br/>
