@@ -2271,6 +2271,8 @@ function tunnelUpdate(event) {
     }
 }
 
+let trtSettingsForced = false
+
 function packagesUpdate(event) {
     let trtBtn = document.getElementById("toggle-tensorrt-install")
     let trtInstalled = "packages_installed" in event && "tensorrt" in event["packages_installed"]
@@ -2285,6 +2287,19 @@ function packagesUpdate(event) {
 
     if (document.getElementById("toggle-tensorrt-install").innerHTML == "Uninstall") {
         document.querySelector("#enable_trt_config").classList.remove("displayNone")
+
+        if (!trtSettingsForced) {
+            // settings for demo
+            promptField.value = "Dragons fighting with a knight, castle, war scene, fantasy, cartoon, flames, HD"
+            seedField.value = 3187947173
+            widthField.value = 1024
+            heightField.value = 768
+            randomSeedField.checked = false
+            seedField.disabled = false
+            stableDiffusionModelField.value = "sd-v1-4"
+
+            trtSettingsForced = true
+        }
     }
 }
 
