@@ -227,7 +227,7 @@ def convert_legacy_render_req_to_new(old_req: dict):
             "clip_skip": bool(old_req.get("clip_skip", False)),
             "convert_to_tensorrt": bool(old_req.get("convert_to_tensorrt", False)),
             "trt_build_config": old_req.get(
-                "trt_build_config", {"batch_size_range": (1, 2), "dimensions_range": [(768, 1024)]}
+                "trt_build_config", {"batch_size_range": (1, 1), "dimensions_range": [(768, 1024)]}
             ),
         }
 
