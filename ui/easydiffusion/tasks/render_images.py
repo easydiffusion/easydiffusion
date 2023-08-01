@@ -210,6 +210,9 @@ def generate_images_internal(
         if req.init_image is not None and not context.test_diffusers:
             req.sampler_name = "ddim"
 
+        if req.control_image and task_data.control_filter_to_apply:
+            req.control_image = filter_images(context, req.control_image, task_data.control_filter_to_apply)[0]
+
         if context.test_diffusers:
             pipe = context.models["stable-diffusion"]["default"]
             if hasattr(pipe.unet, "_allocate_trt_buffers"):

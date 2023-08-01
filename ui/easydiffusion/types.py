@@ -75,6 +75,7 @@ class TaskData(BaseModel):
     use_controlnet_model: Union[str, List[str]] = None
     filters: List[str] = []
     filter_params: Dict[str, Dict[str, Any]] = {}
+    control_filter_to_apply: Union[str, List[str]] = None
 
     show_only_filtered_image: bool = False
     block_nsfw: bool = False
@@ -135,6 +136,7 @@ class GenerateImageResponse:
     def json(self):
         del self.render_request.init_image
         del self.render_request.init_image_mask
+        del self.render_request.control_image
 
         task_data = self.task_data.dict()
         task_data.update(self.output_format.dict())
@@ -212,6 +214,9 @@ def convert_legacy_render_req_to_new(old_req: dict):
     model_paths["latent_upscaler"] = (
         model_paths["latent_upscaler"] if "latent_upscaler" in model_paths["latent_upscaler"].lower() else None
     )
+    if "control_filter_to_apply" in old_req:
+        filter_model = old_req["control_filter_to_apply"]
+        model_paths[filter_model] = filter_model
 
     if old_req.get("block_nsfw"):
         model_paths["nsfw_checker"] = "nsfw_checker"

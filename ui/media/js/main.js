@@ -93,6 +93,11 @@ let initImagePreview = document.querySelector("#init_image_preview")
 let initImageSizeBox = document.querySelector("#init_image_size_box")
 let maskImageSelector = document.querySelector("#mask")
 let maskImagePreview = document.querySelector("#mask_preview")
+let controlImageSelector = document.querySelector("#control_image")
+let controlImagePreview = document.querySelector("#control_image_preview")
+let controlImageClearBtn = document.querySelector(".control_image_clear")
+let controlImageContainer = document.querySelector("#control_image_wrapper")
+let controlImageFilterField = document.querySelector("#control_image_filter")
 let applyColorCorrectionField = document.querySelector("#apply_color_correction")
 let strictMaskBorderField = document.querySelector("#strict_mask_border")
 let colorCorrectionSetting = document.querySelector("#apply_color_correction_setting")
@@ -114,6 +119,7 @@ let codeformerFidelityField = document.querySelector("#codeformer_fidelity")
 let stableDiffusionModelField = new ModelDropdown(document.querySelector("#stable_diffusion_model"), "stable-diffusion")
 let clipSkipField = document.querySelector("#clip_skip")
 let tilingField = document.querySelector("#tiling")
+let controlnetModelField = new ModelDropdown(document.querySelector("#controlnet_model"), "controlnet", "None")
 let vaeModelField = new ModelDropdown(document.querySelector("#vae_model"), "vae", "None")
 let hypernetworkModelField = new ModelDropdown(document.querySelector("#hypernetwork_model"), "hypernetwork", "None")
 let hypernetworkStrengthSlider = document.querySelector("#hypernetwork_strength_slider")
@@ -1447,6 +1453,13 @@ function getCurrentUserRequest() {
         // TRT is installed
         newTask.reqBody.convert_to_tensorrt = document.querySelector("#convert_to_tensorrt").checked
     }
+    if (controlnetModelField.value !== "" && IMAGE_REGEX.test(controlImagePreview.src)) {
+        newTask.reqBody.use_controlnet_model = controlnetModelField.value
+        newTask.reqBody.control_image = controlImagePreview.src
+        if (controlImageFilterField.value !== "") {
+            newTask.reqBody.control_filter_to_apply = controlImageFilterField.value
+        }
+    }
 
     return newTask
 }
@@ -1853,6 +1866,20 @@ function onFixFaceModelChange() {
 gfpganModelField.addEventListener("change", onFixFaceModelChange)
 onFixFaceModelChange()
 
+function onControlnetModelChange() {
+    let configBox = document.querySelector("#controlnet_config")
+    if (IMAGE_REGEX.test(controlImagePreview.src)) {
+        configBox.classList.remove("displayNone")
+        controlImageContainer.classList.remove("displayNone")
+    } else {
+        configBox.classList.add("displayNone")
+        controlImageContainer.classList.add("displayNone")
+    }
+}
+controlImagePreview.addEventListener("load", onControlnetModelChange)
+controlImagePreview.addEventListener("unload", onControlnetModelChange)
+onControlnetModelChange()
+
 upscaleModelField.disabled = !useUpscalingField.checked
 upscaleAmountField.disabled = !useUpscalingField.checked
 useUpscalingField.addEventListener("change", function(e) {
@@ -2142,6 +2169,44 @@ maskSetting.addEventListener("change", function() {
 promptsFromFileBtn.addEventListener("click", function() {
     promptsFromFileSelector.click()
 })
+
+function loadControlnetImageFromFile() {
+    if (controlImageSelector.files.length === 0) {
+        return
+    }
+
+    let reader = new FileReader()
+    let file = controlImageSelector.files[0]
+
+    reader.addEventListener("load", function(event) {
+        controlImagePreview.src = reader.result
+    })
+
+    if (file) {
+        reader.readAsDataURL(file)
+    }
+}
+controlImageSelector.addEventListener("change", loadControlnetImageFromFile)
+
+function controlImageLoad() {
+    let w = controlImagePreview.naturalWidth
+    let h = controlImagePreview.naturalHeight
+    addImageSizeOption(w)
+    addImageSizeOption(h)
+
+    widthField.value = w
+    heightField.value = h
+    widthField.dispatchEvent(new Event("change"))
+    heightField.dispatchEvent(new Event("change"))
+}
+controlImagePreview.addEventListener("load", controlImageLoad)
+
+function controlImageUnload() {
+    controlImageSelector.value = null
+    controlImagePreview.src = ""
+    controlImagePreview.dispatchEvent(new Event("unload"))
+}
+controlImageClearBtn.addEventListener("click", controlImageUnload)
 
 promptsFromFileSelector.addEventListener("change", async function() {
     if (promptsFromFileSelector.files.length === 0) {

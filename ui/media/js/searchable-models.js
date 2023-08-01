@@ -667,4 +667,7 @@ async function getModels(scanForMalicious = true) {
 }
 
 // reload models button
-document.querySelector("#reload-models").addEventListener("click", () => getModels())
+document.querySelector("#reload-models").addEventListener("click", (e) => {
+    e.stopPropagation()
+    getModels()
+})

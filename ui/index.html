@@ -83,8 +83,8 @@
                     <label for="init_image">Initial Image (img2img) <small>(optional)</small> </label>
 
                     <div id="init_image_preview_container" class="image_preview_container">
-                        <div id="init_image_wrapper">
-                            <img id="init_image_preview" src="" crossorigin="anonymous" />
+                        <div id="init_image_wrapper" class="preview_image_wrapper">
+                            <img id="init_image_preview" class="image_preview" src="" crossorigin="anonymous" />
                             <span id="init_image_size_box" class="img_bottom_label"></span>
                             <button class="init_image_clear image_clear_btn"><i class="fa-solid fa-xmark"></i></button>
                         </div>
@@ -151,7 +151,6 @@
                         <td><label for="convert_to_tensorrt">Enable TensorRT:</label></td>
                         <td class="diffusers-restart-needed">
                             <input id="convert_to_tensorrt" name="convert_to_tensorrt" type="checkbox">
-                            <a href="https://github.com/easydiffusion/easydiffusion/wiki/TensorRT" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about TensorRT</span></i></a>
                             <label><small>Takes upto 20 mins the first time</small></label>
                         </td>
                     </tr>
@@ -162,6 +161,58 @@
                             <a href="https://github.com/easydiffusion/easydiffusion/wiki/Clip-Skip" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about Clip Skip</span></i></a>
                         </td>
                     </tr>
+                    <tr id="controlnet_model_container" class="pl-5"><td><label for="controlnet_model">ControlNet Image:</label></td><td>
+                        <div id="control_image_wrapper" class="preview_image_wrapper">
+                            <img id="control_image_preview" class="image_preview" src="" crossorigin="anonymous" />
+                            <span id="control_image_size_box" class="img_bottom_label"></span>
+                            <button class="control_image_clear image_clear_btn"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        <input id="control_image" name="control_image" type="file" />
+                        <a href="https://github.com/easydiffusion/easydiffusion/wiki/ControlNet" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about ControlNets</span></i></a>
+                        <div id="controlnet_config" class="displayNone">
+                            <label><small>Filter to apply:</small></label>
+                            <select id="control_image_filter">
+                                <option value="">None</option>
+                                <optgroup label="Pose">
+                                    <option value="openpose">OpenPose (*)</option>
+                                    <option value="openpose_face">OpenPose face</option>
+                                    <option value="openpose_faceonly">OpenPose face-only</option>
+                                    <option value="openpose_hand">OpenPose hand</option>
+                                    <option value="openpose_full">OpenPose full</option>
+                                </optgroup>
+                                <optgroup label="Outline">
+                                    <option value="canny">Canny (*)</option>
+                                    <option value="mlsd">Straight lines</option>
+                                    <option value="scribble_hed">Scribble hed (*)</option>
+                                    <option value="scribble_hedsafe">Scribble hedsafe</option>
+                                    <option value="scribble_pidinet">Scribble pidinet</option>
+                                    <option value="scribble_pidsafe">Scribble pidsafe</option>
+                                    <option value="softedge_hed">Softedge hed</option>
+                                    <option value="softedge_hedsafe">Softedge hedsafe</option>
+                                    <option value="softedge_pidinet">Softedge pidinet</option>
+                                    <option value="softedge_pidsafe">Softedge pidsafe</option>
+                                </optgroup>
+                                <optgroup label="Depth">
+                                    <option value="normal_bae">Normal bae (*)</option>
+                                    <option value="depth_midas">Depth midas</option>
+                                    <option value="depth_zoe">Depth zoe</option>
+                                    <option value="depth_leres">Depth leres</option>
+                                    <option value="depth_leres++">Depth leres++</option>
+                                </optgroup>
+                                <optgroup label="Line art">
+                                    <option value="lineart_coarse">Lineart coarse</option>
+                                    <option value="lineart_realistic">Lineart realistic</option>
+                                    <option value="lineart_anime">Lineart anime</option>
+                                </optgroup>
+                                <optgroup label="Misc">
+                                    <option value="shuffle">Shuffle</option>
+                                    <option value="segment">Segment</option>
+                                </optgroup>
+                            </select>
+                            <br/>
+                            <label for="controlnet_model"><small>Model:</small></label> <input id="controlnet_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
+                        </div>
+                    </td></tr>
                     <tr class="pl-5"><td><label for="vae_model">Custom VAE:</label></td><td>
                         <input id="vae_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
                         <a href="https://github.com/easydiffusion/easydiffusion/wiki/VAE-Variational-Auto-Encoder" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about VAEs</span></i></a>
@@ -239,7 +290,7 @@
                         </select>
                         <label for="height"><small>(height)</small></label>
                         <div id="recent-resolutions-container">
-                            <span id="recent-resolutions-button" class="clickable"><i class="fa-solid fa-sliders"><span class="simple-tooltip top-left"> Recent sizes </span></i></span>
+                            <span id="recent-resolutions-button" class="clickable"><i class="fa-solid fa-sliders"><span class="simple-tooltip top-left"> Advanced sizes </span></i></span>
                             <div id="recent-resolutions-popup" class="displayNone">
                                 <small>Custom size:</small><br>
                                 <input id="custom-width" name="custom-width" type="number" min="128" value="512" onkeypress="preventNonNumericalInput(event)">

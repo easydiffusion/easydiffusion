@@ -9,6 +9,7 @@ from easydiffusion.types import ModelsData
 from easydiffusion.utils import log
 from sdkit import Context
 from sdkit.models import load_model, scan_model, unload_model, download_model, get_model_info_from_db
+from sdkit.models.model_loader.controlnet_filters import filters as cn_filters
 from sdkit.utils import hash_file_quick
 
 KNOWN_MODEL_TYPES = [
@@ -19,6 +20,8 @@ KNOWN_MODEL_TYPES = [
     "realesrgan",
     "lora",
     "codeformer",
+    "embeddings",
+    "controlnet",
 ]
 MODEL_EXTENSIONS = {
     "stable-diffusion": [".ckpt", ".safetensors"],
@@ -29,6 +32,7 @@ MODEL_EXTENSIONS = {
     "lora": [".ckpt", ".safetensors"],
     "codeformer": [".pth"],
     "embeddings": [".pt", ".bin", ".safetensors"],
+    "controlnet": [".pth", ".safetensors"],
 }
 DEFAULT_MODELS = {
     "stable-diffusion": [
@@ -177,7 +181,8 @@ def reload_models_if_necessary(context: Context, models_data: ModelsData, models
 def resolve_model_paths(models_data: ModelsData):
     model_paths = models_data.model_paths
     for model_type in model_paths:
-        if model_type in ("latent_upscaler", "nsfw_checker"):  # doesn't use model paths
+        skip_models = cn_filters + ["latent_upscaler", "nsfw_checker"]
+        if model_type in skip_models:  # doesn't use model paths
             continue
         if model_type == "codeformer":
             download_if_necessary("codeformer", "codeformer.pth", "codeformer-0.1.0")
@@ -291,6 +296,7 @@ def getModels(scan_for_malicious: bool = True):
             "lora": [],
             "codeformer": ["codeformer"],
             "embeddings": [],
+            "controlnet": [],
         },
     }
 
@@ -350,6 +356,7 @@ def getModels(scan_for_malicious: bool = True):
     listModels(model_type="gfpgan")
     listModels(model_type="lora")
     listModels(model_type="embeddings")
+    listModels(model_type="controlnet")
 
     if scan_for_malicious and models_scanned > 0:
         log.info(f"[green]Scanned {models_scanned} models. Nothing infected[/]")
