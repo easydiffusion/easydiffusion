@@ -678,8 +678,14 @@ function onUseAsThumbnailClick(req, img) {
 
     useAsThumbDialog.showModal()
     useAsThumbImage.src = img.src
+    img.width = img.height = 512
 
-    var croppr = new Croppr('#croppr', { aspectRatio: 1, minSize: [384,384,'px'], startSize:  [100, 100, '%'], returnMode:"real" })
+    var croppr = new Croppr(useAsThumbImage, { aspectRatio: 1, minSize: [384,384,'px'], startSize:  [100, 100, '%'], returnMode:"real" })
+
+    useAsThumbDialog.addEventListener("blur", () => {
+        console.log("blur")
+        croppr.destroy
+    })
 
 //    fetch(img.src)
 //      .then(response => response.blob())
@@ -690,6 +696,10 @@ function onUseAsThumbnailClick(req, img) {
 //          console.log(response)
 //      })
 }
+
+modalDialogCloseOnBackdropClick(useAsThumbDialog)
+makeDialogDraggable(useAsThumbDialog)
+
 
 function enqueueImageVariationTask(req, img, reqDiff) {
     const imageSeed = img.getAttribute("data-seed")
