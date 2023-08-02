@@ -186,6 +186,16 @@ var PARAMETERS = [
         default: true,
     },
     {
+        id: "profileName",
+        type: ParameterType.custom,
+        label: "Profile Name",
+        note: "Name of the profile for model manager settings, e.g. thumbnails for embeddings. Use this to have different settings for different users.",
+        render: (parameter) => {
+            return `<input id="${parameter.id}" name="${parameter.id}" value="default" size="12">`
+        },
+        icon: "fa-user-gear",
+    },
+    {
         id: "listen_to_network",
         type: ParameterType.checkbox,
         label: "Make Stable Diffusion available on your network",
@@ -389,6 +399,7 @@ let useBetaChannelField = document.querySelector("#use_beta_channel")
 let uiOpenBrowserOnStartField = document.querySelector("#ui_open_browser_on_start")
 let confirmDangerousActionsField = document.querySelector("#confirm_dangerous_actions")
 let testDiffusers = document.querySelector("#test_diffusers")
+let profileNameField = document.querySelector("#profileName")
 
 let saveSettingsBtn = document.querySelector("#save-system-settings-btn")
 

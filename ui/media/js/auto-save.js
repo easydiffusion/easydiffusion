@@ -45,6 +45,7 @@ const SETTINGS_IDS_LIST = [
     "sound_toggle",
     "vram_usage_level",
     "confirm_dangerous_actions",
+    "profileName",
     "metadata_output_format",
     "auto_save_settings",
     "apply_color_correction",

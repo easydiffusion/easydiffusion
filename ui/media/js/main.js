@@ -171,7 +171,8 @@ let saveAllJSONToggle = document.querySelector("#json_toggle")
 let saveAllFoldersOption = document.querySelector("#download-add-folders")
 let splashScreenPopup = document.querySelector("#splash-screen")
 let useAsThumbDialog = document.querySelector("#use-as-thumb-dialog")
-let useAsThumbImage = document.querySelector("#use-as-thumb-image")
+let useAsThumbImageContainer = document.querySelector("#use-as-thumb-img-container")
+let useAsThumbSelect = document.querySelector("#use-as-thumb-select")
 
 let maskSetting = document.querySelector("#enable_mask")
 
@@ -678,20 +679,88 @@ function onMakeSimilarClick(req, img) {
     createTask(newTaskRequest)
 }
 
+function getAllModelNames(type) {
+    function f(tree) {
+        if (tree == undefined) {
+            return []
+        }
+        let result=[]; 
+        tree.forEach( e => { 
+            if (typeof(e) == "object") {
+                result = result.concat( f(e[1]))
+            } else {
+                result.push(e) 
+            }
+        });
+        return result
+    }
+    return f(modelsOptions[type])
+}
+
 function onUseAsThumbnailClick(req, img) {
     console.log(req)
     console.log(img)
+    let scale = 1
+    let targetWidth = img.naturalWidth
+    let targetHeight = img.naturalHeight
+    
+    let resize = false
+
+    if ( typeof(onUseAsThumbnailClick.croppr) == 'undefined' ) {
+        console.log("INIT CROPPR")
+        onUseAsThumbnailClick.croppr = new Croppr("#use-as-thumb-image", { aspectRatio: 1, minSize: [384,384,'px'], startSize:  [512, 512, 'px'], returnMode:"real" })
+    }
+
+    if (img.naturalWidth > img.naturalHeight) {
+        if (img.naturalWidth > 768) {
+           scale = 768 / img.naturalWidth
+           targetWidth  = 768
+           targetHeight = (img.naturalHeight*scale)>>>0
+           resize = true
+        }
+    } else {
+        if (img.naturalHeight > 768) {
+            scale = 768 / img.naturalHeight
+            targetHeight = 768
+            targetWidth  = (img.naturalWidth*scale)>>>0
+            resize = true
+        }
+    }
+    if (resize) {
+        console.log("Resize",targetWidth,targetHeight)
+        const canvas = document.createElement('canvas')
+        canvas.width = targetWidth
+        canvas.height = targetHeight
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0, targetWidth, targetHeight)
+
+        onUseAsThumbnailClick.croppr.options.minSize = {width: 384*scale>>>0, height: 384*scale>>>0}
+        onUseAsThumbnailClick.croppr.options.startSize = {width: 512*scale>>>0, height: 512*scale>>>0}
+
+        onUseAsThumbnailClick.croppr.setImage(canvas.toDataURL('image/png'))
+    } else {
+        onUseAsThumbnailClick.croppr.setImage(img.src)
+    }
+
+    let embeddings = getAllModelNames("embeddings").filter( e => req.prompt.includes(e) || req.negative_prompt.includes(e) )
+    let LORA = []
+
+    if ("use_lora_model" in req) {
+        LORA=req.use_lora_model
+    }
+
+    let optgroup = document.createElement("optgroup")
+    optgroup.label = "Embeddings"
+    optgroup.replaceChildren(...embeddings.map(e => { 
+        let option = document.createElement("option")
+        option.innerText = e
+        return option
+    }))
+    
+    console.log("##OptGroup",optgroup)
+    useAsThumbSelect.replaceChildren(optgroup)
 
     useAsThumbDialog.showModal()
-    useAsThumbImage.src = img.src
-    img.width = img.height = 512
-
-    var croppr = new Croppr(useAsThumbImage, { aspectRatio: 1, minSize: [384,384,'px'], startSize:  [100, 100, '%'], returnMode:"real" })
-
-    useAsThumbDialog.addEventListener("blur", () => {
-        console.log("blur")
-        croppr.destroy
-    })
 
 //    fetch(img.src)
 //      .then(response => response.blob())
@@ -2522,13 +2591,14 @@ function updateEmbeddingsList(filter = "") {
         let embIcon = Object.assign({}, ...iconlist.map( x=> ({[x.toLowerCase().split('.').slice(0,-1).join('.')]:x})))
         console.log(embIcon)
 
+        let profileName = profileNameField.value
         model?.forEach((m) => {
             if (typeof m == "string") {
                 let token=m.toLowerCase()
                 if (token.search(filter) != -1) {
                     let img = '/media/images/noimg.png'
                     if (token in embIcon) {
-                        img = `/bucket/embeddings/${embIcon[token]}`
+                        img = `/bucket/${profileName}/embeddings/${embIcon[token]}`
                     }
                     if (iconlist.length==0) {
                         img=""
