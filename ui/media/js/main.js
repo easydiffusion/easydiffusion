@@ -1454,8 +1454,8 @@ function getCurrentUserRequest() {
         newTask.reqBody.convert_to_tensorrt = document.querySelector("#convert_to_tensorrt").checked
         let trtBuildConfig = {
             batch_size_range: [
-                parseInt(document.querySelector("#trt-build-batch").value),
-                parseInt(document.querySelector("#trt-build-batch").value),
+                parseInt(document.querySelector("#trt-build-min-batch").value),
+                parseInt(document.querySelector("#trt-build-max-batch").value),
             ],
             dimensions_range: [],
         }
