@@ -15,6 +15,7 @@ from sdkit.utils import (
     img_to_base64_str,
     img_to_buffer,
     latent_samples_to_images,
+    log,
 )
 
 from .task import Task
@@ -236,7 +237,9 @@ def generate_images_internal(
                 if convert_to_trt:
                     pipe.unet.forward = pipe.unet._trt_forward
                     # pipe.vae.decoder.forward = pipe.vae.decoder._trt_forward
+                    log.info(f"Setting unet.forward to TensorRT")
                 else:
+                    log.info(f"Not using TensorRT for unet.forward")
                     pipe.unet.forward = pipe.unet._non_trt_forward
                     # pipe.vae.decoder.forward = pipe.vae.decoder._non_trt_forward
                     setattr(pipe.unet, "_allocate_trt_buffers_backup", pipe.unet._allocate_trt_buffers)
