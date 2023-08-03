@@ -2245,6 +2245,9 @@ controlImageSelector.addEventListener("change", loadControlnetImageFromFile)
 function controlImageLoad() {
     let w = controlImagePreview.naturalWidth
     let h = controlImagePreview.naturalHeight
+    w = w - (w % 8)
+    h = h - (h % 8)
+
     addImageSizeOption(w)
     addImageSizeOption(h)
 
