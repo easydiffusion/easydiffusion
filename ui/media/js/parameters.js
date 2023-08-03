@@ -462,6 +462,7 @@ async function getAppConfig() {
             document.querySelector("#lora_model_container").style.display = "none"
             document.querySelector("#tiling_container").style.display = "none"
             document.querySelector("#controlnet_model_container").style.display = "none"
+            document.querySelector("#hypernetwork_model_container").style.display = ""
             document.querySelector("#hypernetwork_strength_container").style.display = ""
 
             document.querySelectorAll("#sampler_name option.diffusers-only").forEach((option) => {
@@ -474,6 +475,7 @@ async function getAppConfig() {
             document.querySelector("#lora_model_container").style.display = ""
             document.querySelector("#tiling_container").style.display = ""
             document.querySelector("#controlnet_model_container").style.display = ""
+            document.querySelector("#hypernetwork_model_container").style.display = "none"
             document.querySelector("#hypernetwork_strength_container").style.display = "none"
 
             document.querySelectorAll("#sampler_name option.k_diffusion-only").forEach((option) => {
