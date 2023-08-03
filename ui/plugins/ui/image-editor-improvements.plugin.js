@@ -124,35 +124,17 @@
         // Draw the image with centered coordinates
         context.drawImage(imageObj, x, y, this.width, this.height);
 
-        initImagePreview.src = canvas.toDataURL('image/png');
+        let bestWidth = maxCroppedWidth - maxCroppedWidth % 8
+        let bestHeight = maxCroppedHeight - maxCroppedHeight % 8
 
-        // Get the options from widthField and heightField
-        const widthOptions = Array.from(widthField.options).map(option => parseInt(option.value));
-        const heightOptions = Array.from(heightField.options).map(option => parseInt(option.value));
-
-        // Find the closest aspect ratio and closest to original dimensions
-        let bestWidth = widthOptions[0];
-        let bestHeight = heightOptions[0];
-        let minDifference = Math.abs(maxCroppedWidth / maxCroppedHeight - bestWidth / bestHeight);
-        let minDistance = Math.abs(maxCroppedWidth - bestWidth) + Math.abs(maxCroppedHeight - bestHeight);
-
-        for (const width of widthOptions) {
-            for (const height of heightOptions) {
-                const difference = Math.abs(maxCroppedWidth / maxCroppedHeight - width / height);
-                const distance = Math.abs(maxCroppedWidth - width) + Math.abs(maxCroppedHeight - height);
-
-                if (difference < minDifference || (difference === minDifference && distance < minDistance)) {
-                    minDifference = difference;
-                    minDistance = distance;
-                    bestWidth = width;
-                    bestHeight = height;
-                }
-            }
-        }
+        addImageSizeOption(bestWidth)
+        addImageSizeOption(bestHeight)
 
         // Set the width and height to the closest aspect ratio and closest to original dimensions
         widthField.value = bestWidth;
         heightField.value = bestHeight;
+
+        initImagePreview.src = canvas.toDataURL('image/png');
     };
     
 	function handlePaste(e) {

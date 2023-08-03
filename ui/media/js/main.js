@@ -2162,6 +2162,7 @@ function checkRandomSeed() {
 randomSeedField.addEventListener("input", checkRandomSeed)
 checkRandomSeed()
 
+// warning: the core plugin `image-editor-improvements.js:172` replaces loadImg2ImgFromFile() with a custom version
 function loadImg2ImgFromFile() {
     if (initImageSelector.files.length === 0) {
         return
