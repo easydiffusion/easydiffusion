@@ -698,8 +698,6 @@ function getAllModelNames(type) {
 }
 
 function onUseAsThumbnailClick(req, img) {
-    console.log(req)
-    console.log(img)
     let scale = 1
     let targetWidth = img.naturalWidth
     let targetHeight = img.naturalHeight
@@ -707,7 +705,6 @@ function onUseAsThumbnailClick(req, img) {
     let resize = false
 
     if ( typeof(onUseAsThumbnailClick.croppr) == 'undefined' ) {
-        console.log("INIT CROPPR")
         onUseAsThumbnailClick.croppr = new Croppr("#use-as-thumb-image", { aspectRatio: 1, minSize: [384,384,'px'], startSize:  [512, 512, 'px'], returnMode:"real" })
     }
 
@@ -727,7 +724,6 @@ function onUseAsThumbnailClick(req, img) {
         }
     }
     if (resize) {
-        console.log("Resize",targetWidth,targetHeight)
         const canvas = document.createElement('canvas')
         canvas.width = targetWidth
         canvas.height = targetHeight
@@ -754,14 +750,15 @@ function onUseAsThumbnailClick(req, img) {
     optgroup.replaceChildren(...embeddings.map(e => { 
         let option = document.createElement("option")
         option.innerText = e
+        option.dataset["type"] = "embeddings"
         return option
     }))
     
-    console.log("##OptGroup",optgroup)
     useAsThumbSelect.replaceChildren(optgroup)
 
     useAsThumbDialog.showModal()
 
+    
 //    fetch(img.src)
 //      .then(response => response.blob())
 //      .then(async function(blob) {
