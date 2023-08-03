@@ -5,10 +5,10 @@ If you haven't downloaded Stable Diffusion UI yet, please download from https://
 After downloading, to install please follow these instructions:
 
 For Windows:
-- Please double-click the "Start Stable Diffusion UI.cmd" file inside the "stable-diffusion-ui" folder.
+- Please double-click the "Easy-Diffusion-Windows.exe" file and follow the instructions.
 
 For Linux:
-- Please open a terminal, and go to the "stable-diffusion-ui" directory. Then run ./start.sh
+- Please open a terminal, unzip the Easy-Diffusion-Linux.zip file and go to the "easy-diffusion" directory. Then run ./start.sh
 
 That file will automatically install everything. After that it will start the Stable Diffusion interface in a web browser.
 
