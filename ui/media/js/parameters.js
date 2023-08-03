@@ -462,16 +462,19 @@ async function getAppConfig() {
             document.querySelector("#lora_model_container").style.display = "none"
             document.querySelector("#tiling_container").style.display = "none"
             document.querySelector("#controlnet_model_container").style.display = "none"
+            document.querySelector("#hypernetwork_strength_container").style.display = ""
 
             document.querySelectorAll("#sampler_name option.diffusers-only").forEach((option) => {
                 option.style.display = "none"
             })
-            customWidthField.step = 64
-            customHeightField.step = 64
+            IMAGE_STEP_SIZE = 64
+            customWidthField.step = IMAGE_STEP_SIZE
+            customHeightField.step = IMAGE_STEP_SIZE
         } else {
             document.querySelector("#lora_model_container").style.display = ""
             document.querySelector("#tiling_container").style.display = ""
             document.querySelector("#controlnet_model_container").style.display = ""
+            document.querySelector("#hypernetwork_strength_container").style.display = "none"
 
             document.querySelectorAll("#sampler_name option.k_diffusion-only").forEach((option) => {
                 option.style.display = "none"
@@ -479,8 +482,9 @@ async function getAppConfig() {
             document.querySelector("#clip_skip_config").classList.remove("displayNone")
             document.querySelector("#embeddings-button").classList.remove("displayNone")
             document.querySelector("#negative-embeddings-button").classList.remove("displayNone")
-            customWidthField.step = 8
-            customHeightField.step = 8
+            IMAGE_STEP_SIZE = 8
+            customWidthField.step = IMAGE_STEP_SIZE
+            customHeightField.step = IMAGE_STEP_SIZE
         }
 
         console.log("get config status response", config)
