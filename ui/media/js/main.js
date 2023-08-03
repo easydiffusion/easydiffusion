@@ -183,6 +183,8 @@ let undoBuffer = []
 const UNDO_LIMIT = 20
 const MAX_IMG_UNDO_ENTRIES = 5
 
+let IMAGE_STEP_SIZE = 64
+
 let loraModels = []
 
 imagePreview.addEventListener("drop", function(ev) {
@@ -1368,8 +1370,8 @@ function getCurrentUserRequest() {
     // clamp to multiple of 8
     let width = parseInt(widthField.value)
     let height = parseInt(heightField.value)
-    width = width - (width % 8)
-    height = height - (height % 8)
+    width = width - (width % IMAGE_STEP_SIZE)
+    height = height - (height % IMAGE_STEP_SIZE)
 
     const newTask = {
         batchesDone: 0,
@@ -2245,8 +2247,8 @@ controlImageSelector.addEventListener("change", loadControlnetImageFromFile)
 function controlImageLoad() {
     let w = controlImagePreview.naturalWidth
     let h = controlImagePreview.naturalHeight
-    w = w - (w % 8)
-    h = h - (h % 8)
+    w = w - (w % IMAGE_STEP_SIZE)
+    h = h - (h % IMAGE_STEP_SIZE)
 
     addImageSizeOption(w)
     addImageSizeOption(h)

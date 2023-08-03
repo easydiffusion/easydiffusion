@@ -124,8 +124,8 @@
         // Draw the image with centered coordinates
         context.drawImage(imageObj, x, y, this.width, this.height);
 
-        let bestWidth = maxCroppedWidth - maxCroppedWidth % 8
-        let bestHeight = maxCroppedHeight - maxCroppedHeight % 8
+        let bestWidth = maxCroppedWidth - maxCroppedWidth % IMAGE_STEP_SIZE
+        let bestHeight = maxCroppedHeight - maxCroppedHeight % IMAGE_STEP_SIZE
 
         addImageSizeOption(bestWidth)
         addImageSizeOption(bestHeight)
