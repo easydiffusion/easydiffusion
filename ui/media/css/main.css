@@ -1853,3 +1853,8 @@ div#enlarge-buttons {
 #controlnet_model {
     width: 77%;
 }
+
+/* hack for fixing Image Modifier Improvements plugin */
+#imageTagPopupContainer {
+    position: absolute;
+}

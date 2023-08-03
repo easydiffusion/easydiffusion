@@ -148,7 +148,7 @@ def reload_models_if_necessary(context: Context, models_data: ModelsData, models
     models_to_reload = {
         model_type: path
         for model_type, path in models_data.model_paths.items()
-        if context.model_paths.get(model_type) != path
+        if context.model_paths.get(model_type) != path or (path is not None and context.models.get(model_type) is None)
     }
 
     if models_data.model_paths.get("codeformer"):

@@ -186,6 +186,8 @@ let undoBuffer = []
 const UNDO_LIMIT = 20
 const MAX_IMG_UNDO_ENTRIES = 5
 
+let IMAGE_STEP_SIZE = 64
+
 let loraModels = []
 
 imagePreview.addEventListener("drop", function(ev) {
@@ -1453,15 +1455,21 @@ function getCurrentUserRequest() {
     let numOutputsParallel = parseInt(numOutputsParallelField.value)
     const seed = randomSeedField.checked ? Math.floor(Math.random() * (2 ** 32 - 1)) : parseInt(seedField.value)
 
-    if (
-        testDiffusers.checked &&
-        document.getElementById("toggle-tensorrt-install").innerHTML == "Uninstall" &&
-        document.querySelector("#convert_to_tensorrt").checked
-    ) {
-        // TRT enabled
+    // if (
+    //     testDiffusers.checked &&
+    //     document.getElementById("toggle-tensorrt-install").innerHTML == "Uninstall" &&
+    //     document.querySelector("#convert_to_tensorrt").checked
+    // ) {
+    //     // TRT enabled
 
-        numOutputsParallel = 1 // force 1 parallel
-    }
+    //     numOutputsParallel = 1 // force 1 parallel
+    // }
+
+    // clamp to multiple of 8
+    let width = parseInt(widthField.value)
+    let height = parseInt(heightField.value)
+    width = width - (width % IMAGE_STEP_SIZE)
+    height = height - (height % IMAGE_STEP_SIZE)
 
     const newTask = {
         batchesDone: 0,
@@ -1475,8 +1483,8 @@ function getCurrentUserRequest() {
             num_outputs: numOutputsParallel,
             num_inference_steps: parseInt(numInferenceStepsField.value),
             guidance_scale: parseFloat(guidanceScaleField.value),
-            width: parseInt(widthField.value),
-            height: parseInt(heightField.value),
+            width: width,
+            height: height,
             // allow_nsfw: allowNSFWField.checked,
             vram_usage_level: vramUsageLevelField.value,
             sampler_name: samplerField.value,
@@ -1550,6 +1558,22 @@ function getCurrentUserRequest() {
     if (testDiffusers.checked && document.getElementById("toggle-tensorrt-install").innerHTML == "Uninstall") {
         // TRT is installed
         newTask.reqBody.convert_to_tensorrt = document.querySelector("#convert_to_tensorrt").checked
+        let trtBuildConfig = {
+            batch_size_range: [
+                parseInt(document.querySelector("#trt-build-min-batch").value),
+                parseInt(document.querySelector("#trt-build-max-batch").value),
+            ],
+            dimensions_range: [],
+        }
+
+        let sizes = [512, 768, 1024, 1280, 1536]
+        sizes.forEach((i) => {
+            let el = document.querySelector("#trt-build-res-" + i)
+            if (el.checked) {
+                trtBuildConfig["dimensions_range"].push([i, i + 256])
+            }
+        })
+        newTask.reqBody.trt_build_config = trtBuildConfig
     }
     if (controlnetModelField.value !== "" && IMAGE_REGEX.test(controlImagePreview.src)) {
         newTask.reqBody.use_controlnet_model = controlnetModelField.value
@@ -2238,6 +2262,7 @@ function checkRandomSeed() {
 randomSeedField.addEventListener("input", checkRandomSeed)
 checkRandomSeed()
 
+// warning: the core plugin `image-editor-improvements.js:172` replaces loadImg2ImgFromFile() with a custom version
 function loadImg2ImgFromFile() {
     if (initImageSelector.files.length === 0) {
         return
@@ -2320,6 +2345,9 @@ controlImageSelector.addEventListener("change", loadControlnetImageFromFile)
 function controlImageLoad() {
     let w = controlImagePreview.naturalWidth
     let h = controlImagePreview.naturalHeight
+    w = w - (w % IMAGE_STEP_SIZE)
+    h = h - (h % IMAGE_STEP_SIZE)
+
     addImageSizeOption(w)
     addImageSizeOption(h)
 
@@ -2481,6 +2509,7 @@ function packagesUpdate(event) {
 
     if (document.getElementById("toggle-tensorrt-install").innerHTML == "Uninstall") {
         document.querySelector("#enable_trt_config").classList.remove("displayNone")
+        document.querySelector("#trt-build-config").classList.remove("displayNone")
 
         if (!trtSettingsForced) {
             // settings for demo
@@ -2492,8 +2521,8 @@ function packagesUpdate(event) {
             seedField.disabled = false
             stableDiffusionModelField.value = "sd-v1-4"
 
-            numOutputsParallelField.classList.add("displayNone")
-            document.querySelector("#num_outputs_parallel_label").classList.add("displayNone")
+            // numOutputsParallelField.classList.add("displayNone")
+            // document.querySelector("#num_outputs_parallel_label").classList.add("displayNone")
 
             trtSettingsForced = true
         }
