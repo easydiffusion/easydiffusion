@@ -129,6 +129,31 @@ function tryLoadOldCollapsibles() {
     return null
 }
 
+function collapseAll(selector) {
+    const collapsibleElems = document.querySelectorAll(selector); // needs to have ";"
+
+    [...collapsibleElems].forEach((elem) => {
+        const isActive =  elem.classList.contains("active")
+
+        if(isActive) {
+            elem?.click()
+        }
+    })
+}
+
+function expandAll(selector) {
+    const collapsibleElems = document.querySelectorAll(selector); // needs to have ";"
+
+    [...collapsibleElems].forEach((elem) => {
+        const isActive =  elem.classList.contains("active")
+
+        if (!isActive) {
+            elem?.click()
+        }
+    })
+}
+
+
 function permute(arr) {
     let permutations = []
     let n = arr.length
@@ -151,6 +176,10 @@ function permute(arr) {
     }
 
     return permutations
+}
+
+function permuteNumber(arr) {
+    return Math.pow(2, arr.length)
 }
 
 // https://stackoverflow.com/a/8212878
@@ -841,6 +870,7 @@ function createTab(request) {
     })
 }
 
+
 /* TOAST NOTIFICATIONS */
 function showToast(message, duration = 5000, error = false) {
     const toast = document.createElement("div")
@@ -923,3 +953,207 @@ function confirm(msg, title, fn) {
         },
     })
 }
+
+
+/* STORAGE MANAGEMENT */
+// Request persistent storage
+async function requestPersistentStorage() {
+    if (navigator.storage && navigator.storage.persist) {
+        const isPersisted = await navigator.storage.persist();
+        console.log(`Persisted storage granted: ${isPersisted}`);
+    }
+}
+requestPersistentStorage()
+
+// Open a database
+async function openDB() {
+    return new Promise((resolve, reject) => {
+        let request = indexedDB.open("EasyDiffusionSettingsDatabase", 1);
+        request.addEventListener("upgradeneeded", function () {
+            let db = request.result;
+            db.createObjectStore("EasyDiffusionSettings", { keyPath: "id" });
+        });
+        request.addEventListener("success", function () {
+            resolve(request.result);
+        });
+        request.addEventListener("error", function () {
+            reject(request.error);
+        });
+    });
+}
+
+// Function to write data to the object store
+async function setStorageData(key, value) {
+    return openDB().then(db => {
+        let tx = db.transaction("EasyDiffusionSettings", "readwrite");
+        let store = tx.objectStore("EasyDiffusionSettings");
+        let data = { id: key, value: value };
+        return new Promise((resolve, reject) => {
+            let request = store.put(data);
+            request.addEventListener("success", function () {
+                resolve(request.result);
+            });
+            request.addEventListener("error", function () {
+                reject(request.error);
+            });
+        });
+    });
+}
+
+// Function to retrieve data from the object store
+async function getStorageData(key) {
+    return openDB().then(db => {
+        let tx = db.transaction("EasyDiffusionSettings", "readonly");
+        let store = tx.objectStore("EasyDiffusionSettings");
+        return new Promise((resolve, reject) => {
+            let request = store.get(key);
+            request.addEventListener("success", function () {
+                if (request.result) {
+                    resolve(request.result.value);
+                } else {
+                    // entry not found
+                    resolve();
+                }
+            });
+            request.addEventListener("error", function () {
+                reject(request.error);
+            });
+        });
+    });
+}
+
+function insertAtCursor(field, text) {
+    if (field.selectionStart || field.selectionStart == "0") {
+        var startPos = field.selectionStart
+        var endPos = field.selectionEnd
+        var before = field.value.substring(0, startPos)
+        var after = field.value.substring(endPos, field.value.length)
+
+        if (!before.endsWith(" ")) { before += " " }
+        if (!after.startsWith(" ")) { after = " "+after }
+
+        field.value = before + text + after
+    } else {
+        field.value += text
+    }
+}
+
+// indexedDB debug functions
+async function getAllKeys() {
+    return openDB().then(db => {
+        let tx = db.transaction("EasyDiffusionSettings", "readonly");
+        let store = tx.objectStore("EasyDiffusionSettings");
+        let keys = [];
+        return new Promise((resolve, reject) => {
+            store.openCursor().onsuccess = function (event) {
+                let cursor = event.target.result;
+                if (cursor) {
+                    keys.push(cursor.key);
+                    cursor.continue();
+                } else {
+                    resolve(keys);
+                }
+            };
+        });
+    });
+}
+
+async function logAllStorageKeys() {
+    try {
+        let keys = await getAllKeys();
+        console.log("All keys:", keys);
+        for (const k of keys) {
+            console.log(k, await getStorageData(k))
+        }
+    } catch (error) {
+        console.error("Error retrieving keys:", error);
+    }
+}
+
+// USE WITH CARE - THIS MAY DELETE ALL ENTRIES
+async function deleteKeys(keyToDelete) {
+    let confirmationMessage = keyToDelete
+        ? `This will delete the template with key "${keyToDelete}". Continue?`
+        : "This will delete ALL templates. Continue?";
+    if (confirm(confirmationMessage)) {
+        return openDB().then(db => {
+            let tx = db.transaction("EasyDiffusionSettings", "readwrite");
+            let store = tx.objectStore("EasyDiffusionSettings");
+            return new Promise((resolve, reject) => {
+                store.openCursor().onsuccess = function (event) {
+                    let cursor = event.target.result;
+                    if (cursor) {
+                        if (!keyToDelete || cursor.key === keyToDelete) {
+                            cursor.delete();
+                        }
+                        cursor.continue();
+                    } else {
+                        // refresh the dropdown and resolve
+                        resolve();
+                    }
+                };
+            });
+        });
+    }
+}
+
+function modalDialogCloseOnBackdropClick(dialog) {
+    dialog.addEventListener('mousedown', function (event) {
+        // Firefox creates an event with clientX|Y = 0|0 when choosing an <option>.
+        // Test whether the element interacted with is a child of the dialog, but not the
+        // dialog itself (the backdrop would be a part of the dialog)
+        if (dialog.contains(event.target) && dialog != event.target) {
+            return
+        }
+        var rect = dialog.getBoundingClientRect()
+        var isInDialog=(rect.top <= event.clientY && event.clientY <= rect.top + rect.height
+          && rect.left <= event.clientX && event.clientX <= rect.left + rect.width)
+        if (!isInDialog) {
+            dialog.close()
+        }
+    })
+}
+
+function makeDialogDraggable(element) {
+    element.querySelector(".dialog-header").addEventListener('mousedown', (function() {
+        let deltaX=0
+        let deltaY=0
+        let dragStartX=0
+        let dragStartY=0
+        let oldTop=0
+        let oldLeft=0
+
+        function dlgDragStart(e) {
+            e = e || window.event;
+            const d = e.target.closest("dialog")
+            e.preventDefault();
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            oldTop = parseInt(d.style.top)
+            oldLeft = parseInt(d.style.left)
+            if (isNaN(oldTop)) { oldTop=0 }
+            if (isNaN(oldLeft)) { oldLeft=0 }
+            document.addEventListener('mouseup', dlgDragClose);
+            document.addEventListener('mousemove', dlgDrag);
+        }
+
+        function dlgDragClose(e) {
+            document.removeEventListener('mouseup', dlgDragClose);
+            document.removeEventListener('mousemove', dlgDrag);
+        }
+
+        function dlgDrag(e) {
+            e = e || window.event;
+            const d = e.target.closest("dialog")
+            e.preventDefault();
+            deltaX = dragStartX - e.clientX;
+            deltaY = dragStartY - e.clientY;
+            d.style.left = `${oldLeft-2*deltaX}px`
+            d.style.top  = `${oldTop-2*deltaY}px`
+        }
+
+        return dlgDragStart
+    })() )
+}
+
+

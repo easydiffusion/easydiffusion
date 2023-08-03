@@ -2,6 +2,8 @@
 
 echo "Opening Stable Diffusion UI - Developer Console.." & echo.
 
+cd /d %~dp0
+
 set PATH=C:\Windows\System32;%PATH%
 
 @rem set legacy and new installer's PATH, if they exist
@@ -22,6 +24,8 @@ call where conda
 call conda --version
 
 echo.
+echo COMSPEC=%COMSPEC%
+echo.
 
 @rem activate the legacy environment (if present) and set PYTHONPATH
 if exist "installer_files\env" (
@@ -36,6 +40,10 @@ call where python
 call python --version
 
 echo PYTHONPATH=%PYTHONPATH%
+
+if exist "%cd%\profile" (
+    set HF_HOME=%cd%\profile\.cache\huggingface
+)
 
 @rem done
 echo.

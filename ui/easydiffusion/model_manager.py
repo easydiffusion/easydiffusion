@@ -2,12 +2,14 @@ import os
 import shutil
 from glob import glob
 import traceback
+from typing import Union
 
 from easydiffusion import app
-from easydiffusion.types import TaskData
+from easydiffusion.types import ModelsData
 from easydiffusion.utils import log
 from sdkit import Context
 from sdkit.models import load_model, scan_model, unload_model, download_model, get_model_info_from_db
+from sdkit.models.model_loader.controlnet_filters import filters as cn_filters
 from sdkit.utils import hash_file_quick
 
 KNOWN_MODEL_TYPES = [
@@ -18,6 +20,8 @@ KNOWN_MODEL_TYPES = [
     "realesrgan",
     "lora",
     "codeformer",
+    "embeddings",
+    "controlnet",
 ]
 MODEL_EXTENSIONS = {
     "stable-diffusion": [".ckpt", ".safetensors"],
@@ -27,6 +31,8 @@ MODEL_EXTENSIONS = {
     "realesrgan": [".pth"],
     "lora": [".ckpt", ".safetensors"],
     "codeformer": [".pth"],
+    "embeddings": [".pt", ".bin", ".safetensors"],
+    "controlnet": [".pth", ".safetensors"],
 }
 DEFAULT_MODELS = {
     "stable-diffusion": [
@@ -52,11 +58,15 @@ def init():
     make_model_folders()
     migrate_legacy_model_location()  # if necessary
     download_default_models_if_necessary()
-    getModels()  # run this once, to cache the picklescan results
 
 
 def load_default_models(context: Context):
-    set_vram_optimizations(context)
+    from easydiffusion import runtime
+
+    runtime.set_vram_optimizations(context)
+
+    config = app.getConfig()
+    context.embeddings_path = os.path.join(app.MODELS_DIR, "embeddings")
 
     # init default model paths
     for model_type in MODELS_TO_LOAD_ON_START:
@@ -90,7 +100,14 @@ def unload_all(context: Context):
             del context.model_load_errors[model_type]
 
 
-def resolve_model_to_use(model_name: str = None, model_type: str = None, fail_if_not_found: bool = True):
+def resolve_model_to_use(model_name: Union[str, list] = None, model_type: str = None, fail_if_not_found: bool = True):
+    model_names = model_name if isinstance(model_name, list) else [model_name]
+    model_paths = [resolve_model_to_use_single(m, model_type, fail_if_not_found) for m in model_names]
+
+    return model_paths[0] if len(model_paths) == 1 else model_paths
+
+
+def resolve_model_to_use_single(model_name: str = None, model_type: str = None, fail_if_not_found: bool = True):
     model_extensions = MODEL_EXTENSIONS.get(model_type, [])
     default_models = DEFAULT_MODELS.get(model_type, [])
     config = app.getConfig()
@@ -127,43 +144,32 @@ def resolve_model_to_use(model_name: str = None, model_type: str = None, fail_if
         raise Exception(f"Could not find the desired model {model_name}! Is it present in the {model_dir} folder?")
 
 
-def reload_models_if_necessary(context: Context, task_data: TaskData):
-    face_fix_lower = task_data.use_face_correction.lower() if task_data.use_face_correction else ""
-    upscale_lower = task_data.use_upscale.lower() if task_data.use_upscale else ""
-
-    model_paths_in_req = {
-        "stable-diffusion": task_data.use_stable_diffusion_model,
-        "vae": task_data.use_vae_model,
-        "hypernetwork": task_data.use_hypernetwork_model,
-        "codeformer": task_data.use_face_correction if "codeformer" in face_fix_lower else None,
-        "gfpgan": task_data.use_face_correction if "gfpgan" in face_fix_lower else None,
-        "realesrgan": task_data.use_upscale if "realesrgan" in upscale_lower else None,
-        "latent_upscaler": True if "latent_upscaler" in upscale_lower else None,
-        "nsfw_checker": True if task_data.block_nsfw else None,
-        "lora": task_data.use_lora_model,
-    }
+def reload_models_if_necessary(context: Context, models_data: ModelsData, models_to_force_reload: list = []):
     models_to_reload = {
         model_type: path
-        for model_type, path in model_paths_in_req.items()
-        if context.model_paths.get(model_type) != path
+        for model_type, path in models_data.model_paths.items()
+        if context.model_paths.get(model_type) != path or (path is not None and context.models.get(model_type) is None)
     }
 
-    if task_data.codeformer_upscale_faces:
+    if models_data.model_paths.get("codeformer"):
         if "realesrgan" not in models_to_reload and "realesrgan" not in context.models:
             default_realesrgan = DEFAULT_MODELS["realesrgan"][0]["file_name"]
             models_to_reload["realesrgan"] = resolve_model_to_use(default_realesrgan, "realesrgan")
         elif "realesrgan" in models_to_reload and models_to_reload["realesrgan"] is None:
             del models_to_reload["realesrgan"]  # don't unload realesrgan
 
-    if set_vram_optimizations(context) or set_clip_skip(context, task_data):  # reload SD
-        models_to_reload["stable-diffusion"] = model_paths_in_req["stable-diffusion"]
+    for model_type in models_to_force_reload:
+        if model_type not in models_data.model_paths:
+            continue
+        models_to_reload[model_type] = models_data.model_paths[model_type]
 
     for model_type, model_path_in_req in models_to_reload.items():
         context.model_paths[model_type] = model_path_in_req
 
         action_fn = unload_model if context.model_paths[model_type] is None else load_model
+        extra_params = models_data.model_params.get(model_type, {})
         try:
-            action_fn(context, model_type, scan_model=False)  # we've scanned them already
+            action_fn(context, model_type, scan_model=False, **extra_params)  # we've scanned them already
             if model_type in context.model_load_errors:
                 del context.model_load_errors[model_type]
         except Exception as e:
@@ -172,24 +178,22 @@ def reload_models_if_necessary(context: Context, task_data: TaskData):
                 context.model_load_errors[model_type] = str(e)  # storing the entire Exception can lead to memory leaks
 
 
-def resolve_model_paths(task_data: TaskData):
-    task_data.use_stable_diffusion_model = resolve_model_to_use(
-        task_data.use_stable_diffusion_model, model_type="stable-diffusion"
-    )
-    task_data.use_vae_model = resolve_model_to_use(task_data.use_vae_model, model_type="vae")
-    task_data.use_hypernetwork_model = resolve_model_to_use(task_data.use_hypernetwork_model, model_type="hypernetwork")
-    task_data.use_lora_model = resolve_model_to_use(task_data.use_lora_model, model_type="lora")
-
-    if task_data.use_face_correction:
-        if "gfpgan" in task_data.use_face_correction.lower():
-            model_type = "gfpgan"
-        elif "codeformer" in task_data.use_face_correction.lower():
-            model_type = "codeformer"
+def resolve_model_paths(models_data: ModelsData):
+    model_paths = models_data.model_paths
+    for model_type in model_paths:
+        skip_models = cn_filters + ["latent_upscaler", "nsfw_checker"]
+        if model_type in skip_models:  # doesn't use model paths
+            continue
+        if model_type == "codeformer":
             download_if_necessary("codeformer", "codeformer.pth", "codeformer-0.1.0")
+        elif model_type == "controlnet":
+            model_id = model_paths[model_type]
+            model_info = get_model_info_from_db(model_type=model_type, model_id=model_id)
+            if model_info:
+                filename = model_info.get("url", "").split("/")[-1]
+                download_if_necessary("controlnet", filename, model_id, skip_if_others_exist=False)
 
-        task_data.use_face_correction = resolve_model_to_use(task_data.use_face_correction, model_type)
-    if task_data.use_upscale and "realesrgan" in task_data.use_upscale.lower():
-        task_data.use_upscale = resolve_model_to_use(task_data.use_upscale, "realesrgan")
+        model_paths[model_type] = resolve_model_to_use(model_paths[model_type], model_type=model_type)
 
 
 def fail_if_models_did_not_load(context: Context):
@@ -211,28 +215,17 @@ def download_default_models_if_necessary():
         print(model_type, "model(s) found.")
 
 
-def download_if_necessary(model_type: str, file_name: str, model_id: str):
+def download_if_necessary(model_type: str, file_name: str, model_id: str, skip_if_others_exist=True):
     model_path = os.path.join(app.MODELS_DIR, model_type, file_name)
     expected_hash = get_model_info_from_db(model_type=model_type, model_id=model_id)["quick_hash"]
 
-    other_models_exist = any_model_exists(model_type)
+    other_models_exist = any_model_exists(model_type) and skip_if_others_exist
     known_model_exists = os.path.exists(model_path)
     known_model_is_corrupt = known_model_exists and hash_file_quick(model_path) != expected_hash
 
     if known_model_is_corrupt or (not other_models_exist and not known_model_exists):
         print("> download", model_type, model_id)
-        download_model(model_type, model_id, download_base_dir=app.MODELS_DIR)
-
-
-def set_vram_optimizations(context: Context):
-    config = app.getConfig()
-    vram_usage_level = config.get("vram_usage_level", "balanced")
-
-    if vram_usage_level != context.vram_usage_level:
-        context.vram_usage_level = vram_usage_level
-        return True
-
-    return False
+        download_model(model_type, model_id, download_base_dir=app.MODELS_DIR, download_config_if_available=False)
 
 
 def migrate_legacy_model_location():
@@ -251,16 +244,6 @@ def any_model_exists(model_type: str) -> bool:
     for ext in extensions:
         if any(glob(f"{app.MODELS_DIR}/{model_type}/**/*{ext}", recursive=True)):
             return True
-
-    return False
-
-
-def set_clip_skip(context: Context, task_data: TaskData):
-    clip_skip = task_data.clip_skip
-
-    if clip_skip != context.clip_skip:
-        context.clip_skip = clip_skip
-        return True
 
     return False
 
@@ -310,14 +293,29 @@ def is_malicious_model(file_path):
     return False
 
 
-def getModels():
+def getModels(scan_for_malicious: bool = True):
     models = {
         "options": {
-            "stable-diffusion": ["sd-v1-4"],
+            "stable-diffusion": [{"sd-v1-4": "SD 1.4"}],
             "vae": [],
             "hypernetwork": [],
             "lora": [],
-            "codeformer": ["codeformer"],
+            "codeformer": [{"codeformer": "CodeFormer"}],
+            "embeddings": [],
+            "controlnet": [
+                {"control_v11p_sd15_canny": "Canny (*)"},
+                {"control_v11p_sd15_openpose": "OpenPose (*)"},
+                {"control_v11p_sd15_normalbae": "Normal BAE (*)"},
+                {"control_v11f1p_sd15_depth": "Depth (*)"},
+                {"control_v11p_sd15_scribble": "Scribble"},
+                {"control_v11p_sd15_softedge": "Soft Edge"},
+                {"control_v11p_sd15_inpaint": "Inpaint"},
+                {"control_v11p_sd15_lineart": "Line Art"},
+                {"control_v11p_sd15s2_lineart_anime": "Line Art Anime"},
+                {"control_v11p_sd15_mlsd": "Straight Lines"},
+                {"control_v11p_sd15_seg": "Segment"},
+                {"control_v11e_sd15_shuffle": "Shuffle"},
+            ],
         },
     }
 
@@ -326,9 +324,9 @@ def getModels():
     class MaliciousModelException(Exception):
         "Raised when picklescan reports a problem with a model"
 
-    def scan_directory(directory, suffixes, directoriesFirst: bool = True):
+    def scan_directory(directory, suffixes, directoriesFirst: bool = True, default_entries=[]):
+        tree = list(default_entries)
         nonlocal models_scanned
-        tree = []
         for entry in sorted(
             os.scandir(directory),
             key=lambda entry: (entry.is_file() == directoriesFirst, entry.name.lower()),
@@ -343,10 +341,18 @@ def getModels():
                 mod_time = known_models[entry.path] if entry.path in known_models else -1
                 if mod_time != mtime:
                     models_scanned += 1
-                    if is_malicious_model(entry.path):
+                    if scan_for_malicious and is_malicious_model(entry.path):
                         raise MaliciousModelException(entry.path)
-                known_models[entry.path] = mtime
-                tree.append(entry.name[: -len(matching_suffix)])
+                if scan_for_malicious:
+                    known_models[entry.path] = mtime
+                model_id = entry.name[: -len(matching_suffix)]
+                model_exists = False
+                for m in tree:  # allows default "named" models, like CodeFormer and known ControlNet models
+                    if (isinstance(m, str) and model_id == m) or (isinstance(m, dict) and model_id in m):
+                        model_exists = True
+                        break
+                if not model_exists:
+                    tree.append(model_id)
             elif entry.is_dir():
                 scan = scan_directory(entry.path, suffixes, directoriesFirst=False)
 
@@ -363,19 +369,23 @@ def getModels():
             os.makedirs(models_dir)
 
         try:
-            models["options"][model_type] = scan_directory(models_dir, model_extensions)
+            default_tree = models["options"].get(model_type, [])
+            models["options"][model_type] = scan_directory(models_dir, model_extensions, default_entries=default_tree)
         except MaliciousModelException as e:
-            models["scan-error"] = e
+            models["scan-error"] = str(e)
 
-    log.info(f"[green]Scanning all model folders for models...[/]")
+    if scan_for_malicious:
+        log.info(f"[green]Scanning all model folders for models...[/]")
     # custom models
     listModels(model_type="stable-diffusion")
     listModels(model_type="vae")
     listModels(model_type="hypernetwork")
     listModels(model_type="gfpgan")
     listModels(model_type="lora")
+    listModels(model_type="embeddings")
+    listModels(model_type="controlnet")
 
-    if models_scanned > 0:
+    if scan_for_malicious and models_scanned > 0:
         log.info(f"[green]Scanned {models_scanned} models. Nothing infected[/]")
 
     return models

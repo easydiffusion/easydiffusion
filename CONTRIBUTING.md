@@ -1,6 +1,6 @@
 Hi there, these instructions are meant for the developers of this project.
 
-If you only want to use the Stable Diffusion UI, you've downloaded the wrong file. In that case, please download and follow the instructions at https://github.com/cmdr2/stable-diffusion-ui#installation
+If you only want to use the Stable Diffusion UI, you've downloaded the wrong file. In that case, please download and follow the instructions at https://github.com/easydiffusion/easydiffusion#installation
 
 Thanks
 
@@ -13,7 +13,7 @@ If you would like to contribute to this project, there is a discord for discussi
 This is in-flux, but one way to get a development environment running for editing the UI of this project is:
 (swap `.sh` or `.bat` in instructions depending on your environment, and be sure to adjust any paths to match where you're working)
 
-1) Install the project to a new location using the [usual installation process](https://github.com/cmdr2/stable-diffusion-ui#installation), e.g. to `/projects/stable-diffusion-ui-archive`
+1) Install the project to a new location using the [usual installation process](https://github.com/easydiffusion/easydiffusion#installation), e.g. to `/projects/stable-diffusion-ui-archive`
 2) Start the newly installed project, and check that you can view and generate images on `localhost:9000`
 3) Next, please clone the project repository using `git clone` (e.g. to `/projects/stable-diffusion-ui-repo`)
 4) Close the server (started in step 2), and edit `/projects/stable-diffusion-ui-archive/scripts/on_env_start.sh` (or `on_env_start.bat`)

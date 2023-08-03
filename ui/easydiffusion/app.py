@@ -1,9 +1,13 @@
 import json
 import logging
 import os
+import shutil
 import socket
 import sys
 import traceback
+import copy
+from ruamel.yaml import YAML
+
 import urllib
 import warnings
 
@@ -27,6 +31,8 @@ logging.basicConfig(
 )
 
 SD_DIR = os.getcwd()
+
+ROOT_DIR = os.path.abspath(os.path.join(SD_DIR, ".."))
 
 SD_UI_DIR = os.getenv("SD_UI_PATH", None)
 
@@ -92,57 +98,108 @@ def init():
     # https://pytorch.org/docs/stable/storage.html
     warnings.filterwarnings("ignore", category=UserWarning, message="TypedStorage is deprecated")
 
+
+def init_render_threads():
     load_server_plugins()
 
     update_render_threads()
 
 
 def getConfig(default_val=APP_CONFIG_DEFAULTS):
-    try:
-        config_json_path = os.path.join(CONFIG_DIR, "config.json")
+    config_yaml_path = os.path.join(CONFIG_DIR, "..", "config.yaml")
 
-        # compatibility with upcoming yaml changes, switching from beta to main
-        config_yaml_path = os.path.join(CONFIG_DIR, "..", "config.yaml")
+    # migrate the old config yaml location
+    config_legacy_yaml = os.path.join(CONFIG_DIR, "config.yaml")
+    if os.path.isfile(config_legacy_yaml):
+        shutil.move(config_legacy_yaml, config_yaml_path)
 
-        # migrate the old config yaml location
-        config_legacy_yaml = os.path.join(CONFIG_DIR, "config.yaml")
-        if os.path.isfile(config_legacy_yaml):
-            shutil.move(config_legacy_yaml, config_yaml_path)
+    def set_config_on_startup(config: dict):
+        if getConfig.__test_diffusers_on_startup is None:
+            getConfig.__test_diffusers_on_startup = config.get("test_diffusers", False)
+        config["config_on_startup"] = {"test_diffusers": getConfig.__test_diffusers_on_startup}
 
-        if os.path.exists(config_yaml_path):
-            try:
-                import yaml
+    if os.path.isfile(config_yaml_path):
+        try:
+            yaml = YAML()
+            with open(config_yaml_path, "r", encoding="utf-8") as f:
+                config = yaml.load(f)
+            if "net" not in config:
+                config["net"] = {}
+                if os.getenv("SD_UI_BIND_PORT") is not None:
+                    config["net"]["listen_port"] = int(os.getenv("SD_UI_BIND_PORT"))
+                else:
+                    config["net"]["listen_port"] = 9000
+                if os.getenv("SD_UI_BIND_IP") is not None:
+                    config["net"]["listen_to_network"] = os.getenv("SD_UI_BIND_IP") == "0.0.0.0"
+                else:
+                    config["net"]["listen_to_network"] = True
 
-                with open(config_yaml_path, "r", encoding="utf-8") as f:
-                    config = yaml.safe_load(f)
+            set_config_on_startup(config)
 
-                setConfig(config)  # save to config.json
-                os.remove(config_yaml_path)  # delete the yaml file
-            except:
-                log.warn(traceback.format_exc())
-                config = default_val
-        elif not os.path.exists(config_json_path):
-            config = default_val
-        else:
+            return config
+        except Exception as e:
+            log.warn(traceback.format_exc())
+            set_config_on_startup(default_val)
+            return default_val
+    else:
+        try:
+            config_json_path = os.path.join(CONFIG_DIR, "config.json")
+            if not os.path.exists(config_json_path):
+                return default_val
+
+            log.info("Converting old json config file to yaml")
             with open(config_json_path, "r", encoding="utf-8") as f:
                 config = json.load(f)
-        if "net" not in config:
-            config["net"] = {}
-        if os.getenv("SD_UI_BIND_PORT") is not None:
-            config["net"]["listen_port"] = int(os.getenv("SD_UI_BIND_PORT"))
-        if os.getenv("SD_UI_BIND_IP") is not None:
-            config["net"]["listen_to_network"] = os.getenv("SD_UI_BIND_IP") == "0.0.0.0"
-        return config
-    except Exception:
-        log.warn(traceback.format_exc())
-        return default_val
+            # Save config in new format
+            setConfig(config)
+
+            with open(config_json_path + ".txt", "w") as f:
+                f.write("Moved to config.yaml inside the Easy Diffusion folder. You can open it in any text editor.")
+            os.remove(config_json_path)
+
+            return getConfig(default_val)
+        except Exception as e:
+            log.warn(traceback.format_exc())
+            set_config_on_startup(default_val)
+            return default_val
+
+
+getConfig.__test_diffusers_on_startup = None
 
 
 def setConfig(config):
-    try:  # config.json
-        config_json_path = os.path.join(CONFIG_DIR, "config.json")
-        with open(config_json_path, "w", encoding="utf-8") as f:
-            json.dump(config, f)
+    try:  # config.yaml
+        config_yaml_path = os.path.join(CONFIG_DIR, "..", "config.yaml")
+        yaml = YAML()
+
+        if not hasattr(config, "_yaml_comment"):
+            config_yaml_sample_path = os.path.join(CONFIG_DIR, "config.yaml.sample")
+
+            if os.path.exists(config_yaml_sample_path):
+                with open(config_yaml_sample_path, "r", encoding="utf-8") as f:
+                    commented_config = yaml.load(f)
+
+                for k in config:
+                    commented_config[k] = config[k]
+
+                config = commented_config
+        yaml.indent(mapping=2, sequence=4, offset=2)
+
+        if "config_on_startup" in config:
+            del config["config_on_startup"]
+
+        try:
+            f = open(config_yaml_path + ".tmp", "w", encoding="utf-8")
+            yaml.dump(config, f)
+        finally:
+            f.close()  # do this explicitly to avoid NUL bytes (possible rare bug when using 'with')
+
+        # verify that the new file is valid, and only then overwrite the old config file
+        # helps prevent the rare NUL bytes error from corrupting the config file
+        yaml = YAML()
+        with open(config_yaml_path + ".tmp", "r", encoding="utf-8") as f:
+            yaml.load(f)
+        shutil.move(config_yaml_path + ".tmp", config_yaml_path)
     except:
         log.error(traceback.format_exc())
 
@@ -178,10 +235,12 @@ def update_render_threads():
 def getUIPlugins():
     plugins = []
 
+    file_names = set()
     for plugins_dir, dir_prefix in UI_PLUGINS_SOURCES:
         for file in os.listdir(plugins_dir):
-            if file.endswith(".plugin.js"):
+            if file.endswith(".plugin.js") and file not in file_names:
                 plugins.append(f"/plugins/{dir_prefix}/{file}")
+                file_names.add(file)
 
     return plugins
 
@@ -240,6 +299,8 @@ def open_browser():
     if ui.get("open_browser_on_start", True):
         import webbrowser
 
+        log.info("Opening browser..")
+
         webbrowser.open(f"http://localhost:{port}")
 
     Console().print(
@@ -258,7 +319,7 @@ def fail_and_die(fail_type: str, data: str):
     suggestions = [
         "Run this installer again.",
         "If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB",
-        "If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues",
+        "If that doesn't solve the problem, please file an issue at https://github.com/easydiffusion/easydiffusion/issues",
     ]
 
     if fail_type == "model_download":

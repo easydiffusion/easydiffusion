@@ -6,6 +6,7 @@
 @copy sd-ui-files\scripts\on_env_start.bat scripts\ /Y
 @copy sd-ui-files\scripts\check_modules.py scripts\ /Y
 @copy sd-ui-files\scripts\get_config.py scripts\ /Y
+@copy sd-ui-files\scripts\config.yaml.sample scripts\ /Y
 
 if exist "%cd%\profile" (
     set HF_HOME=%cd%\profile\.cache\huggingface
@@ -26,7 +27,7 @@ if exist "%cd%\stable-diffusion\env" (
 @rem activate the installer env
 call conda activate
 @if "%ERRORLEVEL%" NEQ "0" (
-       @echo. & echo "Error activating conda for Easy Diffusion. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
+       @echo. & echo "Error activating conda for Easy Diffusion. Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/easydiffusion/easydiffusion/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/easydiffusion/easydiffusion/issues" & echo "Thanks!" & echo.
        pause
        exit /b
 )
@@ -68,7 +69,7 @@ if "%ERRORLEVEL%" NEQ "0" (
 call WHERE uvicorn > .tmp
 @>nul findstr /m "uvicorn" .tmp
 @if "%ERRORLEVEL%" NEQ "0" (
-    @echo. & echo "UI packages not found! Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues" & echo "Thanks!" & echo.
+    @echo. & echo "UI packages not found! Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/easydiffusion/easydiffusion/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/easydiffusion/easydiffusion/issues" & echo "Thanks!" & echo.
     pause
     exit /b
 )
@@ -103,18 +104,21 @@ call python --version
 
 @FOR /F "tokens=* USEBACKQ" %%F IN (`python scripts\get_config.py --default=False net listen_to_network`) DO (
     if "%%F" EQU "True" (
-        @SET ED_BIND_IP=0.0.0.0    
+        @FOR /F "tokens=* USEBACKQ" %%G IN (`python scripts\get_config.py --default=0.0.0.0 net bind_ip`) DO (
+            @SET ED_BIND_IP=%%G
+        )
     ) else (
         @SET ED_BIND_IP=127.0.0.1
     )
 )
+
 
 @cd stable-diffusion
 
 @rem set any overrides
 set HF_HUB_DISABLE_SYMLINKS_WARNING=true
 
-@uvicorn main:server_api --app-dir "%SD_UI_PATH%" --port %ED_BIND_PORT% --host %ED_BIND_IP% --log-level error
+@python -m uvicorn main:server_api --app-dir "%SD_UI_PATH%" --port %ED_BIND_PORT% --host %ED_BIND_IP% --log-level error
 
 
 @pause

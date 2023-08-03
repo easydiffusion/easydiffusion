@@ -47,6 +47,7 @@ const IMAGE_EDITOR_TOOLS = [
         begin: defaultToolBegin,
         move: defaultToolMove,
         end: defaultToolEnd,
+        hotkey: "d",
     },
     {
         id: "erase",
@@ -77,6 +78,7 @@ const IMAGE_EDITOR_TOOLS = [
         setBrush: (editor, layer) => {
             layer.ctx.globalCompositeOperation = "destination-out"
         },
+        hotkey: "e",
     },
     {
         id: "fill",
@@ -92,6 +94,7 @@ const IMAGE_EDITOR_TOOLS = [
         },
         move: toolDoNothing,
         end: toolDoNothing,
+        hotkey: "f",
     },
     {
         id: "colorpicker",
@@ -113,6 +116,7 @@ const IMAGE_EDITOR_TOOLS = [
         },
         move: toolDoNothing,
         end: toolDoNothing,
+        hotkey: "p",
     },
 ]
 
@@ -208,7 +212,10 @@ var IMAGE_EDITOR_SECTIONS = [
             var icon = document.createElement("i")
             tool_info.icon.split(" ").forEach((c) => icon.classList.add(c))
             sub_element.appendChild(icon)
-            sub_element.append(tool_info.name)
+            var label_element = document.createElement("div")
+            label_element.classList.add("image-editor-button-label")
+            label_element.textContent=tool_info.name
+            sub_element.appendChild(label_element)
             element.appendChild(sub_element)
         },
     },
@@ -619,6 +626,7 @@ class ImageEditor {
                 .getImageData(0, 0, this.width, this.height)
                 .data.some((channel) => channel !== 0)
             maskSetting.checked = !is_blank
+            maskSetting.dispatchEvent(new Event("change"))
         }
         this.hide()
     }
@@ -702,15 +710,22 @@ class ImageEditor {
                 event.stopPropagation()
                 event.preventDefault()
             }
-            if (event.key == "y" && event.ctrlKey) {
+            else if (event.key == "y" && event.ctrlKey) {
                 this.history.redo()
                 event.stopPropagation()
                 event.preventDefault()
             }
-            if (event.key === "Escape") {
+            else if (event.key === "Escape") {
                 this.hide()
                 event.stopPropagation()
                 event.preventDefault()
+            } else {
+                let toolIndex = IMAGE_EDITOR_TOOLS.findIndex( t => t.hotkey ==event.key )
+                if (toolIndex != -1) {
+                    this.selectOption("tool", toolIndex)
+                    event.stopPropagation()
+                    event.preventDefault()
+                }
             }
         }
 

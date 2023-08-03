@@ -78,6 +78,7 @@
     border-bottom-right-radius: 12px;
 }
 
-.parameters-table .fa-fire {
+.parameters-table .fa-fire,
+.parameters-table .fa-bolt {
     color: #F7630C;
 }

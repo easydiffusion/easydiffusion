@@ -13,6 +13,8 @@
     --accent-lightness-hover: 40%;
 
     --text-color: #eee;
+    --link-color: rgb(0, 102, 204);
+    --small-label-color: rgb(153, 153, 153);
 
 	--input-text-color: #eee;
     --input-background-color: hsl(var(--main-hue), var(--main-saturation), calc(var(--value-base) - (0.7 * var(--value-step))));
@@ -21,6 +23,9 @@
     --button-text-color: var(--input-text-color);
     --button-color: var(--input-background-color);
     --button-border: none;
+    --button-hover-background: hsl(var(--accent-hue), 100%, calc(var(--accent-lightness) + 6%));
+    --secondary-button-background: rgb(132, 8, 0);
+    --secondary-button-hover-background: rgb(177, 27, 0);
 
     /* other */
     --input-border-radius: 4px;

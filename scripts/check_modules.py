@@ -18,12 +18,13 @@ os_name = platform.system()
 modules_to_check = {
     "torch": ("1.11.0", "1.13.1", "2.0.0"),
     "torchvision": ("0.12.0", "0.14.1", "0.15.1"),
-    "sdkit": "1.0.112",
+    "sdkit": "1.0.165",
     "stable-diffusion-sdkit": "2.1.4",
     "rich": "12.6.0",
     "uvicorn": "0.19.0",
     "fastapi": "0.85.1",
     "pycloudflared": "0.2.0",
+    "ruamel.yaml": "0.17.21",
     # "xformers": "0.0.16",
 }
 modules_to_log = ["torch", "torchvision", "sdkit", "stable-diffusion-sdkit"]
@@ -148,9 +149,9 @@ def fail(module_name):
     print(
         f"""Error installing {module_name}. Sorry about that, please try to:
 1. Run this installer again.
-2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/cmdr2/stable-diffusion-ui/wiki/Troubleshooting
+2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/easydiffusion/easydiffusion/wiki/Troubleshooting
 3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB
-4. If that doesn't solve the problem, please file an issue at https://github.com/cmdr2/stable-diffusion-ui/issues
+4. If that doesn't solve the problem, please file an issue at https://github.com/easydiffusion/easydiffusion/issues
 Thanks!"""
     )
     exit(1)
