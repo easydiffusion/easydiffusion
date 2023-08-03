@@ -60,6 +60,7 @@ APP_CONFIG_DEFAULTS = {
     "ui": {
         "open_browser_on_start": True,
     },
+    "test_diffusers": True,
 }
 
 IMAGE_EXTENSIONS = [
@@ -115,7 +116,7 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
 
     def set_config_on_startup(config: dict):
         if getConfig.__test_diffusers_on_startup is None:
-            getConfig.__test_diffusers_on_startup = config.get("test_diffusers", False)
+            getConfig.__test_diffusers_on_startup = config.get("test_diffusers", True)
         config["config_on_startup"] = {"test_diffusers": getConfig.__test_diffusers_on_startup}
 
     if os.path.isfile(config_yaml_path):
