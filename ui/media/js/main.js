@@ -1365,6 +1365,12 @@ function getCurrentUserRequest() {
     //     numOutputsParallel = 1 // force 1 parallel
     // }
 
+    // clamp to multiple of 8
+    let width = parseInt(widthField.value)
+    let height = parseInt(heightField.value)
+    width = width - (width % 8)
+    height = height - (height % 8)
+
     const newTask = {
         batchesDone: 0,
         numOutputsTotal: numOutputsTotal,
@@ -1377,8 +1383,8 @@ function getCurrentUserRequest() {
             num_outputs: numOutputsParallel,
             num_inference_steps: parseInt(numInferenceStepsField.value),
             guidance_scale: parseFloat(guidanceScaleField.value),
-            width: parseInt(widthField.value),
-            height: parseInt(heightField.value),
+            width: width,
+            height: height,
             // allow_nsfw: allowNSFWField.checked,
             vram_usage_level: vramUsageLevelField.value,
             sampler_name: samplerField.value,
