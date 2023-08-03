@@ -8,6 +8,11 @@
     "use strict"
     
     promptField.addEventListener('input', function(e) {
+        let loraExtractSetting = document.getElementById("extract_lora_from_prompt")
+        if (!loraExtractSetting.checked) {
+            return
+        }
+
         const { LoRA, prompt } = extractLoraTags(e.target.value);
 		//console.log('e.target: ' + JSON.stringify(LoRA));
     

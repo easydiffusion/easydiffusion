@@ -54,6 +54,7 @@ const SETTINGS_IDS_LIST = [
     "zip_toggle",
     "tree_toggle",
     "json_toggle",
+    "extract_lora_from_prompt",
 ]
 
 const IGNORE_BY_DEFAULT = ["prompt"]

@@ -122,6 +122,15 @@ var PARAMETERS = [
         default: false,
     },
     {
+        id: "extract_lora_from_prompt",
+        type: ParameterType.checkbox,
+        label: "Extract LoRA tags from the prompt",
+        note:
+            "Automatically extract lora tags like &lt;lora:name:0.4&gt; from the prompt, and apply the correct LoRA (if present)",
+        icon: "fa-code",
+        default: true,
+    },
+    {
         id: "ui_open_browser_on_start",
         type: ParameterType.checkbox,
         label: "Open browser on startup",
