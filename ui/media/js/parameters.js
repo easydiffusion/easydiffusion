@@ -229,9 +229,9 @@ var PARAMETERS = [
     {
         id: "test_diffusers",
         type: ParameterType.checkbox,
-        label: "Use the new v2.6 engine (diffusers)",
+        label: "Use the new v3 engine (diffusers)",
         note:
-            "Use our new v2.6 engine, with additional features like LoRA, ControlNet, SDXL, Embeddings, Tiling and lots more! Please press Save, then restart the program after changing this.",
+            "Use our new v3 engine, with additional features like LoRA, ControlNet, SDXL, Embeddings, Tiling and lots more! Please press Save, then restart the program after changing this.",
         icon: "fa-bolt",
         default: true,
         saveInAppConfig: true,
