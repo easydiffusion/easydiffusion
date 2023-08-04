@@ -159,8 +159,7 @@ def save_images_to_disk(
             from easydiffusion.easydb.database import SessionLocal
 
             session = SessionLocal()
-            
-            img = Image(
+            session.add(Image(
                 path = path_i,
                 seed = metadata_entries[i]["seed"],
                 use_stable_diffusion_model = metadata_entries[i]["use_stable_diffusion_model"],
@@ -176,9 +175,7 @@ def save_images_to_disk(
                 tiling = metadata_entries[i]["tiling"],
                 use_face_correction = metadata_entries[i]["use_face_correction"],
                 use_upscale = metadata_entries[i]["use_upscale"]
-            )
-
-            session.add(img)
+            ))
             session.commit()
             session.close()
         
