@@ -140,6 +140,48 @@ def save_images_to_disk(
             output_quality=output_format.output_quality,
             output_lossless=output_format.output_lossless,
         )
+
+        for i in range(len(filtered_images)):
+            path_i = f"{os.path.join(save_dir_path, make_filename(i))}.{output_format.output_format.lower()}"
+
+            def createLoraString(metadata_entries, i):
+                if metadata_entries[i]["use_lora_model"] is None:
+                    return "None"
+                elif isinstance(metadata_entries[i]["use_lora_model"], list):
+                    loraString = ""
+                    for j in range(len(metadata_entries[i]["use_lora_model"])):
+                        loraString += metadata_entries[i]["use_lora_model"][j] + ":" + str(metadata_entries[i]["lora_alpha"][j]) + " "
+                    return loraString.trim()
+                else:
+                    return metadata_entries[i]["use_lora_model"] + ":" + str(metadata_entries[i]["lora_alpha"])
+
+            from easydiffusion.easydb.mappings import Image
+            from easydiffusion.easydb.database import SessionLocal
+
+            session = SessionLocal()
+            
+            img = Image(
+                path = path_i,
+                seed = metadata_entries[i]["seed"],
+                use_stable_diffusion_model = metadata_entries[i]["use_stable_diffusion_model"],
+                clip_skip = metadata_entries[i]["clip_skip"],
+                use_vae_model = metadata_entries[i]["use_vae_model"],
+                sampler_name = metadata_entries[i]["sampler_name"],
+                width = metadata_entries[i]["width"],
+                height = metadata_entries[i]["height"],
+                num_inference_steps = metadata_entries[i]["num_inference_steps"],
+                guidance_scale = metadata_entries[i]["guidance_scale"],
+                lora = createLoraString(metadata_entries, i),
+                use_hypernetwork_model = metadata_entries[i]["use_hypernetwork_model"],
+                tiling = metadata_entries[i]["tiling"],
+                use_face_correction = metadata_entries[i]["use_face_correction"],
+                use_upscale = metadata_entries[i]["use_upscale"]
+            )
+
+            session.add(img)
+            session.commit()
+            session.close()
+        
         if task_data.metadata_output_format:
             for metadata_output_format in task_data.metadata_output_format.split(","):
                 if metadata_output_format.lower() in ["json", "txt", "embed"]:
