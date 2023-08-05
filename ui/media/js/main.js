@@ -171,8 +171,11 @@ let saveAllJSONToggle = document.querySelector("#json_toggle")
 let saveAllFoldersOption = document.querySelector("#download-add-folders")
 let splashScreenPopup = document.querySelector("#splash-screen")
 let useAsThumbDialog = document.querySelector("#use-as-thumb-dialog")
+let useAsThumbDialogCloseBtn = document.querySelector("#use-as-thumb-dialog-close-button")
 let useAsThumbImageContainer = document.querySelector("#use-as-thumb-img-container")
 let useAsThumbSelect = document.querySelector("#use-as-thumb-select")
+let useAsThumbSaveBtn = document.querySelector("#use-as-thumb-save")
+let useAsThumbCancelBtn = document.querySelector("#use-as-thumb-cancel")
 
 let maskSetting = document.querySelector("#enable_mask")
 
@@ -703,8 +706,8 @@ function onUseAsThumbnailClick(req, img) {
     let scale = 1
     let targetWidth = img.naturalWidth
     let targetHeight = img.naturalHeight
-    
     let resize = false
+    onUseAsThumbnailClick.img = img
 
     if ( typeof(onUseAsThumbnailClick.croppr) == 'undefined' ) {
         onUseAsThumbnailClick.croppr = new Croppr("#use-as-thumb-image", { aspectRatio: 1, minSize: [384,384,'px'], startSize:  [512, 512, 'px'], returnMode:"real" })
@@ -725,15 +728,16 @@ function onUseAsThumbnailClick(req, img) {
             resize = true
         }
     }
+
+    onUseAsThumbnailClick.croppr.options.minSize = {width: 384*scale>>>0, height: 384*scale>>>0}
+    onUseAsThumbnailClick.croppr.options.startSize = {width: 512*scale>>>0, height: 512*scale>>>0}
+
     if (resize) {
         const canvas = document.createElement('canvas')
         canvas.width = targetWidth
         canvas.height = targetHeight
         const ctx = canvas.getContext('2d')
         ctx.drawImage(img, 0, 0, targetWidth, targetHeight)
-
-        onUseAsThumbnailClick.croppr.options.minSize = {width: 384*scale>>>0, height: 384*scale>>>0}
-        onUseAsThumbnailClick.croppr.options.startSize = {width: 512*scale>>>0, height: 512*scale>>>0}
 
         onUseAsThumbnailClick.croppr.setImage(canvas.toDataURL('image/png'))
     } else {
@@ -759,20 +763,50 @@ function onUseAsThumbnailClick(req, img) {
     useAsThumbSelect.replaceChildren(optgroup)
 
     useAsThumbDialog.showModal()
+    onUseAsThumbnailClick.scale = scale
 
-    
-//    fetch(img.src)
-//      .then(response => response.blob())
-//      .then(async function(blob) {
-//          const formData  = new FormData()
-//          formData.append("file", blob)
-//          const response = await fetch(`bucket/embeddings/${embedding}.jpg`, { method: 'POST', body: formData });
-//          console.log(response)
-//      })
 }
 
 modalDialogCloseOnBackdropClick(useAsThumbDialog)
 makeDialogDraggable(useAsThumbDialog)
+
+useAsThumbDialogCloseBtn.addEventListener("click", () => {
+    useAsThumbDialog.close()
+})
+
+useAsThumbCancelBtn.addEventListener("click", () => {
+    useAsThumbDialog.close()
+})
+
+useAsThumbSaveBtn.addEventListener("click", (e) => {
+    let scale = 1/onUseAsThumbnailClick.scale
+    let crop = onUseAsThumbnailClick.croppr.getValue()
+
+    let len = Math.max(crop.width*scale, 384)
+    let profileName = profileNameField.value
+
+    cropImageDataUrl(onUseAsThumbnailClick.img.src, crop.x*scale, crop.y*scale, len, len)
+        .then(thumb => fetch(thumb))
+        .then(response => response.blob())
+        .then(async function(blob) {
+            const formData  = new FormData()
+            formData.append("file", blob)
+            let options = useAsThumbSelect.selectedOptions
+            let promises = []
+            console.log(options)
+            for (let embedding of options) {
+                console.log(`bucket/${profileName}/${embedding.dataset["type"]}/${embedding.value}.png`)
+                promises.push(fetch(`bucket/${profileName}/${embedding.dataset["type"]}/${embedding.value}.png`, { method: 'POST', body: formData }))
+            }
+            return Promise.all(promises)
+        }).then(() => {
+            useAsThumbDialog.close()
+        })
+        .catch(error => {
+            console.error(error)
+            showToast("Couldn't save thumbnail.<br>"+error)
+        })
+})
 
 
 function enqueueImageVariationTask(req, img, reqDiff) {
@@ -2672,6 +2706,16 @@ function updateEmbeddingsList(filter = "") {
         }
     }
 
+    // Usually the rendering of the Embeddings HTML takes less than a second. In case it takes longer, show a spinner
+    embeddingsList.innerHTML = `
+        <div class="spinner-container">
+          <div class="spinner-block"></div> <div class="spinner-block"></div> <div class="spinner-block"></div> <div class="spinner-block"></div>
+          <div class="spinner-block"></div> <div class="spinner-block"></div> <div class="spinner-block"></div> <div class="spinner-block"></div>
+          <div class="spinner-block"></div> <div class="spinner-block"></div> <div class="spinner-block"></div> <div class="spinner-block"></div>
+          <div class="spinner-block"></div> <div class="spinner-block"></div> <div class="spinner-block"></div> <div class="spinner-block"></div>
+        </div>
+    `
+
     // Remove after fixing https://github.com/huggingface/diffusers/issues/3922
     let warning = ""
     if (vramUsageLevelField.value == "low") {
@@ -2682,9 +2726,11 @@ function updateEmbeddingsList(filter = "") {
     }
     // END of remove block
 
-    fetch("/bucket/embeddings/")
+    let profileName = profileNameField.value
+    fetch(`/bucket/${profileName}/embeddings/`)
        .then(response => response.status==200 ? response.json(): [])
-       .then(iconlist => {
+       .then(async function(iconlist) {
+
            embeddingsList.innerHTML = warning + html(modelsOptions.embeddings, iconlist, "", filter)
            embeddingsList.querySelectorAll("button").forEach((b) => {
                b.addEventListener("click", onButtonClick)

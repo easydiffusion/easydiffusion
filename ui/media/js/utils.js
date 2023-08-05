@@ -1097,6 +1097,30 @@ async function deleteKeys(keyToDelete) {
     }
 }
 
+function cropImageDataUrl(dataUrl, x, y, width, height) {
+    return new Promise((resolve, reject) => {
+        const image = new Image()
+        image.src = dataUrl
+
+        image.onload = () => {
+            const canvas = document.createElement('canvas')
+            canvas.width = width
+            canvas.height = height
+
+            const ctx = canvas.getContext('2d')
+            ctx.drawImage(image, x, y, width, height, 0, 0, width, height)
+
+            const croppedDataUrl = canvas.toDataURL('image/png')
+            resolve(croppedDataUrl)
+        }
+
+        image.onerror = (error) => {
+            reject(error)
+        }
+    })
+}
+
+
 function modalDialogCloseOnBackdropClick(dialog) {
     dialog.addEventListener('mousedown', function (event) {
         // Firefox creates an event with clientX|Y = 0|0 when choosing an <option>.
