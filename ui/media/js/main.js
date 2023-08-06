@@ -2638,7 +2638,6 @@ document.getElementById("toggle-tensorrt-install").addEventListener("click", fun
 
 /* Embeddings */
 
-let icl = []
 function updateEmbeddingsList(filter = "") {
     function html(model, iconlist = [], prefix = "", filter = "") {
         filter = filter.toLowerCase()
