@@ -19,7 +19,6 @@ def create_bucketfile(db: Session, bucketfile: schemas.BucketFileCreate, bucket_
     db_bucketfile = models.BucketFile(**bucketfile.dict(), bucket_id=bucket_id)
     db.merge(db_bucketfile)
     db.commit()
-    from pprint import pprint
     db_bucketfile = db.query(models.BucketFile).filter(models.BucketFile.bucket_id==bucket_id, models.BucketFile.filename==bucketfile.filename).first()
     return db_bucketfile
 

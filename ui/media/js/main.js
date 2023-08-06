@@ -763,10 +763,8 @@ function onUseAsThumbnailClick(req, img) {
     }))
     
     useAsThumbSelect.replaceChildren(optgroup)
-
     useAsThumbDialog.showModal()
     onUseAsThumbnailClick.scale = scale
-
 }
 
 modalDialogCloseOnBackdropClick(useAsThumbDialog)
@@ -795,9 +793,7 @@ useAsThumbSaveBtn.addEventListener("click", (e) => {
             formData.append("file", blob)
             let options = useAsThumbSelect.selectedOptions
             let promises = []
-            console.log(options)
             for (let embedding of options) {
-                console.log(`bucket/${profileName}/${embedding.dataset["type"]}/${embedding.value}.png`)
                 promises.push(fetch(`bucket/${profileName}/${embedding.dataset["type"]}/${embedding.value}.png`, { method: 'POST', body: formData }))
             }
             return Promise.all(promises)
