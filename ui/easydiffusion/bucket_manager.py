@@ -1,6 +1,7 @@
 from typing import List
 
 from fastapi import Depends, FastAPI, HTTPException, Response, File
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from easydiffusion.easydb import crud, models, schemas
@@ -87,6 +88,18 @@ def init():
         result =  crud.create_bucketfile(db=db, bucketfile=bucketfile, bucket_id=bucket_id)
         result.data = base64.encodestring(result.data)
         return result
+
+    @server_api.get("/image/{image_path:path}")
+    def get_image(image_path: str, db: Session = Depends(get_db)):
+        from easydiffusion.easydb.mappings import Image
+        image_path = image_path.replace("/", "\\")
+        amount = len(db.query(Image).filter(Image.path == image_path).all())
+        print(image_path, amount)
+        if amount > 0:
+            image = db.query(Image).filter(Image.path == image_path).first()
+            return FileResponse(image.path)
+        else:
+            raise HTTPException(status_code=404, detail="Image not found")
 
 
 def get_filename_from_url(url):
