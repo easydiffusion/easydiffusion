@@ -681,6 +681,15 @@
             </button>
             <i class="fa-solid fa-magnifying-glass"></i>
             <input id="embeddings-search-box" type="text" spellcheck="false" autocomplete="off" placeholder="Search...">
+            <label for="embedding-card-size-selector"><small>Thumbnail Size:</small></label>
+            <select id="embedding-card-size-selector" name="embedding-card-size-selector">
+                <option value="-2">0</option>
+                <option value="-1">1</option>
+                <option value="0">2</option>
+                <option value="1" selected>3</option>
+                <option value="2">4</option>
+                <option value="3">5</option>
+            </select>
             <span style="float:right;"><label>Mode:</label>&nbsp;<select id="embeddings-mode"><option value="insert">Insert at cursor position</option><option value="append">Append at the end</option></select>
         </div>
         <div id="embeddings-list">

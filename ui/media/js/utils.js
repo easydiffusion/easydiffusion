@@ -1097,6 +1097,14 @@ async function deleteKeys(keyToDelete) {
     }
 }
 
+/**
+ * @param {String} Data URL of the image
+ * @param {Integer} Top left X-coordinate of the crop area
+ * @param {Integer} Top left Y-coordinate of the crop area
+ * @param {Integer} Width of the crop area
+ * @param {Integer} Height of the crop area
+ * @return {String}
+ */
 function cropImageDataUrl(dataUrl, x, y, width, height) {
     return new Promise((resolve, reject) => {
         const image = new Image()
@@ -1120,6 +1128,16 @@ function cropImageDataUrl(dataUrl, x, y, width, height) {
     })
 }
 
+/**
+ * @param {String} HTML representing a single element
+ * @return {Element}
+ */
+function htmlToElement(html) {
+    var template = document.createElement('template');
+    html = html.trim(); // Never return a text node of whitespace as the result
+    template.innerHTML = html;
+    return template.content.firstChild;
+}
 
 function modalDialogCloseOnBackdropClick(dialog) {
     dialog.addEventListener('mousedown', function (event) {

@@ -141,6 +141,7 @@ let embeddingsDialogCloseBtn = embeddingsDialog.querySelector("#embeddings-dialo
 let embeddingsSearchBox = document.querySelector("#embeddings-search-box")
 let embeddingsList = document.querySelector("#embeddings-list")
 let embeddingsModeField = document.querySelector("#embeddings-mode")
+let embeddingsCardSizeSelector = document.querySelector("#embedding-card-size-selector")
 
 let positiveEmbeddingText = document.querySelector("#positive-embedding-text")
 let negativeEmbeddingText = document.querySelector("#negative-embedding-text")
@@ -684,6 +685,7 @@ function onMakeSimilarClick(req, img) {
     createTask(newTaskRequest)
 }
 
+// gets a flat list of all models of a certain type, ignoring directories
 function getAllModelNames(type) {
     function f(tree) {
         if (tree == undefined) {
@@ -807,7 +809,6 @@ useAsThumbSaveBtn.addEventListener("click", (e) => {
             showToast("Couldn't save thumbnail.<br>"+error)
         })
 })
-
 
 function enqueueImageVariationTask(req, img, reqDiff) {
     const imageSeed = img.getAttribute("data-seed")
@@ -2645,43 +2646,50 @@ let icl = []
 function updateEmbeddingsList(filter = "") {
     function html(model, iconlist = [], prefix = "", filter = "") {
         filter = filter.toLowerCase()
-        let toplevel = ""
-        let folders = ""
-        console.log(iconlist)
+        let toplevel = document.createElement("div")
+        let folders = document.createElement("div")
         let embIcon = Object.assign({}, ...iconlist.map( x=> ({[x.toLowerCase().split('.').slice(0,-1).join('.')]:x})))
-        console.log(embIcon)
 
         let profileName = profileNameField.value
         model?.forEach((m) => {
             if (typeof m == "string") {
                 let token=m.toLowerCase()
                 if (token.search(filter) != -1) {
-                    let img = '/media/images/noimg.png'
-                    if (token in embIcon) {
-                        img = `/bucket/${profileName}/embeddings/${embIcon[token]}`
-                    }
+                    let button
                     if (iconlist.length==0) {
-                        img=""
+                        button = document.createElement("button")
+                        button.innerText="m"
                     } else {
-                        img=`<img src="${img}" height="128" width="128"><br>`
+                        let img = '/media/images/noimg.png'
+                        if (token in embIcon) {
+                            img = `/bucket/${profileName}/embeddings/${embIcon[token]}`
+                        }
+                        button = createModifierCard(m, [img,img], true)
                     }
-                    toplevel += `<button data-embedding="${m}">${img}${m}</button> `
+                    button.dataset["embedding"] = m
+                    button.addEventListener("click", onButtonClick)
+                    toplevel.appendChild(button)
                 }
             } else {
                 let subdir = html(m[1], iconlist, prefix + m[0] + "/", filter)
-                if (subdir != "") {
-                    folders +=
-                        `<div class="embedding-category"><h4 class="collapsible">${prefix}${m[0]}</h4><div class="collapsible-content">` +
-                        subdir +
-                        "</div></div>"
+                if (typeof(subdir) == "object") {
+                    let div1 = document.createElement("div")
+                    let div2 = document.createElement("div")
+                    div1.classList.add("collapsible-content")
+                    div1.classList.add("embedding-category")
+                    div1.appendChild(subdir)
+                    div2.replaceChildren(htmlToElement(`<h4 class="collapsible">${prefix}${m[0]}</h4>`), div1)
+                    folders.appendChild(div2)
                 }
             }
         })
-        return toplevel + folders
+        let result = document.createElement("div")
+        result.replaceChildren(toplevel, htmlToElement('<br style="clear: both;">'), folders)
+        return result
     }
 
     function onButtonClick(e) {
-        let text = e.target.closest("button").dataset["embedding"]
+        let text = e.target.closest("[data-embedding]").dataset["embedding"]
         const insertIntoNegative = e.shiftKey || positiveEmbeddingText.classList.contains("displayNone")
 
         if (embeddingsModeField.value == "insert") {
@@ -2717,7 +2725,7 @@ function updateEmbeddingsList(filter = "") {
     `
 
     // Remove after fixing https://github.com/huggingface/diffusers/issues/3922
-    let warning = ""
+    let warning = "<div></div>"
     if (vramUsageLevelField.value == "low") {
         warning = `
             <div style="border-color: var(--accent-color); border-width: 4px; border-radius: 1em; border-style: solid; background: black; text-align: center; padding: 1em; margin: 1em; ">
@@ -2731,14 +2739,12 @@ function updateEmbeddingsList(filter = "") {
        .then(response => response.status==200 ? response.json(): [])
        .then(async function(iconlist) {
 
-           embeddingsList.innerHTML = warning + html(modelsOptions.embeddings, iconlist, "", filter)
-           embeddingsList.querySelectorAll("button").forEach((b) => {
-               b.addEventListener("click", onButtonClick)
-           })
+           embeddingsList.replaceChildren(htmlToElement(warning), html(modelsOptions.embeddings, iconlist, "", filter))
            createCollapsibles(embeddingsList)
            if (filter != "") {
                embeddingsExpandAll()
            }
+           resizeModifierCards(embeddingsCardSizeSelector.value)
        })
 }
 
@@ -2747,22 +2753,32 @@ function showEmbeddingDialog() {
     embeddingsSearchBox.value = ""
     embeddingsDialog.showModal()
 }
+
 embeddingsButton.addEventListener("click", () => {
     positiveEmbeddingText.classList.remove("displayNone")
     negativeEmbeddingText.classList.add("displayNone")
     showEmbeddingDialog()
 })
+
 negativeEmbeddingsButton.addEventListener("click", () => {
     positiveEmbeddingText.classList.add("displayNone")
     negativeEmbeddingText.classList.remove("displayNone")
     showEmbeddingDialog()
 })
+
 embeddingsDialogCloseBtn.addEventListener("click", (e) => {
     embeddingsDialog.close()
 })
+
 embeddingsSearchBox.addEventListener("input", (e) => {
     updateEmbeddingsList(embeddingsSearchBox.value)
 })
+
+embeddingsCardSizeSelector.addEventListener("change", (e) => {
+    resizeModifierCards(embeddingsCardSizeSelector.value)
+})
+
+
 
 modalDialogCloseOnBackdropClick(embeddingsDialog)
 makeDialogDraggable(embeddingsDialog)

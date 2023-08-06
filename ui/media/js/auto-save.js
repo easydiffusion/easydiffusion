@@ -56,6 +56,7 @@ const SETTINGS_IDS_LIST = [
     "tree_toggle",
     "json_toggle",
     "extract_lora_from_prompt",
+    "embedding-card-size-selector",
 ]
 
 const IGNORE_BY_DEFAULT = ["prompt"]
