@@ -49,6 +49,9 @@
             <span id="tab-about" class="tab">
                 <span><i class="fa fa-comments icon"></i> Help & Community</span>
             </span>
+            <span id="tab-gallery" class="tab">
+                <span><i class="fa fa-comments"> Gallery</i></span>
+            </span>
         </div>
     </div>
 
@@ -454,6 +457,40 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div id="tab-content-gallery" class="tab-content">
+            <script>
+                tab = document.getElementById("tab-content-gallery")
+                new MutationObserver(function() { // to update all the images, just call this function
+                    console.log("clicked")
+                    container = document.getElementById("imagecontainer")
+                    container.remove()
+                    fetch('/all_images')
+                        .then(response => response.text())
+                        .then(text => new DOMParser().parseFromString(text, 'text/html'))
+                        .then(html_like => html_like.getElementsByTagName('div')[0])
+                        .then(div => tab.appendChild(div))
+                    }).observe(tab, {attributes: true})
+                </script>
+                <style>
+                    #imagecontainer {
+                        display: flex;
+                        justify-content: space-around;
+                        flex-flow: row wrap;
+                        align-items: center;
+                    }
+
+                    #imagecontainer>img {
+                        width: 30vw;
+                        min-width: 256px;
+                        max-width: 1024px;
+                        height: auto;
+                        margin-block: 1vh;
+                        border: 4px white solid;
+                    }
+                </style>
+            <div id="imagecontainer"></div>
         </div>
     </div>
     

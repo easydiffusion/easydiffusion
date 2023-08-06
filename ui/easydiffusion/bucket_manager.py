@@ -104,10 +104,11 @@ def init():
     def get_all_images(db: Session = Depends(get_db)):
         from easydiffusion.easydb.mappings import Image
         images = db.query(Image).all()
-        sum_string = ""
+        sum_string = "<div id='imagecontainer'>"
         for img in images:
             options = f"Path: {img.path}\nPrompt: {img.prompt}\nNegative Prompt: {img.negative_prompt}\nSeed: {img.seed}\nModel: {img.use_stable_diffusion_model}\nSize: {img.height}x{img.width}\nSampler: {img.sampler_name}\nSteps: {img.num_inference_steps}\nGuidance Scale: {img.guidance_scale}\nLoRA: {img.lora}\nUpscaling: {img.use_upscale}\nFace Correction: {img.use_face_correction}\n"
             sum_string += f"<img src='/image/{img.path}' title='{options}'>"
+        sum_string += "</div>"
         return Response(content=sum_string, media_type="text/html")
 
 
