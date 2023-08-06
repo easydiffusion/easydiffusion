@@ -1832,3 +1832,23 @@ div#enlarge-buttons {
 #imageTagPopupContainer {
     position: absolute;
 }
+/* Gallery CSS */
+#imagecontainer {
+    display: flex;
+    justify-content: space-around;
+    flex-flow: row wrap;
+    align-items: center;
+}
+
+#imagecontainer>img {
+    width: 30vw;
+    min-width: 256px;
+    max-width: 1024px;
+    height: auto;
+    margin-block: 1vh;
+    border: 4px white solid;
+}
+
+#tab-content-gallery>button {
+    margin: 8px;
+}
