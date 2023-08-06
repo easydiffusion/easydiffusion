@@ -8,6 +8,7 @@ from easydiffusion.easydb import crud, models, schemas
 from easydiffusion.easydb.database import SessionLocal, engine
 
 from requests.compat import urlparse
+from os.path import abspath
 
 import base64, json
 
@@ -92,7 +93,7 @@ def init():
     @server_api.get("/image/{image_path:path}")
     def get_image(image_path: str, db: Session = Depends(get_db)):
         from easydiffusion.easydb.mappings import Image
-        image_path = image_path.replace("/", "\\")
+        image_path = str(abspath(image_path))
         amount = len(db.query(Image).filter(Image.path == image_path).all())
         if amount > 0:
             image = db.query(Image).filter(Image.path == image_path).first()
