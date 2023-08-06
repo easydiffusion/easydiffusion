@@ -1834,3 +1834,7 @@ div#enlarge-buttons {
     margin-block: 1vh;
     border: 4px white solid;
 }
+
+#tab-content-gallery>button {
+    margin: 8px;
+}
