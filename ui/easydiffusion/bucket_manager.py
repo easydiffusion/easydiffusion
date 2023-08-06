@@ -94,12 +94,21 @@ def init():
         from easydiffusion.easydb.mappings import Image
         image_path = image_path.replace("/", "\\")
         amount = len(db.query(Image).filter(Image.path == image_path).all())
-        print(image_path, amount)
         if amount > 0:
             image = db.query(Image).filter(Image.path == image_path).first()
             return FileResponse(image.path)
         else:
             raise HTTPException(status_code=404, detail="Image not found")
+    
+    @server_api.get("/all_images")
+    def get_all_images(db: Session = Depends(get_db)):
+        from easydiffusion.easydb.mappings import Image
+        images = db.query(Image).all()
+        sum_string = ""
+        for img in images:
+            options = f"Path: {img.path}\nPrompt: \nNegative Prompt: \nSeed: {img.seed}\nModel: {img.use_stable_diffusion_model}\nSize: {img.height}x{img.width}\nSampler: {img.sampler_name}\nSteps: {img.num_inference_steps}\nGuidance Scale: {img.guidance_scale}\nLoRA: {img.lora}\nUpscaling: {img.use_upscale}\nFace Correction: {img.use_face_correction}\n"
+            sum_string += f"<img src='/image/{img.path}' title='{options}'>"
+        return Response(content=sum_string, media_type="text/html")
 
 
 def get_filename_from_url(url):
