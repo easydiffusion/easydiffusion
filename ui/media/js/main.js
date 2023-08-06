@@ -2827,10 +2827,6 @@ embeddingsCollapsiblesBtn.addEventListener("click", (e) => {
     }
 })
 
-if (testDiffusers.checked) {
-    document.getElementById("embeddings-container").classList.remove("displayNone")
-}
-
 /* Pause function */
 document.querySelectorAll(".tab").forEach(linkTabContents)
 

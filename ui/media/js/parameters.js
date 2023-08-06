@@ -239,11 +239,11 @@ var PARAMETERS = [
     {
         id: "test_diffusers",
         type: ParameterType.checkbox,
-        label: "Test Diffusers",
+        label: "Use the new v3 engine (diffusers)",
         note:
-            "<b>Experimental! Can have bugs!</b> Use upcoming features (like LoRA) in our new engine. Please press Save, then restart the program after changing this.",
+            "Use our new v3 engine, with additional features like LoRA, ControlNet, SDXL, Embeddings, Tiling and lots more! Please press Save, then restart the program after changing this.",
         icon: "fa-bolt",
-        default: false,
+        default: true,
         saveInAppConfig: true,
     },
     {
@@ -465,7 +465,10 @@ async function getAppConfig() {
             listenPortField.value = config.net.listen_port
         }
 
-        const testDiffusersEnabled = config.test_diffusers && config.update_branch !== "main"
+        let testDiffusersEnabled = config.update_branch !== "main"
+        if (config.test_diffusers === false) {
+            testDiffusersEnabled = false
+        }
         testDiffusers.checked = testDiffusersEnabled
 
         if (config.config_on_startup) {
