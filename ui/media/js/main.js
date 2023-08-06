@@ -2787,3 +2787,15 @@ let recentResolutionsValues = []
         heightField.value = temp
     })
 })()
+
+/* Gallery JS */
+
+function refreshGallery() {
+    let container = document.getElementById("imagecontainer")
+    container.remove()
+    fetch('/all_images')
+        .then(response => response.text())
+        .then(text => new DOMParser().parseFromString(text, 'text/html'))
+        .then(html_like => html_like.getElementsByTagName('div')[0])
+        .then(div => document.getElementById("tab-content-gallery").appendChild(div))
+}
