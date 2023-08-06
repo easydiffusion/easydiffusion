@@ -174,7 +174,9 @@ def save_images_to_disk(
                 use_hypernetwork_model = metadata_entries[i]["use_hypernetwork_model"],
                 tiling = metadata_entries[i]["tiling"],
                 use_face_correction = metadata_entries[i]["use_face_correction"],
-                use_upscale = metadata_entries[i]["use_upscale"]
+                use_upscale = metadata_entries[i]["use_upscale"],
+                prompt = metadata_entries[i]["prompt"],
+                negative_prompt = metadata_entries[i]["negative_prompt"]
             ))
             session.commit()
             session.close()
