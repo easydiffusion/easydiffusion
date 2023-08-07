@@ -270,7 +270,7 @@ def generate_images_internal(
     return images, user_stopped
 
 
-def construct_response(images: list, seeds: list, output_format: OutputFormatData, metadatas: list):
+def construct_response(images: list, seeds: list, output_format: OutputFormatData, metadata_list: list):
     return [
         ResponseImage(
             data=img_to_base64_str(
@@ -282,7 +282,7 @@ def construct_response(images: list, seeds: list, output_format: OutputFormatDat
             ),
             seed=seed,
         )
-        for img, seed, metadata in zip(images, seeds, metadatas)
+        for img, seed, metadata in zip(images, seeds, metadata_list)
     ]
 
 
