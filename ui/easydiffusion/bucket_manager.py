@@ -94,11 +94,10 @@ def init():
     def get_image(image_path: str, db: Session = Depends(get_db)):
         from easydiffusion.easydb.mappings import Image
         image_path = str(abspath(image_path))
-        amount = len(db.query(Image).filter(Image.path == image_path).all())
-        if amount > 0:
+        try:
             image = db.query(Image).filter(Image.path == image_path).first()
             return FileResponse(image.path)
-        else:
+        except Exception as e:
             raise HTTPException(status_code=404, detail="Image not found")
     
     @server_api.get("/all_images")
