@@ -63,7 +63,7 @@ class SetAppConfigRequest(BaseModel, extra=Extra.allow):
     ui_open_browser_on_start: bool = None
     listen_to_network: bool = None
     listen_port: int = None
-    test_diffusers: bool = False
+    test_diffusers: bool = True
 
 
 def init():

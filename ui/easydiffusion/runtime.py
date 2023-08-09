@@ -31,7 +31,7 @@ def init(device):
 
     app_config = app.getConfig()
     context.test_diffusers = (
-        app_config.get("test_diffusers", False) and app_config.get("update_branch", "main") != "main"
+        app_config.get("test_diffusers", True) and app_config.get("update_branch", "main") != "main"
     )
 
     log.info("Device usage during initialization:")

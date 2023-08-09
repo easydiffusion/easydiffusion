@@ -794,7 +794,7 @@ div.img-preview img {
     margin-bottom: 8px;
 }
 
-#init_image_preview_container:not(.has-image) #init_image_wrapper,
+#init_image_preview_container:not(.has-image) .preview_image_wrapper,
 #init_image_preview_container:not(.has-image) #inpaint_button_container  {
     display: none;
 }
@@ -831,14 +831,14 @@ div.img-preview img {
     gap: 8px;
 }
 
-#init_image_wrapper {
+.preview_image_wrapper {
     grid-row: span 3;
     position: relative;
     width: fit-content;
     max-height: 150px;
 }
 
-#init_image_preview {
+.image_preview {
     max-height: 150px;
     height: 100%;
     width: 100%;
@@ -1650,6 +1650,35 @@ body.wait-pause {
     }
 }
 
+.spinner-container {
+    width: 80px;
+    height: 100px;
+    margin: 100px auto;
+    margin-top: 30vH;
+}
+
+.spinner-block {
+    position: relative;
+    box-sizing: border-box;
+    float: left;
+    margin: 0 10px 10px 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    background: var(--accent-color);
+}
+
+.spinner-block:nth-child(4n+1) { animation: spinner-wave 2s ease .0s infinite; }
+.spinner-block:nth-child(4n+2) { animation: spinner-wave 2s ease .2s infinite; }
+.spinner-block:nth-child(4n+3) { animation: spinner-wave 2s ease .4s infinite; }
+.spinner-block:nth-child(4n+4) { animation: spinner-wave 2s ease .6s infinite; margin-right: 0; }
+
+@keyframes spinner-wave {
+    0%   { top: 0;     opacity: 1; }
+    50%  { top: 30px;  opacity: .2; }
+    100% { top: 0;     opacity: 1; }
+}
+
 #embeddings-dialog {
     overflow: clip;
 }
@@ -1741,6 +1770,32 @@ body.wait-pause {
     float: right;
 }
 
+.use-as-thumb-grid {  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: 1fr auto;
+  gap: 8px 8px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "uat-preview uat-select"
+    "uat-preview uat-buttons";
+}
+
+.use-as-thumb-preview {
+  justify-self: center;
+  align-self: center;
+  grid-area: uat-preview;
+}
+
+.use-as-thumb-select { 
+    grid-area: uat-select;
+}
+
+.use-as-thumb-buttons {
+  justify-self: center;
+  grid-area: uat-buttons;
+}
+
+
 .diffusers-disabled-on-startup .diffusers-restart-needed {
     font-size: 0;
 }
@@ -1818,22 +1873,56 @@ div#enlarge-buttons {
     font-size: 10pt;
 }
 
-/* Gallery CSS */
-#imagecontainer {
-    display: flex;
-    justify-content: space-around;
-    flex-flow: row wrap;
-    align-items: center;
+#controlnet_model_container small {
+    color: var(--text-color)
+}
+#control_image {
+    width: 130pt;
+}
+#controlnet_model {
+    width: 77%;
 }
 
-#imagecontainer>img {
-    width: 30vw;
-    min-width: 256px;
-    max-width: 1024px;
-    height: auto;
-    margin-block: 1vh;
-    border: 4px white solid;
+/* hack for fixing Image Modifier Improvements plugin */
+#imageTagPopupContainer {
+    position: absolute;
 }
+
+/* Gallery CSS */
+.gallery {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  font-family: sans-serif;
+}
+
+.gallery-container {
+  columns: 5 ;
+  column-gap: 1.5rem;
+  width: 95%;
+  margin: 0 0 ;
+}
+.gallery-container  div {
+    margin: 0 1.5rem 1.5rem 0;
+    display: inline-block;
+    width: 100%;
+    padding: 5px;
+    
+    transition: all .75s ease-in-out;
+}
+
+.gallery-container div img {
+    width: 100%;
+    border-radius: 5px;
+    transition: all .25s ease-in-out;
+    box-shadow: 5px 5px 5px rgba(0,0,0,0.4);
+}
+
+.gallery-container div img:hover {
+    box-shadow: 1px 1px 15px rgba(32,0,128,0.8);
+}
+
 
 #tab-content-gallery>button {
     margin: 8px;

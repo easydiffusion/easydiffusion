@@ -21,6 +21,8 @@ TASK_TEXT_MAPPING = {
     "seed": "Seed",
     "use_stable_diffusion_model": "Stable Diffusion model",
     "clip_skip": "Clip Skip",
+    "use_controlnet_model": "ControlNet model",
+    "control_filter_to_apply": "ControlNet Filter",
     "use_vae_model": "VAE model",
     "sampler_name": "Sampler",
     "width": "Width",
@@ -155,11 +157,11 @@ def save_images_to_disk(
                 else:
                     return metadata_entries[i]["use_lora_model"] + ":" + str(metadata_entries[i]["lora_alpha"])
 
-            from easydiffusion.easydb.mappings import Image
+            from easydiffusion.easydb.mappings import GalleryImage
             from easydiffusion.easydb.database import SessionLocal
 
             session = SessionLocal()
-            session.add(Image(
+            session.add(GalleryImage(
                 path = path_i,
                 seed = metadata_entries[i]["seed"],
                 use_stable_diffusion_model = metadata_entries[i]["use_stable_diffusion_model"],
@@ -258,7 +260,7 @@ def get_printable_request(req: GenerateImageRequest, task_data: TaskData, output
     task_data_metadata.update(output_format.dict())
 
     app_config = app.getConfig()
-    using_diffusers = app_config.get("test_diffusers", False)
+    using_diffusers = app_config.get("test_diffusers", True)
 
     # Save the metadata in the order defined in TASK_TEXT_MAPPING
     metadata = {}
@@ -301,10 +303,12 @@ def get_printable_request(req: GenerateImageRequest, task_data: TaskData, output
         del metadata["lora_alpha"]
     if task_data.use_upscale != "latent_upscaler" and "latent_upscaler_steps" in metadata:
         del metadata["latent_upscaler_steps"]
+    if task_data.use_controlnet_model is None and "control_filter_to_apply" in metadata:
+        del metadata["control_filter_to_apply"]
 
     if not using_diffusers:
         for key in (
-            x for x in ["use_lora_model", "lora_alpha", "clip_skip", "tiling", "latent_upscaler_steps"] if x in metadata
+            x for x in ["use_lora_model", "lora_alpha", "clip_skip", "tiling", "latent_upscaler_steps", "use_controlnet_model", "control_filter_to_apply"] if x in metadata
         ):
             del metadata[key]
 

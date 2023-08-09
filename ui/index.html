@@ -18,12 +18,14 @@
     <link rel="stylesheet" href="/media/css/image-modal.css">
     <link rel="stylesheet" href="/media/css/plugins.css">
     <link rel="stylesheet" href="/media/css/animations.css">
+    <link rel="stylesheet" href="/media/css/croppr.css" rel="stylesheet"/>
     <link rel="manifest" href="/media/manifest.webmanifest">
     <script src="/media/js/jquery-3.6.1.min.js"></script>
     <script src="/media/js/jquery-confirm.min.js"></script>
     <script src="/media/js/jszip.min.js"></script>
     <script src="/media/js/FileSaver.min.js"></script>
     <script src="/media/js/marked.min.js"></script>
+    <script src="/media/js/croppr.js"></script>
 </head>
 <body>
 <div id="container">
@@ -32,7 +34,7 @@
             <h1>
                 <img id="logo_img" src="/media/images/icon-512x512.png" >
                 Easy Diffusion
-                <small><span id="version">v2.5.47</span> <span id="updateBranchLabel"></span></small>
+                <small><span id="version">v3.0.0</span> <span id="updateBranchLabel"></span></small>
             </h1>
         </div>
         <div id="server-status">
@@ -86,8 +88,8 @@
                     <label for="init_image">Initial Image (img2img) <small>(optional)</small> </label>
 
                     <div id="init_image_preview_container" class="image_preview_container">
-                        <div id="init_image_wrapper">
-                            <img id="init_image_preview" src="" crossorigin="anonymous" />
+                        <div id="init_image_wrapper" class="preview_image_wrapper">
+                            <img id="init_image_preview" class="image_preview" src="" crossorigin="anonymous" />
                             <span id="init_image_size_box" class="img_bottom_label"></span>
                             <button class="init_image_clear image_clear_btn"><i class="fa-solid fa-xmark"></i></button>
                         </div>
@@ -144,18 +146,17 @@
                     <div><table>
                     <tr><b class="settings-subheader">Image Settings</b></tr>
                     <tr class="pl-5"><td><label for="seed">Seed:</label></td><td><input id="seed" name="seed" size="10" value="0" onkeypress="preventNonNumericalInput(event)"> <input id="random_seed" name="random_seed" type="checkbox" checked><label for="random_seed">Random</label></td></tr>
-                    <tr class="pl-5"><td><label for="num_outputs_total">Number of Images:</label></td><td><input id="num_outputs_total" name="num_outputs_total" value="1" size="1" onkeypress="preventNonNumericalInput(event)"> <label><small>(total)</small></label> <input id="num_outputs_parallel" name="num_outputs_parallel" value="1" size="1" onkeypress="preventNonNumericalInput(event)"> <label for="num_outputs_parallel"><small>(in parallel)</small></label></td></tr>
+                    <tr class="pl-5"><td><label for="num_outputs_total">Number of Images:</label></td><td><input id="num_outputs_total" name="num_outputs_total" value="1" size="1" onkeypress="preventNonNumericalInput(event)"> <label><small>(total)</small></label> <input id="num_outputs_parallel" name="num_outputs_parallel" value="1" size="1" onkeypress="preventNonNumericalInput(event)"> <label id="num_outputs_parallel_label" for="num_outputs_parallel"><small>(in parallel)</small></label></td></tr>
                     <tr class="pl-5"><td><label for="stable_diffusion_model">Model:</label></td><td class="model-input">
                         <input id="stable_diffusion_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
                         <button id="reload-models" class="secondaryButton reloadModels"><i class='fa-solid fa-rotate'></i></button>
                         <a href="https://github.com/easydiffusion/easydiffusion/wiki/Custom-Models" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about custom models</span></i></a>
                     </td></tr>
                     <tr class="pl-5 displayNone" id="enable_trt_config">
-                        <td><label for="convert_to_tensorrt">Convert to TensorRT:</label></td>
+                        <td><label for="convert_to_tensorrt">Enable TensorRT:</label></td>
                         <td class="diffusers-restart-needed">
                             <input id="convert_to_tensorrt" name="convert_to_tensorrt" type="checkbox">
-                            <a href="https://github.com/easydiffusion/easydiffusion/wiki/TensorRT" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about TensorRT</span></i></a>
-                            <label><small>Takes upto 20 mins the first time</small></label>
+                            <!-- <label><small>Takes upto 20 mins the first time</small></label> -->
                         </td>
                     </tr>
                     <tr class="pl-5 displayNone" id="clip_skip_config">
@@ -163,6 +164,63 @@
                         <td class="diffusers-restart-needed">
                             <input id="clip_skip" name="clip_skip" type="checkbox">
                             <a href="https://github.com/easydiffusion/easydiffusion/wiki/Clip-Skip" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about Clip Skip</span></i></a>
+                        </td>
+                    </tr>
+                    <tr id="controlnet_model_container" class="pl-5">
+                        <td><label for="controlnet_model">ControlNet Image:</label></td>
+                        <td class="diffusers-restart-needed">
+                            <div id="control_image_wrapper" class="preview_image_wrapper">
+                                <img id="control_image_preview" class="image_preview" src="" crossorigin="anonymous" />
+                                <span id="control_image_size_box" class="img_bottom_label"></span>
+                                <button class="control_image_clear image_clear_btn"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                            <input id="control_image" name="control_image" type="file" />
+                            <a href="https://github.com/easydiffusion/easydiffusion/wiki/ControlNet" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about ControlNets</span></i></a>
+                            <div id="controlnet_config" class="displayNone">
+                                <label><small>Filter to apply:</small></label>
+                                <select id="control_image_filter">
+                                    <option value="">None</option>
+                                    <optgroup label="Pose">
+                                        <option value="openpose">OpenPose (*)</option>
+                                        <option value="openpose_face">OpenPose face</option>
+                                        <option value="openpose_faceonly">OpenPose face-only</option>
+                                        <option value="openpose_hand">OpenPose hand</option>
+                                        <option value="openpose_full">OpenPose full</option>
+                                    </optgroup>
+                                    <optgroup label="Outline">
+                                        <option value="canny">Canny (*)</option>
+                                        <option value="mlsd">Straight lines</option>
+                                        <option value="scribble_hed">Scribble hed (*)</option>
+                                        <option value="scribble_hedsafe">Scribble hedsafe</option>
+                                        <option value="scribble_pidinet">Scribble pidinet</option>
+                                        <option value="scribble_pidsafe">Scribble pidsafe</option>
+                                        <option value="softedge_hed">Softedge hed</option>
+                                        <option value="softedge_hedsafe">Softedge hedsafe</option>
+                                        <option value="softedge_pidinet">Softedge pidinet</option>
+                                        <option value="softedge_pidsafe">Softedge pidsafe</option>
+                                    </optgroup>
+                                    <optgroup label="Depth">
+                                        <option value="normal_bae">Normal bae (*)</option>
+                                        <option value="depth_midas">Depth midas</option>
+                                        <option value="depth_zoe">Depth zoe</option>
+                                        <option value="depth_leres">Depth leres</option>
+                                        <option value="depth_leres++">Depth leres++</option>
+                                    </optgroup>
+                                    <optgroup label="Line art">
+                                        <option value="lineart_coarse">Lineart coarse</option>
+                                        <option value="lineart_realistic">Lineart realistic</option>
+                                        <option value="lineart_anime">Lineart anime</option>
+                                    </optgroup>
+                                    <optgroup label="Misc">
+                                        <option value="shuffle">Shuffle</option>
+                                        <option value="segment">Segment</option>
+                                    </optgroup>
+                                </select>
+                                <br/>
+                                <label for="controlnet_model"><small>Model:</small></label> <input id="controlnet_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
+                                <br/>
+                                <label><small>Will download the necessary models, the first time.</small></label>
+                            </div>
                         </td>
                     </tr>
                     <tr class="pl-5"><td><label for="vae_model">Custom VAE:</label></td><td>
@@ -242,7 +300,7 @@
                         </select>
                         <label for="height"><small>(height)</small></label>
                         <div id="recent-resolutions-container">
-                            <span id="recent-resolutions-button" class="clickable"><i class="fa-solid fa-sliders"><span class="simple-tooltip top-left"> Recent sizes </span></i></span>
+                            <span id="recent-resolutions-button" class="clickable"><i class="fa-solid fa-sliders"><span class="simple-tooltip top-left"> Advanced sizes </span></i></span>
                             <div id="recent-resolutions-popup" class="displayNone">
                                 <small>Custom size:</small><br>
                                 <input id="custom-width" name="custom-width" type="number" min="128" value="512" onkeypress="preventNonNumericalInput(event)">
@@ -271,7 +329,7 @@
                             <button class="add_model_entry"><i class="fa-solid fa-plus"></i> add another LoRA</button>
                         </td>
                     </tr>
-                    <tr class="pl-5"><td><label for="hypernetwork_model">Hypernetwork:</label></td><td>
+                    <tr id="hypernetwork_model_container" class="pl-5"><td><label for="hypernetwork_model">Hypernetwork:</label></td><td>
                         <input id="hypernetwork_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
                     </td></tr>
                     <tr id="hypernetwork_strength_container" class="pl-5">
@@ -460,7 +518,9 @@
         </div>
         <div id="tab-content-gallery" class="tab-content">
             <button class="primaryButton" onclick="refreshGallery()">Refresh</button>
-            <div id="imagecontainer"></div>
+            <div class="gallery">
+                <div class="gallery-container" id="imagecontainer"></div>
+            </div>
         </div>
     </div>
     
@@ -630,10 +690,47 @@
             </button>
             <i class="fa-solid fa-magnifying-glass"></i>
             <input id="embeddings-search-box" type="text" spellcheck="false" autocomplete="off" placeholder="Search...">
+            <label for="embedding-card-size-selector"><small>Thumbnail Size:</small></label>
+            <select id="embedding-card-size-selector" name="embedding-card-size-selector">
+                <option value="-2">0</option>
+                <option value="-1">1</option>
+                <option value="0">2</option>
+                <option value="1" selected>3</option>
+                <option value="2">4</option>
+                <option value="3">5</option>
+            </select>
             <span style="float:right;"><label>Mode:</label>&nbsp;<select id="embeddings-mode"><option value="insert">Insert at cursor position</option><option value="append">Append at the end</option></select>
         </div>
         <div id="embeddings-list">
         </div>
+        </div>
+    </dialog>
+
+    <dialog id="use-as-thumb-dialog">
+        <div id="use-as-thumb-dialog-header" class="dialog-header">
+            <div id="use-as-thumb-dialog-header-left" class="dialog-header-left">
+                <h4>Use as thumbnail</h4>
+                <span>Use a pictures as thumbnail for embeddings, LORAs, etc.</span>
+            </div>
+            <div id="use-as-thumb-dialog-header-right">
+                <i id="use-as-thumb-dialog-close-button" class="fa-solid fa-xmark fa-lg"></i>
+            </div>
+        </div>
+        <div>
+            <div class="use-as-thumb-grid">
+                <div class="use-as-thumb-preview">
+                    <div id="use-as-thumb-img-container"><img id="use-as-thumb-image" src="/media/images/noimg.png" width="512" height="512"></div>
+                </div>
+                <div class="use-as-thumb-select">
+                    <label for="use-as-thumb-select">Use the thumbnail for:</label><br>
+                    <select id="use-as-thumb-select" size="16" multiple>
+                    </select>
+                </div>
+                <div class="use-as-thumb-buttons">
+                    <button class="tertiaryButton" id="use-as-thumb-save">Save thumbnail</button>
+                    <button class="tertiaryButton" id="use-as-thumb-cancel">Cancel</button>
+                </div>
+            </div>
         </div>
     </dialog>
 
@@ -713,7 +810,7 @@ async function init() {
             ping: onPing
         }
     })
-    splashScreen()
+    // splashScreen()
 
     // load models again, but scan for malicious this time
     await getModels(true)

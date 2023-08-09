@@ -75,6 +75,7 @@ class TaskData(BaseModel):
     use_controlnet_model: Union[str, List[str]] = None
     filters: List[str] = []
     filter_params: Dict[str, Dict[str, Any]] = {}
+    control_filter_to_apply: Union[str, List[str]] = None
 
     show_only_filtered_image: bool = False
     block_nsfw: bool = False
@@ -135,6 +136,7 @@ class GenerateImageResponse:
     def json(self):
         del self.render_request.init_image
         del self.render_request.init_image_mask
+        del self.render_request.control_image
 
         task_data = self.task_data.dict()
         task_data.update(self.output_format.dict())
@@ -212,6 +214,9 @@ def convert_legacy_render_req_to_new(old_req: dict):
     model_paths["latent_upscaler"] = (
         model_paths["latent_upscaler"] if "latent_upscaler" in model_paths["latent_upscaler"].lower() else None
     )
+    if "control_filter_to_apply" in old_req:
+        filter_model = old_req["control_filter_to_apply"]
+        model_paths[filter_model] = filter_model
 
     if old_req.get("block_nsfw"):
         model_paths["nsfw_checker"] = "nsfw_checker"
@@ -221,6 +226,9 @@ def convert_legacy_render_req_to_new(old_req: dict):
         model_params["stable-diffusion"] = {
             "clip_skip": bool(old_req.get("clip_skip", False)),
             "convert_to_tensorrt": bool(old_req.get("convert_to_tensorrt", False)),
+            "trt_build_config": old_req.get(
+                "trt_build_config", {"batch_size_range": (1, 1), "dimensions_range": [(768, 1024)]}
+            ),
         }
 
     # move the filter params

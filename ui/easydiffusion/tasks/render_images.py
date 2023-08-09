@@ -15,6 +15,7 @@ from sdkit.utils import (
     img_to_base64_str,
     img_to_buffer,
     latent_samples_to_images,
+    log,
 )
 
 from .task import Task
@@ -63,7 +64,7 @@ class RenderTask(Task):
         if (
             runtime.set_vram_optimizations(context)
             or self.has_param_changed(context, "clip_skip")
-            or self.has_param_changed(context, "convert_to_tensorrt")
+            or self.trt_needs_reload(context)
         ):
             models_to_force_reload.append("stable-diffusion")
 
@@ -91,6 +92,29 @@ class RenderTask(Task):
         model = context.models["stable-diffusion"]
         new_val = self.models_data.model_params.get("stable-diffusion", {}).get(param_name, False)
         return model["params"].get(param_name) != new_val
+
+    def trt_needs_reload(self, context):
+        if not context.test_diffusers:
+            return False
+        if "stable-diffusion" not in context.models or "params" not in context.models["stable-diffusion"]:
+            return True
+
+        model = context.models["stable-diffusion"]
+
+        # curr_convert_to_trt = model["params"].get("convert_to_tensorrt")
+        new_convert_to_trt = self.models_data.model_params.get("stable-diffusion", {}).get("convert_to_tensorrt", False)
+
+        pipe = model["default"]
+        is_trt_loaded = hasattr(pipe.unet, "_allocate_trt_buffers") or hasattr(
+            pipe.unet, "_allocate_trt_buffers_backup"
+        )
+        if new_convert_to_trt and not is_trt_loaded:
+            return True
+
+        curr_build_config = model["params"].get("trt_build_config")
+        new_build_config = self.models_data.model_params.get("stable-diffusion", {}).get("trt_build_config", {})
+
+        return new_convert_to_trt and curr_build_config != new_build_config
 
 
 def make_images(
@@ -148,6 +172,7 @@ def make_images_internal(
         context,
         req,
         task_data,
+        models_data,
         data_queue,
         task_temp_images,
         step_callback,
@@ -174,6 +199,7 @@ def generate_images_internal(
     context,
     req: GenerateImageRequest,
     task_data: TaskData,
+    models_data: ModelsData,
     data_queue: queue.Queue,
     task_temp_images: list,
     step_callback,
@@ -196,6 +222,30 @@ def generate_images_internal(
     try:
         if req.init_image is not None and not context.test_diffusers:
             req.sampler_name = "ddim"
+
+        req.width, req.height = map(lambda x: x - x % 8, (req.width, req.height))  # clamp to 8
+
+        if req.control_image and task_data.control_filter_to_apply:
+            req.control_image = filter_images(context, req.control_image, task_data.control_filter_to_apply)[0]
+
+        if context.test_diffusers:
+            pipe = context.models["stable-diffusion"]["default"]
+            if hasattr(pipe.unet, "_allocate_trt_buffers_backup"):
+                setattr(pipe.unet, "_allocate_trt_buffers", pipe.unet._allocate_trt_buffers_backup)
+                delattr(pipe.unet, "_allocate_trt_buffers_backup")
+
+            if hasattr(pipe.unet, "_allocate_trt_buffers"):
+                convert_to_trt = models_data.model_params["stable-diffusion"].get("convert_to_tensorrt", False)
+                if convert_to_trt:
+                    pipe.unet.forward = pipe.unet._trt_forward
+                    # pipe.vae.decoder.forward = pipe.vae.decoder._trt_forward
+                    log.info(f"Setting unet.forward to TensorRT")
+                else:
+                    log.info(f"Not using TensorRT for unet.forward")
+                    pipe.unet.forward = pipe.unet._non_trt_forward
+                    # pipe.vae.decoder.forward = pipe.vae.decoder._non_trt_forward
+                    setattr(pipe.unet, "_allocate_trt_buffers_backup", pipe.unet._allocate_trt_buffers)
+                    delattr(pipe.unet, "_allocate_trt_buffers")
 
         images = generate_images(context, callback=callback, **req.dict())
         user_stopped = False
