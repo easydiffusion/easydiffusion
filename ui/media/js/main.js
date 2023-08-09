@@ -3088,6 +3088,15 @@ let recentResolutionsValues = []
 function galleryImage(item) {
     let div = document.createElement("div")
     let img = document.createElement("img")
+    img.addEventListener("click", (event) => {
+        let w;
+        w = window.open("/single_image?image_path=" + item.path, "_blank")
+        w.addEventListener("DOMContentLoaded", () => {
+            w.document.getElementById("button").addEventListener("click", () => {
+                document.title = "hi"
+            })
+        })
+    })
 
     img.src = "/image/" + item.path
     img.dataset["request"] = JSON.stringify(item)

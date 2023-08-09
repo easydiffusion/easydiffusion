@@ -116,7 +116,7 @@ def init():
         try:
             image: GalleryImage = db.query(GalleryImage).filter(GalleryImage.path == image_path).first()
             head = "<head><link rel='stylesheet' href='/media/css/single-gallery.css'></head>"
-            body = "<body><img src='/image/" + image.path + "'>" + image.htmlForm() + "</body>"
+            body = "<body><div><button id='button'></button></div><img src='/image/" + image.path + "'>" + image.htmlForm() + "</body>"
             return Response(content="<html>" + head + body + "</head>", media_type="text/html")
         except Exception as e:
             print(e)
