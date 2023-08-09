@@ -3087,11 +3087,55 @@ let recentResolutionsValues = []
 /* Gallery JS */
 function galleryImage(item) {
     let div = document.createElement("div")
-    let img = document.createElement("img")
+    div.classList.add("gallery-image")
 
+    let img = document.createElement("img")
     img.src = "/image/" + item.path
     img.dataset["request"] = JSON.stringify(item)
-    div.appendChild(img)
+
+    let hover = document.createElement("div")
+    hover.classList.add("gallery-image-hover")
+    
+    let imageExpandBtn=document.createElement("button")
+    imageExpandBtn.classList.add("tertiaryButton")
+    imageExpandBtn.innerHTML = '<i class="fa-solid fa-expand"></i>'
+    imageExpandBtn.addEventListener("click", function() {
+        function previousImage(img) {
+            const allImages = Array.from(document.getElementById("imagecontainer").querySelectorAll(".gallery-image img"))
+            const index = allImages.indexOf(img)
+            return allImages.slice(0, index).reverse()[0]
+        }
+
+        function nextImage(img) {
+            const allImages = Array.from(document.getElementById("imagecontainer").querySelectorAll(".gallery-image img"))
+            const index = allImages.indexOf(img)
+            return allImages.slice(index + 1)[0]
+        }
+
+        function imageModalParameter(img) {
+            const previousImg = previousImage(img)
+            const nextImg = nextImage(img)
+
+            return {
+                src: img.src,
+                previous: previousImg ? () => imageModalParameter(previousImg) : undefined,
+                next: nextImg ? () => imageModalParameter(nextImg) : undefined,
+            }
+        }
+        imageModal(imageModalParameter(img))
+    })
+
+    hover.appendChild(imageExpandBtn)
+    hover.appendChild(document.createElement("br"))
+
+    let useAsInputBtn = document.createElement("button")
+    useAsInputBtn.classList.add("tertiaryButton")
+    useAsInputBtn.innerHTML = "Use as Input"
+    useAsInputBtn.addEventListener("click", (e) => onUseAsInputClick(null, img))
+
+    hover.appendChild(useAsInputBtn)
+
+    div.replaceChildren(img, hover)
     return div
 }
 

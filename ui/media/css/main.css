@@ -1898,12 +1898,21 @@ div#enlarge-buttons {
 }
 
 .gallery-container {
-  columns: 5 ;
+  columns: 6 380px ;
   column-gap: 1.5rem;
   width: 95%;
   margin: 0 0 ;
 }
-.gallery-container  div {
+
+.gallery-image img {
+    width: 100%;
+    border-radius: 5px;
+    transition: all .25s ease-in-out;
+    box-shadow: 5px 5px 5px rgba(0,0,0,0.4);
+}
+
+.gallery-image {
+    position: relative;
     margin: 0 1.5rem 1.5rem 0;
     display: inline-block;
     width: 100%;
@@ -1912,15 +1921,20 @@ div#enlarge-buttons {
     transition: all .75s ease-in-out;
 }
 
-.gallery-container div img {
-    width: 100%;
-    border-radius: 5px;
-    transition: all .25s ease-in-out;
-    box-shadow: 5px 5px 5px rgba(0,0,0,0.4);
+.gallery-image-hover {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    opacity: 0;
+    text-align: right;
 }
 
-.gallery-container div img:hover {
-    box-shadow: 1px 1px 15px rgba(32,0,128,0.8);
+.gallery-image-hover button {
+    margin-bottom: 5px;
+}
+
+.gallery-image:hover .gallery-image-hover {
+    opacity: 1;
 }
 
 
