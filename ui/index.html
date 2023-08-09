@@ -517,7 +517,11 @@
             </div>
         </div>
         <div id="tab-content-gallery" class="tab-content">
-            <button class="primaryButton" onclick="refreshGallery()">Refresh</button>
+            <div id="gallery-search">
+                <textarea id="gallery-prompt-search" onkeydown="gallery_keyDown_handler(event)" placeholder="Search for a prompt..."></textarea>
+                <textarea id="gallery-model-search" onkeydown="gallery_keyDown_handler(event)" placeholder="Search for a model..."></textarea>
+                <button class="primaryButton" onclick="refreshGallery()">Refresh</button>
+            </div>
             <div class="gallery">
                 <div class="gallery-container" id="imagecontainer"></div>
             </div>

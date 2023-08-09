@@ -3097,8 +3097,12 @@ function galleryImage(item) {
 
 function refreshGallery() {
     let container = document.getElementById("imagecontainer")
+    let promptsearchfield = document.getElementById("gallery-prompt-search").value
+    let promptsearch = promptsearchfield.length > 0 ? "prompt=" + promptsearchfield  + "&" : ""
+    let modelsearchfield = document.getElementById("gallery-model-search").value
+    let modelsearch = modelsearchfield.length > 0 ? "model=" + modelsearchfield  + "&" : ""
     container.innerHTML=""
-    fetch('/all_images')
+    fetch('/all_images?' + promptsearch + modelsearch)
         .then(response => response.json())
         .then(json => {
             console.log(json)
@@ -3106,4 +3110,11 @@ function refreshGallery() {
                 container.appendChild(galleryImage(item))
             })
          })
+}
+
+function gallery_keyDown_handler(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault()
+        refreshGallery()
+    }
 }

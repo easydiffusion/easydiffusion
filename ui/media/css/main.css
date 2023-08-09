@@ -1897,6 +1897,17 @@ div#enlarge-buttons {
   font-family: sans-serif;
 }
 
+#gallery-search {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+}
+
+#gallery-search>* {
+    margin: 0.5em;
+}
+
 .gallery-container {
   columns: 5 ;
   column-gap: 1.5rem;
@@ -1924,6 +1935,6 @@ div#enlarge-buttons {
 }
 
 
-#tab-content-gallery>button {
+#tab-content-gallery>* {
     margin: 8px;
 }
