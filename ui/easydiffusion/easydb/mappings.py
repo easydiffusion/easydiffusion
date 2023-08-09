@@ -25,6 +25,7 @@ class GalleryImage(Base):
     prompt = Column(String)
     negative_prompt = Column(String)
     time_created = Column(DateTime(timezone=True), server_default=func.now())
+    nsfw = Column(String, server_default='unknown')
 
     def __repr__(self):
         return "<GalleryImage(path='%s', seed='%s', use_stable_diffusion_model='%s', clip_skip='%s', use_vae_model='%s', sampler_name='%s', width='%s', height='%s', num_inference_steps='%s', guidance_scale='%s', lora='%s', use_hypernetwork_model='%s', tiling='%s', use_face_correction='%s', use_upscale='%s', prompt='%s', negative_prompt='%s')>" % (
