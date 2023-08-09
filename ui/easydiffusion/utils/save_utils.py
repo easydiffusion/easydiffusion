@@ -157,11 +157,11 @@ def save_images_to_disk(
                 else:
                     return metadata_entries[i]["use_lora_model"] + ":" + str(metadata_entries[i]["lora_alpha"])
 
-            from easydiffusion.easydb.mappings import Image
+            from easydiffusion.easydb.mappings import GalleryImage
             from easydiffusion.easydb.database import SessionLocal
 
             session = SessionLocal()
-            session.add(Image(
+            session.add(GalleryImage(
                 path = path_i,
                 seed = metadata_entries[i]["seed"],
                 use_stable_diffusion_model = metadata_entries[i]["use_stable_diffusion_model"],

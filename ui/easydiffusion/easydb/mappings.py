@@ -1,9 +1,10 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean
+from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql import func
 
 Base = declarative_base()
 
-class Image(Base):
+class GalleryImage(Base):
     __tablename__ = 'images'
 
     path = Column(String, primary_key=True)
@@ -23,10 +24,11 @@ class Image(Base):
     use_upscale = Column(String)
     prompt = Column(String)
     negative_prompt = Column(String)
+    time_created = Column(DateTime(timezone=True), server_default=func.now())
 
     def __repr__(self):
-        return "<Image(path='%s', seed='%s', use_stable_diffusion_model='%s', clip_skip='%s', use_vae_model='%s', sampler_name='%s', width='%s', height='%s', num_inference_steps='%s', guidance_scale='%s', lora='%s', use_hypernetwork_model='%s', tiling='%s', use_face_correction='%s', use_upscale='%s', prompt='%s', negative_prompt='%s')>" % (
+        return "<GalleryImage(path='%s', seed='%s', use_stable_diffusion_model='%s', clip_skip='%s', use_vae_model='%s', sampler_name='%s', width='%s', height='%s', num_inference_steps='%s', guidance_scale='%s', lora='%s', use_hypernetwork_model='%s', tiling='%s', use_face_correction='%s', use_upscale='%s', prompt='%s', negative_prompt='%s')>" % (
             self.path, self.seed, self.use_stable_diffusion_model, self.clip_skip, self.use_vae_model, self.sampler_name, self.width, self.height, self.num_inference_steps, self.guidance_scale, self.lora, self.use_hypernetwork_model, self.tiling, self.use_face_correction, self.use_upscale, self.prompt, self.negative_prompt)
 
 from easydiffusion.easydb.database import engine
-Image.metadata.create_all(engine)
+GalleryImage.metadata.create_all(engine)

@@ -91,24 +91,18 @@ def init():
 
     @server_api.get("/image/{image_path:path}")
     def get_image(image_path: str, db: Session = Depends(get_db)):
-        from easydiffusion.easydb.mappings import Image
+        from easydiffusion.easydb.mappings import GalleryImage
         image_path = str(abspath(image_path))
         try:
-            image = db.query(Image).filter(Image.path == image_path).first()
+            image = db.query(GalleryImage).filter(GalleryImage.path == image_path).first()
             return FileResponse(image.path)
         except Exception as e:
             raise HTTPException(status_code=404, detail="Image not found")
     
     @server_api.get("/all_images")
     def get_all_images(db: Session = Depends(get_db)):
-        from easydiffusion.easydb.mappings import Image
-        images = db.query(Image).all()
-        # sum_string = "<div id='imagecontainer'>"
-        # for img in images:
-        #     options = f"Path: {img.path}\nPrompt: {img.prompt}\nNegative Prompt: {img.negative_prompt}\nSeed: {img.seed}\nModel: {img.use_stable_diffusion_model}\nSize: {img.height}x{img.width}\nSampler: {img.sampler_name}\nSteps: {img.num_inference_steps}\nGuidance Scale: {img.guidance_scale}\nLoRA: {img.lora}\nUpscaling: {img.use_upscale}\nFace Correction: {img.use_face_correction}\n"
-        #     sum_string += f"<img src='/image/{img.path}' title='{options}'>"
-        # sum_string += "</div>"
-        # return Response(content=sum_string, media_type="text/html")
+        from easydiffusion.easydb.mappings import GalleryImage
+        images = db.query(GalleryImage).all()
         return images
 
 
