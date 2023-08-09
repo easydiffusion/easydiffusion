@@ -108,6 +108,19 @@ def init():
         if model != "":
             images = images.filter(GalleryImage.use_stable_diffusion_model.like("%"+model+"%"))
         return images.all()
+    
+    @server_api.get("/single_image")
+    def get_single_image(image_path: str, db: Session = Depends(get_db)):
+        from easydiffusion.easydb.mappings import GalleryImage
+        image_path = str(abspath(image_path))
+        try:
+            image: GalleryImage = db.query(GalleryImage).filter(GalleryImage.path == image_path).first()
+            head = "<head><link rel='stylesheet' href='/media/css/single-gallery.css'></head>"
+            body = "<body><img src='/image/" + image.path + "'>" + image.htmlForm() + "</body>"
+            return Response(content="<html>" + head + body + "</head>", media_type="text/html")
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=404, detail="Image not found")
 
 def get_filename_from_url(url):
     path = urlparse(url).path
