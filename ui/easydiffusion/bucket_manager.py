@@ -71,9 +71,8 @@ def init():
         bucket = crud.get_bucket_by_path(db, path)
 
         if bucket == None:
-            bucket_id = crud.create_bucket(db=db, bucket=schemas.BucketCreate(path=path))
-        else:
-            bucket_id = bucket.id
+            bucket = crud.create_bucket(db=db, bucket=schemas.BucketCreate(path=path))
+        bucket_id = bucket.id
 
         bucketfile = schemas.BucketFileCreate(filename=filename, data=file)
         result = crud.create_bucketfile(db=db, bucketfile=bucketfile, bucket_id=bucket_id)
