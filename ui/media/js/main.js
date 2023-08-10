@@ -3092,8 +3092,12 @@ function galleryImage(item) {
         let w;
         w = window.open("/single_image?image_path=" + item.path, "_blank")
         w.addEventListener("DOMContentLoaded", () => {
-            w.document.getElementById("button").addEventListener("click", () => {
-                document.title = "hi"
+            w.document.getElementsByTagName("body")[0].classList.add(themeField.value)
+            w.document.getElementById("use_these_settings").addEventListener("click", () => {
+                alert("use these settings")
+            })
+            w.document.getElementById("use_as_input").addEventListener("click", () => {
+                alert("use as input")
             })
         })
     })
