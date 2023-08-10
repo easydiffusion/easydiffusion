@@ -142,6 +142,8 @@ let embeddingsSearchBox = document.querySelector("#embeddings-search-box")
 let embeddingsList = document.querySelector("#embeddings-list")
 let embeddingsModeField = document.querySelector("#embeddings-mode")
 let embeddingsCardSizeSelector = document.querySelector("#embedding-card-size-selector")
+let galleryImginfoDialog = document.querySelector("#gallery-imginfo")
+let galleryImginfoDialogContent = document.querySelector("#gallery-imginfo-content")
 
 let positiveEmbeddingText = document.querySelector("#positive-embedding-text")
 let negativeEmbeddingText = document.querySelector("#negative-embedding-text")
@@ -3085,6 +3087,30 @@ let recentResolutionsValues = []
 })()
 
 /* Gallery JS */
+
+const IMAGE_INFO = {
+    "Prompt": "prompt",
+    "Negative Prompt": "negative_prompt",
+    "Seed": "seed",
+    "Time": "time_created",
+    "Model": "use_stable_diffusion_model",
+    "VAE Model": "use_vae_model",
+    "Hypernetwork": "use_hypernetwork_model",
+    "LORA": "lora",
+    "Path": "path",
+    "Width": "width",
+    "Height": "height",
+    "Steps": "num_inference_steps",
+    "Sampler": "sampler_name",
+    "Guidance Scale": "guidance_scale",
+    "Tiling": "tiling",
+    "Upscaler": "use_upscale",
+    "Face Correction": "use_face_correction",
+    "Clip Skip": "clip_skip",
+}
+
+const IGNORE_TOKENS = ["None", "none", "Null", "null", "false", "False"]
+
 function galleryImage(item) {
     let div = document.createElement("div")
     div.classList.add("gallery-image")
@@ -3096,9 +3122,34 @@ function galleryImage(item) {
     let hover = document.createElement("div")
     hover.classList.add("gallery-image-hover")
     
+    let infoBtn = document.createElement("button")
+    infoBtn.classList.add("tertiaryButton")
+    infoBtn.innerHTML = '<i class="fa-regular fa-file-lines"></i>'
+    infoBtn.addEventListener("click", function() {
+         let table = document.createElement("table")
+         console.log(item)
+         
+         for (const [label, key] of Object.entries(IMAGE_INFO)) {
+             console.log(label, key, item[key])
+             console.log(IGNORE_TOKENS.findIndex( k => (k == item[key])))
+             if (IGNORE_TOKENS.findIndex( k => (k == item[key])) == -1) {
+                 let data = item[key]
+                 if (key == "path") {
+                     data = "&hellip;/"+data.split(/[\/\\]/).pop()
+                 }
+                 table.appendChild(htmlToElement(`<tr><th style="text-align: right;opacity:0.7;">${label}:</th><td>${data}</td></tr>`))
+             }
+         }
+         galleryImginfoDialogContent.replaceChildren(table)
+         galleryImginfoDialog.showModal()
+    })
+    hover.appendChild(infoBtn)
+
+
     let imageExpandBtn=document.createElement("button")
     imageExpandBtn.classList.add("tertiaryButton")
     imageExpandBtn.innerHTML = '<i class="fa-solid fa-expand"></i>'
+    imageExpandBtn.style["margin-left"] = "0.2em"
     imageExpandBtn.addEventListener("click", function() {
         function previousImage(img) {
             const allImages = Array.from(document.getElementById("imagecontainer").querySelectorAll(".gallery-image img"))
@@ -3126,6 +3177,16 @@ function galleryImage(item) {
     })
 
     hover.appendChild(imageExpandBtn)
+
+    let openInNewTabBtn = document.createElement("button")
+    openInNewTabBtn.classList.add("tertiaryButton")
+    openInNewTabBtn.innerHTML = '<i class="fa-solid fa-arrow-up-right-from-square"></i>'
+    openInNewTabBtn.style["margin-left"] = "0.2em"
+    openInNewTabBtn.addEventListener("click", (e) => {
+        window.open(img.src)
+    })
+    hover.appendChild(openInNewTabBtn)
+
     hover.appendChild(document.createElement("br"))
 
     let useAsInputBtn = document.createElement("button")
@@ -3138,6 +3199,13 @@ function galleryImage(item) {
     div.replaceChildren(img, hover)
     return div
 }
+
+modalDialogCloseOnBackdropClick(galleryImginfoDialog)
+makeDialogDraggable(galleryImginfoDialog)
+
+galleryImginfoDialog.querySelector("#gallery-imginfo-close-button").addEventListener("click", () => {
+    galleryImginfoDialog.close()
+})
 
 function refreshGallery() {
     let container = document.getElementById("imagecontainer")
