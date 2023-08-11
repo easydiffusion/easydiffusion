@@ -1778,6 +1778,10 @@ div#recent-resolutions-popup small {
     opacity: 0.7;
 }
 
+div#common-resolution-list button {
+    background: var(--background-color1);
+}
+
 td#image-size-options small {
     margin-right: 0px !important;
 }
@@ -1792,6 +1796,27 @@ div#recent-resolution-list {
 
 div#enlarge-buttons {
     text-align: center;
+}
+
+.two-column {  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  gap: 0px 0.5em;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "left-column right-column";
+}
+
+.left-column {
+  justify-self: center;
+  align-self: center;
+  grid-area: left-column;
+}
+
+.right-column {
+  justify-self: center;
+  align-self: center;
+  grid-area: right-column;
 }
 
 .clickable {
