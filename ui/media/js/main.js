@@ -965,6 +965,8 @@ function abortTask(task) {
     task.progressBar.classList.remove("active")
     task["taskStatusLabel"].style.display = "none"
     task["stopTask"].innerHTML = '<i class="fa-solid fa-trash-can"></i> Remove'
+    task["stopTask"].style["background-color"] = "color-mix(in srgb, var(--status-orange) 50%, var(--background-color4))"
+    task["stopTask"].style["border"] = "0px"
     if (!task.instances?.some((r) => r.isPending)) {
         return
     }
@@ -1061,6 +1063,8 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
 
     task.isProcessing = false
     task["stopTask"].innerHTML = '<i class="fa-solid fa-trash-can"></i> Remove'
+    task["stopTask"].style["background-color"] = "color-mix(in srgb, var(--status-orange) 50%, var(--background-color4))"
+    task["stopTask"].style["border"] = "0px"
     task["taskStatusLabel"].style.display = "none"
 
     let time = millisecondsToStr(Date.now() - task.startTime)
@@ -1268,7 +1272,7 @@ function createTask(task) {
     taskEntry.innerHTML = ` <div class="header-content panel collapsible active">
                                 <i class="drag-handle fa-solid fa-grip"></i>
                                 <div class="taskStatusLabel">Enqueued</div>
-                                <button class="secondaryButton stopTask"><i class="fa-solid fa-trash-can"></i> Remove</button>
+                                <button class="secondaryButton stopTask"><i class="fa-solid fa-xmark"></i> Cancel</button>
                                 <button class="tertiaryButton useSettings"><i class="fa-solid fa-redo"></i> Use these settings</button>
                                 <div class="preview-prompt"></div>
                                 <div class="taskConfig">${taskConfig}</div>
