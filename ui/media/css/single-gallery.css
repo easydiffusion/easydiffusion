@@ -36,3 +36,7 @@ button {
 div {
     margin: 16px;
 }
+
+:disabled {
+    color: gray;
+}
