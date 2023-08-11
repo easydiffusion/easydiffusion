@@ -3094,7 +3094,7 @@ function galleryImage(item) {
         w.addEventListener("DOMContentLoaded", () => {
             w.document.getElementsByTagName("body")[0].classList.add(themeField.value)
             w.document.getElementById("use_these_settings").addEventListener("click", () => {
-                alert("use these settings")
+                restoreTaskToUI(JSON.parse(w.document.getElementById("use_these_settings").getAttribute("json")))
             })
             w.document.getElementById("use_as_input").addEventListener("click", () => {
                 alert("use as input")

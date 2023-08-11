@@ -50,6 +50,31 @@ class GalleryImage(Base):
                 "<p>Upscale: " + str(self.use_upscale) + "</p>" + \
                 "<p>Time Created: " + str(self.time_created) + "</p>" + \
                 "<p>NSFW: " + str(self.nsfw) + "</p></div>"
+    
+    def settingsJSON(self) -> str:
+        # some are still missing: prompt strength, lora
+        json = {
+            "numOutputsTotal": 1,
+            "seed": self.seed,
+            "reqBody": {
+                "prompt": self.prompt,
+                "negative_prompt": self.negative_prompt,
+                "width": self.width,
+                "height": self.height,
+                "seed": self.seed,
+                "num_inference_steps": self.num_inference_steps,
+                "guidance_scale": self.guidance_scale,
+                "use_face_correction": self.use_face_correction,
+                "use_upscale": self.use_upscale,
+                "sampler_name": self.sampler_name,
+                "use_stable_diffusion_model": self.use_stable_diffusion_model,
+                "clip_skip": self.clip_skip,
+                "tiling": self.tiling,
+                "use_vae_model": self.use_vae_model,
+                "use_hypernetwork_model": self.use_hypernetwork_model
+            }}
+        from json import dumps
+        return dumps(json)
 
 
 from easydiffusion.easydb.database import engine
