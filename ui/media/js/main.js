@@ -3110,12 +3110,13 @@ function galleryImage(item) {
 
 function refreshGallery() {
     let container = document.getElementById("imagecontainer")
-    let promptsearchfield = document.getElementById("gallery-prompt-search").value
-    let promptsearch = promptsearchfield.length > 0 ? "prompt=" + promptsearchfield  + "&" : ""
-    let modelsearchfield = document.getElementById("gallery-model-search").value
-    let modelsearch = modelsearchfield.length > 0 ? "model=" + modelsearchfield  + "&" : ""
+    params = new URLSearchParams({
+        prompt: document.getElementById("gallery-prompt-search").value,
+        model: document.getElementById("gallery-model-search").value,
+        page: document.getElementById("gallery-page").value
+    })
     container.innerHTML=""
-    fetch('/all_images?' + promptsearch + modelsearch)
+    fetch('/all_images?' + params)
         .then(response => response.json())
         .then(json => {
             console.log(json)

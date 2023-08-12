@@ -520,6 +520,7 @@
             <div id="gallery-search">
                 <textarea id="gallery-prompt-search" onkeydown="gallery_keyDown_handler(event)" placeholder="Search for a prompt..."></textarea>
                 <textarea id="gallery-model-search" onkeydown="gallery_keyDown_handler(event)" placeholder="Search for a model..."></textarea>
+                <input type="hidden" id="gallery-page" name="page" value="0">
                 <button class="primaryButton" onclick="refreshGallery()">Refresh</button>
             </div>
             <div class="gallery">
