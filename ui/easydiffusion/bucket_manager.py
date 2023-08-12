@@ -100,14 +100,14 @@ def init():
             raise HTTPException(status_code=404, detail="Image not found")
     
     @server_api.get("/all_images")
-    def get_all_images(prompt: str = "", model: str = "", page = 0, db: Session = Depends(get_db)):
+    def get_all_images(prompt: str = "", model: str = "", page: int = 0, images_per_page: int = 50, db: Session = Depends(get_db)):
         from easydiffusion.easydb.mappings import GalleryImage
-        images = db.query(GalleryImage)
+        images = db.query(GalleryImage).order_by(GalleryImage.time_created.desc())
         if prompt != "":
             images = images.filter(GalleryImage.path.like("%"+prompt+"%"))
         if model != "":
             images = images.filter(GalleryImage.use_stable_diffusion_model.like("%"+model+"%"))
-        images = images.offset(page*50).limit(50)
+        images = images.offset(page*images_per_page).limit(images_per_page)
         return images.all()
     
     @server_api.get("/single_image")

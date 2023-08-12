@@ -3110,20 +3110,36 @@ function galleryImage(item) {
 
 function refreshGallery() {
     let container = document.getElementById("imagecontainer")
-    params = new URLSearchParams({
+    let params = new URLSearchParams({
         prompt: document.getElementById("gallery-prompt-search").value,
         model: document.getElementById("gallery-model-search").value,
         page: document.getElementById("gallery-page").value
     })
-    container.innerHTML=""
+    container.innerHTML = ""
     fetch('/all_images?' + params)
         .then(response => response.json())
         .then(json => {
-            console.log(json)
-            json.forEach( item => {
+            if (document.getElementById("gallery-page").value > 0 && json.length == 0) {
+                decrementGalleryPage()
+                alert("No more images")
+                return
+            }
+            json.forEach(item => {
                 container.appendChild(galleryImage(item))
             })
-         })
+        })
+    document.getElementById("gallery-refresh").innerText = "Refresh"
+}
+
+function decrementGalleryPage() {
+    let page = Math.max(document.getElementById("gallery-page").value - 1, 0)
+    document.getElementById("gallery-page").value = page
+    refreshGallery()
+}
+
+function incrementGalleryPage() {
+    document.getElementById("gallery-page").value++
+    refreshGallery()
 }
 
 function gallery_keyDown_handler(event) {

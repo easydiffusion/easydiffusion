@@ -518,10 +518,13 @@
         </div>
         <div id="tab-content-gallery" class="tab-content">
             <div id="gallery-search">
+                <button class="primaryButton" onclick="decrementGalleryPage()"><i class="fa-solid fa-arrow-left"></i></button>
                 <textarea id="gallery-prompt-search" onkeydown="gallery_keyDown_handler(event)" placeholder="Search for a prompt..."></textarea>
                 <textarea id="gallery-model-search" onkeydown="gallery_keyDown_handler(event)" placeholder="Search for a model..."></textarea>
-                <input type="hidden" id="gallery-page" name="page" value="0">
-                <button class="primaryButton" onclick="refreshGallery()">Refresh</button>
+                <label for="gallery-page">Page:</label>
+                <input id="gallery-page" name="Page" value="0" size="1" onkeypress="gallery_keyDown_handler(event)">
+                <button class="primaryButton" id="gallery-refresh" onclick="refreshGallery()">Load</button>
+                <button class="primaryButton" onclick="incrementGalleryPage()"><i class="fa-solid fa-arrow-right"></i></button>
             </div>
             <div class="gallery">
                 <div class="gallery-container" id="imagecontainer"></div>
