@@ -191,19 +191,28 @@
 
     function createDropAreas(container) {
         // Create two drop areas
-        const dropAreaI2I = document.createElement("div")
-        dropAreaI2I.setAttribute("id", "drop-area-I2I")
-        dropAreaI2I.setAttribute("class", "drop-area")
-        dropAreaI2I.innerHTML = "Use as Image2Image source"
+        const dropAreaI2I = createElement("div", {id: "drop-area-I2I"}, ["drop-area"], "Use as Image2Image source")
         container.appendChild(dropAreaI2I)
         
-        const dropAreaMD = document.createElement("div")
-        dropAreaMD.setAttribute("id", "drop-area-MD")
-        dropAreaMD.setAttribute("class", "drop-area")
-        dropAreaMD.innerHTML = "Extract embedded metadata"
+        const dropAreaMD = createElement("div", {id: "drop-area-MD"}, ["drop-area"], "Extract embedded metadata")
         container.appendChild(dropAreaMD)
         
+        const dropAreaCN = createElement("div", {id: "drop-area-CN"}, ["drop-area"], "Use as Controlnet image")
+        container.appendChild(dropAreaCN)
+        
         // Add event listeners to drop areas
+        dropAreaCN.addEventListener("dragenter", function(event) {
+            event.preventDefault()
+            dropAreaCN.style.backgroundColor = 'darkGreen'
+        })
+        dropAreaCN.addEventListener("dragleave", function(event) {
+            event.preventDefault()
+            dropAreaCN.style.backgroundColor = ''
+        })
+        dropAreaCN.addEventListener("drop", function(event) {
+        //#####
+        })
+
         dropAreaI2I.addEventListener("dragenter", function(event) {
             event.preventDefault()
             dropAreaI2I.style.backgroundColor = 'darkGreen'
@@ -269,7 +278,7 @@
                         imageObj.src = url;
                     });
                 }
-            }            
+            }
         })
         
         dropAreaMD.addEventListener("dragenter", function(event) {
