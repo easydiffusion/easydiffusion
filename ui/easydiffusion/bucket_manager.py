@@ -100,14 +100,28 @@ def init():
             raise HTTPException(status_code=404, detail="Image not found")
     
     @server_api.get("/all_images")
-    def get_all_images(prompt: str = "", model: str = "", db: Session = Depends(get_db)):
+    def get_all_images(prompt: str = "", model: str = "", page: int = 0, images_per_page: int = 50, db: Session = Depends(get_db)):
         from easydiffusion.easydb.mappings import GalleryImage
-        images = db.query(GalleryImage)
+        images = db.query(GalleryImage).order_by(GalleryImage.time_created.desc())
         if prompt != "":
             images = images.filter(GalleryImage.path.like("%"+prompt+"%"))
         if model != "":
             images = images.filter(GalleryImage.use_stable_diffusion_model.like("%"+model+"%"))
+        images = images.offset(page*images_per_page).limit(images_per_page)
         return images.all()
+    
+    @server_api.get("/single_image")
+    def get_single_image(image_path: str, db: Session = Depends(get_db)):
+        from easydiffusion.easydb.mappings import GalleryImage
+        image_path = str(abspath(image_path))
+        try:
+            image: GalleryImage = db.query(GalleryImage).filter(GalleryImage.path == image_path).first()
+            head = "<head><link rel='stylesheet' href='/media/css/single-gallery.css'></head>"
+            body = f"<body><div><button id='use_these_settings' class='primaryButton' json='{image.settingsJSON()}'>Use these settings</button><button id='use_as_input' class='primaryButton' disabled>Use as Input</button></div><img src='/image/" + image.path + "'>" + image.htmlForm() + "</body>"
+            return Response(content="<html>" + head + body + "</head>", media_type="text/html")
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=404, detail="Image not found")
 
 def get_filename_from_url(url):
     path = urlparse(url).path

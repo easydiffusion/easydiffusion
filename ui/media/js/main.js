@@ -3088,6 +3088,19 @@ let recentResolutionsValues = []
 function galleryImage(item) {
     let div = document.createElement("div")
     let img = document.createElement("img")
+    img.addEventListener("click", (event) => {
+        let w;
+        w = window.open("/single_image?image_path=" + item.path, "_blank")
+        w.addEventListener("DOMContentLoaded", () => {
+            w.document.getElementsByTagName("body")[0].classList.add(themeField.value)
+            w.document.getElementById("use_these_settings").addEventListener("click", () => {
+                restoreTaskToUI(JSON.parse(w.document.getElementById("use_these_settings").getAttribute("json")))
+            })
+            w.document.getElementById("use_as_input").addEventListener("click", () => {
+                alert("use as input")
+            })
+        })
+    })
 
     img.src = "/image/" + item.path
     img.dataset["request"] = JSON.stringify(item)
@@ -3097,19 +3110,36 @@ function galleryImage(item) {
 
 function refreshGallery() {
     let container = document.getElementById("imagecontainer")
-    params = new URLSearchParams({
-        prompt: promptsearchfield,
-        model: modelsearchfield
+    let params = new URLSearchParams({
+        prompt: document.getElementById("gallery-prompt-search").value,
+        model: document.getElementById("gallery-model-search").value,
+        page: document.getElementById("gallery-page").value
     })
-    container.innerHTML=""
+    container.innerHTML = ""
     fetch('/all_images?' + params)
         .then(response => response.json())
         .then(json => {
-            console.log(json)
-            json.forEach( item => {
+            if (document.getElementById("gallery-page").value > 0 && json.length == 0) {
+                decrementGalleryPage()
+                alert("No more images")
+                return
+            }
+            json.forEach(item => {
                 container.appendChild(galleryImage(item))
             })
-         })
+        })
+    document.getElementById("gallery-refresh").innerText = "Refresh"
+}
+
+function decrementGalleryPage() {
+    let page = Math.max(document.getElementById("gallery-page").value - 1, 0)
+    document.getElementById("gallery-page").value = page
+    refreshGallery()
+}
+
+function incrementGalleryPage() {
+    document.getElementById("gallery-page").value++
+    refreshGallery()
 }
 
 function gallery_keyDown_handler(event) {
