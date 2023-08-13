@@ -3108,7 +3108,10 @@ function galleryImage(item) {
     return div
 }
 
-function refreshGallery() {
+function refreshGallery(newsearch = false) {
+    if (newsearch) {
+        document.getElementById("gallery-page").value = 0
+    }
     let container = document.getElementById("imagecontainer")
     let params = new URLSearchParams({
         prompt: document.getElementById("gallery-prompt-search").value,
@@ -3134,17 +3137,17 @@ function refreshGallery() {
 function decrementGalleryPage() {
     let page = Math.max(document.getElementById("gallery-page").value - 1, 0)
     document.getElementById("gallery-page").value = page
-    refreshGallery()
+    refreshGallery(false)
 }
 
 function incrementGalleryPage() {
     document.getElementById("gallery-page").value++
-    refreshGallery()
+    refreshGallery(false)
 }
 
 function gallery_keyDown_handler(event) {
     if (event.key === 'Enter') {
         event.preventDefault()
-        refreshGallery()
+        refreshGallery(true)
     }
 }
