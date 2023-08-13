@@ -3254,8 +3254,10 @@ function layoutGallery() {
     })
 }
 
-
-function refreshGallery() {
+function refreshGallery(newsearch = false) {
+    if (newsearch) {
+        document.getElementById("gallery-page").value = 0
+    }
     let container = document.getElementById("imagecontainer")
     container.innerHTML = ""
     let params = new URLSearchParams({
@@ -3278,7 +3280,9 @@ function refreshGallery() {
             // Wait for all images to be loaded
             Promise.all(Array.from(container.querySelectorAll("img")).map(img => {
                 if (img.complete)
+                {
                     return Promise.resolve(img.naturalHeight !== 0)
+                }
                 return new Promise(resolve => {
                     img.addEventListener('load', () => resolve(true))
                     img.addEventListener('error', () => resolve(false))
@@ -3301,17 +3305,17 @@ document.addEventListener("tabClick", (e) => {
 function decrementGalleryPage() {
     let page = Math.max(document.getElementById("gallery-page").value - 1, 0)
     document.getElementById("gallery-page").value = page
-    refreshGallery()
+    refreshGallery(false)
 }
 
 function incrementGalleryPage() {
     document.getElementById("gallery-page").value++
-    refreshGallery()
+    refreshGallery(false)
 }
 
 function gallery_keyDown_handler(event) {
     if (event.key === 'Enter') {
         event.preventDefault()
-        refreshGallery()
+        refreshGallery(true)
     }
 }
