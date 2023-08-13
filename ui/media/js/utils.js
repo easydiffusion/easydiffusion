@@ -872,19 +872,19 @@ function createTab(request) {
 
 
 /* TOAST NOTIFICATIONS */
-function showToast(message, duration = 5000, error = false) {
-    const toast = document.createElement("div")
+function showToast(message, duration = 5000, error = false, doc=document) {
+    const toast = doc.createElement("div")
     toast.classList.add("toast-notification")
     if (error === true) {
         toast.classList.add("toast-notification-error")
     }
     toast.innerHTML = message
-    document.body.appendChild(toast)
+    doc.body.appendChild(toast)
 
     // Set the position of the toast on the screen
-    const toastCount = document.querySelectorAll(".toast-notification").length
+    const toastCount = doc.querySelectorAll(".toast-notification").length
     const toastHeight = toast.offsetHeight
-    const previousToastsHeight = Array.from(document.querySelectorAll(".toast-notification"))
+    const previousToastsHeight = Array.from(doc.querySelectorAll(".toast-notification"))
         .slice(0, -1) // exclude current toast
         .reduce((totalHeight, toast) => totalHeight + toast.offsetHeight + 10, 0) // add 10 pixels for spacing
     toast.style.bottom = `${10 + previousToastsHeight}px`
@@ -896,7 +896,7 @@ function showToast(message, duration = 5000, error = false) {
         const removeTimeoutId = setTimeout(() => {
             toast.remove()
             // Adjust the position of remaining toasts
-            const remainingToasts = document.querySelectorAll(".toast-notification")
+            const remainingToasts = doc.querySelectorAll(".toast-notification")
             const removedToastBottom = toast.getBoundingClientRect().bottom
 
             remainingToasts.forEach((toast) => {
@@ -908,13 +908,13 @@ function showToast(message, duration = 5000, error = false) {
             // Wait for the slide-down animation to complete
             setTimeout(() => {
                 // Remove the slide-down class after the animation has completed
-                const slidingToasts = document.querySelectorAll(".slide-down")
+                const slidingToasts = doc.querySelectorAll(".slide-down")
                 slidingToasts.forEach((toast) => {
                     toast.classList.remove("slide-down")
                 })
 
                 // Adjust the position of remaining toasts again, in case there are multiple toasts being removed at once
-                const remainingToastsDown = document.querySelectorAll(".toast-notification")
+                const remainingToastsDown = doc.querySelectorAll(".toast-notification")
                 let heightSoFar = 0
                 remainingToastsDown.forEach((toast) => {
                     toast.style.bottom = `${10 + heightSoFar}px`
@@ -1198,4 +1198,18 @@ function makeDialogDraggable(element) {
     })() )
 }
 
-
+function toDataURL(url, callback){
+    var xhr = new XMLHttpRequest()
+    xhr.open('get', url)
+    xhr.responseType = 'blob'
+    xhr.onload = function(){
+        var fr = new FileReader()
+    
+        fr.onload = function(){
+            callback(this.result)
+        }
+    
+        fr.readAsDataURL(xhr.response)
+    }
+    xhr.send()
+}
