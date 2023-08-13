@@ -177,16 +177,11 @@ Thanks!"""
 ### Launcher
 
 def get_config():
-    # The config file is in the same directory as this script
     config_directory = os.path.dirname(__file__)
-    config_yaml = os.path.join(config_directory, "config.yaml")
+    config_yaml = os.path.join(config_directory, "..", "config.yaml")
     config_json = os.path.join(config_directory, "config.json")
 
     config = None
-
-    # Defaults
-    listen_port = 9000
-    bind_ip = "127.0.0.1"
 
     # migrate the old config yaml location
     config_legacy_yaml = os.path.join(config_directory, "config.yaml")
@@ -211,7 +206,6 @@ def get_config():
 
     if config is None:
         config = {}
-
     return config
 
 def setup_amd_environment():
@@ -264,6 +258,7 @@ def launch_uvicorn():
     print(f"Version: {platform. python_version()}")
 
     bind_ip = "127.0.0.1"
+    listen_port = 9000
     if "net" in config:
         print("Checking network settings")
         if "listen_port" in config["net"]:
@@ -282,12 +277,7 @@ def launch_uvicorn():
         setup_amd_environment()
 
     print("\nLaunching uvicorn\n")
-    os.execlp("python", "python", "-m", "uvicorn", 
-           "main:server_api",
-           "--app-dir", os.environ["SD_UI_PATH"],
-           "--port", str(listen_port),
-           "--host", bind_ip,
-           "--log-level", "error")
+    os.system(f'python -m uvicorn main:server_api --app-dir "{os.environ["SD_UI_PATH"]}" --port {listen_port} --host {bind_ip} --log-level error')
 
 ### Start
 
