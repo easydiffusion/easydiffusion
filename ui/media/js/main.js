@@ -3244,13 +3244,15 @@ window.addEventListener("resize", layoutGallery)
 
 function layoutGallery() {
     let container = document.getElementById("imagecontainer")
-    let thumbSize = parseInt(galleryThumbnailSize.value)
+    let thumbSize = parseFloat(galleryThumbnailSize.value)
+    thumbSize = (10*thumbSize*thumbSize)>>>0
     let root = document.querySelector(':root')
     root.style.setProperty('--gallery-width', thumbSize + "px")
     let msnry = new Masonry( container, {
         gutter: 10,
         itemSelector: '.gallery-image',
-        columnWidth: thumbSize
+        columnWidth: thumbSize,
+        fitWidth: true,
     })
 }
 
