@@ -1911,6 +1911,10 @@ div#enlarge-buttons {
     margin: 0.5em;
 }
 
+#imagecontainer {
+    margin: auto;
+}
+
 .gallery-container {
 }
 
