@@ -17,12 +17,15 @@ Click the download button for your operating system:
 </p>
 
 **Hardware requirements:**
-- **Windows:** NVIDIA graphics card (minimum 2 GB RAM), or run on your CPU.
-- **Linux:** NVIDIA or AMD graphics card (minimum 2 GB RAM), or run on your CPU.
+- **Windows:** NVIDIA graphics card¹ (minimum 2 GB RAM), or run on your CPU.
+- **Linux:** NVIDIA¹ or AMD² graphics card (minimum 2 GB RAM), or run on your CPU.
 - **Mac:** M1 or M2, or run on your CPU.
 - Minimum 8 GB of system RAM.
 - Atleast 25 GB of space on the hard disk.
 
+¹) [CUDA Compute capability](https://en.wikipedia.org/wiki/CUDA#GPUs_supported) level of 3.7 or higher required.
+
+²) ROCm 5.2 support required.
 
 The installer will take care of whatever is needed. If you face any problems, you can join the friendly [Discord community](https://discord.com/invite/u9yhsFmEkB) and ask for assistance.
 
