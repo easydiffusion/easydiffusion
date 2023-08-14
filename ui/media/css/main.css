@@ -1899,6 +1899,9 @@ div#enlarge-buttons {
   font-family: sans-serif;
 }
 */
+button:disabled {
+    background-color: var(--secondary-button-background);
+}
 
 #gallery-search {
     display: flex;

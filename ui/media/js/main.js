@@ -3257,6 +3257,7 @@ function layoutGallery() {
 }
 
 function refreshGallery(newsearch = false) {
+    let BUTTONS = [...document.getElementById("gallery-search").children].filter(x => x.tagName === "BUTTON")
     if (newsearch) {
         document.getElementById("gallery-page").value = 0
     }
@@ -3294,6 +3295,20 @@ function refreshGallery(newsearch = false) {
                 layoutGallery()
             })
         })
+    fetch('/all_images?images_per_page=1&page=' + (parseInt(document.getElementById("gallery-page").value) + 1) * 50) // 50 has to be replaced if custom images per page is implemented
+        .then(response => response.json())
+        .then(json => {
+            if (json.length == 0) {
+                BUTTONS[2].disabled = true
+            } else {
+                BUTTONS[2].disabled = false
+            }
+        })
+    if (document.getElementById("gallery-page").value == 0) {
+        BUTTONS[0].disabled = true
+    } else {
+        BUTTONS[0].disabled = false
+    }
     document.getElementById("gallery-refresh").innerText = "Refresh"
 }
 
