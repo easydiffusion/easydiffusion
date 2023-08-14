@@ -3118,70 +3118,52 @@ const IMAGE_INFO = {
 
 const IGNORE_TOKENS = ["None", "none", "Null", "null", "false", "False", null]
 
-function galleryImage(item) {
-    function galleryDetailTable(table) {
-        for (const [label, key] of Object.entries(IMAGE_INFO)) {
-            if (IGNORE_TOKENS.findIndex( k => (k == item[key])) == -1) {
-                let data = item[key]
-                if (key == "path") {
-                    data = "&hellip;/"+data.split(/[\/\\]/).pop()
-                }
-                table.appendChild(htmlToElement(`<tr><th style="text-align: right;opacity:0.7;">${label}:</th><td>${data}</td></tr>`))
+function openImageInNewTab(img, reqData) {
+    let w = window.open("/gallery-image.html")
+    w.addEventListener("DOMContentLoaded", () => {
+        let fimg = w.document.getElementById("focusimg")
+        fimg.src = img.src
+
+        w.document.body.classList.add(themeField.value)
+        w.document.getElementById("use_these_settings").addEventListener("click", () => {
+            restoreTaskToUI({
+                batchCount: 1,
+                numOutputsTotal: 1,
+                reqBody: reqData
+            })
+        })
+        w.document.getElementById("use_as_input").addEventListener("click", () => {
+            onUseURLasInput(img.src)
+            showToast("Loaded image as EasyDiffusion input image", 5000, false, w.document)
+        })
+        let table = w.document.createElement("table")
+        galleryDetailTable(table, reqData)
+        w.document.getElementById("focusbox").replaceChildren(table)
+        document.dispatchEvent(new CustomEvent("newGalleryWindow", { detail: w }))
+    })
+}
+
+function galleryDetailTable(table, reqData) {
+    for (const [label, key] of Object.entries(IMAGE_INFO)) {
+        if (IGNORE_TOKENS.findIndex( k => (k == reqData[key])) == -1) {
+            let data = reqData[key]
+            if (key == "path") {
+                data = "&hellip;/"+data.split(/[\/\\]/).pop()
             }
+            table.appendChild(htmlToElement(`<tr><th style="text-align: right;opacity:0.7;">${label}:</th><td>${data}</td></tr>`))
         }
     }
+}
+
+function galleryImage(reqData) {
 
     let div = document.createElement("div")
     div.classList.add("gallery-image")
 
-    let img = createElement("img", { style: "cursor: zoom-in;", src: "/image/" + item.path}, undefined, undefined)
-    img.dataset["request"] = JSON.stringify(item)
+    let img = createElement("img", { style: "cursor: zoom-in;", src: "/image/" + reqData.path}, undefined, undefined)
+    img.dataset["request"] = JSON.stringify(reqData)
 
-    img.addEventListener("click", (event) => {
-        let w = window.open("/gallery-image.html")
-        w.addEventListener("DOMContentLoaded", () => {
-            let fimg = w.document.getElementById("focusimg")
-            fimg.src = img.src
-
-            w.document.body.classList.add(themeField.value)
-            w.document.getElementById("use_these_settings").addEventListener("click", () => {
-                restoreTaskToUI({
-                    batchCount: 1,
-                    numOutputsTotal: 1,
-                    reqBody: item
-                })
-            })
-            w.document.getElementById("use_as_input").addEventListener("click", () => {
-                onUseURLasInput(img.src)
-                showToast("Loaded image as EasyDiffusion input image", 5000, false, w.document)
-            })
-            let table = w.document.createElement("table")
-            galleryDetailTable(table)
-            w.document.getElementById("focusbox").replaceChildren(table)
-            document.dispatchEvent(new CustomEvent("newGalleryWindow", { detail: w }))
-        })
-    })
-
-    let hover = document.createElement("div")
-    hover.classList.add("gallery-image-hover")
-    
-    let infoBtn = document.createElement("button")
-    infoBtn.classList.add("tertiaryButton")
-    infoBtn.innerHTML = '<i class="fa-regular fa-file-lines"></i>'
-    infoBtn.addEventListener("click", function() {
-         let table = document.createElement("table")
-         
-         galleryDetailTable(table)
-         
-         galleryImginfoDialogContent.replaceChildren(table)
-         galleryImginfoDialog.showModal()
-    })
-    hover.appendChild(infoBtn)
-
-
-    let imageExpandBtn=createElement("button", { style: "margin-left: 0.2em;"}, ["tertiaryButton"], undefined)
-    imageExpandBtn.innerHTML = '<i class="fa-solid fa-expand"></i>'
-    imageExpandBtn.addEventListener("click", function() {
+    img.addEventListener("click", function() {
         function previousImage(img) {
             const allImages = Array.from(document.getElementById("imagecontainer").querySelectorAll(".gallery-image img"))
             const index = allImages.indexOf(img)
@@ -3207,14 +3189,26 @@ function galleryImage(item) {
         imageModal(imageModalParameter(img))
     })
 
-    hover.appendChild(imageExpandBtn)
+    let hover = document.createElement("div")
+    hover.classList.add("gallery-image-hover")
+    
+    let infoBtn = document.createElement("button")
+    infoBtn.classList.add("tertiaryButton")
+    infoBtn.innerHTML = '<i class="fa-regular fa-file-lines"></i>'
+    infoBtn.addEventListener("click", function() {
+         let table = document.createElement("table")
+         
+         galleryDetailTable(table, reqData)
+         
+         galleryImginfoDialogContent.replaceChildren(table)
+         galleryImginfoDialog.showModal()
+    })
+    hover.appendChild(infoBtn)
 
-    let openInNewTabBtn = document.createElement("button")
-    openInNewTabBtn.classList.add("tertiaryButton")
-    openInNewTabBtn.innerHTML = '<i class="fa-solid fa-arrow-up-right-from-square"></i>'
-    openInNewTabBtn.style["margin-left"] = "0.2em"
+    let openInNewTabBtn = createElement("button", {style: "margin-left: 0.2em;"}, ["tertiaryButton"],
+                                 htmlToElement('<i class="fa-solid fa-arrow-up-right-from-square"></i>'))
     openInNewTabBtn.addEventListener("click", (e) => {
-        window.open(img.src)
+        openImageInNewTab(img, reqData)
     })
     hover.appendChild(openInNewTabBtn)
 
@@ -3226,7 +3220,19 @@ function galleryImage(item) {
         showToast("Loaded image as input image")
     })
 
+    let useSettingsBtn = createElement("button", {}, ["tertiaryButton"], "Use Settings")
+    useSettingsBtn.addEventListener("click", (e) => {
+        restoreTaskToUI({
+            batchCount: 1,
+            numOutputsTotal: 1,
+            reqBody: reqData
+        })
+        showToast("Loaded settings")
+    })
+
     hover.appendChild(useAsInputBtn)
+    hover.appendChild(document.createElement("br"))
+    hover.appendChild(useSettingsBtn)
 
     div.replaceChildren(img, hover)
     return div
@@ -3245,8 +3251,10 @@ galleryImginfoDialog.querySelector("#gallery-imginfo-close-button").addEventList
     galleryImginfoDialog.close()
 })
 
+
 galleryThumbnailSize.addEventListener("input", layoutGallery)
 window.addEventListener("resize", layoutGallery)
+
 
 function layoutGallery() {
     let container = document.getElementById("imagecontainer")
@@ -3262,8 +3270,10 @@ function layoutGallery() {
     })
 }
 
+
 galleryModelSearchField.addEventListener("keyup", debounce(e => refreshGallery(true), 500))
 galleryPromptSearchField.addEventListener("keyup", debounce(e => refreshGallery(true), 500))
+
 
 function refreshGallery(newsearch = false) {
     if (newsearch) {
@@ -3325,6 +3335,7 @@ function refreshGallery(newsearch = false) {
     document.getElementById("gallery-refresh").innerText = "Refresh"
 }
 
+
 galleryPrevBtn.addEventListener("click", decrementGalleryPage)
 galleryNextBtn.addEventListener("click", incrementGalleryPage)
 
@@ -3342,14 +3353,8 @@ function decrementGalleryPage() {
     refreshGallery(false)
 }
 
+
 function incrementGalleryPage() {
     galleryPageField.value++
     refreshGallery(false)
-}
-
-function gallery_keyDown_handler(event) {
-    if (event.key === 'Enter') {
-        event.preventDefault()
-        refreshGallery(true)
-    }
 }
