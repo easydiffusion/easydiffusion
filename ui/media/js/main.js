@@ -83,9 +83,9 @@ let customHeightField = document.querySelector("#custom-height")
 let recentResolutionsButton = document.querySelector("#recent-resolutions-button")
 let recentResolutionsPopup = document.querySelector("#recent-resolutions-popup")
 let recentResolutionList = document.querySelector("#recent-resolution-list")
-let enlarge15Button = document.querySelector("#enlarge15")
-let enlarge2Button = document.querySelector("#enlarge2")
-let enlarge3Button = document.querySelector("#enlarge3")
+let commonResolutionList = document.querySelector("#common-resolution-list")
+let resizeSlider = document.querySelector("#resize-slider")
+let enlargeButtons = document.querySelector("#enlarge-buttons")
 let swapWidthHeightButton = document.querySelector("#swap-width-height")
 let smallImageWarning = document.querySelector("#small_image_warning")
 let initImageSelector = document.querySelector("#init_image")
@@ -2792,38 +2792,25 @@ let recentResolutionsValues = []
 
 ;(function() {
     ///// Init resolutions dropdown
-    function makeResolutionButtons() {
-        recentResolutionList.innerHTML = ""
-        recentResolutionsValues.forEach((el) => {
-            let button = document.createElement("button")
-            button.classList.add("tertiaryButton")
-            button.style.width = "8em"
-            button.innerHTML = `${el.w}&times;${el.h}`
+
+    function makeResolutionButtons(listElement, resolutionList) {
+        listElement.innerHTML = ""
+        resolutionList.forEach((el) => {
+            let button = createElement("button", {style: "width: 8em;"}, "tertiaryButton", `${el.w}×${el.h}`)
             button.addEventListener("click", () => {
                 customWidthField.value = el.w
                 customHeightField.value = el.h
                 hidePopup()
             })
-            recentResolutionList.appendChild(button)
-            recentResolutionList.appendChild(document.createElement("br"))
+            listElement.appendChild(button)
+            listElement.appendChild(document.createElement("br"))
         })
-        localStorage.recentResolutionsValues = JSON.stringify(recentResolutionsValues)
     }
 
-    enlarge15Button.addEventListener("click", () => {
-        enlargeImageSize(1.5)
+    enlargeButtons.querySelectorAll("button").forEach( button => button.addEventListener("click", e => {
+        enlargeImageSize(parseFloat(button.dataset["factor"]))
         hidePopup()
-    })
-
-    enlarge2Button.addEventListener("click", () => {
-        enlargeImageSize(2)
-        hidePopup()
-    })
-
-    enlarge3Button.addEventListener("click", () => {
-        enlargeImageSize(3)
-        hidePopup()
-    })
+    }))
 
     customWidthField.addEventListener("change", () => {
         let w = customWidthField.value
@@ -2850,25 +2837,29 @@ let recentResolutionsValues = []
         recentResolutionsValues = recentResolutionsValues.slice(0, 8)
 
         localStorage.recentResolutionsValues = JSON.stringify(recentResolutionsValues)
-        makeResolutionButtons()
+        makeResolutionButtons(recentResolutionList, recentResolutionsValues)
     })
 
-    let _jsonstring = localStorage.recentResolutionsValues
-    if (_jsonstring == undefined) {
-        recentResolutionsValues = [
+    const defaultResolutionsValues = [
             { w: 512, h: 512 },
-            { w: 640, h: 448 },
             { w: 448, h: 640 },
             { w: 512, h: 768 },
             { w: 768, h: 512 },
             { w: 1024, h: 768 },
             { w: 768, h: 1024 },
+            { w: 1024, h: 1024 },
+            { w: 1920, h: 1080 },
         ]
+    let _jsonstring = localStorage.recentResolutionsValues
+    if (_jsonstring == undefined) {
+        recentResolutionsValues = defaultResolutionsValues;
         localStorage.recentResolutionsValues = JSON.stringify(recentResolutionsValues)
     } else {
         recentResolutionsValues = JSON.parse(localStorage.recentResolutionsValues)
     }
-    makeResolutionButtons()
+
+    makeResolutionButtons(recentResolutionList, recentResolutionsValues)
+    makeResolutionButtons(commonResolutionList, defaultResolutionsValues)
 
     recentResolutionsValues.forEach((val) => {
         addImageSizeOption(val.w)
@@ -2885,6 +2876,9 @@ let recentResolutionsValues = []
         customWidthField.value = widthField.value
         customHeightField.value = heightField.value
         recentResolutionsPopup.classList.remove("displayNone")
+        resizeSlider.value = 1
+        resizeSlider.dataset["w"] = widthField.value
+        resizeSlider.dataset["h"] = heightField.value
         document.addEventListener("click", processClick)
     }
 
@@ -2901,6 +2895,20 @@ let recentResolutionsValues = []
         } else {
             hidePopup()
         }
+    })
+
+    resizeSlider.addEventListener("input", e => {
+        let w = parseInt(resizeSlider.dataset["w"])
+        let h = parseInt(resizeSlider.dataset["h"])
+        let factor = parseFloat(resizeSlider.value)
+        let step = customWidthField.step
+
+        customWidthField.value = roundToMultiple(w*factor*factor, step)
+        customHeightField.value = roundToMultiple(h*factor*factor, step)
+    })
+
+    resizeSlider.addEventListener("change", e => {
+        hidePopup()
     })
 
     swapWidthHeightButton.addEventListener("click", (event) => {
