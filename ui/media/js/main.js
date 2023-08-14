@@ -3295,10 +3295,10 @@ function refreshGallery(newsearch = false) {
                 return
             }
             json.forEach(item => {
-                container.appendChild(galleryImage(item))
+                galleryImageContainer.appendChild(galleryImage(item))
             })
             // Wait for all images to be loaded
-            Promise.all(Array.from(container.querySelectorAll("img")).map(img => {
+            Promise.all(Array.from(galleryImageContainer.querySelectorAll("img")).map(img => {
                 if (img.complete)
                 {
                     return Promise.resolve(img.naturalHeight !== 0)
