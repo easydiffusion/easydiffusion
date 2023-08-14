@@ -142,6 +142,9 @@ let embeddingsSearchBox = document.querySelector("#embeddings-search-box")
 let embeddingsList = document.querySelector("#embeddings-list")
 let embeddingsModeField = document.querySelector("#embeddings-mode")
 let embeddingsCardSizeSelector = document.querySelector("#embedding-card-size-selector")
+let galleryImginfoDialog = document.querySelector("#gallery-imginfo")
+let galleryThumbnailSize = document.querySelector("#gallery-thumbnail-size")
+let galleryImginfoDialogContent = document.querySelector("#gallery-imginfo-content")
 
 let positiveEmbeddingText = document.querySelector("#positive-embedding-text")
 let negativeEmbeddingText = document.querySelector("#negative-embedding-text")
@@ -3085,27 +3088,172 @@ let recentResolutionsValues = []
 })()
 
 /* Gallery JS */
+
+const IMAGE_INFO = {
+    "Prompt": "prompt",
+    "Negative Prompt": "negative_prompt",
+    "Seed": "seed",
+    "Time": "time_created",
+    "Model": "use_stable_diffusion_model",
+    "VAE Model": "use_vae_model",
+    "Hypernetwork": "use_hypernetwork_model",
+    "LORA": "lora",
+    "Path": "path",
+    "Width": "width",
+    "Height": "height",
+    "Steps": "num_inference_steps",
+    "Sampler": "sampler_name",
+    "Guidance Scale": "guidance_scale",
+    "Tiling": "tiling",
+    "Upscaler": "use_upscale",
+    "Face Correction": "use_face_correction",
+    "Clip Skip": "clip_skip",
+}
+
+const IGNORE_TOKENS = ["None", "none", "Null", "null", "false", "False", null]
+
 function galleryImage(item) {
+    function galleryDetailTable(table) {
+        for (const [label, key] of Object.entries(IMAGE_INFO)) {
+            if (IGNORE_TOKENS.findIndex( k => (k == item[key])) == -1) {
+                let data = item[key]
+                if (key == "path") {
+                    data = "&hellip;/"+data.split(/[\/\\]/).pop()
+                }
+                table.appendChild(htmlToElement(`<tr><th style="text-align: right;opacity:0.7;">${label}:</th><td>${data}</td></tr>`))
+            }
+        }
+    }
+
     let div = document.createElement("div")
-    let img = document.createElement("img")
+    div.classList.add("gallery-image")
+
+    let img = createElement("img", { style: "cursor: zoom-in;", src: "/image/" + item.path}, undefined, undefined)
+    img.dataset["request"] = JSON.stringify(item)
+
     img.addEventListener("click", (event) => {
-        let w;
-        w = window.open("/single_image?image_path=" + item.path, "_blank")
+        let w = window.open("/gallery-image.html")
         w.addEventListener("DOMContentLoaded", () => {
-            w.document.getElementsByTagName("body")[0].classList.add(themeField.value)
+            let fimg = w.document.getElementById("focusimg")
+            fimg.src = img.src
+
+            w.document.body.classList.add(themeField.value)
             w.document.getElementById("use_these_settings").addEventListener("click", () => {
-                restoreTaskToUI(JSON.parse(w.document.getElementById("use_these_settings").getAttribute("json")))
+                restoreTaskToUI({
+                    batchCount: 1,
+                    numOutputsTotal: 1,
+                    reqBody: item
+                })
             })
             w.document.getElementById("use_as_input").addEventListener("click", () => {
-                alert("use as input")
+                onUseURLasInput(img.src)
+                showToast("Loaded image as EasyDiffusion input image", 5000, false, w.document)
             })
+            let table = w.document.createElement("table")
+            galleryDetailTable(table)
+            w.document.getElementById("focusbox").replaceChildren(table)
+            document.dispatchEvent(new CustomEvent("newGalleryWindow", { detail: w }))
         })
     })
 
-    img.src = "/image/" + item.path
-    img.dataset["request"] = JSON.stringify(item)
-    div.appendChild(img)
+    let hover = document.createElement("div")
+    hover.classList.add("gallery-image-hover")
+    
+    let infoBtn = document.createElement("button")
+    infoBtn.classList.add("tertiaryButton")
+    infoBtn.innerHTML = '<i class="fa-regular fa-file-lines"></i>'
+    infoBtn.addEventListener("click", function() {
+         let table = document.createElement("table")
+         
+         galleryDetailTable(table)
+         
+         galleryImginfoDialogContent.replaceChildren(table)
+         galleryImginfoDialog.showModal()
+    })
+    hover.appendChild(infoBtn)
+
+
+    let imageExpandBtn=createElement("button", { style: "margin-left: 0.2em;"}, ["tertiaryButton"], undefined)
+    imageExpandBtn.innerHTML = '<i class="fa-solid fa-expand"></i>'
+    imageExpandBtn.addEventListener("click", function() {
+        function previousImage(img) {
+            const allImages = Array.from(document.getElementById("imagecontainer").querySelectorAll(".gallery-image img"))
+            const index = allImages.indexOf(img)
+            return allImages.slice(0, index).reverse()[0]
+        }
+
+        function nextImage(img) {
+            const allImages = Array.from(document.getElementById("imagecontainer").querySelectorAll(".gallery-image img"))
+            const index = allImages.indexOf(img)
+            return allImages.slice(index + 1)[0]
+        }
+
+        function imageModalParameter(img) {
+            const previousImg = previousImage(img)
+            const nextImg = nextImage(img)
+
+            return {
+                src: img.src,
+                previous: previousImg ? () => imageModalParameter(previousImg) : undefined,
+                next: nextImg ? () => imageModalParameter(nextImg) : undefined,
+            }
+        }
+        imageModal(imageModalParameter(img))
+    })
+
+    hover.appendChild(imageExpandBtn)
+
+    let openInNewTabBtn = document.createElement("button")
+    openInNewTabBtn.classList.add("tertiaryButton")
+    openInNewTabBtn.innerHTML = '<i class="fa-solid fa-arrow-up-right-from-square"></i>'
+    openInNewTabBtn.style["margin-left"] = "0.2em"
+    openInNewTabBtn.addEventListener("click", (e) => {
+        window.open(img.src)
+    })
+    hover.appendChild(openInNewTabBtn)
+
+    hover.appendChild(document.createElement("br"))
+
+    let useAsInputBtn = createElement("button", {}, ["tertiaryButton"], "Use as Input")
+    useAsInputBtn.addEventListener("click", (e) => {
+        onUseURLasInput(img.src)
+        showToast("Loaded image as input image")
+    })
+
+    hover.appendChild(useAsInputBtn)
+
+    div.replaceChildren(img, hover)
     return div
+}
+
+function onUseURLasInput(url) {
+    toDataURL(url, blob => {
+        onUseAsInputClick(null, {src:blob})
+    })
+}
+
+modalDialogCloseOnBackdropClick(galleryImginfoDialog)
+makeDialogDraggable(galleryImginfoDialog)
+
+galleryImginfoDialog.querySelector("#gallery-imginfo-close-button").addEventListener("click", () => {
+    galleryImginfoDialog.close()
+})
+
+galleryThumbnailSize.addEventListener("input", layoutGallery)
+window.addEventListener("resize", layoutGallery)
+
+function layoutGallery() {
+    let container = document.getElementById("imagecontainer")
+    let thumbSize = parseFloat(galleryThumbnailSize.value)
+    thumbSize = (10*thumbSize*thumbSize)>>>0
+    let root = document.querySelector(':root')
+    root.style.setProperty('--gallery-width', thumbSize + "px")
+    let msnry = new Masonry( container, {
+        gutter: 10,
+        itemSelector: '.gallery-image',
+        columnWidth: thumbSize,
+        fitWidth: true,
+    })
 }
 
 function refreshGallery(newsearch = false) {
@@ -3113,12 +3261,13 @@ function refreshGallery(newsearch = false) {
         document.getElementById("gallery-page").value = 0
     }
     let container = document.getElementById("imagecontainer")
+    container.innerHTML = ""
     let params = new URLSearchParams({
         prompt: document.getElementById("gallery-prompt-search").value,
         model: document.getElementById("gallery-model-search").value,
         page: document.getElementById("gallery-page").value
     })
-    container.innerHTML = ""
+
     fetch('/all_images?' + params)
         .then(response => response.json())
         .then(json => {
@@ -3130,9 +3279,30 @@ function refreshGallery(newsearch = false) {
             json.forEach(item => {
                 container.appendChild(galleryImage(item))
             })
+            // Wait for all images to be loaded
+            Promise.all(Array.from(container.querySelectorAll("img")).map(img => {
+                if (img.complete)
+                {
+                    return Promise.resolve(img.naturalHeight !== 0)
+                }
+                return new Promise(resolve => {
+                    img.addEventListener('load', () => resolve(true))
+                    img.addEventListener('error', () => resolve(false))
+                })
+            })).then(results => {
+                // then layout the images
+                layoutGallery()
+            })
         })
     document.getElementById("gallery-refresh").innerText = "Refresh"
 }
+
+document.addEventListener("tabClick", (e) => {
+    if (e.detail.name == 'gallery') {
+        refreshGallery()
+    }
+})
+
 
 function decrementGalleryPage() {
     let page = Math.max(document.getElementById("gallery-page").value - 1, 0)

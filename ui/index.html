@@ -26,6 +26,7 @@
     <script src="/media/js/FileSaver.min.js"></script>
     <script src="/media/js/marked.min.js"></script>
     <script src="/media/js/croppr.js"></script>
+    <script src="/media/js/masonry.pkgd.js"></script>
 </head>
 <body>
 <div id="container">
@@ -523,12 +524,26 @@
                 <input id="gallery-model-search" type="text" onkeydown="gallery_keyDown_handler(event)" placeholder="Search for a model..."></input>
                 <label for="gallery-page">Page:</label>
                 <input id="gallery-page" name="Page" value="0" size="1" onkeypress="gallery_keyDown_handler(event)">
+                <input id="gallery-thumbnail-size" name="gallery-thumbnail-size" class="editor-slider" type="range" value="5.5" min="3" max="20" step="0.05">
                 <button class="primaryButton" id="gallery-refresh" onclick="refreshGallery(true)">Load</button>
                 <button class="primaryButton" onclick="incrementGalleryPage()"><i class="fa-solid fa-arrow-right"></i></button>
             </div>
             <div class="gallery">
                 <div class="gallery-container" id="imagecontainer"></div>
             </div>
+            <dialog id="gallery-imginfo">
+                <div id="gallery-imginfo-header" class="dialog-header">
+                    <div id="gallery-imginfo-header-left" class="dialog-header-left">
+                        <h4>Image Settings</h4>
+                        <span></span>
+                    </div>
+                    <div id="gallery-imginfo-header-right">
+                        <i id="gallery-imginfo-close-button" class="fa-solid fa-xmark fa-lg"></i>
+                    </div>
+                </div>
+                <div id="gallery-imginfo-content">
+                </div>
+            </dialog>
         </div>
     </div>
     
