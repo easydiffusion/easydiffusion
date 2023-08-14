@@ -150,6 +150,7 @@ let galleryPrevBtn = document.querySelector("#gallery-prev")
 let galleryNextBtn = document.querySelector("#gallery-next")
 let galleryPromptSearchField = document.querySelector("#gallery-prompt-search")
 let galleryModelSearchField = document.querySelector("#gallery-model-search")
+let galleryImageContainer = document.querySelector("#imagecontainer")
 
 
 let positiveEmbeddingText = document.querySelector("#positive-embedding-text")
@@ -3183,13 +3184,13 @@ function galleryImage(item) {
     imageExpandBtn.innerHTML = '<i class="fa-solid fa-expand"></i>'
     imageExpandBtn.addEventListener("click", function() {
         function previousImage(img) {
-            const allImages = Array.from(document.getElementById("imagecontainer").querySelectorAll(".gallery-image img"))
+            const allImages = Array.from(galleryImageContainer.querySelectorAll(".gallery-image img"))
             const index = allImages.indexOf(img)
             return allImages.slice(0, index).reverse()[0]
         }
 
         function nextImage(img) {
-            const allImages = Array.from(document.getElementById("imagecontainer").querySelectorAll(".gallery-image img"))
+            const allImages = Array.from(galleryImageContainer.querySelectorAll(".gallery-image img"))
             const index = allImages.indexOf(img)
             return allImages.slice(index + 1)[0]
         }
@@ -3249,12 +3250,11 @@ galleryThumbnailSize.addEventListener("input", layoutGallery)
 window.addEventListener("resize", layoutGallery)
 
 function layoutGallery() {
-    let container = document.getElementById("imagecontainer")
     let thumbSize = parseFloat(galleryThumbnailSize.value)
     thumbSize = (10*thumbSize*thumbSize)>>>0
     let root = document.querySelector(':root')
     root.style.setProperty('--gallery-width', thumbSize + "px")
-    let msnry = new Masonry( container, {
+    let msnry = new Masonry(galleryImageContainer, {
         gutter: 10,
         itemSelector: '.gallery-image',
         columnWidth: thumbSize,
@@ -3269,11 +3269,10 @@ function refreshGallery(newsearch = false) {
     if (newsearch) {
         galleryPageField.value = 0
     }
-    let container = document.getElementById("imagecontainer")
-    container.innerHTML = ""
+    galleryImageContainer.innerHTML = ""
     let params = new URLSearchParams({
-        prompt: document.getElementById("gallery-prompt-search").value,
-        model: document.getElementById("gallery-model-search").value,
+        prompt: galleryPromptSearchField.value,
+        model: galleryModelSearchField.value,
         page: galleryPageField.value
     })
 
