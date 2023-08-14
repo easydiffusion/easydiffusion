@@ -104,7 +104,7 @@ def init():
         from easydiffusion.easydb.mappings import GalleryImage
         images = db.query(GalleryImage).order_by(GalleryImage.time_created.desc())
         if prompt != "":
-            images = images.filter(GalleryImage.path.like("%"+prompt+"%"))
+            images = images.filter(GalleryImage.prompt.like("%"+prompt+"%"))
         if model != "":
             images = images.filter(GalleryImage.use_stable_diffusion_model.like("%"+model+"%"))
         images = images.offset(page*images_per_page).limit(images_per_page)
