@@ -145,6 +145,12 @@ let embeddingsCardSizeSelector = document.querySelector("#embedding-card-size-se
 let galleryImginfoDialog = document.querySelector("#gallery-imginfo")
 let galleryThumbnailSize = document.querySelector("#gallery-thumbnail-size")
 let galleryImginfoDialogContent = document.querySelector("#gallery-imginfo-content")
+let galleryPageField = document.querySelector("#gallery-page")
+let galleryPrevBtn = document.querySelector("#gallery-prev")
+let galleryNextBtn = document.querySelector("#gallery-next")
+let galleryPromptSearchField = document.querySelector("#gallery-prompt-search")
+let galleryModelSearchField = document.querySelector("#gallery-model-search")
+
 
 let positiveEmbeddingText = document.querySelector("#positive-embedding-text")
 let negativeEmbeddingText = document.querySelector("#negative-embedding-text")
@@ -3256,23 +3262,25 @@ function layoutGallery() {
     })
 }
 
+galleryModelSearchField.addEventListener("keyup", debounce(e => refreshGallery(true), 500))
+galleryPromptSearchField.addEventListener("keyup", debounce(e => refreshGallery(true), 500))
+
 function refreshGallery(newsearch = false) {
-    let buttons = document.querySelectorAll("#gallery-search button")
     if (newsearch) {
-        document.getElementById("gallery-page").value = 0
+        galleryPageField.value = 0
     }
     let container = document.getElementById("imagecontainer")
     container.innerHTML = ""
     let params = new URLSearchParams({
         prompt: document.getElementById("gallery-prompt-search").value,
         model: document.getElementById("gallery-model-search").value,
-        page: document.getElementById("gallery-page").value
+        page: galleryPageField.value
     })
 
     fetch('/all_images?' + params)
         .then(response => response.json())
         .then(json => {
-            if (document.getElementById("gallery-page").value > 0 && json.length == 0) {
+            if (galleryPageField.value > 0 && json.length == 0) {
                 decrementGalleryPage()
                 alert("No more images")
                 return
@@ -3295,22 +3303,31 @@ function refreshGallery(newsearch = false) {
                 layoutGallery()
             })
         })
-    fetch('/all_images?images_per_page=1&page=' + (parseInt(document.getElementById("gallery-page").value) + 1) * 50) // 50 has to be replaced if custom images per page is implemented
+
+    params.set("images_per_page", 1)
+    // 50 has to be replaced if custom images per page is implemented
+    params.set("page", (parseInt(galleryPageField.value) + 1) * 50)
+
+    fetch("/all_images?" + params)
         .then(response => response.json())
         .then(json => {
             if (json.length == 0) {
-                buttons[2].disabled = true
+                galleryNextBtn.disabled = true
             } else {
-                buttons[2].disabled = false
+                galleryNextBtn.disabled = false
             }
         })
-    if (document.getElementById("gallery-page").value == 0) {
-        buttons[0].disabled = true
+    if (galleryPageField.value == 0) {
+        galleryPrevBtn.disabled = true
     } else {
-        buttons[0].disabled = false
+        galleryPrevBtn.disabled = false
     }
     document.getElementById("gallery-refresh").innerText = "Refresh"
 }
+
+galleryPrevBtn.addEventListener("click", decrementGalleryPage)
+galleryNextBtn.addEventListener("click", incrementGalleryPage)
+
 
 document.addEventListener("tabClick", (e) => {
     if (e.detail.name == 'gallery') {
@@ -3320,13 +3337,13 @@ document.addEventListener("tabClick", (e) => {
 
 
 function decrementGalleryPage() {
-    let page = Math.max(document.getElementById("gallery-page").value - 1, 0)
-    document.getElementById("gallery-page").value = page
+    let page = Math.max(galleryPageField.value - 1, 0)
+    galleryPageField.value = page
     refreshGallery(false)
 }
 
 function incrementGalleryPage() {
-    document.getElementById("gallery-page").value++
+    galleryPageField.value++
     refreshGallery(false)
 }
 
