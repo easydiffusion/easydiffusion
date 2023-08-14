@@ -3257,7 +3257,7 @@ function layoutGallery() {
 }
 
 function refreshGallery(newsearch = false) {
-    let BUTTONS = [...document.getElementById("gallery-search").children].filter(x => x.tagName === "BUTTON")
+    let buttons = document.querySelectorAll("#gallery-search button")
     if (newsearch) {
         document.getElementById("gallery-page").value = 0
     }
@@ -3299,15 +3299,15 @@ function refreshGallery(newsearch = false) {
         .then(response => response.json())
         .then(json => {
             if (json.length == 0) {
-                BUTTONS[2].disabled = true
+                buttons[2].disabled = true
             } else {
-                BUTTONS[2].disabled = false
+                buttons[2].disabled = false
             }
         })
     if (document.getElementById("gallery-page").value == 0) {
-        BUTTONS[0].disabled = true
+        buttons[0].disabled = true
     } else {
-        BUTTONS[0].disabled = false
+        buttons[0].disabled = false
     }
     document.getElementById("gallery-refresh").innerText = "Refresh"
 }
