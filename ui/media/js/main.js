@@ -2786,7 +2786,7 @@ let recentResolutionsValues = []
     function makeResolutionButtons(listElement, resolutionList) {
         listElement.innerHTML = ""
         resolutionList.forEach((el) => {
-            let button = createElement("button", {style: "width: 8em;"}, "tertiaryButton", `${el.w}×${el.h}`)
+            let button = createElement("button", { style: "width: 8em;" }, "tertiaryButton", `${el.w}×${el.h}`)
             button.addEventListener("click", () => {
                 customWidthField.value = el.w
                 customHeightField.value = el.h
@@ -2797,10 +2797,12 @@ let recentResolutionsValues = []
         })
     }
 
-    enlargeButtons.querySelectorAll("button").forEach( button => button.addEventListener("click", e => {
-        enlargeImageSize(parseFloat(button.dataset["factor"]))
-        hidePopup()
-    }))
+    enlargeButtons.querySelectorAll("button").forEach((button) =>
+        button.addEventListener("click", (e) => {
+            enlargeImageSize(parseFloat(button.dataset["factor"]))
+            hidePopup()
+        })
+    )
 
     customWidthField.addEventListener("change", () => {
         let w = customWidthField.value
@@ -2831,18 +2833,18 @@ let recentResolutionsValues = []
     })
 
     const defaultResolutionsValues = [
-            { w: 512, h: 512 },
-            { w: 448, h: 640 },
-            { w: 512, h: 768 },
-            { w: 768, h: 512 },
-            { w: 1024, h: 768 },
-            { w: 768, h: 1024 },
-            { w: 1024, h: 1024 },
-            { w: 1920, h: 1080 },
-        ]
+        { w: 512, h: 512 },
+        { w: 448, h: 640 },
+        { w: 512, h: 768 },
+        { w: 768, h: 512 },
+        { w: 1024, h: 768 },
+        { w: 768, h: 1024 },
+        { w: 1024, h: 1024 },
+        { w: 1920, h: 1080 },
+    ]
     let _jsonstring = localStorage.recentResolutionsValues
     if (_jsonstring == undefined) {
-        recentResolutionsValues = defaultResolutionsValues;
+        recentResolutionsValues = defaultResolutionsValues
         localStorage.recentResolutionsValues = JSON.stringify(recentResolutionsValues)
     } else {
         recentResolutionsValues = JSON.parse(localStorage.recentResolutionsValues)
@@ -2887,17 +2889,17 @@ let recentResolutionsValues = []
         }
     })
 
-    resizeSlider.addEventListener("input", e => {
+    resizeSlider.addEventListener("input", (e) => {
         let w = parseInt(resizeSlider.dataset["w"])
         let h = parseInt(resizeSlider.dataset["h"])
         let factor = parseFloat(resizeSlider.value)
         let step = customWidthField.step
 
-        customWidthField.value = roundToMultiple(w*factor*factor, step)
-        customHeightField.value = roundToMultiple(h*factor*factor, step)
+        customWidthField.value = roundToMultiple(w * factor * factor, step)
+        customHeightField.value = roundToMultiple(h * factor * factor, step)
     })
 
-    resizeSlider.addEventListener("change", e => {
+    resizeSlider.addEventListener("change", (e) => {
         hidePopup()
     })
 
