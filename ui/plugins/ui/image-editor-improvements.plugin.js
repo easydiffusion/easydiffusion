@@ -210,7 +210,11 @@
             dropAreaCN.style.backgroundColor = ''
         })
         dropAreaCN.addEventListener("drop", function(event) {
-        //#####
+            event.stopPropagation()
+            event.preventDefault()
+            hideDropAreas()
+
+            getImageFromDropEvent(event, e => controlImagePreview.src=e)
         })
 
         dropAreaI2I.addEventListener("dragenter", function(event) {
@@ -221,16 +225,12 @@
             event.preventDefault()
             dropAreaI2I.style.backgroundColor = ''
         })
-        
-        dropAreaI2I.addEventListener("drop", function(event) {
-            event.stopPropagation();
-            event.preventDefault();
-            hideDropAreas()
-            
+       
+        function getImageFromDropEvent(event, callback) {
             // Find the first image file, uri, or moz-url in the items list
-            let imageItem = null;
+            let imageItem = null
             for (let i = 0; i < event.dataTransfer.items.length; i++) {
-                let item = event.dataTransfer.items[i];
+                let item = event.dataTransfer.items[i]
                 if (item.kind === 'file' && item.type.startsWith('image/')) {
                     imageItem = item;
                     break;
@@ -267,18 +267,22 @@
                     // Create a FileReader object to read the dropped file as a data URL
                     let reader = new FileReader();
                     reader.onload = function(e) {
-                        // Set the src attribute of the img element to the data URL
-                        imageObj.src = e.target.result;
+                        callback(e.target.result)
                     };
                     reader.readAsDataURL(file);
                 } else {
                     // If the item is a URL, retrieve it and use it to load the image
-                    imageItem.getAsString(function(url) {
-                        // Set the src attribute of the img element to the URL
-                        imageObj.src = url;
-                    });
+                    imageItem.getAsString(callback)
                 }
             }
+        }
+
+        dropAreaI2I.addEventListener("drop", function(event) {
+            event.stopPropagation()
+            event.preventDefault()
+            hideDropAreas()
+            
+            getImageFromDropEvent(event, e => imageObj.src=e)
         })
         
         dropAreaMD.addEventListener("dragenter", function(event) {
