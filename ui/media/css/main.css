@@ -5,6 +5,8 @@
 
 html {
     position: relative;
+    overscroll-behavior-y: none;
+    color-scheme: dark !important;
 }
 
 body {
@@ -286,12 +288,6 @@ button#resume {
     margin-left: 1em;
     position: relative;
     cursor: pointer;
-}
-#image-modifier-dropdown[data-active="true"]::before {
-    content: "➖";
-}
-#image-modifier-dropdown[data-active="false"]::before {
-    content: "➕";
 }
 #editor-modifiers {
     max-width: 75vw;
@@ -799,7 +795,7 @@ div.img-preview img {
     margin-bottom: 8px;
 }
 
-#init_image_preview_container:not(.has-image) #init_image_wrapper,
+#init_image_preview_container:not(.has-image) .preview_image_wrapper,
 #init_image_preview_container:not(.has-image) #inpaint_button_container  {
     display: none;
 }
@@ -836,14 +832,14 @@ div.img-preview img {
     gap: 8px;
 }
 
-#init_image_wrapper {
+.preview_image_wrapper {
     grid-row: span 3;
     position: relative;
     width: fit-content;
     max-height: 150px;
 }
 
-#init_image_preview {
+.image_preview {
     max-height: 150px;
     height: 100%;
     width: 100%;
@@ -903,6 +899,10 @@ div.img-preview img {
     float: right;
     padding-right: 4px;
     white-space: nowrap;
+}
+
+#editor-settings-entries table {
+    width: 93%;
 }
 
 #negative_prompt {
@@ -1144,7 +1144,7 @@ input::file-selector-button {
     position: relative;
 }
 
-#promptsFromFileBtn {
+.smallButton {
     font-size: 9pt;
     display: inline;
     padding: 2pt;
@@ -1651,29 +1651,185 @@ body.wait-pause {
     }
 }
 
-#embeddings-button {
-    background-color: var(--background-color3);
-}
-
-#embeddings-button:hover {
-    background-color: var(--button-hover-background);
-}
-
 #embeddings-dialog {
     overflow: clip;
 }
 
 #embeddings-list {
     height: 70vH;
-    width: 40vW;
+    width: 50vW;
+    margin-left: 0px;
+    margin-right: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
     overflow-y: scroll;
 }
 
 #embeddings-list button {
-    margin-top: 2px;
-    margin-bottom: 2px;
+    margin: 2px;
+    color: var(--button-color);
+    background: var(--button-text-color);
+    font-weight: 700;
+}
+#embeddings-list button:hover {
+    background: var(--accent-color);
+    color: var(--button-text-color);
+}
+
+#embeddings-list .collapsible {
+    background: var(--background-color3);
+    margin: 0px;
+    padding: 0.5em;
+    position: sticky;
+}
+
+#embeddings-list .embedding-category:nth-child(odd) .collapsible::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.02);
+    opacity: 1;
+    pointer-events: none;
+}
+
+#embeddings-list .collapsible-content {
+    padding-top:    0.4em;
+    padding-bottom: 0.4em;
 }
 
 #embeddings-list::-webkit-scrollbar-thumb {
-  background: var(--background-color3);
+    background: var(--background-color3);
+}
+
+.model_entry .model_name {
+    width: 73%;
+}
+
+.model_entry {
+    position: relative;
+}
+
+.model_entry .remove_model_btn {
+    position: absolute;
+    left: -23pt;
+    top: 4pt;
+}
+
+.split-toolbar {  display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
+    gap: 0px 0px;
+    grid-auto-flow: row;
+    grid-template-areas: "toolbar-left toolbar-right";
+}
+
+.toolbar-left {
+    justify-self: start;
+    align-self: center;
+    grid-area: toolbar-left;
+}
+
+.toolbar-right {
+    justify-self: end;
+    align-self: center;
+    grid-area: toolbar-right;
+}
+
+#negative-embeddings-button {
+    float: right;
+}
+
+.diffusers-disabled-on-startup .diffusers-restart-needed {
+    font-size: 0;
+}
+
+.diffusers-disabled-on-startup .diffusers-restart-needed * {
+    display: none;
+}
+
+.diffusers-disabled-on-startup .diffusers-restart-needed::after {
+    content: "Please restart Easy Diffusion!";
+    font-size: 10pt;
+}
+
+input#custom-width, input#custom-height {
+    width: 47pt;
+}
+
+div#recent-resolutions-container {
+    position: relative;
+    display:inline-block;
+}
+
+div#recent-resolutions-popup {
+    position: absolute;
+    right: 0px;
+    margin: 3px;
+    padding: 0.2em 1em 0.4em 1em;
+    z-index: 1;
+    background: var(--background-color3);
+    border-radius: 4px;
+    box-shadow: 0 20px 28px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
+}
+
+div#recent-resolutions-popup small {
+    opacity: 0.7;
+}
+
+td#image-size-options small {
+    margin-right: 0px !important;
+}
+
+td#image-size-options {
+    white-space: nowrap;
+}
+
+div#recent-resolution-list {
+    text-align: center;
+}
+
+div#enlarge-buttons {
+    text-align: center;
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+.imgContainer .spinner {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    padding: 0;
+
+    background: var(--background-color3);
+    opacity: 0.95;
+    border-radius: 5px;
+    padding: 4pt;
+    border: 1px solid var(--button-color);
+    box-shadow: 0px 0px 4px black;
+}
+
+.imgContainer .spinnerStatus {
+    font-size: 10pt;
+}
+
+#controlnet_model_container small {
+    color: var(--text-color)
+}
+#control_image {
+    width: 130pt;
+}
+#controlnet_model {
+    width: 77%;
+}
+
+/* hack for fixing Image Modifier Improvements plugin */
+#imageTagPopupContainer {
+    position: absolute;
 }

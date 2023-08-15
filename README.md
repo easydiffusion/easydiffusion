@@ -11,9 +11,9 @@ Does not require technical knowledge, does not require pre-installed software. 1
 Click the download button for your operating system:
 
 <p float="left">
-  <a href="https://github.com/easydiffusion/easydiffusion/releases/download/v2.5.24/Easy-Diffusion-Windows.exe"><img src="https://github.com/easydiffusion/easydiffusion/raw/main/media/download-win.png" width="200" /></a>
-  <a href="https://github.com/easydiffusion/easydiffusion/releases/download/v2.5.24/Easy-Diffusion-Linux.zip"><img src="https://github.com/easydiffusion/easydiffusion/raw/main/media/download-linux.png" width="200" /></a>
-  <a href="https://github.com/easydiffusion/easydiffusion/releases/download/v2.5.24/Easy-Diffusion-Mac.zip"><img src="https://github.com/easydiffusion/easydiffusion/raw/main/media/download-mac.png" width="200" /></a>
+  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.41a/Easy-Diffusion-Windows.exe"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-win.png" width="200" /></a>
+  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.41a/Easy-Diffusion-Linux.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-linux.png" width="200" /></a>
+  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/download/v2.5.41a/Easy-Diffusion-Mac.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-mac.png" width="200" /></a>
 </p>
 
 **Hardware requirements:**
@@ -22,6 +22,7 @@ Click the download button for your operating system:
 - **Mac:** M1 or M2, or run on your CPU.
 - Minimum 8 GB of system RAM.
 - Atleast 25 GB of space on the hard disk.
+
 
 The installer will take care of whatever is needed. If you face any problems, you can join the friendly [Discord community](https://discord.com/invite/u9yhsFmEkB) and ask for assistance.
 
@@ -131,6 +132,15 @@ We could really use help on these aspects (click to view tasks that need your he
 * [Documentation](https://github.com/users/cmdr2/projects/5/views/1)
 
 If you have any code contributions in mind, please feel free to say Hi to us on the [discord server](https://discord.com/invite/u9yhsFmEkB). We use the Discord server for development-related discussions, and for helping users.
+
+# Credits
+* Stable Diffusion: https://github.com/Stability-AI/stablediffusion
+* CodeFormer: https://github.com/sczhou/CodeFormer (license: https://github.com/sczhou/CodeFormer/blob/master/LICENSE)
+* GFPGAN: https://github.com/TencentARC/GFPGAN
+* RealESRGAN: https://github.com/xinntao/Real-ESRGAN
+* k-diffusion: https://github.com/crowsonkb/k-diffusion
+* Code contributors and artists on the cmdr2 UI: https://github.com/cmdr2/stable-diffusion-ui and Discord (https://discord.com/invite/u9yhsFmEkB)
+* Lots of contributors on the internet
 
 # Disclaimer
 The authors of this project are not responsible for any content generated using this interface.

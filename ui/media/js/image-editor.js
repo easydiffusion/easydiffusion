@@ -626,6 +626,7 @@ class ImageEditor {
                 .getImageData(0, 0, this.width, this.height)
                 .data.some((channel) => channel !== 0)
             maskSetting.checked = !is_blank
+            maskSetting.dispatchEvent(new Event("change"))
         }
         this.hide()
     }

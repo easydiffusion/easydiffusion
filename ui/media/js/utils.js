@@ -129,6 +129,31 @@ function tryLoadOldCollapsibles() {
     return null
 }
 
+function collapseAll(selector) {
+    const collapsibleElems = document.querySelectorAll(selector); // needs to have ";"
+
+    [...collapsibleElems].forEach((elem) => {
+        const isActive =  elem.classList.contains("active")
+
+        if(isActive) {
+            elem?.click()
+        }
+    })
+}
+
+function expandAll(selector) {
+    const collapsibleElems = document.querySelectorAll(selector); // needs to have ";"
+
+    [...collapsibleElems].forEach((elem) => {
+        const isActive =  elem.classList.contains("active")
+
+        if (!isActive) {
+            elem?.click()
+        }
+    })
+}
+
+
 function permute(arr) {
     let permutations = []
     let n = arr.length
@@ -1074,6 +1099,12 @@ async function deleteKeys(keyToDelete) {
 
 function modalDialogCloseOnBackdropClick(dialog) {
     dialog.addEventListener('mousedown', function (event) {
+        // Firefox creates an event with clientX|Y = 0|0 when choosing an <option>.
+        // Test whether the element interacted with is a child of the dialog, but not the
+        // dialog itself (the backdrop would be a part of the dialog)
+        if (dialog.contains(event.target) && dialog != event.target) {
+            return
+        }
         var rect = dialog.getBoundingClientRect()
         var isInDialog=(rect.top <= event.clientY && event.clientY <= rect.top + rect.height
           && rect.left <= event.clientX && event.clientX <= rect.left + rect.width)

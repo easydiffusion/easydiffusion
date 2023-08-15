@@ -1047,7 +1047,9 @@
         }
     }
     class FilterTask extends Task {
-        constructor(options = {}) {}
+        constructor(options = {}) {
+            super(options)
+        }
         /** Send current task to server.
          * @param {*} [timeout=-1] Optional timeout value in ms
          * @returns the response from the render request.
@@ -1055,9 +1057,27 @@
          */
         async post(timeout = -1) {
             let jsonResponse = await super.post("/filter", timeout)
-            //this._setId(jsonResponse.task)
+            if (typeof jsonResponse?.task !== "number") {
+                console.warn("Endpoint error response: ", jsonResponse)
+                const event = Object.assign({ task: this }, jsonResponse)
+                await eventSource.fireEvent(EVENT_UNEXPECTED_RESPONSE, event)
+                if ("continueWith" in event) {
+                    jsonResponse = await Promise.resolve(event.continueWith)
+                }
+                if (typeof jsonResponse?.task !== "number") {
+                    const err = new Error(jsonResponse?.detail || "Endpoint response does not contains a task ID.")
+                    this.abort(err)
+                    throw err
+                }
+            }
+            this._setId(jsonResponse.task)
+            if (jsonResponse.stream) {
+                this.streamUrl = jsonResponse.stream
+            }
             this._setStatus(TaskStatus.waiting)
+            return jsonResponse
         }
+        checkReqBody() {}
         enqueue(progressCallback) {
             return Task.enqueueNew(this, FilterTask, progressCallback)
         }
@@ -1068,6 +1088,65 @@
             if (this.isStopped) {
                 return
             }
+
+            this._setStatus(TaskStatus.pending)
+            progressCallback?.call(this, { reqBody: this._reqBody })
+            Object.freeze(this._reqBody)
+
+            // Post task request to backend
+            let renderRes = undefined
+            try {
+                renderRes = yield this.post()
+                yield progressCallback?.call(this, { renderResponse: renderRes })
+            } catch (e) {
+                yield progressCallback?.call(this, { detail: e.message })
+                throw e
+            }
+
+            try {
+                // Wait for task to start on server.
+                yield this.waitUntil({
+                    callback: function() {
+                        return progressCallback?.call(this, {})
+                    },
+                    status: TaskStatus.processing,
+                })
+            } catch (e) {
+                this.abort(err)
+                throw e
+            }
+
+            // Task started!
+            // Open the reader.
+            const reader = this.reader
+            const task = this
+            reader.onError = function(response) {
+                if (progressCallback) {
+                    task.abort(new Error(response.statusText))
+                    return progressCallback.call(task, { response, reader })
+                }
+                return Task.prototype.onError.call(task, response)
+            }
+            yield progressCallback?.call(this, { reader })
+
+            //Start streaming the results.
+            const streamGenerator = reader.open()
+            let value = undefined
+            let done = undefined
+            yield progressCallback?.call(this, { stream: streamGenerator })
+            do {
+                ;({ value, done } = yield streamGenerator.next())
+                if (typeof value !== "object") {
+                    continue
+                }
+                if (value.status !== undefined) {
+                    yield progressCallback?.call(this, value)
+                    if (value.status === "succeeded" || value.status === "failed") {
+                        done = true
+                    }
+                }
+            } while (!done)
+            return value
         }
         static start(task, progressCallback) {
             if (typeof task !== "object") {

@@ -5,7 +5,7 @@ import shutil
 import socket
 import sys
 import traceback
-import shlex
+import copy
 from ruamel.yaml import YAML
 
 import urllib
@@ -31,6 +31,8 @@ logging.basicConfig(
 )
 
 SD_DIR = os.getcwd()
+
+ROOT_DIR = os.path.abspath(os.path.join(SD_DIR, ".."))
 
 SD_UI_DIR = os.getenv("SD_UI_PATH", None)
 
@@ -58,6 +60,7 @@ APP_CONFIG_DEFAULTS = {
     "ui": {
         "open_browser_on_start": True,
     },
+    "test_diffusers": True,
 }
 
 IMAGE_EXTENSIONS = [
@@ -111,6 +114,11 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
     if os.path.isfile(config_legacy_yaml):
         shutil.move(config_legacy_yaml, config_yaml_path)
 
+    def set_config_on_startup(config: dict):
+        if getConfig.__test_diffusers_on_startup is None:
+            getConfig.__test_diffusers_on_startup = config.get("test_diffusers", True)
+        config["config_on_startup"] = {"test_diffusers": getConfig.__test_diffusers_on_startup}
+
     if os.path.isfile(config_yaml_path):
         try:
             yaml = YAML()
@@ -126,9 +134,13 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
                     config["net"]["listen_to_network"] = os.getenv("SD_UI_BIND_IP") == "0.0.0.0"
                 else:
                     config["net"]["listen_to_network"] = True
+
+            set_config_on_startup(config)
+
             return config
         except Exception as e:
             log.warn(traceback.format_exc())
+            set_config_on_startup(default_val)
             return default_val
     else:
         try:
@@ -149,7 +161,11 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
             return getConfig(default_val)
         except Exception as e:
             log.warn(traceback.format_exc())
+            set_config_on_startup(default_val)
             return default_val
+
+
+getConfig.__test_diffusers_on_startup = None
 
 
 def setConfig(config):
@@ -169,6 +185,9 @@ def setConfig(config):
 
                 config = commented_config
         yaml.indent(mapping=2, sequence=4, offset=2)
+
+        if "config_on_startup" in config:
+            del config["config_on_startup"]
 
         try:
             f = open(config_yaml_path + ".tmp", "w", encoding="utf-8")
