@@ -1265,7 +1265,7 @@ function createTask(task) {
     taskEntry.id = `imageTaskContainer-${Date.now()}`
     taskEntry.className = "imageTaskContainer"
     taskEntry.innerHTML = ` <div class="header-content panel collapsible active">
-                                <i class="drag-handle fa-solid fa-grip"></i>
+                                <i class="drag-handle fa-solid fa-sort"></i>
                                 <div class="taskStatusLabel">Enqueued</div>
                                 <div class="preview-prompt"></div>
                                 <div class="taskConfig">${taskConfig}</div>

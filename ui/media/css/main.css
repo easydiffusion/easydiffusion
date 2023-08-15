@@ -701,6 +701,7 @@ div.img-preview img {
     margin-right: 6px;
     cursor: move;
     float: right;
+    opacity: 0.5;
 }
 .taskStatusLabel {
     font-size: 8pt;
