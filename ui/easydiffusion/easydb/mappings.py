@@ -24,6 +24,7 @@ class GalleryImage(Base):
     use_upscale = Column(String)
     prompt = Column(String)
     negative_prompt = Column(String)
+    workspace = Column(String, server_default="default")
     time_created = Column(DateTime(timezone=True), server_default=func.now())
     nsfw = Column(Boolean, server_default=None)
 
