@@ -821,12 +821,25 @@ function makeImage() {
     }
     if (!randomSeedField.checked && seedField.value == "") {
         alert('The "Seed" field must not be empty.')
+        seedField.classList.add("validation-failed")
         return
     }
+    seedField.classList.remove("validation-failed")
+
     if (numInferenceStepsField.value == "") {
         alert('The "Inference Steps" field must not be empty.')
+        numInferenceStepsField.classList.add("validation-failed")
         return
     }
+    numInferenceStepsField.classList.remove("validation-failed")
+
+    if (controlnetModelField.value === "" && IMAGE_REGEX.test(controlImagePreview.src)) {
+        alert("To use controlnets, choose a controlnet model")
+        document.getElementById("controlnet_model").classList.add("validation-failed")
+        return
+    }
+    document.getElementById("controlnet_model").classList.remove("validation-failed")
+
     if (numOutputsTotalField.value == "" || numOutputsTotalField.value == 0) {
         numOutputsTotalField.value = 1
     }
