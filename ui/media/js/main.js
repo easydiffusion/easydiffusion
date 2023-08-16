@@ -517,6 +517,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             const imageRedoBuffer = []
             let buttons = [
                 { text: "Use as Input", on_click: onUseAsInputClick },
+                { text: "Use for Controlnet", on_click: onUseForControlnetClick },
                 [
                     {
                         html: '<i class="fa-solid fa-download"></i> Download Image',
@@ -625,6 +626,10 @@ function onUseAsInputClick(req, img) {
     initImagePreview.src = imgData
 
     maskSetting.checked = false
+}
+
+function onUseForControlnetClick(req, img) {
+    controlImagePreview.src = img.src
 }
 
 function getDownloadFilename(img, suffix) {
