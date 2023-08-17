@@ -199,6 +199,7 @@ let undoButton = document.querySelector("#undo")
 let undoBuffer = []
 const UNDO_LIMIT = 20
 const MAX_IMG_UNDO_ENTRIES = 5
+var GALLERY_NAME="default"
 
 let IMAGE_STEP_SIZE = 64
 
@@ -1542,6 +1543,7 @@ function getCurrentUserRequest() {
             output_quality: parseInt(outputQualityField.value),
             output_lossless: outputLosslessField.checked,
             metadata_output_format: metadataOutputFormatField.value,
+            use_gallery: useGalleryField.checked?GALLERY_NAME:null,
             original_prompt: promptField.value,
             active_tags: activeTags.map((x) => x.name),
             inactive_tags: activeTags.filter((tag) => tag.inactive === true).map((x) => x.name),
@@ -2008,6 +2010,7 @@ function onDimensionChange() {
 
 diskPathField.disabled = !saveToDiskField.checked
 metadataOutputFormatField.disabled = !saveToDiskField.checked
+useGalleryField.disabled = !saveToDiskField.checked
 
 gfpganModelField.disabled = !useFaceCorrectionField.checked
 useFaceCorrectionField.addEventListener("change", function(e) {
@@ -3273,7 +3276,12 @@ function layoutGallery() {
 
 galleryModelSearchField.addEventListener("keyup", debounce(e => refreshGallery(true), 500))
 galleryPromptSearchField.addEventListener("keyup", debounce(e => refreshGallery(true), 500))
-
+galleryPageField.addEventListener("keyup", e => {
+    if (e.code === "Enter") {
+        e.preventDefault()
+        refreshGallery(false)
+    }
+})
 
 function refreshGallery(newsearch = false) {
     if (newsearch) {
@@ -3281,6 +3289,7 @@ function refreshGallery(newsearch = false) {
     }
     galleryImageContainer.innerHTML = ""
     let params = new URLSearchParams({
+        workspace: GALLERY_NAME,
         prompt: galleryPromptSearchField.value,
         model: galleryModelSearchField.value,
         page: galleryPageField.value

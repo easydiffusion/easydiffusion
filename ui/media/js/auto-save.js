@@ -14,6 +14,7 @@ const SETTINGS_IDS_LIST = [
     "num_outputs_parallel",
     "stable_diffusion_model",
     "clip_skip",
+    "use_gallery",
     "vae_model",
     "hypernetwork_model",
     "sampler_name",

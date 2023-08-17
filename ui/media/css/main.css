@@ -1031,6 +1031,9 @@ input::file-selector-button {
 .input-toggle > input:checked + label {
     background: var(--accent-color);
 }
+.input-toggle > input:disabled + label {
+    background: var(--background-color1);
+}
 .input-toggle > input:checked + label:before {
     right: calc(var(--input-border-size) + var(--input-switch-padding));
     opacity: 1;
