@@ -834,7 +834,7 @@ function makeImage() {
     numInferenceStepsField.classList.remove("validation-failed")
 
     if (controlnetModelField.value === "" && IMAGE_REGEX.test(controlImagePreview.src)) {
-        alert("To use controlnets, choose a controlnet model")
+        alert("Please choose a ControlNet model, to use the ControlNet image.")
         document.getElementById("controlnet_model").classList.add("validation-failed")
         return
     }
