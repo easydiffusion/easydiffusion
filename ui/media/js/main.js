@@ -2762,6 +2762,12 @@ function updateEmbeddingsList(filter = "") {
                 }
             }
         })
+
+        if (toplevel.children.length == 0 && folders.children.length == 0) {
+             // Empty folder
+             return ""
+        }
+
         let result = document.createElement("div")
         result.replaceChildren(toplevel, htmlToElement('<br style="clear: both;">'), folders)
         return result
