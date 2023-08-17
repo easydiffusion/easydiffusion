@@ -22,6 +22,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 3.0.1 - 17 Aug 2023 - Automatically use the correct yaml config file for custom SDXL models, even if a yaml file isn't present in the folder.
 * 3.0.1 - 17 Aug 2023 - Fix broken embeddings with SDXL.
 * 3.0.1 - 16 Aug 2023 - Fix broken LoRA with SDXL.
 * 3.0.1 - 15 Aug 2023 - Fix broken seamless tiling.
