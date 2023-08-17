@@ -2735,16 +2735,16 @@ function updateEmbeddingsList(filter = "") {
                 let token=m.toLowerCase()
                 if (token.search(filter) != -1) {
                     let button
-                    if (iconlist.length==0) {
-                        button = document.createElement("button")
-                        button.innerText = m
-                    } else {
-                        let img = '/media/images/noimg.png'
-                        if (token in embIcon) {
-                            img = `/bucket/${profileName}/embeddings/${embIcon[token]}`
-                        }
-                        button = createModifierCard(m, [img,img], true)
+                    // if (iconlist.length==0) {
+                    //     button = document.createElement("button")
+                    //     button.innerText = m
+                    // } else {
+                    let img = '/media/images/noimg.png'
+                    if (token in embIcon) {
+                        img = `/bucket/${profileName}/embeddings/${embIcon[token]}`
                     }
+                    button = createModifierCard(m, [img,img], true)
+                    // }
                     button.dataset["embedding"] = m
                     button.addEventListener("click", onButtonClick)
                     toplevel.appendChild(button)
