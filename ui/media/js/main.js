@@ -2803,22 +2803,12 @@ function updateEmbeddingsList(filter = "") {
         </div>
     `
 
-    // Remove after fixing https://github.com/huggingface/diffusers/issues/3922
-    let warning = "<div></div>"
-    if (vramUsageLevelField.value == "low") {
-        warning = `
-            <div style="border-color: var(--accent-color); border-width: 4px; border-radius: 1em; border-style: solid; background: black; text-align: center; padding: 1em; margin: 1em; ">
-                <i class="fa fa-fire" style="color:#f7630c;"></i> Warning: Your GPU memory profile is set to "Low". Embeddings currently only work in "Balanced" mode!
-            </div>`
-    }
-    // END of remove block
-
     let profileName = profileNameField.value
     fetch(`/bucket/${profileName}/embeddings/`)
        .then(response => response.status==200 ? response.json(): [])
        .then(async function(iconlist) {
 
-           embeddingsList.replaceChildren(htmlToElement(warning), html(modelsOptions.embeddings, iconlist, "", filter))
+           embeddingsList.replaceChildren(html(modelsOptions.embeddings, iconlist, "", filter))
            createCollapsibles(embeddingsList)
            if (filter != "") {
                embeddingsExpandAll()
