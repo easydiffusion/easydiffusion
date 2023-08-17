@@ -1461,6 +1461,9 @@ button#save-system-settings-btn {
     cursor: pointer;;
 }
 
+.validation-failed {
+    border: solid 2px red;
+}
 /* SCROLLBARS */
 :root {
     --scrollbar-width: 14px;
