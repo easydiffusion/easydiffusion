@@ -2737,7 +2737,7 @@ function updateEmbeddingsList(filter = "") {
                     let button
                     if (iconlist.length==0) {
                         button = document.createElement("button")
-                        button.innerText="m"
+                        button.innerText = m
                     } else {
                         let img = '/media/images/noimg.png'
                         if (token in embIcon) {
