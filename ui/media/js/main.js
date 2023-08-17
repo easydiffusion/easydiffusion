@@ -1039,15 +1039,18 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
                             <b>Suggestions</b>:
                             <br/>
                             Try to use a different model or a different LORA.`
-                } else if (msg.includes("Tensor on device cuda:0 is not on the expected device meta")) {
+                } else if (msg.includes("'ModuleList' object has no attribute '1'")) {
                     msg += `<br/><br/>
-                            <b>Reason</b>: Due to some software issues, embeddings currently don't work with the "Low" memory profile.
+                            <b>Reason</b>: SDXL models need a yaml config file.
                             <br/><br/>
                             <b>Suggestions</b>:
                             <br/>
-                            1. Set the memory profile to "Balanced"<br/>
-                            2. Remove the embeddings from the prompt and the negative prompt<br/>
-                            3. Check whether the plugins you're using change the memory profile automatically.`
+                            <ol>
+                            <li>Download the <a href="https://gist.githubusercontent.com/JeLuF/5dc56e7a3a6988265c423f464d3cbdd3/raw/4ba4c39b1c7329877ad7a39c8c8a077ea4b53d11/dreamshaperXL10_alpha2Xl10.yaml" target="_blank">config file</a></li>
+                            <li>Save it in the same directory as the SDXL model file</li>
+                            <li>Rename the config file so that it matches the filename of the model, with the extension of the model file replaced by <tt>yaml</tt>. 
+                                For example, if the model file is called <tt>FantasySDXL_v2.safetensors</tt>, the config file must be called <tt>FantasySDXL_v2.yaml</tt>.
+                            </ol>`
                 }
             } else {
                 msg = `Unexpected Read Error:<br/><pre>StepUpdate: ${JSON.stringify(stepUpdate, undefined, 4)}</pre>`
