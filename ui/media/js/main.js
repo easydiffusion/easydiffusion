@@ -845,6 +845,7 @@ function makeImage() {
             reqBody: Object.assign({ prompt: prompt }, taskTemplate.reqBody),
         })
     )
+    newTaskRequests.forEach(setEmbeddings)
     newTaskRequests.forEach(createTask)
 
     updateInitialText()
@@ -1491,6 +1492,42 @@ function getCurrentUserRequest() {
     }
 
     return newTask
+}
+
+function setEmbeddings(task) {
+    let prompt = task.reqBody.prompt.toLowerCase()
+    let negativePrompt = task.reqBody.negative_prompt.toLowerCase()
+    let overallPrompt = (prompt + " " + negativePrompt).split(" ")
+
+    let embeddingsTree = modelsOptions["embeddings"]
+    let embeddings = []
+    function extract(entries, basePath = "") {
+        entries.forEach((e) => {
+            if (Array.isArray(e)) {
+                let path = basePath === "" ? basePath + e[0] : basePath + "/" + e[0]
+                extract(e[1], path)
+            } else {
+                let path = basePath === "" ? basePath + e : basePath + "/" + e
+                embeddings.push([e.toLowerCase().replace(" ", "_"), path])
+            }
+        })
+    }
+    extract(embeddingsTree)
+
+    let embeddingPaths = []
+
+    embeddings.forEach((e) => {
+        let token = e[0]
+        let path = e[1]
+
+        if (overallPrompt.includes(token)) {
+            embeddingPaths.push(path)
+        }
+    })
+
+    if (embeddingPaths.length > 0) {
+        task.reqBody.use_embeddings_model = embeddingPaths
+    }
 }
 
 function getModelInfo(models) {
