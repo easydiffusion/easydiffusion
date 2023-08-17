@@ -141,6 +141,7 @@ let embeddingsDialogCloseBtn = embeddingsDialog.querySelector("#embeddings-dialo
 let embeddingsSearchBox = document.querySelector("#embeddings-search-box")
 let embeddingsList = document.querySelector("#embeddings-list")
 let embeddingsModeField = document.querySelector("#embeddings-mode")
+let embeddingsCardSizeSelector = document.querySelector("#embedding-card-size-selector")
 
 let positiveEmbeddingText = document.querySelector("#positive-embedding-text")
 let negativeEmbeddingText = document.querySelector("#negative-embedding-text")
@@ -170,6 +171,12 @@ let saveAllTreeToggle = document.querySelector("#tree_toggle")
 let saveAllJSONToggle = document.querySelector("#json_toggle")
 let saveAllFoldersOption = document.querySelector("#download-add-folders")
 let splashScreenPopup = document.querySelector("#splash-screen")
+let useAsThumbDialog = document.querySelector("#use-as-thumb-dialog")
+let useAsThumbDialogCloseBtn = document.querySelector("#use-as-thumb-dialog-close-button")
+let useAsThumbImageContainer = document.querySelector("#use-as-thumb-img-container")
+let useAsThumbSelect = document.querySelector("#use-as-thumb-select")
+let useAsThumbSaveBtn = document.querySelector("#use-as-thumb-save")
+let useAsThumbCancelBtn = document.querySelector("#use-as-thumb-cancel")
 
 let maskSetting = document.querySelector("#enable_mask")
 
@@ -538,6 +545,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                     { text: "Upscale", on_click: onUpscaleClick },
                     { text: "Fix Faces", on_click: onFixFacesClick },
                 ],
+                { text: "Use as Thumbnail", on_click: onUseAsThumbnailClick },
             ]
 
             // include the plugins
@@ -681,6 +689,127 @@ function onMakeSimilarClick(req, img) {
 
     createTask(newTaskRequest)
 }
+
+// gets a flat list of all models of a certain type, ignoring directories
+function getAllModelNames(type) {
+    function f(tree) {
+        if (tree == undefined) {
+            return []
+        }
+        let result=[]; 
+        tree.forEach( e => { 
+            if (typeof(e) == "object") {
+                result = result.concat( f(e[1]))
+            } else {
+                result.push(e) 
+            }
+        });
+        return result
+    }
+    return f(modelsOptions[type])
+}
+
+function onUseAsThumbnailClick(req, img) {
+    let scale = 1
+    let targetWidth = img.naturalWidth
+    let targetHeight = img.naturalHeight
+    let resize = false
+    onUseAsThumbnailClick.img = img
+
+    if ( typeof(onUseAsThumbnailClick.croppr) == 'undefined' ) {
+        onUseAsThumbnailClick.croppr = new Croppr("#use-as-thumb-image", { aspectRatio: 1, minSize: [384,384,'px'], startSize:  [512, 512, 'px'], returnMode:"real" })
+    }
+
+    if (img.naturalWidth > img.naturalHeight) {
+        if (img.naturalWidth > 768) {
+           scale = 768 / img.naturalWidth
+           targetWidth  = 768
+           targetHeight = (img.naturalHeight*scale)>>>0
+           resize = true
+        }
+    } else {
+        if (img.naturalHeight > 768) {
+            scale = 768 / img.naturalHeight
+            targetHeight = 768
+            targetWidth  = (img.naturalWidth*scale)>>>0
+            resize = true
+        }
+    }
+
+    onUseAsThumbnailClick.croppr.options.minSize = {width: 384*scale>>>0, height: 384*scale>>>0}
+    onUseAsThumbnailClick.croppr.options.startSize = {width: 512*scale>>>0, height: 512*scale>>>0}
+
+    if (resize) {
+        const canvas = document.createElement('canvas')
+        canvas.width = targetWidth
+        canvas.height = targetHeight
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0, targetWidth, targetHeight)
+
+        onUseAsThumbnailClick.croppr.setImage(canvas.toDataURL('image/png'))
+    } else {
+        onUseAsThumbnailClick.croppr.setImage(img.src)
+    }
+
+    let embeddings = getAllModelNames("embeddings").filter( e => req.prompt.includes(e) || req.negative_prompt.includes(e) )
+    let LORA = []
+
+    if ("use_lora_model" in req) {
+        LORA=req.use_lora_model
+    }
+
+    let optgroup = document.createElement("optgroup")
+    optgroup.label = "Embeddings"
+    optgroup.replaceChildren(...embeddings.map(e => { 
+        let option = document.createElement("option")
+        option.innerText = e
+        option.dataset["type"] = "embeddings"
+        return option
+    }))
+    
+    useAsThumbSelect.replaceChildren(optgroup)
+    useAsThumbDialog.showModal()
+    onUseAsThumbnailClick.scale = scale
+}
+
+modalDialogCloseOnBackdropClick(useAsThumbDialog)
+makeDialogDraggable(useAsThumbDialog)
+
+useAsThumbDialogCloseBtn.addEventListener("click", () => {
+    useAsThumbDialog.close()
+})
+
+useAsThumbCancelBtn.addEventListener("click", () => {
+    useAsThumbDialog.close()
+})
+
+useAsThumbSaveBtn.addEventListener("click", (e) => {
+    let scale = 1/onUseAsThumbnailClick.scale
+    let crop = onUseAsThumbnailClick.croppr.getValue()
+
+    let len = Math.max(crop.width*scale, 384)
+    let profileName = profileNameField.value
+
+    cropImageDataUrl(onUseAsThumbnailClick.img.src, crop.x*scale, crop.y*scale, len, len)
+        .then(thumb => fetch(thumb))
+        .then(response => response.blob())
+        .then(async function(blob) {
+            const formData  = new FormData()
+            formData.append("file", blob)
+            let options = useAsThumbSelect.selectedOptions
+            let promises = []
+            for (let embedding of options) {
+                promises.push(fetch(`bucket/${profileName}/${embedding.dataset["type"]}/${embedding.value}.png`, { method: 'POST', body: formData }))
+            }
+            return Promise.all(promises)
+        }).then(() => {
+            useAsThumbDialog.close()
+        })
+        .catch(error => {
+            console.error(error)
+            showToast("Couldn't save thumbnail.<br>"+error)
+        })
+})
 
 function enqueueImageVariationTask(req, img, reqDiff) {
     const imageSeed = img.getAttribute("data-seed")
@@ -2594,31 +2723,52 @@ document.getElementById("toggle-tensorrt-install").addEventListener("click", fun
 /* Embeddings */
 
 function updateEmbeddingsList(filter = "") {
-    function html(model, prefix = "", filter = "") {
+    function html(model, iconlist = [], prefix = "", filter = "") {
         filter = filter.toLowerCase()
-        let toplevel = ""
-        let folders = ""
+        let toplevel = document.createElement("div")
+        let folders = document.createElement("div")
+        let embIcon = Object.assign({}, ...iconlist.map( x=> ({[x.toLowerCase().split('.').slice(0,-1).join('.')]:x})))
 
+        let profileName = profileNameField.value
         model?.forEach((m) => {
             if (typeof m == "string") {
-                if (m.toLowerCase().search(filter) != -1) {
-                    toplevel += `<button data-embedding="${m}">${m}</button> `
+                let token=m.toLowerCase()
+                if (token.search(filter) != -1) {
+                    let button
+                    if (iconlist.length==0) {
+                        button = document.createElement("button")
+                        button.innerText="m"
+                    } else {
+                        let img = '/media/images/noimg.png'
+                        if (token in embIcon) {
+                            img = `/bucket/${profileName}/embeddings/${embIcon[token]}`
+                        }
+                        button = createModifierCard(m, [img,img], true)
+                    }
+                    button.dataset["embedding"] = m
+                    button.addEventListener("click", onButtonClick)
+                    toplevel.appendChild(button)
                 }
             } else {
-                let subdir = html(m[1], prefix + m[0] + "/", filter)
-                if (subdir != "") {
-                    folders +=
-                        `<div class="embedding-category"><h4 class="collapsible">${prefix}${m[0]}</h4><div class="collapsible-content">` +
-                        subdir +
-                        "</div></div>"
+                let subdir = html(m[1], iconlist, prefix + m[0] + "/", filter)
+                if (typeof(subdir) == "object") {
+                    let div1 = document.createElement("div")
+                    let div2 = document.createElement("div")
+                    div1.classList.add("collapsible-content")
+                    div1.classList.add("embedding-category")
+                    div1.appendChild(subdir)
+                    div2.replaceChildren(htmlToElement(`<h4 class="collapsible">${prefix}${m[0]}</h4>`), div1)
+                    folders.appendChild(div2)
                 }
             }
         })
-        return toplevel + folders
+        let result = document.createElement("div")
+        result.replaceChildren(toplevel, htmlToElement('<br style="clear: both;">'), folders)
+        return result
     }
 
     function onButtonClick(e) {
-        let text = e.target.dataset["embedding"]
+        let text = e.target.closest("[data-embedding]").dataset["embedding"]
         const insertIntoNegative = e.shiftKey || positiveEmbeddingText.classList.contains("displayNone")
 
         if (embeddingsModeField.value == "insert") {
@@ -2643,14 +2793,38 @@ function updateEmbeddingsList(filter = "") {
         }
     }
 
-    embeddingsList.innerHTML = html(modelsOptions.embeddings, "", filter)
-    embeddingsList.querySelectorAll("button").forEach((b) => {
-        b.addEventListener("click", onButtonClick)
-    })
-    createCollapsibles(embeddingsList)
-    if (filter != "") {
-        embeddingsExpandAll()
+    // Usually the rendering of the Embeddings HTML takes less than a second. In case it takes longer, show a spinner
+    embeddingsList.innerHTML = `
+        <div class="spinner-container">
+          <div class="spinner-block"></div> <div class="spinner-block"></div> <div class="spinner-block"></div> <div class="spinner-block"></div>
+          <div class="spinner-block"></div> <div class="spinner-block"></div> <div class="spinner-block"></div> <div class="spinner-block"></div>
+          <div class="spinner-block"></div> <div class="spinner-block"></div> <div class="spinner-block"></div> <div class="spinner-block"></div>
+          <div class="spinner-block"></div> <div class="spinner-block"></div> <div class="spinner-block"></div> <div class="spinner-block"></div>
+        </div>
+    `
+
+    // Remove after fixing https://github.com/huggingface/diffusers/issues/3922
+    let warning = "<div></div>"
+    if (vramUsageLevelField.value == "low") {
+        warning = `
+            <div style="border-color: var(--accent-color); border-width: 4px; border-radius: 1em; border-style: solid; background: black; text-align: center; padding: 1em; margin: 1em; ">
+                <i class="fa fa-fire" style="color:#f7630c;"></i> Warning: Your GPU memory profile is set to "Low". Embeddings currently only work in "Balanced" mode!
+            </div>`
     }
+    // END of remove block
+
+    let profileName = profileNameField.value
+    fetch(`/bucket/${profileName}/embeddings/`)
+       .then(response => response.status==200 ? response.json(): [])
+       .then(async function(iconlist) {
+
+           embeddingsList.replaceChildren(htmlToElement(warning), html(modelsOptions.embeddings, iconlist, "", filter))
+           createCollapsibles(embeddingsList)
+           if (filter != "") {
+               embeddingsExpandAll()
+           }
+           resizeModifierCards(embeddingsCardSizeSelector.value)
+       })
 }
 
 function showEmbeddingDialog() {
@@ -2658,22 +2832,32 @@ function showEmbeddingDialog() {
     embeddingsSearchBox.value = ""
     embeddingsDialog.showModal()
 }
+
 embeddingsButton.addEventListener("click", () => {
     positiveEmbeddingText.classList.remove("displayNone")
     negativeEmbeddingText.classList.add("displayNone")
     showEmbeddingDialog()
 })
+
 negativeEmbeddingsButton.addEventListener("click", () => {
     positiveEmbeddingText.classList.add("displayNone")
     negativeEmbeddingText.classList.remove("displayNone")
     showEmbeddingDialog()
 })
+
 embeddingsDialogCloseBtn.addEventListener("click", (e) => {
     embeddingsDialog.close()
 })
+
 embeddingsSearchBox.addEventListener("input", (e) => {
     updateEmbeddingsList(embeddingsSearchBox.value)
 })
+
+embeddingsCardSizeSelector.addEventListener("change", (e) => {
+    resizeModifierCards(embeddingsCardSizeSelector.value)
+})
+
+
 
 modalDialogCloseOnBackdropClick(embeddingsDialog)
 makeDialogDraggable(embeddingsDialog)

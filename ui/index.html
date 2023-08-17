@@ -18,12 +18,14 @@
     <link rel="stylesheet" href="/media/css/image-modal.css">
     <link rel="stylesheet" href="/media/css/plugins.css">
     <link rel="stylesheet" href="/media/css/animations.css">
+    <link rel="stylesheet" href="/media/css/croppr.css" rel="stylesheet"/>
     <link rel="manifest" href="/media/manifest.webmanifest">
     <script src="/media/js/jquery-3.6.1.min.js"></script>
     <script src="/media/js/jquery-confirm.min.js"></script>
     <script src="/media/js/jszip.min.js"></script>
     <script src="/media/js/FileSaver.min.js"></script>
     <script src="/media/js/marked.min.js"></script>
+    <script src="/media/js/croppr.js"></script>
 </head>
 <body>
 <div id="container">
@@ -689,10 +691,47 @@
             </button>
             <i class="fa-solid fa-magnifying-glass"></i>
             <input id="embeddings-search-box" type="text" spellcheck="false" autocomplete="off" placeholder="Search...">
+            <label for="embedding-card-size-selector"><small>Thumbnail Size:</small></label>
+            <select id="embedding-card-size-selector" name="embedding-card-size-selector">
+                <option value="-2">0</option>
+                <option value="-1">1</option>
+                <option value="0">2</option>
+                <option value="1" selected>3</option>
+                <option value="2">4</option>
+                <option value="3">5</option>
+            </select>
             <span style="float:right;"><label>Mode:</label>&nbsp;<select id="embeddings-mode"><option value="insert">Insert at cursor position</option><option value="append">Append at the end</option></select>
         </div>
         <div id="embeddings-list">
         </div>
+        </div>
+    </dialog>
+
+    <dialog id="use-as-thumb-dialog">
+        <div id="use-as-thumb-dialog-header" class="dialog-header">
+            <div id="use-as-thumb-dialog-header-left" class="dialog-header-left">
+                <h4>Use as thumbnail</h4>
+                <span>Use a pictures as thumbnail for embeddings, LORAs, etc.</span>
+            </div>
+            <div id="use-as-thumb-dialog-header-right">
+                <i id="use-as-thumb-dialog-close-button" class="fa-solid fa-xmark fa-lg"></i>
+            </div>
+        </div>
+        <div>
+            <div class="use-as-thumb-grid">
+                <div class="use-as-thumb-preview">
+                    <div id="use-as-thumb-img-container"><img id="use-as-thumb-image" src="/media/images/noimg.png" width="512" height="512"></div>
+                </div>
+                <div class="use-as-thumb-select">
+                    <label for="use-as-thumb-select">Use the thumbnail for:</label><br>
+                    <select id="use-as-thumb-select" size="16" multiple>
+                    </select>
+                </div>
+                <div class="use-as-thumb-buttons">
+                    <button class="tertiaryButton" id="use-as-thumb-save">Save thumbnail</button>
+                    <button class="tertiaryButton" id="use-as-thumb-cancel">Cancel</button>
+                </div>
+            </div>
         </div>
     </dialog>
 
