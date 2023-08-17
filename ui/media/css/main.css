@@ -477,6 +477,7 @@ dialog {
     background: var(--background-color2);
     color: var(--text-color);
     border-radius: 6px;
+    box-shadow: 0px 0px 30px black;
     border: 2px solid rgb(255 255 255 / 10%);
     padding: 0px;
 }
