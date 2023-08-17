@@ -46,6 +46,8 @@ if "%update_branch%"=="" (
 
     @cd sd-ui-files
 
+    @call git add -A .
+    @call git stash
     @call git reset --hard
     @call git -c advice.detachedHead=false checkout "%update_branch%"
     @call git pull

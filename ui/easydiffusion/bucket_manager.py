@@ -109,6 +109,7 @@ def init():
             images = images.filter(GalleryImage.use_stable_diffusion_model.like("%"+model+"%"))
         images = images.offset(page*images_per_page).limit(images_per_page)
         return images.all()
+
     
 def get_filename_from_url(url):
     path = urlparse(url).path

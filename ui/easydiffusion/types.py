@@ -73,6 +73,7 @@ class TaskData(BaseModel):
     use_hypernetwork_model: Union[str, List[str]] = None
     use_lora_model: Union[str, List[str]] = None
     use_controlnet_model: Union[str, List[str]] = None
+    use_embeddings_model: Union[str, List[str]] = None
     filters: List[str] = []
     filter_params: Dict[str, Dict[str, Any]] = {}
     control_filter_to_apply: Union[str, List[str]] = None
@@ -201,6 +202,7 @@ def convert_legacy_render_req_to_new(old_req: dict):
     model_paths["hypernetwork"] = old_req.get("use_hypernetwork_model")
     model_paths["lora"] = old_req.get("use_lora_model")
     model_paths["controlnet"] = old_req.get("use_controlnet_model")
+    model_paths["embeddings"] = old_req.get("use_embeddings_model")
 
     model_paths["gfpgan"] = old_req.get("use_face_correction", "")
     model_paths["gfpgan"] = model_paths["gfpgan"] if "gfpgan" in model_paths["gfpgan"].lower() else None
