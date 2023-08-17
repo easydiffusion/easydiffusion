@@ -696,14 +696,14 @@ function getAllModelNames(type) {
         if (tree == undefined) {
             return []
         }
-        let result=[]; 
-        tree.forEach( e => { 
-            if (typeof(e) == "object") {
-                result = result.concat( f(e[1]))
+        let result = []
+        tree.forEach((e) => {
+            if (typeof e == "object") {
+                result = result.concat(f(e[1]))
             } else {
-                result.push(e) 
+                result.push(e)
             }
-        });
+        })
         return result
     }
     return f(modelsOptions[type])
@@ -716,57 +716,66 @@ function onUseAsThumbnailClick(req, img) {
     let resize = false
     onUseAsThumbnailClick.img = img
 
-    if ( typeof(onUseAsThumbnailClick.croppr) == 'undefined' ) {
-        onUseAsThumbnailClick.croppr = new Croppr("#use-as-thumb-image", { aspectRatio: 1, minSize: [384,384,'px'], startSize:  [512, 512, 'px'], returnMode:"real" })
+    if (typeof onUseAsThumbnailClick.croppr == "undefined") {
+        onUseAsThumbnailClick.croppr = new Croppr("#use-as-thumb-image", {
+            aspectRatio: 1,
+            minSize: [384, 384, "px"],
+            startSize: [512, 512, "px"],
+            returnMode: "real",
+        })
     }
 
     if (img.naturalWidth > img.naturalHeight) {
         if (img.naturalWidth > 768) {
-           scale = 768 / img.naturalWidth
-           targetWidth  = 768
-           targetHeight = (img.naturalHeight*scale)>>>0
-           resize = true
+            scale = 768 / img.naturalWidth
+            targetWidth = 768
+            targetHeight = (img.naturalHeight * scale) >>> 0
+            resize = true
         }
     } else {
         if (img.naturalHeight > 768) {
             scale = 768 / img.naturalHeight
             targetHeight = 768
-            targetWidth  = (img.naturalWidth*scale)>>>0
+            targetWidth = (img.naturalWidth * scale) >>> 0
             resize = true
         }
     }
 
-    onUseAsThumbnailClick.croppr.options.minSize = {width: 384*scale>>>0, height: 384*scale>>>0}
-    onUseAsThumbnailClick.croppr.options.startSize = {width: 512*scale>>>0, height: 512*scale>>>0}
+    onUseAsThumbnailClick.croppr.options.minSize = { width: (384 * scale) >>> 0, height: (384 * scale) >>> 0 }
+    onUseAsThumbnailClick.croppr.options.startSize = { width: (512 * scale) >>> 0, height: (512 * scale) >>> 0 }
 
     if (resize) {
-        const canvas = document.createElement('canvas')
+        const canvas = document.createElement("canvas")
         canvas.width = targetWidth
         canvas.height = targetHeight
-        const ctx = canvas.getContext('2d')
+        const ctx = canvas.getContext("2d")
         ctx.drawImage(img, 0, 0, targetWidth, targetHeight)
 
-        onUseAsThumbnailClick.croppr.setImage(canvas.toDataURL('image/png'))
+        onUseAsThumbnailClick.croppr.setImage(canvas.toDataURL("image/png"))
     } else {
         onUseAsThumbnailClick.croppr.setImage(img.src)
     }
 
-    let embeddings = getAllModelNames("embeddings").filter( e => req.prompt.includes(e) || req.negative_prompt.includes(e) )
+    let embeddings = getAllModelNames("embeddings").filter(
+        (e) => req.prompt.includes(e) || req.negative_prompt.includes(e)
+    )
     let LORA = []
 
     if ("use_lora_model" in req) {
-        LORA=req.use_lora_model
+        LORA = req.use_lora_model
     }
 
     let optgroup = document.createElement("optgroup")
     optgroup.label = "Embeddings"
-    optgroup.replaceChildren(...embeddings.map(e => { 
-        let option = document.createElement("option")
-        option.innerText = e
-        option.dataset["type"] = "embeddings"
-        return option
-    }))
-    
+    optgroup.replaceChildren(
+        ...embeddings.map((e) => {
+            let option = document.createElement("option")
+            option.innerText = e
+            option.dataset["type"] = "embeddings"
+            return option
+        })
+    )
+
     useAsThumbSelect.replaceChildren(optgroup)
     useAsThumbDialog.showModal()
     onUseAsThumbnailClick.scale = scale
@@ -784,30 +793,36 @@ useAsThumbCancelBtn.addEventListener("click", () => {
 })
 
 useAsThumbSaveBtn.addEventListener("click", (e) => {
-    let scale = 1/onUseAsThumbnailClick.scale
+    let scale = 1 / onUseAsThumbnailClick.scale
     let crop = onUseAsThumbnailClick.croppr.getValue()
 
-    let len = Math.max(crop.width*scale, 384)
+    let len = Math.max(crop.width * scale, 384)
     let profileName = profileNameField.value
 
-    cropImageDataUrl(onUseAsThumbnailClick.img.src, crop.x*scale, crop.y*scale, len, len)
-        .then(thumb => fetch(thumb))
-        .then(response => response.blob())
+    cropImageDataUrl(onUseAsThumbnailClick.img.src, crop.x * scale, crop.y * scale, len, len)
+        .then((thumb) => fetch(thumb))
+        .then((response) => response.blob())
         .then(async function(blob) {
-            const formData  = new FormData()
+            const formData = new FormData()
             formData.append("file", blob)
             let options = useAsThumbSelect.selectedOptions
             let promises = []
             for (let embedding of options) {
-                promises.push(fetch(`bucket/${profileName}/${embedding.dataset["type"]}/${embedding.value}.png`, { method: 'POST', body: formData }))
+                promises.push(
+                    fetch(`bucket/${profileName}/${embedding.dataset["type"]}/${embedding.value}.png`, {
+                        method: "POST",
+                        body: formData,
+                    })
+                )
             }
             return Promise.all(promises)
-        }).then(() => {
+        })
+        .then(() => {
             useAsThumbDialog.close()
         })
-        .catch(error => {
+        .catch((error) => {
             console.error(error)
-            showToast("Couldn't save thumbnail.<br>"+error)
+            showToast("Couldn't save thumbnail.<br>" + error)
         })
 })
 
@@ -1346,20 +1361,20 @@ async function onTaskStart(task) {
 
 /* Hover effect for the init image in the task list */
 function createInitImageHover(taskEntry) {
-    taskEntry.querySelectorAll(".task-initimg").forEach( thumb => {
+    taskEntry.querySelectorAll(".task-initimg").forEach((thumb) => {
         let thumbimg = thumb.querySelector("img")
-        let img = createElement("img", {src: thumbimg.src})
+        let img = createElement("img", { src: thumbimg.src })
         thumb.querySelector(".task-fs-initimage").appendChild(img)
         let div = createElement("div", undefined, ["top-right"])
         div.innerHTML = `
             <button class="useAsInputBtn">Use as Input</button>
             <br>
             <button class="useForControlnetBtn">Use for Controlnet</button>`
-        div.querySelector(".useAsInputBtn").addEventListener("click", e => {
+        div.querySelector(".useAsInputBtn").addEventListener("click", (e) => {
             e.preventDefault()
             onUseAsInputClick(null, img)
         })
-        div.querySelector(".useForControlnetBtn").addEventListener("click", e => {
+        div.querySelector(".useForControlnetBtn").addEventListener("click", (e) => {
             e.preventDefault()
             controlImagePreview.src = img.src
         })
@@ -2709,23 +2724,32 @@ function updateEmbeddingsList(filter = "") {
         filter = filter.toLowerCase()
         let toplevel = document.createElement("div")
         let folders = document.createElement("div")
-        let embIcon = Object.assign({}, ...iconlist.map( x=> ({[x.toLowerCase().split('.').slice(0,-1).join('.')]:x})))
+        let embIcon = Object.assign(
+            {},
+            ...iconlist.map((x) => ({
+                [x
+                    .toLowerCase()
+                    .split(".")
+                    .slice(0, -1)
+                    .join(".")]: x,
+            }))
+        )
 
         let profileName = profileNameField.value
         model?.forEach((m) => {
             if (typeof m == "string") {
-                let token=m.toLowerCase()
+                let token = m.toLowerCase()
                 if (token.search(filter) != -1) {
                     let button
                     // if (iconlist.length==0) {
                     //     button = document.createElement("button")
                     //     button.innerText = m
                     // } else {
-                    let img = '/media/images/noimg.png'
+                    let img = "/media/images/noimg.png"
                     if (token in embIcon) {
                         img = `/bucket/${profileName}/embeddings/${embIcon[token]}`
                     }
-                    button = createModifierCard(m, [img,img], true)
+                    button = createModifierCard(m, [img, img], true)
                     // }
                     button.dataset["embedding"] = m
                     button.addEventListener("click", onButtonClick)
@@ -2733,7 +2757,7 @@ function updateEmbeddingsList(filter = "") {
                 }
             } else {
                 let subdir = html(m[1], iconlist, prefix + m[0] + "/", filter)
-                if (typeof(subdir) == "object") {
+                if (typeof subdir == "object") {
                     let div1 = document.createElement("div")
                     let div2 = document.createElement("div")
                     div1.classList.add("collapsible-content")
@@ -2746,8 +2770,8 @@ function updateEmbeddingsList(filter = "") {
         })
 
         if (toplevel.children.length == 0 && folders.children.length == 0) {
-             // Empty folder
-             return ""
+            // Empty folder
+            return ""
         }
 
         let result = document.createElement("div")
@@ -2793,15 +2817,15 @@ function updateEmbeddingsList(filter = "") {
 
     let profileName = profileNameField.value
     fetch(`/bucket/${profileName}/embeddings/`)
-       .then(response => response.status==200 ? response.json(): [])
-       .then(async function(iconlist) {
-           embeddingsList.replaceChildren(html(modelsOptions.embeddings, iconlist, "", filter))
-           createCollapsibles(embeddingsList)
-           if (filter != "") {
-               embeddingsExpandAll()
-           }
-           resizeModifierCards(embeddingsCardSizeSelector.value)
-       })
+        .then((response) => (response.status == 200 ? response.json() : []))
+        .then(async function(iconlist) {
+            embeddingsList.replaceChildren(html(modelsOptions.embeddings, iconlist, "", filter))
+            createCollapsibles(embeddingsList)
+            if (filter != "") {
+                embeddingsExpandAll()
+            }
+            resizeModifierCards(embeddingsCardSizeSelector.value)
+        })
 }
 
 function showEmbeddingDialog() {
@@ -2833,8 +2857,6 @@ embeddingsSearchBox.addEventListener("input", (e) => {
 embeddingsCardSizeSelector.addEventListener("change", (e) => {
     resizeModifierCards(embeddingsCardSizeSelector.value)
 })
-
-
 
 modalDialogCloseOnBackdropClick(embeddingsDialog)
 makeDialogDraggable(embeddingsDialog)
