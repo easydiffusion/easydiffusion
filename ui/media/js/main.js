@@ -83,9 +83,9 @@ let customHeightField = document.querySelector("#custom-height")
 let recentResolutionsButton = document.querySelector("#recent-resolutions-button")
 let recentResolutionsPopup = document.querySelector("#recent-resolutions-popup")
 let recentResolutionList = document.querySelector("#recent-resolution-list")
-let enlarge15Button = document.querySelector("#enlarge15")
-let enlarge2Button = document.querySelector("#enlarge2")
-let enlarge3Button = document.querySelector("#enlarge3")
+let commonResolutionList = document.querySelector("#common-resolution-list")
+let resizeSlider = document.querySelector("#resize-slider")
+let enlargeButtons = document.querySelector("#enlarge-buttons")
 let swapWidthHeightButton = document.querySelector("#swap-width-height")
 let smallImageWarning = document.querySelector("#small_image_warning")
 let initImageSelector = document.querySelector("#init_image")
@@ -524,6 +524,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             const imageRedoBuffer = []
             let buttons = [
                 { text: "Use as Input", on_click: onUseAsInputClick },
+                { text: "Use for Controlnet", on_click: onUseForControlnetClick },
                 [
                     {
                         html: '<i class="fa-solid fa-download"></i> Download Image',
@@ -633,6 +634,10 @@ function onUseAsInputClick(req, img) {
     initImagePreview.src = imgData
 
     maskSetting.checked = false
+}
+
+function onUseForControlnetClick(req, img) {
+    controlImagePreview.src = img.src
 }
 
 function getDownloadFilename(img, suffix) {
@@ -945,12 +950,25 @@ function makeImage() {
     }
     if (!randomSeedField.checked && seedField.value == "") {
         alert('The "Seed" field must not be empty.')
+        seedField.classList.add("validation-failed")
         return
     }
+    seedField.classList.remove("validation-failed")
+
     if (numInferenceStepsField.value == "") {
         alert('The "Inference Steps" field must not be empty.')
+        numInferenceStepsField.classList.add("validation-failed")
         return
     }
+    numInferenceStepsField.classList.remove("validation-failed")
+
+    if (controlnetModelField.value === "" && IMAGE_REGEX.test(controlImagePreview.src)) {
+        alert("Please choose a ControlNet model, to use the ControlNet image.")
+        document.getElementById("controlnet_model").classList.add("validation-failed")
+        return
+    }
+    document.getElementById("controlnet_model").classList.remove("validation-failed")
+
     if (numOutputsTotalField.value == "" || numOutputsTotalField.value == 0) {
         numOutputsTotalField.value = 1
     }
@@ -969,6 +987,7 @@ function makeImage() {
             reqBody: Object.assign({ prompt: prompt }, taskTemplate.reqBody),
         })
     )
+    newTaskRequests.forEach(setEmbeddings)
     newTaskRequests.forEach(createTask)
 
     updateInitialText()
@@ -1162,15 +1181,18 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
                             <b>Suggestions</b>:
                             <br/>
                             Try to use a different model or a different LORA.`
-                } else if (msg.includes("Tensor on device cuda:0 is not on the expected device meta")) {
+                } else if (msg.includes("'ModuleList' object has no attribute '1'")) {
                     msg += `<br/><br/>
-                            <b>Reason</b>: Due to some software issues, embeddings currently don't work with the "Low" memory profile.
+                            <b>Reason</b>: SDXL models need a yaml config file.
                             <br/><br/>
                             <b>Suggestions</b>:
                             <br/>
-                            1. Set the memory profile to "Balanced"<br/>
-                            2. Remove the embeddings from the prompt and the negative prompt<br/>
-                            3. Check whether the plugins you're using change the memory profile automatically.`
+                            <ol>
+                            <li>Download the <a href="https://gist.githubusercontent.com/JeLuF/5dc56e7a3a6988265c423f464d3cbdd3/raw/4ba4c39b1c7329877ad7a39c8c8a077ea4b53d11/dreamshaperXL10_alpha2Xl10.yaml" target="_blank">config file</a></li>
+                            <li>Save it in the same directory as the SDXL model file</li>
+                            <li>Rename the config file so that it matches the filename of the model, with the extension of the model file replaced by <tt>yaml</tt>. 
+                                For example, if the model file is called <tt>FantasySDXL_v2.safetensors</tt>, the config file must be called <tt>FantasySDXL_v2.yaml</tt>.
+                            </ol>`
                 }
             } else {
                 msg = `Unexpected Read Error:<br/><pre>StepUpdate: ${JSON.stringify(stepUpdate, undefined, 4)}</pre>`
@@ -1324,6 +1346,27 @@ async function onTaskStart(task) {
 
 /* Hover effect for the init image in the task list */
 function createInitImageHover(taskEntry) {
+    taskEntry.querySelectorAll(".task-initimg").forEach( thumb => {
+        let thumbimg = thumb.querySelector("img")
+        let img = createElement("img", {src: thumbimg.src})
+        thumb.querySelector(".task-fs-initimage").appendChild(img)
+        let div = createElement("div", undefined, ["top-right"])
+        div.innerHTML = `
+            <button class="useAsInputBtn">Use as Input</button>
+            <br>
+            <button class="useForControlnetBtn">Use for Controlnet</button>`
+        div.querySelector(".useAsInputBtn").addEventListener("click", e => {
+            e.preventDefault()
+            onUseAsInputClick(null, img)
+        })
+        div.querySelector(".useForControlnetBtn").addEventListener("click", e => {
+            e.preventDefault()
+            controlImagePreview.src = img.src
+        })
+        thumb.querySelector(".task-fs-initimage").appendChild(div)
+    })
+    return
+
     var $tooltip = $(taskEntry.querySelector(".task-fs-initimage"))
     var img = document.createElement("img")
     img.src = taskEntry.querySelector("div.task-initimg > img").src
@@ -1388,6 +1431,11 @@ function createTask(task) {
         let w = ((task.reqBody.width * h) / task.reqBody.height) >> 0
         taskConfig += `<div class="task-initimg" style="float:left;"><img style="width:${w}px;height:${h}px;" src="${task.reqBody.init_image}"><div class="task-fs-initimage"></div></div>`
     }
+    if (task.reqBody.control_image !== undefined) {
+        let h = 80
+        let w = ((task.reqBody.width * h) / task.reqBody.height) >> 0
+        taskConfig += `<div class="task-initimg" style="float:left;"><img style="width:${w}px;height:${h}px;" src="${task.reqBody.control_image}"><div class="task-fs-initimage"></div></div>`
+    }
 
     taskConfig += `<div class="taskConfigData">${createTaskConfig(task)}</span></div></div>`
 
@@ -1438,7 +1486,7 @@ function createTask(task) {
         startY = e.target.closest(".imageTaskContainer").offsetTop
     })
 
-    if (task.reqBody.init_image !== undefined) {
+    if (task.reqBody.init_image !== undefined || task.reqBody.control_image !== undefined) {
         createInitImageHover(taskEntry)
     }
 
@@ -1615,6 +1663,42 @@ function getCurrentUserRequest() {
     }
 
     return newTask
+}
+
+function setEmbeddings(task) {
+    let prompt = task.reqBody.prompt.toLowerCase()
+    let negativePrompt = task.reqBody.negative_prompt.toLowerCase()
+    let overallPrompt = (prompt + " " + negativePrompt).split(" ")
+
+    let embeddingsTree = modelsOptions["embeddings"]
+    let embeddings = []
+    function extract(entries, basePath = "") {
+        entries.forEach((e) => {
+            if (Array.isArray(e)) {
+                let path = basePath === "" ? basePath + e[0] : basePath + "/" + e[0]
+                extract(e[1], path)
+            } else {
+                let path = basePath === "" ? basePath + e : basePath + "/" + e
+                embeddings.push([e.toLowerCase().replace(" ", "_"), path])
+            }
+        })
+    }
+    extract(embeddingsTree)
+
+    let embeddingPaths = []
+
+    embeddings.forEach((e) => {
+        let token = e[0]
+        let path = e[1]
+
+        if (overallPrompt.includes(token)) {
+            embeddingPaths.push(path)
+        }
+    })
+
+    if (embeddingPaths.length > 0) {
+        task.reqBody.use_embeddings_model = embeddingPaths
+    }
 }
 
 function getModelInfo(models) {
@@ -2966,38 +3050,27 @@ let recentResolutionsValues = []
 
 ;(function() {
     ///// Init resolutions dropdown
-    function makeResolutionButtons() {
-        recentResolutionList.innerHTML = ""
-        recentResolutionsValues.forEach((el) => {
-            let button = document.createElement("button")
-            button.classList.add("tertiaryButton")
-            button.style.width = "8em"
-            button.innerHTML = `${el.w}&times;${el.h}`
+
+    function makeResolutionButtons(listElement, resolutionList) {
+        listElement.innerHTML = ""
+        resolutionList.forEach((el) => {
+            let button = createElement("button", { style: "width: 8em;" }, "tertiaryButton", `${el.w}×${el.h}`)
             button.addEventListener("click", () => {
                 customWidthField.value = el.w
                 customHeightField.value = el.h
                 hidePopup()
             })
-            recentResolutionList.appendChild(button)
-            recentResolutionList.appendChild(document.createElement("br"))
+            listElement.appendChild(button)
+            listElement.appendChild(document.createElement("br"))
         })
-        localStorage.recentResolutionsValues = JSON.stringify(recentResolutionsValues)
     }
 
-    enlarge15Button.addEventListener("click", () => {
-        enlargeImageSize(1.5)
-        hidePopup()
-    })
-
-    enlarge2Button.addEventListener("click", () => {
-        enlargeImageSize(2)
-        hidePopup()
-    })
-
-    enlarge3Button.addEventListener("click", () => {
-        enlargeImageSize(3)
-        hidePopup()
-    })
+    enlargeButtons.querySelectorAll("button").forEach((button) =>
+        button.addEventListener("click", (e) => {
+            enlargeImageSize(parseFloat(button.dataset["factor"]))
+            hidePopup()
+        })
+    )
 
     customWidthField.addEventListener("change", () => {
         let w = customWidthField.value
@@ -3024,25 +3097,29 @@ let recentResolutionsValues = []
         recentResolutionsValues = recentResolutionsValues.slice(0, 8)
 
         localStorage.recentResolutionsValues = JSON.stringify(recentResolutionsValues)
-        makeResolutionButtons()
+        makeResolutionButtons(recentResolutionList, recentResolutionsValues)
     })
 
+    const defaultResolutionsValues = [
+        { w: 512, h: 512 },
+        { w: 448, h: 640 },
+        { w: 512, h: 768 },
+        { w: 768, h: 512 },
+        { w: 1024, h: 768 },
+        { w: 768, h: 1024 },
+        { w: 1024, h: 1024 },
+        { w: 1920, h: 1080 },
+    ]
     let _jsonstring = localStorage.recentResolutionsValues
     if (_jsonstring == undefined) {
-        recentResolutionsValues = [
-            { w: 512, h: 512 },
-            { w: 640, h: 448 },
-            { w: 448, h: 640 },
-            { w: 512, h: 768 },
-            { w: 768, h: 512 },
-            { w: 1024, h: 768 },
-            { w: 768, h: 1024 },
-        ]
+        recentResolutionsValues = defaultResolutionsValues
         localStorage.recentResolutionsValues = JSON.stringify(recentResolutionsValues)
     } else {
         recentResolutionsValues = JSON.parse(localStorage.recentResolutionsValues)
     }
-    makeResolutionButtons()
+
+    makeResolutionButtons(recentResolutionList, recentResolutionsValues)
+    makeResolutionButtons(commonResolutionList, defaultResolutionsValues)
 
     recentResolutionsValues.forEach((val) => {
         addImageSizeOption(val.w)
@@ -3059,6 +3136,9 @@ let recentResolutionsValues = []
         customWidthField.value = widthField.value
         customHeightField.value = heightField.value
         recentResolutionsPopup.classList.remove("displayNone")
+        resizeSlider.value = 1
+        resizeSlider.dataset["w"] = widthField.value
+        resizeSlider.dataset["h"] = heightField.value
         document.addEventListener("click", processClick)
     }
 
@@ -3075,6 +3155,20 @@ let recentResolutionsValues = []
         } else {
             hidePopup()
         }
+    })
+
+    resizeSlider.addEventListener("input", (e) => {
+        let w = parseInt(resizeSlider.dataset["w"])
+        let h = parseInt(resizeSlider.dataset["h"])
+        let factor = parseFloat(resizeSlider.value)
+        let step = customWidthField.step
+
+        customWidthField.value = roundToMultiple(w * factor * factor, step)
+        customHeightField.value = roundToMultiple(h * factor * factor, step)
+    })
+
+    resizeSlider.addEventListener("change", (e) => {
+        hidePopup()
     })
 
     swapWidthHeightButton.addEventListener("click", (event) => {
