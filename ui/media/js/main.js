@@ -1217,6 +1217,27 @@ async function onTaskStart(task) {
 
 /* Hover effect for the init image in the task list */
 function createInitImageHover(taskEntry) {
+    taskEntry.querySelectorAll(".task-initimg").forEach( thumb => {
+        let thumbimg = thumb.querySelector("img")
+        let img = createElement("img", {src: thumbimg.src})
+        thumb.querySelector(".task-fs-initimage").appendChild(img)
+        let div = createElement("div", undefined, ["top-right"])
+        div.innerHTML = `
+            <button class="useAsInputBtn">Use as Input</button>
+            <br>
+            <button class="useForControlnetBtn">Use for Controlnet</button>`
+        div.querySelector(".useAsInputBtn").addEventListener("click", e => {
+            e.preventDefault()
+            onUseAsInputClick(null, img)
+        })
+        div.querySelector(".useForControlnetBtn").addEventListener("click", e => {
+            e.preventDefault()
+            controlImagePreview.src = img.src
+        })
+        thumb.querySelector(".task-fs-initimage").appendChild(div)
+    })
+    return
+
     var $tooltip = $(taskEntry.querySelector(".task-fs-initimage"))
     var img = document.createElement("img")
     img.src = taskEntry.querySelector("div.task-initimg > img").src
@@ -1281,6 +1302,11 @@ function createTask(task) {
         let w = ((task.reqBody.width * h) / task.reqBody.height) >> 0
         taskConfig += `<div class="task-initimg" style="float:left;"><img style="width:${w}px;height:${h}px;" src="${task.reqBody.init_image}"><div class="task-fs-initimage"></div></div>`
     }
+    if (task.reqBody.control_image !== undefined) {
+        let h = 80
+        let w = ((task.reqBody.width * h) / task.reqBody.height) >> 0
+        taskConfig += `<div class="task-initimg" style="float:left;"><img style="width:${w}px;height:${h}px;" src="${task.reqBody.control_image}"><div class="task-fs-initimage"></div></div>`
+    }
 
     taskConfig += `<div class="taskConfigData">${createTaskConfig(task)}</span></div></div>`
 
@@ -1331,7 +1357,7 @@ function createTask(task) {
         startY = e.target.closest(".imageTaskContainer").offsetTop
     })
 
-    if (task.reqBody.init_image !== undefined) {
+    if (task.reqBody.init_image !== undefined || task.reqBody.control_image !== undefined) {
         createInitImageHover(taskEntry)
     }
 

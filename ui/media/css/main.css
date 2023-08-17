@@ -1419,6 +1419,10 @@ div.task-fs-initimage {
     display: none;
     position: absolute;
 }
+div.task-fs-initimage img {
+    max-height: 70vH;
+    max-width: 70vW;
+}
 div.task-initimg:hover div.task-fs-initimage {
     display: block;
     position: absolute;
@@ -1434,9 +1438,13 @@ div.top-right {
     right: 8px;
 }
 
+button.useForControlnetBtn {
+    margin-top: 6px;
+}
+
 #small_image_warning {
-     font-size: smaller;
-     color: var(--status-orange);
+    font-size: smaller;
+    color: var(--status-orange);
 }
 
 button#save-system-settings-btn {
