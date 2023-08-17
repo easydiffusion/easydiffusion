@@ -1038,13 +1038,6 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
                             <b>Suggestions</b>:
                             <br/>
                             Try to use a different model or a different LORA.`
-                } else if (msg.includes("'StableDiffusionXLPipeline' object has no attribute 'load_textual_inversion'")) {
-                    msg += `<br/><br/>
-                            <b>Reason</b>: Embeddings are currently not supported for SDXL models.
-                            <br/><br/>
-                            <b>Suggestions</b>:
-                            <br/>
-                            Remove the embedding from the prompt.`
                 } else if (msg.includes("'ModuleList' object has no attribute '1'")) {
                     msg += `<br/><br/>
                             <b>Reason</b>: SDXL models need a yaml config file.
