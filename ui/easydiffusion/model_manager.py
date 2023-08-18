@@ -65,9 +65,6 @@ def load_default_models(context: Context):
 
     runtime.set_vram_optimizations(context)
 
-    config = app.getConfig()
-    context.embeddings_path = os.path.join(app.MODELS_DIR, "embeddings")
-
     # init default model paths
     for model_type in MODELS_TO_LOAD_ON_START:
         context.model_paths[model_type] = resolve_model_to_use(model_type=model_type, fail_if_not_found=False)

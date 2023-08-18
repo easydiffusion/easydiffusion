@@ -34,6 +34,7 @@ code {
     width: 32px;
     height: 32px;
     transform: translateY(4px);
+    cursor: pointer;
 }
 #prompt {
     width: 100%;
@@ -1031,6 +1032,9 @@ input::file-selector-button {
 .input-toggle > input:checked + label {
     background: var(--accent-color);
 }
+.input-toggle > input:disabled + label {
+    background: var(--background-color1);
+}
 .input-toggle > input:checked + label:before {
     right: calc(var(--input-border-size) + var(--input-switch-padding));
     opacity: 1;
@@ -1418,6 +1422,10 @@ div.task-fs-initimage {
     display: none;
     position: absolute;
 }
+div.task-fs-initimage img {
+    max-height: 70vH;
+    max-width: 70vW;
+}
 div.task-initimg:hover div.task-fs-initimage {
     display: block;
     position: absolute;
@@ -1433,9 +1441,13 @@ div.top-right {
     right: 8px;
 }
 
+button.useForControlnetBtn {
+    margin-top: 6px;
+}
+
 #small_image_warning {
-     font-size: smaller;
-     color: var(--status-orange);
+    font-size: smaller;
+    color: var(--status-orange);
 }
 
 button#save-system-settings-btn {
@@ -1460,6 +1472,9 @@ button#save-system-settings-btn {
     cursor: pointer;;
 }
 
+.validation-failed {
+    border: solid 2px red;
+}
 /* SCROLLBARS */
 :root {
     --scrollbar-width: 14px;
@@ -1833,6 +1848,10 @@ div#recent-resolutions-popup small {
     opacity: 0.7;
 }
 
+div#common-resolution-list button {
+    background: var(--background-color1);
+}
+
 td#image-size-options small {
     margin-right: 0px !important;
 }
@@ -1847,6 +1866,27 @@ div#recent-resolution-list {
 
 div#enlarge-buttons {
     text-align: center;
+}
+
+.two-column {  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  gap: 0px 0.5em;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "left-column right-column";
+}
+
+.left-column {
+  justify-self: center;
+  align-self: center;
+  grid-area: left-column;
+}
+
+.right-column {
+  justify-self: center;
+  align-self: center;
+  grid-area: right-column;
 }
 
 .clickable {
@@ -1890,15 +1930,6 @@ div#enlarge-buttons {
 
 /* Gallery CSS */
 
-/*
-.gallery {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  font-family: sans-serif;
-}
-*/
 button:disabled {
     background-color: var(--secondary-button-background);
 }
