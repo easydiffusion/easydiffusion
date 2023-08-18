@@ -204,6 +204,10 @@ class MultiModelSelector {
     set modelNames(newModelNames) {
         this.resizeEntryList(newModelNames.length)
 
+        if (newModelNames.length === 0) {
+            this.getModelElements()[0].name.value = ""
+        }
+
         // assign to the corresponding elements
         let currElements = this.getModelElements()
         for (let i = 0; i < newModelNames.length; i++) {
@@ -219,6 +223,10 @@ class MultiModelSelector {
 
     set modelWeights(newModelWeights) {
         this.resizeEntryList(newModelWeights.length)
+
+        if (newModelWeights.length === 0) {
+            this.getModelElements()[0].weight.value = this.defaultWeight
+        }
 
         // assign to the corresponding elements
         let currElements = this.getModelElements()

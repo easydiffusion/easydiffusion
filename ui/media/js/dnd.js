@@ -292,10 +292,6 @@ const TASK_MAPPING = {
     use_lora_model: {
         name: "LoRA model",
         setUI: (use_lora_model) => {
-            if (!use_lora_model) {
-                return
-            }
-
             let modelPaths = []
             use_lora_model.forEach((m) => {
                 if (m.includes("models\\lora\\")) {
@@ -333,10 +329,6 @@ const TASK_MAPPING = {
     lora_alpha: {
         name: "LoRA Strength",
         setUI: (lora_alpha) => {
-            if (!lora_alpha) {
-                return
-            }
-
             loraModelField.modelWeights = lora_alpha
         },
         readUI: () => {
