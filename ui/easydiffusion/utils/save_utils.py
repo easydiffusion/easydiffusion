@@ -265,7 +265,10 @@ def get_printable_request(req: GenerateImageRequest, task_data: TaskData, output
     if task_data.use_controlnet_model is None and "control_filter_to_apply" in metadata:
         del metadata["control_filter_to_apply"]
 
-    if not using_diffusers:
+    if using_diffusers:
+        for key in (x for x in ["use_hypernetwork_model", "hypernetwork_strength"] if x in metadata):
+            del metadata[key]
+    else:
         for key in (
             x for x in ["use_lora_model", "lora_alpha", "clip_skip", "tiling", "latent_upscaler_steps", "use_controlnet_model", "control_filter_to_apply"] if x in metadata
         ):
