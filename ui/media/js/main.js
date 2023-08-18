@@ -1640,7 +1640,9 @@ function getCurrentUserRequest() {
         newTask.reqBody.hypernetwork_strength = parseFloat(hypernetworkStrengthField.value)
     }
     if (testDiffusers.checked) {
-        let [modelNames, modelStrengths] = getModelInfo(loraModels)
+        let loraModelData = loraModelField.value
+        let modelNames = loraModelData["modelNames"]
+        let modelStrengths = loraModelData["modelWeights"]
 
         if (modelNames.length > 0) {
             modelNames = modelNames.length == 1 ? modelNames[0] : modelNames
@@ -1715,17 +1717,6 @@ function setEmbeddings(task) {
     if (embeddingPaths.length > 0) {
         task.reqBody.use_embeddings_model = embeddingPaths
     }
-}
-
-function getModelInfo(models) {
-    let modelInfo = models.map((e) => [e[0].value, e[1].value])
-    modelInfo = modelInfo.filter((e) => e[0].trim() !== "")
-    modelInfo = modelInfo.map((e) => [e[0], parseFloat(e[1])])
-
-    let modelNames = modelInfo.map((e) => e[0])
-    let modelStrengths = modelInfo.map((e) => e[1])
-
-    return [modelNames, modelStrengths]
 }
 
 function getPrompts(prompts) {
