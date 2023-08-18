@@ -3,7 +3,7 @@ import pprint
 
 from sdkit.filter import apply_filters
 from sdkit.models import load_model
-from sdkit.utils import img_to_base64_str, log
+from sdkit.utils import img_to_base64_str, get_image, log
 
 from easydiffusion import model_manager, runtime
 from easydiffusion.types import FilterImageRequest, FilterImageResponse, ModelsData, OutputFormatData
@@ -42,7 +42,12 @@ class FilterTask(Task):
 
         print_task_info(self.request, self.models_data, self.output_format)
 
-        images = filter_images(context, self.request.image, self.request.filter, self.request.filter_params)
+        if isinstance(self.request.image, list):
+            images = [get_image(img) for img in self.request.image]
+        else:
+            images = get_image(self.request.image)
+
+        images = filter_images(context, images, self.request.filter, self.request.filter_params)
 
         output_format = self.output_format
         images = [
