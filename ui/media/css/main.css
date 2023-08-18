@@ -1439,7 +1439,7 @@ div.top-right {
     right: 8px;
 }
 
-button.useForControlnetBtn {
+.task-fs-initimage .top-right button {
     margin-top: 6px;
 }
 

@@ -1362,7 +1362,7 @@ async function onTaskStart(task) {
 }
 
 /* Hover effect for the init image in the task list */
-function createInitImageHover(taskEntry) {
+function createInitImageHover(taskEntry, task) {
     taskEntry.querySelectorAll(".task-initimg").forEach((thumb) => {
         let thumbimg = thumb.querySelector("img")
         let img = createElement("img", { src: thumbimg.src })
@@ -1371,7 +1371,9 @@ function createInitImageHover(taskEntry) {
         div.innerHTML = `
             <button class="useAsInputBtn">Use as Input</button>
             <br>
-            <button class="useForControlnetBtn">Use for Controlnet</button>`
+            <button class="useForControlnetBtn">Use for Controlnet</button>
+            <br>
+            <button class="downloadPreviewImg">Download</button>`
         div.querySelector(".useAsInputBtn").addEventListener("click", (e) => {
             e.preventDefault()
             onUseAsInputClick(null, img)
@@ -1379,6 +1381,13 @@ function createInitImageHover(taskEntry) {
         div.querySelector(".useForControlnetBtn").addEventListener("click", (e) => {
             e.preventDefault()
             controlImagePreview.src = img.src
+        })
+        div.querySelector(".downloadPreviewImg").addEventListener("click", (e) => {
+            e.preventDefault()
+
+            const name = "image." + task.reqBody["output_format"]
+            const blob = dataURItoBlob(img.src)
+            saveAs(blob, name)
         })
         thumb.querySelector(".task-fs-initimage").appendChild(div)
     })
@@ -1474,7 +1483,7 @@ function createTask(task) {
                             </div>`
 
     if (task.reqBody.init_image !== undefined || task.reqBody.control_image !== undefined) {
-        createInitImageHover(taskEntry)
+        createInitImageHover(taskEntry, task)
     }
 
     if (task.reqBody.control_image !== undefined && task.reqBody.control_filter_to_apply !== undefined) {
