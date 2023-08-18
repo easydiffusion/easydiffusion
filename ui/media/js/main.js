@@ -121,6 +121,7 @@ let clipSkipField = document.querySelector("#clip_skip")
 let tilingField = document.querySelector("#tiling")
 let controlnetModelField = new ModelDropdown(document.querySelector("#controlnet_model"), "controlnet", "None", false)
 let vaeModelField = new ModelDropdown(document.querySelector("#vae_model"), "vae", "None")
+let loraModelField = new MultiModelSelector(document.querySelector("#lora_model"), "lora", "LoRA", 0.5, 0.02)
 let hypernetworkModelField = new ModelDropdown(document.querySelector("#hypernetwork_model"), "hypernetwork", "None")
 let hypernetworkStrengthSlider = document.querySelector("#hypernetwork_strength_slider")
 let hypernetworkStrengthField = document.querySelector("#hypernetwork_strength")
@@ -2927,76 +2928,6 @@ prettifyInputs(document)
 // set the textbox as focused on start
 promptField.focus()
 promptField.selectionStart = promptField.value.length
-
-// multi-models
-let modelCount = 0
-
-function addModelEntry(modelContainer, modelsList, modelType, defaultValue, strengthStep) {
-    let idx = modelCount++
-    let nameId = modelType + "_model_" + idx
-    let strengthId = modelType + "_alpha_" + idx
-
-    const modelElement = document.createElement("div")
-    modelElement.className = "model_entry"
-    modelElement.innerHTML = `
-        <input id="${nameId}" class="model_name" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
-        <input id="${strengthId}" class="model_strength" type="number" step="${strengthStep}" style="width: 50pt" value="${defaultValue}" pattern="^-?[0-9]*\.?[0-9]*$" onkeypress="preventNonNumericalInput(event)">
-    `
-    modelContainer.appendChild(modelElement)
-
-    let modelName = new ModelDropdown(modelElement.querySelector(".model_name"), modelType, "None")
-    let modelStrength = modelElement.querySelector(".model_strength")
-    let entry = [modelName, modelStrength, modelElement]
-
-    let removeBtn = document.createElement("button")
-    removeBtn.className = "remove_model_btn"
-    removeBtn.setAttribute("title", "Remove model")
-    removeBtn.innerHTML = '<i class="fa-solid fa-minus"></i>'
-
-    if (modelsList.length === 0) {
-        removeBtn.classList.add("displayNone")
-    }
-
-    removeBtn.addEventListener("click", function() {
-        let entryIdx = modelsList.indexOf(entry)
-        modelsList.splice(entryIdx, 1)
-        modelContainer.removeChild(modelElement)
-    })
-
-    modelElement.appendChild(removeBtn)
-
-    modelsList.push(entry)
-
-    return modelElement
-}
-
-function createLoraEntry() {
-    let container = document.querySelector("#lora_model_container .model_entries")
-    return addModelEntry(container, loraModels, "lora", 0.5, 0.02)
-}
-
-function createLoraEntries() {
-    let firstEntry = createLoraEntry()
-
-    let addLoraBtn = document.querySelector("#lora_model_container .add_model_entry")
-    addLoraBtn.addEventListener("click", () => {
-        createLoraEntry()
-    })
-}
-createLoraEntries()
-
-// chrome-like spinners only on hover
-// function showSpinnerOnlyOnHover(e) {
-//     e.addEventListener("mouseenter", () => {
-//         e.setAttribute("type", "number")
-//     })
-//     e.addEventListener("mouseleave", () => {
-//         e.removeAttribute("type")
-//     })
-//     e.removeAttribute("type")
-// }
-
-// document.querySelectorAll("input[type=number]").forEach(showSpinnerOnlyOnHover)
 
 ////////////////////////////// Image Size Widget //////////////////////////////////////////
 
