@@ -529,6 +529,10 @@ function restoreTaskToUI(task, fieldsToSkip) {
 function readUI() {
     const reqBody = {}
     for (const key in TASK_MAPPING) {
+        if (testDiffusers.checked && (key === "use_hypernetwork_model" || key === "hypernetwork_strength")) {
+            continue
+        }
+
         reqBody[key] = TASK_MAPPING[key].readUI()
     }
     return {
