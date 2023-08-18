@@ -144,6 +144,8 @@ let embeddingsSearchBox = document.querySelector("#embeddings-search-box")
 let embeddingsList = document.querySelector("#embeddings-list")
 let embeddingsModeField = document.querySelector("#embeddings-mode")
 let embeddingsCardSizeSelector = document.querySelector("#embedding-card-size-selector")
+let addEmbeddingsThumb = document.querySelector("#add-embeddings-thumb")
+let addEmbeddingsThumbInput = document.querySelector("#add-embeddings-thumb-input")
 
 let positiveEmbeddingText = document.querySelector("#positive-embedding-text")
 let negativeEmbeddingText = document.querySelector("#negative-embedding-text")
@@ -547,7 +549,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                     { text: "Upscale", on_click: onUpscaleClick },
                     { text: "Fix Faces", on_click: onFixFacesClick },
                 ],
-                { text: "Use as Thumbnail", on_click: onUseAsThumbnailClick },
+                { text: "Use as Thumbnail", on_click: onUseAsThumbnailClick, filter: (req, img) => "use_embeddings_model" in req },
             ]
 
             // include the plugins
@@ -758,9 +760,7 @@ function onUseAsThumbnailClick(req, img) {
         onUseAsThumbnailClick.croppr.setImage(img.src)
     }
 
-    let embeddings = getAllModelNames("embeddings").filter(
-        (e) => req.prompt.includes(e) || req.negative_prompt.includes(e)
-    )
+    let embeddings = req.use_embeddings_model.map(e => e.split("/").pop())
     let LORA = []
 
     if ("use_lora_model" in req) {
@@ -2740,6 +2740,34 @@ document.getElementById("toggle-tensorrt-install").addEventListener("click", fun
 })
 
 /* Embeddings */
+
+addEmbeddingsThumb.addEventListener("click", e => addEmbeddingsThumbInput.click())
+addEmbeddingsThumbInput.addEventListener("change", loadThumbnailImageFromFile)
+
+function loadThumbnailImageFromFile() {
+    if (addEmbeddingsThumbInput.files.length === 0) {
+        return
+    }
+
+    let reader = new FileReader()
+    let file = addEmbeddingsThumbInput.files[0]
+
+    reader.addEventListener("load", function(event) {
+        let img = document.createElement("img")
+        img.src = reader.result
+        onUseAsThumbnailClick(
+            {
+                use_embeddings_model: getAllModelNames("embeddings").sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
+            },
+            img
+        )
+    })
+
+    if (file) {
+        reader.readAsDataURL(file)
+    }
+}
+
 
 function updateEmbeddingsList(filter = "") {
     function html(model, iconlist = [], prefix = "", filter = "") {

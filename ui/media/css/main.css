@@ -1706,6 +1706,12 @@ body.wait-pause {
     overflow-y: scroll;
 }
 
+@media screen and (max-width: 1400px) {
+    #embeddings-list {
+        width: 80vW;
+    }
+}
+
 #embeddings-list button {
     margin: 2px;
     color: var(--button-color);
