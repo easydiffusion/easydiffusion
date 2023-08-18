@@ -22,6 +22,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 3.0.1 - 18 Aug 2023 - Show controlnet filter preview in the task entry.
 * 3.0.1 - 18 Aug 2023 - Fix drag-and-drop and 'Use these Settings' for LoRA.
 * 3.0.1 - 18 Aug 2023 - Auto-save LoRA models and strengths.
 * 3.0.1 - 17 Aug 2023 - Automatically use the correct yaml config file for custom SDXL models, even if a yaml file isn't present in the folder.
