@@ -1446,12 +1446,12 @@ function createTask(task) {
     if (task.reqBody.init_image !== undefined) {
         let h = 80
         let w = ((task.reqBody.width * h) / task.reqBody.height) >> 0
-        taskConfig += `<div class="task-initimg" style="float:left;"><img style="width:${w}px;height:${h}px;" src="${task.reqBody.init_image}"><div class="task-fs-initimage"></div></div>`
+        taskConfig += `<div class="task-initimg init-img-preview" style="float:left;"><img style="width:${w}px;height:${h}px;" src="${task.reqBody.init_image}"><div class="task-fs-initimage"></div></div>`
     }
     if (task.reqBody.control_image !== undefined) {
         let h = 80
         let w = ((task.reqBody.width * h) / task.reqBody.height) >> 0
-        taskConfig += `<div class="task-initimg" style="float:left;"><img style="width:${w}px;height:${h}px;" src="${task.reqBody.control_image}"><div class="task-fs-initimage"></div></div>`
+        taskConfig += `<div class="task-initimg controlnet-img-preview" style="float:left;"><img style="width:${w}px;height:${h}px;" src="${task.reqBody.control_image}"><div class="task-fs-initimage"></div></div>`
     }
 
     taskConfig += `<div class="taskConfigData">${createTaskConfig(task)}</span></div></div>`
@@ -1472,6 +1472,30 @@ function createTask(task) {
                             <div class="collapsible-content">
                                 <div class="img-preview">
                             </div>`
+
+    if (task.reqBody.init_image !== undefined || task.reqBody.control_image !== undefined) {
+        createInitImageHover(taskEntry)
+    }
+
+    if (task.reqBody.control_image !== undefined && task.reqBody.control_filter_to_apply !== undefined) {
+        let controlImagePreview = taskEntry.querySelector(".controlnet-img-preview > img")
+        let req = {
+            image: task.reqBody.control_image,
+            filter: task.reqBody.control_filter_to_apply,
+            model_paths: {},
+            filter_params: {},
+        }
+        req["model_paths"][task.reqBody.control_filter_to_apply] = task.reqBody.control_filter_to_apply
+        SD.filter(req).then(
+            (result) => {
+                console.log(result)
+                controlImagePreview.src = result.output[0]
+                let controlImageLargePreview = taskEntry.querySelector(".controlnet-img-preview .task-fs-initimage img")
+                controlImageLargePreview.src = controlImagePreview.src
+            },
+            (error) => console.log("filter error", error)
+        )
+    }
 
     createCollapsibles(taskEntry)
 
@@ -1502,10 +1526,6 @@ function createTask(task) {
         startX = e.target.closest(".imageTaskContainer").offsetLeft
         startY = e.target.closest(".imageTaskContainer").offsetTop
     })
-
-    if (task.reqBody.init_image !== undefined || task.reqBody.control_image !== undefined) {
-        createInitImageHover(taskEntry)
-    }
 
     task["taskStatusLabel"] = taskEntry.querySelector(".taskStatusLabel")
     task["outputContainer"] = taskEntry.querySelector(".img-preview")
