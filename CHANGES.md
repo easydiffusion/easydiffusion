@@ -22,6 +22,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 3.0.1 - 18 Aug 2023 - Rotate an image if EXIF rotation is present. For e.g. this is common in images taken with a smartphone.
 * 3.0.1 - 18 Aug 2023 - Resize control images to the task dimensions, to avoid memory errors with high-res control images.
 * 3.0.1 - 18 Aug 2023 - Show controlnet filter preview in the task entry.
 * 3.0.1 - 18 Aug 2023 - Fix drag-and-drop and 'Use these Settings' for LoRA and ControlNet.
