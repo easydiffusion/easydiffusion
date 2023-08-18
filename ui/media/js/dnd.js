@@ -293,6 +293,7 @@ const TASK_MAPPING = {
         name: "LoRA model",
         setUI: (use_lora_model) => {
             let modelPaths = []
+            use_lora_model = Array.isArray(use_lora_model) ? use_lora_model : [use_lora_model]
             use_lora_model.forEach((m) => {
                 if (m.includes("models\\lora\\")) {
                     m = m.split("models\\lora\\")[1]
@@ -329,6 +330,7 @@ const TASK_MAPPING = {
     lora_alpha: {
         name: "LoRA Strength",
         setUI: (lora_alpha) => {
+            lora_alpha = Array.isArray(lora_alpha) ? lora_alpha : [lora_alpha]
             loraModelField.modelWeights = lora_alpha
         },
         readUI: () => {
@@ -454,11 +456,8 @@ function restoreTaskToUI(task, fieldsToSkip) {
     }
 
     if (!("use_lora_model" in task.reqBody)) {
-        loraModels.forEach((e) => {
-            e[0].value = ""
-            e[1].value = 0
-            e[0].dispatchEvent(new Event("change"))
-        })
+        loraModelField.modelNames = []
+        loraModelField.modelWeights = []
     }
 
     // restore the original prompt if provided (e.g. use settings), fallback to prompt as needed (e.g. copy/paste or d&d)
