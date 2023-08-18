@@ -289,6 +289,22 @@ const TASK_MAPPING = {
         readUI: () => vaeModelField.value,
         parse: (val) => val,
     },
+    use_controlnet_model: {
+        name: "ControlNet model",
+        setUI: (use_controlnet_model) => {
+            controlnetModelField.value = getModelPath(use_controlnet_model, [".pth", ".safetensors"])
+        },
+        readUI: () => controlnetModelField.value,
+        parse: (val) => val,
+    },
+    control_filter_to_apply: {
+        name: "ControlNet Filter",
+        setUI: (control_filter_to_apply) => {
+            controlImageFilterField.value = control_filter_to_apply
+        },
+        readUI: () => controlImageFilterField.value,
+        parse: (val) => val,
+    },
     use_lora_model: {
         name: "LoRA model",
         setUI: (use_lora_model) => {
@@ -552,6 +568,8 @@ const TASK_TEXT_MAPPING = {
     hypernetwork_strength: "Hypernetwork Strength",
     use_lora_model: "LoRA model",
     lora_alpha: "LoRA Strength",
+    use_controlnet_model: "ControlNet model",
+    control_filter_to_apply: "ControlNet Filter",
 }
 function parseTaskFromText(str) {
     const taskReqBody = {}
