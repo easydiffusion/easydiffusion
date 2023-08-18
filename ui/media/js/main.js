@@ -50,6 +50,7 @@ const taskConfigSetup = {
         lora_alpha: { label: "Lora Strength", visible: ({ reqBody }) => !!reqBody?.use_lora_model },
         preserve_init_image_color_profile: "Preserve Color Profile",
         strict_mask_border: "Strict Mask Border",
+        use_controlnet_model: "ControlNet Model",
     },
     pluginTaskConfig: {},
     getCSSKey: (key) =>
