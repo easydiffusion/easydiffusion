@@ -29,15 +29,7 @@ class MultiModelSelector {
         return this.root.parentNode
     }
     get value() {
-        let modelNames = []
-        let modelWeights = []
-
-        this.modelElements.forEach((e) => {
-            modelNames.push(e.name.value)
-            modelWeights.push(e.weight.value)
-        })
-
-        return { modelNames: modelNames, modelWeights: modelWeights }
+        return { modelNames: this.modelNames, modelWeights: this.modelWeights }
     }
     set value(modelData) {
         if (typeof modelData !== "object") {
@@ -53,31 +45,13 @@ class MultiModelSelector {
             throw new Error("Need to pass an equal number of modelNames and modelWeights!")
         }
 
-        // expand or shrink entries
-        let currElements = this.modelElements
-        if (currElements.length < newModelNames.length) {
-            for (let i = currElements.length; i < newModelNames.length; i++) {
-                this.addModelEntry()
-            }
-        } else {
-            for (let i = newModelNames.length; i < currElements.length; i++) {
-                this.removeModelEntry()
-            }
-        }
-
-        // assign to the corresponding elements
-        currElements = this.modelElements
-        for (let i = 0; i < newModelNames.length; i++) {
-            let curr = currElements[i]
-
-            // update weight first, name second.
-            // for some unholy reason this order matters for dispatch chains
-            // the root of all this unholiness is because searchable-models automatically dispatches an update event
-            // as soon as the value is updated via JS, which is against the DOM pattern of not dispatching an event automatically
-            // unless the caller explicitly dispatches the event.
-            curr.weight.value = newModelWeights[i]
-            curr.name.value = newModelNames[i]
-        }
+        // update weight first, name second.
+        // for some unholy reason this order matters for dispatch chains
+        // the root of all this unholiness is because searchable-models automatically dispatches an update event
+        // as soon as the value is updated via JS, which is against the DOM pattern of not dispatching an event automatically
+        // unless the caller explicitly dispatches the event.
+        this.modelWeights = newModelWeights
+        this.modelNames = newModelNames
     }
     get disabled() {
         return false
@@ -85,12 +59,19 @@ class MultiModelSelector {
     set disabled(state) {
         // do nothing
     }
-    get modelElements() {
+    getModelElements(ignoreEmpty = false) {
         let entries = this.root.querySelectorAll(".model_entry")
         entries = [...entries]
         let elements = entries.map((e) => {
-            return { name: e.querySelector(".model_name").field, weight: e.querySelector(".model_weight") }
+            let modelName = e.querySelector(".model_name").field
+            let modelWeight = e.querySelector(".model_weight")
+            if (ignoreEmpty && modelName.value.trim() === "") {
+                return null
+            }
+
+            return { name: modelName, weight: modelWeight }
         })
+        elements = elements.filter((e) => e !== null)
         return elements
     }
     addEventListener(type, listener, options) {
@@ -213,18 +194,18 @@ class MultiModelSelector {
     }
 
     get length() {
-        return this.modelContainer.childElementCount
+        return this.getModelElements().length
     }
 
     get modelNames() {
-        return this.modelElements.map((e) => e.name.value)
+        return this.getModelElements(true).map((e) => e.name.value)
     }
 
     set modelNames(newModelNames) {
         this.resizeEntryList(newModelNames.length)
 
         // assign to the corresponding elements
-        let currElements = this.modelElements
+        let currElements = this.getModelElements()
         for (let i = 0; i < newModelNames.length; i++) {
             let curr = currElements[i]
 
@@ -233,14 +214,14 @@ class MultiModelSelector {
     }
 
     get modelWeights() {
-        return this.modelElements.map((e) => e.weight.value)
+        return this.getModelElements(true).map((e) => e.weight.value)
     }
 
     set modelWeights(newModelWeights) {
         this.resizeEntryList(newModelWeights.length)
 
         // assign to the corresponding elements
-        let currElements = this.modelElements
+        let currElements = this.getModelElements()
         for (let i = 0; i < newModelWeights.length; i++) {
             let curr = currElements[i]
 
@@ -249,6 +230,10 @@ class MultiModelSelector {
     }
 
     resizeEntryList(newLength) {
+        if (newLength === 0) {
+            newLength = 1
+        }
+
         let currLength = this.length
         if (currLength < newLength) {
             for (let i = currLength; i < newLength; i++) {
