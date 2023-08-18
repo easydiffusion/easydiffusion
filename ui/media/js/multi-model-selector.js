@@ -215,4 +215,49 @@ class MultiModelSelector {
     get length() {
         return this.modelContainer.childElementCount
     }
+
+    get modelNames() {
+        return this.modelElements.map((e) => e.name.value)
+    }
+
+    set modelNames(newModelNames) {
+        this.resizeEntryList(newModelNames.length)
+
+        // assign to the corresponding elements
+        let currElements = this.modelElements
+        for (let i = 0; i < newModelNames.length; i++) {
+            let curr = currElements[i]
+
+            curr.name.value = newModelNames[i]
+        }
+    }
+
+    get modelWeights() {
+        return this.modelElements.map((e) => e.weight.value)
+    }
+
+    set modelWeights(newModelWeights) {
+        this.resizeEntryList(newModelWeights.length)
+
+        // assign to the corresponding elements
+        let currElements = this.modelElements
+        for (let i = 0; i < newModelWeights.length; i++) {
+            let curr = currElements[i]
+
+            curr.weight.value = newModelWeights[i]
+        }
+    }
+
+    resizeEntryList(newLength) {
+        let currLength = this.length
+        if (currLength < newLength) {
+            for (let i = currLength; i < newLength; i++) {
+                this.addModelEntry()
+            }
+        } else {
+            for (let i = newLength; i < currLength; i++) {
+                this.removeModelEntry()
+            }
+        }
+    }
 }
