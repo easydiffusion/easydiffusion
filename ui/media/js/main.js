@@ -1112,7 +1112,6 @@ function getTaskUpdater(task, reqBody, outputContainer) {
             const stepsRemaining = Math.max(0, totalSteps - overallStepCount)
             const timeRemaining = timeTaken < 0 ? "" : millisecondsToStr(stepsRemaining * timeTaken * 1000)
             outputMsg.innerHTML = `Batch ${task.batchesDone} of ${batchCount}. Generating image(s): ${percent}%. Time remaining (approx): ${timeRemaining}`
-            outputMsg.style.display = "block"
             progressBarInner.style.width = `${percent}%`
 
             if (stepUpdate.output) {
@@ -1469,13 +1468,13 @@ function createTask(task) {
     taskEntry.id = `imageTaskContainer-${Date.now()}`
     taskEntry.className = "imageTaskContainer"
     taskEntry.innerHTML = ` <div class="header-content panel collapsible active">
-                                <i class="drag-handle fa-solid fa-grip"></i>
+                                <i class="drag-handle fa-solid fa-sort"></i>
                                 <div class="taskStatusLabel">Enqueued</div>
-                                <button class="secondaryButton stopTask"><i class="fa-solid fa-trash-can"></i> Remove</button>
-                                <button class="tertiaryButton useSettings"><i class="fa-solid fa-redo"></i> Use these settings</button>
                                 <div class="preview-prompt"></div>
                                 <div class="taskConfig">${taskConfig}</div>
                                 <div class="outputMsg"></div>
+                                <button class="secondaryButton stopTask"><i class="fa-solid fa-trash-can"></i> Remove</button>
+                                <button class="tertiaryButton useSettings"><i class="fa-solid fa-redo"></i> Use these settings</button>
                                 <div class="progress-bar active"><div></div></div>
                             </div>
                             <div class="collapsible-content">

@@ -90,6 +90,7 @@ code {
 .outputMsg {
     font-size: small;
     padding-bottom: 3pt;
+    display: inline-block;
 }
 #footer {
     font-size: small;
@@ -681,9 +682,7 @@ div.img-preview img {
     border-radius: 5pt;
     box-shadow: 0 20px 28px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
 }
-.imageTaskContainer > div > .collapsible-handle {
-    display: none;
-}
+
 .dropTargetBefore::before{
     content: "";
     border: 1px solid #fff;
@@ -703,6 +702,8 @@ div.img-preview img {
 .drag-handle {
     margin-right: 6px;
     cursor: move;
+    float: right;
+    opacity: 0.5;
 }
 .taskStatusLabel {
     font-size: 8pt;
@@ -758,6 +759,7 @@ div.img-preview img {
 }
 .useSettings {
     margin-right: 6pt;
+    margin-bottom: 4pt;
     float: right;
 }
 .stopTask {
