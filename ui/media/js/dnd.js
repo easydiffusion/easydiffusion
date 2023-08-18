@@ -516,6 +516,15 @@ function restoreTaskToUI(task, fieldsToSkip) {
         )
         initImagePreview.src = task.reqBody.init_image
     }
+
+    // hide/show controlnet picture as needed
+    if (IMAGE_REGEX.test(controlImagePreview.src) && task.reqBody.control_image == undefined) {
+        // hide source image
+        controlImageClearBtn.dispatchEvent(new Event("click"))
+    } else if (task.reqBody.control_image !== undefined) {
+        // listen for inpainter loading event, which happens AFTER the main image loads (which reloads the inpai
+        controlImagePreview.src = task.reqBody.control_image
+    }
 }
 function readUI() {
     const reqBody = {}
