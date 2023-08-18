@@ -15,14 +15,12 @@ const SETTINGS_IDS_LIST = [
     "stable_diffusion_model",
     "clip_skip",
     "vae_model",
-    "hypernetwork_model",
     "sampler_name",
     "width",
     "height",
     "num_inference_steps",
     "guidance_scale",
     "prompt_strength",
-    "hypernetwork_strength",
     "tiling",
     "output_format",
     "output_quality",
@@ -61,6 +59,11 @@ const SETTINGS_IDS_LIST = [
 ]
 
 const IGNORE_BY_DEFAULT = ["prompt"]
+
+if (!testDiffusers.checked) {
+    SETTINGS_IDS_LIST.push("hypernetwork_model")
+    SETTINGS_IDS_LIST.push("hypernetwork_strength")
+}
 
 const SETTINGS_SECTIONS = [
     // gets the "keys" property filled in with an ordered list of settings in this section via initSettings
