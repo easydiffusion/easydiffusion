@@ -143,7 +143,12 @@
                     <div><table>
                     <tr><b class="settings-subheader">Image Settings</b></tr>
                     <tr class="pl-5"><td><label for="seed">Seed:</label></td><td><input id="seed" name="seed" size="10" value="0" onkeypress="preventNonNumericalInput(event)"> <input id="random_seed" name="random_seed" type="checkbox" checked><label for="random_seed">Random</label></td></tr>
-                    <tr class="pl-5"><td><label for="num_outputs_total">Number of Images:</label></td><td><input id="num_outputs_total" name="num_outputs_total" value="1" size="1" onkeypress="preventNonNumericalInput(event)"> <label><small>(total)</small></label> <input id="num_outputs_parallel" name="num_outputs_parallel" value="1" size="1" onkeypress="preventNonNumericalInput(event)"> <label id="num_outputs_parallel_label" for="num_outputs_parallel"><small>(in parallel)</small></label></td></tr>
+                    <tr class="pl-5"><td><label for="num_outputs_total">Number of Images:</label></td>
+                        <td><input id="num_outputs_total" name="num_outputs_total" value="1" type="number" value="1" min="1" step="1" style="width:42pt;" onkeypres"="preventNonNumericalInput(event)">
+                        <label><small>(total)</small></label>
+                        <input id="num_outputs_parallel" name="num_outputs_parallel" value="1" type="number" value="1" min="1" step="1" style="width:42pt;" onkeypress="preventNonNumericalInput(event)">
+                        <label id="num_outputs_parallel_label" for="num_outputs_parallel"><small>(in parallel)</small></label></td>
+                    </tr>
                     <tr class="pl-5"><td><label for="stable_diffusion_model">Model:</label></td><td class="model-input">
                         <input id="stable_diffusion_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
                         <button id="reload-models" class="secondaryButton reloadModels"><i class='fa-solid fa-rotate'></i></button>
@@ -680,6 +685,8 @@
                 <span>
             </div>
             <div id="embeddings-dialog-header-right">
+                <button id="add-embeddings-thumb" class="tertiaryButton smallButton" style="background-color: var(--background-color4);"><i class="fa-solid fa-folder-plus"></i> Add thumbnail</button>
+                <input id="add-embeddings-thumb-input" name="add-embeddings-thumb-input" type="file" class="displayNone">
                 <i id="embeddings-dialog-close-button" class="fa-solid fa-xmark fa-lg"></i>
             </div>
         </div>
