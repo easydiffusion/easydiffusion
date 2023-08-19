@@ -26,6 +26,7 @@
     <script src="/media/js/FileSaver.min.js"></script>
     <script src="/media/js/marked.min.js"></script>
     <script src="/media/js/croppr.js"></script>
+    <script src="/media/js/exif-reader.js"></script>
 </head>
 <body>
 <div id="container">
@@ -61,7 +62,14 @@
                 <div id="editor-inputs-prompt" class="row">
                     <div id="prompt-toolbar" class="split-toolbar">
                         <div id="prompt-toolbar-left" class="toolbar-left">
-                            <label for="prompt"><b>Enter Prompt</b></label> <small>or</small> <button id="promptsFromFileBtn" class="tertiaryButton smallButton">Load from a file</button>
+                            <label for="prompt"><b>Enter Prompt</b>
+                                <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">
+                                    You can type your prompts in the below textbox or load them from a file. You can also
+                                    reload tasks from metadata embedded in PNG and JPEG images (enable embedding from the Settings).
+                                </span></i>
+                            </label>
+                            <small>or</small>
+                            <button id="promptsFromFileBtn" class="tertiaryButton smallButton">Load from a file</button>
                         </div>
                         <div id="prompt-toolbar-right" class="toolbar-right">
                             <button id="image-modifier-dropdown" class="tertiaryButton smallButton">+ Image Modifiers</button>
@@ -83,6 +91,11 @@
 
                 <div id="editor-inputs-init-image" class="row">
                     <label for="init_image">Initial Image (img2img) <small>(optional)</small> </label>
+                    <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top">
+                        Add img2img source image using the Browse button, via drag & drop from external file or browser image (incl.
+                        rendered image) or by pasting an image from the clipboard using Ctrl+V.<br /><br />
+                        You may also reload the metadata embedded in a PNG or JPEG image (enable embedding from the Settings).
+                    </span></i>
 
                     <div id="init_image_preview_container" class="image_preview_container">
                         <div id="init_image_wrapper" class="preview_image_wrapper">

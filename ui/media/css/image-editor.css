@@ -230,3 +230,26 @@
 .inpainter .load_mask {
 	display: flex;
 }
+
+.editor-canvas-overlay {
+        cursor: none;
+}
+
+.image-brush-preview {
+        position: fixed;
+        background: black;
+        opacity: 0.3;
+        borderRadius: 50%;
+        cursor: none;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+}
+
+.editor-options-container > * > *:not(.active):not(.button) {
+        border: 1px dotted slategray;
+}
+
+.image_editor_opacity .editor-options-container > * > *:not(.active):not(.button) {
+        border: 1px dotted slategray;
+}
+
