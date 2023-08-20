@@ -32,14 +32,13 @@
 				//console.log(LoRA[0].lora_model_0);
 				//console.log(JSON.stringify(LoRa));
 				
-                let lora = `lora_${i}`;
-                let alpha = `lora_weight_${i}`;
-                let loramodel = document.getElementById(lora);
-                let alphavalue = document.getElementById(alpha);
-				loramodel.setAttribute("data-path", LoRA[i].lora_model_0);
-                alphavalue.value = LoRA[i].lora_alpha_0;
-                loramodel.value = LoRA[i].lora_model_0;
-                loramodel.dispatchEvent(new Event('change'));
+                
+                let loramodel = document.querySelectorAll(`div#lora_model > div.model_entries > div.model_entry > input[class*='model_name']`); 
+                let alphavalue = document.querySelectorAll(`div#lora_model > div.model_entries > div.model_entry > input[id^='lora_weight']`);
+				loramodel[i].setAttribute("data-path", LoRA[i].lora_model_0);
+                alphavalue[i].value = LoRA[i].lora_alpha_0;
+                loramodel[i].value = LoRA[i].lora_model_0;
+                loramodel[i].dispatchEvent(new Event('change'));
                 if (i != LoRA.length - 1)
                     loraModelField.addModelEntry();
             }

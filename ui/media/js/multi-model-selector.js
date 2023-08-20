@@ -176,7 +176,7 @@ class MultiModelSelector {
             "click",
             this.bind(function(e) {
                 this.modelContainer.removeChild(modelElement)
-                this.counter--
+                
                 makeUpdateEvent("change")(e)
             }, this)
         )
