@@ -32,15 +32,15 @@
 				//console.log(LoRA[0].lora_model_0);
 				//console.log(JSON.stringify(LoRa));
 				
-                let lora = `lora_model_${i}`;
-                let alpha = `lora_alpha_${i}`;
+                let lora = `lora_${i}`;
+                let alpha = `lora_weight_${i}`;
                 let loramodel = document.getElementById(lora);
                 let alphavalue = document.getElementById(alpha);
 				loramodel.setAttribute("data-path", LoRA[i].lora_model_0);
-                loramodel.value = LoRA[i].lora_model_0;
                 alphavalue.value = LoRA[i].lora_alpha_0;
+                loramodel.value = LoRA[i].lora_model_0;
                 if (i != LoRA.length - 1)
-                    createLoraEntry();
+                    loraModelField.addModelEntry();
             }
                 //loraAlphaSlider.value = loraAlphaField.value * 100;
                 //TBD.value = LoRA[0].blockweights; // block weights not supported by ED at this time
