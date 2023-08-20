@@ -39,6 +39,7 @@
 				loramodel.setAttribute("data-path", LoRA[i].lora_model_0);
                 alphavalue.value = LoRA[i].lora_alpha_0;
                 loramodel.value = LoRA[i].lora_model_0;
+                loramodel.dispatchEvent(new Event('change'));
                 if (i != LoRA.length - 1)
                     loraModelField.addModelEntry();
             }
