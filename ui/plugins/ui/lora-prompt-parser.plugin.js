@@ -25,29 +25,11 @@
         }
                                  
         if (LoRA !== null && LoRA.length > 0 && testDiffusers?.checked) {
-            for (let i = 0; i < LoRA.length; i++) {
-            //if (loraModelField.value !== LoRA[0].lora_model) {
-                // Set the new LoRA value
-				//console.log("Loading info");
-				//console.log(LoRA[0].lora_model_0);
-				//console.log(JSON.stringify(LoRa));
-				
-                let lora = `lora_model_${i}`;
-                let alpha = `lora_alpha_${i}`;
-                let loramodel = document.getElementById(lora);
-                let alphavalue = document.getElementById(alpha);
-				loramodel.setAttribute("data-path", LoRA[i].lora_model_0);
-                loramodel.value = LoRA[i].lora_model_0;
-                alphavalue.value = LoRA[i].lora_alpha_0;
-                if (i != LoRA.length - 1)
-                    createLoraEntry();
-            }
-                //loraAlphaSlider.value = loraAlphaField.value * 100;
-                //TBD.value = LoRA[0].blockweights; // block weights not supported by ED at this time
-            //}
+            let modelNames = LoRA.map(e => e.lora_model_0)
+            let modelWeights = LoRA.map(e => e.lora_alpha_0)
+            loraModelField.value = {modelNames: modelNames, modelWeights: modelWeights}
+
             showToast("Prompt successfully processed", LoRA[0].lora_model_0);
-			//console.log('LoRa: ' + LoRA[0].lora_model_0);
-			//showToast("Prompt successfully processed", lora_model_0.value);
 			
         }
             
