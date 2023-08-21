@@ -509,7 +509,11 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                     { text: "Upscale", on_click: onUpscaleClick },
                     { text: "Fix Faces", on_click: onFixFacesClick },
                 ],
-                { text: "Use as Thumbnail", on_click: onUseAsThumbnailClick, filter: (req, img) => "use_embeddings_model" in req },
+                {
+                    text: "Use as Thumbnail",
+                    on_click: onUseAsThumbnailClick,
+                    filter: (req, img) => "use_embeddings_model" in req,
+                },
             ]
 
             // include the plugins
@@ -720,7 +724,7 @@ function onUseAsThumbnailClick(req, img) {
         onUseAsThumbnailClick.croppr.setImage(img.src)
     }
 
-    let embeddings = req.use_embeddings_model.map(e => e.split("/").pop())
+    let embeddings = req.use_embeddings_model.map((e) => e.split("/").pop())
     let LORA = []
 
     if ("use_lora_model" in req) {
@@ -1080,7 +1084,6 @@ function createTask(task) {
     }
 
     if (task.reqBody.control_image !== undefined && task.reqBody.control_filter_to_apply !== undefined) {
-        let controlImagePreview = taskEntry.querySelector(".controlnet-img-preview > img")
         let req = {
             image: task.reqBody.control_image,
             filter: task.reqBody.control_filter_to_apply,
@@ -1088,15 +1091,8 @@ function createTask(task) {
             filter_params: {},
         }
         req["model_paths"][task.reqBody.control_filter_to_apply] = task.reqBody.control_filter_to_apply
-        SD.filter(req).then(
-            (result) => {
-                console.log(result)
-                controlImagePreview.src = result.output[0]
-                let controlImageLargePreview = taskEntry.querySelector(".controlnet-img-preview .task-fs-initimage img")
-                controlImageLargePreview.src = controlImagePreview.src
-            },
-            (error) => console.log("filter error", error)
-        )
+
+        task["previewTaskReq"] = req
     }
 
     createCollapsibles(taskEntry)
@@ -1129,6 +1125,7 @@ function createTask(task) {
         startY = e.target.closest(".imageTaskContainer").offsetTop
     })
 
+    task["taskConfig"] = taskEntry.querySelector(".taskConfig")
     task["taskStatusLabel"] = taskEntry.querySelector(".taskStatusLabel")
     task["outputContainer"] = taskEntry.querySelector(".img-preview")
     task["outputMsg"] = taskEntry.querySelector(".outputMsg")
@@ -2289,7 +2286,7 @@ document.getElementById("toggle-tensorrt-install").addEventListener("click", fun
 
 /* Embeddings */
 
-addEmbeddingsThumb.addEventListener("click", e => addEmbeddingsThumbInput.click())
+addEmbeddingsThumb.addEventListener("click", (e) => addEmbeddingsThumbInput.click())
 addEmbeddingsThumbInput.addEventListener("change", loadThumbnailImageFromFile)
 
 function loadThumbnailImageFromFile() {
@@ -2305,7 +2302,9 @@ function loadThumbnailImageFromFile() {
         img.src = reader.result
         onUseAsThumbnailClick(
             {
-                use_embeddings_model: getAllModelNames("embeddings").sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
+                use_embeddings_model: getAllModelNames("embeddings").sort((a, b) =>
+                    a.localeCompare(b, undefined, { sensitivity: "base" })
+                ),
             },
             img
         )
@@ -2315,7 +2314,6 @@ function loadThumbnailImageFromFile() {
         reader.readAsDataURL(file)
     }
 }
-
 
 function updateEmbeddingsList(filter = "") {
     function html(model, iconlist = [], prefix = "", filter = "") {

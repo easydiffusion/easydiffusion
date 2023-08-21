@@ -67,6 +67,23 @@ async function onTaskStart(task) {
     task["taskStatusLabel"].innerText = "Starting"
     task["taskStatusLabel"].classList.add("waitingTaskLabel")
 
+    if (task.previewTaskReq !== undefined) {
+        let controlImagePreview = task.taskConfig.querySelector(".controlnet-img-preview > img")
+        try {
+            let result = await SD.filter(task.previewTaskReq)
+
+            controlImagePreview.src = result.output[0]
+            let controlImageLargePreview = task.taskConfig.querySelector(
+                ".controlnet-img-preview .task-fs-initimage img"
+            )
+            controlImageLargePreview.src = controlImagePreview.src
+        } catch (error) {
+            console.log("filter error", error)
+        }
+
+        delete task.previewTaskReq
+    }
+
     let newTaskReqBody = task.reqBody
     if (task.batchCount > 1) {
         // Each output render batch needs it's own task reqBody instance to avoid altering the other runs after they are completed.
