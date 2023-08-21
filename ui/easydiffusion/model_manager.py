@@ -312,7 +312,7 @@ def getModels(scan_for_malicious: bool = True):
                 {"control_v11p_sd15_mlsd": "Straight Lines"},
                 {"control_v11p_sd15_seg": "Segment"},
                 {"control_v11e_sd15_shuffle": "Shuffle"},
-                {"control_v11f1e_sd15_tile.pth": "Tile"},
+                {"control_v11f1e_sd15_tile": "Tile"},
             ],
         },
     }
