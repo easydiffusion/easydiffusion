@@ -1927,6 +1927,20 @@ div#enlarge-buttons {
     width: 77%;
 }
 
+.drop-area {
+    width: 45%;
+    height: 50px;
+    border: 2px dashed #ccc;
+    text-align: center;
+    line-height: 50px;
+    font-size: small;
+    color: #ccc;
+    border-radius: 10px;
+    display: none;
+    margin: 12px 10px;
+}
+
+
 /* hack for fixing Image Modifier Improvements plugin */
 #imageTagPopupContainer {
     position: absolute;
