@@ -1306,7 +1306,7 @@ function getCurrentUserRequest() {
 function setEmbeddings(task) {
     let prompt = task.reqBody.prompt.toLowerCase()
     let negativePrompt = task.reqBody.negative_prompt.toLowerCase()
-    let overallPrompt = (prompt + " " + negativePrompt).replaceAll(",", "").split(" ")
+    let overallPrompt = (prompt + " " + negativePrompt)
 
     let embeddingsTree = modelsOptions["embeddings"]
     let embeddings = []
