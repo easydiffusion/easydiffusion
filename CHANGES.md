@@ -22,6 +22,7 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
+* 3.0.2 - 22 Aug 2023 - Full support for inpainting models, including custom models. Support SD 1.x and SD 2.x inpainting models. Does not require you to specify a yaml config file.
 * 3.0.2 - 22 Aug 2023 - Reduce VRAM consumption of controlnet in 'low' VRAM mode, and allow accelerating controlnets using xformers.
 * 3.0.2 - 22 Aug 2023 - Improve auto-detection of SD 2.0 and 2.1 models, removing the need for custom yaml files for SD 2.x models. Improve the model load time by speeding-up the black image test.
 * 3.0.1 - 18 Aug 2023 - Rotate an image if EXIF rotation is present. For e.g. this is common in images taken with a smartphone.
