@@ -487,6 +487,7 @@ async function getAppConfig() {
             document.querySelector("#controlnet_model_container").style.display = "none"
             document.querySelector("#hypernetwork_model_container").style.display = ""
             document.querySelector("#hypernetwork_strength_container").style.display = ""
+            document.querySelector("#negative-embeddings-button").style.display = "none"
 
             document.querySelectorAll("#sampler_name option.diffusers-only").forEach((option) => {
                 option.style.display = "none"
@@ -506,7 +507,6 @@ async function getAppConfig() {
             })
             document.querySelector("#clip_skip_config").classList.remove("displayNone")
             document.querySelector("#embeddings-button").classList.remove("displayNone")
-            document.querySelector("#negative-embeddings-button").classList.remove("displayNone")
             IMAGE_STEP_SIZE = 8
             customWidthField.step = IMAGE_STEP_SIZE
             customHeightField.step = IMAGE_STEP_SIZE

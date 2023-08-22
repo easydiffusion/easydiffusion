@@ -2517,6 +2517,17 @@ window.addEventListener("beforeunload", function(e) {
     }
 })
 
+document.addEventListener("collapsibleClick", function(e) {
+    let header = e.detail
+    if (header === document.querySelector("#negative_prompt_handle")) {
+        if (header.classList.contains("active")) {
+            negativeEmbeddingsButton.classList.remove("displayNone")
+        } else {
+            negativeEmbeddingsButton.classList.add("displayNone")
+        }
+    }
+})
+
 createCollapsibles()
 prettifyInputs(document)
 
