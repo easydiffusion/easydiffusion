@@ -4,15 +4,6 @@ const pauseBtn = document.querySelector("#pause")
 const resumeBtn = document.querySelector("#resume")
 const processOrder = document.querySelector("#process_order_toggle")
 
-let TASK_CALLBACKS = {
-    before_task_start: [],
-    after_task_start: [],
-    on_task_step: [],
-    on_render_task_success: [],
-    on_render_task_fail: [],
-    on_all_tasks_complete: [],
-}
-
 let pauseClient = false
 
 async function onIdle() {
@@ -141,7 +132,7 @@ async function onTaskStart(task) {
     task["instances"].push(instance)
     task.batchesDone++
 
-    TASK_CALLBACKS["before_task_start"].forEach((callback) => callback(task))
+    document.dispatchEvent(new CustomEvent("before_task_start", { detail: { task: task } }))
 
     instance.enqueue(getTaskUpdater(task, newTaskReqBody, outputContainer)).then(
         (renderResult) => {
@@ -152,7 +143,7 @@ async function onTaskStart(task) {
         }
     )
 
-    TASK_CALLBACKS["after_task_start"].forEach((callback) => callback(task))
+    document.dispatchEvent(new CustomEvent("after_task_start", { detail: { task: task } }))
 }
 
 function getTaskUpdater(task, reqBody, outputContainer) {
@@ -242,8 +233,15 @@ function getTaskUpdater(task, reqBody, outputContainer) {
             progressBarInner.style.width = `${percent}%`
 
             if (stepUpdate.output) {
-                TASK_CALLBACKS["on_task_step"].forEach((callback) =>
-                    callback(task, reqBody, stepUpdate, outputContainer)
+                document.dispatchEvent(
+                    new CustomEvent("on_task_step", {
+                        detail: {
+                            task: task,
+                            reqBody: reqBody,
+                            stepUpdate: stepUpdate,
+                            outputContainer: outputContainer,
+                        },
+                    })
                 )
             }
         }
@@ -253,13 +251,27 @@ function getTaskUpdater(task, reqBody, outputContainer) {
 function onRenderTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
     if (typeof stepUpdate === "object") {
         if (stepUpdate.status === "succeeded") {
-            TASK_CALLBACKS["on_render_task_success"].forEach((callback) =>
-                callback(task, reqBody, stepUpdate, outputContainer)
+            document.dispatchEvent(
+                new CustomEvent("on_render_task_success", {
+                    detail: {
+                        task: task,
+                        reqBody: reqBody,
+                        stepUpdate: stepUpdate,
+                        outputContainer: outputContainer,
+                    },
+                })
             )
         } else {
             task.isProcessing = false
-            TASK_CALLBACKS["on_render_task_fail"].forEach((callback) =>
-                callback(task, reqBody, stepUpdate, outputContainer)
+            document.dispatchEvent(
+                new CustomEvent("on_render_task_fail", {
+                    detail: {
+                        task: task,
+                        reqBody: reqBody,
+                        stepUpdate: stepUpdate,
+                        outputContainer: outputContainer,
+                    },
+                })
             )
         }
     }
@@ -307,7 +319,11 @@ function onRenderTaskCompleted(task, reqBody, instance, outputContainer, stepUpd
         resumeBtn.click()
     }
 
-    TASK_CALLBACKS["on_all_tasks_complete"].forEach((callback) => callback())
+    document.dispatchEvent(
+        new CustomEvent("on_all_tasks_complete", {
+            detail: {},
+        })
+    )
 }
 
 function resumeClient() {

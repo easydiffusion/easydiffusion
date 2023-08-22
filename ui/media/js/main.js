@@ -2703,29 +2703,33 @@ let recentResolutionsValues = []
     })
 })()
 
-TASK_CALLBACKS["before_task_start"].push(function(task) {
+document.addEventListener("before_task_start", (e) => {
+    let task = e.detail.task
+
     // Update the seed *before* starting the processing so it's retained if user stops the task
     if (randomSeedField.checked) {
         seedField.value = task.seed
     }
 })
 
-TASK_CALLBACKS["after_task_start"].push(function(task) {
-    // setStatus("request", "fetching..") // no-op implementation
+document.addEventListener("after_task_start", (e) => {
     renderButtons.style.display = "flex"
     renameMakeImageButton()
     updateInitialText()
 })
 
-TASK_CALLBACKS["on_task_step"].push(function(task, reqBody, stepUpdate, outputContainer) {
-    showImages(reqBody, stepUpdate, outputContainer, true)
+document.addEventListener("on_task_step", (e) => {
+    showImages(e.detail.reqBody, e.detail.stepUpdate, e.detail.outputContainer, true)
 })
 
-TASK_CALLBACKS["on_render_task_success"].push(function(task, reqBody, stepUpdate, outputContainer) {
-    showImages(reqBody, stepUpdate, outputContainer, false)
+document.addEventListener("on_render_task_success", (e) => {
+    showImages(e.detail.reqBody, e.detail.stepUpdate, e.detail.outputContainer, false)
 })
 
-TASK_CALLBACKS["on_render_task_fail"].push(function(task, reqBody, stepUpdate, outputContainer) {
+document.addEventListener("on_render_task_fail", (e) => {
+    let task = e.detail.task
+    let stepUpdate = e.detail.stepUpdate
+
     const outputMsg = task["outputMsg"]
     let msg = ""
     if ("detail" in stepUpdate && typeof stepUpdate.detail === "string" && stepUpdate.detail.length > 0) {
@@ -2774,7 +2778,7 @@ TASK_CALLBACKS["on_render_task_fail"].push(function(task, reqBody, stepUpdate, o
     logError(msg, stepUpdate, outputMsg)
 })
 
-TASK_CALLBACKS["on_all_tasks_complete"].push(function() {
+document.addEventListener("on_all_tasks_complete", (e) => {
     renderButtons.style.display = "none"
     renameMakeImageButton()
 
