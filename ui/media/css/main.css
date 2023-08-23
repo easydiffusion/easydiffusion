@@ -1116,6 +1116,9 @@ input::file-selector-button {
     #preview-tools button .icon {
         font-size: 12pt;
     }
+    #show-download-popup .fa-solid {
+        font-size: 12pt;
+    }
 }
 
 @media screen and (max-width: 500px) {
