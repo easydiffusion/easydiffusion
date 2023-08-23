@@ -1090,7 +1090,7 @@ input::file-selector-button {
     .tab-content-inner {
         margin: 0px;
     }
-    .tab {
+    #top-nav .tab {
         font-size: 0;
     }
     .tab .icon {
