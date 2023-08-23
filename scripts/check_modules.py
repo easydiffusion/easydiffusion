@@ -57,6 +57,12 @@ def install(module_name: str, module_version: str):
             module_version = "0.14.1"
 
     install_cmd = f"python -m pip install --upgrade {module_name}=={module_version}"
+
+    # hack for safetensors, until v3 gets released to the main branch
+    if module_name == "sdkit":
+        install_cmd += " safetensors==0.3.2"
+    # /hack
+
     if index_url:
         install_cmd += f" --index-url {index_url}"
     if module_name == "sdkit" and version("sdkit") is not None:
