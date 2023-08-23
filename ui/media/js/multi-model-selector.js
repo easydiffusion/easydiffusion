@@ -137,7 +137,7 @@ class MultiModelSelector {
         modelElement.className = "model_entry"
         modelElement.innerHTML = `
             <input id="${this.modelType}_${idx}" class="model_name model-filter" type="text" spellcheck="false" autocomplete="off" data-path="" />
-            <input class="model_weight" type="number" step="${this.weightStep}" style="width: 50pt" value="${this.defaultWeight}" pattern="^-?[0-9]*\.?[0-9]*$" onkeypress="preventNonNumericalInput(event)">
+            <input class="model_weight" type="number" step="${this.weightStep}" value="${this.defaultWeight}" pattern="^-?[0-9]*\.?[0-9]*$" onkeypress="preventNonNumericalInput(event)">
         `
         this.modelContainer.appendChild(modelElement)
 

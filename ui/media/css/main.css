@@ -1940,8 +1940,77 @@ div#enlarge-buttons {
     margin: 12px 10px;
 }
 
+#num_outputs_total {
+    width: 42pt;
+}
+#num_outputs_parallel {
+    width: 42pt;
+}
+.model_entry .model_weight {
+    width: 50pt;
+}
 
 /* hack for fixing Image Modifier Improvements plugin */
 #imageTagPopupContainer {
     position: absolute;
+}
+
+@media screen and (max-width: 400px) {
+    .editor-slider {
+        width: 40%;
+    }
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    input[type=number] {
+        -moz-appearance: textfield;
+        /* Firefox */
+    }
+    #num_outputs_total {
+        width: 27pt;
+    }
+    #num_outputs_parallel {
+        width: 27pt;
+        margin-left: -4pt;
+    }
+    .model_entry .model_weight {
+        width: 30pt;
+    }
+    #width {
+        width: 50pt;
+    }
+    #height {
+        width: 50pt;
+    }
+}
+@media screen and (max-width: 460px) {
+    #widthLabel small span {
+        display: none;
+    }
+    #widthLabel small:after {
+        content: "(w)";
+    }
+    #heightLabel small span {
+        display: none;
+    }
+    #heightLabel small:after {
+        content: "(h)";
+    }
+    #prompt-toolbar-right {
+        text-align: right;
+    }
+    #editor-settings label {
+        font-size: 9pt;
+    }
+    #editor-settings .model-filter {
+        width: 56%;
+    }
+    #vae_model {
+        width: 65% !important;
+    }
+    .model_entry .model_name {
+        width: 60% !important;
+    }
 }
