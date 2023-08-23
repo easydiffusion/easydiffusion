@@ -5,13 +5,13 @@
 - **ControlNet** - Full support for ControlNet, with native integration of the common ControlNet models. Just select a control image, then choose the ControlNet filter/model and run. No additional configuration or download necessary. Supports custom ControlNets as well.
 - **SDXL** - Full support for SDXL. No configuration necessary, just put the SDXL model in the `models/stable-diffusion` folder.
 - **Multiple LoRAs** - Use multiple LoRAs, including SDXL and SD2-compatible LoRAs. Put them in the `models/lora` folder.
-- **Embeddings** - Use textual inversion embeddings easily, by putting them in the `models/embeddings` folder and using their names in the prompt (or by clicking the `+ Embeddings` button to select embeddings visually).
-- **Seamless Tiling** - Generate repeating textures that can be useful for games and other art projects. Works best in 512x512 resolution.
+- **Embeddings** - Use textual inversion embeddings easily, by putting them in the `models/embeddings` folder and using their names in the prompt (or by clicking the `+ Embeddings` button to select embeddings visually). Thanks @JeLuf.
+- **Seamless Tiling** - Generate repeating textures that can be useful for games and other art projects. Works best in 512x512 resolution. Thanks @JeLuf.
 - **Inpainting Models** - Full support for inpainting models, including custom inpainting models. No configuration (or yaml files) necessary.
 - **Faster than v2.5** - Nearly 40% faster than Easy Diffusion v2.5, and can be even faster if you enable xFormers.
 - **Even less VRAM usage** - Less than 2 GB for 512x512 images on 'low' VRAM usage setting (SD 1.5). Can generate large images with SDXL.
 - **WebP images** - Supports saving images in the lossless webp format.
-- **Undo/Redo in the UI** - Remove tasks or images from the queue easily, and undo the action if you removed anything accidentally.
+- **Undo/Redo in the UI** - Remove tasks or images from the queue easily, and undo the action if you removed anything accidentally. Thanks @JeLuf.
 - **Three new samplers, and latent upscaler** - Added `DEIS`, `DDPM` and `DPM++ 2m SDE` as additional samplers. Thanks @ogmaresca and @rbertus2000.
 - **Significantly faster 'Upscale' and 'Fix Faces' buttons on the images**
 - **Major rewrite of the code** - We've switched to using diffusers under-the-hood, which allows us to release new features faster, and focus on making the UI and installer even easier to use.
