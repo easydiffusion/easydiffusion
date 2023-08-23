@@ -198,7 +198,8 @@ var PARAMETERS = [
         id: "profileName",
         type: ParameterType.custom,
         label: "Profile Name",
-        note: "Name of the profile for model manager settings, e.g. thumbnails for embeddings. Use this to have different settings for different users.",
+        note:
+            "Name of the profile for model manager settings, e.g. thumbnails for embeddings. Use this to have different settings for different users.",
         render: (parameter) => {
             return `<input id="${parameter.id}" name="${parameter.id}" value="default" size="12">`
         },
@@ -452,8 +453,6 @@ async function getAppConfig() {
         if (config.update_branch === "beta") {
             useBetaChannelField.checked = true
             document.querySelector("#updateBranchLabel").innerText = "(beta)"
-        } else {
-            getParameterSettingsEntry("test_diffusers").classList.add("displayNone")
         }
         if (config.ui && config.ui.open_browser_on_start === false) {
             uiOpenBrowserOnStartField.checked = false
@@ -465,14 +464,14 @@ async function getAppConfig() {
             listenPortField.value = config.net.listen_port
         }
 
-        let testDiffusersEnabled = config.update_branch !== "main"
+        let testDiffusersEnabled = true
         if (config.test_diffusers === false) {
             testDiffusersEnabled = false
         }
         testDiffusers.checked = testDiffusersEnabled
 
         if (config.config_on_startup) {
-            if (config.config_on_startup?.test_diffusers && config.update_branch !== "main") {
+            if (config.config_on_startup?.test_diffusers) {
                 document.body.classList.add("diffusers-enabled-on-startup")
                 document.body.classList.remove("diffusers-disabled-on-startup")
             } else {
@@ -819,11 +818,3 @@ navigator.permissions.query({ name: "clipboard-write" }).then(function(result) {
 })
 
 document.addEventListener("system_info_update", (e) => setDeviceInfo(e.detail))
-
-useBetaChannelField.addEventListener("change", (e) => {
-    if (e.target.checked) {
-        getParameterSettingsEntry("test_diffusers").classList.remove("displayNone")
-    } else {
-        getParameterSettingsEntry("test_diffusers").classList.add("displayNone")
-    }
-})
