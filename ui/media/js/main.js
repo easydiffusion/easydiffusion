@@ -160,6 +160,7 @@ let initImageClearBtn = document.querySelector(".init_image_clear")
 let promptStrengthContainer = document.querySelector("#prompt_strength_container")
 
 let initialText = document.querySelector("#initial-text")
+let supportBanner = document.querySelector("#supportBanner")
 let versionText = document.querySelector("#version")
 let previewTools = document.querySelector("#preview-tools")
 let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
@@ -956,6 +957,13 @@ function makeImage() {
     newTaskRequests.forEach(createTask)
 
     updateInitialText()
+
+    const countBeforeBanner = localStorage.getItem("countBeforeBanner") || 1
+    if (countBeforeBanner <= 0) {
+        supportBanner.classList.remove("displayNone")
+    } else {
+        localStorage.setItem("countBeforeBanner", countBeforeBanner - 1)
+    }
 }
 
 /* Hover effect for the init image in the task list */
@@ -1155,7 +1163,7 @@ function createTask(task) {
     })
 
     task.isProcessing = true
-    taskEntry = imagePreviewContent.insertBefore(taskEntry, previewTools.nextSibling)
+    taskEntry = imagePreviewContent.insertBefore(taskEntry, supportBanner.nextSibling)
     htmlTaskMap.set(taskEntry, task)
 
     task.previewPrompt.innerText = task.reqBody.prompt
@@ -1521,10 +1529,16 @@ function updateInitialText() {
         }
         previewTools.classList.add("displayNone")
         initialText.classList.remove("displayNone")
+        supportBanner.classList.add("displayNone")
     } else {
         initialText.classList.add("displayNone")
         previewTools.classList.remove("displayNone")
         document.querySelector("div.display-settings").prepend(undoButton)
+
+        const countBeforeBanner = localStorage.getItem("countBeforeBanner") || 1
+        if (countBeforeBanner <= 0) {
+            supportBanner.classList.remove("displayNone")
+        }
     }
 }
 
