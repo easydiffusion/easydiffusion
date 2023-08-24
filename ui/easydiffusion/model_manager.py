@@ -29,7 +29,7 @@ MODEL_EXTENSIONS = {
     "hypernetwork": [".pt", ".safetensors"],
     "gfpgan": [".pth"],
     "realesrgan": [".pth"],
-    "lora": [".ckpt", ".safetensors"],
+    "lora": [".ckpt", ".safetensors", ".pt"],
     "codeformer": [".pth"],
     "embeddings": [".pt", ".bin", ".safetensors"],
     "controlnet": [".pth", ".safetensors"],
