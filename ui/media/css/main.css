@@ -2017,3 +2017,13 @@ div#enlarge-buttons {
         width: 60% !important;
     }
 }
+
+#supportBanner {
+    font-size: 9pt;
+    padding: 5pt;
+    border: 1px solid var(--background-color2);
+    margin-bottom: 5pt;
+    border-radius: 4pt;
+    padding-top: 6pt;
+    color: var(--small-label-color);
+}
