@@ -34,6 +34,7 @@ code {
     width: 32px;
     height: 32px;
     transform: translateY(4px);
+    cursor: pointer;
 }
 #prompt {
     width: 100%;
@@ -476,6 +477,7 @@ dialog {
     background: var(--background-color2);
     color: var(--text-color);
     border-radius: 6px;
+    box-shadow: 0px 0px 30px black;
     border: 2px solid rgb(255 255 255 / 10%);
     padding: 0px;
 }
@@ -794,7 +796,7 @@ div.img-preview img {
     margin-bottom: 8px;
 }
 
-#init_image_preview_container:not(.has-image) #init_image_wrapper,
+#init_image_preview_container:not(.has-image) .preview_image_wrapper,
 #init_image_preview_container:not(.has-image) #inpaint_button_container  {
     display: none;
 }
@@ -831,14 +833,14 @@ div.img-preview img {
     gap: 8px;
 }
 
-#init_image_wrapper {
+.preview_image_wrapper {
     grid-row: span 3;
     position: relative;
     width: fit-content;
     max-height: 150px;
 }
 
-#init_image_preview {
+.image_preview {
     max-height: 150px;
     height: 100%;
     width: 100%;
@@ -1088,7 +1090,7 @@ input::file-selector-button {
     .tab-content-inner {
         margin: 0px;
     }
-    .tab {
+    #top-nav .tab {
         font-size: 0;
     }
     .tab .icon {
@@ -1112,6 +1114,9 @@ input::file-selector-button {
         font-size: 0px;
     }
     #preview-tools button .icon {
+        font-size: 12pt;
+    }
+    #show-download-popup .fa-solid {
         font-size: 12pt;
     }
 }
@@ -1418,6 +1423,10 @@ div.task-fs-initimage {
     display: none;
     position: absolute;
 }
+div.task-fs-initimage img {
+    max-height: 70vH;
+    max-width: 70vW;
+}
 div.task-initimg:hover div.task-fs-initimage {
     display: block;
     position: absolute;
@@ -1433,9 +1442,13 @@ div.top-right {
     right: 8px;
 }
 
+.task-fs-initimage .top-right button {
+    margin-top: 6px;
+}
+
 #small_image_warning {
-     font-size: smaller;
-     color: var(--status-orange);
+    font-size: smaller;
+    color: var(--status-orange);
 }
 
 button#save-system-settings-btn {
@@ -1460,6 +1473,9 @@ button#save-system-settings-btn {
     cursor: pointer;;
 }
 
+.validation-failed {
+    border: solid 2px red;
+}
 /* SCROLLBARS */
 :root {
     --scrollbar-width: 14px;
@@ -1650,6 +1666,35 @@ body.wait-pause {
     }
 }
 
+.spinner-container {
+    width: 80px;
+    height: 100px;
+    margin: 100px auto;
+    margin-top: 30vH;
+}
+
+.spinner-block {
+    position: relative;
+    box-sizing: border-box;
+    float: left;
+    margin: 0 10px 10px 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    background: var(--accent-color);
+}
+
+.spinner-block:nth-child(4n+1) { animation: spinner-wave 2s ease .0s infinite; }
+.spinner-block:nth-child(4n+2) { animation: spinner-wave 2s ease .2s infinite; }
+.spinner-block:nth-child(4n+3) { animation: spinner-wave 2s ease .4s infinite; }
+.spinner-block:nth-child(4n+4) { animation: spinner-wave 2s ease .6s infinite; margin-right: 0; }
+
+@keyframes spinner-wave {
+    0%   { top: 0;     opacity: 1; }
+    50%  { top: 30px;  opacity: .2; }
+    100% { top: 0;     opacity: 1; }
+}
+
 #embeddings-dialog {
     overflow: clip;
 }
@@ -1662,6 +1707,12 @@ body.wait-pause {
     padding-left: 0px;
     padding-right: 0px;
     overflow-y: scroll;
+}
+
+@media screen and (max-width: 1400px) {
+    #embeddings-list {
+        width: 80vW;
+    }
 }
 
 #embeddings-list button {
@@ -1741,6 +1792,32 @@ body.wait-pause {
     float: right;
 }
 
+.use-as-thumb-grid {  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: 1fr auto;
+  gap: 8px 8px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "uat-preview uat-select"
+    "uat-preview uat-buttons";
+}
+
+.use-as-thumb-preview {
+  justify-self: center;
+  align-self: center;
+  grid-area: uat-preview;
+}
+
+.use-as-thumb-select { 
+    grid-area: uat-select;
+}
+
+.use-as-thumb-buttons {
+  justify-self: center;
+  grid-area: uat-buttons;
+}
+
+
 .diffusers-disabled-on-startup .diffusers-restart-needed {
     font-size: 0;
 }
@@ -1752,6 +1829,75 @@ body.wait-pause {
 .diffusers-disabled-on-startup .diffusers-restart-needed::after {
     content: "Please restart Easy Diffusion!";
     font-size: 10pt;
+}
+
+input#custom-width, input#custom-height {
+    width: 47pt;
+}
+
+div#recent-resolutions-container {
+    position: relative;
+    display:inline-block;
+}
+
+div#recent-resolutions-popup {
+    position: absolute;
+    right: 0px;
+    margin: 3px;
+    padding: 0.2em 1em 0.4em 1em;
+    z-index: 1;
+    background: var(--background-color3);
+    border-radius: 4px;
+    box-shadow: 0 20px 28px 0 rgba(0, 0, 0, 0.15), 0 6px 20px 0 rgba(0, 0, 0, 0.15);
+}
+
+div#recent-resolutions-popup small {
+    opacity: 0.7;
+}
+
+div#common-resolution-list button {
+    background: var(--background-color1);
+}
+
+td#image-size-options small {
+    margin-right: 0px !important;
+}
+
+td#image-size-options {
+    white-space: nowrap;
+}
+
+div#recent-resolution-list {
+    text-align: center;
+}
+
+div#enlarge-buttons {
+    text-align: center;
+}
+
+.two-column {  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  gap: 0px 0.5em;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "left-column right-column";
+}
+
+.left-column {
+  justify-self: center;
+  align-self: center;
+  grid-area: left-column;
+}
+
+.right-column {
+  justify-self: center;
+  align-self: center;
+  grid-area: right-column;
+}
+
+.clickable {
+    cursor: pointer;
 }
 
 .imgContainer .spinner {
@@ -1769,6 +1915,105 @@ body.wait-pause {
     border: 1px solid var(--button-color);
     box-shadow: 0px 0px 4px black;
 }
+
 .imgContainer .spinnerStatus {
     font-size: 10pt;
+}
+
+#controlnet_model_container small {
+    color: var(--text-color)
+}
+#control_image {
+    width: 130pt;
+}
+#controlnet_model {
+    width: 77%;
+}
+
+.drop-area {
+    width: 45%;
+    height: 50px;
+    border: 2px dashed #ccc;
+    text-align: center;
+    line-height: 50px;
+    font-size: small;
+    color: #ccc;
+    border-radius: 10px;
+    display: none;
+    margin: 12px 10px;
+}
+
+#num_outputs_total {
+    width: 42pt;
+}
+#num_outputs_parallel {
+    width: 42pt;
+}
+.model_entry .model_weight {
+    width: 50pt;
+}
+
+/* hack for fixing Image Modifier Improvements plugin */
+#imageTagPopupContainer {
+    position: absolute;
+}
+
+@media screen and (max-width: 400px) {
+    .editor-slider {
+        width: 40%;
+    }
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    input[type=number] {
+        -moz-appearance: textfield;
+        /* Firefox */
+    }
+    #num_outputs_total {
+        width: 27pt;
+    }
+    #num_outputs_parallel {
+        width: 27pt;
+        margin-left: -4pt;
+    }
+    .model_entry .model_weight {
+        width: 30pt;
+    }
+    #width {
+        width: 50pt;
+    }
+    #height {
+        width: 50pt;
+    }
+}
+@media screen and (max-width: 460px) {
+    #widthLabel small span {
+        display: none;
+    }
+    #widthLabel small:after {
+        content: "(w)";
+    }
+    #heightLabel small span {
+        display: none;
+    }
+    #heightLabel small:after {
+        content: "(h)";
+    }
+    #prompt-toolbar-right {
+        text-align: right;
+    }
+    #editor-settings label {
+        font-size: 9pt;
+    }
+    #editor-settings .model-filter {
+        width: 56%;
+    }
+    #vae_model {
+        width: 65% !important;
+    }
+    .model_entry .model_name {
+        width: 60% !important;
+    }
 }

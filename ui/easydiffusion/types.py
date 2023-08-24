@@ -21,6 +21,7 @@ class GenerateImageRequest(BaseModel):
     control_alpha: Union[float, List[float]] = None
     prompt_strength: float = 0.8
     preserve_init_image_color_profile = False
+    strict_mask_border = False
 
     sampler_name: str = None  # "ddim", "plms", "heun", "euler", "euler_a", "dpm2", "dpm2_a", "lms"
     hypernetwork_strength: float = 0
@@ -72,8 +73,10 @@ class TaskData(BaseModel):
     use_hypernetwork_model: Union[str, List[str]] = None
     use_lora_model: Union[str, List[str]] = None
     use_controlnet_model: Union[str, List[str]] = None
+    use_embeddings_model: Union[str, List[str]] = None
     filters: List[str] = []
     filter_params: Dict[str, Dict[str, Any]] = {}
+    control_filter_to_apply: Union[str, List[str]] = None
 
     show_only_filtered_image: bool = False
     block_nsfw: bool = False
@@ -134,6 +137,7 @@ class GenerateImageResponse:
     def json(self):
         del self.render_request.init_image
         del self.render_request.init_image_mask
+        del self.render_request.control_image
 
         task_data = self.task_data.dict()
         task_data.update(self.output_format.dict())
@@ -197,6 +201,7 @@ def convert_legacy_render_req_to_new(old_req: dict):
     model_paths["hypernetwork"] = old_req.get("use_hypernetwork_model")
     model_paths["lora"] = old_req.get("use_lora_model")
     model_paths["controlnet"] = old_req.get("use_controlnet_model")
+    model_paths["embeddings"] = old_req.get("use_embeddings_model")
 
     model_paths["gfpgan"] = old_req.get("use_face_correction", "")
     model_paths["gfpgan"] = model_paths["gfpgan"] if "gfpgan" in model_paths["gfpgan"].lower() else None
@@ -211,13 +216,22 @@ def convert_legacy_render_req_to_new(old_req: dict):
     model_paths["latent_upscaler"] = (
         model_paths["latent_upscaler"] if "latent_upscaler" in model_paths["latent_upscaler"].lower() else None
     )
+    if "control_filter_to_apply" in old_req:
+        filter_model = old_req["control_filter_to_apply"]
+        model_paths[filter_model] = filter_model
 
     if old_req.get("block_nsfw"):
         model_paths["nsfw_checker"] = "nsfw_checker"
 
     # move the model params
     if model_paths["stable-diffusion"]:
-        model_params["stable-diffusion"] = {"clip_skip": bool(old_req.get("clip_skip", False))}
+        model_params["stable-diffusion"] = {
+            "clip_skip": bool(old_req.get("clip_skip", False)),
+            "convert_to_tensorrt": bool(old_req.get("convert_to_tensorrt", False)),
+            "trt_build_config": old_req.get(
+                "trt_build_config", {"batch_size_range": (1, 1), "dimensions_range": [(768, 1024)]}
+            ),
+        }
 
     # move the filter params
     if model_paths["realesrgan"]:

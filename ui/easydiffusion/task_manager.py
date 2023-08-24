@@ -373,6 +373,12 @@ def get_devices():
     finally:
         manager_lock.release()
 
+    # temp until TRT releases
+    import os
+    from easydiffusion import app
+
+    devices["enable_trt"] = os.path.exists(os.path.join(app.ROOT_DIR, "tensorrt"))
+
     return devices
 
 

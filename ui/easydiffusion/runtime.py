@@ -30,9 +30,7 @@ def init(device):
     from easydiffusion import app
 
     app_config = app.getConfig()
-    context.test_diffusers = (
-        app_config.get("test_diffusers", False) and app_config.get("update_branch", "main") != "main"
-    )
+    context.test_diffusers = app_config.get("test_diffusers", True)
 
     log.info("Device usage during initialization:")
     get_device_usage(device, log_info=True, process_usage_only=False)

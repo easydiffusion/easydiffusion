@@ -3,7 +3,6 @@ const MAX_INIT_IMAGE_DIMENSION = 768
 const MIN_GPUS_TO_SHOW_SELECTION = 2
 
 const IMAGE_REGEX = new RegExp("data:image/[A-Za-z]+;base64")
-const htmlTaskMap = new WeakMap()
 
 const spinnerPacmanHtml =
     '<div class="loadingio-spinner-bean-eater-x0y3u8qky4n"><div class="ldio-8f673ktaleu"><div><div></div><div></div><div></div></div><div><div></div><div></div><div></div></div></div></div>'
@@ -49,6 +48,8 @@ const taskConfigSetup = {
         use_lora_model: { label: "Lora Model", visible: ({ reqBody }) => !!reqBody?.use_lora_model },
         lora_alpha: { label: "Lora Strength", visible: ({ reqBody }) => !!reqBody?.use_lora_model },
         preserve_init_image_color_profile: "Preserve Color Profile",
+        strict_mask_border: "Strict Mask Border",
+        use_controlnet_model: "ControlNet Model",
     },
     pluginTaskConfig: {},
     getCSSKey: (key) =>
@@ -77,14 +78,30 @@ let randomSeedField = document.querySelector("#random_seed")
 let seedField = document.querySelector("#seed")
 let widthField = document.querySelector("#width")
 let heightField = document.querySelector("#height")
+let customWidthField = document.querySelector("#custom-width")
+let customHeightField = document.querySelector("#custom-height")
+let recentResolutionsButton = document.querySelector("#recent-resolutions-button")
+let recentResolutionsPopup = document.querySelector("#recent-resolutions-popup")
+let recentResolutionList = document.querySelector("#recent-resolution-list")
+let commonResolutionList = document.querySelector("#common-resolution-list")
+let resizeSlider = document.querySelector("#resize-slider")
+let enlargeButtons = document.querySelector("#enlarge-buttons")
+let swapWidthHeightButton = document.querySelector("#swap-width-height")
 let smallImageWarning = document.querySelector("#small_image_warning")
 let initImageSelector = document.querySelector("#init_image")
 let initImagePreview = document.querySelector("#init_image_preview")
 let initImageSizeBox = document.querySelector("#init_image_size_box")
 let maskImageSelector = document.querySelector("#mask")
 let maskImagePreview = document.querySelector("#mask_preview")
+let controlImageSelector = document.querySelector("#control_image")
+let controlImagePreview = document.querySelector("#control_image_preview")
+let controlImageClearBtn = document.querySelector(".control_image_clear")
+let controlImageContainer = document.querySelector("#control_image_wrapper")
+let controlImageFilterField = document.querySelector("#control_image_filter")
 let applyColorCorrectionField = document.querySelector("#apply_color_correction")
+let strictMaskBorderField = document.querySelector("#strict_mask_border")
 let colorCorrectionSetting = document.querySelector("#apply_color_correction_setting")
+let strictMaskBorderSetting = document.querySelector("#strict_mask_border_setting")
 let promptStrengthSlider = document.querySelector("#prompt_strength_slider")
 let promptStrengthField = document.querySelector("#prompt_strength")
 let samplerField = document.querySelector("#sampler_name")
@@ -102,7 +119,9 @@ let codeformerFidelityField = document.querySelector("#codeformer_fidelity")
 let stableDiffusionModelField = new ModelDropdown(document.querySelector("#stable_diffusion_model"), "stable-diffusion")
 let clipSkipField = document.querySelector("#clip_skip")
 let tilingField = document.querySelector("#tiling")
+let controlnetModelField = new ModelDropdown(document.querySelector("#controlnet_model"), "controlnet", "None", false)
 let vaeModelField = new ModelDropdown(document.querySelector("#vae_model"), "vae", "None")
+let loraModelField = new MultiModelSelector(document.querySelector("#lora_model"), "lora", "LoRA", 0.5, 0.02)
 let hypernetworkModelField = new ModelDropdown(document.querySelector("#hypernetwork_model"), "hypernetwork", "None")
 let hypernetworkStrengthSlider = document.querySelector("#hypernetwork_strength_slider")
 let hypernetworkStrengthField = document.querySelector("#hypernetwork_strength")
@@ -123,6 +142,9 @@ let embeddingsDialogCloseBtn = embeddingsDialog.querySelector("#embeddings-dialo
 let embeddingsSearchBox = document.querySelector("#embeddings-search-box")
 let embeddingsList = document.querySelector("#embeddings-list")
 let embeddingsModeField = document.querySelector("#embeddings-mode")
+let embeddingsCardSizeSelector = document.querySelector("#embedding-card-size-selector")
+let addEmbeddingsThumb = document.querySelector("#add-embeddings-thumb")
+let addEmbeddingsThumbInput = document.querySelector("#add-embeddings-thumb-input")
 
 let positiveEmbeddingText = document.querySelector("#positive-embedding-text")
 let negativeEmbeddingText = document.querySelector("#negative-embedding-text")
@@ -130,8 +152,6 @@ let embeddingsCollapsiblesBtn = document.querySelector("#embeddings-action-colla
 
 let makeImageBtn = document.querySelector("#makeImage")
 let stopImageBtn = document.querySelector("#stopImage")
-let pauseBtn = document.querySelector("#pause")
-let resumeBtn = document.querySelector("#resume")
 let renderButtons = document.querySelector("#render-buttons")
 
 let imagesContainer = document.querySelector("#current-images")
@@ -152,10 +172,14 @@ let saveAllTreeToggle = document.querySelector("#tree_toggle")
 let saveAllJSONToggle = document.querySelector("#json_toggle")
 let saveAllFoldersOption = document.querySelector("#download-add-folders")
 let splashScreenPopup = document.querySelector("#splash-screen")
+let useAsThumbDialog = document.querySelector("#use-as-thumb-dialog")
+let useAsThumbDialogCloseBtn = document.querySelector("#use-as-thumb-dialog-close-button")
+let useAsThumbImageContainer = document.querySelector("#use-as-thumb-img-container")
+let useAsThumbSelect = document.querySelector("#use-as-thumb-select")
+let useAsThumbSaveBtn = document.querySelector("#use-as-thumb-save")
+let useAsThumbCancelBtn = document.querySelector("#use-as-thumb-cancel")
 
 let maskSetting = document.querySelector("#enable_mask")
-
-const processOrder = document.querySelector("#process_order_toggle")
 
 let imagePreview = document.querySelector("#preview")
 let imagePreviewContent = document.querySelector("#preview-content")
@@ -164,6 +188,8 @@ let undoButton = document.querySelector("#undo")
 let undoBuffer = []
 const UNDO_LIMIT = 20
 const MAX_IMG_UNDO_ENTRIES = 5
+
+let IMAGE_STEP_SIZE = 64
 
 let loraModels = []
 
@@ -275,59 +301,24 @@ function setServerStatus(event) {
 //   e      : MouseEvent
 //   prompt : Text to be shown as prompt. Should be a question to which "yes" is a good answer.
 //   fn     : function to be called if the user confirms the dialog or has the shift key pressed
+//   allowSkip: Allow skipping the dialog using the shift key or the confirm_dangerous_actions setting (default: true)
 //
 // If the user had the shift key pressed while clicking, the function fn will be executed.
 // If the setting "confirm_dangerous_actions" in the system settings is disabled, the function
 // fn will be executed.
 // Otherwise, a confirmation dialog is shown. If the user confirms, the function fn will also
 // be executed.
-function shiftOrConfirm(e, prompt, fn) {
+function shiftOrConfirm(e, prompt, fn, allowSkip = true) {
     e.stopPropagation()
-    if (e.shiftKey || !confirmDangerousActionsField.checked) {
+    let tip = allowSkip
+        ? '<small>Tip: To skip this dialog, use shift-click or disable the "Confirm dangerous actions" setting in the Settings tab.</small>'
+        : ""
+    if (allowSkip && (e.shiftKey || !confirmDangerousActionsField.checked)) {
         fn(e)
     } else {
-        confirm(
-            '<small>Tip: To skip this dialog, use shift-click or disable the "Confirm dangerous actions" setting in the Settings tab.</small>',
-            prompt,
-            () => {
-                fn(e)
-            }
-        )
-    }
-}
-
-function logMsg(msg, level, outputMsg) {
-    if (outputMsg.hasChildNodes()) {
-        outputMsg.appendChild(document.createElement("br"))
-    }
-    if (level === "error") {
-        outputMsg.innerHTML += '<span style="color: red">Error: ' + msg + "</span>"
-    } else if (level === "warn") {
-        outputMsg.innerHTML += '<span style="color: orange">Warning: ' + msg + "</span>"
-    } else {
-        outputMsg.innerText += msg
-    }
-    console.log(level, msg)
-}
-
-function logError(msg, res, outputMsg) {
-    logMsg(msg, "error", outputMsg)
-
-    console.log("request error", res)
-    console.trace()
-    setStatus("request", "error", "error")
-}
-
-function playSound() {
-    const audio = new Audio("/media/ding.mp3")
-    audio.volume = 0.2
-    var promise = audio.play()
-    if (promise !== undefined) {
-        promise
-            .then((_) => {})
-            .catch((error) => {
-                console.warn("browser blocked autoplay")
-            })
+        confirm(tip, prompt, () => {
+            fn(e)
+        })
     }
 }
 
@@ -497,6 +488,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             const imageRedoBuffer = []
             let buttons = [
                 { text: "Use as Input", on_click: onUseAsInputClick },
+                { text: "Use for Controlnet", on_click: onUseForControlnetClick },
                 [
                     {
                         html: '<i class="fa-solid fa-download"></i> Download Image',
@@ -517,6 +509,11 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                     { text: "Upscale", on_click: onUpscaleClick },
                     { text: "Fix Faces", on_click: onFixFacesClick },
                 ],
+                {
+                    text: "Use as Thumbnail",
+                    on_click: onUseAsThumbnailClick,
+                    filter: (req, img) => "use_embeddings_model" in req,
+                },
             ]
 
             // include the plugins
@@ -607,6 +604,10 @@ function onUseAsInputClick(req, img) {
     maskSetting.checked = false
 }
 
+function onUseForControlnetClick(req, img) {
+    controlImagePreview.src = img.src
+}
+
 function getDownloadFilename(img, suffix) {
     const imageSeed = img.getAttribute("data-seed")
     const imagePrompt = img.getAttribute("data-prompt")
@@ -657,6 +658,140 @@ function onMakeSimilarClick(req, img) {
     createTask(newTaskRequest)
 }
 
+// gets a flat list of all models of a certain type, ignoring directories
+function getAllModelNames(type) {
+    function f(tree) {
+        if (tree == undefined) {
+            return []
+        }
+        let result = []
+        tree.forEach((e) => {
+            if (typeof e == "object") {
+                result = result.concat(f(e[1]))
+            } else {
+                result.push(e)
+            }
+        })
+        return result
+    }
+    return f(modelsOptions[type])
+}
+
+function onUseAsThumbnailClick(req, img) {
+    let scale = 1
+    let targetWidth = img.naturalWidth
+    let targetHeight = img.naturalHeight
+    let resize = false
+    onUseAsThumbnailClick.img = img
+
+    if (typeof onUseAsThumbnailClick.croppr == "undefined") {
+        onUseAsThumbnailClick.croppr = new Croppr("#use-as-thumb-image", {
+            aspectRatio: 1,
+            minSize: [384, 384, "px"],
+            startSize: [512, 512, "px"],
+            returnMode: "real",
+        })
+    }
+
+    if (img.naturalWidth > img.naturalHeight) {
+        if (img.naturalWidth > 768) {
+            scale = 768 / img.naturalWidth
+            targetWidth = 768
+            targetHeight = (img.naturalHeight * scale) >>> 0
+            resize = true
+        }
+    } else {
+        if (img.naturalHeight > 768) {
+            scale = 768 / img.naturalHeight
+            targetHeight = 768
+            targetWidth = (img.naturalWidth * scale) >>> 0
+            resize = true
+        }
+    }
+
+    onUseAsThumbnailClick.croppr.options.minSize = { width: (384 * scale) >>> 0, height: (384 * scale) >>> 0 }
+    onUseAsThumbnailClick.croppr.options.startSize = { width: (512 * scale) >>> 0, height: (512 * scale) >>> 0 }
+
+    if (resize) {
+        const canvas = document.createElement("canvas")
+        canvas.width = targetWidth
+        canvas.height = targetHeight
+        const ctx = canvas.getContext("2d")
+        ctx.drawImage(img, 0, 0, targetWidth, targetHeight)
+
+        onUseAsThumbnailClick.croppr.setImage(canvas.toDataURL("image/png"))
+    } else {
+        onUseAsThumbnailClick.croppr.setImage(img.src)
+    }
+
+    let embeddings = req.use_embeddings_model.map((e) => e.split("/").pop())
+    let LORA = []
+
+    if ("use_lora_model" in req) {
+        LORA = req.use_lora_model
+    }
+
+    let optgroup = document.createElement("optgroup")
+    optgroup.label = "Embeddings"
+    optgroup.replaceChildren(
+        ...embeddings.map((e) => {
+            let option = document.createElement("option")
+            option.innerText = e
+            option.dataset["type"] = "embeddings"
+            return option
+        })
+    )
+
+    useAsThumbSelect.replaceChildren(optgroup)
+    useAsThumbDialog.showModal()
+    onUseAsThumbnailClick.scale = scale
+}
+
+modalDialogCloseOnBackdropClick(useAsThumbDialog)
+makeDialogDraggable(useAsThumbDialog)
+
+useAsThumbDialogCloseBtn.addEventListener("click", () => {
+    useAsThumbDialog.close()
+})
+
+useAsThumbCancelBtn.addEventListener("click", () => {
+    useAsThumbDialog.close()
+})
+
+useAsThumbSaveBtn.addEventListener("click", (e) => {
+    let scale = 1 / onUseAsThumbnailClick.scale
+    let crop = onUseAsThumbnailClick.croppr.getValue()
+
+    let len = Math.max(crop.width * scale, 384)
+    let profileName = profileNameField.value
+
+    cropImageDataUrl(onUseAsThumbnailClick.img.src, crop.x * scale, crop.y * scale, len, len)
+        .then((thumb) => fetch(thumb))
+        .then((response) => response.blob())
+        .then(async function(blob) {
+            const formData = new FormData()
+            formData.append("file", blob)
+            let options = useAsThumbSelect.selectedOptions
+            let promises = []
+            for (let embedding of options) {
+                promises.push(
+                    fetch(`bucket/${profileName}/${embedding.dataset["type"]}/${embedding.value}.png`, {
+                        method: "POST",
+                        body: formData,
+                    })
+                )
+            }
+            return Promise.all(promises)
+        })
+        .then(() => {
+            useAsThumbDialog.close()
+        })
+        .catch((error) => {
+            console.error(error)
+            showToast("Couldn't save thumbnail.<br>" + error)
+        })
+})
+
 function enqueueImageVariationTask(req, img, reqDiff) {
     const imageSeed = img.getAttribute("data-seed")
 
@@ -687,6 +822,9 @@ function applyInlineFilter(filterName, path, filterParams, img, statusText, tool
         filter: filterName,
         model_paths: {},
         filter_params: filterParams,
+        output_format: outputFormatField.value,
+        output_quality: parseInt(outputQualityField.value),
+        output_lossless: outputLosslessField.checked,
     }
     filterReq.model_paths[filterName] = path
 
@@ -766,22 +904,6 @@ function onContinueDrawingClick(req, img) {
     })
 }
 
-function getUncompletedTaskEntries() {
-    const taskEntries = Array.from(document.querySelectorAll("#preview .imageTaskContainer .taskStatusLabel"))
-        .filter((taskLabel) => taskLabel.style.display !== "none")
-        .map(function(taskLabel) {
-            let imageTaskContainer = taskLabel.parentNode
-            while (!imageTaskContainer.classList.contains("imageTaskContainer") && imageTaskContainer.parentNode) {
-                imageTaskContainer = imageTaskContainer.parentNode
-            }
-            return imageTaskContainer
-        })
-    if (!processOrder.checked) {
-        taskEntries.reverse()
-    }
-    return taskEntries
-}
-
 function makeImage() {
     if (typeof performance == "object" && performance.mark) {
         performance.mark("click-makeImage")
@@ -793,12 +915,25 @@ function makeImage() {
     }
     if (!randomSeedField.checked && seedField.value == "") {
         alert('The "Seed" field must not be empty.')
+        seedField.classList.add("validation-failed")
         return
     }
+    seedField.classList.remove("validation-failed")
+
     if (numInferenceStepsField.value == "") {
         alert('The "Inference Steps" field must not be empty.')
+        numInferenceStepsField.classList.add("validation-failed")
         return
     }
+    numInferenceStepsField.classList.remove("validation-failed")
+
+    if (controlnetModelField.value === "" && IMAGE_REGEX.test(controlImagePreview.src)) {
+        alert("Please choose a ControlNet model, to use the ControlNet image.")
+        document.getElementById("controlnet_model").classList.add("validation-failed")
+        return
+    }
+    document.getElementById("controlnet_model").classList.remove("validation-failed")
+
     if (numOutputsTotalField.value == "" || numOutputsTotalField.value == 0) {
         numOutputsTotalField.value = 1
     }
@@ -817,361 +952,44 @@ function makeImage() {
             reqBody: Object.assign({ prompt: prompt }, taskTemplate.reqBody),
         })
     )
+    newTaskRequests.forEach(setEmbeddings)
     newTaskRequests.forEach(createTask)
 
     updateInitialText()
 }
 
-async function onIdle() {
-    const serverCapacity = SD.serverCapacity
-    if (pauseClient === true) {
-        await resumeClient()
-    }
-
-    for (const taskEntry of getUncompletedTaskEntries()) {
-        if (SD.activeTasks.size >= serverCapacity) {
-            break
-        }
-        const task = htmlTaskMap.get(taskEntry)
-        if (!task) {
-            const taskStatusLabel = taskEntry.querySelector(".taskStatusLabel")
-            taskStatusLabel.style.display = "none"
-            continue
-        }
-        await onTaskStart(task)
-    }
-}
-
-function getTaskUpdater(task, reqBody, outputContainer) {
-    const outputMsg = task["outputMsg"]
-    const progressBar = task["progressBar"]
-    const progressBarInner = progressBar.querySelector("div")
-
-    const batchCount = task.batchCount
-    let lastStatus = undefined
-    return async function(event) {
-        if (this.status !== lastStatus) {
-            lastStatus = this.status
-            switch (this.status) {
-                case SD.TaskStatus.pending:
-                    task["taskStatusLabel"].innerText = "Pending"
-                    task["taskStatusLabel"].classList.add("waitingTaskLabel")
-                    break
-                case SD.TaskStatus.waiting:
-                    task["taskStatusLabel"].innerText = "Waiting"
-                    task["taskStatusLabel"].classList.add("waitingTaskLabel")
-                    task["taskStatusLabel"].classList.remove("activeTaskLabel")
-                    break
-                case SD.TaskStatus.processing:
-                case SD.TaskStatus.completed:
-                    task["taskStatusLabel"].innerText = "Processing"
-                    task["taskStatusLabel"].classList.add("activeTaskLabel")
-                    task["taskStatusLabel"].classList.remove("waitingTaskLabel")
-                    break
-                case SD.TaskStatus.stopped:
-                    break
-                case SD.TaskStatus.failed:
-                    if (!SD.isServerAvailable()) {
-                        logError(
-                            "Stable Diffusion is still starting up, please wait. If this goes on beyond a few minutes, Stable Diffusion has probably crashed. Please check the error message in the command-line window.",
-                            event,
-                            outputMsg
-                        )
-                    } else if (typeof event?.response === "object") {
-                        let msg = "Stable Diffusion had an error reading the response:<br/><pre>"
-                        if (this.exception) {
-                            msg += `Error: ${this.exception.message}<br/>`
-                        }
-                        try {
-                            // 'Response': body stream already read
-                            msg += "Read: " + (await event.response.text())
-                        } catch (e) {
-                            msg += "Unexpected end of stream. "
-                        }
-                        const bufferString = event.reader.bufferedString
-                        if (bufferString) {
-                            msg += "Buffered data: " + bufferString
-                        }
-                        msg += "</pre>"
-                        logError(msg, event, outputMsg)
-                    }
-                    break
-            }
-        }
-        if ("update" in event) {
-            const stepUpdate = event.update
-            if (!("step" in stepUpdate)) {
-                return
-            }
-            // task.instances can be a mix of different tasks with uneven number of steps (Render Vs Filter Tasks)
-            const overallStepCount =
-                task.instances.reduce(
-                    (sum, instance) =>
-                        sum +
-                        (instance.isPending
-                            ? Math.max(0, instance.step || stepUpdate.step) /
-                              (instance.total_steps || stepUpdate.total_steps)
-                            : 1),
-                    0 // Initial value
-                ) * stepUpdate.total_steps // Scale to current number of steps.
-            const totalSteps = task.instances.reduce(
-                (sum, instance) => sum + (instance.total_steps || stepUpdate.total_steps),
-                stepUpdate.total_steps * (batchCount - task.batchesDone) // Initial value at (unstarted task count * Nbr of steps)
-            )
-            const percent = Math.min(100, 100 * (overallStepCount / totalSteps)).toFixed(0)
-
-            const timeTaken = stepUpdate.step_time // sec
-            const stepsRemaining = Math.max(0, totalSteps - overallStepCount)
-            const timeRemaining = timeTaken < 0 ? "" : millisecondsToStr(stepsRemaining * timeTaken * 1000)
-            outputMsg.innerHTML = `Batch ${task.batchesDone} of ${batchCount}. Generating image(s): ${percent}%. Time remaining (approx): ${timeRemaining}`
-            outputMsg.style.display = "block"
-            progressBarInner.style.width = `${percent}%`
-
-            if (stepUpdate.output) {
-                showImages(reqBody, stepUpdate, outputContainer, true)
-            }
-        }
-    }
-}
-
-function abortTask(task) {
-    if (!task.isProcessing) {
-        return false
-    }
-    task.isProcessing = false
-    task.progressBar.classList.remove("active")
-    task["taskStatusLabel"].style.display = "none"
-    task["stopTask"].innerHTML = '<i class="fa-solid fa-trash-can"></i> Remove'
-    if (!task.instances?.some((r) => r.isPending)) {
-        return
-    }
-    task.instances.forEach((instance) => {
-        try {
-            instance.abort()
-        } catch (e) {
-            console.error(e)
-        }
-    })
-}
-
-function onTaskErrorHandler(task, reqBody, instance, reason) {
-    if (!task.isProcessing) {
-        return
-    }
-    console.log("Render request %o, Instance: %o, Error: %s", reqBody, instance, reason)
-    abortTask(task)
-    const outputMsg = task["outputMsg"]
-    logError(
-        "Stable Diffusion had an error. Please check the logs in the command-line window. <br/><br/>" +
-            reason +
-            "<br/><pre>" +
-            reason.stack +
-            "</pre>",
-        task,
-        outputMsg
-    )
-    setStatus("request", "error", "error")
-}
-
-function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
-    if (typeof stepUpdate === "object") {
-        if (stepUpdate.status === "succeeded") {
-            showImages(reqBody, stepUpdate, outputContainer, false)
-        } else {
-            task.isProcessing = false
-            const outputMsg = task["outputMsg"]
-            let msg = ""
-            if ("detail" in stepUpdate && typeof stepUpdate.detail === "string" && stepUpdate.detail.length > 0) {
-                msg = stepUpdate.detail
-                if (msg.toLowerCase().includes("out of memory")) {
-                    msg += `<br/><br/>
-                            <b>Suggestions</b>:
-                            <br/>
-                            1. If you have set an initial image, please try reducing its dimension to ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION} or smaller.<br/>
-                            2. Try picking a lower level in the '<em>GPU Memory Usage</em>' setting (in the '<em>Settings</em>' tab).<br/>
-                            3. Try generating a smaller image.<br/>`
-                } else if (msg.includes("DefaultCPUAllocator: not enough memory")) {
-                    msg += `<br/><br/>
-                            Reason: Your computer is running out of system RAM!
-                            <br/><br/>
-                            <b>Suggestions</b>:
-                            <br/>
-                            1. Try closing unnecessary programs and browser tabs.<br/>
-                            2. If that doesn't help, please increase your computer's virtual memory by following these steps for
-                             <a href="https://www.ibm.com/docs/en/opw/8.2.0?topic=tuning-optional-increasing-paging-file-size-windows-computers" target="_blank">Windows</a> or
-                             <a href="https://linuxhint.com/increase-swap-space-linux/" target="_blank">Linux</a>.<br/>
-                            3. Try restarting your computer.<br/>`
-                } else if (
-                    msg.includes("RuntimeError: output with shape [320, 320] doesn't match the broadcast shape")
-                ) {
-                    msg += `<br/><br/>
-                            <b>Reason</b>: You tried to use a LORA that was trained for a different Stable Diffusion model version!
-                            <br/><br/>
-                            <b>Suggestions</b>:
-                            <br/>
-                            Try to use a different model or a different LORA.`
-                } else if (msg.includes("Tensor on device cuda:0 is not on the expected device meta")) {
-                    msg += `<br/><br/>
-                            <b>Reason</b>: Due to some software issues, embeddings currently don't work with the "Low" memory profile.
-                            <br/><br/>
-                            <b>Suggestions</b>:
-                            <br/>
-                            1. Set the memory profile to "Balanced"<br/>
-                            2. Remove the embeddings from the prompt and the negative prompt<br/>
-                            3. Check whether the plugins you're using change the memory profile automatically.`
-                }
-            } else {
-                msg = `Unexpected Read Error:<br/><pre>StepUpdate: ${JSON.stringify(stepUpdate, undefined, 4)}</pre>`
-            }
-            logError(msg, stepUpdate, outputMsg)
-        }
-    }
-    if (task.isProcessing && task.batchesDone < task.batchCount) {
-        task["taskStatusLabel"].innerText = "Pending"
-        task["taskStatusLabel"].classList.add("waitingTaskLabel")
-        task["taskStatusLabel"].classList.remove("activeTaskLabel")
-        return
-    }
-    if ("instances" in task && task.instances.some((ins) => ins != instance && ins.isPending)) {
-        return
-    }
-
-    task.isProcessing = false
-    task["stopTask"].innerHTML = '<i class="fa-solid fa-trash-can"></i> Remove'
-    task["taskStatusLabel"].style.display = "none"
-
-    let time = millisecondsToStr(Date.now() - task.startTime)
-
-    if (task.batchesDone == task.batchCount) {
-        if (!task.outputMsg.innerText.toLowerCase().includes("error")) {
-            task.outputMsg.innerText = `Processed ${task.numOutputsTotal} images in ${time}`
-        }
-        task.progressBar.style.height = "0px"
-        task.progressBar.style.border = "0px solid var(--background-color3)"
-        task.progressBar.classList.remove("active")
-        setStatus("request", "done", "success")
-    } else {
-        task.outputMsg.innerText += `. Task ended after ${time}`
-    }
-
-    if (randomSeedField.checked) {
-        seedField.value = task.seed
-    }
-
-    if (SD.activeTasks.size > 0) {
-        return
-    }
-    const uncompletedTasks = getUncompletedTaskEntries()
-    if (uncompletedTasks && uncompletedTasks.length > 0) {
-        return
-    }
-
-    if (pauseClient) {
-        resumeBtn.click()
-    }
-    renderButtons.style.display = "none"
-    renameMakeImageButton()
-
-    if (isSoundEnabled()) {
-        playSound()
-    }
-}
-
-async function onTaskStart(task) {
-    if (!task.isProcessing || task.batchesDone >= task.batchCount) {
-        return
-    }
-
-    if (typeof task.startTime !== "number") {
-        task.startTime = Date.now()
-    }
-    if (!("instances" in task)) {
-        task["instances"] = []
-    }
-
-    task["stopTask"].innerHTML = '<i class="fa-solid fa-circle-stop"></i> Stop'
-    task["taskStatusLabel"].innerText = "Starting"
-    task["taskStatusLabel"].classList.add("waitingTaskLabel")
-
-    let newTaskReqBody = task.reqBody
-    if (task.batchCount > 1) {
-        // Each output render batch needs it's own task reqBody instance to avoid altering the other runs after they are completed.
-        newTaskReqBody = Object.assign({}, task.reqBody)
-        if (task.batchesDone == task.batchCount - 1) {
-            // Last batch of the task
-            // If the number of parallel jobs is no factor of the total number of images, the last batch must create less than "parallel jobs count" images
-            // E.g. with numOutputsTotal = 6 and num_outputs = 5, the last batch shall only generate 1 image.
-            newTaskReqBody.num_outputs = task.numOutputsTotal - task.reqBody.num_outputs * (task.batchCount - 1)
-        }
-    }
-
-    const startSeed = task.seed || newTaskReqBody.seed
-    const genSeeds = Boolean(
-        typeof newTaskReqBody.seed !== "number" || (newTaskReqBody.seed === task.seed && task.numOutputsTotal > 1)
-    )
-    if (genSeeds) {
-        newTaskReqBody.seed = parseInt(startSeed) + task.batchesDone * task.reqBody.num_outputs
-    }
-
-    // Update the seed *before* starting the processing so it's retained if user stops the task
-    if (randomSeedField.checked) {
-        seedField.value = task.seed
-    }
-
-    const outputContainer = document.createElement("div")
-    outputContainer.className = "img-batch"
-    task.outputContainer.insertBefore(outputContainer, task.outputContainer.firstChild)
-
-    const eventInfo = { reqBody: newTaskReqBody }
-    const callbacksPromises = PLUGINS["TASK_CREATE"].map((hook) => {
-        if (typeof hook !== "function") {
-            console.error("The provided TASK_CREATE hook is not a function. Hook: %o", hook)
-            return Promise.reject(new Error("hook is not a function."))
-        }
-        try {
-            return Promise.resolve(hook.call(task, eventInfo))
-        } catch (err) {
-            console.error(err)
-            return Promise.reject(err)
-        }
-    })
-    await Promise.allSettled(callbacksPromises)
-    let instance = eventInfo.instance
-    if (!instance) {
-        const factory = PLUGINS.OUTPUTS_FORMATS.get(eventInfo.reqBody?.output_format || newTaskReqBody.output_format)
-        if (factory) {
-            instance = await Promise.resolve(factory(eventInfo.reqBody || newTaskReqBody))
-        }
-        if (!instance) {
-            console.error(
-                `${factory ? "Factory " + String(factory) : "No factory defined"} for output format ${eventInfo.reqBody
-                    ?.output_format || newTaskReqBody.output_format}. Instance is ${instance ||
-                    "undefined"}. Using default renderer.`
-            )
-            instance = new SD.RenderTask(eventInfo.reqBody || newTaskReqBody)
-        }
-    }
-
-    task["instances"].push(instance)
-    task.batchesDone++
-
-    instance.enqueue(getTaskUpdater(task, newTaskReqBody, outputContainer)).then(
-        (renderResult) => {
-            onTaskCompleted(task, newTaskReqBody, instance, outputContainer, renderResult)
-        },
-        (reason) => {
-            onTaskErrorHandler(task, newTaskReqBody, instance, reason)
-        }
-    )
-
-    setStatus("request", "fetching..")
-    renderButtons.style.display = "flex"
-    renameMakeImageButton()
-    updateInitialText()
-}
-
 /* Hover effect for the init image in the task list */
-function createInitImageHover(taskEntry) {
+function createInitImageHover(taskEntry, task) {
+    taskEntry.querySelectorAll(".task-initimg").forEach((thumb) => {
+        let thumbimg = thumb.querySelector("img")
+        let img = createElement("img", { src: thumbimg.src })
+        thumb.querySelector(".task-fs-initimage").appendChild(img)
+        let div = createElement("div", undefined, ["top-right"])
+        div.innerHTML = `
+            <button class="useAsInputBtn">Use as Input</button>
+            <br>
+            <button class="useForControlnetBtn">Use for Controlnet</button>
+            <br>
+            <button class="downloadPreviewImg">Download</button>`
+        div.querySelector(".useAsInputBtn").addEventListener("click", (e) => {
+            e.preventDefault()
+            onUseAsInputClick(null, img)
+        })
+        div.querySelector(".useForControlnetBtn").addEventListener("click", (e) => {
+            e.preventDefault()
+            controlImagePreview.src = img.src
+        })
+        div.querySelector(".downloadPreviewImg").addEventListener("click", (e) => {
+            e.preventDefault()
+
+            const name = "image." + task.reqBody["output_format"]
+            const blob = dataURItoBlob(img.src)
+            saveAs(blob, name)
+        })
+        thumb.querySelector(".task-fs-initimage").appendChild(div)
+    })
+    return
+
     var $tooltip = $(taskEntry.querySelector(".task-fs-initimage"))
     var img = document.createElement("img")
     img.src = taskEntry.querySelector("div.task-initimg > img").src
@@ -1234,7 +1052,12 @@ function createTask(task) {
     if (task.reqBody.init_image !== undefined) {
         let h = 80
         let w = ((task.reqBody.width * h) / task.reqBody.height) >> 0
-        taskConfig += `<div class="task-initimg" style="float:left;"><img style="width:${w}px;height:${h}px;" src="${task.reqBody.init_image}"><div class="task-fs-initimage"></div></div>`
+        taskConfig += `<div class="task-initimg init-img-preview" style="float:left;"><img style="width:${w}px;height:${h}px;" src="${task.reqBody.init_image}"><div class="task-fs-initimage"></div></div>`
+    }
+    if (task.reqBody.control_image !== undefined) {
+        let h = 80
+        let w = ((task.reqBody.width * h) / task.reqBody.height) >> 0
+        taskConfig += `<div class="task-initimg controlnet-img-preview" style="float:left;"><img style="width:${w}px;height:${h}px;" src="${task.reqBody.control_image}"><div class="task-fs-initimage"></div></div>`
     }
 
     taskConfig += `<div class="taskConfigData">${createTaskConfig(task)}</span></div></div>`
@@ -1245,7 +1068,7 @@ function createTask(task) {
     taskEntry.innerHTML = ` <div class="header-content panel collapsible active">
                                 <i class="drag-handle fa-solid fa-grip"></i>
                                 <div class="taskStatusLabel">Enqueued</div>
-                                <button class="secondaryButton stopTask"><i class="fa-solid fa-trash-can"></i> Remove</button>
+                                <button class="secondaryButton stopTask"><i class="fa-solid fa-xmark"></i> Cancel</button>
                                 <button class="tertiaryButton useSettings"><i class="fa-solid fa-redo"></i> Use these settings</button>
                                 <div class="preview-prompt"></div>
                                 <div class="taskConfig">${taskConfig}</div>
@@ -1255,6 +1078,22 @@ function createTask(task) {
                             <div class="collapsible-content">
                                 <div class="img-preview">
                             </div>`
+
+    if (task.reqBody.init_image !== undefined || task.reqBody.control_image !== undefined) {
+        createInitImageHover(taskEntry, task)
+    }
+
+    if (task.reqBody.control_image !== undefined && task.reqBody.control_filter_to_apply !== undefined) {
+        let req = {
+            image: task.reqBody.control_image,
+            filter: task.reqBody.control_filter_to_apply,
+            model_paths: {},
+            filter_params: {},
+        }
+        req["model_paths"][task.reqBody.control_filter_to_apply] = task.reqBody.control_filter_to_apply
+
+        task["previewTaskReq"] = req
+    }
 
     createCollapsibles(taskEntry)
 
@@ -1286,10 +1125,7 @@ function createTask(task) {
         startY = e.target.closest(".imageTaskContainer").offsetTop
     })
 
-    if (task.reqBody.init_image !== undefined) {
-        createInitImageHover(taskEntry)
-    }
-
+    task["taskConfig"] = taskEntry.querySelector(".taskConfig")
     task["taskStatusLabel"] = taskEntry.querySelector(".taskStatusLabel")
     task["outputContainer"] = taskEntry.querySelector(".img-preview")
     task["outputMsg"] = taskEntry.querySelector(".outputMsg")
@@ -1331,8 +1167,24 @@ function createTask(task) {
 
 function getCurrentUserRequest() {
     const numOutputsTotal = parseInt(numOutputsTotalField.value)
-    const numOutputsParallel = parseInt(numOutputsParallelField.value)
+    let numOutputsParallel = parseInt(numOutputsParallelField.value)
     const seed = randomSeedField.checked ? Math.floor(Math.random() * (2 ** 32 - 1)) : parseInt(seedField.value)
+
+    // if (
+    //     testDiffusers.checked &&
+    //     document.getElementById("toggle-tensorrt-install").innerHTML == "Uninstall" &&
+    //     document.querySelector("#convert_to_tensorrt").checked
+    // ) {
+    //     // TRT enabled
+
+    //     numOutputsParallel = 1 // force 1 parallel
+    // }
+
+    // clamp to multiple of 8
+    let width = parseInt(widthField.value)
+    let height = parseInt(heightField.value)
+    width = width - (width % IMAGE_STEP_SIZE)
+    height = height - (height % IMAGE_STEP_SIZE)
 
     const newTask = {
         batchesDone: 0,
@@ -1346,8 +1198,8 @@ function getCurrentUserRequest() {
             num_outputs: numOutputsParallel,
             num_inference_steps: parseInt(numInferenceStepsField.value),
             guidance_scale: parseFloat(guidanceScaleField.value),
-            width: parseInt(widthField.value),
-            height: parseInt(heightField.value),
+            width: width,
+            height: height,
             // allow_nsfw: allowNSFWField.checked,
             vram_usage_level: vramUsageLevelField.value,
             sampler_name: samplerField.value,
@@ -1377,6 +1229,7 @@ function getCurrentUserRequest() {
         // }
         if (maskSetting.checked) {
             newTask.reqBody.mask = imageInpainter.getImg()
+            newTask.reqBody.strict_mask_border = strictMaskBorderField.checked
         }
         newTask.reqBody.preserve_init_image_color_profile = applyColorCorrectionField.checked
         if (!testDiffusers.checked) {
@@ -1407,7 +1260,9 @@ function getCurrentUserRequest() {
         newTask.reqBody.hypernetwork_strength = parseFloat(hypernetworkStrengthField.value)
     }
     if (testDiffusers.checked) {
-        let [modelNames, modelStrengths] = getModelInfo(loraModels)
+        let loraModelData = loraModelField.value
+        let modelNames = loraModelData["modelNames"]
+        let modelStrengths = loraModelData["modelWeights"]
 
         if (modelNames.length > 0) {
             modelNames = modelNames.length == 1 ? modelNames[0] : modelNames
@@ -1417,18 +1272,71 @@ function getCurrentUserRequest() {
             newTask.reqBody.lora_alpha = modelStrengths
         }
     }
+    if (testDiffusers.checked && document.getElementById("toggle-tensorrt-install").innerHTML == "Uninstall") {
+        // TRT is installed
+        newTask.reqBody.convert_to_tensorrt = document.querySelector("#convert_to_tensorrt").checked
+        let trtBuildConfig = {
+            batch_size_range: [
+                parseInt(document.querySelector("#trt-build-min-batch").value),
+                parseInt(document.querySelector("#trt-build-max-batch").value),
+            ],
+            dimensions_range: [],
+        }
+
+        let sizes = [512, 768, 1024, 1280, 1536]
+        sizes.forEach((i) => {
+            let el = document.querySelector("#trt-build-res-" + i)
+            if (el.checked) {
+                trtBuildConfig["dimensions_range"].push([i, i + 256])
+            }
+        })
+        newTask.reqBody.trt_build_config = trtBuildConfig
+    }
+    if (controlnetModelField.value !== "" && IMAGE_REGEX.test(controlImagePreview.src)) {
+        newTask.reqBody.use_controlnet_model = controlnetModelField.value
+        newTask.reqBody.control_image = controlImagePreview.src
+        if (controlImageFilterField.value !== "") {
+            newTask.reqBody.control_filter_to_apply = controlImageFilterField.value
+        }
+    }
+
     return newTask
 }
 
-function getModelInfo(models) {
-    let modelInfo = models.map((e) => [e[0].value, e[1].value])
-    modelInfo = modelInfo.filter((e) => e[0].trim() !== "")
-    modelInfo = modelInfo.map((e) => [e[0], parseFloat(e[1])])
+function setEmbeddings(task) {
+    let prompt = task.reqBody.prompt.toLowerCase()
+    let negativePrompt = task.reqBody.negative_prompt.toLowerCase()
+    let overallPrompt = prompt + " " + negativePrompt
 
-    let modelNames = modelInfo.map((e) => e[0])
-    let modelStrengths = modelInfo.map((e) => e[1])
+    let embeddingsTree = modelsOptions["embeddings"]
+    let embeddings = []
+    function extract(entries, basePath = "") {
+        entries.forEach((e) => {
+            if (Array.isArray(e)) {
+                let path = basePath === "" ? basePath + e[0] : basePath + "/" + e[0]
+                extract(e[1], path)
+            } else {
+                let path = basePath === "" ? basePath + e : basePath + "/" + e
+                embeddings.push([e.toLowerCase().replace(" ", "_"), path])
+            }
+        })
+    }
+    extract(embeddingsTree)
 
-    return [modelNames, modelStrengths]
+    let embeddingPaths = []
+
+    embeddings.forEach((e) => {
+        let token = e[0]
+        let path = e[1]
+
+        if (overallPrompt.includes(token)) {
+            embeddingPaths.push(path)
+        }
+    })
+
+    if (embeddingPaths.length > 0) {
+        task.reqBody.use_embeddings_model = embeddingPaths
+    }
 }
 
 function getPrompts(prompts) {
@@ -1604,20 +1512,6 @@ function createFileName(prompt, seed, steps, guidance, outputFormat) {
     let fileName = `${underscoreName}_S${seed}_St${steps}_G${guidance}.${outputFormat}`
 
     return fileName
-}
-
-async function stopAllTasks() {
-    getUncompletedTaskEntries().forEach((taskEntry) => {
-        const taskStatusLabel = taskEntry.querySelector(".taskStatusLabel")
-        if (taskStatusLabel) {
-            taskStatusLabel.style.display = "none"
-        }
-        const task = htmlTaskMap.get(taskEntry)
-        if (!task) {
-            return
-        }
-        abortTask(task)
-    })
 }
 
 function updateInitialText() {
@@ -1821,6 +1715,51 @@ function onFixFaceModelChange() {
 }
 gfpganModelField.addEventListener("change", onFixFaceModelChange)
 onFixFaceModelChange()
+
+function onControlnetModelChange() {
+    let configBox = document.querySelector("#controlnet_config")
+    if (IMAGE_REGEX.test(controlImagePreview.src)) {
+        configBox.classList.remove("displayNone")
+        controlImageContainer.classList.remove("displayNone")
+    } else {
+        configBox.classList.add("displayNone")
+        controlImageContainer.classList.add("displayNone")
+    }
+}
+controlImagePreview.addEventListener("load", onControlnetModelChange)
+controlImagePreview.addEventListener("unload", onControlnetModelChange)
+onControlnetModelChange()
+
+function onControlImageFilterChange() {
+    let filterId = controlImageFilterField.value
+    if (filterId.includes("openpose")) {
+        controlnetModelField.value = "control_v11p_sd15_openpose"
+    } else if (filterId === "canny") {
+        controlnetModelField.value = "control_v11p_sd15_canny"
+    } else if (filterId === "mlsd") {
+        controlnetModelField.value = "control_v11p_sd15_mlsd"
+    } else if (filterId === "mlsd") {
+        controlnetModelField.value = "control_v11p_sd15_mlsd"
+    } else if (filterId.includes("scribble")) {
+        controlnetModelField.value = "control_v11p_sd15_scribble"
+    } else if (filterId.includes("softedge")) {
+        controlnetModelField.value = "control_v11p_sd15_softedge"
+    } else if (filterId === "normal_bae") {
+        controlnetModelField.value = "control_v11p_sd15_normalbae"
+    } else if (filterId.includes("depth")) {
+        controlnetModelField.value = "control_v11f1p_sd15_depth"
+    } else if (filterId === "lineart_anime") {
+        controlnetModelField.value = "control_v11p_sd15s2_lineart_anime"
+    } else if (filterId.includes("lineart")) {
+        controlnetModelField.value = "control_v11p_sd15_lineart"
+    } else if (filterId === "shuffle") {
+        controlnetModelField.value = "control_v11e_sd15_shuffle"
+    } else if (filterId === "segment") {
+        controlnetModelField.value = "control_v11p_sd15_seg"
+    }
+}
+controlImageFilterField.addEventListener("change", onControlImageFilterChange)
+onControlImageFilterChange()
 
 upscaleModelField.disabled = !useUpscalingField.checked
 upscaleAmountField.disabled = !useUpscalingField.checked
@@ -2051,6 +1990,7 @@ function checkRandomSeed() {
 randomSeedField.addEventListener("input", checkRandomSeed)
 checkRandomSeed()
 
+// warning: the core plugin `image-editor-improvements.js:172` replaces loadImg2ImgFromFile() with a custom version
 function loadImg2ImgFromFile() {
     if (initImageSelector.files.length === 0) {
         return
@@ -2077,6 +2017,7 @@ function img2imgLoad() {
     }
     initImagePreviewContainer.classList.add("has-image")
     colorCorrectionSetting.style.display = ""
+    strictMaskBorderSetting.style.display = maskSetting.checked ? "" : "none"
 
     initImageSizeBox.textContent = initImagePreview.naturalWidth + " x " + initImagePreview.naturalHeight
     imageEditor.setImage(this.src, initImagePreview.naturalWidth, initImagePreview.naturalHeight)
@@ -2094,6 +2035,7 @@ function img2imgUnload() {
     }
     initImagePreviewContainer.classList.remove("has-image")
     colorCorrectionSetting.style.display = "none"
+    strictMaskBorderSetting.style.display = "none"
     imageEditor.setImage(null, parseInt(widthField.value), parseInt(heightField.value))
 }
 initImagePreview.addEventListener("load", img2imgLoad)
@@ -2102,10 +2044,54 @@ initImageClearBtn.addEventListener("click", img2imgUnload)
 maskSetting.addEventListener("click", function() {
     onDimensionChange()
 })
+maskSetting.addEventListener("change", function() {
+    strictMaskBorderSetting.style.display = this.checked ? "" : "none"
+})
 
 promptsFromFileBtn.addEventListener("click", function() {
     promptsFromFileSelector.click()
 })
+
+function loadControlnetImageFromFile() {
+    if (controlImageSelector.files.length === 0) {
+        return
+    }
+
+    let reader = new FileReader()
+    let file = controlImageSelector.files[0]
+
+    reader.addEventListener("load", function(event) {
+        controlImagePreview.src = reader.result
+    })
+
+    if (file) {
+        reader.readAsDataURL(file)
+    }
+}
+controlImageSelector.addEventListener("change", loadControlnetImageFromFile)
+
+function controlImageLoad() {
+    let w = controlImagePreview.naturalWidth
+    let h = controlImagePreview.naturalHeight
+    w = w - (w % IMAGE_STEP_SIZE)
+    h = h - (h % IMAGE_STEP_SIZE)
+
+    addImageSizeOption(w)
+    addImageSizeOption(h)
+
+    widthField.value = w
+    heightField.value = h
+    widthField.dispatchEvent(new Event("change"))
+    heightField.dispatchEvent(new Event("change"))
+}
+controlImagePreview.addEventListener("load", controlImageLoad)
+
+function controlImageUnload() {
+    controlImageSelector.value = null
+    controlImagePreview.src = ""
+    controlImagePreview.dispatchEvent(new Event("unload"))
+}
+controlImageClearBtn.addEventListener("click", controlImageUnload)
 
 promptsFromFileSelector.addEventListener("change", async function() {
     if (promptsFromFileSelector.files.length === 0) {
@@ -2169,22 +2155,6 @@ function isTabActive(tab) {
     return tab.classList.contains("active")
 }
 
-let pauseClient = false
-
-function resumeClient() {
-    if (pauseClient) {
-        document.body.classList.remove("wait-pause")
-        document.body.classList.add("pause")
-    }
-    return new Promise((resolve) => {
-        let playbuttonclick = function() {
-            resumeBtn.removeEventListener("click", playbuttonclick)
-            resolve("resolved")
-        }
-        resumeBtn.addEventListener("click", playbuttonclick)
-    })
-}
-
 function splashScreen(force = false) {
     const splashVersion = splashScreenPopup.dataset["version"]
     const lastSplash = localStorage.getItem("lastSplashScreenVersion") || 0
@@ -2202,20 +2172,10 @@ document.getElementById("logo_img").addEventListener("click", (e) => {
 
 promptField.addEventListener("input", debounce(renameMakeImageButton, 1000))
 
-pauseBtn.addEventListener("click", function() {
-    pauseClient = true
-    pauseBtn.style.display = "none"
-    resumeBtn.style.display = "inline"
-    document.body.classList.add("wait-pause")
-})
-
-resumeBtn.addEventListener("click", function() {
-    pauseClient = false
-    resumeBtn.style.display = "none"
-    pauseBtn.style.display = "inline"
-    document.body.classList.remove("pause")
-    document.body.classList.remove("wait-pause")
-})
+function onPing(event) {
+    tunnelUpdate(event)
+    packagesUpdate(event)
+}
 
 function tunnelUpdate(event) {
     if ("cloudflare" in event) {
@@ -2227,6 +2187,24 @@ function tunnelUpdate(event) {
         document.getElementById("cloudflare-on").classList.add("displayNone")
         document.getElementById("cloudflare-off").classList.remove("displayNone")
         document.getElementById("toggle-cloudflare-tunnel").innerHTML = "Start"
+    }
+}
+
+function packagesUpdate(event) {
+    let trtBtn = document.getElementById("toggle-tensorrt-install")
+    let trtInstalled = "packages_installed" in event && "tensorrt" in event["packages_installed"]
+
+    if ("packages_installing" in event && event["packages_installing"].includes("tensorrt")) {
+        trtBtn.innerHTML = "Installing.."
+        trtBtn.disabled = true
+    } else {
+        trtBtn.innerHTML = trtInstalled ? "Uninstall" : "Install"
+        trtBtn.disabled = false
+    }
+
+    if (document.getElementById("toggle-tensorrt-install").innerHTML == "Uninstall") {
+        document.querySelector("#enable_trt_config").classList.remove("displayNone")
+        document.querySelector("#trt-build-config").classList.remove("displayNone")
     }
 }
 
@@ -2249,34 +2227,156 @@ document.getElementById("toggle-cloudflare-tunnel").addEventListener("click", as
     console.log(`Cloudflare tunnel ${command} result:`, res)
 })
 
+document.getElementById("toggle-tensorrt-install").addEventListener("click", function(e) {
+    if (this.disabled === true) {
+        return
+    }
+
+    let command = this.innerHTML.toLowerCase()
+    let self = this
+
+    shiftOrConfirm(
+        e,
+        "Are you sure you want to " + command + " TensorRT?",
+        async function() {
+            showToast(`TensorRT ${command} started. Please wait.`)
+
+            self.disabled = true
+
+            if (command === "install") {
+                self.innerHTML = "Installing.."
+            } else if (command === "uninstall") {
+                self.innerHTML = "Uninstalling.."
+            }
+
+            if (command === "installing..") {
+                alert("Already installing TensorRT!")
+                return
+            }
+            if (command !== "install" && command !== "uninstall") {
+                return
+            }
+
+            let res = await fetch("/package/tensorrt", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    command: command,
+                }),
+            })
+            res = await res.json()
+
+            self.disabled = false
+
+            if (res.status === "OK") {
+                alert("TensorRT " + command + "ed successfully!")
+                self.innerHTML = command === "install" ? "Uninstall" : "Install"
+            } else if (res.status_code === 500) {
+                alert("TensorselfRT failed to " + command + ": " + res.detail)
+                self.innerHTML = command === "install" ? "Install" : "Uninstall"
+            }
+
+            console.log(`Package ${command} result:`, res)
+        },
+        false
+    )
+})
+
 /* Embeddings */
 
-function updateEmbeddingsList(filter = "") {
-    function html(model, prefix = "", filter = "") {
-        filter = filter.toLowerCase()
-        let toplevel = ""
-        let folders = ""
+addEmbeddingsThumb.addEventListener("click", (e) => addEmbeddingsThumbInput.click())
+addEmbeddingsThumbInput.addEventListener("change", loadThumbnailImageFromFile)
 
+function loadThumbnailImageFromFile() {
+    if (addEmbeddingsThumbInput.files.length === 0) {
+        return
+    }
+
+    let reader = new FileReader()
+    let file = addEmbeddingsThumbInput.files[0]
+
+    reader.addEventListener("load", function(event) {
+        let img = document.createElement("img")
+        img.src = reader.result
+        onUseAsThumbnailClick(
+            {
+                use_embeddings_model: getAllModelNames("embeddings").sort((a, b) =>
+                    a.localeCompare(b, undefined, { sensitivity: "base" })
+                ),
+            },
+            img
+        )
+    })
+
+    if (file) {
+        reader.readAsDataURL(file)
+    }
+}
+
+function updateEmbeddingsList(filter = "") {
+    function html(model, iconlist = [], prefix = "", filter = "") {
+        filter = filter.toLowerCase()
+        let toplevel = document.createElement("div")
+        let folders = document.createElement("div")
+        let embIcon = Object.assign(
+            {},
+            ...iconlist.map((x) => ({
+                [x
+                    .toLowerCase()
+                    .split(".")
+                    .slice(0, -1)
+                    .join(".")]: x,
+            }))
+        )
+
+        let profileName = profileNameField.value
         model?.forEach((m) => {
             if (typeof m == "string") {
-                if (m.toLowerCase().search(filter) != -1) {
-                    toplevel += `<button data-embedding="${m}">${m}</button> `
+                let token = m.toLowerCase()
+                if (token.search(filter) != -1) {
+                    let button
+                    // if (iconlist.length==0) {
+                    //     button = document.createElement("button")
+                    //     button.innerText = m
+                    // } else {
+                    let img = "/media/images/noimg.png"
+                    if (token in embIcon) {
+                        img = `/bucket/${profileName}/embeddings/${embIcon[token]}`
+                    }
+                    button = createModifierCard(m, [img, img], true)
+                    // }
+                    button.dataset["embedding"] = m
+                    button.addEventListener("click", onButtonClick)
+                    toplevel.appendChild(button)
                 }
             } else {
-                let subdir = html(m[1], prefix + m[0] + "/", filter)
-                if (subdir != "") {
-                    folders +=
-                        `<div class="embedding-category"><h4 class="collapsible">${prefix}${m[0]}</h4><div class="collapsible-content">` +
-                        subdir +
-                        "</div></div>"
+                let subdir = html(m[1], iconlist, prefix + m[0] + "/", filter)
+                if (typeof subdir == "object") {
+                    let div1 = document.createElement("div")
+                    let div2 = document.createElement("div")
+                    div1.classList.add("collapsible-content")
+                    div1.classList.add("embedding-category")
+                    div1.appendChild(subdir)
+                    div2.replaceChildren(htmlToElement(`<h4 class="collapsible">${prefix}${m[0]}</h4>`), div1)
+                    folders.appendChild(div2)
                 }
             }
         })
-        return toplevel + folders
+
+        if (toplevel.children.length == 0 && folders.children.length == 0) {
+            // Empty folder
+            return ""
+        }
+
+        let result = document.createElement("div")
+        result.replaceChildren(toplevel, htmlToElement('<br style="clear: both;">'), folders)
+        return result
     }
 
     function onButtonClick(e) {
-        let text = e.target.dataset["embedding"]
+        let text = e.target.closest("[data-embedding]").dataset["embedding"]
         const insertIntoNegative = e.shiftKey || positiveEmbeddingText.classList.contains("displayNone")
 
         if (embeddingsModeField.value == "insert") {
@@ -2301,24 +2401,27 @@ function updateEmbeddingsList(filter = "") {
         }
     }
 
-    // Remove after fixing https://github.com/huggingface/diffusers/issues/3922
-    let warning = ""
-    if (vramUsageLevelField.value == "low") {
-        warning = `
-            <div style="border-color: var(--accent-color); border-width: 4px; border-radius: 1em; border-style: solid; background: black; text-align: center; padding: 1em; margin: 1em; ">
-                <i class="fa fa-fire" style="color:#f7630c;"></i> Warning: Your GPU memory profile is set to "Low". Embeddings currently only work in "Balanced" mode!
-            </div>`
-    }
-    // END of remove block
+    // Usually the rendering of the Embeddings HTML takes less than a second. In case it takes longer, show a spinner
+    embeddingsList.innerHTML = `
+        <div class="spinner-container">
+          <div class="spinner-block"></div> <div class="spinner-block"></div> <div class="spinner-block"></div> <div class="spinner-block"></div>
+          <div class="spinner-block"></div> <div class="spinner-block"></div> <div class="spinner-block"></div> <div class="spinner-block"></div>
+          <div class="spinner-block"></div> <div class="spinner-block"></div> <div class="spinner-block"></div> <div class="spinner-block"></div>
+          <div class="spinner-block"></div> <div class="spinner-block"></div> <div class="spinner-block"></div> <div class="spinner-block"></div>
+        </div>
+    `
 
-    embeddingsList.innerHTML = warning + html(modelsOptions.embeddings, "", filter)
-    embeddingsList.querySelectorAll("button").forEach((b) => {
-        b.addEventListener("click", onButtonClick)
-    })
-    createCollapsibles(embeddingsList)
-    if (filter != "") {
-        embeddingsExpandAll()
-    }
+    let profileName = profileNameField.value
+    fetch(`/bucket/${profileName}/embeddings/`)
+        .then((response) => (response.status == 200 ? response.json() : []))
+        .then(async function(iconlist) {
+            embeddingsList.replaceChildren(html(modelsOptions.embeddings, iconlist, "", filter))
+            createCollapsibles(embeddingsList)
+            if (filter != "") {
+                embeddingsExpandAll()
+            }
+            resizeModifierCards(embeddingsCardSizeSelector.value)
+        })
 }
 
 function showEmbeddingDialog() {
@@ -2326,21 +2429,29 @@ function showEmbeddingDialog() {
     embeddingsSearchBox.value = ""
     embeddingsDialog.showModal()
 }
+
 embeddingsButton.addEventListener("click", () => {
     positiveEmbeddingText.classList.remove("displayNone")
     negativeEmbeddingText.classList.add("displayNone")
     showEmbeddingDialog()
 })
+
 negativeEmbeddingsButton.addEventListener("click", () => {
     positiveEmbeddingText.classList.add("displayNone")
     negativeEmbeddingText.classList.remove("displayNone")
     showEmbeddingDialog()
 })
+
 embeddingsDialogCloseBtn.addEventListener("click", (e) => {
     embeddingsDialog.close()
 })
+
 embeddingsSearchBox.addEventListener("input", (e) => {
     updateEmbeddingsList(embeddingsSearchBox.value)
+})
+
+embeddingsCardSizeSelector.addEventListener("change", (e) => {
+    resizeModifierCards(embeddingsCardSizeSelector.value)
 })
 
 modalDialogCloseOnBackdropClick(embeddingsDialog)
@@ -2390,10 +2501,6 @@ embeddingsCollapsiblesBtn.addEventListener("click", (e) => {
     }
 })
 
-if (testDiffusers.checked) {
-    document.getElementById("embeddings-container").classList.remove("displayNone")
-}
-
 /* Pause function */
 document.querySelectorAll(".tab").forEach(linkTabContents)
 
@@ -2410,6 +2517,17 @@ window.addEventListener("beforeunload", function(e) {
     }
 })
 
+document.addEventListener("collapsibleClick", function(e) {
+    let header = e.detail
+    if (header === document.querySelector("#negative_prompt_handle")) {
+        if (header.classList.contains("active")) {
+            negativeEmbeddingsButton.classList.remove("displayNone")
+        } else {
+            negativeEmbeddingsButton.classList.add("displayNone")
+        }
+    }
+})
+
 createCollapsibles()
 prettifyInputs(document)
 
@@ -2417,72 +2535,265 @@ prettifyInputs(document)
 promptField.focus()
 promptField.selectionStart = promptField.value.length
 
-// multi-models
-let modelCount = 0
+////////////////////////////// Image Size Widget //////////////////////////////////////////
 
-function addModelEntry(modelContainer, modelsList, modelType, defaultValue, strengthStep) {
-    let idx = modelCount++
-    let nameId = modelType + "_model_" + idx
-    let strengthId = modelType + "_alpha_" + idx
+function roundToMultiple(number, n) {
+    if (n == "") {
+        n = 1
+    }
+    return Math.round(number / n) * n
+}
 
-    const modelElement = document.createElement("div")
-    modelElement.className = "model_entry"
-    modelElement.innerHTML = `
-        <input id="${nameId}" class="model_name" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
-        <input id="${strengthId}" class="model_strength" type="number" step="${strengthStep}" style="width: 50pt" value="${defaultValue}" pattern="^-?[0-9]*\.?[0-9]*$" onkeypress="preventNonNumericalInput(event)">
-    `
-    modelContainer.appendChild(modelElement)
+function addImageSizeOption(size) {
+    let sizes = Object.values(widthField.options).map((o) => o.value)
+    if (!sizes.includes(String(size))) {
+        sizes.push(String(size))
+        sizes.sort((a, b) => Number(a) - Number(b))
 
-    let modelName = new ModelDropdown(modelElement.querySelector(".model_name"), modelType, "None")
-    let modelStrength = modelElement.querySelector(".model_strength")
-    let entry = [modelName, modelStrength, modelElement]
+        let option = document.createElement("option")
+        option.value = size
+        option.text = `${size}`
 
-    let removeBtn = document.createElement("button")
-    removeBtn.className = "remove_model_btn"
-    removeBtn.setAttribute("title", "Remove model")
-    removeBtn.innerHTML = '<i class="fa-solid fa-minus"></i>'
+        widthField.add(option, sizes.indexOf(String(size)))
+        heightField.add(option.cloneNode(true), sizes.indexOf(String(size)))
+    }
+}
 
-    if (modelsList.length === 0) {
-        removeBtn.classList.add("displayNone")
+function setImageWidthHeight(w, h) {
+    let step = customWidthField.step
+    w = roundToMultiple(w, step)
+    h = roundToMultiple(h, step)
+
+    addImageSizeOption(w)
+    addImageSizeOption(h)
+
+    widthField.value = w
+    heightField.value = h
+    widthField.dispatchEvent(new Event("change"))
+    heightField.dispatchEvent(new Event("change"))
+}
+
+function enlargeImageSize(factor) {
+    let step = customWidthField.step
+
+    let w = roundToMultiple(widthField.value * factor, step)
+    let h = roundToMultiple(heightField.value * factor, step)
+    customWidthField.value = w
+    customHeightField.value = h
+}
+
+let recentResolutionsValues = []
+
+;(function() {
+    ///// Init resolutions dropdown
+
+    function makeResolutionButtons(listElement, resolutionList) {
+        listElement.innerHTML = ""
+        resolutionList.forEach((el) => {
+            let button = createElement("button", { style: "width: 8em;" }, "tertiaryButton", `${el.w}×${el.h}`)
+            button.addEventListener("click", () => {
+                customWidthField.value = el.w
+                customHeightField.value = el.h
+                hidePopup()
+            })
+            listElement.appendChild(button)
+            listElement.appendChild(document.createElement("br"))
+        })
     }
 
-    removeBtn.addEventListener("click", function() {
-        let entryIdx = modelsList.indexOf(entry)
-        modelsList.splice(entryIdx, 1)
-        modelContainer.removeChild(modelElement)
+    enlargeButtons.querySelectorAll("button").forEach((button) =>
+        button.addEventListener("click", (e) => {
+            enlargeImageSize(parseFloat(button.dataset["factor"]))
+            hidePopup()
+        })
+    )
+
+    customWidthField.addEventListener("change", () => {
+        let w = customWidthField.value
+        customWidthField.value = roundToMultiple(w, customWidthField.step)
+        if (w != customWidthField.value) {
+            showToast(`Rounded width to the closest multiple of ${customWidthField.step}.`)
+        }
     })
 
-    modelElement.appendChild(removeBtn)
-
-    modelsList.push(entry)
-
-    return modelElement
-}
-
-function createLoraEntry() {
-    let container = document.querySelector("#lora_model_container .model_entries")
-    return addModelEntry(container, loraModels, "lora", 0.5, 0.02)
-}
-
-function createLoraEntries() {
-    let firstEntry = createLoraEntry()
-
-    let addLoraBtn = document.querySelector("#lora_model_container .add_model_entry")
-    addLoraBtn.addEventListener("click", () => {
-        createLoraEntry()
+    customHeightField.addEventListener("change", () => {
+        let h = customHeightField.value
+        customHeightField.value = roundToMultiple(h, customHeightField.step)
+        if (h != customHeightField.value) {
+            showToast(`Rounded height to the closest multiple of ${customHeightField.step}.`)
+        }
     })
-}
-createLoraEntries()
 
-// chrome-like spinners only on hover
-// function showSpinnerOnlyOnHover(e) {
-//     e.addEventListener("mouseenter", () => {
-//         e.setAttribute("type", "number")
-//     })
-//     e.addEventListener("mouseleave", () => {
-//         e.removeAttribute("type")
-//     })
-//     e.removeAttribute("type")
-// }
+    makeImageBtn.addEventListener("click", () => {
+        let w = widthField.value
+        let h = heightField.value
 
-// document.querySelectorAll("input[type=number]").forEach(showSpinnerOnlyOnHover)
+        recentResolutionsValues = recentResolutionsValues.filter((el) => el.w != w || el.h != h)
+        recentResolutionsValues.unshift({ w: w, h: h })
+        recentResolutionsValues = recentResolutionsValues.slice(0, 8)
+
+        localStorage.recentResolutionsValues = JSON.stringify(recentResolutionsValues)
+        makeResolutionButtons(recentResolutionList, recentResolutionsValues)
+    })
+
+    const defaultResolutionsValues = [
+        { w: 512, h: 512 },
+        { w: 448, h: 640 },
+        { w: 512, h: 768 },
+        { w: 768, h: 512 },
+        { w: 1024, h: 768 },
+        { w: 768, h: 1024 },
+        { w: 1024, h: 1024 },
+        { w: 1920, h: 1080 },
+    ]
+    let _jsonstring = localStorage.recentResolutionsValues
+    if (_jsonstring == undefined) {
+        recentResolutionsValues = defaultResolutionsValues
+        localStorage.recentResolutionsValues = JSON.stringify(recentResolutionsValues)
+    } else {
+        recentResolutionsValues = JSON.parse(localStorage.recentResolutionsValues)
+    }
+
+    makeResolutionButtons(recentResolutionList, recentResolutionsValues)
+    makeResolutionButtons(commonResolutionList, defaultResolutionsValues)
+
+    recentResolutionsValues.forEach((val) => {
+        addImageSizeOption(val.w)
+        addImageSizeOption(val.h)
+    })
+
+    function processClick(e) {
+        if (!recentResolutionsPopup.contains(e.target)) {
+            hidePopup()
+        }
+    }
+
+    function showPopup() {
+        customWidthField.value = widthField.value
+        customHeightField.value = heightField.value
+        recentResolutionsPopup.classList.remove("displayNone")
+        resizeSlider.value = 1
+        resizeSlider.dataset["w"] = widthField.value
+        resizeSlider.dataset["h"] = heightField.value
+        document.addEventListener("click", processClick)
+    }
+
+    function hidePopup() {
+        recentResolutionsPopup.classList.add("displayNone")
+        setImageWidthHeight(customWidthField.value, customHeightField.value)
+        document.removeEventListener("click", processClick)
+    }
+
+    recentResolutionsButton.addEventListener("click", (event) => {
+        if (recentResolutionsPopup.classList.contains("displayNone")) {
+            showPopup()
+            event.stopPropagation()
+        } else {
+            hidePopup()
+        }
+    })
+
+    resizeSlider.addEventListener("input", (e) => {
+        let w = parseInt(resizeSlider.dataset["w"])
+        let h = parseInt(resizeSlider.dataset["h"])
+        let factor = parseFloat(resizeSlider.value)
+        let step = customWidthField.step
+
+        customWidthField.value = roundToMultiple(w * factor * factor, step)
+        customHeightField.value = roundToMultiple(h * factor * factor, step)
+    })
+
+    resizeSlider.addEventListener("change", (e) => {
+        hidePopup()
+    })
+
+    swapWidthHeightButton.addEventListener("click", (event) => {
+        let temp = widthField.value
+        widthField.value = heightField.value
+        heightField.value = temp
+    })
+})()
+
+document.addEventListener("before_task_start", (e) => {
+    let task = e.detail.task
+
+    // Update the seed *before* starting the processing so it's retained if user stops the task
+    if (randomSeedField.checked) {
+        seedField.value = task.seed
+    }
+})
+
+document.addEventListener("after_task_start", (e) => {
+    renderButtons.style.display = "flex"
+    renameMakeImageButton()
+    updateInitialText()
+})
+
+document.addEventListener("on_task_step", (e) => {
+    showImages(e.detail.reqBody, e.detail.stepUpdate, e.detail.outputContainer, true)
+})
+
+document.addEventListener("on_render_task_success", (e) => {
+    showImages(e.detail.reqBody, e.detail.stepUpdate, e.detail.outputContainer, false)
+})
+
+document.addEventListener("on_render_task_fail", (e) => {
+    let task = e.detail.task
+    let stepUpdate = e.detail.stepUpdate
+
+    const outputMsg = task["outputMsg"]
+    let msg = ""
+    if ("detail" in stepUpdate && typeof stepUpdate.detail === "string" && stepUpdate.detail.length > 0) {
+        msg = stepUpdate.detail
+        if (msg.toLowerCase().includes("out of memory")) {
+            msg += `<br/><br/>
+                    <b>Suggestions</b>:
+                    <br/>
+                    1. If you have set an initial image, please try reducing its dimension to ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION} or smaller.<br/>
+                    2. Try picking a lower level in the '<em>GPU Memory Usage</em>' setting (in the '<em>Settings</em>' tab).<br/>
+                    3. Try generating a smaller image.<br/>`
+        } else if (msg.includes("DefaultCPUAllocator: not enough memory")) {
+            msg += `<br/><br/>
+                    Reason: Your computer is running out of system RAM!
+                    <br/><br/>
+                    <b>Suggestions</b>:
+                    <br/>
+                    1. Try closing unnecessary programs and browser tabs.<br/>
+                    2. If that doesn't help, please increase your computer's virtual memory by following these steps for
+                        <a href="https://www.ibm.com/docs/en/opw/8.2.0?topic=tuning-optional-increasing-paging-file-size-windows-computers" target="_blank">Windows</a> or
+                        <a href="https://linuxhint.com/increase-swap-space-linux/" target="_blank">Linux</a>.<br/>
+                    3. Try restarting your computer.<br/>`
+        } else if (msg.includes("RuntimeError: output with shape [320, 320] doesn't match the broadcast shape")) {
+            msg += `<br/><br/>
+                    <b>Reason</b>: You tried to use a LORA that was trained for a different Stable Diffusion model version!
+                    <br/><br/>
+                    <b>Suggestions</b>:
+                    <br/>
+                    Try to use a different model or a different LORA.`
+        } else if (msg.includes("'ModuleList' object has no attribute '1'")) {
+            msg += `<br/><br/>
+                    <b>Reason</b>: SDXL models need a yaml config file.
+                    <br/><br/>
+                    <b>Suggestions</b>:
+                    <br/>
+                    <ol>
+                    <li>Download the <a href="https://gist.githubusercontent.com/JeLuF/5dc56e7a3a6988265c423f464d3cbdd3/raw/4ba4c39b1c7329877ad7a39c8c8a077ea4b53d11/dreamshaperXL10_alpha2Xl10.yaml" target="_blank">config file</a></li>
+                    <li>Save it in the same directory as the SDXL model file</li>
+                    <li>Rename the config file so that it matches the filename of the model, with the extension of the model file replaced by <tt>yaml</tt>. 
+                        For example, if the model file is called <tt>FantasySDXL_v2.safetensors</tt>, the config file must be called <tt>FantasySDXL_v2.yaml</tt>.
+                    </ol>`
+        }
+    } else {
+        msg = `Unexpected Read Error:<br/><pre>StepUpdate: ${JSON.stringify(stepUpdate, undefined, 4)}</pre>`
+    }
+    logError(msg, stepUpdate, outputMsg)
+})
+
+document.addEventListener("on_all_tasks_complete", (e) => {
+    renderButtons.style.display = "none"
+    renameMakeImageButton()
+
+    if (isSoundEnabled()) {
+        playSound()
+    }
+})

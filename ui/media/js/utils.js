@@ -1097,6 +1097,48 @@ async function deleteKeys(keyToDelete) {
     }
 }
 
+/**
+ * @param {String} Data URL of the image
+ * @param {Integer} Top left X-coordinate of the crop area
+ * @param {Integer} Top left Y-coordinate of the crop area
+ * @param {Integer} Width of the crop area
+ * @param {Integer} Height of the crop area
+ * @return {String}
+ */
+function cropImageDataUrl(dataUrl, x, y, width, height) {
+    return new Promise((resolve, reject) => {
+        const image = new Image()
+        image.src = dataUrl
+
+        image.onload = () => {
+            const canvas = document.createElement('canvas')
+            canvas.width = width
+            canvas.height = height
+
+            const ctx = canvas.getContext('2d')
+            ctx.drawImage(image, x, y, width, height, 0, 0, width, height)
+
+            const croppedDataUrl = canvas.toDataURL('image/png')
+            resolve(croppedDataUrl)
+        }
+
+        image.onerror = (error) => {
+            reject(error)
+        }
+    })
+}
+
+/**
+ * @param {String} HTML representing a single element
+ * @return {Element}
+ */
+function htmlToElement(html) {
+    var template = document.createElement('template');
+    html = html.trim(); // Never return a text node of whitespace as the result
+    template.innerHTML = html;
+    return template.content.firstChild;
+}
+
 function modalDialogCloseOnBackdropClick(dialog) {
     dialog.addEventListener('mousedown', function (event) {
         // Firefox creates an event with clientX|Y = 0|0 when choosing an <option>.
@@ -1156,4 +1198,37 @@ function makeDialogDraggable(element) {
     })() )
 }
 
+function logMsg(msg, level, outputMsg) {
+    if (outputMsg.hasChildNodes()) {
+        outputMsg.appendChild(document.createElement("br"))
+    }
+    if (level === "error") {
+        outputMsg.innerHTML += '<span style="color: red">Error: ' + msg + "</span>"
+    } else if (level === "warn") {
+        outputMsg.innerHTML += '<span style="color: orange">Warning: ' + msg + "</span>"
+    } else {
+        outputMsg.innerText += msg
+    }
+    console.log(level, msg)
+}
 
+function logError(msg, res, outputMsg) {
+    logMsg(msg, "error", outputMsg)
+
+    console.log("request error", res)
+    console.trace()
+    // setStatus("request", "error", "error")
+}
+
+function playSound() {
+    const audio = new Audio("/media/ding.mp3")
+    audio.volume = 0.2
+    var promise = audio.play()
+    if (promise !== undefined) {
+        promise
+            .then((_) => {})
+            .catch((error) => {
+                console.warn("browser blocked autoplay")
+            })
+    }
+}

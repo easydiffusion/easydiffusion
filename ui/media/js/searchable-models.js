@@ -118,13 +118,16 @@ class ModelDropdown {
         )
     }
 
-    saveCurrentSelection(elem, value, path) {
+    saveCurrentSelection(elem, value, path, dispatchEvent = true) {
         this.currentSelection.elem = elem
         this.currentSelection.value = value
         this.currentSelection.path = path
         this.modelFilter.dataset.path = path
         this.modelFilter.value = value
-        this.modelFilter.dispatchEvent(new Event("change"))
+
+        if (dispatchEvent) {
+            this.modelFilter.dispatchEvent(new Event("change"))
+        }
     }
 
     processClick(e) {
@@ -348,13 +351,13 @@ class ModelDropdown {
         }
     }
 
-    selectEntry(path) {
+    selectEntry(path, dispatchEvent = true) {
         if (path !== undefined) {
             const entries = this.modelElements
 
             for (const elem of entries) {
                 if (elem.dataset.path == path) {
-                    this.saveCurrentSelection(elem, elem.innerText, elem.dataset.path)
+                    this.saveCurrentSelection(elem, elem.innerText, elem.dataset.path, dispatchEvent)
                     this.highlightedModelEntry = elem
                     elem.scrollIntoView({ block: "nearest" })
                     break
@@ -529,7 +532,7 @@ class ModelDropdown {
             rootModelList.style.minWidth = modelFilterStyle.width
         })
 
-        this.selectEntry(this.activeModel)
+        this.selectEntry(this.activeModel, false)
     }
 
     /**
@@ -552,17 +555,23 @@ class ModelDropdown {
                     this.createModelNodeList(`${folderName || ""}/${childFolderName}`, childModels, false)
                 )
             } else {
+                let modelId = model
+                let modelName = model
+                if (typeof model === "object") {
+                    modelId = Object.keys(model)[0]
+                    modelName = model[modelId]
+                }
                 const classes = ["model-file"]
                 if (isRootFolder) {
                     classes.push("in-root-folder")
                 }
                 // Remove the leading slash from the model path
-                const fullPath = folderName ? `${folderName.substring(1)}/${model}` : model
+                const fullPath = folderName ? `${folderName.substring(1)}/${modelId}` : modelId
                 modelsMap.set(
-                    model,
+                    modelId,
                     createElement("li", { "data-path": fullPath }, classes, [
                         createElement("i", undefined, ["fa-regular", "fa-file", "icon"]),
-                        model,
+                        modelName,
                     ])
                 )
             }
@@ -643,22 +652,6 @@ async function getModels(scanForMalicious = true) {
             makeImageBtn.disabled = true
         }
 
-        /* This code should no longer be needed. Commenting out for now, will cleanup later.
-        const sd_model_setting_key = "stable_diffusion_model"
-        const vae_model_setting_key = "vae_model"
-        const hypernetwork_model_key = "hypernetwork_model"
-
-        const stableDiffusionOptions = modelsOptions['stable-diffusion']
-        const vaeOptions = modelsOptions['vae']
-        const hypernetworkOptions = modelsOptions['hypernetwork']
-
-        // TODO: set default for model here too
-        SETTINGS[sd_model_setting_key].default = stableDiffusionOptions[0]
-        if (getSetting(sd_model_setting_key) == '' || SETTINGS[sd_model_setting_key].value == '') {
-            setSetting(sd_model_setting_key, stableDiffusionOptions[0])
-        }
-        */
-
         // notify ModelDropdown objects to refresh
         document.dispatchEvent(new Event("refreshModels"))
     } catch (e) {
@@ -667,4 +660,7 @@ async function getModels(scanForMalicious = true) {
 }
 
 // reload models button
-document.querySelector("#reload-models").addEventListener("click", () => getModels())
+document.querySelector("#reload-models").addEventListener("click", (e) => {
+    e.stopPropagation()
+    getModels()
+})

@@ -18,13 +18,15 @@ os_name = platform.system()
 modules_to_check = {
     "torch": ("1.11.0", "1.13.1", "2.0.0"),
     "torchvision": ("0.12.0", "0.14.1", "0.15.1"),
-    "sdkit": "1.0.144",
+    "sdkit": "2.0.2",
     "stable-diffusion-sdkit": "2.1.4",
     "rich": "12.6.0",
     "uvicorn": "0.19.0",
     "fastapi": "0.85.1",
     "pycloudflared": "0.2.0",
     "ruamel.yaml": "0.17.21",
+    "sqlalchemy": "2.0.19",
+    "python-multipart": "0.0.6",
     # "xformers": "0.0.16",
 }
 modules_to_log = ["torch", "torchvision", "sdkit", "stable-diffusion-sdkit"]
@@ -57,6 +59,12 @@ def install(module_name: str, module_version: str):
             module_version = "0.14.1"
 
     install_cmd = f"python -m pip install --upgrade {module_name}=={module_version}"
+
+    # hack for safetensors, until v3 gets released to the main branch
+    if module_name == "sdkit":
+        install_cmd += " safetensors==0.3.2"
+    # /hack
+
     if index_url:
         install_cmd += f" --index-url {index_url}"
     if module_name == "sdkit" and version("sdkit") is not None:
