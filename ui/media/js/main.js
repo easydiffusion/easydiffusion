@@ -1061,8 +1061,6 @@ function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
 
     task.isProcessing = false
     task["stopTask"].innerHTML = '<i class="fa-solid fa-trash-can"></i> Remove'
-    task["stopTask"].style["background-color"] = "color-mix(in srgb, var(--status-orange) 50%, var(--background-color4))"
-    task["stopTask"].style["border"] = "0px"
     task["taskStatusLabel"].style.display = "none"
 
     let time = millisecondsToStr(Date.now() - task.startTime)
