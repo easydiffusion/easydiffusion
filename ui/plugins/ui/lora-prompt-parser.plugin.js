@@ -29,7 +29,7 @@
             let modelWeights = LoRA.map(e => e.lora_alpha_0)
             loraModelField.value = {modelNames: modelNames, modelWeights: modelWeights}
 
-            showToast("Prompt successfully processed", LoRA[0].lora_model_0);
+            showToast("Prompt successfully processed")
 			
         }
             
@@ -37,7 +37,20 @@
     });
     
     function isModelAvailable(array, searchString) {
+        var found=false
+        console.log(array,searchString, found,"------------")
+        array.forEach((e) => {
+            if (typeof e == "object") {
+                found ||= isModelAvailable(e[1], searchString)
+            } else {
+                found ||= (e == searchString)
+            }
+        })
+        console.log("Return:", found)
+        return found
+
         const foundItem = array.find(function(item) {
+            console.log(item, typeof item, "----------------")
             item = item.toString().toLowerCase();
             return item === searchString.toLowerCase()
         });
@@ -55,8 +68,8 @@
 
         // Iterate over the string, finding matches
         for (const match of prompt.matchAll(regex)) {
-            const modelFileName = isModelAvailable(modelsCache.options.lora, match[1].trim())
-            if (modelFileName !== "") {
+            const modelFileName = match[1].trim()
+            if (isModelAvailable(modelsCache.options.lora, modelFileName)) {
                 // Initialize an object to hold a match
                 let loraTag = {
                     lora_model_0: modelFileName,
