@@ -9,7 +9,8 @@ from functools import reduce
 from easydiffusion import app
 from easydiffusion.types import GenerateImageRequest, TaskData, OutputFormatData
 from numpy import base_repr
-from sdkit.utils import save_dicts, save_images, get_embedding_token
+from sdkit.utils import save_dicts, save_images
+from sdkit.models.model_loader.embeddings import get_embedding_token
 
 filename_regex = re.compile("[^a-zA-Z0-9._-]")
 img_number_regex = re.compile("([0-9]{5,})")
