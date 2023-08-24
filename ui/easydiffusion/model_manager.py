@@ -9,7 +9,8 @@ from easydiffusion.types import ModelsData
 from easydiffusion.utils import log
 from sdkit import Context
 from sdkit.models import load_model, scan_model, unload_model, download_model, get_model_info_from_db
-from sdkit.utils import hash_file_quick, get_embedding_token
+from sdkit.utils import hash_file_quick
+from sdkit.models.model_loader.embeddings import get_embedding_token
 
 KNOWN_MODEL_TYPES = [
     "stable-diffusion",
