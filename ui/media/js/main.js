@@ -965,8 +965,6 @@ function abortTask(task) {
     task.progressBar.classList.remove("active")
     task["taskStatusLabel"].style.display = "none"
     task["stopTask"].innerHTML = '<i class="fa-solid fa-trash-can"></i> Remove'
-    task["stopTask"].style["background-color"] = "color-mix(in srgb, var(--status-orange) 50%, var(--background-color4))"
-    task["stopTask"].style["border"] = "0px"
     if (!task.instances?.some((r) => r.isPending)) {
         return
     }
