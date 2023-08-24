@@ -10,6 +10,7 @@ from easydiffusion import app
 from easydiffusion.types import GenerateImageRequest, TaskData, OutputFormatData
 from numpy import base_repr
 from sdkit.utils import save_dicts, save_images
+from sdkit.models.model_loader.embeddings import get_embedding_token
 
 filename_regex = re.compile("[^a-zA-Z0-9._-]")
 img_number_regex = re.compile("([0-9]{5,})")
@@ -228,7 +229,26 @@ def get_printable_request(req: GenerateImageRequest, task_data: TaskData, output
             metadata[key] = req_metadata[key]
         elif key in task_data_metadata:
             metadata[key] = task_data_metadata[key]
-        
+
+        if key == "use_embeddings_model" and using_diffusers:
+            embeddings_extensions = {".pt", ".bin", ".safetensors"}
+
+            def scan_directory(directory_path: str):
+                used_embeddings = []
+                for entry in os.scandir(directory_path):
+                    if entry.is_file():
+                        # Check if the filename has the right extension
+                        if not any(map(lambda ext: entry.name.endswith(ext), embeddings_extensions)):
+                            continue
+                        embedding_name_regex = regex.compile(r"(^|[\s,])" + regex.escape(get_embedding_token(entry.name)) + r"([+-]*$|[\s,]|[+-]+[\s,])")
+                        if embedding_name_regex.search(req.prompt) or embedding_name_regex.search(req.negative_prompt):
+                            used_embeddings.append(entry.path)
+                    elif entry.is_dir():
+                        used_embeddings.extend(scan_directory(entry.path))
+                return used_embeddings
+
+            used_embeddings = scan_directory(os.path.join(app.MODELS_DIR, "embeddings"))
+            metadata["use_embeddings_model"] = used_embeddings if len(used_embeddings) > 0 else None
 
     # Clean up the metadata
     if req.init_image is None and "prompt_strength" in metadata:
