@@ -104,7 +104,7 @@ def resolve_model_to_use(model_name: Union[str, list] = None, model_type: str = 
     for m in model_names:
         if model_type == "embeddings":
             try:
-                resolve_model_to_use_single(m, model_type, fail_if_not_found)
+                resolve_model_to_use_single(m, model_type)
             except FileNotFoundError:  # try with spaces
                 m = m.replace("_", " ")
 
