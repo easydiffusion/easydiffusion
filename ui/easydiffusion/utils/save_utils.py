@@ -229,7 +229,8 @@ def get_printable_request(req: GenerateImageRequest, task_data: TaskData, output
             metadata[key] = req_metadata[key]
         elif key in task_data_metadata:
             metadata[key] = task_data_metadata[key]
-        elif key == "use_embeddings_model" and using_diffusers:
+
+        if key == "use_embeddings_model" and using_diffusers:
             embeddings_extensions = {".pt", ".bin", ".safetensors"}
 
             def scan_directory(directory_path: str):
