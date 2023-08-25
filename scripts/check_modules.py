@@ -62,7 +62,7 @@ def install(module_name: str, module_version: str):
 
     # hack for safetensors, until v3 gets released to the main branch
     if module_name == "sdkit":
-        install_cmd += " safetensors==0.3.3"
+        install_cmd += " safetensors==0.3.2"
     # /hack
 
     if index_url:
