@@ -102,7 +102,7 @@ Just delete the `EasyDiffusion` folder to uninstall all the downloaded packages.
 - **Auto scan for malicious models**: Uses picklescan to prevent malicious models.
 - **Safetensors support**: Support loading models in the safetensor format, for improved safety.
 - **Auto-updater**: Gets you the latest improvements and bug-fixes to a rapidly evolving project.
-- **Developer Console**: A developer-mode for those who want to modify their Stable Diffusion code, and edit the conda environment.
+- **Developer Console**: A developer-mode for those who want to modify their Stable Diffusion code, modify packages, and edit the conda environment.
 
 **(and a lot more)**
 
