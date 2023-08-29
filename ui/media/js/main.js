@@ -1312,9 +1312,11 @@ function getCurrentUserRequest() {
 }
 
 function setEmbeddings(task) {
-    let prompt = task.reqBody.prompt.toLowerCase()
-    let negativePrompt = task.reqBody.negative_prompt.toLowerCase()
-    let overallPrompt = prompt + " " + negativePrompt
+    let prompt = task.reqBody.prompt
+    let negativePrompt = task.reqBody.negative_prompt
+    let overallPrompt = (prompt + " " + negativePrompt).toLowerCase()
+    overallPrompt = overallPrompt.replaceAll(/[^a-z0-9\.]/g, " ") // only allow alpha-numeric and dots
+    overallPrompt = overallPrompt.split(" ")
 
     let embeddingsTree = modelsOptions["embeddings"]
     let embeddings = []
