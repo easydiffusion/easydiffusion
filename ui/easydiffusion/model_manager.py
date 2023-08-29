@@ -37,7 +37,7 @@ MODEL_EXTENSIONS = {
 }
 DEFAULT_MODELS = {
     "stable-diffusion": [
-        {"file_name": "sd-v1-4.ckpt", "model_id": "1.4"},
+        {"file_name": "sd-v1-5.safetensors", "model_id": "1.5-pruned-emaonly-fp16"},
     ],
     "gfpgan": [
         {"file_name": "GFPGANv1.4.pth", "model_id": "1.4"},
@@ -305,7 +305,7 @@ def is_malicious_model(file_path):
 def getModels(scan_for_malicious: bool = True):
     models = {
         "options": {
-            "stable-diffusion": [{"sd-v1-4": "SD 1.4"}],
+            "stable-diffusion": [],
             "vae": [],
             "hypernetwork": [],
             "lora": [],
