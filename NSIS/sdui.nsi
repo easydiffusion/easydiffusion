@@ -7,9 +7,9 @@ RequestExecutionLevel user
 !AddPluginDir /amd64-unicode "."
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "Easy Diffusion"
-!define PRODUCT_VERSION "2.5"
+!define PRODUCT_VERSION "3.0"
 !define PRODUCT_PUBLISHER "cmdr2 and contributors"
-!define PRODUCT_WEB_SITE "https://stable-diffusion-ui.github.io"
+!define PRODUCT_WEB_SITE "https://easydiffusion.github.io"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Easy Diffusion\App Paths\installer.exe"
 
 ; MUI 1.67 compatible ------
@@ -215,24 +215,30 @@ Section "MainSection" SEC01
   File "..\LICENSE"
   File "..\scripts\Start Stable Diffusion UI.cmd"
   File /r "${EXISTING_INSTALLATION_DIR}\installer_files"
-  File /r "${EXISTING_INSTALLATION_DIR}\profile"
   File /r "${EXISTING_INSTALLATION_DIR}\sd-ui-files"
+
   SetOutPath "$INSTDIR\installer_files"
   File "cyborg_flower_girl.ico"
+
   SetOutPath "$INSTDIR\scripts"
   File "${EXISTING_INSTALLATION_DIR}\scripts\install_status.txt"
   File "..\scripts\on_env_start.bat"
   File "C:\windows\system32\curl.exe"
-  CreateDirectory "$INSTDIR\models"
+
   CreateDirectory "$INSTDIR\models\stable-diffusion"
   CreateDirectory "$INSTDIR\models\gfpgan"
   CreateDirectory "$INSTDIR\models\realesrgan"
   CreateDirectory "$INSTDIR\models\vae"
+
+  CreateDirectory "$INSTDIR\profile\.cache\huggingface\hub"
+  SetOutPath "$INSTDIR\profile\.cache\huggingface\hub"
+  File /r /x pytorch_model.bin "${EXISTING_INSTALLATION_DIR}\profile\.cache\huggingface\hub\models--openai--clip-vit-large-patch14"
+
   CreateDirectory "$SMPROGRAMS\Easy Diffusion"
   CreateShortCut "$SMPROGRAMS\Easy Diffusion\Easy Diffusion.lnk" "$INSTDIR\Start Stable Diffusion UI.cmd" "" "$INSTDIR\installer_files\cyborg_flower_girl.ico"
 
-  DetailPrint 'Downloading the Stable Diffusion 1.4 model...'
-  NScurl::http get "https://huggingface.co/CompVis/stable-diffusion-v-1-4-original/resolve/main/sd-v1-4.ckpt" "$INSTDIR\models\stable-diffusion\sd-v1-4.ckpt" /CANCEL /INSIST /END
+  DetailPrint 'Downloading the Stable Diffusion 1.5 model...'
+  NScurl::http get "https://github.com/easydiffusion/sdkit-test-data/releases/download/assets/sd-v1-5.safetensors" "$INSTDIR\models\stable-diffusion\sd-v1-5.safetensors" /CANCEL /INSIST /END
 
   DetailPrint 'Downloading the GFPGAN model...'
   NScurl::http get "https://github.com/TencentARC/GFPGAN/releases/download/v1.3.4/GFPGANv1.4.pth" "$INSTDIR\models\gfpgan\GFPGANv1.4.pth" /CANCEL /INSIST /END
