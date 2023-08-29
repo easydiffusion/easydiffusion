@@ -1,18 +1,18 @@
-Congrats on downloading Stable Diffusion UI, version 2!
+Congrats on downloading Easy Diffusion, version 3!
 
-If you haven't downloaded Stable Diffusion UI yet, please download from https://github.com/easydiffusion/easydiffusion#installation
+If you haven't downloaded Easy Diffusion yet, please download from https://github.com/easydiffusion/easydiffusion#installation
 
 After downloading, to install please follow these instructions:
 
 For Windows:
 - Please double-click the "Easy-Diffusion-Windows.exe" file and follow the instructions.
 
-For Linux:
-- Please open a terminal, unzip the Easy-Diffusion-Linux.zip file and go to the "easy-diffusion" directory. Then run ./start.sh
+For Linux and Mac:
+- Please open a terminal, and go to the "easy-diffusion" directory. Then run ./start.sh
 
-That file will automatically install everything. After that it will start the Stable Diffusion interface in a web browser.
+That file will automatically install everything. After that it will start the Easy Diffusion interface in a web browser.
 
-To start the UI in the future, please run the same command mentioned above.
+To start Easy Diffusion in the future, please run the same command mentioned above.
 
 
 If you have any problems, please:
