@@ -17,6 +17,7 @@
 - **Major rewrite of the code** - We've switched to using diffusers under-the-hood, which allows us to release new features faster, and focus on making the UI and installer even easier to use.
 
 ### Detailed changelog
+* 3.0.2 - 29 Aug 2023 - Fixed incorrect matching of embeddings from prompts.
 * 3.0.2 - 24 Aug 2023 - Fix broken seamless tiling.
 * 3.0.2 - 23 Aug 2023 - Fix styling on mobile devices.
 * 3.0.2 - 22 Aug 2023 - Full support for inpainting models, including custom models. Support SD 1.x and SD 2.x inpainting models. Does not require you to specify a yaml config file.
