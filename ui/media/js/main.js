@@ -678,6 +678,29 @@ function getAllModelNames(type) {
     return f(modelsOptions[type])
 }
 
+// gets a flattened list of all models of a certain type. e.g. "path/subpath/modelname"
+// use the filter to search for all models having a certain name.
+function getAllModelPathes(type,filter="") {
+    function f(tree, prefix) {
+        if (tree == undefined) {
+            return []
+        }
+        let result = []
+        tree.forEach((e) => {
+            if (typeof e == "object") {
+                result = result.concat(f(e[1], prefix + e[0] + "/"))
+            } else {
+                if (filter=="" || e==filter) {
+                    result.push(prefix + e)
+                }
+            }
+        })
+        return result
+    }
+    return f(modelsOptions[type], "")
+}
+
+
 function onUseAsThumbnailClick(req, img) {
     let scale = 1
     let targetWidth = img.naturalWidth

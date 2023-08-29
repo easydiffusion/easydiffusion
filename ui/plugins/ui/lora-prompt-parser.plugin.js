@@ -29,22 +29,13 @@
             let modelWeights = LoRA.map(e => e.lora_alpha_0)
             loraModelField.value = {modelNames: modelNames, modelWeights: modelWeights}
 
-            showToast("Prompt successfully processed", LoRA[0].lora_model_0);
+            showToast("Prompt successfully processed")
 			
         }
             
         //promptField.dispatchEvent(new Event('change'));
     });
     
-    function isModelAvailable(array, searchString) {
-        const foundItem = array.find(function(item) {
-            item = item.toString().toLowerCase();
-            return item === searchString.toLowerCase()
-        });
-
-        return foundItem || "";
-    }
-
     // extract LoRA tags from strings
     function extractLoraTags(prompt) {
         // Define the regular expression for the tags
@@ -55,11 +46,13 @@
 
         // Iterate over the string, finding matches
         for (const match of prompt.matchAll(regex)) {
-            const modelFileName = isModelAvailable(modelsCache.options.lora, match[1].trim())
-            if (modelFileName !== "") {
+            const modelFileName = match[1].trim()
+            const loraPathes = getAllModelPathes("lora", modelFileName)
+            if (loraPathes.length > 0) {
+                const loraPath = loraPathes[0]
                 // Initialize an object to hold a match
                 let loraTag = {
-                    lora_model_0: modelFileName,
+                    lora_model_0: loraPath,
                 }
 				//console.log("Model:" +  modelFileName);
         
