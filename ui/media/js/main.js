@@ -960,7 +960,7 @@ function makeImage() {
 
     const countBeforeBanner = localStorage.getItem("countBeforeBanner") || 1
     if (countBeforeBanner <= 0) {
-        supportBanner.classList.remove("displayNone")
+        // supportBanner.classList.remove("displayNone")
     } else {
         localStorage.setItem("countBeforeBanner", countBeforeBanner - 1)
     }
@@ -1537,7 +1537,7 @@ function updateInitialText() {
 
         const countBeforeBanner = localStorage.getItem("countBeforeBanner") || 1
         if (countBeforeBanner <= 0) {
-            supportBanner.classList.remove("displayNone")
+            // supportBanner.classList.remove("displayNone")
         }
     }
 }
