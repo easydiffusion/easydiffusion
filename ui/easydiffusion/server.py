@@ -63,7 +63,7 @@ class SetAppConfigRequest(BaseModel, extra=Extra.allow):
     ui_open_browser_on_start: bool = None
     listen_to_network: bool = None
     listen_port: int = None
-    test_diffusers: bool = False
+    test_diffusers: bool = True
 
 
 def init():
@@ -138,6 +138,10 @@ def init():
     @server_api.post("/package/{package_name:str}")
     def modify_package(package_name: str, req: dict):
         return modify_package_internal(package_name, req)
+
+    @server_api.get("/sha256/{obj_path:path}")
+    def get_sha256(obj_path: str):
+        return get_sha256_internal(obj_path)
 
     @server_api.get("/")
     def read_root():
@@ -451,3 +455,26 @@ def modify_package_internal(package_name: str, req: dict):
         log.error(str(e))
         log.error(traceback.format_exc())
         return HTTPException(status_code=500, detail=str(e))
+
+def get_sha256_internal(obj_path):
+    import hashlib
+    from easydiffusion.utils import sha256sum
+
+    path = obj_path.split("/")
+    type = path.pop(0)
+
+    try:
+        model_path = model_manager.resolve_model_to_use("/".join(path), type)
+    except Exception as e:
+        log.error(str(e))
+        log.error(traceback.format_exc())
+
+        return HTTPException(status_code=404)
+    try:
+        digest = sha256sum(model_path)
+        return {"digest": digest}
+    except Exception as e:
+        log.error(str(e))
+        log.error(traceback.format_exc())
+        return HTTPException(status_code=500, detail=str(e))
+

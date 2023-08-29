@@ -122,6 +122,15 @@ var PARAMETERS = [
         default: false,
     },
     {
+        id: "extract_lora_from_prompt",
+        type: ParameterType.checkbox,
+        label: "Extract LoRA tags from the prompt",
+        note:
+            "Automatically extract lora tags like &lt;lora:name:0.4&gt; from the prompt, and apply the correct LoRA (if present)",
+        icon: "fa-code",
+        default: true,
+    },
+    {
         id: "ui_open_browser_on_start",
         type: ParameterType.checkbox,
         label: "Open browser on startup",
@@ -186,6 +195,17 @@ var PARAMETERS = [
         default: true,
     },
     {
+        id: "profileName",
+        type: ParameterType.custom,
+        label: "Profile Name",
+        note:
+            "Name of the profile for model manager settings, e.g. thumbnails for embeddings. Use this to have different settings for different users.",
+        render: (parameter) => {
+            return `<input id="${parameter.id}" name="${parameter.id}" value="default" size="12">`
+        },
+        icon: "fa-user-gear",
+    },
+    {
         id: "listen_to_network",
         type: ParameterType.checkbox,
         label: "Make Stable Diffusion available on your network",
@@ -220,11 +240,11 @@ var PARAMETERS = [
     {
         id: "test_diffusers",
         type: ParameterType.checkbox,
-        label: "Test Diffusers",
+        label: "Use the new v3 engine (diffusers)",
         note:
-            "<b>Experimental! Can have bugs!</b> Use upcoming features (like LoRA) in our new engine. Please press Save, then restart the program after changing this.",
+            "Use our new v3 engine, with additional features like LoRA, ControlNet, SDXL, Embeddings, Tiling and lots more! Please press Save, then restart the program after changing this.",
         icon: "fa-bolt",
-        default: false,
+        default: true,
         saveInAppConfig: true,
     },
     {
@@ -401,6 +421,7 @@ let useBetaChannelField = document.querySelector("#use_beta_channel")
 let uiOpenBrowserOnStartField = document.querySelector("#ui_open_browser_on_start")
 let confirmDangerousActionsField = document.querySelector("#confirm_dangerous_actions")
 let testDiffusers = document.querySelector("#test_diffusers")
+let profileNameField = document.querySelector("#profileName")
 
 let saveSettingsBtn = document.querySelector("#save-system-settings-btn")
 
@@ -432,8 +453,6 @@ async function getAppConfig() {
         if (config.update_branch === "beta") {
             useBetaChannelField.checked = true
             document.querySelector("#updateBranchLabel").innerText = "(beta)"
-        } else {
-            getParameterSettingsEntry("test_diffusers").classList.add("displayNone")
         }
         if (config.ui && config.ui.open_browser_on_start === false) {
             uiOpenBrowserOnStartField.checked = false
@@ -445,11 +464,14 @@ async function getAppConfig() {
             listenPortField.value = config.net.listen_port
         }
 
-        const testDiffusersEnabled = config.test_diffusers && config.update_branch !== "main"
+        let testDiffusersEnabled = true
+        if (config.test_diffusers === false) {
+            testDiffusersEnabled = false
+        }
         testDiffusers.checked = testDiffusersEnabled
 
         if (config.config_on_startup) {
-            if (config.config_on_startup?.test_diffusers && config.update_branch !== "main") {
+            if (config.config_on_startup?.test_diffusers) {
                 document.body.classList.add("diffusers-enabled-on-startup")
                 document.body.classList.remove("diffusers-disabled-on-startup")
             } else {
@@ -462,7 +484,9 @@ async function getAppConfig() {
             document.querySelector("#lora_model_container").style.display = "none"
             document.querySelector("#tiling_container").style.display = "none"
             document.querySelector("#controlnet_model_container").style.display = "none"
+            document.querySelector("#hypernetwork_model_container").style.display = ""
             document.querySelector("#hypernetwork_strength_container").style.display = ""
+            document.querySelector("#negative-embeddings-button").style.display = "none"
 
             document.querySelectorAll("#sampler_name option.diffusers-only").forEach((option) => {
                 option.style.display = "none"
@@ -474,6 +498,7 @@ async function getAppConfig() {
             document.querySelector("#lora_model_container").style.display = ""
             document.querySelector("#tiling_container").style.display = ""
             document.querySelector("#controlnet_model_container").style.display = ""
+            document.querySelector("#hypernetwork_model_container").style.display = "none"
             document.querySelector("#hypernetwork_strength_container").style.display = "none"
 
             document.querySelectorAll("#sampler_name option.k_diffusion-only").forEach((option) => {
@@ -481,7 +506,6 @@ async function getAppConfig() {
             })
             document.querySelector("#clip_skip_config").classList.remove("displayNone")
             document.querySelector("#embeddings-button").classList.remove("displayNone")
-            document.querySelector("#negative-embeddings-button").classList.remove("displayNone")
             IMAGE_STEP_SIZE = 8
             customWidthField.step = IMAGE_STEP_SIZE
             customHeightField.step = IMAGE_STEP_SIZE
@@ -794,11 +818,3 @@ navigator.permissions.query({ name: "clipboard-write" }).then(function(result) {
 })
 
 document.addEventListener("system_info_update", (e) => setDeviceInfo(e.detail))
-
-useBetaChannelField.addEventListener("change", (e) => {
-    if (e.target.checked) {
-        getParameterSettingsEntry("test_diffusers").classList.remove("displayNone")
-    } else {
-        getParameterSettingsEntry("test_diffusers").classList.add("displayNone")
-    }
-})

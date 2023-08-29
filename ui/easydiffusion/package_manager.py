@@ -12,9 +12,9 @@ from easydiffusion import app
 manifest = {
     "tensorrt": {
         "install": [
-            "nvidia-cudnn --extra-index-url=https://pypi.ngc.nvidia.com --trusted-host pypi.ngc.nvidia.com",
-            "tensorrt-libs --extra-index-url=https://pypi.ngc.nvidia.com --trusted-host pypi.ngc.nvidia.com",
-            "tensorrt --extra-index-url=https://pypi.ngc.nvidia.com --trusted-host pypi.ngc.nvidia.com",
+            "nvidia-cudnn --pre --extra-index-url=https://pypi.nvidia.com --trusted-host pypi.nvidia.com",
+            "tensorrt-libs --pre --extra-index-url=https://pypi.nvidia.com --trusted-host pypi.nvidia.com",
+            "tensorrt --pre --extra-index-url=https://pypi.nvidia.com --trusted-host pypi.nvidia.com",
         ],
         "uninstall": ["tensorrt"],
         # TODO also uninstall tensorrt-libs and nvidia-cudnn, but do it upon restarting (avoid 'file in use' error)
@@ -25,7 +25,7 @@ installing = []
 # remove this once TRT releases on pypi
 if platform.system() == "Windows":
     trt_dir = os.path.join(app.ROOT_DIR, "tensorrt")
-    if os.path.exists(trt_dir):
+    if os.path.exists(trt_dir) and os.path.isdir(trt_dir) and len(os.listdir(trt_dir)) > 0:
         files = os.listdir(trt_dir)
 
         packages = manifest["tensorrt"]["install"]
@@ -61,6 +61,10 @@ def install(module_name):
         raise RuntimeError(f"Can't install unknown package: {module_name}!")
 
     commands = manifest[module_name]["install"]
+    if module_name == "tensorrt":
+        commands += [
+            "protobuf==3.20.3 polygraphy==0.47.1 onnx==1.14.0 --extra-index-url=https://pypi.ngc.nvidia.com --trusted-host pypi.ngc.nvidia.com"
+        ]
     commands = [f"python -m pip install --upgrade {cmd}" for cmd in commands]
 
     installing.append(module_name)

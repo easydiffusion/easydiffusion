@@ -10,6 +10,7 @@ from easydiffusion import app
 from easydiffusion.types import GenerateImageRequest, TaskData, OutputFormatData
 from numpy import base_repr
 from sdkit.utils import save_dicts, save_images
+from sdkit.models.model_loader.embeddings import get_embedding_token
 
 filename_regex = re.compile("[^a-zA-Z0-9._-]")
 img_number_regex = re.compile("([0-9]{5,})")
@@ -34,7 +35,7 @@ TASK_TEXT_MAPPING = {
     "lora_alpha": "LoRA Strength",
     "use_hypernetwork_model": "Hypernetwork model",
     "hypernetwork_strength": "Hypernetwork Strength",
-    "use_embedding_models": "Embedding models",
+    "use_embeddings_model": "Embedding models",
     "tiling": "Seamless Tiling",
     "use_face_correction": "Use Face Correction",
     "use_upscale": "Use Upscaling",
@@ -219,7 +220,7 @@ def get_printable_request(req: GenerateImageRequest, task_data: TaskData, output
     task_data_metadata.update(output_format.dict())
 
     app_config = app.getConfig()
-    using_diffusers = app_config.get("test_diffusers", False)
+    using_diffusers = app_config.get("test_diffusers", True)
 
     # Save the metadata in the order defined in TASK_TEXT_MAPPING
     metadata = {}
@@ -228,20 +229,18 @@ def get_printable_request(req: GenerateImageRequest, task_data: TaskData, output
             metadata[key] = req_metadata[key]
         elif key in task_data_metadata:
             metadata[key] = task_data_metadata[key]
-        elif key == "use_embedding_models" and using_diffusers:
+
+        if key == "use_embeddings_model" and using_diffusers:
             embeddings_extensions = {".pt", ".bin", ".safetensors"}
 
             def scan_directory(directory_path: str):
                 used_embeddings = []
                 for entry in os.scandir(directory_path):
                     if entry.is_file():
-                        entry_extension = os.path.splitext(entry.name)[1]
-                        if entry_extension not in embeddings_extensions:
+                        # Check if the filename has the right extension
+                        if not any(map(lambda ext: entry.name.endswith(ext), embeddings_extensions)):
                             continue
-
-                        embedding_name_regex = regex.compile(
-                            r"(^|[\s,])" + regex.escape(os.path.splitext(entry.name)[0]) + r"([+-]*$|[\s,]|[+-]+[\s,])"
-                        )
+                        embedding_name_regex = regex.compile(r"(^|[\s,])" + regex.escape(get_embedding_token(entry.name)) + r"([+-]*$|[\s,]|[+-]+[\s,])")
                         if embedding_name_regex.search(req.prompt) or embedding_name_regex.search(req.negative_prompt):
                             used_embeddings.append(entry.path)
                     elif entry.is_dir():
@@ -249,7 +248,7 @@ def get_printable_request(req: GenerateImageRequest, task_data: TaskData, output
                 return used_embeddings
 
             used_embeddings = scan_directory(os.path.join(app.MODELS_DIR, "embeddings"))
-            metadata["use_embedding_models"] = used_embeddings if len(used_embeddings) > 0 else None
+            metadata["use_embeddings_model"] = used_embeddings if len(used_embeddings) > 0 else None
 
     # Clean up the metadata
     if req.init_image is None and "prompt_strength" in metadata:
@@ -265,7 +264,10 @@ def get_printable_request(req: GenerateImageRequest, task_data: TaskData, output
     if task_data.use_controlnet_model is None and "control_filter_to_apply" in metadata:
         del metadata["control_filter_to_apply"]
 
-    if not using_diffusers:
+    if using_diffusers:
+        for key in (x for x in ["use_hypernetwork_model", "hypernetwork_strength"] if x in metadata):
+            del metadata[key]
+    else:
         for key in (
             x for x in ["use_lora_model", "lora_alpha", "clip_skip", "tiling", "latent_upscaler_steps", "use_controlnet_model", "control_filter_to_apply"] if x in metadata
         ):

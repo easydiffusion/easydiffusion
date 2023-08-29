@@ -289,42 +289,56 @@ const TASK_MAPPING = {
         readUI: () => vaeModelField.value,
         parse: (val) => val,
     },
+    use_controlnet_model: {
+        name: "ControlNet model",
+        setUI: (use_controlnet_model) => {
+            controlnetModelField.value = getModelPath(use_controlnet_model, [".pth", ".safetensors"])
+        },
+        readUI: () => controlnetModelField.value,
+        parse: (val) => val,
+    },
+    control_filter_to_apply: {
+        name: "ControlNet Filter",
+        setUI: (control_filter_to_apply) => {
+            controlImageFilterField.value = control_filter_to_apply
+        },
+        readUI: () => controlImageFilterField.value,
+        parse: (val) => val,
+    },
     use_lora_model: {
         name: "LoRA model",
         setUI: (use_lora_model) => {
-            // create rows
-            for (let i = loraModels.length; i < use_lora_model.length; i++) {
-                createLoraEntry()
-            }
-
-            use_lora_model.forEach((model_name, i) => {
-                let field = loraModels[i][0]
-                const oldVal = field.value
-
-                if (model_name !== "") {
-                    model_name = getModelPath(model_name, [".ckpt", ".safetensors"])
-                    model_name = model_name !== "" ? model_name : oldVal
+            let modelPaths = []
+            use_lora_model = Array.isArray(use_lora_model) ? use_lora_model : [use_lora_model]
+            use_lora_model.forEach((m) => {
+                if (m.includes("models\\lora\\")) {
+                    m = m.split("models\\lora\\")[1]
+                } else if (m.includes("models\\\\lora\\\\")) {
+                    m = m.split("models\\\\lora\\\\")[1]
+                } else if (m.includes("models/lora/")) {
+                    m = m.split("models/lora/")[1]
                 }
-                field.value = model_name
+                m = m.replaceAll("\\\\", "/")
+                m = getModelPath(m, [".ckpt", ".safetensors"])
+                modelPaths.push(m)
             })
-
-            // clear the remaining entries
-            let container = document.querySelector("#lora_model_container .model_entries")
-            for (let i = use_lora_model.length; i < loraModels.length; i++) {
-                let modelEntry = loraModels[i][2]
-                container.removeChild(modelEntry)
-            }
-
-            loraModels.splice(use_lora_model.length)
+            loraModelField.modelNames = modelPaths
         },
         readUI: () => {
-            let values = loraModels.map((e) => e[0].value)
-            values = values.filter((e) => e.trim() !== "")
-            values = values.length > 0 ? values : "None"
-            return values
+            return loraModelField.modelNames
         },
         parse: (val) => {
             val = !val || val === "None" ? "" : val
+            if (typeof val === "string" && val.includes(",")) {
+                val = val.split(",")
+                val = val.map((v) => v.trim())
+                val = val.map((v) => v.replaceAll("\\", "\\\\"))
+                val = val.map((v) => v.replaceAll('"', ""))
+                val = val.map((v) => v.replaceAll("'", ""))
+                val = val.map((v) => '"' + v + '"')
+                val = "[" + val + "]"
+                val = JSON.parse(val)
+            }
             val = Array.isArray(val) ? val : [val]
             return val
         },
@@ -332,31 +346,17 @@ const TASK_MAPPING = {
     lora_alpha: {
         name: "LoRA Strength",
         setUI: (lora_alpha) => {
-            for (let i = loraModels.length; i < lora_alpha.length; i++) {
-                createLoraEntry()
-            }
-
-            lora_alpha.forEach((model_strength, i) => {
-                let field = loraModels[i][1]
-                field.value = model_strength
-            })
-
-            // clear the remaining entries
-            let container = document.querySelector("#lora_model_container .model_entries")
-            for (let i = lora_alpha.length; i < loraModels.length; i++) {
-                let modelEntry = loraModels[i][2]
-                container.removeChild(modelEntry)
-            }
-
-            loraModels.splice(lora_alpha.length)
+            lora_alpha = Array.isArray(lora_alpha) ? lora_alpha : [lora_alpha]
+            loraModelField.modelWeights = lora_alpha
         },
         readUI: () => {
-            let models = loraModels.filter((e) => e[0].value.trim() !== "")
-            let values = models.map((e) => e[1].value)
-            values = values.length > 0 ? values : 0
-            return values
+            return loraModelField.modelWeights
         },
         parse: (val) => {
+            if (typeof val === "string" && val.includes(",")) {
+                val = "[" + val.replaceAll("'", '"') + "]"
+                val = JSON.parse(val)
+            }
             val = Array.isArray(val) ? val : [val]
             val = val.map((e) => parseFloat(e))
             return val
@@ -472,11 +472,8 @@ function restoreTaskToUI(task, fieldsToSkip) {
     }
 
     if (!("use_lora_model" in task.reqBody)) {
-        loraModels.forEach((e) => {
-            e[0].value = ""
-            e[1].value = 0
-            e[0].dispatchEvent(new Event("change"))
-        })
+        loraModelField.modelNames = []
+        loraModelField.modelWeights = []
     }
 
     // restore the original prompt if provided (e.g. use settings), fallback to prompt as needed (e.g. copy/paste or d&d)
@@ -519,10 +516,23 @@ function restoreTaskToUI(task, fieldsToSkip) {
         )
         initImagePreview.src = task.reqBody.init_image
     }
+
+    // hide/show controlnet picture as needed
+    if (IMAGE_REGEX.test(controlImagePreview.src) && task.reqBody.control_image == undefined) {
+        // hide source image
+        controlImageClearBtn.dispatchEvent(new Event("click"))
+    } else if (task.reqBody.control_image !== undefined) {
+        // listen for inpainter loading event, which happens AFTER the main image loads (which reloads the inpai
+        controlImagePreview.src = task.reqBody.control_image
+    }
 }
 function readUI() {
     const reqBody = {}
     for (const key in TASK_MAPPING) {
+        if (testDiffusers.checked && (key === "use_hypernetwork_model" || key === "hypernetwork_strength")) {
+            continue
+        }
+
         reqBody[key] = TASK_MAPPING[key].readUI()
     }
     return {
@@ -569,6 +579,10 @@ const TASK_TEXT_MAPPING = {
     use_stable_diffusion_model: "Stable Diffusion model",
     use_hypernetwork_model: "Hypernetwork model",
     hypernetwork_strength: "Hypernetwork Strength",
+    use_lora_model: "LoRA model",
+    lora_alpha: "LoRA Strength",
+    use_controlnet_model: "ControlNet model",
+    control_filter_to_apply: "ControlNet Filter",
 }
 function parseTaskFromText(str) {
     const taskReqBody = {}

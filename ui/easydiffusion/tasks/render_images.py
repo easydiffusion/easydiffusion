@@ -15,6 +15,8 @@ from sdkit.utils import (
     img_to_base64_str,
     img_to_buffer,
     latent_samples_to_images,
+    resize_img,
+    get_image,
     log,
 )
 
@@ -226,7 +228,12 @@ def generate_images_internal(
         req.width, req.height = map(lambda x: x - x % 8, (req.width, req.height))  # clamp to 8
 
         if req.control_image and task_data.control_filter_to_apply:
+            req.control_image = get_image(req.control_image)
+            req.control_image = resize_img(req.control_image.convert("RGB"), req.width, req.height, clamp_to_8=True)
             req.control_image = filter_images(context, req.control_image, task_data.control_filter_to_apply)[0]
+
+        if req.init_image is not None and int(req.num_inference_steps * req.prompt_strength) == 0:
+            req.prompt_strength = 1 / req.num_inference_steps if req.num_inference_steps > 0 else 1
 
         if context.test_diffusers:
             pipe = context.models["stable-diffusion"]["default"]

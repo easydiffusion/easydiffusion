@@ -15,14 +15,12 @@ const SETTINGS_IDS_LIST = [
     "stable_diffusion_model",
     "clip_skip",
     "vae_model",
-    "hypernetwork_model",
     "sampler_name",
     "width",
     "height",
     "num_inference_steps",
     "guidance_scale",
     "prompt_strength",
-    "hypernetwork_strength",
     "tiling",
     "output_format",
     "output_quality",
@@ -45,6 +43,7 @@ const SETTINGS_IDS_LIST = [
     "sound_toggle",
     "vram_usage_level",
     "confirm_dangerous_actions",
+    "profileName",
     "metadata_output_format",
     "auto_save_settings",
     "apply_color_correction",
@@ -54,9 +53,17 @@ const SETTINGS_IDS_LIST = [
     "zip_toggle",
     "tree_toggle",
     "json_toggle",
+    "extract_lora_from_prompt",
+    "embedding-card-size-selector",
+    "lora_model",
 ]
 
 const IGNORE_BY_DEFAULT = ["prompt"]
+
+if (!testDiffusers.checked) {
+    SETTINGS_IDS_LIST.push("hypernetwork_model")
+    SETTINGS_IDS_LIST.push("hypernetwork_strength")
+}
 
 const SETTINGS_SECTIONS = [
     // gets the "keys" property filled in with an ordered list of settings in this section via initSettings
