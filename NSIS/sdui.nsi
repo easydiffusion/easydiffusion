@@ -7,9 +7,9 @@ RequestExecutionLevel user
 !AddPluginDir /amd64-unicode "."
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "Easy Diffusion"
-!define PRODUCT_VERSION "2.5"
+!define PRODUCT_VERSION "3.0"
 !define PRODUCT_PUBLISHER "cmdr2 and contributors"
-!define PRODUCT_WEB_SITE "https://stable-diffusion-ui.github.io"
+!define PRODUCT_WEB_SITE "https://easydiffusion.github.io"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Easy Diffusion\App Paths\installer.exe"
 
 ; MUI 1.67 compatible ------
@@ -215,19 +215,25 @@ Section "MainSection" SEC01
   File "..\LICENSE"
   File "..\scripts\Start Stable Diffusion UI.cmd"
   File /r "${EXISTING_INSTALLATION_DIR}\installer_files"
-  File /r "${EXISTING_INSTALLATION_DIR}\profile"
   File /r "${EXISTING_INSTALLATION_DIR}\sd-ui-files"
+
   SetOutPath "$INSTDIR\installer_files"
   File "cyborg_flower_girl.ico"
+
   SetOutPath "$INSTDIR\scripts"
   File "${EXISTING_INSTALLATION_DIR}\scripts\install_status.txt"
   File "..\scripts\on_env_start.bat"
   File "C:\windows\system32\curl.exe"
-  CreateDirectory "$INSTDIR\models"
+
   CreateDirectory "$INSTDIR\models\stable-diffusion"
   CreateDirectory "$INSTDIR\models\gfpgan"
   CreateDirectory "$INSTDIR\models\realesrgan"
   CreateDirectory "$INSTDIR\models\vae"
+
+  CreateDirectory "$INSTDIR\profile\.cache\huggingface\hub"
+  SetOutPath "$INSTDIR\profile\.cache\huggingface\hub"
+  File /r /x pytorch_model.bin "${EXISTING_INSTALLATION_DIR}\profile\.cache\huggingface\hub\models--openai--clip-vit-large-patch14"
+
   CreateDirectory "$SMPROGRAMS\Easy Diffusion"
   CreateShortCut "$SMPROGRAMS\Easy Diffusion\Easy Diffusion.lnk" "$INSTDIR\Start Stable Diffusion UI.cmd" "" "$INSTDIR\installer_files\cyborg_flower_girl.ico"
 
