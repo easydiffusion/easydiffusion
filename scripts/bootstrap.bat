@@ -14,6 +14,8 @@ set LEGACY_INSTALL_ENV_DIR=%cd%\installer
 set MICROMAMBA_DOWNLOAD_URL=https://github.com/easydiffusion/easydiffusion/releases/download/v1.1/micromamba.exe
 set umamba_exists=F
 
+set PYTHONHOME=
+
 set OLD_APPDATA=%APPDATA%
 set OLD_USERPROFILE=%USERPROFILE%
 set APPDATA=%cd%\installer_files\appdata
@@ -22,14 +24,11 @@ set USERPROFILE=%cd%\profile
 @rem figure out whether git and conda needs to be installed
 if exist "%INSTALL_ENV_DIR%" set PATH=%INSTALL_ENV_DIR%;%INSTALL_ENV_DIR%\Library\bin;%INSTALL_ENV_DIR%\Scripts;%INSTALL_ENV_DIR%\Library\usr\bin;%PATH%
 
-set PACKAGES_TO_INSTALL=
+set PACKAGES_TO_INSTALL=git python=3.8.5
 
 if not exist "%LEGACY_INSTALL_ENV_DIR%\etc\profile.d\conda.sh" (
-    if not exist "%INSTALL_ENV_DIR%\etc\profile.d\conda.sh" set PACKAGES_TO_INSTALL=%PACKAGES_TO_INSTALL% conda python=3.8.5
+    if not exist "%INSTALL_ENV_DIR%\etc\profile.d\conda.sh" set PACKAGES_TO_INSTALL=%PACKAGES_TO_INSTALL% conda
 )
-
-call git --version >.tmp1 2>.tmp2
-if "!ERRORLEVEL!" NEQ "0" set PACKAGES_TO_INSTALL=%PACKAGES_TO_INSTALL% git
 
 call "%MAMBA_ROOT_PREFIX%\micromamba.exe" --version >.tmp1 2>.tmp2
 if "!ERRORLEVEL!" EQU "0" set umamba_exists=T
