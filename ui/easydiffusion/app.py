@@ -172,6 +172,7 @@ getConfig.__test_diffusers_on_startup = None
 def setConfig(config):
     try:  # config.yaml
         config_yaml_path = os.path.join(CONFIG_DIR, "..", "config.yaml")
+        config_yaml_path = os.path.abspath(config_yaml_path)
         yaml = YAML()
 
         if not hasattr(config, "_yaml_comment"):

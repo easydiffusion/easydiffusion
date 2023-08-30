@@ -4,3 +4,5 @@ installer.tar
 dist
 .idea/*
 node_modules/*
+.tmp1
+.tmp2

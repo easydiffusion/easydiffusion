@@ -42,9 +42,16 @@ class RenderTask(Task):
     def run(self):
         "Runs the image generation task on the assigned thread"
 
-        from easydiffusion import task_manager
+        from easydiffusion import task_manager, app
 
         context = runtime.context
+        config = app.getConfig()
+
+        if config.get("block_nsfw", False):  # override if set on the server
+            self.task_data.block_nsfw = True
+            if "nsfw_checker" not in self.task_data.filters:
+                self.task_data.filters.append("nsfw_checker")
+                self.models_data.model_paths["nsfw_checker"] = "nsfw_checker"
 
         def step_callback():
             task_manager.keep_task_alive(self)

@@ -22,7 +22,8 @@ const taskConfigSetup = {
         },
         tiling: {
             label: "Tiling",
-            visible: ({ reqBody }) => reqBody?.tiling != "none",
+            visible: ({ reqBody }) =>
+                reqBody?.tiling != "none" && reqBody?.tiling !== null && reqBody?.tiling !== undefined,
             value: ({ reqBody }) => reqBody?.tiling,
         },
         use_vae_model: {
@@ -678,6 +679,28 @@ function getAllModelNames(type) {
     return f(modelsOptions[type])
 }
 
+// gets a flattened list of all models of a certain type. e.g. "path/subpath/modelname"
+// use the filter to search for all models having a certain name.
+function getAllModelPathes(type, filter = "") {
+    function f(tree, prefix) {
+        if (tree == undefined) {
+            return []
+        }
+        let result = []
+        tree.forEach((e) => {
+            if (typeof e == "object") {
+                result = result.concat(f(e[1], prefix + e[0] + "/"))
+            } else {
+                if (filter == "" || e == filter) {
+                    result.push(prefix + e)
+                }
+            }
+        })
+        return result
+    }
+    return f(modelsOptions[type], "")
+}
+
 function onUseAsThumbnailClick(req, img) {
     let scale = 1
     let targetWidth = img.naturalWidth
@@ -960,7 +983,7 @@ function makeImage() {
 
     const countBeforeBanner = localStorage.getItem("countBeforeBanner") || 1
     if (countBeforeBanner <= 0) {
-        supportBanner.classList.remove("displayNone")
+        // supportBanner.classList.remove("displayNone")
     } else {
         localStorage.setItem("countBeforeBanner", countBeforeBanner - 1)
     }
@@ -1214,7 +1237,6 @@ function getCurrentUserRequest() {
             //render_device: undefined, // Set device affinity. Prefer this device, but wont activate.
             use_stable_diffusion_model: stableDiffusionModelField.value,
             clip_skip: clipSkipField.checked,
-            tiling: tilingField.value,
             use_vae_model: vaeModelField.value,
             stream_progress_updates: true,
             stream_image_progress: numOutputsTotal > 50 ? false : streamImageProgressField.checked,
@@ -1279,6 +1301,10 @@ function getCurrentUserRequest() {
             newTask.reqBody.use_lora_model = modelNames
             newTask.reqBody.lora_alpha = modelStrengths
         }
+
+        if (tilingField.value !== "none") {
+            newTask.reqBody.tiling = tilingField.value
+        }
     }
     if (testDiffusers.checked && document.getElementById("toggle-tensorrt-install").innerHTML == "Uninstall") {
         // TRT is installed
@@ -1312,9 +1338,11 @@ function getCurrentUserRequest() {
 }
 
 function setEmbeddings(task) {
-    let prompt = task.reqBody.prompt.toLowerCase()
-    let negativePrompt = task.reqBody.negative_prompt.toLowerCase()
-    let overallPrompt = prompt + " " + negativePrompt
+    let prompt = task.reqBody.prompt
+    let negativePrompt = task.reqBody.negative_prompt
+    let overallPrompt = (prompt + " " + negativePrompt).toLowerCase()
+    overallPrompt = overallPrompt.replaceAll(/[^a-z0-9\.]/g, " ") // only allow alpha-numeric and dots
+    overallPrompt = overallPrompt.split(" ")
 
     let embeddingsTree = modelsOptions["embeddings"]
     let embeddings = []
@@ -1537,7 +1565,7 @@ function updateInitialText() {
 
         const countBeforeBanner = localStorage.getItem("countBeforeBanner") || 1
         if (countBeforeBanner <= 0) {
-            supportBanner.classList.remove("displayNone")
+            // supportBanner.classList.remove("displayNone")
         }
     }
 }
