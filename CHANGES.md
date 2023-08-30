@@ -17,6 +17,7 @@
 - **Major rewrite of the code** - We've switched to using diffusers under-the-hood, which allows us to release new features faster, and focus on making the UI and installer even easier to use.
 
 ### Detailed changelog
+* 3.0.2 - 30 Aug 2023 - Allow blocking NSFW images using a server-side config. This prevents the browser from generating NSFW images or changing the config. Open `config.yaml` in a text editor (e.g. Notepad), and add `block_nsfw: true` at the end, and save the file.
 * 3.0.2 - 29 Aug 2023 - Fixed incorrect matching of embeddings from prompts.
 * 3.0.2 - 24 Aug 2023 - Fix broken seamless tiling.
 * 3.0.2 - 23 Aug 2023 - Fix styling on mobile devices.
