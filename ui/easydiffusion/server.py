@@ -36,6 +36,7 @@ NOCACHE_HEADERS = {
     "Pragma": "no-cache",
     "Expires": "0",
 }
+PROTECTED_CONFIG_KEYS = ("block_nsfw",)  # can't change these via the HTTP API
 
 
 class NoCacheStaticFiles(StaticFiles):
@@ -175,7 +176,7 @@ def set_app_config_internal(req: SetAppConfigRequest):
     config["test_diffusers"] = req.test_diffusers
 
     for property, property_value in req.dict().items():
-        if property_value is not None and property not in req.__fields__:
+        if property_value is not None and property not in req.__fields__ and property not in PROTECTED_CONFIG_KEYS:
             config[property] = property_value
 
     try:
@@ -456,6 +457,7 @@ def modify_package_internal(package_name: str, req: dict):
         log.error(traceback.format_exc())
         return HTTPException(status_code=500, detail=str(e))
 
+
 def get_sha256_internal(obj_path):
     import hashlib
     from easydiffusion.utils import sha256sum
@@ -477,4 +479,3 @@ def get_sha256_internal(obj_path):
         log.error(str(e))
         log.error(traceback.format_exc())
         return HTTPException(status_code=500, detail=str(e))
-
