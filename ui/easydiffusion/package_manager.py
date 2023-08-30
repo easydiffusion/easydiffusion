@@ -12,9 +12,9 @@ from easydiffusion import app
 manifest = {
     "tensorrt": {
         "install": [
-            "nvidia-cudnn --pre --extra-index-url=https://pypi.nvidia.com --trusted-host pypi.nvidia.com",
-            "tensorrt-libs --pre --extra-index-url=https://pypi.nvidia.com --trusted-host pypi.nvidia.com",
-            "tensorrt --pre --extra-index-url=https://pypi.nvidia.com --trusted-host pypi.nvidia.com",
+            "wheel",
+            "nvidia-cudnn-cu11==8.9.4.25",
+            "tensorrt==9.0.0.post11.dev1 --pre --extra-index-url=https://pypi.nvidia.com --trusted-host pypi.nvidia.com",
         ],
         "uninstall": ["tensorrt"],
         # TODO also uninstall tensorrt-libs and nvidia-cudnn, but do it upon restarting (avoid 'file in use' error)
