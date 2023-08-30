@@ -11,7 +11,7 @@ if [ -f "on_sd_start.bat" ]; then
     echo download. This will not work.
     echo
     echo Recommended: Please close this window and download the installer from
-    echo https://stable-diffusion-ui.github.io/docs/installation/
+    echo https://easydiffusion.github.io/docs/installation/
     echo
     echo ================================================================================
     echo

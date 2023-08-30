@@ -165,9 +165,9 @@ FunctionEnd
 ; MUI Settings
 ;---------------------------------------------------------------------------------------------------------
 !define MUI_ABORTWARNING
-!define MUI_ICON "cyborg_flower_girl.ico"
+!define MUI_ICON "${EXISTING_INSTALLATION_DIR}\installer_files\cyborg_flower_girl.ico"
 
-!define MUI_WELCOMEFINISHPAGE_BITMAP "cyborg_flower_girl.bmp"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "${EXISTING_INSTALLATION_DIR}\installer_files\cyborg_flower_girl.bmp"
 
 ; Welcome page
 !define MUI_WELCOMEPAGE_TEXT "This installer will guide you through the installation of Easy Diffusion.$\n$\n\
@@ -176,8 +176,8 @@ Click Next to continue."
 Page custom MediaPackDialog
 
 ; License page
-!insertmacro MUI_PAGE_LICENSE "..\LICENSE"
-!insertmacro MUI_PAGE_LICENSE "..\CreativeML Open RAIL-M License"
+!insertmacro MUI_PAGE_LICENSE "${EXISTING_INSTALLATION_DIR}\LICENSE"
+!insertmacro MUI_PAGE_LICENSE "${EXISTING_INSTALLATION_DIR}\CreativeML Open RAIL-M License"
 ; Directory page
 !define MUI_PAGE_CUSTOMFUNCTION_LEAVE "DirectoryLeave"
 !insertmacro MUI_PAGE_DIRECTORY
@@ -210,20 +210,18 @@ ShowInstDetails show
 ; List of files to be installed
 Section "MainSection" SEC01
   SetOutPath "$INSTDIR"
-  File "..\CreativeML Open RAIL-M License"
-  File "..\How to install and run.txt"
-  File "..\LICENSE"
-  File "..\scripts\Start Stable Diffusion UI.cmd"
+  File "${EXISTING_INSTALLATION_DIR}\CreativeML Open RAIL-M License"
+  File "${EXISTING_INSTALLATION_DIR}\How to install and run.txt"
+  File "${EXISTING_INSTALLATION_DIR}\LICENSE"
+  File "${EXISTING_INSTALLATION_DIR}\Start Stable Diffusion UI.cmd"
   File /r "${EXISTING_INSTALLATION_DIR}\installer_files"
   File /r "${EXISTING_INSTALLATION_DIR}\sd-ui-files"
 
-  SetOutPath "$INSTDIR\installer_files"
-  File "cyborg_flower_girl.ico"
-
   SetOutPath "$INSTDIR\scripts"
   File "${EXISTING_INSTALLATION_DIR}\scripts\install_status.txt"
-  File "..\scripts\on_env_start.bat"
+  File "${EXISTING_INSTALLATION_DIR}\scripts\on_env_start.bat"
   File "C:\windows\system32\curl.exe"
+  File "${EXISTING_INSTALLATION_DIR}\scripts\config.yaml.sample"
 
   CreateDirectory "$INSTDIR\models\stable-diffusion"
   CreateDirectory "$INSTDIR\models\gfpgan"
