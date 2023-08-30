@@ -193,9 +193,9 @@ def resolve_model_paths(models_data: ModelsData):
         skip_models = cn_filters + ["latent_upscaler", "nsfw_checker"]
         if model_type in skip_models:  # doesn't use model paths
             continue
-        if model_type == "codeformer":
+        if model_type == "codeformer" and model_paths[model_type]:
             download_if_necessary("codeformer", "codeformer.pth", "codeformer-0.1.0")
-        elif model_type == "controlnet":
+        elif model_type == "controlnet" and model_paths[model_type]:
             model_id = model_paths[model_type]
             model_info = get_model_info_from_db(model_type=model_type, model_id=model_id)
             if model_info:
