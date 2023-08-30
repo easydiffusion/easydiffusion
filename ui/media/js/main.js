@@ -22,7 +22,8 @@ const taskConfigSetup = {
         },
         tiling: {
             label: "Tiling",
-            visible: ({ reqBody }) => reqBody?.tiling != "none",
+            visible: ({ reqBody }) =>
+                reqBody?.tiling != "none" && reqBody?.tiling !== null && reqBody?.tiling !== undefined,
             value: ({ reqBody }) => reqBody?.tiling,
         },
         use_vae_model: {
