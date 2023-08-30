@@ -1,1 +1,0 @@
-!define EXISTING_INSTALLATION_DIR "D:\path\to\installed\easy-diffusion"
