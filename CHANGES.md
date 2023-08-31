@@ -17,6 +17,7 @@
 - **Major rewrite of the code** - We've switched to using diffusers under-the-hood, which allows us to release new features faster, and focus on making the UI and installer even easier to use.
 
 ### Detailed changelog
+* 3.0.3 - 31 Aug 2023 - Auto-save images to disk (if enabled by the user) when upscaling/fixing using the buttons on the image.
 * 3.0.3 - 30 Aug 2023 - Allow loading NovelAI-based custom models.
 * 3.0.3 - 30 Aug 2023 - Fix broken VAE tiling. This allows you to create larger images with lesser VRAM usage.
 * 3.0.3 - 30 Aug 2023 - Allow blocking NSFW images using a server-side config. This prevents the browser from generating NSFW images or changing the config. Open `config.yaml` in a text editor (e.g. Notepad), and add `block_nsfw: true` at the end, and save the file.

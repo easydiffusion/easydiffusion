@@ -15,8 +15,10 @@ from easydiffusion.types import (
     FilterImageRequest,
     MergeRequest,
     TaskData,
+    RenderTaskData,
     ModelsData,
     OutputFormatData,
+    SaveToDiskData,
     convert_legacy_render_req_to_new,
 )
 from easydiffusion.utils import log
@@ -64,7 +66,7 @@ class SetAppConfigRequest(BaseModel, extra=Extra.allow):
     ui_open_browser_on_start: bool = None
     listen_to_network: bool = None
     listen_port: int = None
-    test_diffusers: bool = True
+    use_v3_engine: bool = True
 
 
 def init():
@@ -173,7 +175,7 @@ def set_app_config_internal(req: SetAppConfigRequest):
             config["net"] = {}
         config["net"]["listen_port"] = int(req.listen_port)
 
-    config["test_diffusers"] = req.test_diffusers
+    config["use_v3_engine"] = req.use_v3_engine
 
     for property, property_value in req.dict().items():
         if property_value is not None and property not in req.__fields__ and property not in PROTECTED_CONFIG_KEYS:
@@ -262,9 +264,10 @@ def render_internal(req: dict):
 
         # separate out the request data into rendering and task-specific data
         render_req: GenerateImageRequest = GenerateImageRequest.parse_obj(req)
-        task_data: TaskData = TaskData.parse_obj(req)
+        task_data: RenderTaskData = RenderTaskData.parse_obj(req)
         models_data: ModelsData = ModelsData.parse_obj(req)
         output_format: OutputFormatData = OutputFormatData.parse_obj(req)
+        save_data: SaveToDiskData = SaveToDiskData.parse_obj(req)
 
         # Overwrite user specified save path
         config = app.getConfig()
@@ -281,7 +284,7 @@ def render_internal(req: dict):
         )
 
         # enqueue the task
-        task = RenderTask(render_req, task_data, models_data, output_format)
+        task = RenderTask(render_req, task_data, models_data, output_format, save_data)
         return enqueue_task(task)
     except HTTPException as e:
         raise e
@@ -292,13 +295,14 @@ def render_internal(req: dict):
 
 def filter_internal(req: dict):
     try:
-        session_id = req.get("session_id", "session")
         filter_req: FilterImageRequest = FilterImageRequest.parse_obj(req)
+        task_data: TaskData = TaskData.parse_obj(req)
         models_data: ModelsData = ModelsData.parse_obj(req)
         output_format: OutputFormatData = OutputFormatData.parse_obj(req)
+        save_data: SaveToDiskData = SaveToDiskData.parse_obj(req)
 
         # enqueue the task
-        task = FilterTask(filter_req, session_id, models_data, output_format)
+        task = FilterTask(filter_req, task_data, models_data, output_format, save_data)
         return enqueue_task(task)
     except HTTPException as e:
         raise e

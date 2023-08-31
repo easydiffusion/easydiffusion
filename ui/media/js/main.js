@@ -852,6 +852,10 @@ function applyInlineFilter(filterName, path, filterParams, img, statusText, tool
     }
     filterReq.model_paths[filterName] = path
 
+    if (saveToDiskField.checked && diskPathField.value.trim() !== "") {
+        filterReq.save_to_disk_path = diskPathField.value.trim()
+    }
+
     tools.spinnerStatus.innerText = statusText
     tools.spinner.classList.remove("displayNone")
 
