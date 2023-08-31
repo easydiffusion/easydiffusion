@@ -230,7 +230,7 @@ def get_printable_request(
     task_data_metadata.update(save_data.dict())
 
     app_config = app.getConfig()
-    using_diffusers = app_config.get("test_diffusers", True)
+    using_diffusers = app_config.get("use_v3_engine", True)
 
     # Save the metadata in the order defined in TASK_TEXT_MAPPING
     metadata = {}

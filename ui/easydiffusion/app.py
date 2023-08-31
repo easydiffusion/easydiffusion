@@ -61,7 +61,7 @@ APP_CONFIG_DEFAULTS = {
     "ui": {
         "open_browser_on_start": True,
     },
-    "test_diffusers": True,
+    "use_v3_engine": True,
 }
 
 IMAGE_EXTENSIONS = [
@@ -116,9 +116,9 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
         shutil.move(config_legacy_yaml, config_yaml_path)
 
     def set_config_on_startup(config: dict):
-        if getConfig.__test_diffusers_on_startup is None:
-            getConfig.__test_diffusers_on_startup = config.get("test_diffusers", True)
-        config["config_on_startup"] = {"test_diffusers": getConfig.__test_diffusers_on_startup}
+        if getConfig.__use_v3_engine_on_startup is None:
+            getConfig.__use_v3_engine_on_startup = config.get("use_v3_engine", True)
+        config["config_on_startup"] = {"use_v3_engine": getConfig.__use_v3_engine_on_startup}
 
     if os.path.isfile(config_yaml_path):
         try:
@@ -166,7 +166,7 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
             return default_val
 
 
-getConfig.__test_diffusers_on_startup = None
+getConfig.__use_v3_engine_on_startup = None
 
 
 def setConfig(config):

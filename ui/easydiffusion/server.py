@@ -66,7 +66,7 @@ class SetAppConfigRequest(BaseModel, extra=Extra.allow):
     ui_open_browser_on_start: bool = None
     listen_to_network: bool = None
     listen_port: int = None
-    test_diffusers: bool = True
+    use_v3_engine: bool = True
 
 
 def init():
@@ -175,7 +175,7 @@ def set_app_config_internal(req: SetAppConfigRequest):
             config["net"] = {}
         config["net"]["listen_port"] = int(req.listen_port)
 
-    config["test_diffusers"] = req.test_diffusers
+    config["use_v3_engine"] = req.use_v3_engine
 
     for property, property_value in req.dict().items():
         if property_value is not None and property not in req.__fields__ and property not in PROTECTED_CONFIG_KEYS:

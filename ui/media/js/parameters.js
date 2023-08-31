@@ -238,7 +238,7 @@ var PARAMETERS = [
         default: false,
     },
     {
-        id: "test_diffusers",
+        id: "use_v3_engine",
         type: ParameterType.checkbox,
         label: "Use the new v3 engine (diffusers)",
         note:
@@ -420,7 +420,7 @@ let listenPortField = document.querySelector("#listen_port")
 let useBetaChannelField = document.querySelector("#use_beta_channel")
 let uiOpenBrowserOnStartField = document.querySelector("#ui_open_browser_on_start")
 let confirmDangerousActionsField = document.querySelector("#confirm_dangerous_actions")
-let testDiffusers = document.querySelector("#test_diffusers")
+let testDiffusers = document.querySelector("#use_v3_engine")
 let profileNameField = document.querySelector("#profileName")
 
 let saveSettingsBtn = document.querySelector("#save-system-settings-btn")
@@ -465,13 +465,13 @@ async function getAppConfig() {
         }
 
         let testDiffusersEnabled = true
-        if (config.test_diffusers === false) {
+        if (config.use_v3_engine === false) {
             testDiffusersEnabled = false
         }
         testDiffusers.checked = testDiffusersEnabled
 
         if (config.config_on_startup) {
-            if (config.config_on_startup?.test_diffusers) {
+            if (config.config_on_startup?.use_v3_engine) {
                 document.body.classList.add("diffusers-enabled-on-startup")
                 document.body.classList.remove("diffusers-disabled-on-startup")
             } else {
