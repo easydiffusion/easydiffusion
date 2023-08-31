@@ -268,7 +268,11 @@ const TASK_MAPPING = {
     tiling: {
         name: "Tiling",
         setUI: (val) => {
-            tilingField.value = val
+            if (val === null || val === "None") {
+                tilingField.value = "none"
+            } else {
+                tilingField.value = val
+            }
         },
         readUI: () => tilingField.value,
         parse: (val) => val,
@@ -583,6 +587,7 @@ const TASK_TEXT_MAPPING = {
     lora_alpha: "LoRA Strength",
     use_controlnet_model: "ControlNet model",
     control_filter_to_apply: "ControlNet Filter",
+    tiling: "Seamless Tiling",
 }
 function parseTaskFromText(str) {
     const taskReqBody = {}
