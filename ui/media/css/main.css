@@ -715,15 +715,26 @@ div.img-preview img {
 .header-content > .drag-handle {
     min-width: initial !important;
 }
-.taskStatusLabel, .taskNumberOfImagesLabel {
+.taskLabel {
     font-size: 8pt;
     background:var(--background-color2);
     border: 1px solid rgb(61, 62, 66);
     padding: 2pt 4pt;
     border-radius: 2pt;
-    margin-right: 5pt;
     display: inline;
 }
+.taskStatusLabel {
+    margin-right: 5pt;
+}
+.multiNumberOfImages {
+    font-weight: bold;
+}
+.taskNumberOfImagesLabel {
+    min-width: 30px;
+    display: inline-block;
+    text-align: center;
+}
+
 .activeTaskLabel {
     background:rgb(0, 90, 30);
     border: 1px solid rgb(0, 75, 19);
