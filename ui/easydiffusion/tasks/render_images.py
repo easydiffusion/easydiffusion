@@ -7,7 +7,7 @@ from easydiffusion import model_manager, runtime
 from easydiffusion.types import GenerateImageRequest, ModelsData, OutputFormatData
 from easydiffusion.types import Image as ResponseImage
 from easydiffusion.types import GenerateImageResponse, TaskData, UserInitiatedStop
-from easydiffusion.utils import get_printable_request, log, save_images_to_disk
+from easydiffusion.utils import get_printable_request, log, save_images_to_disk, get_metadata_entries_for_request
 from sdkit.generate import generate_images
 from sdkit.utils import (
     diffusers_latent_samples_to_images,
@@ -142,9 +142,13 @@ def make_images(
     images, seeds = make_images_internal(
         context, req, task_data, models_data, output_format, data_queue, task_temp_images, step_callback
     )
+    
+    metadata = [None for _ in images]
+    if "embed" in task_data.metadata_output_format:
+        metadata = get_metadata_entries_for_request(req, task_data, output_format)
 
     res = GenerateImageResponse(
-        req, task_data, models_data, output_format, images=construct_response(images, seeds, output_format)
+        req, task_data, models_data, output_format, images=construct_response(images, seeds, output_format, metadata)
     )
     res = res.json()
     data_queue.put(json.dumps(res))
@@ -280,7 +284,7 @@ def generate_images_internal(
     return images, user_stopped
 
 
-def construct_response(images: list, seeds: list, output_format: OutputFormatData):
+def construct_response(images: list, seeds: list, output_format: OutputFormatData, metadata_list: list):
     return [
         ResponseImage(
             data=img_to_base64_str(
@@ -288,10 +292,11 @@ def construct_response(images: list, seeds: list, output_format: OutputFormatDat
                 output_format.output_format,
                 output_format.output_quality,
                 output_format.output_lossless,
+                metadata=metadata
             ),
             seed=seed,
         )
-        for img, seed in zip(images, seeds)
+        for img, seed, metadata in zip(images, seeds, metadata_list)
     ]
 
 
