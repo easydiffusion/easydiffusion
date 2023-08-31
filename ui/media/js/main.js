@@ -1102,6 +1102,7 @@ function createTask(task) {
     taskEntry.className = "imageTaskContainer"
     taskEntry.innerHTML = ` <div class="header-content panel collapsible active">
                                 <i class="drag-handle fa-solid fa-grip"></i>
+                                ${task.numOutputsTotal > 1 ? `<div class="taskNumberOfImagesLabel">✕${task.numOutputsTotal}</div>` : ''}
                                 <div class="taskStatusLabel">Enqueued</div>
                                 <button class="secondaryButton stopTask"><i class="fa-solid fa-xmark"></i> Cancel</button>
                                 <button class="tertiaryButton useSettings"><i class="fa-solid fa-redo"></i> Use these settings</button>

@@ -711,7 +711,11 @@ div.img-preview img {
     margin-right: 6px;
     cursor: move;
 }
-.taskStatusLabel {
+/* Override conflicting css from imported library */
+.header-content > .drag-handle {
+    min-width: initial !important;
+}
+.taskStatusLabel, .taskNumberOfImagesLabel {
     font-size: 8pt;
     background:var(--background-color2);
     border: 1px solid rgb(61, 62, 66);
