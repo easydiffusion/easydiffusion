@@ -609,10 +609,17 @@ div.img-preview img {
     margin: auto;
     padding: 0px;
 }
+#help-links ul {
+    list-style-type: disc;
+    padding-left: 12pt;
+}
 #help-links li {
-    padding-bottom: 12pt;
+    padding-bottom: 6pt;
     display: block;
     font-size: 10pt;
+}
+#help-links ul li {
+    display: list-item;
 }
 #help-links li .fa-fw {
     padding-right: 2pt;
