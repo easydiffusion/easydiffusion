@@ -272,7 +272,7 @@ def render_internal(req: dict):
         # Overwrite user specified save path
         config = app.getConfig()
         if "force_save_path" in config:
-            task_data.save_to_disk_path = config["force_save_path"]
+            save_data.save_to_disk_path = config["force_save_path"]
 
         render_req.init_image_mask = req.get("mask")  # hack: will rename this in the HTTP API in a future revision
 
