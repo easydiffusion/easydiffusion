@@ -170,7 +170,7 @@ def print_task_info(
     output_format: OutputFormatData,
     save_data: SaveToDiskData,
 ):
-    req_str = pprint.pformat(get_printable_request(req, task_data, output_format, save_data)).replace("[", "\[")
+    req_str = pprint.pformat(get_printable_request(req, task_data, models_data, output_format, save_data)).replace("[", "\[")
     task_str = pprint.pformat(task_data.dict()).replace("[", "\[")
     models_data = pprint.pformat(models_data.dict()).replace("[", "\[")
     output_format = pprint.pformat(output_format.dict()).replace("[", "\[")
@@ -212,7 +212,7 @@ def make_images_internal(
     filtered_images = filter_images(context, images, filters, filter_params) if not user_stopped else images
 
     if save_data.save_to_disk_path is not None:
-        save_images_to_disk(images, filtered_images, req, task_data, output_format, save_data)
+        save_images_to_disk(images, filtered_images, req, task_data, models_data, output_format, save_data)
 
     seeds = [*range(req.seed, req.seed + len(images))]
     if task_data.show_only_filtered_image or filtered_images is images:
