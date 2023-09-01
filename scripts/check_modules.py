@@ -180,7 +180,7 @@ Thanks!"""
 ### Launcher
 
 def get_config():
-    config_directory = os.path.dirname(__file__)
+    config_directory = os.path.dirname(__file__)  # this will be "scripts"
     config_yaml = os.path.join(config_directory, "..", "config.yaml")
     config_json = os.path.join(config_directory, "config.json")
 
