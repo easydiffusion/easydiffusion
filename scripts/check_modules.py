@@ -250,7 +250,10 @@ def launch_uvicorn():
 
     os.environ["SD_PATH"] = str(Path(Path.cwd(), "stable-diffusion"))
     os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
-    os.environ["PYTHONPATH"] = str(Path( os.environ["INSTALL_ENV_DIR"], "lib", "python3.8", "site-packages"))
+    if os_name == "Windows":
+        os.environ["PYTHONPATH"] = str(Path( os.environ["INSTALL_ENV_DIR"], "lib", "site-packages"))
+    else:
+        os.environ["PYTHONPATH"] = str(Path( os.environ["INSTALL_ENV_DIR"], "lib", "python3.8", "site-packages"))
     os.environ["SD_UI_PATH"] = str(Path(Path.cwd(), "ui"))
 
     print(f"PYTHONPATH={os.environ['PYTHONPATH']}")
