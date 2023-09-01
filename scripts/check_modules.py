@@ -85,7 +85,7 @@ def install(module_name: str, module_version: str):
 
 def update_modules():
     for module_name, allowed_versions in modules_to_check.items():
-        if os.path.exists(f"../src/{module_name}"):
+        if os.path.exists(f"src/{module_name}"):
             print(f"Skipping {module_name} update, since it's in developer/editable mode")
             continue
 
