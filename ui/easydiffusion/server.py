@@ -67,6 +67,7 @@ class SetAppConfigRequest(BaseModel, extra=Extra.allow):
     listen_to_network: bool = None
     listen_port: int = None
     use_v3_engine: bool = True
+    models_dir: str = None
 
 
 def init():
@@ -176,6 +177,7 @@ def set_app_config_internal(req: SetAppConfigRequest):
         config["net"]["listen_port"] = int(req.listen_port)
 
     config["use_v3_engine"] = req.use_v3_engine
+    config["models_dir"] = req.models_dir
 
     for property, property_value in req.dict().items():
         if property_value is not None and property not in req.__fields__ and property not in PROTECTED_CONFIG_KEYS:
@@ -207,7 +209,12 @@ def read_web_data_internal(key: str = None, **kwargs):
     if not key:  # /get without parameters, stable-diffusion easter egg.
         raise HTTPException(status_code=418, detail="StableDiffusion is drawing a teapot!")  # HTTP418 I'm a teapot
     elif key == "app_config":
-        return JSONResponse(app.getConfig(), headers=NOCACHE_HEADERS)
+        config = app.getConfig()
+
+        if "models_dir" not in config:
+            config["models_dir"] = app.MODELS_DIR
+
+        return JSONResponse(config, headers=NOCACHE_HEADERS)
     elif key == "system_info":
         config = app.getConfig()
 

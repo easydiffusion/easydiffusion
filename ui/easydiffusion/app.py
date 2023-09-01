@@ -37,7 +37,6 @@ ROOT_DIR = os.path.abspath(os.path.join(SD_DIR, ".."))
 SD_UI_DIR = os.getenv("SD_UI_PATH", None)
 
 CONFIG_DIR = os.path.abspath(os.path.join(SD_UI_DIR, "..", "scripts"))
-MODELS_DIR = os.path.abspath(os.path.join(SD_DIR, "..", "models"))
 BUCKET_DIR = os.path.abspath(os.path.join(SD_DIR, "..", "bucket"))
 
 USER_PLUGINS_DIR = os.path.abspath(os.path.join(SD_DIR, "..", "plugins"))
@@ -92,13 +91,20 @@ CUSTOM_MODIFIERS_LANDSCAPE_EXTENSIONS = [
     "-landscape",
 ]
 
+MODELS_DIR = os.path.abspath(os.path.join(SD_DIR, "..", "models"))
+
 
 def init():
+    global MODELS_DIR
+
     os.makedirs(USER_UI_PLUGINS_DIR, exist_ok=True)
     os.makedirs(USER_SERVER_PLUGINS_DIR, exist_ok=True)
 
     # https://pytorch.org/docs/stable/storage.html
     warnings.filterwarnings("ignore", category=UserWarning, message="TypedStorage is deprecated")
+
+    config = getConfig()
+    MODELS_DIR = config.get("models_dir", MODELS_DIR)
 
 
 def init_render_threads():
@@ -170,6 +176,8 @@ getConfig.__use_v3_engine_on_startup = None
 
 
 def setConfig(config):
+    global MODELS_DIR
+
     try:  # config.yaml
         config_yaml_path = os.path.join(CONFIG_DIR, "..", "config.yaml")
         config_yaml_path = os.path.abspath(config_yaml_path)
@@ -205,6 +213,9 @@ def setConfig(config):
         shutil.move(config_yaml_path + ".tmp", config_yaml_path)
     except:
         log.error(traceback.format_exc())
+
+    if config.get("models_dir"):
+        MODELS_DIR = config["models_dir"]
 
 
 def save_to_config(ckpt_model_name, vae_model_name, hypernetwork_model_name, vram_usage_level):

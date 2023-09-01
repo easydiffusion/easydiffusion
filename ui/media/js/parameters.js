@@ -98,6 +98,17 @@ var PARAMETERS = [
         ],
     },
     {
+        id: "models_dir",
+        type: ParameterType.custom,
+        icon: "fa-folder-tree",
+        label: "Models Folder",
+        note: "Path to the 'models' folder. Please save and refresh the page after changing this.",
+        saveInAppConfig: true,
+        render: (parameter) => {
+            return `<input id="${parameter.id}" name="${parameter.id}" size="30">`
+        },
+    },
+    {
         id: "block_nsfw",
         type: ParameterType.checkbox,
         label: "Block NSFW images",
@@ -422,6 +433,7 @@ let uiOpenBrowserOnStartField = document.querySelector("#ui_open_browser_on_star
 let confirmDangerousActionsField = document.querySelector("#confirm_dangerous_actions")
 let testDiffusers = document.querySelector("#use_v3_engine")
 let profileNameField = document.querySelector("#profileName")
+let modelsDirField = document.querySelector("#models_dir")
 
 let saveSettingsBtn = document.querySelector("#save-system-settings-btn")
 
@@ -463,6 +475,7 @@ async function getAppConfig() {
         if (config.net && config.net.listen_port !== undefined) {
             listenPortField.value = config.net.listen_port
         }
+        modelsDirField.value = config.models_dir
 
         let testDiffusersEnabled = true
         if (config.use_v3_engine === false) {
