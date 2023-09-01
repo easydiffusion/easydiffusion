@@ -284,7 +284,10 @@ def launch_uvicorn():
         setup_amd_environment()
 
     print("\nLaunching uvicorn\n")
-    os.system(f'python -m uvicorn main:server_api --app-dir "{os.environ["SD_UI_PATH"]}" --port {listen_port} --host {bind_ip} --log-level error')
+    if os_name == "Windows":
+        os.system(f'uvicorn main:server_api --app-dir "{os.environ["SD_UI_PATH"]}" --port {listen_port} --host {bind_ip} --log-level error')
+    else:
+        os.system(f'python -m uvicorn main:server_api --app-dir "{os.environ["SD_UI_PATH"]}" --port {listen_port} --host {bind_ip} --log-level error')
 
 ### Start
 
