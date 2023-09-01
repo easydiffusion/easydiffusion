@@ -41,45 +41,8 @@ fi
 if [ -e "src" ]; then mv src src-old; fi
 if [ -e "ldm" ]; then mv ldm ldm-old; fi
 
-# Download the required packages
-if ! python ../scripts/check_modules.py; then
-    read -p "Press any key to continue"
-    exit 1
-fi
-
-if ! command -v uvicorn &> /dev/null; then
-    fail "UI packages not found!"
-fi
-
-if [ `grep -c sd_install_complete ../scripts/install_status.txt` -gt "0" ]; then
-    echo sd_weights_downloaded >> ../scripts/install_status.txt
-    echo sd_install_complete >> ../scripts/install_status.txt
-fi
-
-printf "\n\nEasy Diffusion installation complete, starting the server!\n\n"
-
-SD_PATH=`pwd`
-
-export PYTORCH_ENABLE_MPS_FALLBACK=1
-export PYTHONPATH="$INSTALL_ENV_DIR/lib/python3.8/site-packages"
-echo "PYTHONPATH=$PYTHONPATH"
-
-which python
-python --version
-
 cd ..
-export SD_UI_PATH=`pwd`/ui
-export ED_BIND_PORT="$( python scripts/get_config.py --default=9000 net listen_port )"
-case "$( python scripts/get_config.py --default=False net listen_to_network )" in
-    "True")
-        export ED_BIND_IP=$( python scripts/get_config.py --default=0.0.0.0 net bind_ip)
-        ;;
-    "False")
-        export ED_BIND_IP=127.0.0.1
-        ;;
-esac
-cd stable-diffusion
-
-uvicorn main:server_api --app-dir "$SD_UI_PATH" --port "$ED_BIND_PORT" --host "$ED_BIND_IP" --log-level error
+# Download the required packages
+python scripts/check_modules.py --launch-uvicorn
 
 read -p "Press any key to continue"

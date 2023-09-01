@@ -52,73 +52,24 @@ if exist ldm rename ldm ldm-old
 if not exist "%INSTALL_ENV_DIR%\DLLs\libssl-1_1-x64.dll"    copy "%INSTALL_ENV_DIR%\Library\bin\libssl-1_1-x64.dll"    "%INSTALL_ENV_DIR%\DLLs\"
 if not exist "%INSTALL_ENV_DIR%\DLLs\libcrypto-1_1-x64.dll" copy "%INSTALL_ENV_DIR%\Library\bin\libcrypto-1_1-x64.dll" "%INSTALL_ENV_DIR%\DLLs\"
 
+cd ..
+
+@rem set any overrides
+set HF_HUB_DISABLE_SYMLINKS_WARNING=true
+
 @rem install or upgrade the required modules
 set PATH=C:\Windows\System32;%PATH%
 
 @REM prevent from using packages from the user's home directory, to avoid conflicts
 set PYTHONNOUSERSITE=1
 set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
-
-@rem Download the required packages
-call python ..\scripts\check_modules.py
-if "%ERRORLEVEL%" NEQ "0" (
-    pause
-    exit /b
-)
-
-call WHERE uvicorn > .tmp
-@>nul findstr /m "uvicorn" .tmp
-@if "%ERRORLEVEL%" NEQ "0" (
-    @echo. & echo "UI packages not found! Sorry about that, please try to:" & echo "  1. Run this installer again." & echo "  2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/easydiffusion/easydiffusion/wiki/Troubleshooting" & echo "  3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB" & echo "  4. If that doesn't solve the problem, please file an issue at https://github.com/easydiffusion/easydiffusion/issues" & echo "Thanks!" & echo.
-    pause
-    exit /b
-)
-
-@>nul findstr /m "conda_sd_ui_deps_installed" ..\scripts\install_status.txt
-@if "%ERRORLEVEL%" NEQ "0" (
-    @echo conda_sd_ui_deps_installed >> ..\scripts\install_status.txt
-)
-
-@>nul findstr /m "sd_install_complete" ..\scripts\install_status.txt
-@if "%ERRORLEVEL%" NEQ "0" (
-    @echo sd_weights_downloaded >> ..\scripts\install_status.txt
-    @echo sd_install_complete >> ..\scripts\install_status.txt
-)
-
-@echo. & echo "Easy Diffusion installation complete! Starting the server!" & echo.
-
-@set SD_DIR=%cd%
-
-set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 echo PYTHONPATH=%PYTHONPATH%
 
+@rem Download the required packages
 call where python
 call python --version
 
-@cd ..
-@set SD_UI_PATH=%cd%\ui
+call python scripts\check_modules.py --launch-uvicorn
+pause
+exit /b
 
-@FOR /F "tokens=* USEBACKQ" %%F IN (`python scripts\get_config.py --default=9000 net listen_port`) DO (
-    @SET ED_BIND_PORT=%%F
-)
-
-@FOR /F "tokens=* USEBACKQ" %%F IN (`python scripts\get_config.py --default=False net listen_to_network`) DO (
-    if "%%F" EQU "True" (
-        @FOR /F "tokens=* USEBACKQ" %%G IN (`python scripts\get_config.py --default=0.0.0.0 net bind_ip`) DO (
-            @SET ED_BIND_IP=%%G
-        )
-    ) else (
-        @SET ED_BIND_IP=127.0.0.1
-    )
-)
-
-
-@cd stable-diffusion
-
-@rem set any overrides
-set HF_HUB_DISABLE_SYMLINKS_WARNING=true
-
-@python -m uvicorn main:server_api --app-dir "%SD_UI_PATH%" --port %ED_BIND_PORT% --host %ED_BIND_IP% --log-level error
-
-
-@pause
