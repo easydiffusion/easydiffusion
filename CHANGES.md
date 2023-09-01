@@ -17,6 +17,7 @@
 - **Major rewrite of the code** - We've switched to using diffusers under-the-hood, which allows us to release new features faster, and focus on making the UI and installer even easier to use.
 
 ### Detailed changelog
+* 3.0.4 - 1 Sep 2023 - Fix incorrect metadata generated for embeddings, when the exact word doesn't match the case, or is part of a larger word.
 * 3.0.4 - 1 Sep 2023 - Simplify the installation for AMD users on Linux. Thanks @JeLuf.
 * 3.0.4 - 1 Sep 2023 - Allow using a different folder for models. This is useful if you want to share a models folder across different software, or on a different drive. You can change this path in the Settings tab.
 * 3.0.3 - 31 Aug 2023 - Auto-save images to disk (if enabled by the user) when upscaling/fixing using the buttons on the image.
