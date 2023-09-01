@@ -1569,7 +1569,7 @@ function updateInitialText() {
 
         const countBeforeBanner = localStorage.getItem("countBeforeBanner") || 1
         if (countBeforeBanner <= 0) {
-            // supportBanner.classList.remove("displayNone")
+            supportBanner.classList.remove("displayNone")
         }
     }
 }
