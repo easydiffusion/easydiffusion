@@ -213,7 +213,8 @@ def get_config():
 
 def setup_amd_environment():
     gpus = list(filter(lambda x: ("amdgpu" in x), open("/proc/bus/pci/devices", "r").readlines()))
-    gpus = [ AMD_PCI_IDs[x.split("\t")[1].upper()] for x in gpus ]
+    gpus = [ x.split("\t")[1].upper() for x in gpus ]
+    gpus = [ AMD_PCI_IDs[x] for x in gpus if x in AMD_PCI_IDs ]
     i=0
     supported_gpus=[]
     for gpu in gpus:
