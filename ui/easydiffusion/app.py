@@ -104,7 +104,9 @@ def init():
     warnings.filterwarnings("ignore", category=UserWarning, message="TypedStorage is deprecated")
 
     config = getConfig()
-    MODELS_DIR = config.get("models_dir", MODELS_DIR)
+    config_models_dir = config.get("models_dir", None)
+    if (config_models_dir is not None and config_models_dir != ""):
+        MODELS_DIR = config_models_dir
 
 
 def init_render_threads():
