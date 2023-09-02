@@ -244,7 +244,7 @@ def setup_amd_environment():
 def launch_uvicorn():
     config = get_config()
 
-    # pprint(config)
+    pprint(config)
 
     with open("scripts/install_status.txt","a") as f:
         f.write("sd_weights_downloaded\n")
