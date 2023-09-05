@@ -39,6 +39,7 @@ call where conda
 call conda --version
 echo .
 echo COMSPEC=%COMSPEC%
+wmic path win32_VideoController get name,AdapterRAM,DriverDate,DriverVersion
 
 @rem Download the rest of the installer and UI
 call scripts\on_env_start.bat

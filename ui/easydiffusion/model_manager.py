@@ -261,7 +261,24 @@ def make_model_folders():
     for model_type in KNOWN_MODEL_TYPES:
         model_dir_path = os.path.join(app.MODELS_DIR, model_type)
 
-        os.makedirs(model_dir_path, exist_ok=True)
+        try:
+            os.makedirs(model_dir_path, exist_ok=True)
+        except Exception as e:
+            from rich.console import Console
+            from rich.panel import Panel
+
+            Console().print(
+                Panel(
+                    "\n"
+                    + f"Error while creating the models directory: '{model_dir_path}'\n"
+                    + f"Error: {e}\n\n"
+                    + f"[white]Check the 'models_dir:' line in the file '{os.path.join(app.ROOT_DIR, 'config.yaml')}'.[/white]\n",
+                    title="Fatal Error starting Easy Diffusion",
+                    style="bold yellow on red",
+                )
+            )
+            input("Press Enter to terminate...")
+            exit(1)
 
         help_file_name = f"Place your {model_type} model files here.txt"
         help_file_contents = f'Supported extensions: {" or ".join(MODEL_EXTENSIONS.get(model_type))}'
