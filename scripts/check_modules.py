@@ -16,6 +16,9 @@ import shutil
 from pathlib import Path
 from pprint import pprint
 
+from rich.console import Console
+from rich.panel import Panel
+
 os_name = platform.system()
 
 modules_to_check = {
@@ -211,7 +214,21 @@ def get_config():
         config = {}
     return config
 
+
 def setup_amd_environment():
+    if not os.access("/dev/kfd", os.W_OK):
+        Console().print(
+            Panel(
+                "\n"
+                + "[black]EasyDiffusion has no write access to /dev/kfd.\n\n"
+                + "Without this, the ROCm driver will probably not be able to initialize the GPU and EasyDiffusion will use the CPU for rendering.\n"
+                + f"Follow the instructions on this site to configure the access:\n"
+                + f"[bold yellow underline]https://github.com/easydiffusion/easydiffusion/wiki/AMD-on-Linux#access-permissions\n",
+                title="Missing write access to /dev/kfd",
+                style="white on red",
+            )
+        )
+
     gpus = list(filter(lambda x: ("amdgpu" in x), open("/proc/bus/pci/devices", "r").readlines()))
     gpus = [ x.split("\t")[1].upper() for x in gpus ]
     gpus = [ AMD_PCI_IDs[x] for x in gpus if x in AMD_PCI_IDs ]
@@ -252,7 +269,6 @@ def launch_uvicorn():
 
     print("\n\nEasy Diffusion installation complete, starting the server!\n\n")
 
-    os.environ["SD_PATH"] = str(Path(Path.cwd(), "stable-diffusion"))
     os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
     if os_name == "Windows":
         os.environ["PYTHONPATH"] = str(Path( os.environ["INSTALL_ENV_DIR"], "lib", "site-packages"))
