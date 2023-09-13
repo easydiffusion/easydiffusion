@@ -16,9 +16,6 @@ import shutil
 from pathlib import Path
 from pprint import pprint
 
-from rich.console import Console
-from rich.panel import Panel
-
 os_name = platform.system()
 
 modules_to_check = {
@@ -217,16 +214,18 @@ def get_config():
 
 def setup_amd_environment():
     if not os.access("/dev/kfd", os.W_OK):
-        Console().print(
-            Panel(
-                "\n"
-                + "[black]EasyDiffusion has no write access to /dev/kfd.\n\n"
-                + "Without this, the ROCm driver will probably not be able to initialize the GPU and EasyDiffusion will use the CPU for rendering.\n"
-                + f"Follow the instructions on this site to configure the access:\n"
-                + f"[bold yellow underline]https://github.com/easydiffusion/easydiffusion/wiki/AMD-on-Linux#access-permissions\n",
-                title="Missing write access to /dev/kfd",
-                style="white on red",
-            )
+        print(
+                  f"#########################################################################\n"
+                + f"#           EasyDiffusion has no write access to /dev/kfd.              #\n"
+                + f"#########################################################################\n"
+                + f"#                                                                       #\n"
+                + f"# Without this, the ROCm driver will probably not be able to initialize #\n"
+                + f"# the GPU and EasyDiffusion will use the CPU for rendering.             #\n"
+                + f"#                                                                       #\n"
+                + f"# Follow the instructions on this site to configure the access:         #\n"
+                + f"# https://github.com/easydiffusion/easydiffusion/wiki/AMD-on-Linux      #\n",
+                + f"#                                                                       #\n"
+                + f"#########################################################################\n"
         )
 
     gpus = list(filter(lambda x: ("amdgpu" in x), open("/proc/bus/pci/devices", "r").readlines()))
