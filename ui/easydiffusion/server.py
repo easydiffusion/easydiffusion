@@ -470,7 +470,6 @@ def modify_package_internal(package_name: str, req: dict):
 
 
 def get_sha256_internal(obj_path):
-    import hashlib
     from easydiffusion.utils import sha256sum
 
     path = obj_path.split("/")

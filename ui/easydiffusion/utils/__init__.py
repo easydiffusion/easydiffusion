@@ -1,4 +1,5 @@
 import logging
+import hashlib
 
 log = logging.getLogger("easydiffusion")
 
