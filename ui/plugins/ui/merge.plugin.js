@@ -733,5 +733,5 @@
 })()
 async function getLoraKeywords(model) {
     return Bucket.retrieve(`modelinfo/lora/${model}`)
-        .then((info) => info.keywords)
+        .then((info) => info ? info.keywords : [])
 }
