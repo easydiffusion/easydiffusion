@@ -55,8 +55,13 @@ def init():
             return bucketfiles
 
         else:
-            bucket_id = crud.get_bucket_by_path(db, path).id
+            bucket = crud.get_bucket_by_path(db, path)
+            if bucket == None:
+                raise HTTPException(status_code=404, detail="Bucket not found")
+            bucket_id = bucket.id
             bucketfile = db.query(models.BucketFile).filter(models.BucketFile.bucket_id == bucket_id, models.BucketFile.filename == filename).first()
+            if bucketfile == None:
+                raise HTTPException(status_code=404, detail="File not found")
 
             suffix = get_suffix_from_filename(filename)
 

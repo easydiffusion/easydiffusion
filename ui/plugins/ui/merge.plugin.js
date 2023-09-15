@@ -645,8 +645,10 @@
                     } else {
                         LoraUI.keywordsField.value = info.keywords.join("\n")
                         LoraUI.notesField.value = info.notes
-                        if ("civitai" in info) {
+                        if ("civitai" in info && info["civitai"] != null) {
                             LoraUI.showCivitaiLink(info.civitai)
+                        } else {
+                            LoraUI.hideCivitaiLink()
                         }
                     }
                 })
@@ -657,7 +659,6 @@
                     LoraUI.imagePlaceholder.classList.add("displayNone")
                 })
                 .catch((error) => {
-                    console.error("Caught error:", error)
                     LoraUI.image.classList.add("displayNone")
                     LoraUI.imagePlaceholder.classList.remove("displayNone")
                 })
