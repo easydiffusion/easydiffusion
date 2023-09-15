@@ -47,3 +47,5 @@ Build the Windows installer using Windows, and the Linux installer using Linux. 
 
 1. Run `build.bat` or `./build.sh` depending on whether you're in Windows or Linux.
 2. Make a new GitHub release and upload the Windows and Linux installer builds created inside the `dist` folder.
+
+For NSIS (on Windows), you need to have these plugins in the `nsis/Plugins` folder: `amd64-unicode`, `x86-ansi`, `x86-unicode`

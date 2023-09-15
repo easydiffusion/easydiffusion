@@ -477,6 +477,7 @@ dialog {
     background: var(--background-color2);
     color: var(--text-color);
     border-radius: 6px;
+    box-shadow: 0px 0px 30px black;
     border: 2px solid rgb(255 255 255 / 10%);
     padding: 0px;
 }
@@ -608,10 +609,17 @@ div.img-preview img {
     margin: auto;
     padding: 0px;
 }
+#help-links ul {
+    list-style-type: disc;
+    padding-left: 12pt;
+}
 #help-links li {
-    padding-bottom: 12pt;
+    padding-bottom: 6pt;
     display: block;
     font-size: 10pt;
+}
+#help-links ul li {
+    display: list-item;
 }
 #help-links li .fa-fw {
     padding-right: 2pt;
@@ -1092,7 +1100,7 @@ input::file-selector-button {
     .tab-content-inner {
         margin: 0px;
     }
-    .tab {
+    #top-nav .tab {
         font-size: 0;
     }
     .tab .icon {
@@ -1116,6 +1124,9 @@ input::file-selector-button {
         font-size: 0px;
     }
     #preview-tools button .icon {
+        font-size: 12pt;
+    }
+    #show-download-popup .fa-solid {
         font-size: 12pt;
     }
 }
@@ -1441,7 +1452,7 @@ div.top-right {
     right: 8px;
 }
 
-button.useForControlnetBtn {
+.task-fs-initimage .top-right button {
     margin-top: 6px;
 }
 
@@ -1708,6 +1719,12 @@ body.wait-pause {
     overflow-y: scroll;
 }
 
+@media screen and (max-width: 1400px) {
+    #embeddings-list {
+        width: 80vW;
+    }
+}
+
 #embeddings-list button {
     margin: 2px;
     color: var(--button-color);
@@ -1923,6 +1940,29 @@ div#enlarge-buttons {
     width: 77%;
 }
 
+.drop-area {
+    width: 45%;
+    height: 50px;
+    border: 2px dashed #ccc;
+    text-align: center;
+    line-height: 50px;
+    font-size: small;
+    color: #ccc;
+    border-radius: 10px;
+    display: none;
+    margin: 12px 10px;
+}
+
+#num_outputs_total {
+    width: 42pt;
+}
+#num_outputs_parallel {
+    width: 42pt;
+}
+.model_entry .model_weight {
+    width: 50pt;
+}
+
 /* hack for fixing Image Modifier Improvements plugin */
 #imageTagPopupContainer {
     position: absolute;
@@ -1981,4 +2021,74 @@ button:disabled {
 
 #tab-content-gallery>* {
     margin: 8px;
+}
+
+@media screen and (max-width: 400px) {
+    .editor-slider {
+        width: 40%;
+    }
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    input[type=number] {
+        -moz-appearance: textfield;
+        /* Firefox */
+    }
+    #num_outputs_total {
+        width: 27pt;
+    }
+    #num_outputs_parallel {
+        width: 27pt;
+        margin-left: -4pt;
+    }
+    .model_entry .model_weight {
+        width: 30pt;
+    }
+    #width {
+        width: 50pt;
+    }
+    #height {
+        width: 50pt;
+    }
+}
+@media screen and (max-width: 460px) {
+    #widthLabel small span {
+        display: none;
+    }
+    #widthLabel small:after {
+        content: "(w)";
+    }
+    #heightLabel small span {
+        display: none;
+    }
+    #heightLabel small:after {
+        content: "(h)";
+    }
+    #prompt-toolbar-right {
+        text-align: right;
+    }
+    #editor-settings label {
+        font-size: 9pt;
+    }
+    #editor-settings .model-filter {
+        width: 56%;
+    }
+    #vae_model {
+        width: 65% !important;
+    }
+    .model_entry .model_name {
+        width: 60% !important;
+    }
+}
+
+#supportBanner {
+    font-size: 9pt;
+    padding: 5pt;
+    border: 1px solid var(--background-color2);
+    margin-bottom: 5pt;
+    border-radius: 4pt;
+    padding-top: 6pt;
+    color: var(--small-label-color);
 }

@@ -1,6 +1,6 @@
 @echo off
 
-@echo. & echo "Easy Diffusion - v2" & echo.
+@echo. & echo "Easy Diffusion - v3" & echo.
 
 set PATH=C:\Windows\System32;%PATH%
 

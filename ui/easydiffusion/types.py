@@ -26,7 +26,7 @@ class GenerateImageRequest(BaseModel):
     sampler_name: str = None  # "ddim", "plms", "heun", "euler", "euler_a", "dpm2", "dpm2_a", "lms"
     hypernetwork_strength: float = 0
     lora_alpha: Union[float, List[float]] = 0
-    tiling: str = "none"  # "none", "x", "y", "xy"
+    tiling: str = None  # None, "x", "y", "xy"
 
 
 class FilterImageRequest(BaseModel):
@@ -58,10 +58,17 @@ class OutputFormatData(BaseModel):
     output_lossless: bool = False
 
 
+class SaveToDiskData(BaseModel):
+    save_to_disk_path: str = None
+    metadata_output_format: str = "txt"  # or "json"
+
+
 class TaskData(BaseModel):
     request_id: str = None
     session_id: str = "session"
-    save_to_disk_path: str = None
+
+
+class RenderTaskData(TaskData):
     vram_usage_level: str = "balanced"  # or "low" or "medium"
 
     use_face_correction: Union[str, List[str]] = None  # or "GFPGANv1.3"
@@ -80,7 +87,6 @@ class TaskData(BaseModel):
 
     show_only_filtered_image: bool = False
     block_nsfw: bool = False
-    metadata_output_format: str = "txt"  # or "json"
     stream_image_progress: bool = False
     stream_image_progress_interval: int = 5
     clip_skip: bool = False
@@ -127,12 +133,14 @@ class GenerateImageResponse:
         task_data: TaskData,
         models_data: ModelsData,
         output_format: OutputFormatData,
+        save_data: SaveToDiskData,
         images: list,
     ):
         self.render_request = render_request
         self.task_data = task_data
         self.models_data = models_data
         self.output_format = output_format
+        self.save_data = save_data
         self.images = images
 
     def json(self):
@@ -142,6 +150,7 @@ class GenerateImageResponse:
 
         task_data = self.task_data.dict()
         task_data.update(self.output_format.dict())
+        task_data.update(self.save_data.dict())
 
         res = {
             "status": "succeeded",

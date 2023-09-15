@@ -7,9 +7,17 @@ from datetime import datetime
 from functools import reduce
 
 from easydiffusion import app
-from easydiffusion.types import GenerateImageRequest, TaskData, OutputFormatData
+from easydiffusion.types import (
+    GenerateImageRequest,
+    TaskData,
+    RenderTaskData,
+    OutputFormatData,
+    SaveToDiskData,
+    ModelsData,
+)
 from numpy import base_repr
 from sdkit.utils import save_dicts, save_images
+from sdkit.models.model_loader.embeddings import get_embedding_token
 
 filename_regex = re.compile("[^a-zA-Z0-9._-]")
 img_number_regex = re.compile("([0-9]{5,})")
@@ -34,7 +42,7 @@ TASK_TEXT_MAPPING = {
     "lora_alpha": "LoRA Strength",
     "use_hypernetwork_model": "Hypernetwork model",
     "hypernetwork_strength": "Hypernetwork Strength",
-    "use_embedding_models": "Embedding models",
+    "use_embeddings_model": "Embedding models",
     "tiling": "Seamless Tiling",
     "use_face_correction": "Use Face Correction",
     "use_upscale": "Use Upscaling",
@@ -94,7 +102,7 @@ def format_folder_name(format: str, req: GenerateImageRequest, task_data: TaskDa
 def format_file_name(
     format: str,
     req: GenerateImageRequest,
-    task_data: TaskData,
+    task_data: RenderTaskData,
     now: float,
     batch_file_number: int,
     folder_img_number: ImageNumber,
@@ -117,13 +125,19 @@ def format_file_name(
 
 
 def save_images_to_disk(
-    images: list, filtered_images: list, req: GenerateImageRequest, task_data: TaskData, output_format: OutputFormatData
+    images: list,
+    filtered_images: list,
+    req: GenerateImageRequest,
+    task_data: RenderTaskData,
+    models_data: ModelsData,
+    output_format: OutputFormatData,
+    save_data: SaveToDiskData,
 ):
     now = time.time()
     app_config = app.getConfig()
     folder_format = app_config.get("folder_format", "$id")
-    save_dir_path = os.path.join(task_data.save_to_disk_path, format_folder_name(folder_format, req, task_data))
-    metadata_entries = get_metadata_entries_for_request(req, task_data, output_format)
+    save_dir_path = os.path.join(save_data.save_to_disk_path, format_folder_name(folder_format, req, task_data))
+    metadata_entries = get_metadata_entries_for_request(req, task_data, models_data, output_format, save_data)
     file_number = calculate_img_number(save_dir_path, task_data)
     make_filename = make_filename_callback(
         app_config.get("filename_format", "$p_$tsb64"),
@@ -142,7 +156,6 @@ def save_images_to_disk(
             output_quality=output_format.output_quality,
             output_lossless=output_format.output_lossless,
         )
-
         for i in range(len(filtered_images)):
             path_i = f"{os.path.join(save_dir_path, make_filename(i))}.{output_format.output_format.lower()}"
 
@@ -185,8 +198,8 @@ def save_images_to_disk(
                 session.commit()
                 session.close()
         
-        if task_data.metadata_output_format:
-            for metadata_output_format in task_data.metadata_output_format.split(","):
+        if save_data.metadata_output_format:
+            for metadata_output_format in save_data.metadata_output_format.split(","):
                 if metadata_output_format.lower() in ["json", "txt", "embed"]:
                     save_dicts(
                         metadata_entries,
@@ -221,8 +234,8 @@ def save_images_to_disk(
             output_quality=output_format.output_quality,
             output_lossless=output_format.output_lossless,
         )
-        if task_data.metadata_output_format:
-            for metadata_output_format in task_data.metadata_output_format.split(","):
+        if save_data.metadata_output_format:
+            for metadata_output_format in save_data.metadata_output_format.split(","):
                 if metadata_output_format.lower() in ["json", "txt", "embed"]:
                     save_dicts(
                         metadata_entries,
@@ -233,11 +246,17 @@ def save_images_to_disk(
                     )
 
 
-def get_metadata_entries_for_request(req: GenerateImageRequest, task_data: TaskData, output_format: OutputFormatData):
-    metadata = get_printable_request(req, task_data, output_format)
+def get_metadata_entries_for_request(
+    req: GenerateImageRequest,
+    task_data: RenderTaskData,
+    models_data: ModelsData,
+    output_format: OutputFormatData,
+    save_data: SaveToDiskData,
+):
+    metadata = get_printable_request(req, task_data, models_data, output_format, save_data)
 
     # if text, format it in the text format expected by the UI
-    is_txt_format = task_data.metadata_output_format and "txt" in task_data.metadata_output_format.lower().split(",")
+    is_txt_format = save_data.metadata_output_format and "txt" in save_data.metadata_output_format.lower().split(",")
     if is_txt_format:
 
         def format_value(value):
@@ -256,13 +275,20 @@ def get_metadata_entries_for_request(req: GenerateImageRequest, task_data: TaskD
     return entries
 
 
-def get_printable_request(req: GenerateImageRequest, task_data: TaskData, output_format: OutputFormatData):
+def get_printable_request(
+    req: GenerateImageRequest,
+    task_data: RenderTaskData,
+    models_data: ModelsData,
+    output_format: OutputFormatData,
+    save_data: SaveToDiskData,
+):
     req_metadata = req.dict()
     task_data_metadata = task_data.dict()
     task_data_metadata.update(output_format.dict())
+    task_data_metadata.update(save_data.dict())
 
     app_config = app.getConfig()
-    using_diffusers = app_config.get("test_diffusers", True)
+    using_diffusers = app_config.get("use_v3_engine", True)
 
     # Save the metadata in the order defined in TASK_TEXT_MAPPING
     metadata = {}
@@ -271,28 +297,12 @@ def get_printable_request(req: GenerateImageRequest, task_data: TaskData, output
             metadata[key] = req_metadata[key]
         elif key in task_data_metadata:
             metadata[key] = task_data_metadata[key]
-        elif key == "use_embedding_models" and using_diffusers:
-            embeddings_extensions = {".pt", ".bin", ".safetensors"}
 
-            def scan_directory(directory_path: str):
-                used_embeddings = []
-                for entry in os.scandir(directory_path):
-                    if entry.is_file():
-                        entry_extension = os.path.splitext(entry.name)[1]
-                        if entry_extension not in embeddings_extensions:
-                            continue
+        if key == "use_embeddings_model" and task_data_metadata[key] and using_diffusers:
+            embeddings_used = models_data.model_paths["embeddings"]
+            embeddings_used = embeddings_used if isinstance(embeddings_used, list) else [embeddings_used]
 
-                        embedding_name_regex = regex.compile(
-                            r"(^|[\s,])" + regex.escape(os.path.splitext(entry.name)[0]) + r"([+-]*$|[\s,]|[+-]+[\s,])"
-                        )
-                        if embedding_name_regex.search(req.prompt) or embedding_name_regex.search(req.negative_prompt):
-                            used_embeddings.append(entry.path)
-                    elif entry.is_dir():
-                        used_embeddings.extend(scan_directory(entry.path))
-                return used_embeddings
-
-            used_embeddings = scan_directory(os.path.join(app.MODELS_DIR, "embeddings"))
-            metadata["use_embedding_models"] = used_embeddings if len(used_embeddings) > 0 else None
+            metadata["use_embeddings_model"] = embeddings_used if len(embeddings_used) > 0 else None
 
     # Clean up the metadata
     if req.init_image is None and "prompt_strength" in metadata:
@@ -308,9 +318,22 @@ def get_printable_request(req: GenerateImageRequest, task_data: TaskData, output
     if task_data.use_controlnet_model is None and "control_filter_to_apply" in metadata:
         del metadata["control_filter_to_apply"]
 
-    if not using_diffusers:
+    if using_diffusers:
+        for key in (x for x in ["use_hypernetwork_model", "hypernetwork_strength"] if x in metadata):
+            del metadata[key]
+    else:
         for key in (
-            x for x in ["use_lora_model", "lora_alpha", "clip_skip", "tiling", "latent_upscaler_steps", "use_controlnet_model", "control_filter_to_apply"] if x in metadata
+            x
+            for x in [
+                "use_lora_model",
+                "lora_alpha",
+                "clip_skip",
+                "tiling",
+                "latent_upscaler_steps",
+                "use_controlnet_model",
+                "control_filter_to_apply",
+            ]
+            if x in metadata
         ):
             del metadata[key]
 
@@ -320,7 +343,7 @@ def get_printable_request(req: GenerateImageRequest, task_data: TaskData, output
 def make_filename_callback(
     filename_format: str,
     req: GenerateImageRequest,
-    task_data: TaskData,
+    task_data: RenderTaskData,
     folder_img_number: int,
     suffix=None,
     now=None,
@@ -337,7 +360,7 @@ def make_filename_callback(
     return make_filename
 
 
-def _calculate_img_number(save_dir_path: str, task_data: TaskData):
+def _calculate_img_number(save_dir_path: str, task_data: RenderTaskData):
     def get_highest_img_number(accumulator: int, file: os.DirEntry) -> int:
         if not file.is_file:
             return accumulator
@@ -381,5 +404,5 @@ def _calculate_img_number(save_dir_path: str, task_data: TaskData):
 _calculate_img_number.session_img_numbers = {}
 
 
-def calculate_img_number(save_dir_path: str, task_data: TaskData):
+def calculate_img_number(save_dir_path: str, task_data: RenderTaskData):
     return ImageNumber(lambda: _calculate_img_number(save_dir_path, task_data))

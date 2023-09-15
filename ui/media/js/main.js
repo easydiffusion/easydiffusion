@@ -3,7 +3,6 @@ const MAX_INIT_IMAGE_DIMENSION = 768
 const MIN_GPUS_TO_SHOW_SELECTION = 2
 
 const IMAGE_REGEX = new RegExp("data:image/[A-Za-z]+;base64")
-const htmlTaskMap = new WeakMap()
 
 const spinnerPacmanHtml =
     '<div class="loadingio-spinner-bean-eater-x0y3u8qky4n"><div class="ldio-8f673ktaleu"><div><div></div><div></div><div></div></div><div><div></div><div></div><div></div></div></div></div>'
@@ -23,7 +22,8 @@ const taskConfigSetup = {
         },
         tiling: {
             label: "Tiling",
-            visible: ({ reqBody }) => reqBody?.tiling != "none",
+            visible: ({ reqBody }) =>
+                reqBody?.tiling != "none" && reqBody?.tiling !== null && reqBody?.tiling !== undefined,
             value: ({ reqBody }) => reqBody?.tiling,
         },
         use_vae_model: {
@@ -50,6 +50,7 @@ const taskConfigSetup = {
         lora_alpha: { label: "Lora Strength", visible: ({ reqBody }) => !!reqBody?.use_lora_model },
         preserve_init_image_color_profile: "Preserve Color Profile",
         strict_mask_border: "Strict Mask Border",
+        use_controlnet_model: "ControlNet Model",
     },
     pluginTaskConfig: {},
     getCSSKey: (key) =>
@@ -121,6 +122,7 @@ let clipSkipField = document.querySelector("#clip_skip")
 let tilingField = document.querySelector("#tiling")
 let controlnetModelField = new ModelDropdown(document.querySelector("#controlnet_model"), "controlnet", "None", false)
 let vaeModelField = new ModelDropdown(document.querySelector("#vae_model"), "vae", "None")
+let loraModelField = new MultiModelSelector(document.querySelector("#lora_model"), "lora", "LoRA", 0.5, 0.02)
 let hypernetworkModelField = new ModelDropdown(document.querySelector("#hypernetwork_model"), "hypernetwork", "None")
 let hypernetworkStrengthSlider = document.querySelector("#hypernetwork_strength_slider")
 let hypernetworkStrengthField = document.querySelector("#hypernetwork_strength")
@@ -151,6 +153,8 @@ let galleryNextBtn = document.querySelector("#gallery-next")
 let galleryPromptSearchField = document.querySelector("#gallery-prompt-search")
 let galleryModelSearchField = document.querySelector("#gallery-model-search")
 let galleryImageContainer = document.querySelector("#imagecontainer")
+let addEmbeddingsThumb = document.querySelector("#add-embeddings-thumb")
+let addEmbeddingsThumbInput = document.querySelector("#add-embeddings-thumb-input")
 
 let positiveEmbeddingText = document.querySelector("#positive-embedding-text")
 let negativeEmbeddingText = document.querySelector("#negative-embedding-text")
@@ -158,8 +162,6 @@ let embeddingsCollapsiblesBtn = document.querySelector("#embeddings-action-colla
 
 let makeImageBtn = document.querySelector("#makeImage")
 let stopImageBtn = document.querySelector("#stopImage")
-let pauseBtn = document.querySelector("#pause")
-let resumeBtn = document.querySelector("#resume")
 let renderButtons = document.querySelector("#render-buttons")
 
 let imagesContainer = document.querySelector("#current-images")
@@ -168,6 +170,7 @@ let initImageClearBtn = document.querySelector(".init_image_clear")
 let promptStrengthContainer = document.querySelector("#prompt_strength_container")
 
 let initialText = document.querySelector("#initial-text")
+let supportBanner = document.querySelector("#supportBanner")
 let versionText = document.querySelector("#version")
 let previewTools = document.querySelector("#preview-tools")
 let clearAllPreviewsBtn = document.querySelector("#clear-all-previews")
@@ -188,8 +191,6 @@ let useAsThumbSaveBtn = document.querySelector("#use-as-thumb-save")
 let useAsThumbCancelBtn = document.querySelector("#use-as-thumb-cancel")
 
 let maskSetting = document.querySelector("#enable_mask")
-
-const processOrder = document.querySelector("#process_order_toggle")
 
 let imagePreview = document.querySelector("#preview")
 let imagePreviewContent = document.querySelector("#preview-content")
@@ -330,41 +331,6 @@ function shiftOrConfirm(e, prompt, fn, allowSkip = true) {
         confirm(tip, prompt, () => {
             fn(e)
         })
-    }
-}
-
-function logMsg(msg, level, outputMsg) {
-    if (outputMsg.hasChildNodes()) {
-        outputMsg.appendChild(document.createElement("br"))
-    }
-    if (level === "error") {
-        outputMsg.innerHTML += '<span style="color: red">Error: ' + msg + "</span>"
-    } else if (level === "warn") {
-        outputMsg.innerHTML += '<span style="color: orange">Warning: ' + msg + "</span>"
-    } else {
-        outputMsg.innerText += msg
-    }
-    console.log(level, msg)
-}
-
-function logError(msg, res, outputMsg) {
-    logMsg(msg, "error", outputMsg)
-
-    console.log("request error", res)
-    console.trace()
-    setStatus("request", "error", "error")
-}
-
-function playSound() {
-    const audio = new Audio("/media/ding.mp3")
-    audio.volume = 0.2
-    var promise = audio.play()
-    if (promise !== undefined) {
-        promise
-            .then((_) => {})
-            .catch((error) => {
-                console.warn("browser blocked autoplay")
-            })
     }
 }
 
@@ -555,7 +521,11 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                     { text: "Upscale", on_click: onUpscaleClick },
                     { text: "Fix Faces", on_click: onFixFacesClick },
                 ],
-                { text: "Use as Thumbnail", on_click: onUseAsThumbnailClick },
+                {
+                    text: "Use as Thumbnail",
+                    on_click: onUseAsThumbnailClick,
+                    filter: (req, img) => "use_embeddings_model" in req,
+                },
             ]
 
             // include the plugins
@@ -706,17 +676,39 @@ function getAllModelNames(type) {
         if (tree == undefined) {
             return []
         }
-        let result=[]; 
-        tree.forEach( e => { 
-            if (typeof(e) == "object") {
-                result = result.concat( f(e[1]))
+        let result = []
+        tree.forEach((e) => {
+            if (typeof e == "object") {
+                result = result.concat(f(e[1]))
             } else {
-                result.push(e) 
+                result.push(e)
             }
-        });
+        })
         return result
     }
     return f(modelsOptions[type])
+}
+
+// gets a flattened list of all models of a certain type. e.g. "path/subpath/modelname"
+// use the filter to search for all models having a certain name.
+function getAllModelPathes(type, filter = "") {
+    function f(tree, prefix) {
+        if (tree == undefined) {
+            return []
+        }
+        let result = []
+        tree.forEach((e) => {
+            if (typeof e == "object") {
+                result = result.concat(f(e[1], prefix + e[0] + "/"))
+            } else {
+                if (filter == "" || e == filter) {
+                    result.push(prefix + e)
+                }
+            }
+        })
+        return result
+    }
+    return f(modelsOptions[type], "")
 }
 
 function onUseAsThumbnailClick(req, img) {
@@ -726,57 +718,64 @@ function onUseAsThumbnailClick(req, img) {
     let resize = false
     onUseAsThumbnailClick.img = img
 
-    if ( typeof(onUseAsThumbnailClick.croppr) == 'undefined' ) {
-        onUseAsThumbnailClick.croppr = new Croppr("#use-as-thumb-image", { aspectRatio: 1, minSize: [384,384,'px'], startSize:  [512, 512, 'px'], returnMode:"real" })
+    if (typeof onUseAsThumbnailClick.croppr == "undefined") {
+        onUseAsThumbnailClick.croppr = new Croppr("#use-as-thumb-image", {
+            aspectRatio: 1,
+            minSize: [384, 384, "px"],
+            startSize: [512, 512, "px"],
+            returnMode: "real",
+        })
     }
 
     if (img.naturalWidth > img.naturalHeight) {
         if (img.naturalWidth > 768) {
-           scale = 768 / img.naturalWidth
-           targetWidth  = 768
-           targetHeight = (img.naturalHeight*scale)>>>0
-           resize = true
+            scale = 768 / img.naturalWidth
+            targetWidth = 768
+            targetHeight = (img.naturalHeight * scale) >>> 0
+            resize = true
         }
     } else {
         if (img.naturalHeight > 768) {
             scale = 768 / img.naturalHeight
             targetHeight = 768
-            targetWidth  = (img.naturalWidth*scale)>>>0
+            targetWidth = (img.naturalWidth * scale) >>> 0
             resize = true
         }
     }
 
-    onUseAsThumbnailClick.croppr.options.minSize = {width: 384*scale>>>0, height: 384*scale>>>0}
-    onUseAsThumbnailClick.croppr.options.startSize = {width: 512*scale>>>0, height: 512*scale>>>0}
+    onUseAsThumbnailClick.croppr.options.minSize = { width: (384 * scale) >>> 0, height: (384 * scale) >>> 0 }
+    onUseAsThumbnailClick.croppr.options.startSize = { width: (512 * scale) >>> 0, height: (512 * scale) >>> 0 }
 
     if (resize) {
-        const canvas = document.createElement('canvas')
+        const canvas = document.createElement("canvas")
         canvas.width = targetWidth
         canvas.height = targetHeight
-        const ctx = canvas.getContext('2d')
+        const ctx = canvas.getContext("2d")
         ctx.drawImage(img, 0, 0, targetWidth, targetHeight)
 
-        onUseAsThumbnailClick.croppr.setImage(canvas.toDataURL('image/png'))
+        onUseAsThumbnailClick.croppr.setImage(canvas.toDataURL("image/png"))
     } else {
         onUseAsThumbnailClick.croppr.setImage(img.src)
     }
 
-    let embeddings = getAllModelNames("embeddings").filter( e => req.prompt.includes(e) || req.negative_prompt.includes(e) )
+    let embeddings = req.use_embeddings_model.map((e) => e.split("/").pop())
     let LORA = []
 
     if ("use_lora_model" in req) {
-        LORA=req.use_lora_model
+        LORA = req.use_lora_model
     }
 
     let optgroup = document.createElement("optgroup")
     optgroup.label = "Embeddings"
-    optgroup.replaceChildren(...embeddings.map(e => { 
-        let option = document.createElement("option")
-        option.innerText = e
-        option.dataset["type"] = "embeddings"
-        return option
-    }))
-    
+    optgroup.replaceChildren(
+        ...embeddings.map((e) => {
+            let option = document.createElement("option")
+            option.innerText = e
+            option.dataset["type"] = "embeddings"
+            return option
+        })
+    )
+
     useAsThumbSelect.replaceChildren(optgroup)
     useAsThumbDialog.showModal()
     onUseAsThumbnailClick.scale = scale
@@ -794,30 +793,36 @@ useAsThumbCancelBtn.addEventListener("click", () => {
 })
 
 useAsThumbSaveBtn.addEventListener("click", (e) => {
-    let scale = 1/onUseAsThumbnailClick.scale
+    let scale = 1 / onUseAsThumbnailClick.scale
     let crop = onUseAsThumbnailClick.croppr.getValue()
 
-    let len = Math.max(crop.width*scale, 384)
+    let len = Math.max(crop.width * scale, 384)
     let profileName = profileNameField.value
 
-    cropImageDataUrl(onUseAsThumbnailClick.img.src, crop.x*scale, crop.y*scale, len, len)
-        .then(thumb => fetch(thumb))
-        .then(response => response.blob())
+    cropImageDataUrl(onUseAsThumbnailClick.img.src, crop.x * scale, crop.y * scale, len, len)
+        .then((thumb) => fetch(thumb))
+        .then((response) => response.blob())
         .then(async function(blob) {
-            const formData  = new FormData()
+            const formData = new FormData()
             formData.append("file", blob)
             let options = useAsThumbSelect.selectedOptions
             let promises = []
             for (let embedding of options) {
-                promises.push(fetch(`bucket/${profileName}/${embedding.dataset["type"]}/${embedding.value}.png`, { method: 'POST', body: formData }))
+                promises.push(
+                    fetch(`bucket/${profileName}/${embedding.dataset["type"]}/${embedding.value}.png`, {
+                        method: "POST",
+                        body: formData,
+                    })
+                )
             }
             return Promise.all(promises)
-        }).then(() => {
+        })
+        .then(() => {
             useAsThumbDialog.close()
         })
-        .catch(error => {
+        .catch((error) => {
             console.error(error)
-            showToast("Couldn't save thumbnail.<br>"+error)
+            showToast("Couldn't save thumbnail.<br>" + error)
         })
 })
 
@@ -856,6 +861,10 @@ function applyInlineFilter(filterName, path, filterParams, img, statusText, tool
         output_lossless: outputLosslessField.checked,
     }
     filterReq.model_paths[filterName] = path
+
+    if (saveToDiskField.checked && diskPathField.value.trim() !== "") {
+        filterReq.save_to_disk_path = diskPathField.value.trim()
+    }
 
     tools.spinnerStatus.innerText = statusText
     tools.spinner.classList.remove("displayNone")
@@ -933,22 +942,6 @@ function onContinueDrawingClick(req, img) {
     })
 }
 
-function getUncompletedTaskEntries() {
-    const taskEntries = Array.from(document.querySelectorAll("#preview .imageTaskContainer .taskStatusLabel"))
-        .filter((taskLabel) => taskLabel.style.display !== "none")
-        .map(function(taskLabel) {
-            let imageTaskContainer = taskLabel.parentNode
-            while (!imageTaskContainer.classList.contains("imageTaskContainer") && imageTaskContainer.parentNode) {
-                imageTaskContainer = imageTaskContainer.parentNode
-            }
-            return imageTaskContainer
-        })
-    if (!processOrder.checked) {
-        taskEntries.reverse()
-    }
-    return taskEntries
-}
-
 function makeImage() {
     if (typeof performance == "object" && performance.mark) {
         performance.mark("click-makeImage")
@@ -1001,377 +994,42 @@ function makeImage() {
     newTaskRequests.forEach(createTask)
 
     updateInitialText()
-}
 
-async function onIdle() {
-    const serverCapacity = SD.serverCapacity
-    if (pauseClient === true) {
-        await resumeClient()
-    }
-
-    for (const taskEntry of getUncompletedTaskEntries()) {
-        if (SD.activeTasks.size >= serverCapacity) {
-            break
-        }
-        const task = htmlTaskMap.get(taskEntry)
-        if (!task) {
-            const taskStatusLabel = taskEntry.querySelector(".taskStatusLabel")
-            taskStatusLabel.style.display = "none"
-            continue
-        }
-        await onTaskStart(task)
-    }
-}
-
-function getTaskUpdater(task, reqBody, outputContainer) {
-    const outputMsg = task["outputMsg"]
-    const progressBar = task["progressBar"]
-    const progressBarInner = progressBar.querySelector("div")
-
-    const batchCount = task.batchCount
-    let lastStatus = undefined
-    return async function(event) {
-        if (this.status !== lastStatus) {
-            lastStatus = this.status
-            switch (this.status) {
-                case SD.TaskStatus.pending:
-                    task["taskStatusLabel"].innerText = "Pending"
-                    task["taskStatusLabel"].classList.add("waitingTaskLabel")
-                    break
-                case SD.TaskStatus.waiting:
-                    task["taskStatusLabel"].innerText = "Waiting"
-                    task["taskStatusLabel"].classList.add("waitingTaskLabel")
-                    task["taskStatusLabel"].classList.remove("activeTaskLabel")
-                    break
-                case SD.TaskStatus.processing:
-                case SD.TaskStatus.completed:
-                    task["taskStatusLabel"].innerText = "Processing"
-                    task["taskStatusLabel"].classList.add("activeTaskLabel")
-                    task["taskStatusLabel"].classList.remove("waitingTaskLabel")
-                    break
-                case SD.TaskStatus.stopped:
-                    break
-                case SD.TaskStatus.failed:
-                    if (!SD.isServerAvailable()) {
-                        logError(
-                            "Stable Diffusion is still starting up, please wait. If this goes on beyond a few minutes, Stable Diffusion has probably crashed. Please check the error message in the command-line window.",
-                            event,
-                            outputMsg
-                        )
-                    } else if (typeof event?.response === "object") {
-                        let msg = "Stable Diffusion had an error reading the response:<br/><pre>"
-                        if (this.exception) {
-                            msg += `Error: ${this.exception.message}<br/>`
-                        }
-                        try {
-                            // 'Response': body stream already read
-                            msg += "Read: " + (await event.response.text())
-                        } catch (e) {
-                            msg += "Unexpected end of stream. "
-                        }
-                        const bufferString = event.reader.bufferedString
-                        if (bufferString) {
-                            msg += "Buffered data: " + bufferString
-                        }
-                        msg += "</pre>"
-                        logError(msg, event, outputMsg)
-                    }
-                    break
-            }
-        }
-        if ("update" in event) {
-            const stepUpdate = event.update
-            if (!("step" in stepUpdate)) {
-                return
-            }
-            // task.instances can be a mix of different tasks with uneven number of steps (Render Vs Filter Tasks)
-            const overallStepCount =
-                task.instances.reduce(
-                    (sum, instance) =>
-                        sum +
-                        (instance.isPending
-                            ? Math.max(0, instance.step || stepUpdate.step) /
-                              (instance.total_steps || stepUpdate.total_steps)
-                            : 1),
-                    0 // Initial value
-                ) * stepUpdate.total_steps // Scale to current number of steps.
-            const totalSteps = task.instances.reduce(
-                (sum, instance) => sum + (instance.total_steps || stepUpdate.total_steps),
-                stepUpdate.total_steps * (batchCount - task.batchesDone) // Initial value at (unstarted task count * Nbr of steps)
-            )
-            const percent = Math.min(100, 100 * (overallStepCount / totalSteps)).toFixed(0)
-
-            const timeTaken = stepUpdate.step_time // sec
-            const stepsRemaining = Math.max(0, totalSteps - overallStepCount)
-            const timeRemaining = timeTaken < 0 ? "" : millisecondsToStr(stepsRemaining * timeTaken * 1000)
-            outputMsg.innerHTML = `Batch ${task.batchesDone} of ${batchCount}. Generating image(s): ${percent}%. Time remaining (approx): ${timeRemaining}`
-            outputMsg.style.display = "block"
-            progressBarInner.style.width = `${percent}%`
-
-            if (stepUpdate.output) {
-                showImages(reqBody, stepUpdate, outputContainer, true)
-            }
-        }
-    }
-}
-
-function abortTask(task) {
-    if (!task.isProcessing) {
-        return false
-    }
-    task.isProcessing = false
-    task.progressBar.classList.remove("active")
-    task["taskStatusLabel"].style.display = "none"
-    task["stopTask"].innerHTML = '<i class="fa-solid fa-trash-can"></i> Remove'
-    if (!task.instances?.some((r) => r.isPending)) {
-        return
-    }
-    task.instances.forEach((instance) => {
-        try {
-            instance.abort()
-        } catch (e) {
-            console.error(e)
-        }
-    })
-}
-
-function onTaskErrorHandler(task, reqBody, instance, reason) {
-    if (!task.isProcessing) {
-        return
-    }
-    console.log("Render request %o, Instance: %o, Error: %s", reqBody, instance, reason)
-    abortTask(task)
-    const outputMsg = task["outputMsg"]
-    logError(
-        "Stable Diffusion had an error. Please check the logs in the command-line window. <br/><br/>" +
-            reason +
-            "<br/><pre>" +
-            reason.stack +
-            "</pre>",
-        task,
-        outputMsg
-    )
-    setStatus("request", "error", "error")
-}
-
-function onTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
-    if (typeof stepUpdate === "object") {
-        if (stepUpdate.status === "succeeded") {
-            showImages(reqBody, stepUpdate, outputContainer, false)
-        } else {
-            task.isProcessing = false
-            const outputMsg = task["outputMsg"]
-            let msg = ""
-            if ("detail" in stepUpdate && typeof stepUpdate.detail === "string" && stepUpdate.detail.length > 0) {
-                msg = stepUpdate.detail
-                if (msg.toLowerCase().includes("out of memory")) {
-                    msg += `<br/><br/>
-                            <b>Suggestions</b>:
-                            <br/>
-                            1. If you have set an initial image, please try reducing its dimension to ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION} or smaller.<br/>
-                            2. Try picking a lower level in the '<em>GPU Memory Usage</em>' setting (in the '<em>Settings</em>' tab).<br/>
-                            3. Try generating a smaller image.<br/>`
-                } else if (msg.includes("DefaultCPUAllocator: not enough memory")) {
-                    msg += `<br/><br/>
-                            Reason: Your computer is running out of system RAM!
-                            <br/><br/>
-                            <b>Suggestions</b>:
-                            <br/>
-                            1. Try closing unnecessary programs and browser tabs.<br/>
-                            2. If that doesn't help, please increase your computer's virtual memory by following these steps for
-                             <a href="https://www.ibm.com/docs/en/opw/8.2.0?topic=tuning-optional-increasing-paging-file-size-windows-computers" target="_blank">Windows</a> or
-                             <a href="https://linuxhint.com/increase-swap-space-linux/" target="_blank">Linux</a>.<br/>
-                            3. Try restarting your computer.<br/>`
-                } else if (
-                    msg.includes("RuntimeError: output with shape [320, 320] doesn't match the broadcast shape")
-                ) {
-                    msg += `<br/><br/>
-                            <b>Reason</b>: You tried to use a LORA that was trained for a different Stable Diffusion model version!
-                            <br/><br/>
-                            <b>Suggestions</b>:
-                            <br/>
-                            Try to use a different model or a different LORA.`
-                } else if (msg.includes("'ModuleList' object has no attribute '1'")) {
-                    msg += `<br/><br/>
-                            <b>Reason</b>: SDXL models need a yaml config file.
-                            <br/><br/>
-                            <b>Suggestions</b>:
-                            <br/>
-                            <ol>
-                            <li>Download the <a href="https://gist.githubusercontent.com/JeLuF/5dc56e7a3a6988265c423f464d3cbdd3/raw/4ba4c39b1c7329877ad7a39c8c8a077ea4b53d11/dreamshaperXL10_alpha2Xl10.yaml" target="_blank">config file</a></li>
-                            <li>Save it in the same directory as the SDXL model file</li>
-                            <li>Rename the config file so that it matches the filename of the model, with the extension of the model file replaced by <tt>yaml</tt>. 
-                                For example, if the model file is called <tt>FantasySDXL_v2.safetensors</tt>, the config file must be called <tt>FantasySDXL_v2.yaml</tt>.
-                            </ol>`
-                }
-            } else {
-                msg = `Unexpected Read Error:<br/><pre>StepUpdate: ${JSON.stringify(stepUpdate, undefined, 4)}</pre>`
-            }
-            logError(msg, stepUpdate, outputMsg)
-        }
-    }
-    if (task.isProcessing && task.batchesDone < task.batchCount) {
-        task["taskStatusLabel"].innerText = "Pending"
-        task["taskStatusLabel"].classList.add("waitingTaskLabel")
-        task["taskStatusLabel"].classList.remove("activeTaskLabel")
-        return
-    }
-    if ("instances" in task && task.instances.some((ins) => ins != instance && ins.isPending)) {
-        return
-    }
-
-    task.isProcessing = false
-    task["stopTask"].innerHTML = '<i class="fa-solid fa-trash-can"></i> Remove'
-    task["taskStatusLabel"].style.display = "none"
-
-    let time = millisecondsToStr(Date.now() - task.startTime)
-
-    if (task.batchesDone == task.batchCount) {
-        if (!task.outputMsg.innerText.toLowerCase().includes("error")) {
-            task.outputMsg.innerText = `Processed ${task.numOutputsTotal} images in ${time}`
-        }
-        task.progressBar.style.height = "0px"
-        task.progressBar.style.border = "0px solid var(--background-color3)"
-        task.progressBar.classList.remove("active")
-        setStatus("request", "done", "success")
+    const countBeforeBanner = localStorage.getItem("countBeforeBanner") || 1
+    if (countBeforeBanner <= 0) {
+        // supportBanner.classList.remove("displayNone")
     } else {
-        task.outputMsg.innerText += `. Task ended after ${time}`
+        localStorage.setItem("countBeforeBanner", countBeforeBanner - 1)
     }
-
-    if (randomSeedField.checked) {
-        seedField.value = task.seed
-    }
-
-    if (SD.activeTasks.size > 0) {
-        return
-    }
-    const uncompletedTasks = getUncompletedTaskEntries()
-    if (uncompletedTasks && uncompletedTasks.length > 0) {
-        return
-    }
-
-    if (pauseClient) {
-        resumeBtn.click()
-    }
-    renderButtons.style.display = "none"
-    renameMakeImageButton()
-
-    if (isSoundEnabled()) {
-        playSound()
-    }
-}
-
-async function onTaskStart(task) {
-    if (!task.isProcessing || task.batchesDone >= task.batchCount) {
-        return
-    }
-
-    if (typeof task.startTime !== "number") {
-        task.startTime = Date.now()
-    }
-    if (!("instances" in task)) {
-        task["instances"] = []
-    }
-
-    task["stopTask"].innerHTML = '<i class="fa-solid fa-circle-stop"></i> Stop'
-    task["taskStatusLabel"].innerText = "Starting"
-    task["taskStatusLabel"].classList.add("waitingTaskLabel")
-
-    let newTaskReqBody = task.reqBody
-    if (task.batchCount > 1) {
-        // Each output render batch needs it's own task reqBody instance to avoid altering the other runs after they are completed.
-        newTaskReqBody = Object.assign({}, task.reqBody)
-        if (task.batchesDone == task.batchCount - 1) {
-            // Last batch of the task
-            // If the number of parallel jobs is no factor of the total number of images, the last batch must create less than "parallel jobs count" images
-            // E.g. with numOutputsTotal = 6 and num_outputs = 5, the last batch shall only generate 1 image.
-            newTaskReqBody.num_outputs = task.numOutputsTotal - task.reqBody.num_outputs * (task.batchCount - 1)
-        }
-    }
-
-    const startSeed = task.seed || newTaskReqBody.seed
-    const genSeeds = Boolean(
-        typeof newTaskReqBody.seed !== "number" || (newTaskReqBody.seed === task.seed && task.numOutputsTotal > 1)
-    )
-    if (genSeeds) {
-        newTaskReqBody.seed = parseInt(startSeed) + task.batchesDone * task.reqBody.num_outputs
-    }
-
-    // Update the seed *before* starting the processing so it's retained if user stops the task
-    if (randomSeedField.checked) {
-        seedField.value = task.seed
-    }
-
-    const outputContainer = document.createElement("div")
-    outputContainer.className = "img-batch"
-    task.outputContainer.insertBefore(outputContainer, task.outputContainer.firstChild)
-
-    const eventInfo = { reqBody: newTaskReqBody }
-    const callbacksPromises = PLUGINS["TASK_CREATE"].map((hook) => {
-        if (typeof hook !== "function") {
-            console.error("The provided TASK_CREATE hook is not a function. Hook: %o", hook)
-            return Promise.reject(new Error("hook is not a function."))
-        }
-        try {
-            return Promise.resolve(hook.call(task, eventInfo))
-        } catch (err) {
-            console.error(err)
-            return Promise.reject(err)
-        }
-    })
-    await Promise.allSettled(callbacksPromises)
-    let instance = eventInfo.instance
-    if (!instance) {
-        const factory = PLUGINS.OUTPUTS_FORMATS.get(eventInfo.reqBody?.output_format || newTaskReqBody.output_format)
-        if (factory) {
-            instance = await Promise.resolve(factory(eventInfo.reqBody || newTaskReqBody))
-        }
-        if (!instance) {
-            console.error(
-                `${factory ? "Factory " + String(factory) : "No factory defined"} for output format ${eventInfo.reqBody
-                    ?.output_format || newTaskReqBody.output_format}. Instance is ${instance ||
-                    "undefined"}. Using default renderer.`
-            )
-            instance = new SD.RenderTask(eventInfo.reqBody || newTaskReqBody)
-        }
-    }
-
-    task["instances"].push(instance)
-    task.batchesDone++
-
-    instance.enqueue(getTaskUpdater(task, newTaskReqBody, outputContainer)).then(
-        (renderResult) => {
-            onTaskCompleted(task, newTaskReqBody, instance, outputContainer, renderResult)
-        },
-        (reason) => {
-            onTaskErrorHandler(task, newTaskReqBody, instance, reason)
-        }
-    )
-
-    setStatus("request", "fetching..")
-    renderButtons.style.display = "flex"
-    renameMakeImageButton()
-    updateInitialText()
 }
 
 /* Hover effect for the init image in the task list */
-function createInitImageHover(taskEntry) {
-    taskEntry.querySelectorAll(".task-initimg").forEach( thumb => {
+function createInitImageHover(taskEntry, task) {
+    taskEntry.querySelectorAll(".task-initimg").forEach((thumb) => {
         let thumbimg = thumb.querySelector("img")
-        let img = createElement("img", {src: thumbimg.src})
+        let img = createElement("img", { src: thumbimg.src })
         thumb.querySelector(".task-fs-initimage").appendChild(img)
         let div = createElement("div", undefined, ["top-right"])
         div.innerHTML = `
             <button class="useAsInputBtn">Use as Input</button>
             <br>
-            <button class="useForControlnetBtn">Use for Controlnet</button>`
-        div.querySelector(".useAsInputBtn").addEventListener("click", e => {
+            <button class="useForControlnetBtn">Use for Controlnet</button>
+            <br>
+            <button class="downloadPreviewImg">Download</button>`
+        div.querySelector(".useAsInputBtn").addEventListener("click", (e) => {
             e.preventDefault()
             onUseAsInputClick(null, img)
         })
-        div.querySelector(".useForControlnetBtn").addEventListener("click", e => {
+        div.querySelector(".useForControlnetBtn").addEventListener("click", (e) => {
             e.preventDefault()
             controlImagePreview.src = img.src
+        })
+        div.querySelector(".downloadPreviewImg").addEventListener("click", (e) => {
+            e.preventDefault()
+
+            const name = "image." + task.reqBody["output_format"]
+            const blob = dataURItoBlob(img.src)
+            saveAs(blob, name)
         })
         thumb.querySelector(".task-fs-initimage").appendChild(div)
     })
@@ -1439,12 +1097,12 @@ function createTask(task) {
     if (task.reqBody.init_image !== undefined) {
         let h = 80
         let w = ((task.reqBody.width * h) / task.reqBody.height) >> 0
-        taskConfig += `<div class="task-initimg" style="float:left;"><img style="width:${w}px;height:${h}px;" src="${task.reqBody.init_image}"><div class="task-fs-initimage"></div></div>`
+        taskConfig += `<div class="task-initimg init-img-preview" style="float:left;"><img style="width:${w}px;height:${h}px;" src="${task.reqBody.init_image}"><div class="task-fs-initimage"></div></div>`
     }
     if (task.reqBody.control_image !== undefined) {
         let h = 80
         let w = ((task.reqBody.width * h) / task.reqBody.height) >> 0
-        taskConfig += `<div class="task-initimg" style="float:left;"><img style="width:${w}px;height:${h}px;" src="${task.reqBody.control_image}"><div class="task-fs-initimage"></div></div>`
+        taskConfig += `<div class="task-initimg controlnet-img-preview" style="float:left;"><img style="width:${w}px;height:${h}px;" src="${task.reqBody.control_image}"><div class="task-fs-initimage"></div></div>`
     }
 
     taskConfig += `<div class="taskConfigData">${createTaskConfig(task)}</span></div></div>`
@@ -1455,7 +1113,7 @@ function createTask(task) {
     taskEntry.innerHTML = ` <div class="header-content panel collapsible active">
                                 <i class="drag-handle fa-solid fa-grip"></i>
                                 <div class="taskStatusLabel">Enqueued</div>
-                                <button class="secondaryButton stopTask"><i class="fa-solid fa-trash-can"></i> Remove</button>
+                                <button class="secondaryButton stopTask"><i class="fa-solid fa-xmark"></i> Cancel</button>
                                 <button class="tertiaryButton useSettings"><i class="fa-solid fa-redo"></i> Use these settings</button>
                                 <div class="preview-prompt"></div>
                                 <div class="taskConfig">${taskConfig}</div>
@@ -1465,6 +1123,22 @@ function createTask(task) {
                             <div class="collapsible-content">
                                 <div class="img-preview">
                             </div>`
+
+    if (task.reqBody.init_image !== undefined || task.reqBody.control_image !== undefined) {
+        createInitImageHover(taskEntry, task)
+    }
+
+    if (task.reqBody.control_image !== undefined && task.reqBody.control_filter_to_apply !== undefined) {
+        let req = {
+            image: task.reqBody.control_image,
+            filter: task.reqBody.control_filter_to_apply,
+            model_paths: {},
+            filter_params: {},
+        }
+        req["model_paths"][task.reqBody.control_filter_to_apply] = task.reqBody.control_filter_to_apply
+
+        task["previewTaskReq"] = req
+    }
 
     createCollapsibles(taskEntry)
 
@@ -1496,10 +1170,7 @@ function createTask(task) {
         startY = e.target.closest(".imageTaskContainer").offsetTop
     })
 
-    if (task.reqBody.init_image !== undefined || task.reqBody.control_image !== undefined) {
-        createInitImageHover(taskEntry)
-    }
-
+    task["taskConfig"] = taskEntry.querySelector(".taskConfig")
     task["taskStatusLabel"] = taskEntry.querySelector(".taskStatusLabel")
     task["outputContainer"] = taskEntry.querySelector(".img-preview")
     task["outputMsg"] = taskEntry.querySelector(".outputMsg")
@@ -1529,7 +1200,7 @@ function createTask(task) {
     })
 
     task.isProcessing = true
-    taskEntry = imagePreviewContent.insertBefore(taskEntry, previewTools.nextSibling)
+    taskEntry = imagePreviewContent.insertBefore(taskEntry, supportBanner.nextSibling)
     htmlTaskMap.set(taskEntry, task)
 
     task.previewPrompt.innerText = task.reqBody.prompt
@@ -1580,7 +1251,6 @@ function getCurrentUserRequest() {
             //render_device: undefined, // Set device affinity. Prefer this device, but wont activate.
             use_stable_diffusion_model: stableDiffusionModelField.value,
             clip_skip: clipSkipField.checked,
-            tiling: tilingField.value,
             use_vae_model: vaeModelField.value,
             stream_progress_updates: true,
             stream_image_progress: numOutputsTotal > 50 ? false : streamImageProgressField.checked,
@@ -1635,7 +1305,9 @@ function getCurrentUserRequest() {
         newTask.reqBody.hypernetwork_strength = parseFloat(hypernetworkStrengthField.value)
     }
     if (testDiffusers.checked) {
-        let [modelNames, modelStrengths] = getModelInfo(loraModels)
+        let loraModelData = loraModelField.value
+        let modelNames = loraModelData["modelNames"]
+        let modelStrengths = loraModelData["modelWeights"]
 
         if (modelNames.length > 0) {
             modelNames = modelNames.length == 1 ? modelNames[0] : modelNames
@@ -1643,6 +1315,10 @@ function getCurrentUserRequest() {
 
             newTask.reqBody.use_lora_model = modelNames
             newTask.reqBody.lora_alpha = modelStrengths
+        }
+
+        if (tilingField.value !== "none") {
+            newTask.reqBody.tiling = tilingField.value
         }
     }
     if (testDiffusers.checked && document.getElementById("toggle-tensorrt-install").innerHTML == "Uninstall") {
@@ -1677,9 +1353,11 @@ function getCurrentUserRequest() {
 }
 
 function setEmbeddings(task) {
-    let prompt = task.reqBody.prompt.toLowerCase()
-    let negativePrompt = task.reqBody.negative_prompt.toLowerCase()
-    let overallPrompt = (prompt + " " + negativePrompt).split(" ")
+    let prompt = task.reqBody.prompt
+    let negativePrompt = task.reqBody.negative_prompt
+    let overallPrompt = (prompt + " " + negativePrompt).toLowerCase()
+    overallPrompt = overallPrompt.replaceAll(/[^a-z0-9\-_\.]/g, " ") // only allow alpha-numeric, dots and hyphens
+    overallPrompt = overallPrompt.split(" ")
 
     let embeddingsTree = modelsOptions["embeddings"]
     let embeddings = []
@@ -1710,17 +1388,6 @@ function setEmbeddings(task) {
     if (embeddingPaths.length > 0) {
         task.reqBody.use_embeddings_model = embeddingPaths
     }
-}
-
-function getModelInfo(models) {
-    let modelInfo = models.map((e) => [e[0].value, e[1].value])
-    modelInfo = modelInfo.filter((e) => e[0].trim() !== "")
-    modelInfo = modelInfo.map((e) => [e[0], parseFloat(e[1])])
-
-    let modelNames = modelInfo.map((e) => e[0])
-    let modelStrengths = modelInfo.map((e) => e[1])
-
-    return [modelNames, modelStrengths]
 }
 
 function getPrompts(prompts) {
@@ -1898,20 +1565,6 @@ function createFileName(prompt, seed, steps, guidance, outputFormat) {
     return fileName
 }
 
-async function stopAllTasks() {
-    getUncompletedTaskEntries().forEach((taskEntry) => {
-        const taskStatusLabel = taskEntry.querySelector(".taskStatusLabel")
-        if (taskStatusLabel) {
-            taskStatusLabel.style.display = "none"
-        }
-        const task = htmlTaskMap.get(taskEntry)
-        if (!task) {
-            return
-        }
-        abortTask(task)
-    })
-}
-
 function updateInitialText() {
     if (document.querySelector(".imageTaskContainer") === null) {
         if (undoBuffer.length > 0) {
@@ -1919,10 +1572,16 @@ function updateInitialText() {
         }
         previewTools.classList.add("displayNone")
         initialText.classList.remove("displayNone")
+        supportBanner.classList.add("displayNone")
     } else {
         initialText.classList.add("displayNone")
         previewTools.classList.remove("displayNone")
         document.querySelector("div.display-settings").prepend(undoButton)
+
+        const countBeforeBanner = localStorage.getItem("countBeforeBanner") || 1
+        if (countBeforeBanner <= 0) {
+            supportBanner.classList.remove("displayNone")
+        }
     }
 }
 
@@ -2554,22 +2213,6 @@ function isTabActive(tab) {
     return tab.classList.contains("active")
 }
 
-let pauseClient = false
-
-function resumeClient() {
-    if (pauseClient) {
-        document.body.classList.remove("wait-pause")
-        document.body.classList.add("pause")
-    }
-    return new Promise((resolve) => {
-        let playbuttonclick = function() {
-            resumeBtn.removeEventListener("click", playbuttonclick)
-            resolve("resolved")
-        }
-        resumeBtn.addEventListener("click", playbuttonclick)
-    })
-}
-
 function splashScreen(force = false) {
     const splashVersion = splashScreenPopup.dataset["version"]
     const lastSplash = localStorage.getItem("lastSplashScreenVersion") || 0
@@ -2586,21 +2229,6 @@ document.getElementById("logo_img").addEventListener("click", (e) => {
 })
 
 promptField.addEventListener("input", debounce(renameMakeImageButton, 1000))
-
-pauseBtn.addEventListener("click", function() {
-    pauseClient = true
-    pauseBtn.style.display = "none"
-    resumeBtn.style.display = "inline"
-    document.body.classList.add("wait-pause")
-})
-
-resumeBtn.addEventListener("click", function() {
-    pauseClient = false
-    resumeBtn.style.display = "none"
-    pauseBtn.style.display = "inline"
-    document.body.classList.remove("pause")
-    document.body.classList.remove("wait-pause")
-})
 
 function onPing(event) {
     tunnelUpdate(event)
@@ -2620,8 +2248,6 @@ function tunnelUpdate(event) {
     }
 }
 
-let trtSettingsForced = false
-
 function packagesUpdate(event) {
     let trtBtn = document.getElementById("toggle-tensorrt-install")
     let trtInstalled = "packages_installed" in event && "tensorrt" in event["packages_installed"]
@@ -2637,22 +2263,6 @@ function packagesUpdate(event) {
     if (document.getElementById("toggle-tensorrt-install").innerHTML == "Uninstall") {
         document.querySelector("#enable_trt_config").classList.remove("displayNone")
         document.querySelector("#trt-build-config").classList.remove("displayNone")
-
-        if (!trtSettingsForced) {
-            // settings for demo
-            promptField.value = "Dragons fighting with a knight, castle, war scene, fantasy, cartoon, flames, HD"
-            seedField.value = 3187947173
-            widthField.value = 1024
-            heightField.value = 768
-            randomSeedField.checked = false
-            seedField.disabled = false
-            stableDiffusionModelField.value = "sd-v1-4"
-
-            // numOutputsParallelField.classList.add("displayNone")
-            // document.querySelector("#num_outputs_parallel_label").classList.add("displayNone")
-
-            trtSettingsForced = true
-        }
     }
 }
 
@@ -2734,36 +2344,74 @@ document.getElementById("toggle-tensorrt-install").addEventListener("click", fun
 
 /* Embeddings */
 
+addEmbeddingsThumb.addEventListener("click", (e) => addEmbeddingsThumbInput.click())
+addEmbeddingsThumbInput.addEventListener("change", loadThumbnailImageFromFile)
+
+function loadThumbnailImageFromFile() {
+    if (addEmbeddingsThumbInput.files.length === 0) {
+        return
+    }
+
+    let reader = new FileReader()
+    let file = addEmbeddingsThumbInput.files[0]
+
+    reader.addEventListener("load", function(event) {
+        let img = document.createElement("img")
+        img.src = reader.result
+        onUseAsThumbnailClick(
+            {
+                use_embeddings_model: getAllModelNames("embeddings").sort((a, b) =>
+                    a.localeCompare(b, undefined, { sensitivity: "base" })
+                ),
+            },
+            img
+        )
+    })
+
+    if (file) {
+        reader.readAsDataURL(file)
+    }
+}
+
 function updateEmbeddingsList(filter = "") {
     function html(model, iconlist = [], prefix = "", filter = "") {
         filter = filter.toLowerCase()
         let toplevel = document.createElement("div")
         let folders = document.createElement("div")
-        let embIcon = Object.assign({}, ...iconlist.map( x=> ({[x.toLowerCase().split('.').slice(0,-1).join('.')]:x})))
+        let embIcon = Object.assign(
+            {},
+            ...iconlist.map((x) => ({
+                [x
+                    .toLowerCase()
+                    .split(".")
+                    .slice(0, -1)
+                    .join(".")]: x,
+            }))
+        )
 
         let profileName = profileNameField.value
         model?.forEach((m) => {
             if (typeof m == "string") {
-                let token=m.toLowerCase()
+                let token = m.toLowerCase()
                 if (token.search(filter) != -1) {
                     let button
-                    if (iconlist.length==0) {
-                        button = document.createElement("button")
-                        button.innerText = m
-                    } else {
-                        let img = '/media/images/noimg.png'
-                        if (token in embIcon) {
-                            img = `/bucket/${profileName}/embeddings/${embIcon[token]}`
-                        }
-                        button = createModifierCard(m, [img,img], true)
+                    // if (iconlist.length==0) {
+                    //     button = document.createElement("button")
+                    //     button.innerText = m
+                    // } else {
+                    let img = "/media/images/noimg.png"
+                    if (token in embIcon) {
+                        img = `/bucket/${profileName}/embeddings/${embIcon[token]}`
                     }
+                    button = createModifierCard(m, [img, img], true)
+                    // }
                     button.dataset["embedding"] = m
                     button.addEventListener("click", onButtonClick)
                     toplevel.appendChild(button)
                 }
             } else {
                 let subdir = html(m[1], iconlist, prefix + m[0] + "/", filter)
-                if (typeof(subdir) == "object") {
+                if (typeof subdir == "object") {
                     let div1 = document.createElement("div")
                     let div2 = document.createElement("div")
                     div1.classList.add("collapsible-content")
@@ -2774,6 +2422,12 @@ function updateEmbeddingsList(filter = "") {
                 }
             }
         })
+
+        if (toplevel.children.length == 0 && folders.children.length == 0) {
+            // Empty folder
+            return ""
+        }
+
         let result = document.createElement("div")
         result.replaceChildren(toplevel, htmlToElement('<br style="clear: both;">'), folders)
         return result
@@ -2815,28 +2469,17 @@ function updateEmbeddingsList(filter = "") {
         </div>
     `
 
-    // Remove after fixing https://github.com/huggingface/diffusers/issues/3922
-    let warning = "<div></div>"
-    if (vramUsageLevelField.value == "low") {
-        warning = `
-            <div style="border-color: var(--accent-color); border-width: 4px; border-radius: 1em; border-style: solid; background: black; text-align: center; padding: 1em; margin: 1em; ">
-                <i class="fa fa-fire" style="color:#f7630c;"></i> Warning: Your GPU memory profile is set to "Low". Embeddings currently only work in "Balanced" mode!
-            </div>`
-    }
-    // END of remove block
-
     let profileName = profileNameField.value
     fetch(`/bucket/${profileName}/embeddings/`)
-       .then(response => response.status==200 ? response.json(): [])
-       .then(async function(iconlist) {
-
-           embeddingsList.replaceChildren(htmlToElement(warning), html(modelsOptions.embeddings, iconlist, "", filter))
-           createCollapsibles(embeddingsList)
-           if (filter != "") {
-               embeddingsExpandAll()
-           }
-           resizeModifierCards(embeddingsCardSizeSelector.value)
-       })
+        .then((response) => (response.status == 200 ? response.json() : []))
+        .then(async function(iconlist) {
+            embeddingsList.replaceChildren(html(modelsOptions.embeddings, iconlist, "", filter))
+            createCollapsibles(embeddingsList)
+            if (filter != "") {
+                embeddingsExpandAll()
+            }
+            resizeModifierCards(embeddingsCardSizeSelector.value)
+        })
 }
 
 function showEmbeddingDialog() {
@@ -2868,8 +2511,6 @@ embeddingsSearchBox.addEventListener("input", (e) => {
 embeddingsCardSizeSelector.addEventListener("change", (e) => {
     resizeModifierCards(embeddingsCardSizeSelector.value)
 })
-
-
 
 modalDialogCloseOnBackdropClick(embeddingsDialog)
 makeDialogDraggable(embeddingsDialog)
@@ -2934,82 +2575,23 @@ window.addEventListener("beforeunload", function(e) {
     }
 })
 
+document.addEventListener("collapsibleClick", function(e) {
+    let header = e.detail
+    if (header === document.querySelector("#negative_prompt_handle")) {
+        if (header.classList.contains("active")) {
+            negativeEmbeddingsButton.classList.remove("displayNone")
+        } else {
+            negativeEmbeddingsButton.classList.add("displayNone")
+        }
+    }
+})
+
 createCollapsibles()
 prettifyInputs(document)
 
 // set the textbox as focused on start
 promptField.focus()
 promptField.selectionStart = promptField.value.length
-
-// multi-models
-let modelCount = 0
-
-function addModelEntry(modelContainer, modelsList, modelType, defaultValue, strengthStep) {
-    let idx = modelCount++
-    let nameId = modelType + "_model_" + idx
-    let strengthId = modelType + "_alpha_" + idx
-
-    const modelElement = document.createElement("div")
-    modelElement.className = "model_entry"
-    modelElement.innerHTML = `
-        <input id="${nameId}" class="model_name" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
-        <input id="${strengthId}" class="model_strength" type="number" step="${strengthStep}" style="width: 50pt" value="${defaultValue}" pattern="^-?[0-9]*\.?[0-9]*$" onkeypress="preventNonNumericalInput(event)">
-    `
-    modelContainer.appendChild(modelElement)
-
-    let modelName = new ModelDropdown(modelElement.querySelector(".model_name"), modelType, "None")
-    let modelStrength = modelElement.querySelector(".model_strength")
-    let entry = [modelName, modelStrength, modelElement]
-
-    let removeBtn = document.createElement("button")
-    removeBtn.className = "remove_model_btn"
-    removeBtn.setAttribute("title", "Remove model")
-    removeBtn.innerHTML = '<i class="fa-solid fa-minus"></i>'
-
-    if (modelsList.length === 0) {
-        removeBtn.classList.add("displayNone")
-    }
-
-    removeBtn.addEventListener("click", function() {
-        let entryIdx = modelsList.indexOf(entry)
-        modelsList.splice(entryIdx, 1)
-        modelContainer.removeChild(modelElement)
-    })
-
-    modelElement.appendChild(removeBtn)
-
-    modelsList.push(entry)
-
-    return modelElement
-}
-
-function createLoraEntry() {
-    let container = document.querySelector("#lora_model_container .model_entries")
-    return addModelEntry(container, loraModels, "lora", 0.5, 0.02)
-}
-
-function createLoraEntries() {
-    let firstEntry = createLoraEntry()
-
-    let addLoraBtn = document.querySelector("#lora_model_container .add_model_entry")
-    addLoraBtn.addEventListener("click", () => {
-        createLoraEntry()
-    })
-}
-createLoraEntries()
-
-// chrome-like spinners only on hover
-// function showSpinnerOnlyOnHover(e) {
-//     e.addEventListener("mouseenter", () => {
-//         e.setAttribute("type", "number")
-//     })
-//     e.addEventListener("mouseleave", () => {
-//         e.removeAttribute("type")
-//     })
-//     e.removeAttribute("type")
-// }
-
-// document.querySelectorAll("input[type=number]").forEach(showSpinnerOnlyOnHover)
 
 ////////////////////////////// Image Size Widget //////////////////////////////////////////
 
@@ -3459,3 +3041,87 @@ function incrementGalleryPage() {
     galleryPageField.value++
     refreshGallery(false)
 }
+
+document.addEventListener("before_task_start", (e) => {
+    let task = e.detail.task
+
+    // Update the seed *before* starting the processing so it's retained if user stops the task
+    if (randomSeedField.checked) {
+        seedField.value = task.seed
+    }
+})
+
+document.addEventListener("after_task_start", (e) => {
+    renderButtons.style.display = "flex"
+    renameMakeImageButton()
+    updateInitialText()
+})
+
+document.addEventListener("on_task_step", (e) => {
+    showImages(e.detail.reqBody, e.detail.stepUpdate, e.detail.outputContainer, true)
+})
+
+document.addEventListener("on_render_task_success", (e) => {
+    showImages(e.detail.reqBody, e.detail.stepUpdate, e.detail.outputContainer, false)
+})
+
+document.addEventListener("on_render_task_fail", (e) => {
+    let task = e.detail.task
+    let stepUpdate = e.detail.stepUpdate
+
+    const outputMsg = task["outputMsg"]
+    let msg = ""
+    if ("detail" in stepUpdate && typeof stepUpdate.detail === "string" && stepUpdate.detail.length > 0) {
+        msg = stepUpdate.detail
+        if (msg.toLowerCase().includes("out of memory")) {
+            msg += `<br/><br/>
+                    <b>Suggestions</b>:
+                    <br/>
+                    1. If you have set an initial image, please try reducing its dimension to ${MAX_INIT_IMAGE_DIMENSION}x${MAX_INIT_IMAGE_DIMENSION} or smaller.<br/>
+                    2. Try picking a lower level in the '<em>GPU Memory Usage</em>' setting (in the '<em>Settings</em>' tab).<br/>
+                    3. Try generating a smaller image.<br/>`
+        } else if (msg.includes("DefaultCPUAllocator: not enough memory")) {
+            msg += `<br/><br/>
+                    Reason: Your computer is running out of system RAM!
+                    <br/><br/>
+                    <b>Suggestions</b>:
+                    <br/>
+                    1. Try closing unnecessary programs and browser tabs.<br/>
+                    2. If that doesn't help, please increase your computer's virtual memory by following these steps for
+                        <a href="https://www.ibm.com/docs/en/opw/8.2.0?topic=tuning-optional-increasing-paging-file-size-windows-computers" target="_blank">Windows</a> or
+                        <a href="https://linuxhint.com/increase-swap-space-linux/" target="_blank">Linux</a>.<br/>
+                    3. Try restarting your computer.<br/>`
+        } else if (msg.includes("RuntimeError: output with shape [320, 320] doesn't match the broadcast shape")) {
+            msg += `<br/><br/>
+                    <b>Reason</b>: You tried to use a LORA that was trained for a different Stable Diffusion model version!
+                    <br/><br/>
+                    <b>Suggestions</b>:
+                    <br/>
+                    Try to use a different model or a different LORA.`
+        } else if (msg.includes("'ModuleList' object has no attribute '1'")) {
+            msg += `<br/><br/>
+                    <b>Reason</b>: SDXL models need a yaml config file.
+                    <br/><br/>
+                    <b>Suggestions</b>:
+                    <br/>
+                    <ol>
+                    <li>Download the <a href="https://gist.githubusercontent.com/JeLuF/5dc56e7a3a6988265c423f464d3cbdd3/raw/4ba4c39b1c7329877ad7a39c8c8a077ea4b53d11/dreamshaperXL10_alpha2Xl10.yaml" target="_blank">config file</a></li>
+                    <li>Save it in the same directory as the SDXL model file</li>
+                    <li>Rename the config file so that it matches the filename of the model, with the extension of the model file replaced by <tt>yaml</tt>. 
+                        For example, if the model file is called <tt>FantasySDXL_v2.safetensors</tt>, the config file must be called <tt>FantasySDXL_v2.yaml</tt>.
+                    </ol>`
+        }
+    } else {
+        msg = `Unexpected Read Error:<br/><pre>StepUpdate: ${JSON.stringify(stepUpdate, undefined, 4)}</pre>`
+    }
+    logError(msg, stepUpdate, outputMsg)
+})
+
+document.addEventListener("on_all_tasks_complete", (e) => {
+    renderButtons.style.display = "none"
+    renameMakeImageButton()
+
+    if (isSoundEnabled()) {
+        playSound()
+    }
+})

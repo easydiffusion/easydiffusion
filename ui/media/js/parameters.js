@@ -104,6 +104,16 @@ var PARAMETERS = [
         note: "Stores metadata of all images into a database so that they show up on the gallery tab.",
         default: false,
     },
+  {
+        id: "models_dir",
+        type: ParameterType.custom,
+        icon: "fa-folder-tree",
+        label: "Models Folder",
+        note: "Path to the 'models' folder. Please save and refresh the page after changing this.",
+        saveInAppConfig: true,
+        render: (parameter) => {
+            return `<input id="${parameter.id}" name="${parameter.id}" size="30">` }
+    },
     {
         id: "block_nsfw",
         type: ParameterType.checkbox,
@@ -205,7 +215,8 @@ var PARAMETERS = [
         id: "profileName",
         type: ParameterType.custom,
         label: "Profile Name",
-        note: "Name of the profile for model manager settings, e.g. thumbnails for embeddings. Use this to have different settings for different users.",
+        note:
+            "Name of the profile for model manager settings, e.g. thumbnails for embeddings. Use this to have different settings for different users.",
         render: (parameter) => {
             return `<input id="${parameter.id}" name="${parameter.id}" value="default" size="12">`
         },
@@ -244,7 +255,7 @@ var PARAMETERS = [
         default: false,
     },
     {
-        id: "test_diffusers",
+        id: "use_v3_engine",
         type: ParameterType.checkbox,
         label: "Use the new v3 engine (diffusers)",
         note:
@@ -426,9 +437,10 @@ let listenPortField = document.querySelector("#listen_port")
 let useBetaChannelField = document.querySelector("#use_beta_channel")
 let uiOpenBrowserOnStartField = document.querySelector("#ui_open_browser_on_start")
 let confirmDangerousActionsField = document.querySelector("#confirm_dangerous_actions")
-let testDiffusers = document.querySelector("#test_diffusers")
+let testDiffusers = document.querySelector("#use_v3_engine")
 let profileNameField = document.querySelector("#profileName")
 let useGalleryField = document.querySelector("#use_gallery")
+let modelsDirField = document.querySelector("#models_dir")
 
 let saveSettingsBtn = document.querySelector("#save-system-settings-btn")
 
@@ -460,8 +472,6 @@ async function getAppConfig() {
         if (config.update_branch === "beta") {
             useBetaChannelField.checked = true
             document.querySelector("#updateBranchLabel").innerText = "(beta)"
-        } else {
-            getParameterSettingsEntry("test_diffusers").classList.add("displayNone")
         }
         if (config.ui && config.ui.open_browser_on_start === false) {
             uiOpenBrowserOnStartField.checked = false
@@ -472,15 +482,17 @@ async function getAppConfig() {
         if (config.net && config.net.listen_port !== undefined) {
             listenPortField.value = config.net.listen_port
         }
+        modelsDirField.value = config.models_dir
 
-        let testDiffusersEnabled = config.update_branch !== "main"
-        if (config.test_diffusers === false) {
+        let testDiffusersEnabled = true
+        if (config.use_v3_engine === false) {
             testDiffusersEnabled = false
         }
         testDiffusers.checked = testDiffusersEnabled
+        document.querySelector("#test_diffusers").checked = testDiffusers.checked // don't break plugins
 
         if (config.config_on_startup) {
-            if (config.config_on_startup?.test_diffusers && config.update_branch !== "main") {
+            if (config.config_on_startup?.use_v3_engine) {
                 document.body.classList.add("diffusers-enabled-on-startup")
                 document.body.classList.remove("diffusers-disabled-on-startup")
             } else {
@@ -495,6 +507,7 @@ async function getAppConfig() {
             document.querySelector("#controlnet_model_container").style.display = "none"
             document.querySelector("#hypernetwork_model_container").style.display = ""
             document.querySelector("#hypernetwork_strength_container").style.display = ""
+            document.querySelector("#negative-embeddings-button").style.display = "none"
 
             document.querySelectorAll("#sampler_name option.diffusers-only").forEach((option) => {
                 option.style.display = "none"
@@ -514,7 +527,6 @@ async function getAppConfig() {
             })
             document.querySelector("#clip_skip_config").classList.remove("displayNone")
             document.querySelector("#embeddings-button").classList.remove("displayNone")
-            document.querySelector("#negative-embeddings-button").classList.remove("displayNone")
             IMAGE_STEP_SIZE = 8
             customWidthField.step = IMAGE_STEP_SIZE
             customHeightField.step = IMAGE_STEP_SIZE
@@ -828,11 +840,3 @@ navigator.permissions.query({ name: "clipboard-write" }).then(function(result) {
 })
 
 document.addEventListener("system_info_update", (e) => setDeviceInfo(e.detail))
-
-useBetaChannelField.addEventListener("change", (e) => {
-    if (e.target.checked) {
-        getParameterSettingsEntry("test_diffusers").classList.remove("displayNone")
-    } else {
-        getParameterSettingsEntry("test_diffusers").classList.add("displayNone")
-    }
-})

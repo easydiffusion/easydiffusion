@@ -118,13 +118,16 @@ class ModelDropdown {
         )
     }
 
-    saveCurrentSelection(elem, value, path) {
+    saveCurrentSelection(elem, value, path, dispatchEvent = true) {
         this.currentSelection.elem = elem
         this.currentSelection.value = value
         this.currentSelection.path = path
         this.modelFilter.dataset.path = path
         this.modelFilter.value = value
-        this.modelFilter.dispatchEvent(new Event("change"))
+
+        if (dispatchEvent) {
+            this.modelFilter.dispatchEvent(new Event("change"))
+        }
     }
 
     processClick(e) {
@@ -348,13 +351,13 @@ class ModelDropdown {
         }
     }
 
-    selectEntry(path) {
+    selectEntry(path, dispatchEvent = true) {
         if (path !== undefined) {
             const entries = this.modelElements
 
             for (const elem of entries) {
                 if (elem.dataset.path == path) {
-                    this.saveCurrentSelection(elem, elem.innerText, elem.dataset.path)
+                    this.saveCurrentSelection(elem, elem.innerText, elem.dataset.path, dispatchEvent)
                     this.highlightedModelEntry = elem
                     elem.scrollIntoView({ block: "nearest" })
                     break
@@ -529,7 +532,7 @@ class ModelDropdown {
             rootModelList.style.minWidth = modelFilterStyle.width
         })
 
-        this.selectEntry(this.activeModel)
+        this.selectEntry(this.activeModel, false)
     }
 
     /**

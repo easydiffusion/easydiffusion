@@ -37,7 +37,6 @@ ROOT_DIR = os.path.abspath(os.path.join(SD_DIR, ".."))
 SD_UI_DIR = os.getenv("SD_UI_PATH", None)
 
 CONFIG_DIR = os.path.abspath(os.path.join(SD_UI_DIR, "..", "scripts"))
-MODELS_DIR = os.path.abspath(os.path.join(SD_DIR, "..", "models"))
 BUCKET_DIR = os.path.abspath(os.path.join(SD_DIR, "..", "bucket"))
 
 USER_PLUGINS_DIR = os.path.abspath(os.path.join(SD_DIR, "..", "plugins"))
@@ -61,7 +60,7 @@ APP_CONFIG_DEFAULTS = {
     "ui": {
         "open_browser_on_start": True,
     },
-    "test_diffusers": True,
+    "use_v3_engine": True,
 }
 
 IMAGE_EXTENSIONS = [
@@ -92,13 +91,22 @@ CUSTOM_MODIFIERS_LANDSCAPE_EXTENSIONS = [
     "-landscape",
 ]
 
+MODELS_DIR = os.path.abspath(os.path.join(SD_DIR, "..", "models"))
+
 
 def init():
+    global MODELS_DIR
+
     os.makedirs(USER_UI_PLUGINS_DIR, exist_ok=True)
     os.makedirs(USER_SERVER_PLUGINS_DIR, exist_ok=True)
 
     # https://pytorch.org/docs/stable/storage.html
     warnings.filterwarnings("ignore", category=UserWarning, message="TypedStorage is deprecated")
+
+    config = getConfig()
+    config_models_dir = config.get("models_dir", None)
+    if (config_models_dir is not None and config_models_dir != ""):
+        MODELS_DIR = config_models_dir
 
 
 def init_render_threads():
@@ -116,9 +124,9 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
         shutil.move(config_legacy_yaml, config_yaml_path)
 
     def set_config_on_startup(config: dict):
-        if getConfig.__test_diffusers_on_startup is None:
-            getConfig.__test_diffusers_on_startup = config.get("test_diffusers", True)
-        config["config_on_startup"] = {"test_diffusers": getConfig.__test_diffusers_on_startup}
+        if getConfig.__use_v3_engine_on_startup is None:
+            getConfig.__use_v3_engine_on_startup = config.get("use_v3_engine", True)
+        config["config_on_startup"] = {"use_v3_engine": getConfig.__use_v3_engine_on_startup}
 
     if os.path.isfile(config_yaml_path):
         try:
@@ -166,12 +174,15 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
             return default_val
 
 
-getConfig.__test_diffusers_on_startup = None
+getConfig.__use_v3_engine_on_startup = None
 
 
 def setConfig(config):
+    global MODELS_DIR
+
     try:  # config.yaml
         config_yaml_path = os.path.join(CONFIG_DIR, "..", "config.yaml")
+        config_yaml_path = os.path.abspath(config_yaml_path)
         yaml = YAML()
 
         if not hasattr(config, "_yaml_comment"):
@@ -204,6 +215,9 @@ def setConfig(config):
         shutil.move(config_yaml_path + ".tmp", config_yaml_path)
     except:
         log.error(traceback.format_exc())
+
+    if config.get("models_dir"):
+        MODELS_DIR = config["models_dir"]
 
 
 def save_to_config(ckpt_model_name, vae_model_name, hypernetwork_model_name, vram_usage_level):

@@ -1213,3 +1213,38 @@ function toDataURL(url, callback){
     }
     xhr.send()
 }
+
+function logMsg(msg, level, outputMsg) {
+    if (outputMsg.hasChildNodes()) {
+        outputMsg.appendChild(document.createElement("br"))
+    }
+    if (level === "error") {
+        outputMsg.innerHTML += '<span style="color: red">Error: ' + msg + "</span>"
+    } else if (level === "warn") {
+        outputMsg.innerHTML += '<span style="color: orange">Warning: ' + msg + "</span>"
+    } else {
+        outputMsg.innerText += msg
+    }
+    console.log(level, msg)
+}
+
+function logError(msg, res, outputMsg) {
+    logMsg(msg, "error", outputMsg)
+
+    console.log("request error", res)
+    console.trace()
+    // setStatus("request", "error", "error")
+}
+
+function playSound() {
+    const audio = new Audio("/media/ding.mp3")
+    audio.volume = 0.2
+    var promise = audio.play()
+    if (promise !== undefined) {
+        promise
+            .then((_) => {})
+            .catch((error) => {
+                console.warn("browser blocked autoplay")
+            })
+    }
+}

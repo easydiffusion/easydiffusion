@@ -1,11 +1,15 @@
-# Easy Diffusion 2.5
+# Easy Diffusion 3.0
 ### The easiest way to install and use [Stable Diffusion](https://github.com/CompVis/stable-diffusion) on your computer.
 
 Does not require technical knowledge, does not require pre-installed software. 1-click install, powerful features, friendly community.
 
-[Installation guide](#installation) | [Troubleshooting guide](https://github.com/easydiffusion/easydiffusion/wiki/Troubleshooting) | <sub>[![Discord Server](https://img.shields.io/discord/1014774730907209781?label=Discord)](https://discord.com/invite/u9yhsFmEkB)</sub> <sup>(for support queries, and development discussions)</sup>
+️‍🔥🎉 **New!** Support for SDXL, ControlNet, multiple LoRA files, embeddings (and a lot more) have been added!
 
-![t2i](https://raw.githubusercontent.com/Stability-AI/stablediffusion/main/assets/stable-samples/txt2img/768/merged-0006.png)
+[Installation guide](#installation) | [Troubleshooting guide](https://github.com/easydiffusion/easydiffusion/wiki/Troubleshooting) | [User guide](https://github.com/easydiffusion/easydiffusion/wiki) | <sub>[![Discord Server](https://img.shields.io/discord/1014774730907209781?label=Discord)](https://discord.com/invite/u9yhsFmEkB)</sub> <sup>(for support queries, and development discussions)</sup>
+
+---
+![262597678-11089485-2514-4a11-88fb-c3acc81fc9ec](https://github.com/easydiffusion/easydiffusion/assets/844287/050b5e15-e909-45bf-8162-a38234830e38)
+
 
 # Installation
 Click the download button for your operating system:
@@ -17,12 +21,15 @@ Click the download button for your operating system:
 </p>
 
 **Hardware requirements:**
-- **Windows:** NVIDIA graphics card (minimum 2 GB RAM), or run on your CPU.
-- **Linux:** NVIDIA or AMD graphics card (minimum 2 GB RAM), or run on your CPU.
+- **Windows:** NVIDIA graphics card¹ (minimum 2 GB RAM), or run on your CPU.
+- **Linux:** NVIDIA¹ or AMD² graphics card (minimum 2 GB RAM), or run on your CPU.
 - **Mac:** M1 or M2, or run on your CPU.
 - Minimum 8 GB of system RAM.
 - Atleast 25 GB of space on the hard disk.
 
+¹) [CUDA Compute capability](https://en.wikipedia.org/wiki/CUDA#GPUs_supported) level of 3.7 or higher required.
+
+²) ROCm 5.2 support required.
 
 The installer will take care of whatever is needed. If you face any problems, you can join the friendly [Discord community](https://discord.com/invite/u9yhsFmEkB) and ask for assistance.
 
@@ -59,17 +66,19 @@ Just delete the `EasyDiffusion` folder to uninstall all the downloaded packages.
 - **UI Themes**: Customize the program to your liking.
 - **Searchable models dropdown**: organize your models into sub-folders, and search through them in the UI.
 
-### Image generation
-- **Supports**: "*Text to Image*" and "*Image to Image*".
-- **21 Samplers**: `ddim`, `plms`, `heun`, `euler`, `euler_a`, `dpm2`, `dpm2_a`, `lms`, `dpm_solver_stability`, `dpmpp_2s_a`, `dpmpp_2m`, `dpmpp_sde`, `dpm_fast`, `dpm_adaptive`, `ddpm`, `deis`, `unipc_snr`, `unipc_tu`, `unipc_tq`, `unipc_snr_2`, `unipc_tu_2`.
-- **In-Painting**: Specify areas of your image to paint into.
+### Powerful image generation
+- **Supports**: "*Text to Image*", "*Image to Image*" and "*InPainting*"
+- **ControlNet**: For advanced control over the image, e.g. by setting the pose or drawing the outline for the AI to fill in.
+- **16 Samplers**: `PLMS`, `DDIM`, `DEIS`, `Heun`, `Euler`, `Euler Ancestral`, `DPM2`, `DPM2 Ancestral`, `LMS`, `DPM Solver`, `DPM++ 2s Ancestral`, `DPM++ 2m`, `DPM++ 2m SDE`, `DPM++ SDE`, `DDPM`, `UniPC`.
+- **Stable Diffusion XL and 2.1**: Generate higher-quality images using the latest Stable Diffusion XL models.
+- **Textual Inversion Embeddings**: For guiding the AI strongly towards a particular concept.
 - **Simple Drawing Tool**: Draw basic images to guide the AI, without needing an external drawing program.
 - **Face Correction (GFPGAN)**
 - **Upscaling (RealESRGAN)**
-- **Loopback**: Use the output image as the input image for the next img2img task.
+- **Loopback**: Use the output image as the input image for the next image task.
 - **Negative Prompt**: Specify aspects of the image to *remove*.
-- **Attention/Emphasis**: () in the prompt increases the model's attention to enclosed words, and [] decreases it.
-- **Weighted Prompts**: Use weights for specific words in your prompt to change their importance, e.g. `red:2.4 dragon:1.2`.
+- **Attention/Emphasis**: `+` in the prompt increases the model's attention to enclosed words, and `-` decreases it. E.g. `apple++ falling from a tree`.
+- **Weighted Prompts**: Use weights for specific words in your prompt to change their importance, e.g. `(red)2.4 (dragon)1.2`.
 - **Prompt Matrix**: Quickly create multiple variations of your prompt, e.g. `a photograph of an astronaut riding a horse | illustration | cinematic lighting`.
 - **Prompt Set**: Quickly create multiple variations of your prompt, e.g. `a photograph of an astronaut on the {moon,earth}`
 - **1-click Upscale/Face Correction**: Upscale or correct an image after it has been generated.
@@ -79,10 +88,11 @@ Just delete the `EasyDiffusion` folder to uninstall all the downloaded packages.
 
 ### Advanced features
 - **Custom Models**: Use your own `.ckpt` or `.safetensors` file, by placing it inside the `models/stable-diffusion` folder!
-- **Stable Diffusion 2.1 support**
+- **Stable Diffusion XL and 2.1 support**
 - **Merge Models**
 - **Use custom VAE models**
-- **Use pre-trained Hypernetworks**
+- **Textual Inversion Embeddings**
+- **ControlNet**
 - **Use custom GFPGAN models**
 - **UI Plugins**: Choose from a growing list of [community-generated UI plugins](https://github.com/easydiffusion/easydiffusion/wiki/UI-Plugins), or write your own plugin to add features to the project!
 
@@ -94,24 +104,14 @@ Just delete the `EasyDiffusion` folder to uninstall all the downloaded packages.
 - **Auto scan for malicious models**: Uses picklescan to prevent malicious models.
 - **Safetensors support**: Support loading models in the safetensor format, for improved safety.
 - **Auto-updater**: Gets you the latest improvements and bug-fixes to a rapidly evolving project.
-- **Developer Console**: A developer-mode for those who want to modify their Stable Diffusion code, and edit the conda environment.
+- **Developer Console**: A developer-mode for those who want to modify their Stable Diffusion code, modify packages, and edit the conda environment.
 
 **(and a lot more)**
 
 ----
 
-## Easy for new users:
-![Screenshot of the initial UI](https://user-images.githubusercontent.com/844287/217043152-29454d15-0387-4228-b70d-9a4b84aeb8ba.png)
-
-
-## Powerful features for advanced users:
-![Screenshot of advanced settings](https://user-images.githubusercontent.com/844287/217042588-fc53c975-bacd-4a9c-af88-37408734ade3.png)
-
-
-## Live Preview
-Useful for judging (and stopping) an image quickly, without waiting for it to finish rendering.
-
-![live-512](https://user-images.githubusercontent.com/844287/192097249-729a0a1e-a677-485e-9ccc-16a9e848fabe.gif)
+## Easy for new users, powerful features for advanced users:
+![image](https://github.com/easydiffusion/easydiffusion/assets/844287/efbbac9f-42ce-4aef-8625-fd23c74a8241)
 
 ## Task Queue
 ![Screenshot of task queue](https://user-images.githubusercontent.com/844287/217043984-0b35f73b-1318-47cb-9eed-a2a91b430490.png)
@@ -124,12 +124,6 @@ Please refer to our [guide](https://github.com/easydiffusion/easydiffusion/wiki/
 
 # Bugs reports and code contributions welcome
 If there are any problems or suggestions, please feel free to ask on the [discord server](https://discord.com/invite/u9yhsFmEkB) or [file an issue](https://github.com/easydiffusion/easydiffusion/issues).
-
-We could really use help on these aspects (click to view tasks that need your help):
-* [User Interface](https://github.com/users/cmdr2/projects/1/views/1)
-* [Engine](https://github.com/users/cmdr2/projects/3/views/1)
-* [Installer](https://github.com/users/cmdr2/projects/4/views/1)
-* [Documentation](https://github.com/users/cmdr2/projects/5/views/1)
 
 If you have any code contributions in mind, please feel free to say Hi to us on the [discord server](https://discord.com/invite/u9yhsFmEkB). We use the Discord server for development-related discussions, and for helping users.
 

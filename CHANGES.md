@@ -1,5 +1,52 @@
 # What's new?
 
+## v3.0
+### Major Changes
+- **ControlNet** - Full support for ControlNet, with native integration of the common ControlNet models. Just select a control image, then choose the ControlNet filter/model and run. No additional configuration or download necessary. Supports custom ControlNets as well.
+- **SDXL** - Full support for SDXL. No configuration necessary, just put the SDXL model in the `models/stable-diffusion` folder.
+- **Multiple LoRAs** - Use multiple LoRAs, including SDXL and SD2-compatible LoRAs. Put them in the `models/lora` folder.
+- **Embeddings** - Use textual inversion embeddings easily, by putting them in the `models/embeddings` folder and using their names in the prompt (or by clicking the `+ Embeddings` button to select embeddings visually). Thanks @JeLuf.
+- **Seamless Tiling** - Generate repeating textures that can be useful for games and other art projects. Works best in 512x512 resolution. Thanks @JeLuf.
+- **Inpainting Models** - Full support for inpainting models, including custom inpainting models. No configuration (or yaml files) necessary.
+- **Faster than v2.5** - Nearly 40% faster than Easy Diffusion v2.5, and can be even faster if you enable xFormers.
+- **Even less VRAM usage** - Less than 2 GB for 512x512 images on 'low' VRAM usage setting (SD 1.5). Can generate large images with SDXL.
+- **WebP images** - Supports saving images in the lossless webp format.
+- **Undo/Redo in the UI** - Remove tasks or images from the queue easily, and undo the action if you removed anything accidentally. Thanks @JeLuf.
+- **Three new samplers, and latent upscaler** - Added `DEIS`, `DDPM` and `DPM++ 2m SDE` as additional samplers. Thanks @ogmaresca and @rbertus2000.
+- **Significantly faster 'Upscale' and 'Fix Faces' buttons on the images**
+- **Major rewrite of the code** - We've switched to using diffusers under-the-hood, which allows us to release new features faster, and focus on making the UI and installer even easier to use.
+
+### Detailed changelog
+* 3.0.5 - 2 Sep 2023 - Support SDXL ControlNets.
+* 3.0.4 - 1 Sep 2023 - Fix incorrect metadata generated for embeddings, when the exact word doesn't match the case, or is part of a larger word.
+* 3.0.4 - 1 Sep 2023 - Simplify the installation for AMD users on Linux. Thanks @JeLuf.
+* 3.0.4 - 1 Sep 2023 - Allow using a different folder for models. This is useful if you want to share a models folder across different software, or on a different drive. You can change this path in the Settings tab.
+* 3.0.3 - 31 Aug 2023 - Auto-save images to disk (if enabled by the user) when upscaling/fixing using the buttons on the image.
+* 3.0.3 - 30 Aug 2023 - Allow loading NovelAI-based custom models.
+* 3.0.3 - 30 Aug 2023 - Fix broken VAE tiling. This allows you to create larger images with lesser VRAM usage.
+* 3.0.3 - 30 Aug 2023 - Allow blocking NSFW images using a server-side config. This prevents the browser from generating NSFW images or changing the config. Open `config.yaml` in a text editor (e.g. Notepad), and add `block_nsfw: true` at the end, and save the file.
+* 3.0.2 - 29 Aug 2023 - Fixed incorrect matching of embeddings from prompts.
+* 3.0.2 - 24 Aug 2023 - Fix broken seamless tiling.
+* 3.0.2 - 23 Aug 2023 - Fix styling on mobile devices.
+* 3.0.2 - 22 Aug 2023 - Full support for inpainting models, including custom models. Support SD 1.x and SD 2.x inpainting models. Does not require you to specify a yaml config file.
+* 3.0.2 - 22 Aug 2023 - Reduce VRAM consumption of controlnet in 'low' VRAM mode, and allow accelerating controlnets using xformers.
+* 3.0.2 - 22 Aug 2023 - Improve auto-detection of SD 2.0 and 2.1 models, removing the need for custom yaml files for SD 2.x models. Improve the model load time by speeding-up the black image test.
+* 3.0.1 - 18 Aug 2023 - Rotate an image if EXIF rotation is present. For e.g. this is common in images taken with a smartphone.
+* 3.0.1 - 18 Aug 2023 - Resize control images to the task dimensions, to avoid memory errors with high-res control images.
+* 3.0.1 - 18 Aug 2023 - Show controlnet filter preview in the task entry.
+* 3.0.1 - 18 Aug 2023 - Fix drag-and-drop and 'Use these Settings' for LoRA and ControlNet.
+* 3.0.1 - 18 Aug 2023 - Auto-save LoRA models and strengths.
+* 3.0.1 - 17 Aug 2023 - Automatically use the correct yaml config file for custom SDXL models, even if a yaml file isn't present in the folder.
+* 3.0.1 - 17 Aug 2023 - Fix broken embeddings with SDXL.
+* 3.0.1 - 16 Aug 2023 - Fix broken LoRA with SDXL.
+* 3.0.1 - 15 Aug 2023 - Fix broken seamless tiling.
+* 3.0.1 - 15 Aug 2023 - Fix textual inversion embeddings not working in `low` VRAM usage mode.
+* 3.0.1 - 15 Aug 2023 - Fix for custom VAEs not working in `low` VRAM usage mode.
+* 3.0.1 - 14 Aug 2023 - Slider to change the image dimensions proportionally (in Image Settings). Thanks @JeLuf.
+* 3.0.1 - 14 Aug 2023 - Show an error to the user if an embedding isn't compatible with the model, instead of failing silently without informing the user. Thanks @JeLuf.
+* 3.0.1 - 14 Aug 2023 - Disable watermarking for SDXL img2img. Thanks @AvidGameFan.
+* 3.0.0 - 3 Aug 2023 - Enabled diffusers for everyone by default. The old v2 engine can be used by disabling the "Use v3 engine" option in the Settings tab.
+
 ## v2.5
 ### Major Changes
 - **Nearly twice as fast** - significantly faster speed of image generation. Code contributions are welcome to make our project even faster: https://github.com/easydiffusion/sdkit/#is-it-fast
@@ -22,15 +69,6 @@
 Our focus continues to remain on an easy installation experience, and an easy user-interface. While still remaining pretty powerful, in terms of features and speed.
 
 ### Detailed changelog
-* 3.0.1 - 17 Aug 2023 - Fix broken embeddings with SDXL.
-* 3.0.1 - 16 Aug 2023 - Fix broken LoRA with SDXL.
-* 3.0.1 - 15 Aug 2023 - Fix broken seamless tiling.
-* 3.0.1 - 15 Aug 2023 - Fix textual inversion embeddings not working in `low` VRAM usage mode.
-* 3.0.1 - 15 Aug 2023 - Fix for custom VAEs not working in `low` VRAM usage mode.
-* 3.0.1 - 14 Aug 2023 - Slider to change the image dimensions proportionally (in Image Settings). Thanks @JeLuf.
-* 3.0.1 - 14 Aug 2023 - Show an error to the user if an embedding isn't compatible with the model, instead of failing silently without informing the user. Thanks @JeLuf.
-* 3.0.1 - 14 Aug 2023 - Disable watermarking for SDXL img2img. Thanks @AvidGameFan.
-* 3.0.0 - 3 Aug 2023 - Enabled diffusers for everyone by default. The old v2 engine can be used by disabling the "Use v3 engine" option in the Settings tab.
 * 2.5.48 - 1 Aug 2023 - (beta-only) Full support for ControlNets. You can select a control image to guide the AI. You can pick a filter to pre-process the image, and one of the known (or custom) controlnet models. Supports `OpenPose`, `Canny`, `Straight Lines`, `Depth`, `Line Art`, `Scribble`, `Soft Edge`, `Shuffle` and `Segment`.
 * 2.5.47 - 30 Jul 2023 - An option to use `Strict Mask Border` while inpainting, to avoid touching areas outside the mask. But this might show a slight outline of the mask, which you will have to touch up separately.
 * 2.5.47 - 29 Jul 2023 - (beta-only) Fix long prompts with SDXL.

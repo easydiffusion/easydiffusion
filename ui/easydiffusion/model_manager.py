@@ -11,6 +11,7 @@ from sdkit import Context
 from sdkit.models import load_model, scan_model, unload_model, download_model, get_model_info_from_db
 from sdkit.models.model_loader.controlnet_filters import filters as cn_filters
 from sdkit.utils import hash_file_quick
+from sdkit.models.model_loader.embeddings import get_embedding_token
 
 KNOWN_MODEL_TYPES = [
     "stable-diffusion",
@@ -29,14 +30,14 @@ MODEL_EXTENSIONS = {
     "hypernetwork": [".pt", ".safetensors"],
     "gfpgan": [".pth"],
     "realesrgan": [".pth"],
-    "lora": [".ckpt", ".safetensors"],
+    "lora": [".ckpt", ".safetensors", ".pt"],
     "codeformer": [".pth"],
     "embeddings": [".pt", ".bin", ".safetensors"],
     "controlnet": [".pth", ".safetensors"],
 }
 DEFAULT_MODELS = {
     "stable-diffusion": [
-        {"file_name": "sd-v1-4.ckpt", "model_id": "1.4"},
+        {"file_name": "sd-v1-5.safetensors", "model_id": "1.5-pruned-emaonly-fp16"},
     ],
     "gfpgan": [
         {"file_name": "GFPGANv1.4.pth", "model_id": "1.4"},
@@ -99,7 +100,16 @@ def unload_all(context: Context):
 
 def resolve_model_to_use(model_name: Union[str, list] = None, model_type: str = None, fail_if_not_found: bool = True):
     model_names = model_name if isinstance(model_name, list) else [model_name]
-    model_paths = [resolve_model_to_use_single(m, model_type, fail_if_not_found) for m in model_names]
+    model_paths = []
+    for m in model_names:
+        if model_type == "embeddings":
+            try:
+                resolve_model_to_use_single(m, model_type)
+            except FileNotFoundError:  # try with spaces
+                m = m.replace("_", " ")
+
+        path = resolve_model_to_use_single(m, model_type, fail_if_not_found)
+        model_paths.append(path)
 
     return model_paths[0] if len(model_paths) == 1 else model_paths
 
@@ -138,7 +148,9 @@ def resolve_model_to_use_single(model_name: str = None, model_type: str = None, 
                 return default_model_path
 
     if model_name and fail_if_not_found:
-        raise Exception(f"Could not find the desired model {model_name}! Is it present in the {model_dir} folder?")
+        raise FileNotFoundError(
+            f"Could not find the desired model {model_name}! Is it present in the {model_dir} folder?"
+        )
 
 
 def reload_models_if_necessary(context: Context, models_data: ModelsData, models_to_force_reload: list = []):
@@ -181,9 +193,9 @@ def resolve_model_paths(models_data: ModelsData):
         skip_models = cn_filters + ["latent_upscaler", "nsfw_checker"]
         if model_type in skip_models:  # doesn't use model paths
             continue
-        if model_type == "codeformer":
+        if model_type == "codeformer" and model_paths[model_type]:
             download_if_necessary("codeformer", "codeformer.pth", "codeformer-0.1.0")
-        elif model_type == "controlnet":
+        elif model_type == "controlnet" and model_paths[model_type]:
             model_id = model_paths[model_type]
             model_info = get_model_info_from_db(model_type=model_type, model_id=model_id)
             if model_info:
@@ -249,7 +261,24 @@ def make_model_folders():
     for model_type in KNOWN_MODEL_TYPES:
         model_dir_path = os.path.join(app.MODELS_DIR, model_type)
 
-        os.makedirs(model_dir_path, exist_ok=True)
+        try:
+            os.makedirs(model_dir_path, exist_ok=True)
+        except Exception as e:
+            from rich.console import Console
+            from rich.panel import Panel
+
+            Console().print(
+                Panel(
+                    "\n"
+                    + f"Error while creating the models directory: '{model_dir_path}'\n"
+                    + f"Error: {e}\n\n"
+                    + f"[white]Check the 'models_dir:' line in the file '{os.path.join(app.ROOT_DIR, 'config.yaml')}'.[/white]\n",
+                    title="Fatal Error starting Easy Diffusion",
+                    style="bold yellow on red",
+                )
+            )
+            input("Press Enter to terminate...")
+            exit(1)
 
         help_file_name = f"Place your {model_type} model files here.txt"
         help_file_contents = f'Supported extensions: {" or ".join(MODEL_EXTENSIONS.get(model_type))}'
@@ -293,7 +322,7 @@ def is_malicious_model(file_path):
 def getModels(scan_for_malicious: bool = True):
     models = {
         "options": {
-            "stable-diffusion": [{"sd-v1-4": "SD 1.4"}],
+            "stable-diffusion": [],
             "vae": [],
             "hypernetwork": [],
             "lora": [],
@@ -312,6 +341,7 @@ def getModels(scan_for_malicious: bool = True):
                 {"control_v11p_sd15_mlsd": "Straight Lines"},
                 {"control_v11p_sd15_seg": "Segment"},
                 {"control_v11e_sd15_shuffle": "Shuffle"},
+                {"control_v11f1e_sd15_tile": "Tile"},
             ],
         },
     }
@@ -321,9 +351,11 @@ def getModels(scan_for_malicious: bool = True):
     class MaliciousModelException(Exception):
         "Raised when picklescan reports a problem with a model"
 
-    def scan_directory(directory, suffixes, directoriesFirst: bool = True, default_entries=[]):
-        tree = list(default_entries)
+    def scan_directory(directory, suffixes, directoriesFirst: bool = True, default_entries=[], nameFilter=None):
         nonlocal models_scanned
+
+        tree = list(default_entries)
+
         for entry in sorted(
             os.scandir(directory),
             key=lambda entry: (entry.is_file() == directoriesFirst, entry.name.lower()),
@@ -342,7 +374,11 @@ def getModels(scan_for_malicious: bool = True):
                         raise MaliciousModelException(entry.path)
                 if scan_for_malicious:
                     known_models[entry.path] = mtime
+
                 model_id = entry.name[: -len(matching_suffix)]
+                if callable(nameFilter):
+                    model_id = nameFilter(model_id)
+
                 model_exists = False
                 for m in tree:  # allows default "named" models, like CodeFormer and known ControlNet models
                     if (isinstance(m, str) and model_id == m) or (isinstance(m, dict) and model_id in m):
@@ -350,14 +386,15 @@ def getModels(scan_for_malicious: bool = True):
                         break
                 if not model_exists:
                     tree.append(model_id)
+
             elif entry.is_dir():
-                scan = scan_directory(entry.path, suffixes, directoriesFirst=False)
+                scan = scan_directory(entry.path, suffixes, directoriesFirst=False, nameFilter=nameFilter)
 
                 if len(scan) != 0:
                     tree.append((entry.name, scan))
         return tree
 
-    def listModels(model_type):
+    def listModels(model_type, nameFilter=None):
         nonlocal models_scanned
 
         model_extensions = MODEL_EXTENSIONS.get(model_type, [])
@@ -367,7 +404,9 @@ def getModels(scan_for_malicious: bool = True):
 
         try:
             default_tree = models["options"].get(model_type, [])
-            models["options"][model_type] = scan_directory(models_dir, model_extensions, default_entries=default_tree)
+            models["options"][model_type] = scan_directory(
+                models_dir, model_extensions, default_entries=default_tree, nameFilter=nameFilter
+            )
         except MaliciousModelException as e:
             models["scan-error"] = str(e)
 
@@ -379,7 +418,7 @@ def getModels(scan_for_malicious: bool = True):
     listModels(model_type="hypernetwork")
     listModels(model_type="gfpgan")
     listModels(model_type="lora")
-    listModels(model_type="embeddings")
+    listModels(model_type="embeddings", nameFilter=get_embedding_token)
     listModels(model_type="controlnet")
 
     if scan_for_malicious and models_scanned > 0:

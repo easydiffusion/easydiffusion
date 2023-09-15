@@ -2,7 +2,7 @@
 
 source ./scripts/functions.sh
 
-printf "\n\nEasy Diffusion\n\n"
+printf "\n\nEasy Diffusion - v3\n\n"
 
 export PYTHONNOUSERSITE=y
 
