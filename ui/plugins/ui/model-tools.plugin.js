@@ -117,7 +117,8 @@
                 grid-template-rows: auto 1fr;
                 grid-template-areas:
                     "selector  selector selector"
-                    "thumbnail keywords notes";
+                    "thumbnail keywords notes"
+                    "civimg   civimg   civimg";
             }
         }
 
@@ -132,7 +133,8 @@
                 grid-template-areas:
                     "selector  selector"
                     "thumbnail keywords"
-                    "thumbnail notes";
+                    "thumbnail notes"
+                    "civimg   civimg";
             }
 
         }
@@ -149,7 +151,8 @@
                     "selector"
                     "keywords"
                     "thumbnail"
-                    "notes";
+                    "notes"
+                    "civimg";
             }
 
         }
@@ -170,6 +173,10 @@
 
         .lora-manager-grid-notes { 
             grid-area: notes; 
+        }
+
+        .lora-manager-grid-civimg { 
+            grid-area: civimg; 
         }
         
         .lora-manager-grid p {
@@ -306,6 +313,8 @@
                     <b>Civitai model page:</b>
                     <a id="civitai-model-page" target="_blank"></a>
                 </p>
+            </div>
+            <div class="lora-manager-grid-civimg">
             </div>
         </div>`
 
@@ -675,6 +684,7 @@
                         LoraUI.keywordsField.value = ""
                         LoraUI.notesField.value = ""
                         LoraUI.hideCivitaiLink()
+                        document.querySelector(".lora-manager-grid-civimg").innerHTML = ""
                     } else {
                         LoraUI.keywordsField.value = info.keywords.join("\n")
                         LoraUI.notesField.value = info.notes
@@ -683,6 +693,7 @@
                         } else {
                             LoraUI.hideCivitaiLink()
                         }
+                        document.querySelector(".lora-manager-grid-civimg").innerHTML = ""
                     }
                 })
             Bucket.getImageAsDataURL(`${profileNameField.value}/lora/${LoraUI.modelField.value}.png`)
@@ -723,6 +734,35 @@
                         LoraUI.keywordsField.value = json["trainedWords"].join("\n")
                     } else {
                         showToast("No keyword info found.")
+                    }
+                    if ("images" in json) {
+                        json.images.forEach(element => {
+                           if (blockNSFWField.checked) {
+                                if (element.nsfw != "None") {
+                                    return
+                                }
+                           }
+                           let civitimg = document.createElement("img")
+                            fetch(element.url)
+                             .then(result => result.blob())
+                             .then(blob => {
+                               civitimg.src = URL.createObjectURL(blob);
+                            
+                            })
+                            civitimg.style["max-width"] = "256px"
+                            civitimg.style["max-height"] = "256px"
+                            civitimg.alt = "Civitai image (nsfw: " + element.nsfw + ")"
+                            document.querySelector(".lora-manager-grid-civimg").appendChild(civitimg)
+                            civitimg.addEventListener("click", (e) => onUseAsThumbnailClick(
+                                {
+                                    use_lora_model: LoraUI.modelField.value,
+                                },
+                                civitimg
+                            ))
+                            
+                        });
+                    } else {
+                        showToast("No images found.")
                     }
                     if ("modelId" in json) {
                         LoraUI.showCivitaiLink("https://civitai.com/models/" + json.modelId)
