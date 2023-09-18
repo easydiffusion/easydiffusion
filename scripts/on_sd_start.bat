@@ -34,6 +34,7 @@ call conda activate
 
 @REM remove the old version of the dev console script, if it's still present
 if exist "Open Developer Console.cmd" del "Open Developer Console.cmd"
+if exist "ui\plugins\ui\merge.plugin.js" del "ui\plugins\ui\merge.plugin.js"
 
 @rem create the stable-diffusion folder, to work with legacy installations
 if not exist "stable-diffusion" mkdir stable-diffusion
