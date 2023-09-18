@@ -285,8 +285,9 @@
                     <img id="lora-manager-image" class="displayNone" style="border-radius:6px;max-height:256px;max-width:256px;"/>
                 </div>
                 <div style="text-align:center;">
-                    <button class="tertiaryButton"><i class="fa-solid fa-upload"></i> Upload new thumbnail</button>
-                    <button class="tertiaryButton"><i class="fa-solid fa-trash-can"></i> Remove</button>
+                    <button class="tertiaryButton" id="lora-manager-upload-button"><i class="fa-solid fa-upload"></i> Upload new thumbnail</button>
+                    <input id="lora-manager-upload-input" name="lora-manager-upload-input" type="file" class="displayNone">
+                    <!-- button class="tertiaryButton"><i class="fa-solid fa-trash-can"></i> Remove</button -->
                 </div>
             </div>
             <div class="lora-manager-grid-keywords">
@@ -625,13 +626,45 @@
             LoraUI.civitaiAnchor = document.querySelector("#civitai-model-page")
             LoraUI.image = document.querySelector("#lora-manager-image")
             LoraUI.imagePlaceholder = document.querySelector("#lora-manager-image-placeholder")
+            LoraUI.uploadBtn = document.querySelector("#lora-manager-upload-button")
+            LoraUI.uploadInput = document.querySelector("#lora-manager-upload-input")
 
             LoraUI.modelField.addEventListener("change", LoraUI.updateFields)
             LoraUI.keywordsField.addEventListener("focusout", LoraUI.saveInfos)
             LoraUI.notesField.addEventListener("focusout", LoraUI.saveInfos)
             LoraUI.civitaiImportBtn.addEventListener("click", LoraUI.importFromCivitai)
 
+            LoraUI.uploadBtn.addEventListener("click", (e) => LoraUI.uploadInput.click())
+            LoraUI.uploadInput.addEventListener("change", LoraUI.uploadLoraThumb)
+
+            document.addEventListener("saveThumb", LoraUI.updateFields)
+
             LoraUI.updateFields()
+        },
+
+        uploadLoraThumb(e) {
+            console.log(e)
+            if (LoraUI.uploadInput.files.length === 0) {
+                return
+            }
+
+            let reader = new FileReader()
+            let file = LoraUI.uploadInput.files[0]
+
+            reader.addEventListener("load", (event) => {
+                let img = document.createElement("img")
+                img.src = reader.result
+                onUseAsThumbnailClick(
+                    {
+                        use_lora_model: LoraUI.modelField.value,
+                    },
+                    img
+                )
+            })
+
+            if (file) {
+                reader.readAsDataURL(file)
+            }
         },
 
         updateFields() {
