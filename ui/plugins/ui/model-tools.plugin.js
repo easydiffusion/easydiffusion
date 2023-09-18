@@ -696,7 +696,7 @@
                         document.querySelector(".lora-manager-grid-civimg").innerHTML = ""
                     }
                 })
-            Bucket.getImageAsDataURL(`${profileNameField.value}/lora/${LoraUI.modelField.value}.png`)
+            Bucket.getImageAsDataURL(`${profileNameField.value}/lora/${LoraUI.modelField.value.split("/").pop()}.png`)
                 .then((data) => {
                     LoraUI.image.src=data
                     LoraUI.image.classList.remove("displayNone")
