@@ -868,6 +868,7 @@ useAsThumbSaveBtn.addEventListener("click", (e) => {
         })
         .then(() => {
             useAsThumbDialog.close()
+            document.dispatchEvent(new CustomEvent("saveThumb", { detail: useAsThumbSelect.selectedOptions }))
         })
         .catch((error) => {
             console.error(error)
