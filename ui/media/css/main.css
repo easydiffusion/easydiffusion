@@ -1214,6 +1214,12 @@ input::file-selector-button {
         visibility: visible;
     }
 }
+
+.tooltip-container {
+    display: inline-block;
+    position: relative;
+}
+
 .simple-tooltip.right {
     right: 0px;
     top: 50%;
