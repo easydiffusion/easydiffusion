@@ -737,6 +737,7 @@ async function getSystemInfo() {
             if (force == true) {
                 saveToDiskField.checked = true
                 metadataOutputFormatField.disabled = false
+                metadataOutputFormatField.value = "txt"
             }
             saveToDiskField.disabled = force
             diskPathField.disabled = force
