@@ -618,7 +618,7 @@
         imagePlaceholder: undefined,
 
         init() {
-            LoraUI.modelField = new ModelDropdown(document.querySelector("#loraModel"), "lora")
+            LoraUI.modelField = new ModelDropdown(document.querySelector("#loraModel"), "lora", "None")
             LoraUI.keywordsField = document.querySelector("#lora-manager-keywords")
             LoraUI.notesField = document.querySelector("#lora-manager-notes")
             LoraUI.civitaiImportBtn = document.querySelector("#lora-keyword-from-civitai")
