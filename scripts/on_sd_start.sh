@@ -6,6 +6,7 @@ cp sd-ui-files/scripts/bootstrap.sh scripts/
 cp sd-ui-files/scripts/check_modules.py scripts/
 cp sd-ui-files/scripts/get_config.py scripts/
 cp sd-ui-files/scripts/config.yaml.sample scripts/
+     
 
 source ./scripts/functions.sh
 
@@ -18,6 +19,10 @@ conda activate || fail "Failed to activate conda"
 # remove the old version of the dev console script, if it's still present
 if [ -e "open_dev_console.sh" ]; then
     rm "open_dev_console.sh"
+fi
+
+if [ -e "ui/plugins/ui/merge.plugin.js" ]; then
+    rm "ui/plugins/ui/merge.plugin.js"
 fi
 
 # set the correct installer path (current vs legacy)
