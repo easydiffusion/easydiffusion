@@ -18,7 +18,6 @@
 
 ### Detailed changelog
 * 3.0.6 - 15 Sep 2023 - Fix broken embeddings dialog when LoRA information couldn't be fetched.
-* 3.0.6 - 14 Sep 2023 - Fix GFPGAN (Face Fixing) when running on multiple GPUs in parallel.
 * 3.0.5 - 2 Sep 2023 - Support SDXL ControlNets.
 * 3.0.4 - 1 Sep 2023 - Fix incorrect metadata generated for embeddings, when the exact word doesn't match the case, or is part of a larger word.
 * 3.0.4 - 1 Sep 2023 - Simplify the installation for AMD users on Linux. Thanks @JeLuf.
