@@ -525,6 +525,10 @@ async function getAppConfig() {
             customHeightField.step = IMAGE_STEP_SIZE
         }
 
+        if (config.force_save_metadata) {
+            metadataOutputFormatField.value = config.force_save_metadata
+        }
+
         console.log("get config status response", config)
 
         return config
@@ -737,7 +741,6 @@ async function getSystemInfo() {
             if (force == true) {
                 saveToDiskField.checked = true
                 metadataOutputFormatField.disabled = false
-                metadataOutputFormatField.value = "json"
             }
             saveToDiskField.disabled = force
             diskPathField.disabled = force
