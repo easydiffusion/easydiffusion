@@ -740,10 +740,13 @@ async function getSystemInfo() {
             force = res["enforce_output_dir"]
             if (force == true) {
                 saveToDiskField.checked = true
-                metadataOutputFormatField.disabled = false
+                metadataOutputFormatField.disabled = res["enforce_output_metadata"]
+                diskPathField.disabled = true
             }
             saveToDiskField.disabled = force
-            diskPathField.disabled = force
+        } else {
+            diskPathField.disabled = !saveToDiskField.checked
+            metadataOutputFormatField.disabled = !saveToDiskField.checked
         }
         setDiskPath(res["default_output_dir"], force)
     } catch (e) {
