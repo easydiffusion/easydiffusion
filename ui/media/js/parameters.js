@@ -525,6 +525,10 @@ async function getAppConfig() {
             customHeightField.step = IMAGE_STEP_SIZE
         }
 
+        if (config.force_save_metadata) {
+            metadataOutputFormatField.value = config.force_save_metadata
+        }
+
         console.log("get config status response", config)
 
         return config
@@ -736,11 +740,13 @@ async function getSystemInfo() {
             force = res["enforce_output_dir"]
             if (force == true) {
                 saveToDiskField.checked = true
-                metadataOutputFormatField.disabled = false
-                metadataOutputFormatField.value = "json"
+                metadataOutputFormatField.disabled = res["enforce_output_metadata"]
+                diskPathField.disabled = true
             }
             saveToDiskField.disabled = force
-            diskPathField.disabled = force
+        } else {
+            diskPathField.disabled = !saveToDiskField.checked
+            metadataOutputFormatField.disabled = !saveToDiskField.checked
         }
         setDiskPath(res["default_output_dir"], force)
     } catch (e) {

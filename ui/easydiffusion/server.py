@@ -225,6 +225,7 @@ def read_web_data_internal(key: str = None, **kwargs):
             "hosts": app.getIPConfig(),
             "default_output_dir": output_dir,
             "enforce_output_dir": ("force_save_path" in config),
+            "enforce_output_metadata": ("force_save_metadata" in config),
         }
         system_info["devices"]["config"] = config.get("render_devices", "auto")
         return JSONResponse(system_info, headers=NOCACHE_HEADERS)
