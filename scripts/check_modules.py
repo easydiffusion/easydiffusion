@@ -56,14 +56,14 @@ def install(module_name: str, module_version: str):
             if "Navi 3" in amd_gpus:
                 # No AMD 7x00 support in rocm 5.2, needs nightly 5.5. build
                 module_version = "2.1.0.dev-20230614+rocm5.5"
-                index_url = "https: //download.pytorch.org/whl/nightly/rocm5.5"
+                index_url = "https://download.pytorch.org/whl/nightly/rocm5.5"
             else:
                 module_version = "1.13.1+rocm5.2"
         elif module_name == "torchvision":
             if "Navi 3" in amd_gpus:
                 # No AMD 7x00 support in rocm 5.2, needs nightly 5.5. build
                 module_version = "0.16.0.dev-20230614+rocm5.5"
-                index_url = "https: //download.pytorch.org/whl/nightly/rocm5.5"
+                index_url = "https://download.pytorch.org/whl/nightly/rocm5.5"
             else:
                 module_version = "0.14.1+rocm5.2"
     elif os_name == "Darwin":
