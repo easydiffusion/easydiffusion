@@ -511,10 +511,10 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                     { text: "Upscale", on_click: onUpscaleClick },
                     { text: "Fix Faces", on_click: onFixFacesClick },
                 ],
-                {
+                { 
                     text: "Use as Thumbnail",
                     on_click: onUseAsThumbnailClick,
-                    filter: (req, img) => "use_embeddings_model" in req || "use_lora_model" in req,
+                    filter: (req, img) => "use_embeddings_model" in req || "use_lora_model" in req
                 },
             ]
 
@@ -748,7 +748,7 @@ function onUseAsThumbnailClick(req, img) {
         onUseAsThumbnailClick.croppr.setImage(img.src)
     }
 
-    useAsThumbSelect.innerHTML = ""
+    useAsThumbSelect.innerHTML=""
 
     if ("use_embeddings_model" in req) {
         let embeddings = req.use_embeddings_model.map((e) => e.split("/").pop())
@@ -765,6 +765,7 @@ function onUseAsThumbnailClick(req, img) {
         )
         useAsThumbSelect.appendChild(embOptions)
     }
+
 
     if ("use_lora_model" in req) {
         let LORA = req.use_lora_model
@@ -831,7 +832,8 @@ const Bucket = {
     },
 
     getList(path) {
-        return fetch(`bucket/${path}`).then((response) => (response.status == 200 ? response.json() : []))
+        return fetch(`bucket/${path}`)
+            .then((response) => (response.status == 200 ? response.json() : []))
     },
 
     store(path, data) {
@@ -839,7 +841,8 @@ const Bucket = {
     },
 
     retrieve(path) {
-        return fetch(`bucket/${path}.json`).then((response) => (response.status == 200 ? response.json() : null))
+        return fetch(`bucket/${path}.json`)
+            .then((response) => (response.status == 200 ? response.json() : null))
     },
 }
 
@@ -857,7 +860,9 @@ useAsThumbSaveBtn.addEventListener("click", (e) => {
             let options = useAsThumbSelect.selectedOptions
             let promises = []
             for (let embedding of options) {
-                promises.push(Bucket.upload(`${profileName}/${embedding.dataset["type"]}/${embedding.value}.png`, blob))
+                promises.push(
+                    Bucket.upload(`${profileName}/${embedding.dataset["type"]}/${embedding.value}.png`, blob)
+                )
             }
             return Promise.all(promises)
         })
@@ -1040,12 +1045,12 @@ function makeImage() {
 
     updateInitialText()
 
-    // const countBeforeBanner = localStorage.getItem("countBeforeBanner") || 1
-    // if (countBeforeBanner <= 0) {
-    //     // supportBanner.classList.remove("displayNone")
-    // } else {
-    //     localStorage.setItem("countBeforeBanner", countBeforeBanner - 1)
-    // }
+    const countBeforeBanner = localStorage.getItem("countBeforeBanner") || 1
+    if (countBeforeBanner <= 0) {
+        // supportBanner.classList.remove("displayNone")
+    } else {
+        localStorage.setItem("countBeforeBanner", countBeforeBanner - 1)
+    }
 }
 
 /* Hover effect for the init image in the task list */
@@ -1245,7 +1250,7 @@ function createTask(task) {
     })
 
     task.isProcessing = true
-    taskEntry = imagePreviewContent.insertBefore(taskEntry, previewTools.nextSibling)
+    taskEntry = imagePreviewContent.insertBefore(taskEntry, supportBanner.nextSibling)
     htmlTaskMap.set(taskEntry, task)
 
     task.previewPrompt.innerText = task.reqBody.prompt
@@ -1616,16 +1621,16 @@ function updateInitialText() {
         }
         previewTools.classList.add("displayNone")
         initialText.classList.remove("displayNone")
-        // supportBanner.classList.add("displayNone")
+        supportBanner.classList.add("displayNone")
     } else {
         initialText.classList.add("displayNone")
         previewTools.classList.remove("displayNone")
         document.querySelector("div.display-settings").prepend(undoButton)
 
-        // const countBeforeBanner = localStorage.getItem("countBeforeBanner") || 1
-        // if (countBeforeBanner <= 0) {
-        //     supportBanner.classList.remove("displayNone")
-        // }
+        const countBeforeBanner = localStorage.getItem("countBeforeBanner") || 1
+        if (countBeforeBanner <= 0) {
+            supportBanner.classList.remove("displayNone")
+        }
     }
 }
 
@@ -2517,7 +2522,7 @@ function updateEmbeddingsList(filter = "") {
 
             return Bucket.getList(`${profileName}/lora/`)
         })
-        .then(async function(icons) {
+        .then(async function (icons) {
             for (let lora of loraModelField.value.modelNames) {
                 let keywords = await getLoraKeywords(lora)
                 loraTokens = loraTokens.concat(keywords)
@@ -2526,13 +2531,14 @@ function updateEmbeddingsList(filter = "") {
                 if (icons.includes(`${loraname}.png`)) {
                     keywords.forEach((kw) => {
                         iconMap[kw.toLowerCase()] = `lora/${loraname}.png`
+                        
                     })
                 }
             }
 
             let tokenList = [...modelsOptions.embeddings]
             if (loraTokens.length != 0) {
-                tokenList.unshift(["LORA Keywords", loraTokens])
+                tokenList.unshift(['LORA Keywords', loraTokens])
             }
             embeddingsList.replaceChildren(html(tokenList, iconMap, "", filter))
             createCollapsibles(embeddingsList)
