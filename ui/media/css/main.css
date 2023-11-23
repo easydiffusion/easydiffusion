@@ -2042,6 +2042,7 @@ div#enlarge-buttons {
     border-radius: 4pt;
     padding-top: 6pt;
     color: var(--small-label-color);
+}
 /* Gallery CSS */
 
 button:disabled {
