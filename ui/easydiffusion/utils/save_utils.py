@@ -188,7 +188,7 @@ def save_images_to_disk(
                     num_inference_steps = metadata_entries[i]["num_inference_steps"],
                     guidance_scale = metadata_entries[i]["guidance_scale"],
                     lora = createLoraString(metadata_entries, i),
-                    use_hypernetwork_model = metadata_entries[i]["use_hypernetwork_model"],
+                    use_hypernetwork_model = metadata_entries[i]["use_hypernetwork_model"] if "use_hypernetwork_model" in metadata_entries[i] else None,
                     tiling = metadata_entries[i]["tiling"],
                     use_face_correction = metadata_entries[i]["use_face_correction"],
                     use_upscale = metadata_entries[i]["use_upscale"],
