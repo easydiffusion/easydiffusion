@@ -199,8 +199,8 @@ def save_images_to_disk(
                 session.commit()
                 session.close()
         
-        if task_data.metadata_output_format:
-            for metadata_output_format in task_data.metadata_output_format.split(","):
+        if save_data.metadata_output_format:
+            for metadata_output_format in save_data.metadata_output_format.split(","):
                 if metadata_output_format.lower() in ["json", "txt", "embed"]:
                     save_dicts(
                         metadata_entries,
