@@ -146,6 +146,15 @@ let embeddingsModeField = document.querySelector("#embeddings-mode")
 let embeddingsCardSizeSelector = document.querySelector("#embedding-card-size-selector")
 let addEmbeddingsThumb = document.querySelector("#add-embeddings-thumb")
 let addEmbeddingsThumbInput = document.querySelector("#add-embeddings-thumb-input")
+let galleryImginfoDialog = document.querySelector("#gallery-imginfo")
+let galleryThumbnailSize = document.querySelector("#gallery-thumbnail-size")
+let galleryImginfoDialogContent = document.querySelector("#gallery-imginfo-content")
+let galleryPageField = document.querySelector("#gallery-page")
+let galleryPrevBtn = document.querySelector("#gallery-prev")
+let galleryNextBtn = document.querySelector("#gallery-next")
+let galleryPromptSearchField = document.querySelector("#gallery-prompt-search")
+let galleryModelSearchField = document.querySelector("#gallery-model-search")
+let galleryImageContainer = document.querySelector("#imagecontainer")
 
 let positiveEmbeddingText = document.querySelector("#positive-embedding-text")
 let negativeEmbeddingText = document.querySelector("#negative-embedding-text")
@@ -190,6 +199,7 @@ let undoButton = document.querySelector("#undo")
 let undoBuffer = []
 const UNDO_LIMIT = 20
 const MAX_IMG_UNDO_ENTRIES = 5
+var GALLERY_NAME="default"
 
 let IMAGE_STEP_SIZE = 64
 
@@ -1657,6 +1667,7 @@ function getCurrentUserRequest() {
             output_quality: parseInt(outputQualityField.value),
             output_lossless: outputLosslessField.checked,
             metadata_output_format: metadataOutputFormatField.value,
+            use_gallery: useGalleryField.checked?GALLERY_NAME:null,
             original_prompt: promptField.value,
             active_tags: activeTags.map((x) => x.name),
             inactive_tags: activeTags.filter((tag) => tag.inactive === true).map((x) => x.name),
@@ -2148,6 +2159,7 @@ function onDimensionChange() {
 
 diskPathField.disabled = !saveToDiskField.checked
 metadataOutputFormatField.disabled = !saveToDiskField.checked
+useGalleryField.disabled = !saveToDiskField.checked
 
 gfpganModelField.disabled = !useFaceCorrectionField.checked
 useFaceCorrectionField.addEventListener("change", function(e) {
@@ -3269,3 +3281,272 @@ document.addEventListener("on_all_tasks_complete", (e) => {
         playSound()
     }
 })
+/* Gallery JS */
+
+const IMAGE_INFO = {
+    "Prompt": "prompt",
+    "Negative Prompt": "negative_prompt",
+    "Seed": "seed",
+    "Time": "time_created",
+    "Model": "use_stable_diffusion_model",
+    "VAE Model": "use_vae_model",
+    "Hypernetwork": "use_hypernetwork_model",
+    "LORA": "lora",
+    "Path": "path",
+    "Width": "width",
+    "Height": "height",
+    "Steps": "num_inference_steps",
+    "Sampler": "sampler_name",
+    "Guidance Scale": "guidance_scale",
+    "Tiling": "tiling",
+    "Upscaler": "use_upscale",
+    "Face Correction": "use_face_correction",
+    "Clip Skip": "clip_skip",
+}
+
+const IGNORE_TOKENS = ["None", "none", "Null", "null", "false", "False", null]
+
+function openImageInNewTab(img, reqData) {
+    let w = window.open("/gallery-image.html")
+    w.addEventListener("DOMContentLoaded", () => {
+        let fimg = w.document.getElementById("focusimg")
+        fimg.src = img.src
+
+        w.document.body.classList.add(themeField.value)
+        w.document.getElementById("use_these_settings").addEventListener("click", () => {
+            restoreTaskToUI({
+                batchCount: 1,
+                numOutputsTotal: 1,
+                reqBody: reqData
+            })
+        })
+        w.document.getElementById("use_as_input").addEventListener("click", () => {
+            onUseURLasInput(img.src)
+            showToast("Loaded image as EasyDiffusion input image", 5000, false, w.document)
+        })
+        let table = w.document.createElement("table")
+        galleryDetailTable(table, reqData)
+        w.document.getElementById("focusbox").replaceChildren(table)
+        document.dispatchEvent(new CustomEvent("newGalleryWindow", { detail: w }))
+    })
+}
+
+function galleryDetailTable(table, reqData) {
+    for (const [label, key] of Object.entries(IMAGE_INFO)) {
+        if (IGNORE_TOKENS.findIndex( k => (k == reqData[key])) == -1) {
+            let data = reqData[key]
+            if (key == "path") {
+                data = "&hellip;/"+data.split(/[\/\\]/).pop()
+            }
+            table.appendChild(htmlToElement(`<tr><th style="text-align: right;opacity:0.7;">${label}:</th><td>${data}</td></tr>`))
+        }
+    }
+}
+
+function galleryImage(reqData) {
+
+    let div = document.createElement("div")
+    div.classList.add("gallery-image")
+
+    let img = createElement("img", { style: "cursor: zoom-in;", src: "/image/" + reqData.path}, undefined, undefined)
+    img.dataset["request"] = JSON.stringify(reqData)
+
+    img.addEventListener("click", function() {
+        function previousImage(img) {
+            const allImages = Array.from(galleryImageContainer.querySelectorAll(".gallery-image img"))
+            const index = allImages.indexOf(img)
+            return allImages.slice(0, index).reverse()[0]
+        }
+
+        function nextImage(img) {
+            const allImages = Array.from(galleryImageContainer.querySelectorAll(".gallery-image img"))
+            const index = allImages.indexOf(img)
+            return allImages.slice(index + 1)[0]
+        }
+
+        function imageModalParameter(img) {
+            const previousImg = previousImage(img)
+            const nextImg = nextImage(img)
+
+            return {
+                src: img.src,
+                previous: previousImg ? () => imageModalParameter(previousImg) : undefined,
+                next: nextImg ? () => imageModalParameter(nextImg) : undefined,
+            }
+        }
+        imageModal(imageModalParameter(img))
+    })
+
+    let hover = document.createElement("div")
+    hover.classList.add("gallery-image-hover")
+    
+    let infoBtn = document.createElement("button")
+    infoBtn.classList.add("tertiaryButton")
+    infoBtn.innerHTML = '<i class="fa-regular fa-file-lines"></i>'
+    infoBtn.addEventListener("click", function() {
+         let table = document.createElement("table")
+         
+         galleryDetailTable(table, reqData)
+         
+         galleryImginfoDialogContent.replaceChildren(table)
+         galleryImginfoDialog.showModal()
+    })
+    hover.appendChild(infoBtn)
+
+    let openInNewTabBtn = createElement("button", {style: "margin-left: 0.2em;"}, ["tertiaryButton"],
+                                 htmlToElement('<i class="fa-solid fa-arrow-up-right-from-square"></i>'))
+    openInNewTabBtn.addEventListener("click", (e) => {
+        openImageInNewTab(img, reqData)
+    })
+    hover.appendChild(openInNewTabBtn)
+
+    hover.appendChild(document.createElement("br"))
+
+    let useAsInputBtn = createElement("button", {}, ["tertiaryButton"], "Use as Input")
+    useAsInputBtn.addEventListener("click", (e) => {
+        onUseURLasInput(img.src)
+        showToast("Loaded image as input image")
+    })
+
+    let useSettingsBtn = createElement("button", {}, ["tertiaryButton"], "Use Settings")
+    useSettingsBtn.addEventListener("click", (e) => {
+        restoreTaskToUI({
+            batchCount: 1,
+            numOutputsTotal: 1,
+            reqBody: reqData
+        })
+        showToast("Loaded settings")
+    })
+
+    hover.appendChild(useAsInputBtn)
+    hover.appendChild(document.createElement("br"))
+    hover.appendChild(useSettingsBtn)
+
+    div.replaceChildren(img, hover)
+    return div
+}
+
+function onUseURLasInput(url) {
+    toDataURL(url, blob => {
+        onUseAsInputClick(null, {src:blob})
+    })
+}
+
+modalDialogCloseOnBackdropClick(galleryImginfoDialog)
+makeDialogDraggable(galleryImginfoDialog)
+
+galleryImginfoDialog.querySelector("#gallery-imginfo-close-button").addEventListener("click", () => {
+    galleryImginfoDialog.close()
+})
+
+
+galleryThumbnailSize.addEventListener("input", layoutGallery)
+window.addEventListener("resize", layoutGallery)
+
+
+function layoutGallery() {
+    let thumbSize = parseFloat(galleryThumbnailSize.value)
+    thumbSize = (10*thumbSize*thumbSize)>>>0
+    let root = document.querySelector(':root')
+    root.style.setProperty('--gallery-width', thumbSize + "px")
+    let msnry = new Masonry(galleryImageContainer, {
+        gutter: 10,
+        itemSelector: '.gallery-image',
+        columnWidth: thumbSize,
+        fitWidth: true,
+    })
+}
+
+
+galleryModelSearchField.addEventListener("keyup", debounce(e => refreshGallery(true), 500))
+galleryPromptSearchField.addEventListener("keyup", debounce(e => refreshGallery(true), 500))
+galleryPageField.addEventListener("keyup", e => {
+    if (e.code === "Enter") {
+        e.preventDefault()
+        refreshGallery(false)
+    }
+})
+
+function refreshGallery(newsearch = false) {
+    if (newsearch) {
+        galleryPageField.value = 0
+    }
+    galleryImageContainer.innerHTML = ""
+    let params = new URLSearchParams({
+        workspace: GALLERY_NAME,
+        prompt: galleryPromptSearchField.value,
+        model: galleryModelSearchField.value,
+        page: galleryPageField.value
+    })
+
+    fetch('/all_images?' + params)
+        .then(response => response.json())
+        .then(json => {
+            if (galleryPageField.value > 0 && json.length == 0) {
+                decrementGalleryPage()
+                alert("No more images")
+                return
+            }
+            json.forEach(item => {
+                galleryImageContainer.appendChild(galleryImage(item))
+            })
+            // Wait for all images to be loaded
+            Promise.all(Array.from(galleryImageContainer.querySelectorAll("img")).map(img => {
+                if (img.complete)
+                {
+                    return Promise.resolve(img.naturalHeight !== 0)
+                }
+                return new Promise(resolve => {
+                    img.addEventListener('load', () => resolve(true))
+                    img.addEventListener('error', () => resolve(false))
+                })
+            })).then(results => {
+                // then layout the images
+                layoutGallery()
+            })
+        })
+
+    params.set("images_per_page", 1)
+    // 50 has to be replaced if custom images per page is implemented
+    params.set("page", (parseInt(galleryPageField.value) + 1) * 50)
+
+    fetch("/all_images?" + params)
+        .then(response => response.json())
+        .then(json => {
+            if (json.length == 0) {
+                galleryNextBtn.disabled = true
+            } else {
+                galleryNextBtn.disabled = false
+            }
+        })
+    if (galleryPageField.value == 0) {
+        galleryPrevBtn.disabled = true
+    } else {
+        galleryPrevBtn.disabled = false
+    }
+    document.getElementById("gallery-refresh").innerText = "Refresh"
+}
+
+
+galleryPrevBtn.addEventListener("click", decrementGalleryPage)
+galleryNextBtn.addEventListener("click", incrementGalleryPage)
+
+
+document.addEventListener("tabClick", (e) => {
+    if (e.detail.name == 'gallery') {
+        refreshGallery()
+    }
+})
+
+
+function decrementGalleryPage() {
+    let page = Math.max(galleryPageField.value - 1, 0)
+    galleryPageField.value = page
+    refreshGallery(false)
+}
+
+
+function incrementGalleryPage() {
+    galleryPageField.value++
+    refreshGallery(false)
+}

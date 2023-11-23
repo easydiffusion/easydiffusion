@@ -1040,6 +1040,9 @@ input::file-selector-button {
 .input-toggle > input:checked + label {
     background: var(--accent-color);
 }
+.input-toggle > input:disabled + label {
+    background: var(--background-color1);
+}
 .input-toggle > input:checked + label:before {
     right: calc(var(--input-border-size) + var(--input-switch-padding));
     opacity: 1;
@@ -2039,4 +2042,57 @@ div#enlarge-buttons {
     border-radius: 4pt;
     padding-top: 6pt;
     color: var(--small-label-color);
+/* Gallery CSS */
+
+button:disabled {
+    background-color: var(--secondary-button-background);
+}
+
+#gallery-search {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+}
+
+#gallery-search>* {
+    margin: 0.5em;
+}
+
+#imagecontainer {
+    margin: auto;
+}
+
+.gallery-container {
+}
+
+.gallery-image img {
+    width: var(--gallery-width);
+}
+
+.gallery-image {
+    position: relative;
+    width: var(--gallery-width);
+    margin-bottom: 6px;
+}
+
+.gallery-image-hover {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    opacity: 0;
+    text-align: right;
+}
+
+.gallery-image-hover button {
+    margin-bottom: 5px;
+}
+
+.gallery-image:hover .gallery-image-hover {
+    opacity: 1;
+}
+
+
+#tab-content-gallery>* {
+    margin: 8px;
 }

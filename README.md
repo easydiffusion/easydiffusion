@@ -15,9 +15,9 @@ Does not require technical knowledge, does not require pre-installed software. 1
 Click the download button for your operating system:
 
 <p float="left">
-  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/latest/download/Easy-Diffusion-Linux.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-linux.png" width="200" /></a>
-  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/latest/download/Easy-Diffusion-Mac.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-mac.png" width="200" /></a>
-  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/latest/download/Easy-Diffusion-Windows.exe"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-win.png" width="200" /></a>
+  <a href="https://github.com/easydiffusion/easydiffusion/releases/download/v2.5.41a/Easy-Diffusion-Windows.exe"><img src="https://github.com/easydiffusion/easydiffusion/raw/main/media/download-win.png" width="200" /></a>
+  <a href="https://github.com/easydiffusion/easydiffusion/releases/download/v2.5.41a/Easy-Diffusion-Linux.zip"><img src="https://github.com/easydiffusion/easydiffusion/raw/main/media/download-linux.png" width="200" /></a>
+  <a href="https://github.com/easydiffusion/easydiffusion/releases/download/v2.5.41a/Easy-Diffusion-Mac.zip"><img src="https://github.com/easydiffusion/easydiffusion/raw/main/media/download-mac.png" width="200" /></a>
 </p>
 
 **Hardware requirements:**

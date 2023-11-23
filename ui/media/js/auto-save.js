@@ -14,6 +14,7 @@ const SETTINGS_IDS_LIST = [
     "num_outputs_parallel",
     "stable_diffusion_model",
     "clip_skip",
+    "use_gallery",
     "vae_model",
     "sampler_name",
     "width",
@@ -54,6 +55,7 @@ const SETTINGS_IDS_LIST = [
     "tree_toggle",
     "json_toggle",
     "extract_lora_from_prompt",
+    "gallery-thumbnail-size",
     "embedding-card-size-selector",
     "lora_model",
 ]
