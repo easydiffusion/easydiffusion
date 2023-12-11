@@ -278,6 +278,11 @@ def generate_images_internal(
                     setattr(pipe.unet, "_allocate_trt_buffers_backup", pipe.unet._allocate_trt_buffers)
                     delattr(pipe.unet, "_allocate_trt_buffers")
 
+            if task_data.enable_vae_tiling:
+                pipe.enable_vae_tiling()
+            else:
+                pipe.disable_vae_tiling()
+
         images = generate_images(context, callback=callback, **req.dict())
         user_stopped = False
     except UserInitiatedStop:
