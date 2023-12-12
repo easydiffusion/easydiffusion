@@ -56,6 +56,7 @@ const SETTINGS_IDS_LIST = [
     "extract_lora_from_prompt",
     "embedding-card-size-selector",
     "lora_model",
+    "enable_vae_tiling",
 ]
 
 const IGNORE_BY_DEFAULT = ["prompt"]
