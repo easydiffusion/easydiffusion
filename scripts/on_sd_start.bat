@@ -10,6 +10,7 @@
 
 if exist "%cd%\profile" (
     set HF_HOME=%cd%\profile\.cache\huggingface
+    set HF_ENDPOINT=https://hf-mirror.com
 )
 
 @rem set the correct installer path (current vs legacy)
