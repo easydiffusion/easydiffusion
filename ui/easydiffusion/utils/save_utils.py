@@ -167,7 +167,7 @@ def save_images_to_disk(
                     loraString = ""
                     for j in range(len(metadata_entries[i]["use_lora_model"])):
                         loraString += metadata_entries[i]["use_lora_model"][j] + ":" + str(metadata_entries[i]["lora_alpha"][j]) + " "
-                    return loraString.trim()
+                    return loraString.strip()
                 else:
                     return metadata_entries[i]["use_lora_model"] + ":" + str(metadata_entries[i]["lora_alpha"])
 
