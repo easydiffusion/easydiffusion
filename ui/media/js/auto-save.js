@@ -58,6 +58,7 @@ const SETTINGS_IDS_LIST = [
     "gallery-thumbnail-size",
     "embedding-card-size-selector",
     "lora_model",
+    "enable_vae_tiling",
 ]
 
 const IGNORE_BY_DEFAULT = ["prompt"]

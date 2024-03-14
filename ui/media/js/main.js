@@ -129,6 +129,7 @@ let hypernetworkStrengthField = document.querySelector("#hypernetwork_strength")
 let outputFormatField = document.querySelector("#output_format")
 let outputLosslessField = document.querySelector("#output_lossless")
 let outputLosslessContainer = document.querySelector("#output_lossless_container")
+let enableVAETilingField = document.querySelector("#enable_vae_tiling")
 let blockNSFWField = document.querySelector("#block_nsfw")
 let showOnlyFilteredImageField = document.querySelector("#show_only_filtered_image")
 let updateBranchLabel = document.querySelector("#updateBranchLabel")
@@ -1727,6 +1728,7 @@ function getCurrentUserRequest() {
         if (tilingField.value !== "none") {
             newTask.reqBody.tiling = tilingField.value
         }
+        newTask.reqBody.enable_vae_tiling = enableVAETilingField.checked
     }
     if (testDiffusers.checked && document.getElementById("toggle-tensorrt-install").innerHTML == "Uninstall") {
         // TRT is installed

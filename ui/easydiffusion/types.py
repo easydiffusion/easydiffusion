@@ -84,6 +84,7 @@ class RenderTaskData(TaskData):
     filters: List[str] = []
     filter_params: Dict[str, Dict[str, Any]] = {}
     control_filter_to_apply: Union[str, List[str]] = None
+    enable_vae_tiling: bool = True
 
     show_only_filtered_image: bool = False
     block_nsfw: bool = False
