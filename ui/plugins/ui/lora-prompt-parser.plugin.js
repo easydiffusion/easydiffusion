@@ -82,7 +82,9 @@
         }
 
         // Clean up the prompt string, e.g. from "apple, banana, <lora:...>, orange, <lora:...>  , pear <lora:...>, <lora:...>" to "apple, banana, orange, pear"
-        let cleanedPrompt = prompt.replace(regex, '').replace(/(\s*,\s*(?=\s*,|$))|(^\s*,\s*)|\s+/g, ' ').trim();
+        // let cleanedPrompt = prompt.replace(regex, '').replace(/(\s*,\s*(?=\s*,|$))|(^\s*,\s*)|\s+/g, ' ').trim();
+	// This line keeps /n in prompts. Good if you want to make prompt with multiple sub-prompts. Previous line would merge sub-prompts into one big prompt
+	let cleanedPrompt = prompt.replace(regex, '').trim();    
 		//console.log('Matches: ' + JSON.stringify(matches));
 
         // Return the array of matches and cleaned prompt string
