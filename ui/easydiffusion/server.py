@@ -23,6 +23,7 @@ from easydiffusion.types import (
 )
 from easydiffusion.utils import log
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Extra
 from starlette.responses import FileResponse, JSONResponse, StreamingResponse
@@ -32,6 +33,7 @@ log.info(f"started in {app.SD_DIR}")
 log.info(f"started at {datetime.datetime.now():%x %X}")
 
 server_api = FastAPI()
+
 
 NOCACHE_HEADERS = {
     "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -86,6 +88,16 @@ def init():
         NoCacheStaticFiles(directory=os.path.join(app.SD_UI_DIR, "media")),
         name="media",
     )
+    config = app.getConfig()
+    
+    if config["net"]["api_allow_any_origins"]:
+        server_api.add_middleware(
+            CORSMiddleware,
+            allow_credentials=True,
+            allow_origins=["*"],
+            allow_methods=["*"],
+            allow_headers=["*"]
+        )
 
     for plugins_dir, dir_prefix in app.UI_PLUGINS_SOURCES:
         server_api.mount(
