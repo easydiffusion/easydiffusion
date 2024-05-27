@@ -21,7 +21,7 @@ os_name = platform.system()
 modules_to_check = {
     "torch": ("1.11.0", "1.13.1", "2.0.0", "2.0.1"),
     "torchvision": ("0.12.0", "0.14.1", "0.15.1", "0.15.2"),
-    "setuptools": "59.8.0",
+    "setuptools": "69.5.1",
     "sdkit": "2.0.15",
     "stable-diffusion-sdkit": "2.1.5",
     "rich": "12.6.0",
@@ -91,6 +91,14 @@ def update_modules():
             continue
 
         allowed_versions, latest_version = get_allowed_versions(module_name, allowed_versions)
+
+        if module_name == "setuptools":
+            if os_name == "Windows":
+                allowed_versions = ("59.8.0",)
+                latest_version = "59.8.0"
+            else:
+                allowed_versions = ("69.0.0",)
+                latest_version = "69.0.0"
 
         requires_install = False
         if module_name in ("torch", "torchvision"):
