@@ -21,6 +21,7 @@ os_name = platform.system()
 modules_to_check = {
     "torch": ("1.11.0", "1.13.1", "2.0.0", "2.0.1"),
     "torchvision": ("0.12.0", "0.14.1", "0.15.1", "0.15.2"),
+    "setuptools": "69.5.1",
     "sdkit": "2.0.15",
     "stable-diffusion-sdkit": "2.1.5",
     "rich": "12.6.0",
@@ -110,8 +111,9 @@ def update_modules():
                 fail(module_name)
             else:
                 if version(module_name) != latest_version:
-                    print(f"WARNING! Tried to install {module_name}=={latest_version}, but the version is still {version(module_name)}!")
-
+                    print(
+                        f"WARNING! Tried to install {module_name}=={latest_version}, but the version is still {version(module_name)}!"
+                    )
 
         if module_name in modules_to_log:
             print(f"{module_name}: {version(module_name)}")
@@ -177,7 +179,9 @@ Thanks!"""
     )
     exit(1)
 
+
 ### Launcher
+
 
 def get_config():
     config_directory = os.path.dirname(__file__)  # this will be "scripts"
@@ -193,15 +197,17 @@ def get_config():
 
     if os.path.isfile(config_yaml):
         from ruamel.yaml import YAML
-        yaml = YAML(typ='safe')
-        with open(config_yaml, 'r') as configfile:
+
+        yaml = YAML(typ="safe")
+        with open(config_yaml, "r") as configfile:
             try:
                 config = yaml.load(configfile)
             except Exception as e:
                 print(e, file=sys.stderr)
     elif os.path.isfile(config_json):
         import json
-        with open(config_json, 'r') as configfile:
+
+        with open(config_json, "r") as configfile:
             try:
                 config = json.load(configfile)
             except Exception as e:
@@ -215,43 +221,43 @@ def get_config():
 def setup_amd_environment():
     if not os.access("/dev/kfd", os.W_OK):
         print(
-                  "#########################################################################\n"
-                + "#           EasyDiffusion has no write access to /dev/kfd.              #\n"
-                + "#########################################################################\n"
-                + "\n"
-                + "Without this, the ROCm driver will probably not be able to initialize the GPU and EasyDiffusion will use the CPU for rendering.\n"
-                + "\n"
-                + "Follow the instructions on this site to configure the access:\n"
-                + "https://github.com/easydiffusion/easydiffusion/wiki/AMD-on-Linux#access-permissions\n"
-                + "\n"
+            "#########################################################################\n"
+            + "#           EasyDiffusion has no write access to /dev/kfd.              #\n"
+            + "#########################################################################\n"
+            + "\n"
+            + "Without this, the ROCm driver will probably not be able to initialize the GPU and EasyDiffusion will use the CPU for rendering.\n"
+            + "\n"
+            + "Follow the instructions on this site to configure the access:\n"
+            + "https://github.com/easydiffusion/easydiffusion/wiki/AMD-on-Linux#access-permissions\n"
+            + "\n"
         )
 
     gpus = list(filter(lambda x: ("amdgpu" in x), open("/proc/bus/pci/devices", "r").readlines()))
-    gpus = [ x.split("\t")[1].upper() for x in gpus ]
-    gpus = [ AMD_PCI_IDs[x] for x in gpus if x in AMD_PCI_IDs ]
-    i=0
-    supported_gpus=[]
+    gpus = [x.split("\t")[1].upper() for x in gpus]
+    gpus = [AMD_PCI_IDs[x] for x in gpus if x in AMD_PCI_IDs]
+    i = 0
+    supported_gpus = []
     for gpu in gpus:
         print(f"Found AMD GPU {gpu}.")
         if gpu.startswith("Navi 1"):
             print("--- Applying Navi 1 settings")
-            os.environ["HSA_OVERRIDE_GFX_VERSION"]="10.3.0"
-            os.environ["FORCE_FULL_PRECISION"]="yes"
-            os.environ["HIP_VISIBLE_DEVICES"]=str(i)
+            os.environ["HSA_OVERRIDE_GFX_VERSION"] = "10.3.0"
+            os.environ["FORCE_FULL_PRECISION"] = "yes"
+            os.environ["HIP_VISIBLE_DEVICES"] = str(i)
             supported_gpus.append("Navi 1")
-        elif gpu.startswith("Navi 2"):    
+        elif gpu.startswith("Navi 2"):
             print("--- Applying Navi 2 settings")
-            os.environ["HSA_OVERRIDE_GFX_VERSION"]="10.3.0"
-            os.environ["HIP_VISIBLE_DEVICES"]=str(i)
+            os.environ["HSA_OVERRIDE_GFX_VERSION"] = "10.3.0"
+            os.environ["HIP_VISIBLE_DEVICES"] = str(i)
             supported_gpus.append("Navi 2")
         elif gpu.startswith("Navi 3"):
             print("--- Applying Navi 3 settings")
-            os.environ["HSA_OVERRIDE_GFX_VERSION"]="11.0.0"
-            os.environ["HIP_VISIBLE_DEVICES"]=str(i)
+            os.environ["HSA_OVERRIDE_GFX_VERSION"] = "11.0.0"
+            os.environ["HIP_VISIBLE_DEVICES"] = str(i)
             supported_gpus.append("Navi 3")
         else:
             print("--- This GPU is probably not supported by ROCm\n")
-        i+=1
+        i += 1
     return supported_gpus
 
 
@@ -260,7 +266,7 @@ def launch_uvicorn():
 
     pprint(config)
 
-    with open("scripts/install_status.txt","a") as f:
+    with open("scripts/install_status.txt", "a") as f:
         f.write("sd_weights_downloaded\n")
         f.write("sd_install_complete\n")
 
@@ -268,9 +274,9 @@ def launch_uvicorn():
 
     os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
     if os_name == "Windows":
-        os.environ["PYTHONPATH"] = str(Path( os.environ["INSTALL_ENV_DIR"], "lib", "site-packages"))
+        os.environ["PYTHONPATH"] = str(Path(os.environ["INSTALL_ENV_DIR"], "lib", "site-packages"))
     else:
-        os.environ["PYTHONPATH"] = str(Path( os.environ["INSTALL_ENV_DIR"], "lib", "python3.8", "site-packages"))
+        os.environ["PYTHONPATH"] = str(Path(os.environ["INSTALL_ENV_DIR"], "lib", "python3.8", "site-packages"))
     os.environ["SD_UI_PATH"] = str(Path(Path.cwd(), "ui"))
 
     print(f"PYTHONPATH={os.environ['PYTHONPATH']}")
@@ -297,7 +303,10 @@ def launch_uvicorn():
         setup_amd_environment()
 
     print("\nLaunching uvicorn\n")
-    os.system(f'python -m uvicorn main:server_api --app-dir "{os.environ["SD_UI_PATH"]}" --port {listen_port} --host {bind_ip} --log-level error')
+    os.system(
+        f'python -m uvicorn main:server_api --app-dir "{os.environ["SD_UI_PATH"]}" --port {listen_port} --host {bind_ip} --log-level error'
+    )
+
 
 ### Start
 
@@ -1102,5 +1111,5 @@ AMD_PCI_IDs = {
 
 update_modules()
 
-if len(sys.argv) > 1 and sys.argv[1]=="--launch-uvicorn":
+if len(sys.argv) > 1 and sys.argv[1] == "--launch-uvicorn":
     launch_uvicorn()
