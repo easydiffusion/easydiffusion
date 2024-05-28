@@ -31,6 +31,7 @@ TASK_TEXT_MAPPING = {
     "clip_skip": "Clip Skip",
     "use_controlnet_model": "ControlNet model",
     "control_filter_to_apply": "ControlNet Filter",
+    "control_alpha": "ControlNet Strength",
     "use_vae_model": "VAE model",
     "sampler_name": "Sampler",
     "width": "Width",

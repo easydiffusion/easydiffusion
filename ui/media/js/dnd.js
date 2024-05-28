@@ -309,6 +309,15 @@ const TASK_MAPPING = {
         readUI: () => controlImageFilterField.value,
         parse: (val) => val,
     },
+    control_alpha: {
+        name: "ControlNet Strength",
+        setUI: (control_alpha) => {
+            controlAlphaField.value = control_alpha
+            updateControlAlphaSlider()
+        },
+        readUI: () => parseFloat(controlAlphaField.value),
+        parse: (val) => parseFloat(val),
+    },
     use_lora_model: {
         name: "LoRA model",
         setUI: (use_lora_model) => {
@@ -587,6 +596,7 @@ const TASK_TEXT_MAPPING = {
     lora_alpha: "LoRA Strength",
     use_controlnet_model: "ControlNet model",
     control_filter_to_apply: "ControlNet Filter",
+    control_alpha: "ControlNet Strength",
     tiling: "Seamless Tiling",
 }
 function parseTaskFromText(str) {
