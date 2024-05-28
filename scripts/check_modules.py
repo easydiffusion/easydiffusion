@@ -22,7 +22,7 @@ modules_to_check = {
     "torch": ("1.11.0", "1.13.1", "2.0.0", "2.0.1"),
     "torchvision": ("0.12.0", "0.14.1", "0.15.1", "0.15.2"),
     "setuptools": "69.5.1",
-    "sdkit": "2.0.15.2",
+    "sdkit": "2.0.15.3",
     "diffusers": "0.21.4",
     "stable-diffusion-sdkit": "2.1.5",
     "rich": "12.6.0",
