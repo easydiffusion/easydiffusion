@@ -17,6 +17,8 @@
 - **Major rewrite of the code** - We've switched to using diffusers under-the-hood, which allows us to release new features faster, and focus on making the UI and installer even easier to use.
 
 ### Detailed changelog
+* 3.0.9 - 28 May 2024 - Slider for controlling the strength of controlnets.
+* 3.0.8 - 27 May 2024 - SDXL ControlNets for Img2Img and Inpainting.
 * 3.0.7 - 11 Dec 2023 - Setting to enable/disable VAE tiling (in the Image Settings panel). Sometimes VAE tiling reduces the quality of the image, so this setting will help control that.
 * 3.0.6 - 18 Sep 2023 - Add thumbnails to embeddings from the UI, using the new `Upload Thumbnail` button in the Embeddings popup. Thanks @JeLuf.
 * 3.0.6 - 15 Sep 2023 - Fix broken embeddings dialog when LoRA information couldn't be fetched.

@@ -51,6 +51,10 @@ const taskConfigSetup = {
         preserve_init_image_color_profile: "Preserve Color Profile",
         strict_mask_border: "Strict Mask Border",
         use_controlnet_model: "ControlNet Model",
+        control_alpha: {
+            label: "ControlNet Strength",
+            visible: ({ reqBody }) => !!reqBody?.use_controlnet_model,
+        },
     },
     pluginTaskConfig: {},
     getCSSKey: (key) =>
@@ -99,6 +103,8 @@ let controlImagePreview = document.querySelector("#control_image_preview")
 let controlImageClearBtn = document.querySelector(".control_image_clear")
 let controlImageContainer = document.querySelector("#control_image_wrapper")
 let controlImageFilterField = document.querySelector("#control_image_filter")
+let controlAlphaSlider = document.querySelector("#controlnet_alpha_slider")
+let controlAlphaField = document.querySelector("#controlnet_alpha")
 let applyColorCorrectionField = document.querySelector("#apply_color_correction")
 let strictMaskBorderField = document.querySelector("#strict_mask_border")
 let colorCorrectionSetting = document.querySelector("#apply_color_correction_setting")
@@ -1395,6 +1401,7 @@ function getCurrentUserRequest() {
     if (controlnetModelField.value !== "" && IMAGE_REGEX.test(controlImagePreview.src)) {
         newTask.reqBody.use_controlnet_model = controlnetModelField.value
         newTask.reqBody.control_image = controlImagePreview.src
+        newTask.reqBody.control_alpha = parseFloat(controlAlphaField.value)
         if (controlImageFilterField.value !== "") {
             newTask.reqBody.control_filter_to_apply = controlImageFilterField.value
         }
@@ -2014,6 +2021,27 @@ function updateHypernetworkStrengthContainer() {
 }
 hypernetworkModelField.addEventListener("change", updateHypernetworkStrengthContainer)
 updateHypernetworkStrengthContainer()
+
+/********************* Controlnet Alpha **************************/
+function updateControlAlpha() {
+    controlAlphaField.value = controlAlphaSlider.value / 10
+    controlAlphaField.dispatchEvent(new Event("change"))
+}
+
+function updateControlAlphaSlider() {
+    if (controlAlphaField.value < 0) {
+        controlAlphaField.value = 0
+    } else if (controlAlphaField.value > 10) {
+        controlAlphaField.value = 10
+    }
+
+    controlAlphaSlider.value = controlAlphaField.value * 10
+    controlAlphaSlider.dispatchEvent(new Event("change"))
+}
+
+controlAlphaSlider.addEventListener("input", updateControlAlpha)
+controlAlphaField.addEventListener("input", updateControlAlphaSlider)
+updateControlAlpha()
 
 /********************* JPEG/WEBP Quality **********************/
 function updateOutputQuality() {

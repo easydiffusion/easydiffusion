@@ -309,10 +309,21 @@ const TASK_MAPPING = {
         readUI: () => controlImageFilterField.value,
         parse: (val) => val,
     },
+    control_alpha: {
+        name: "ControlNet Strength",
+        setUI: (control_alpha) => {
+            control_alpha = control_alpha || 1.0
+            controlAlphaField.value = control_alpha
+            updateControlAlphaSlider()
+        },
+        readUI: () => parseFloat(controlAlphaField.value),
+        parse: (val) => val === null ? 1.0 : parseFloat(val),
+    },
     use_lora_model: {
         name: "LoRA model",
         setUI: (use_lora_model) => {
             let modelPaths = []
+            use_lora_model = use_lora_model === null ? "" : use_lora_model
             use_lora_model = Array.isArray(use_lora_model) ? use_lora_model : [use_lora_model]
             use_lora_model.forEach((m) => {
                 if (m.includes("models\\lora\\")) {
@@ -529,6 +540,11 @@ function restoreTaskToUI(task, fieldsToSkip) {
         // listen for inpainter loading event, which happens AFTER the main image loads (which reloads the inpai
         controlImagePreview.src = task.reqBody.control_image
     }
+
+    if ("use_controlnet_model" in task.reqBody && task.reqBody.use_controlnet_model && !("control_alpha" in task.reqBody)) {
+        controlAlphaField.value = 1.0
+        updateControlAlphaSlider()
+    }
 }
 function readUI() {
     const reqBody = {}
@@ -587,6 +603,7 @@ const TASK_TEXT_MAPPING = {
     lora_alpha: "LoRA Strength",
     use_controlnet_model: "ControlNet model",
     control_filter_to_apply: "ControlNet Filter",
+    control_alpha: "ControlNet Strength",
     tiling: "Seamless Tiling",
 }
 function parseTaskFromText(str) {
