@@ -127,22 +127,53 @@ def update_modules():
         if module_name in modules_to_log:
             print(f"{module_name}: {version(module_name)}")
 
-    # hotfix accelerate
-    accelerate_version = version("accelerate")
-    if accelerate_version is None:
-        install("accelerate", "0.23.0")
-    else:
-        accelerate_version = accelerate_version.split(".")
-        accelerate_version = tuple(map(int, accelerate_version))
-        if accelerate_version < (0, 23):
-            install("accelerate", "0.23.0")
-
     # hotfix - 29 May 2024. sdkit has stopped pulling its dependencies for some reason
     # temporarily dumping sdkit's requirements here:
-    if os_name != "Windows" and version("picklescan") is None:
-        install_cmd = "python -m pip install gfpgan piexif realesrgan requests picklescan safetensors==0.3.3 k-diffusion==0.0.12 compel==2.0.1 controlnet-aux==0.0.6 invisible-watermark==0.2.0"
-        print(">", install_cmd)
-        os.system(install_cmd)
+    if os_name != "Windows":
+        sdkit_deps = [
+            "gfpgan",
+            "piexif",
+            "realesrgan",
+            "requests",
+            "picklescan",
+            "safetensors==0.3.3",
+            "k-diffusion==0.0.12",
+            "compel==2.0.1",
+            "accelerate==0.23.0",
+            "controlnet-aux==0.0.6",
+            "invisible-watermark==0.2.0",  # required for SD XL
+        ]
+
+        for mod in sdkit_deps:
+            mod_name = mod
+            mod_force_version_str = None
+            if "==" in mod:
+                mod_name, mod_force_version_str = mod.split("==")
+
+            curr_mod_version_str = version(mod_name)
+            if curr_mod_version_str is None:
+                _install(mod_name, mod_force_version_str)
+            else:
+                curr_mod_version = version_str_to_tuple(curr_mod_version_str)
+                mod_force_version = version_str_to_tuple(mod_force_version_str)
+
+                if curr_mod_version != mod_force_version:
+                    _install(mod_name, mod_force_version_str)
+
+
+def _install(module_name, module_version=None):
+    if module_version is None:
+        install_cmd = f"python -m pip install {module_name}"
+    else:
+        install_cmd = f"python -m pip install --upgrade {module_name}=={module_version}"
+
+    print(">", install_cmd)
+    os.system(install_cmd)
+
+
+def version_str_to_tuple(ver_str):
+    ver = ver_str.split(".")
+    return tuple(map(int, ver))
 
 
 ### utilities
