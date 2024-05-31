@@ -137,6 +137,13 @@ def update_modules():
         if accelerate_version < (0, 23):
             install("accelerate", "0.23.0")
 
+    # hotfix - 29 May 2024. sdkit has stopped pulling its dependencies for some reason
+    # temporarily dumping sdkit's requirements here:
+    if os_name != "Windows" and version("picklescan") is None:
+        install_cmd = "python -m pip install gfpgan piexif realesrgan requests picklescan safetensors==0.3.3 k-diffusion==0.0.12 compel==2.0.1 controlnet-aux==0.0.6 invisible-watermark==0.2.0"
+        print(">", install_cmd)
+        os.system(install_cmd)
+
 
 ### utilities
 
