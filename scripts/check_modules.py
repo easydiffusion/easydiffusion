@@ -153,7 +153,7 @@ def update_modules():
             curr_mod_version_str = version(mod_name)
             if curr_mod_version_str is None:
                 _install(mod_name, mod_force_version_str)
-            else:
+            elif mod_force_version_str is not None:
                 curr_mod_version = version_str_to_tuple(curr_mod_version_str)
                 mod_force_version = version_str_to_tuple(mod_force_version_str)
 
