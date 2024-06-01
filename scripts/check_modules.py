@@ -127,6 +127,16 @@ def update_modules():
         if module_name in modules_to_log:
             print(f"{module_name}: {version(module_name)}")
 
+    # hotfix accelerate
+    accelerate_version = version("accelerate")
+    if accelerate_version is None:
+        install("accelerate", "0.23.0")
+    else:
+        accelerate_version = accelerate_version.split(".")
+        accelerate_version = tuple(map(int, accelerate_version))
+        if accelerate_version < (0, 23):
+            install("accelerate", "0.23.0")
+
     # hotfix - 29 May 2024. sdkit has stopped pulling its dependencies for some reason
     # temporarily dumping sdkit's requirements here:
     if os_name != "Windows":
@@ -139,7 +149,6 @@ def update_modules():
             "safetensors==0.3.3",
             "k-diffusion==0.0.12",
             "compel==2.0.1",
-            "accelerate==0.23.0",
             "controlnet-aux==0.0.6",
             "invisible-watermark==0.2.0",  # required for SD XL
         ]
