@@ -34,7 +34,7 @@ modules_to_check = {
     "python-multipart": "0.0.6",
     # "xformers": "0.0.16",
 }
-modules_to_log = ["torch", "torchvision", "sdkit", "stable-diffusion-sdkit"]
+modules_to_log = ["torch", "torchvision", "sdkit", "stable-diffusion-sdkit", "diffusers"]
 
 
 def version(module_name: str) -> str:
