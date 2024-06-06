@@ -370,8 +370,8 @@ def launch_uvicorn():
 
     print("\nLaunching uvicorn\n")
     
-    from uvicorn import run
-    run("main:server_api", port=listen_port, log_level="error", app_dir=os.environ["SD_UI_PATH"], host=bind_ip, access_log=False)
+    import uvicorn
+    uvicorn.run("main:server_api", port=listen_port, log_level="error", app_dir=os.environ["SD_UI_PATH"], host=bind_ip, access_log=False)
 
 
 ### Start
