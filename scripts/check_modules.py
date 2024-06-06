@@ -152,7 +152,7 @@ def update_modules():
             install_pkg_if_necessary("sdkit", legacy_sdkit_version_str)
             install_pkg_if_necessary("diffusers", legacy_diffusers_version_str)
         else:
-            if torch_version < (0, 13):
+            if torch_version < (1, 13):
                 # install the gpu-compatible torch (if necessary), instead of the default CPU-only one
                 # from the diffusers dependency chain
                 install("torch", modules_to_check["torch"][-1])
