@@ -413,9 +413,9 @@ def launch_uvicorn():
         setup_amd_environment()
 
     print("\nLaunching uvicorn\n")
-    os.system(
-        f'python -m uvicorn main:server_api --app-dir "{os.environ["SD_UI_PATH"]}" --port {listen_port} --host {bind_ip} --log-level error'
-    )
+    
+    import uvicorn
+    uvicorn.run("main:server_api", port=listen_port, log_level="error", app_dir=os.environ["SD_UI_PATH"], host=bind_ip, access_log=False)
 
 
 ### Start
