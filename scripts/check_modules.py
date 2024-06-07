@@ -22,8 +22,8 @@ modules_to_check = {
     "torch": ("1.11.0", "1.13.1", "2.0.0", "2.0.1"),
     "torchvision": ("0.12.0", "0.14.1", "0.15.1", "0.15.2"),
     "setuptools": "69.5.1",
-    "sdkit": "2.0.15.6",
-    "diffusers": "0.21.4",
+    # "sdkit": "2.0.15.6", # checked later
+    # "diffusers": "0.21.4", # checked later
     "stable-diffusion-sdkit": "2.1.5",
     "rich": "12.6.0",
     "uvicorn": "0.19.0",
@@ -34,7 +34,7 @@ modules_to_check = {
     "python-multipart": "0.0.6",
     # "xformers": "0.0.16",
 }
-modules_to_log = ["torch", "torchvision", "sdkit", "stable-diffusion-sdkit"]
+modules_to_log = ["torch", "torchvision", "sdkit", "stable-diffusion-sdkit", "diffusers"]
 
 
 def version(module_name: str) -> str:
@@ -124,8 +124,42 @@ def update_modules():
                         f"WARNING! Tried to install {module_name}=={latest_version}, but the version is still {version(module_name)}!"
                     )
 
-        if module_name in modules_to_log:
-            print(f"{module_name}: {version(module_name)}")
+    # different sdkit versions, with the corresponding diffusers
+    #  if sdkit is 2.0.15.x (or lower), then diffusers should be restricted to 0.21.4 (see below for the reason)
+    #  otherwise use the current sdkit version (with the corresponding diffusers version)
+
+    expected_sdkit_version_str = "2.0.20.3"
+    expected_diffusers_version_str = "0.28.2"
+
+    legacy_sdkit_version_str = "2.0.15.6"
+    legacy_diffusers_version_str = "0.21.4"
+
+    sdkit_version_str = version("sdkit")
+    if sdkit_version_str is None:  # first install
+        _install("sdkit", expected_sdkit_version_str)
+        _install("diffusers", expected_diffusers_version_str)
+    else:
+        sdkit_version = version_str_to_tuple(sdkit_version_str)
+        legacy_sdkit_version = version_str_to_tuple(legacy_sdkit_version_str)
+        torch_version = version_str_to_tuple(version("torch"))
+
+        if sdkit_version[:3] <= legacy_sdkit_version[:3]:  # and torch_version < (0, 13):
+            # stick to diffusers 0.21.4, since it preserves torch 0.11+ compatibility.
+            # upgrading beyond this will result in a 2+ GB download of torch on older installations
+            #  and a time-consuming chain of small package updates due to huggingface_hub upgrade.
+            # for now, the user will need to explicitly upgrade to a newer sdkit, to break this ceiling.
+
+            install_pkg_if_necessary("sdkit", legacy_sdkit_version_str)
+            install_pkg_if_necessary("diffusers", legacy_diffusers_version_str)
+        else:
+            if torch_version < (1, 13):
+                # install the gpu-compatible torch (if necessary), instead of the default CPU-only one
+                # from the diffusers dependency chain
+                install("torch", modules_to_check["torch"][-1])
+                install("torchvision", modules_to_check["torchvision"][-1])
+
+            install_pkg_if_necessary("sdkit", expected_sdkit_version_str)
+            install_pkg_if_necessary("diffusers", expected_diffusers_version_str)
 
     # hotfix accelerate
     accelerate_version = version("accelerate")
@@ -169,6 +203,9 @@ def update_modules():
                 if curr_mod_version != mod_force_version:
                     _install(mod_name, mod_force_version_str)
 
+    for module_name in modules_to_log:
+        print(f"{module_name}: {version(module_name)}")
+
 
 def _install(module_name, module_version=None):
     if module_version is None:
@@ -180,7 +217,14 @@ def _install(module_name, module_version=None):
     os.system(install_cmd)
 
 
+def install_pkg_if_necessary(pkg_name, required_version):
+    pkg_version = version(pkg_name)
+    if pkg_version != required_version:
+        _install(pkg_name, required_version)
+
+
 def version_str_to_tuple(ver_str):
+    ver_str = ver_str.split("+")[0]
     ver = ver_str.split(".")
     return tuple(map(int, ver))
 
@@ -369,9 +413,9 @@ def launch_uvicorn():
         setup_amd_environment()
 
     print("\nLaunching uvicorn\n")
-    os.system(
-        f'python -m uvicorn main:server_api --app-dir "{os.environ["SD_UI_PATH"]}" --port {listen_port} --host {bind_ip} --log-level error'
-    )
+    
+    import uvicorn
+    uvicorn.run("main:server_api", port=listen_port, log_level="error", app_dir=os.environ["SD_UI_PATH"], host=bind_ip, access_log=False)
 
 
 ### Start
