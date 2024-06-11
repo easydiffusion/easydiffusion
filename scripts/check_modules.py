@@ -128,10 +128,10 @@ def update_modules():
     #  if sdkit is 2.0.15.x (or lower), then diffusers should be restricted to 0.21.4 (see below for the reason)
     #  otherwise use the current sdkit version (with the corresponding diffusers version)
 
-    expected_sdkit_version_str = "2.0.20.3"
+    expected_sdkit_version_str = "2.0.20.4"
     expected_diffusers_version_str = "0.28.2"
 
-    legacy_sdkit_version_str = "2.0.15.6"
+    legacy_sdkit_version_str = "2.0.15.7"
     legacy_diffusers_version_str = "0.21.4"
 
     sdkit_version_str = version("sdkit")
@@ -413,9 +413,17 @@ def launch_uvicorn():
         setup_amd_environment()
 
     print("\nLaunching uvicorn\n")
-    
+
     import uvicorn
-    uvicorn.run("main:server_api", port=listen_port, log_level="error", app_dir=os.environ["SD_UI_PATH"], host=bind_ip, access_log=False)
+
+    uvicorn.run(
+        "main:server_api",
+        port=listen_port,
+        log_level="error",
+        app_dir=os.environ["SD_UI_PATH"],
+        host=bind_ip,
+        access_log=False,
+    )
 
 
 ### Start
