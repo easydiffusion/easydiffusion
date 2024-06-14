@@ -15,6 +15,7 @@ import traceback
 import shutil
 from pathlib import Path
 from pprint import pprint
+import re
 
 os_name = platform.system()
 
@@ -225,6 +226,7 @@ def install_pkg_if_necessary(pkg_name, required_version):
 
 def version_str_to_tuple(ver_str):
     ver_str = ver_str.split("+")[0]
+    ver_str = re.sub("[^0-9.]", "", ver_str)
     ver = ver_str.split(".")
     return tuple(map(int, ver))
 
