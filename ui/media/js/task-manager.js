@@ -165,12 +165,14 @@ function getTaskUpdater(task, reqBody, outputContainer) {
                     task["taskStatusLabel"].innerText = "Waiting"
                     task["taskStatusLabel"].classList.add("waitingTaskLabel")
                     task["taskStatusLabel"].classList.remove("activeTaskLabel")
+                    task["imgCount"].setAttribute("disabled", true)
                     break
                 case SD.TaskStatus.processing:
                 case SD.TaskStatus.completed:
                     task["taskStatusLabel"].innerText = "Processing"
                     task["taskStatusLabel"].classList.add("activeTaskLabel")
                     task["taskStatusLabel"].classList.remove("waitingTaskLabel")
+                    task["imgCount"].setAttribute("disabled", true)
                     break
                 case SD.TaskStatus.stopped:
                     break
