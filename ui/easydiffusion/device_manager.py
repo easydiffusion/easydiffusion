@@ -243,7 +243,8 @@ def get_processor_name():
         if platform.system() == "Windows":
             return platform.processor()
         elif platform.system() == "Darwin":
-            os.environ["PATH"] = os.environ["PATH"] + os.pathsep + "/usr/sbin"
+            if "/usr/sbin" not in os.environ["PATH"].split(os.pathsep):
+                os.environ["PATH"] = os.environ["PATH"] + os.pathsep + "/usr/sbin"
             command = "sysctl -n machdep.cpu.brand_string"
             return subprocess.check_output(command, shell=True).decode().strip()
         elif platform.system() == "Linux":

@@ -59,6 +59,7 @@ const SETTINGS_IDS_LIST = [
     "embedding-card-size-selector",
     "lora_model",
     "enable_vae_tiling",
+    "controlnet_alpha",
 ]
 
 const IGNORE_BY_DEFAULT = ["prompt"]
