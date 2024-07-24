@@ -285,8 +285,8 @@ def make_model_folders():
         try:
             with open(os.path.join(model_dir_path, help_file_name), "w", encoding="utf-8") as f:
                 f.write(help_file_contents)
-        except:
-            pass
+        except Exception as e:
+            log.exception(e)
 
 
 def is_malicious_model(file_path):
