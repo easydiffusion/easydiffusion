@@ -36,10 +36,10 @@ ROOT_DIR = os.path.abspath(os.path.join(SD_DIR, ".."))
 
 SD_UI_DIR = os.getenv("SD_UI_PATH", None)
 
-CONFIG_DIR = os.path.abspath(os.path.join(SD_UI_DIR, "..", "scripts"))
-BUCKET_DIR = os.path.abspath(os.path.join(SD_DIR, "..", "bucket"))
+CONFIG_DIR = os.path.abspath(os.path.join(ROOT_DIR, "scripts"))
+BUCKET_DIR = os.path.abspath(os.path.join(ROOT_DIR, "bucket"))
 
-USER_PLUGINS_DIR = os.path.abspath(os.path.join(SD_DIR, "..", "plugins"))
+USER_PLUGINS_DIR = os.path.abspath(os.path.join(ROOT_DIR, "plugins"))
 CORE_PLUGINS_DIR = os.path.abspath(os.path.join(SD_UI_DIR, "plugins"))
 
 USER_UI_PLUGINS_DIR = os.path.join(USER_PLUGINS_DIR, "ui")
@@ -77,7 +77,7 @@ IMAGE_EXTENSIONS = [
     ".avif",
     ".svg",
 ]
-CUSTOM_MODIFIERS_DIR = os.path.abspath(os.path.join(SD_DIR, "..", "modifiers"))
+CUSTOM_MODIFIERS_DIR = os.path.abspath(os.path.join(ROOT_DIR, "modifiers"))
 CUSTOM_MODIFIERS_PORTRAIT_EXTENSIONS = [
     ".portrait",
     "_portrait",
@@ -91,7 +91,7 @@ CUSTOM_MODIFIERS_LANDSCAPE_EXTENSIONS = [
     "-landscape",
 ]
 
-MODELS_DIR = os.path.abspath(os.path.join(SD_DIR, "..", "models"))
+MODELS_DIR = os.path.abspath(os.path.join(ROOT_DIR, "models"))
 
 
 def init():
@@ -105,7 +105,7 @@ def init():
 
     config = getConfig()
     config_models_dir = config.get("models_dir", None)
-    if (config_models_dir is not None and config_models_dir != ""):
+    if config_models_dir is not None and config_models_dir != "":
         MODELS_DIR = config_models_dir
 
 
