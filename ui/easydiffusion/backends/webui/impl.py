@@ -13,7 +13,12 @@ from sdkit.utils import base64_str_to_img, img_to_base64_str
 WEBUI_HOST = "localhost"
 WEBUI_PORT = "7860"
 
-DEFAULT_WEBUI_OPTIONS = {"show_progress_every_n_steps": 3, "show_progress_grid": True, "live_previews_enable": False}
+DEFAULT_WEBUI_OPTIONS = {
+    "show_progress_every_n_steps": 3,
+    "show_progress_grid": True,
+    "live_previews_enable": False,
+    "forge_additional_modules": [],
+}
 
 
 webui_opts: dict = None
@@ -449,6 +454,8 @@ def image_progress_thread(task_id, callback, stream_image_progress, total_images
         )
         if res.status_code == 200:
             res = res.json()
+        else:
+            raise RuntimeError(f"Unexpected progress response. Status code: {res.status_code}. Res: {res.text}")
 
         last_preview_id = res["id_live_preview"]
 
