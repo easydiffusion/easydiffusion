@@ -69,8 +69,13 @@ def start_backend():
         global backend_process
 
         cmd = "webui.bat" if platform.system() == "Windows" else "webui.sh"
-        print("starting", cmd, WEBUI_DIR)
-        backend_process = subprocess.Popen([cmd], shell=True, cwd=WEBUI_DIR, env=env)
+
+        while True:
+            print("starting", cmd, WEBUI_DIR)
+            backend_process = subprocess.Popen([cmd], shell=True, cwd=WEBUI_DIR, env=env)
+            backend_process.wait()
+
+            stop_backend()
 
     backend_thread = threading.Thread(target=target)
     backend_thread.start()
@@ -80,7 +85,10 @@ def stop_backend():
     global backend_process
 
     if backend_process:
-        kill(backend_process.pid)
+        try:
+            kill(backend_process.pid)
+        except:
+            pass
 
     backend_process = None
 
