@@ -364,15 +364,13 @@ def model_merge_internal(req: dict):
 
         mergeReq: MergeRequest = MergeRequest.parse_obj(req)
 
+        sd_model_dir = model_manager.get_model_dir("stable-diffusion")
+
         merge_models(
             model_manager.resolve_model_to_use(mergeReq.model0, "stable-diffusion"),
             model_manager.resolve_model_to_use(mergeReq.model1, "stable-diffusion"),
             mergeReq.ratio,
-            os.path.join(
-                app.MODELS_DIR,
-                "stable-diffusion",
-                filename_regex.sub("_", mergeReq.out_path),
-            ),
+            os.path.join(sd_model_dir, filename_regex.sub("_", mergeReq.out_path)),
             mergeReq.use_fp16,
         )
         return JSONResponse({"status": "OK"}, headers=NOCACHE_HEADERS)

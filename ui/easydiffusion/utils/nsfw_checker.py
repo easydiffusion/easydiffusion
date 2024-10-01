@@ -13,7 +13,7 @@ nsfw_check_model = None
 def filter_nsfw(images, blur_radius: float = 75, print_log=True):
     global nsfw_check_model
 
-    from easydiffusion.app import MODELS_DIR
+    from easydiffusion.model_manager import get_model_dir
     from sdkit.utils import base64_str_to_img, img_to_base64_str, download_file, log, hash_file_quick
 
     import onnxruntime as ort
@@ -21,7 +21,7 @@ def filter_nsfw(images, blur_radius: float = 75, print_log=True):
     import numpy as np
 
     if nsfw_check_model is None:
-        model_dir = os.path.join(MODELS_DIR, "nsfw-checker")
+        model_dir = get_model_dir("nsfw-checker")
         model_path = os.path.join(model_dir, "vit-base-nsfw-detector-quantized.onnx")
 
         os.makedirs(model_dir, exist_ok=True)

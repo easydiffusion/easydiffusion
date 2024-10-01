@@ -122,7 +122,7 @@ def resolve_model_to_use_single(model_name: str = None, model_type: str = None, 
     default_models = DEFAULT_MODELS.get(model_type, [])
     config = app.getConfig()
 
-    model_dir = os.path.join(app.MODELS_DIR, model_type)
+    model_dir = get_model_dir(model_type)
     if not model_name:  # When None try user configured model.
         # config = getConfig()
         if "model" in config and model_type in config["model"]:
@@ -239,7 +239,8 @@ def download_default_models_if_necessary():
 
 
 def download_if_necessary(model_type: str, file_name: str, model_id: str, skip_if_others_exist=True):
-    model_path = os.path.join(app.MODELS_DIR, model_type, file_name)
+    model_dir = get_model_dir(model_type)
+    model_path = os.path.join(model_dir, file_name)
     expected_hash = get_model_info_from_db(model_type=model_type, model_id=model_id)["quick_hash"]
 
     other_models_exist = any_model_exists(model_type) and skip_if_others_exist
@@ -259,13 +260,15 @@ def migrate_legacy_model_location():
             file_name = model["file_name"]
             legacy_path = os.path.join(app.SD_DIR, file_name)
             if os.path.exists(legacy_path):
-                shutil.move(legacy_path, os.path.join(app.MODELS_DIR, model_type, file_name))
+                model_dir = get_model_dir(model_type)
+                shutil.move(legacy_path, os.path.join(model_dir, file_name))
 
 
 def any_model_exists(model_type: str) -> bool:
     extensions = MODEL_EXTENSIONS.get(model_type, [])
+    model_dir = get_model_dir(model_type)
     for ext in extensions:
-        if any(glob(f"{app.MODELS_DIR}/{model_type}/**/*{ext}", recursive=True)):
+        if any(glob(f"{model_dir}/**/*{ext}", recursive=True)):
             return True
 
     return False
@@ -273,7 +276,7 @@ def any_model_exists(model_type: str) -> bool:
 
 def make_model_folders():
     for model_type in KNOWN_MODEL_TYPES:
-        model_dir_path = os.path.join(app.MODELS_DIR, model_type)
+        model_dir_path = get_model_dir(model_type)
 
         try:
             os.makedirs(model_dir_path, exist_ok=True)
@@ -418,7 +421,7 @@ def getModels(scan_for_malicious: bool = True):
         nonlocal models_scanned
 
         model_extensions = MODEL_EXTENSIONS.get(model_type, [])
-        models_dir = os.path.join(app.MODELS_DIR, model_type)
+        models_dir = get_model_dir(model_type)
         if not os.path.exists(models_dir):
             os.makedirs(models_dir)
 
@@ -445,3 +448,30 @@ def getModels(scan_for_malicious: bool = True):
         log.info(f"[green]Scanned {models_scanned} models. Nothing infected[/]")
 
     return models
+
+
+def get_model_dir(model_type: str, base_dir=None):
+    "Returns the case-insensitive model directory path, or the given model folder (if the model sub-dir wasn't found)"
+
+    if base_dir is None:
+        base_dir = app.MODELS_DIR
+
+    for dir in os.listdir(base_dir):
+        if dir.lower() == model_type.lower() and os.path.isdir(os.path.join(base_dir, dir)):
+            return os.path.join(base_dir, dir)
+
+    return os.path.join(base_dir, model_type)
+
+
+# patch sdkit
+def __patched__get_actual_base_dir(model_type, download_base_dir, subdir_for_model_type):
+    "Patched version that works with case-insensitive model sub-dirs"
+
+    download_base_dir = os.path.join("~", ".cache", "sdkit") if download_base_dir is None else download_base_dir
+    download_base_dir = get_model_dir(model_type, download_base_dir) if subdir_for_model_type else download_base_dir
+    return os.path.abspath(download_base_dir)
+
+
+from sdkit.models import model_downloader
+
+model_downloader.get_actual_base_dir = __patched__get_actual_base_dir

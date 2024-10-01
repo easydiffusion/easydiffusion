@@ -6,6 +6,7 @@ from threading import local
 import psutil
 
 from easydiffusion.app import ROOT_DIR, getConfig
+from easydiffusion.model_manager import get_model_dir
 
 from . import impl
 from .impl import (
@@ -31,6 +32,18 @@ ed_info = {
 BACKEND_DIR = os.path.abspath(os.path.join(ROOT_DIR, "webui"))
 SYSTEM_DIR = os.path.join(BACKEND_DIR, "system")
 WEBUI_DIR = os.path.join(BACKEND_DIR, "webui")
+
+MODELS_TO_OVERRIDE = {
+    "stable-diffusion": "--ckpt-dir",
+    "vae": "--vae-dir",
+    "hypernetwork": "--hypernetwork-dir",
+    "gfpgan": "--gfpgan-models-path",
+    "realesrgan": "--realesrgan-models-path",
+    "lora": "--lora-dir",
+    "codeformer": "--codeformer-models-path",
+    "embeddings": "--embeddings-dir",
+    "controlnet": "--controlnet-dir",
+}
 
 backend_process = None
 
@@ -104,7 +117,8 @@ def get_env():
 
     config = getConfig()
     models_dir = config.get("models_dir", os.path.join(ROOT_DIR, "models"))
-    embeddings_dir = os.path.join(models_dir, "embeddings")
+
+    model_path_args = get_model_path_args()
 
     env_entries = {
         "PATH": [
@@ -125,7 +139,7 @@ def get_env():
         "PIP_INSTALLER_LOCATION": [f"{dir}/python/get-pip.py"],
         "TRANSFORMERS_CACHE": [f"{dir}/transformers-cache"],
         "HF_HUB_DISABLE_SYMLINKS_WARNING": ["true"],
-        "COMMANDLINE_ARGS": [f'--api --models-dir "{models_dir}" --embeddings-dir "{embeddings_dir}"'],
+        "COMMANDLINE_ARGS": [f'--api --models-dir "{models_dir}" {model_path_args}'],
         "SKIP_VENV": ["1"],
         "SD_WEBUI_RESTARTING": ["1"],
         "PYTHON": [f"{dir}/python/python"],
@@ -153,3 +167,12 @@ def kill(proc_pid):
     for proc in process.children(recursive=True):
         proc.kill()
     process.kill()
+
+
+def get_model_path_args():
+    args = []
+    for model_type, flag in MODELS_TO_OVERRIDE.items():
+        model_dir = get_model_dir(model_type)
+        args.append(f'{flag} "{model_dir}"')
+
+    return " ".join(args)

@@ -102,7 +102,7 @@ var PARAMETERS = [
         type: ParameterType.custom,
         icon: "fa-folder-tree",
         label: "Models Folder",
-        note: "Path to the 'models' folder. Please save and refresh the page after changing this.",
+        note: "Path to the 'models' folder. Please save and restart Easy Diffusion after changing this.",
         saveInAppConfig: true,
         render: (parameter) => {
             return `<input id="${parameter.id}" name="${parameter.id}" size="30">`
