@@ -35,7 +35,10 @@
             <h1>
                 <img id="logo_img" src="/media/images/icon-512x512.png" >
                 Easy Diffusion
-                <small><span id="version">v3.0.9</span> <span id="updateBranchLabel"></span></small>
+                <small>
+                    <span id="version">v3.5.0</span> <span id="updateBranchLabel"></span>
+                    <div id="engine-logo" class="gated-feature" data-feature-keys="backend_webui">(Powered by <a id="backend-url" href="https://github.com/lllyasviel/stable-diffusion-webui-forge" target="_blank">Stable Diffusion WebUI Forge</a>)</div>
+                </small>
             </h1>
         </div>
         <div id="server-status">
@@ -73,7 +76,7 @@
                         </div>
                         <div id="prompt-toolbar-right" class="toolbar-right">
                             <button id="image-modifier-dropdown" class="tertiaryButton smallButton">+ Image Modifiers</button>
-                            <button id="embeddings-button" class="tertiaryButton smallButton displayNone">+ Embedding</button>
+                            <button id="embeddings-button" class="tertiaryButton smallButton gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">+ Embedding</button>
                         </div>
                     </div>
                     <textarea id="prompt" class="col-free">a photograph of an astronaut riding a horse</textarea>
@@ -83,7 +86,7 @@
                         <a href="https://github.com/easydiffusion/easydiffusion/wiki/Writing-prompts#negative-prompts" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top">Click to learn more about Negative Prompts</span></i></a>
                         <small>(optional)</small>
                     </label>
-                    <button id="negative-embeddings-button" class="tertiaryButton smallButton displayNone">+ Negative Embedding</button>
+                    <button id="negative-embeddings-button" class="tertiaryButton smallButton gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">+ Negative Embedding</button>
                     <div class="collapsible-content">
                         <textarea id="negative_prompt" name="negative_prompt" placeholder="list the things to remove from the image (e.g. fog, green)"></textarea>
                     </div>
@@ -174,14 +177,14 @@
                             <!-- <label><small>Takes upto 20 mins the first time</small></label> -->
                         </td>
                     </tr>
-                    <tr class="pl-5 displayNone" id="clip_skip_config">
+                    <tr class="pl-5 gated-feature" id="clip_skip_config" data-feature-keys="backend_ed_diffusers backend_webui">
                         <td><label for="clip_skip">Clip Skip:</label></td>
                         <td class="diffusers-restart-needed">
                             <input id="clip_skip" name="clip_skip" type="checkbox">
                             <a href="https://github.com/easydiffusion/easydiffusion/wiki/Clip-Skip" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about Clip Skip</span></i></a>
                         </td>
                     </tr>
-                    <tr id="controlnet_model_container" class="pl-5">
+                    <tr id="controlnet_model_container" class="pl-5 gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">
                         <td><label for="controlnet_model">ControlNet Image:</label></td>
                         <td class="diffusers-restart-needed">
                             <div id="control_image_wrapper" class="preview_image_wrapper">
@@ -201,40 +204,92 @@
                                         <option value="openpose_faceonly">OpenPose face-only</option>
                                         <option value="openpose_hand">OpenPose hand</option>
                                         <option value="openpose_full">OpenPose full</option>
+                                        <option value="animal_openpose" class="gated-feature" data-feature-keys="backend_webui">animal_openpose</option>
+                                        <option value="densepose_parula (black bg & blue torso)" class="gated-feature" data-feature-keys="backend_webui">densepose_parula (black bg & blue torso)</option>
+                                        <option value="densepose (pruple bg & purple torso)" class="gated-feature" data-feature-keys="backend_webui">densepose (pruple bg & purple torso)</option>
+                                        <option value="dw_openpose_full" class="gated-feature" data-feature-keys="backend_webui">dw_openpose_full</option>
+                                        <option value="mediapipe_face" class="gated-feature" data-feature-keys="backend_webui">mediapipe_face</option>
+                                        <option value="instant_id_face_keypoints" class="gated-feature" data-feature-keys="backend_webui">instant_id_face_keypoints</option>
+                                        <option value="InsightFace+CLIP-H (IPAdapter)" class="gated-feature" data-feature-keys="backend_webui">InsightFace+CLIP-H (IPAdapter)</option>
+                                        <option value="InsightFace (InstantID)" class="gated-feature" data-feature-keys="backend_webui">InsightFace (InstantID)</option>
                                     </optgroup>
                                     <optgroup label="Outline">
                                         <option value="canny">Canny (*)</option>
                                         <option value="mlsd">Straight lines</option>
                                         <option value="scribble_hed">Scribble hed (*)</option>
-                                        <option value="scribble_hedsafe">Scribble hedsafe</option>
+                                        <option value="scribble_hedsafe" class="gated-feature" data-feature-keys="backend_diffusers">Scribble hedsafe</option>
                                         <option value="scribble_pidinet">Scribble pidinet</option>
-                                        <option value="scribble_pidsafe">Scribble pidsafe</option>
+                                        <option value="scribble_pidsafe" class="gated-feature" data-feature-keys="backend_diffusers">Scribble pidsafe</option>
+                                        <option value="scribble_xdog" class="gated-feature" data-feature-keys="backend_webui">scribble_xdog</option>
                                         <option value="softedge_hed">Softedge hed</option>
                                         <option value="softedge_hedsafe">Softedge hedsafe</option>
                                         <option value="softedge_pidinet">Softedge pidinet</option>
                                         <option value="softedge_pidsafe">Softedge pidsafe</option>
+                                        <option value="softedge_teed" class="gated-feature" data-feature-keys="backend_webui">softedge_teed</option>
                                     </optgroup>
                                     <optgroup label="Depth">
                                         <option value="normal_bae">Normal bae (*)</option>
                                         <option value="depth_midas">Depth midas</option>
+                                        <option value="normal_midas" class="gated-feature" data-feature-keys="backend_webui">normal_midas</option>
                                         <option value="depth_zoe">Depth zoe</option>
                                         <option value="depth_leres">Depth leres</option>
                                         <option value="depth_leres++">Depth leres++</option>
+                                        <option value="depth_anything_v2" class="gated-feature" data-feature-keys="backend_webui">depth_anything_v2</option>
+                                        <option value="depth_anything" class="gated-feature" data-feature-keys="backend_webui">depth_anything</option>
+                                        <option value="depth_hand_refiner" class="gated-feature" data-feature-keys="backend_webui">depth_hand_refiner</option>
+                                        <option value="depth_marigold" class="gated-feature" data-feature-keys="backend_webui">depth_marigold</option>
                                     </optgroup>
                                     <optgroup label="Line art">
                                         <option value="lineart_coarse">Lineart coarse</option>
                                         <option value="lineart_realistic">Lineart realistic</option>
                                         <option value="lineart_anime">Lineart anime</option>
+                                        <option value="lineart_standard (from white bg & black line)" class="gated-feature" data-feature-keys="backend_webui">lineart_standard (from white bg & black line)</option>
+                                        <option value="lineart_anime_denoise" class="gated-feature" data-feature-keys="backend_webui">lineart_anime_denoise</option>
+                                    </optgroup>
+                                    <optgroup label="Reference" class="gated-feature" data-feature-keys="backend_webui">
+                                        <option value="reference_adain">reference_adain</option>
+                                        <option value="reference_only">reference_only</option>
+                                        <option value="reference_adain+attn">reference_adain+attn</option>
+                                    </optgroup>
+                                    <optgroup label="Tile" class="gated-feature" data-feature-keys="backend_webui">
+                                        <option value="tile_colorfix">tile_colorfix</option>
+                                        <option value="tile_resample">tile_resample</option>
+                                        <option value="tile_colorfix+sharp">tile_colorfix+sharp</option>
+                                    </optgroup>
+                                    <optgroup label="CLIP (IPAdapter)" class="gated-feature" data-feature-keys="backend_webui">
+                                        <option value="CLIP-ViT-H (IPAdapter)">CLIP-ViT-H (IPAdapter)</option>
+                                        <option value="CLIP-G (Revision)">CLIP-G (Revision)</option>
+                                        <option value="CLIP-G (Revision ignore prompt)">CLIP-G (Revision ignore prompt)</option>
+                                        <option value="CLIP-ViT-bigG (IPAdapter)">CLIP-ViT-bigG (IPAdapter)</option>
+                                        <option value="InsightFace+CLIP-H (IPAdapter)">InsightFace+CLIP-H (IPAdapter)</option>
+                                    </optgroup>
+                                    <optgroup label="Inpaint" class="gated-feature" data-feature-keys="backend_webui">
+                                        <option value="inpaint_only">inpaint_only</option>
+                                        <option value="inpaint_only+lama">inpaint_only+lama</option>
+                                        <option value="inpaint_global_harmonious">inpaint_global_harmonious</option>
+                                    </optgroup>
+                                    <optgroup label="Segment" class="gated-feature" data-feature-keys="backend_webui">
+                                        <option value="seg_ufade20k">seg_ufade20k</option>
+                                        <option value="seg_ofade20k">seg_ofade20k</option>
+                                        <option value="seg_anime_face">seg_anime_face</option>
+                                        <option value="seg_ofcoco">seg_ofcoco</option>
                                     </optgroup>
                                     <optgroup label="Misc">
                                         <option value="shuffle">Shuffle</option>
-                                        <option value="segment">Segment</option>
+                                        <option value="segment" class="gated-feature" data-feature-keys="backend_diffusers">Segment</option>
+                                        <option value="invert (from white bg & black line)" class="gated-feature" data-feature-keys="backend_webui">invert (from white bg & black line)</option>
+                                        <option value="threshold" class="gated-feature" data-feature-keys="backend_webui">threshold</option>
+                                        <option value="t2ia_sketch_pidi" class="gated-feature" data-feature-keys="backend_webui">t2ia_sketch_pidi</option>
+                                        <option value="t2ia_color_grid" class="gated-feature" data-feature-keys="backend_webui">t2ia_color_grid</option>
+                                        <option value="recolor_intensity" class="gated-feature" data-feature-keys="backend_webui">recolor_intensity</option>
+                                        <option value="recolor_luminance" class="gated-feature" data-feature-keys="backend_webui">recolor_luminance</option>
+                                        <option value="blur_gaussian" class="gated-feature" data-feature-keys="backend_webui">blur_gaussian</option>
                                     </optgroup>
                                 </select>
                                 <br/>
                                 <label for="controlnet_model"><small>Model:</small></label> <input id="controlnet_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
-                                <br/>
-                                <label><small>Will download the necessary models, the first time.</small></label>
+                                <!-- <br/>
+                                <label><small>Will download the necessary models, the first time.</small></label> -->
                                 <br/>
                                 <label for="controlnet_alpha_slider"><small>Strength:</small></label> <input id="controlnet_alpha_slider" name="controlnet_alpha_slider" class="editor-slider" value="10" type="range" min="0" max="10"> <input id="controlnet_alpha" name="controlnet_alpha" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" inputmode="decimal">
                             </div>
@@ -248,27 +303,38 @@
                         <select id="sampler_name" name="sampler_name">
                             <option value="plms">PLMS</option>
                             <option value="ddim">DDIM</option>
+                            <option value="ddim_cfgpp" class="gated-feature" data-feature-keys="backend_webui">DDIM CFG++</option>
                             <option value="heun">Heun</option>
                             <option value="euler">Euler</option>
                             <option value="euler_a" selected>Euler Ancestral</option>
                             <option value="dpm2">DPM2</option>
                             <option value="dpm2_a">DPM2 Ancestral</option>
+                            <option value="dpm_fast" class="gated-feature" data-feature-keys="backend_webui">DPM Fast</option>
+                            <option value="dpm_adaptive" class="gated-feature" data-feature-keys="backend_ed_classic backend_webui">DPM Adaptive</option>
                             <option value="lms">LMS</option>
-                            <option value="dpm_solver_stability">DPM Solver (Stability AI)</option>
+                            <option value="dpm_solver_stability" class="gated-feature" data-feature-keys="backend_ed_classic backend_ed_diffusers">DPM Solver (Stability AI)</option>
                             <option value="dpmpp_2s_a">DPM++ 2s Ancestral (Karras)</option>
                             <option value="dpmpp_2m">DPM++ 2m (Karras)</option>
-                            <option value="dpmpp_2m_sde" class="diffusers-only">DPM++ 2m SDE (Karras)</option>
+                            <option value="dpmpp_2m_sde" class="gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">DPM++ 2m SDE</option>
+                            <option value="dpmpp_2m_sde_heun" class="gated-feature" data-feature-keys="backend_webui">DPM++ 2m SDE Heun</option>
+                            <option value="dpmpp_3m_sde" class="gated-feature" data-feature-keys="backend_webui">DPM++ 3M SDE</option>
                             <option value="dpmpp_sde">DPM++ SDE (Karras)</option>
-                            <option value="dpm_adaptive" class="k_diffusion-only">DPM Adaptive (Karras)</option>
-                            <option value="ddpm" class="diffusers-only">DDPM</option>
-                            <option value="deis" class="diffusers-only">DEIS</option>
-                            <option value="unipc_snr" class="k_diffusion-only">UniPC SNR</option>
-                            <option value="unipc_tu">UniPC TU</option>
-                            <option value="unipc_snr_2" class="k_diffusion-only">UniPC SNR 2</option>
-                            <option value="unipc_tu_2" class="k_diffusion-only">UniPC TU 2</option>
-                            <option value="unipc_tq" class="k_diffusion-only">UniPC TQ</option>
+                            <option value="restart" class="gated-feature" data-feature-keys="backend_webui">Restart</option>
+                            <option value="heun_pp2" class="gated-feature" data-feature-keys="backend_webui">Heun PP2</option>
+                            <option value="ipndm" class="gated-feature" data-feature-keys="backend_webui">IPNDM</option>
+                            <option value="ipndm_v" class="gated-feature" data-feature-keys="backend_webui">IPNDM_V</option>
+                            <option value="ddpm" class="gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">DDPM</option>
+                            <option value="deis" class="gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">DEIS</option>
+                            <option value="lcm" class="gated-feature" data-feature-keys="backend_webui">LCM</option>
+                            <option value="forge_flux_realistic" class="gated-feature" data-feature-keys="backend_webui">[Forge] Flux Realistic</option>
+                            <option value="forge_flux_realistic_slow" class="gated-feature" data-feature-keys="backend_webui">[Forge] Flux Realistic (Slow)</option>
+                            <option value="unipc_snr" class="gated-feature" data-feature-keys="backend_ed_classic">UniPC SNR</option>
+                            <option value="unipc_tu" class="gated-feature" data-feature-keys="backend_ed_classic backend_ed_diffusers">UniPC TU</option>
+                            <option value="unipc_snr_2" class="gated-feature" data-feature-keys="backend_ed_classic">UniPC SNR 2</option>
+                            <option value="unipc_tu_2" class="gated-feature" data-feature-keys="backend_ed_classic">UniPC TU 2</option>
+                            <option value="unipc_tq" class="gated-feature" data-feature-keys="backend_ed_classic">UniPC TQ</option>
                         </select>
-                        <a href="https://github.com/easydiffusion/easydiffusion/wiki/Samplers" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about samplers</span></i></a>
+                        <a href="https://github.com/easydiffusion/easydiffusion/wiki/How-to-Use#samplers" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about samplers</span></i></a>
                     </td></tr>
                     <tr class="pl-5"><td><label>Image Size: </label></td><td id="image-size-options">
                         <select id="width" name="width" value="512">
@@ -349,7 +415,7 @@
                     <tr class="pl-5"><td><label for="num_inference_steps">Inference Steps:</label></td><td> <input id="num_inference_steps" name="num_inference_steps" type="number" min="1" step="1" style="width: 42pt" value="25" onkeypress="preventNonNumericalInput(event)" inputmode="numeric"></td></tr>
                     <tr class="pl-5"><td><label for="guidance_scale_slider">Guidance Scale:</label></td><td> <input id="guidance_scale_slider" name="guidance_scale_slider" class="editor-slider" value="75" type="range" min="11" max="500"> <input id="guidance_scale" name="guidance_scale" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" inputmode="decimal"></td></tr>
                     <tr id="prompt_strength_container" class="pl-5"><td><label for="prompt_strength_slider">Prompt Strength:</label></td><td> <input id="prompt_strength_slider" name="prompt_strength_slider" class="editor-slider" value="80" type="range" min="0" max="99"> <input id="prompt_strength" name="prompt_strength" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" inputmode="decimal"><br/></td></tr>
-                    <tr id="lora_model_container" class="pl-5">
+                    <tr id="lora_model_container" class="pl-5 gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">
                         <td>
                             <label for="lora_model">LoRA:</label>
                         </td>
@@ -357,14 +423,14 @@
                             <div id="lora_model" data-path=""></div>
                         </td>
                     </tr>
-                    <tr id="hypernetwork_model_container" class="pl-5"><td><label for="hypernetwork_model">Hypernetwork:</label></td><td>
+                    <tr id="hypernetwork_model_container" class="pl-5 gated-feature" data-feature-keys="backend_ed_classic"><td><label for="hypernetwork_model">Hypernetwork:</label></td><td>
                         <input id="hypernetwork_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
                     </td></tr>
-                    <tr id="hypernetwork_strength_container" class="pl-5">
+                    <tr id="hypernetwork_strength_container" class="pl-5 gated-feature" data-feature-keys="backend_ed_classic">
                         <td><label for="hypernetwork_strength_slider">Hypernetwork Strength:</label></td>
                         <td> <input id="hypernetwork_strength_slider" name="hypernetwork_strength_slider" class="editor-slider" value="100" type="range" min="0" max="100"> <input id="hypernetwork_strength" name="hypernetwork_strength" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" inputmode="decimal"><br/></td>
                     </tr>
-                    <tr id="tiling_container" class="pl-5">
+                    <tr id="tiling_container" class="pl-5 gated-feature" data-feature-keys="backend_ed_diffusers">
                         <td><label for="tiling">Seamless Tiling:</label></td>
                         <td class="diffusers-restart-needed">
                             <select id="tiling" name="tiling">
@@ -389,7 +455,7 @@
                     <tr class="pl-5" id="output_quality_row"><td><label for="output_quality">Image Quality:</label></td><td>
                     <input id="output_quality_slider" name="output_quality" class="editor-slider" value="75" type="range" min="10" max="95"> <input id="output_quality" name="output_quality" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" inputmode="numeric">
                     </td></tr>
-                    <tr class="pl-5">
+                    <tr class="pl-5 gated-feature" data-feature-keys="backend_ed_diffusers">
                         <td><label for="tiling">Enable VAE Tiling:</label></td>
                         <td class="diffusers-restart-needed">
                             <input id="enable_vae_tiling" name="enable_vae_tiling" type="checkbox" checked>
@@ -405,7 +471,7 @@
                         <input id="use_face_correction" name="use_face_correction" type="checkbox"> <label for="use_face_correction">Fix incorrect faces and eyes</label> <div style="display:inline-block;"><input id="gfpgan_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" /></div>
                         <table id="codeformer_settings" class="displayNone sub-settings">
                             <tr class="pl-5"><td><label for="codeformer_fidelity_slider">Strength:</label></td><td><input id="codeformer_fidelity_slider" name="codeformer_fidelity_slider" class="editor-slider" value="5" type="range" min="0" max="10"> <input id="codeformer_fidelity" name="codeformer_fidelity" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" inputmode="decimal"></td></tr>
-                            <tr class="pl-5"><td><label for="codeformer_upscale_faces">Upscale Faces:</label></td><td><input id="codeformer_upscale_faces" name="codeformer_upscale_faces" type="checkbox" checked> <label><small>(improves the resolution of faces)</small></label></td></tr>
+                            <tr class="pl-5 gated-feature" data-feature-keys="backend_ed_diffusers"><td><label for="codeformer_upscale_faces">Upscale Faces:</label></td><td><input id="codeformer_upscale_faces" name="codeformer_upscale_faces" type="checkbox" checked> <label><small>(improves the resolution of faces)</small></label></td></tr>
                         </table>
                     </li>
                     <li class="pl-5">
@@ -418,7 +484,13 @@
                         <select id="upscale_model" name="upscale_model">
                             <option value="RealESRGAN_x4plus" selected>RealESRGAN_x4plus</option>
                             <option value="RealESRGAN_x4plus_anime_6B">RealESRGAN_x4plus_anime_6B</option>
-                            <option value="latent_upscaler">Latent Upscaler 2x</option>
+                            <option value="ESRGAN_4x" class="pl-5 gated-feature" data-feature-keys="backend_webui">ESRGAN_4x</option>
+                            <option value="Lanczos" class="pl-5 gated-feature" data-feature-keys="backend_webui">Lanczos</option>
+                            <option value="Nearest" class="pl-5 gated-feature" data-feature-keys="backend_webui">Nearest</option>
+                            <option value="ScuNET" class="pl-5 gated-feature" data-feature-keys="backend_webui">ScuNET GAN</option>
+                            <option value="ScuNET PSNR" class="pl-5 gated-feature" data-feature-keys="backend_webui">ScuNET PSNR</option>
+                            <option value="SwinIR_4x" class="pl-5 gated-feature" data-feature-keys="backend_webui">SwinIR 4x</option>
+                            <option value="latent_upscaler" class="pl-5 gated-feature" data-feature-keys="backend_ed_classic backend_ed_diffusers">Latent Upscaler 2x</option>
                         </select>
                         <table id="latent_upscaler_settings" class="displayNone sub-settings">
                             <tr class="pl-5"><td><label for="latent_upscaler_steps_slider">Upscaling Steps:</label></td><td><input id="latent_upscaler_steps_slider" name="latent_upscaler_steps_slider" class="editor-slider" value="10" type="range" min="1" max="50"> <input id="latent_upscaler_steps" name="latent_upscaler_steps" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" inputmode="numeric"></td></tr>
@@ -825,7 +897,8 @@
             <p>This license of this software forbids you from sharing any content that violates any laws, produce any harm to a person, disseminate any personal information that would be meant for harm, <br/>spread misinformation and target vulnerable groups. For the full list of restrictions please read <a href="https://github.com/easydiffusion/easydiffusion/blob/main/LICENSE" target="_blank">the license</a>.</p>
             <p>By using this software, you consent to the terms and conditions of the license.</p>
         </div>
-        <input id="test_diffusers" type="checkbox" style="display: none" checked />
+        <input id="test_diffusers" type="checkbox" style="display: none" checked /> <!-- for backwards compatibility -->
+        <input id="use_v3_engine" type="checkbox" style="display: none" checked /> <!-- for backwards compatibility -->
     </div>
 </div>
 </body>

@@ -2,26 +2,23 @@ import json
 import pprint
 import queue
 import time
+from PIL import Image
 
 from easydiffusion import model_manager, runtime
 from easydiffusion.types import GenerateImageRequest, ModelsData, OutputFormatData, SaveToDiskData
 from easydiffusion.types import Image as ResponseImage
-from easydiffusion.types import GenerateImageResponse, RenderTaskData, UserInitiatedStop
-from easydiffusion.utils import get_printable_request, log, save_images_to_disk
-from sdkit.generate import generate_images
+from easydiffusion.types import GenerateImageResponse, RenderTaskData
+from easydiffusion.utils import get_printable_request, log, save_images_to_disk, filter_nsfw
 from sdkit.utils import (
-    diffusers_latent_samples_to_images,
-    gc,
     img_to_base64_str,
+    base64_str_to_img,
     img_to_buffer,
-    latent_samples_to_images,
     resize_img,
     get_image,
     log,
 )
 
 from .task import Task
-from .filter_images import filter_images
 
 
 class RenderTask(Task):
@@ -51,15 +48,13 @@ class RenderTask(Task):
         "Runs the image generation task on the assigned thread"
 
         from easydiffusion import task_manager, app
+        from easydiffusion.backend_manager import backend
 
         context = runtime.context
         config = app.getConfig()
 
         if config.get("block_nsfw", False):  # override if set on the server
             self.task_data.block_nsfw = True
-            if "nsfw_checker" not in self.task_data.filters:
-                self.task_data.filters.append("nsfw_checker")
-                self.models_data.model_paths["nsfw_checker"] = "nsfw_checker"
 
         def step_callback():
             task_manager.keep_task_alive(self)
@@ -68,7 +63,7 @@ class RenderTask(Task):
             if isinstance(task_manager.current_state_error, (SystemExit, StopAsyncIteration)) or isinstance(
                 self.error, StopAsyncIteration
             ):
-                context.stop_processing = True
+                backend.stop_rendering(context)
                 if isinstance(task_manager.current_state_error, StopAsyncIteration):
                     self.error = task_manager.current_state_error
                     task_manager.current_state_error = None
@@ -78,11 +73,7 @@ class RenderTask(Task):
         model_manager.resolve_model_paths(self.models_data)
 
         models_to_force_reload = []
-        if (
-            runtime.set_vram_optimizations(context)
-            or self.has_param_changed(context, "clip_skip")
-            or self.trt_needs_reload(context)
-        ):
+        if runtime.set_vram_optimizations(context) or self.has_param_changed(context, "clip_skip"):
             models_to_force_reload.append("stable-diffusion")
 
         model_manager.reload_models_if_necessary(context, self.models_data, models_to_force_reload)
@@ -99,10 +90,11 @@ class RenderTask(Task):
             self.buffer_queue,
             self.temp_images,
             step_callback,
+            self,
         )
 
     def has_param_changed(self, context, param_name):
-        if not context.test_diffusers:
+        if not getattr(context, "test_diffusers", False):
             return False
         if "stable-diffusion" not in context.models or "params" not in context.models["stable-diffusion"]:
             return True
@@ -110,29 +102,6 @@ class RenderTask(Task):
         model = context.models["stable-diffusion"]
         new_val = self.models_data.model_params.get("stable-diffusion", {}).get(param_name, False)
         return model["params"].get(param_name) != new_val
-
-    def trt_needs_reload(self, context):
-        if not context.test_diffusers:
-            return False
-        if "stable-diffusion" not in context.models or "params" not in context.models["stable-diffusion"]:
-            return True
-
-        model = context.models["stable-diffusion"]
-
-        # curr_convert_to_trt = model["params"].get("convert_to_tensorrt")
-        new_convert_to_trt = self.models_data.model_params.get("stable-diffusion", {}).get("convert_to_tensorrt", False)
-
-        pipe = model["default"]
-        is_trt_loaded = hasattr(pipe.unet, "_allocate_trt_buffers") or hasattr(
-            pipe.unet, "_allocate_trt_buffers_backup"
-        )
-        if new_convert_to_trt and not is_trt_loaded:
-            return True
-
-        curr_build_config = model["params"].get("trt_build_config")
-        new_build_config = self.models_data.model_params.get("stable-diffusion", {}).get("trt_build_config", {})
-
-        return new_convert_to_trt and curr_build_config != new_build_config
 
 
 def make_images(
@@ -145,12 +114,21 @@ def make_images(
     data_queue: queue.Queue,
     task_temp_images: list,
     step_callback,
+    task,
 ):
-    context.stop_processing = False
     print_task_info(req, task_data, models_data, output_format, save_data)
 
     images, seeds = make_images_internal(
-        context, req, task_data, models_data, output_format, save_data, data_queue, task_temp_images, step_callback
+        context,
+        req,
+        task_data,
+        models_data,
+        output_format,
+        save_data,
+        data_queue,
+        task_temp_images,
+        step_callback,
+        task,
     )
 
     res = GenerateImageResponse(
@@ -170,7 +148,9 @@ def print_task_info(
     output_format: OutputFormatData,
     save_data: SaveToDiskData,
 ):
-    req_str = pprint.pformat(get_printable_request(req, task_data, models_data, output_format, save_data)).replace("[", "\[")
+    req_str = pprint.pformat(get_printable_request(req, task_data, models_data, output_format, save_data)).replace(
+        "[", "\["
+    )
     task_str = pprint.pformat(task_data.dict()).replace("[", "\[")
     models_data = pprint.pformat(models_data.dict()).replace("[", "\[")
     output_format = pprint.pformat(output_format.dict()).replace("[", "\[")
@@ -178,7 +158,7 @@ def print_task_info(
 
     log.info(f"request: {req_str}")
     log.info(f"task data: {task_str}")
-    # log.info(f"models data: {models_data}")
+    log.info(f"models data: {models_data}")
     log.info(f"output format: {output_format}")
     log.info(f"save data: {save_data}")
 
@@ -193,26 +173,41 @@ def make_images_internal(
     data_queue: queue.Queue,
     task_temp_images: list,
     step_callback,
+    task,
 ):
-    images, user_stopped = generate_images_internal(
+    from easydiffusion.backend_manager import backend
+
+    # prep the nsfw_filter
+    if task_data.block_nsfw:
+        filter_nsfw([Image.new("RGB", (1, 1))])  # hack - ensures that the model is available
+
+    images = generate_images_internal(
         context,
         req,
         task_data,
         models_data,
+        output_format,
         data_queue,
         task_temp_images,
         step_callback,
         task_data.stream_image_progress,
         task_data.stream_image_progress_interval,
     )
-
-    gc(context)
+    user_stopped = isinstance(task.error, StopAsyncIteration)
 
     filters, filter_params = task_data.filters, task_data.filter_params
-    filtered_images = filter_images(context, images, filters, filter_params) if not user_stopped else images
+    if len(filters) > 0 and not user_stopped:
+        filtered_images = backend.filter_images(context, images, filters, filter_params, input_type="base64")
+    else:
+        filtered_images = images
+
+    if task_data.block_nsfw:
+        filtered_images = filter_nsfw(filtered_images)
 
     if save_data.save_to_disk_path is not None:
-        save_images_to_disk(images, filtered_images, req, task_data, models_data, output_format, save_data)
+        images_pil = [base64_str_to_img(img) for img in images]
+        filtered_images_pil = [base64_str_to_img(img) for img in filtered_images]
+        save_images_to_disk(images_pil, filtered_images_pil, req, task_data, models_data, output_format, save_data)
 
     seeds = [*range(req.seed, req.seed + len(images))]
     if task_data.show_only_filtered_image or filtered_images is images:
@@ -226,97 +221,43 @@ def generate_images_internal(
     req: GenerateImageRequest,
     task_data: RenderTaskData,
     models_data: ModelsData,
+    output_format: OutputFormatData,
     data_queue: queue.Queue,
     task_temp_images: list,
     step_callback,
     stream_image_progress: bool,
     stream_image_progress_interval: int,
 ):
-    context.temp_images.clear()
+    from easydiffusion.backend_manager import backend
 
-    callback = make_step_callback(
+    callback = make_step_callback(context, req, task_data, data_queue, task_temp_images, step_callback)
+
+    req.width, req.height = map(lambda x: x - x % 8, (req.width, req.height))  # clamp to 8
+
+    if req.control_image and task_data.control_filter_to_apply:
+        req.controlnet_filter = task_data.control_filter_to_apply
+
+    if req.init_image is not None and int(req.num_inference_steps * req.prompt_strength) == 0:
+        req.prompt_strength = 1 / req.num_inference_steps if req.num_inference_steps > 0 else 1
+
+    backend.set_options(
         context,
-        req,
-        task_data,
-        data_queue,
-        task_temp_images,
-        step_callback,
-        stream_image_progress,
-        stream_image_progress_interval,
+        output_format=output_format.output_format,
+        output_quality=output_format.output_quality,
+        output_lossless=output_format.output_lossless,
+        vae_tiling=task_data.enable_vae_tiling,
+        stream_image_progress=stream_image_progress,
+        stream_image_progress_interval=stream_image_progress_interval,
+        clip_skip=2 if task_data.clip_skip else 1,
     )
 
-    try:
-        if req.init_image is not None and not context.test_diffusers:
-            req.sampler_name = "ddim"
+    images = backend.generate_images(context, callback=callback, output_type="base64", **req.dict())
 
-        req.width, req.height = map(lambda x: x - x % 8, (req.width, req.height))  # clamp to 8
-
-        if req.control_image and task_data.control_filter_to_apply:
-            req.control_image = get_image(req.control_image)
-            req.control_image = resize_img(req.control_image.convert("RGB"), req.width, req.height, clamp_to_8=True)
-            req.control_image = filter_images(context, req.control_image, task_data.control_filter_to_apply)[0]
-
-        if req.init_image is not None and int(req.num_inference_steps * req.prompt_strength) == 0:
-            req.prompt_strength = 1 / req.num_inference_steps if req.num_inference_steps > 0 else 1
-
-        if context.test_diffusers:
-            pipe = context.models["stable-diffusion"]["default"]
-            if hasattr(pipe.unet, "_allocate_trt_buffers_backup"):
-                setattr(pipe.unet, "_allocate_trt_buffers", pipe.unet._allocate_trt_buffers_backup)
-                delattr(pipe.unet, "_allocate_trt_buffers_backup")
-
-            if hasattr(pipe.unet, "_allocate_trt_buffers"):
-                convert_to_trt = models_data.model_params["stable-diffusion"].get("convert_to_tensorrt", False)
-                if convert_to_trt:
-                    pipe.unet.forward = pipe.unet._trt_forward
-                    # pipe.vae.decoder.forward = pipe.vae.decoder._trt_forward
-                    log.info(f"Setting unet.forward to TensorRT")
-                else:
-                    log.info(f"Not using TensorRT for unet.forward")
-                    pipe.unet.forward = pipe.unet._non_trt_forward
-                    # pipe.vae.decoder.forward = pipe.vae.decoder._non_trt_forward
-                    setattr(pipe.unet, "_allocate_trt_buffers_backup", pipe.unet._allocate_trt_buffers)
-                    delattr(pipe.unet, "_allocate_trt_buffers")
-
-            if task_data.enable_vae_tiling:
-                if hasattr(pipe, "enable_vae_tiling"):
-                    pipe.enable_vae_tiling()
-            else:
-                if hasattr(pipe, "disable_vae_tiling"):
-                    pipe.disable_vae_tiling()
-
-        images = generate_images(context, callback=callback, **req.dict())
-        user_stopped = False
-    except UserInitiatedStop:
-        images = []
-        user_stopped = True
-        if context.partial_x_samples is not None:
-            if context.test_diffusers:
-                images = diffusers_latent_samples_to_images(context, context.partial_x_samples)
-            else:
-                images = latent_samples_to_images(context, context.partial_x_samples)
-    finally:
-        if hasattr(context, "partial_x_samples") and context.partial_x_samples is not None:
-            if not context.test_diffusers:
-                del context.partial_x_samples
-            context.partial_x_samples = None
-
-    return images, user_stopped
+    return images
 
 
 def construct_response(images: list, seeds: list, output_format: OutputFormatData):
-    return [
-        ResponseImage(
-            data=img_to_base64_str(
-                img,
-                output_format.output_format,
-                output_format.output_quality,
-                output_format.output_lossless,
-            ),
-            seed=seed,
-        )
-        for img, seed in zip(images, seeds)
-    ]
+    return [ResponseImage(data=img, seed=seed) for img, seed in zip(images, seeds)]
 
 
 def make_step_callback(
@@ -326,53 +267,44 @@ def make_step_callback(
     data_queue: queue.Queue,
     task_temp_images: list,
     step_callback,
-    stream_image_progress: bool,
-    stream_image_progress_interval: int,
 ):
+    from easydiffusion.backend_manager import backend
+
     n_steps = req.num_inference_steps if req.init_image is None else int(req.num_inference_steps * req.prompt_strength)
     last_callback_time = -1
 
-    def update_temp_img(x_samples, task_temp_images: list):
+    def update_temp_img(images, task_temp_images: list):
         partial_images = []
 
-        if context.test_diffusers:
-            images = diffusers_latent_samples_to_images(context, x_samples)
-        else:
-            images = latent_samples_to_images(context, x_samples)
+        if images is None:
+            return []
 
         if task_data.block_nsfw:
-            images = filter_images(context, images, "nsfw_checker")
+            images = filter_nsfw(images, print_log=False)
 
         for i, img in enumerate(images):
+            img = img.convert("RGB")
+            img = resize_img(img, req.width, req.height)
             buf = img_to_buffer(img, output_format="JPEG")
 
-            context.temp_images[f"{task_data.request_id}/{i}"] = buf
             task_temp_images[i] = buf
             partial_images.append({"path": f"/image/tmp/{task_data.request_id}/{i}"})
         del images
         return partial_images
 
-    def on_image_step(x_samples, i, *args):
+    def on_image_step(images, i, *args):
         nonlocal last_callback_time
-
-        if context.test_diffusers:
-            context.partial_x_samples = (x_samples, args[0])
-        else:
-            context.partial_x_samples = x_samples
 
         step_time = time.time() - last_callback_time if last_callback_time != -1 else -1
         last_callback_time = time.time()
 
         progress = {"step": i, "step_time": step_time, "total_steps": n_steps}
 
-        if stream_image_progress and stream_image_progress_interval > 0 and i % stream_image_progress_interval == 0:
-            progress["output"] = update_temp_img(context.partial_x_samples, task_temp_images)
+        if images is not None:
+            progress["output"] = update_temp_img(images, task_temp_images)
 
         data_queue.put(json.dumps(progress))
 
         step_callback()
-
-        if context.stop_processing:
-            raise UserInitiatedStop("User requested that we stop processing")
 
     return on_image_step

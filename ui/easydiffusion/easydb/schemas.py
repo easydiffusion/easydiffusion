@@ -33,4 +33,3 @@ class Bucket(BucketBase):
 
     class Config:
         orm_mode = True
-

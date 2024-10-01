@@ -981,7 +981,20 @@ function onRedoFilter(req, img, e, tools) {
 function onUpscaleClick(req, img, e, tools) {
     let path = upscaleModelField.value
     let scale = parseInt(upscaleAmountField.value)
-    let filterName = path.toLowerCase().includes("realesrgan") ? "realesrgan" : "latent_upscaler"
+
+    let filterName = null
+    const FILTERS = ["realesrgan", "latent_upscaler", "esrgan_4x", "lanczos", "nearest", "scunet", "swinir"]
+    for (let idx in FILTERS) {
+        let f = FILTERS[idx]
+        if (path.toLowerCase().includes(f)) {
+            filterName = f
+            break
+        }
+    }
+
+    if (!filterName) {
+        return
+    }
     let statusText = "Upscaling by " + scale + "x using " + filterName
     applyInlineFilter(filterName, path, { scale: scale }, img, statusText, tools)
 }

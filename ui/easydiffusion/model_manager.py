@@ -8,7 +8,7 @@ from easydiffusion import app
 from easydiffusion.types import ModelsData
 from easydiffusion.utils import log
 from sdkit import Context
-from sdkit.models import load_model, scan_model, unload_model, download_model, get_model_info_from_db
+from sdkit.models import scan_model, download_model, get_model_info_from_db
 from sdkit.models.model_loader.controlnet_filters import filters as cn_filters
 from sdkit.utils import hash_file_quick
 from sdkit.models.model_loader.embeddings import get_embedding_token
@@ -25,15 +25,15 @@ KNOWN_MODEL_TYPES = [
     "controlnet",
 ]
 MODEL_EXTENSIONS = {
-    "stable-diffusion": [".ckpt", ".safetensors"],
-    "vae": [".vae.pt", ".ckpt", ".safetensors"],
-    "hypernetwork": [".pt", ".safetensors"],
+    "stable-diffusion": [".ckpt", ".safetensors", ".sft", ".gguf"],
+    "vae": [".vae.pt", ".ckpt", ".safetensors", ".sft"],
+    "hypernetwork": [".pt", ".safetensors", ".sft"],
     "gfpgan": [".pth"],
     "realesrgan": [".pth"],
-    "lora": [".ckpt", ".safetensors", ".pt"],
+    "lora": [".ckpt", ".safetensors", ".sft", ".pt"],
     "codeformer": [".pth"],
-    "embeddings": [".pt", ".bin", ".safetensors"],
-    "controlnet": [".pth", ".safetensors"],
+    "embeddings": [".pt", ".bin", ".safetensors", ".sft"],
+    "controlnet": [".pth", ".safetensors", ".sft"],
 }
 DEFAULT_MODELS = {
     "stable-diffusion": [
@@ -63,6 +63,7 @@ def init():
 
 def load_default_models(context: Context):
     from easydiffusion import runtime
+    from easydiffusion.backend_manager import backend
 
     runtime.set_vram_optimizations(context)
 
@@ -70,7 +71,7 @@ def load_default_models(context: Context):
     for model_type in MODELS_TO_LOAD_ON_START:
         context.model_paths[model_type] = resolve_model_to_use(model_type=model_type, fail_if_not_found=False)
         try:
-            load_model(
+            backend.load_model(
                 context,
                 model_type,
                 scan_model=context.model_paths[model_type] != None
@@ -92,8 +93,10 @@ def load_default_models(context: Context):
 
 
 def unload_all(context: Context):
+    from easydiffusion.backend_manager import backend
+
     for model_type in KNOWN_MODEL_TYPES:
-        unload_model(context, model_type)
+        backend.unload_model(context, model_type)
         if model_type in context.model_load_errors:
             del context.model_load_errors[model_type]
 
@@ -154,6 +157,8 @@ def resolve_model_to_use_single(model_name: str = None, model_type: str = None, 
 
 
 def reload_models_if_necessary(context: Context, models_data: ModelsData, models_to_force_reload: list = []):
+    from easydiffusion.backend_manager import backend
+
     models_to_reload = {
         model_type: path
         for model_type, path in models_data.model_paths.items()
@@ -175,7 +180,7 @@ def reload_models_if_necessary(context: Context, models_data: ModelsData, models
     for model_type, model_path_in_req in models_to_reload.items():
         context.model_paths[model_type] = model_path_in_req
 
-        action_fn = unload_model if context.model_paths[model_type] is None else load_model
+        action_fn = backend.unload_model if context.model_paths[model_type] is None else backend.load_model
         extra_params = models_data.model_params.get(model_type, {})
         try:
             action_fn(context, model_type, scan_model=False, **extra_params)  # we've scanned them already
@@ -183,14 +188,23 @@ def reload_models_if_necessary(context: Context, models_data: ModelsData, models
                 del context.model_load_errors[model_type]
         except Exception as e:
             log.exception(e)
-            if action_fn == load_model:
+            if action_fn == backend.load_model:
                 context.model_load_errors[model_type] = str(e)  # storing the entire Exception can lead to memory leaks
 
 
 def resolve_model_paths(models_data: ModelsData):
     model_paths = models_data.model_paths
+    skip_models = cn_filters + [
+        "latent_upscaler",
+        "nsfw_checker",
+        "esrgan_4x",
+        "lanczos",
+        "nearest",
+        "scunet",
+        "swinir",
+    ]
+
     for model_type in model_paths:
-        skip_models = cn_filters + ["latent_upscaler", "nsfw_checker"]
         if model_type in skip_models:  # doesn't use model paths
             continue
         if model_type == "codeformer" and model_paths[model_type]:
@@ -320,6 +334,10 @@ def is_malicious_model(file_path):
 
 
 def getModels(scan_for_malicious: bool = True):
+    from easydiffusion.backend_manager import backend
+
+    backend.refresh_models()
+
     models = {
         "options": {
             "stable-diffusion": [],
@@ -329,19 +347,19 @@ def getModels(scan_for_malicious: bool = True):
             "codeformer": [{"codeformer": "CodeFormer"}],
             "embeddings": [],
             "controlnet": [
-                {"control_v11p_sd15_canny": "Canny (*)"},
-                {"control_v11p_sd15_openpose": "OpenPose (*)"},
-                {"control_v11p_sd15_normalbae": "Normal BAE (*)"},
-                {"control_v11f1p_sd15_depth": "Depth (*)"},
-                {"control_v11p_sd15_scribble": "Scribble"},
-                {"control_v11p_sd15_softedge": "Soft Edge"},
-                {"control_v11p_sd15_inpaint": "Inpaint"},
-                {"control_v11p_sd15_lineart": "Line Art"},
-                {"control_v11p_sd15s2_lineart_anime": "Line Art Anime"},
-                {"control_v11p_sd15_mlsd": "Straight Lines"},
-                {"control_v11p_sd15_seg": "Segment"},
-                {"control_v11e_sd15_shuffle": "Shuffle"},
-                {"control_v11f1e_sd15_tile": "Tile"},
+                # {"control_v11p_sd15_canny": "Canny (*)"},
+                # {"control_v11p_sd15_openpose": "OpenPose (*)"},
+                # {"control_v11p_sd15_normalbae": "Normal BAE (*)"},
+                # {"control_v11f1p_sd15_depth": "Depth (*)"},
+                # {"control_v11p_sd15_scribble": "Scribble"},
+                # {"control_v11p_sd15_softedge": "Soft Edge"},
+                # {"control_v11p_sd15_inpaint": "Inpaint"},
+                # {"control_v11p_sd15_lineart": "Line Art"},
+                # {"control_v11p_sd15s2_lineart_anime": "Line Art Anime"},
+                # {"control_v11p_sd15_mlsd": "Straight Lines"},
+                # {"control_v11p_sd15_seg": "Segment"},
+                # {"control_v11e_sd15_shuffle": "Shuffle"},
+                # {"control_v11f1e_sd15_tile": "Tile"},
             ],
         },
     }
@@ -378,6 +396,8 @@ def getModels(scan_for_malicious: bool = True):
                 model_id = entry.name[: -len(matching_suffix)]
                 if callable(nameFilter):
                     model_id = nameFilter(model_id)
+                    if model_id is None:
+                        continue
 
                 model_exists = False
                 for m in tree:  # allows default "named" models, like CodeFormer and known ControlNet models
@@ -416,7 +436,7 @@ def getModels(scan_for_malicious: bool = True):
     listModels(model_type="stable-diffusion")
     listModels(model_type="vae")
     listModels(model_type="hypernetwork")
-    listModels(model_type="gfpgan")
+    listModels(model_type="gfpgan", nameFilter=lambda x: (x if "gfpgan" in x.lower() else None))
     listModels(model_type="lora")
     listModels(model_type="embeddings", nameFilter=get_embedding_token)
     listModels(model_type="controlnet")

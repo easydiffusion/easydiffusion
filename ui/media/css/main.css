@@ -36,6 +36,15 @@ code {
     transform: translateY(4px);
     cursor: pointer;
 }
+#engine-logo {
+    font-size: 8pt;
+    padding-left: 10pt;
+    color: var(--small-label-color);
+}
+#engine-logo a {
+    text-decoration: none;
+    /* color: var(--small-label-color); */
+}
 #prompt {
     width: 100%;
     height: 65pt;
@@ -541,7 +550,7 @@ div.img-preview img {
     position: relative;
     background: var(--background-color4);
     display: flex;
-    padding: 12px 0 0;
+    padding: 6px 0 0;
 }
 .tab .icon {
     padding-right: 4pt;
@@ -655,6 +664,10 @@ div.img-preview img {
 }
 .dropdown-content:hover {
     display: block;
+}
+
+.gated-feature {
+    display: none;
 }
 
 .display-settings {

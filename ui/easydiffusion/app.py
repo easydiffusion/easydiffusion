@@ -11,7 +11,7 @@ from ruamel.yaml import YAML
 import urllib
 import warnings
 
-from easydiffusion import task_manager
+from easydiffusion import task_manager, backend_manager
 from easydiffusion.utils import log
 from rich.logging import RichHandler
 from rich.console import Console
@@ -60,7 +60,7 @@ APP_CONFIG_DEFAULTS = {
     "ui": {
         "open_browser_on_start": True,
     },
-    "use_v3_engine": True,
+    "backend": "ed_diffusers",
 }
 
 IMAGE_EXTENSIONS = [
@@ -108,6 +108,8 @@ def init():
     if config_models_dir is not None and config_models_dir != "":
         MODELS_DIR = config_models_dir
 
+    backend_manager.start_backend()
+
 
 def init_render_threads():
     load_server_plugins()
@@ -124,9 +126,9 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
         shutil.move(config_legacy_yaml, config_yaml_path)
 
     def set_config_on_startup(config: dict):
-        if getConfig.__use_v3_engine_on_startup is None:
-            getConfig.__use_v3_engine_on_startup = config.get("use_v3_engine", True)
-        config["config_on_startup"] = {"use_v3_engine": getConfig.__use_v3_engine_on_startup}
+        if getConfig.__use_backend_on_startup is None:
+            getConfig.__use_backend_on_startup = config.get("backend", "ed_diffusers")
+        config["config_on_startup"] = {"backend": getConfig.__use_backend_on_startup}
 
     if os.path.isfile(config_yaml_path):
         try:
@@ -143,6 +145,15 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
                     config["net"]["listen_to_network"] = os.getenv("SD_UI_BIND_IP") == "0.0.0.0"
                 else:
                     config["net"]["listen_to_network"] = True
+
+            if "backend" not in config:
+                if "use_v3_engine" in config:
+                    config["backend"] = "ed_diffusers" if config["use_v3_engine"] else "ed_classic"
+                else:
+                    config["backend"] = "ed_diffusers"
+                    # this default will need to be smarter when WebUI becomes the main backend, but needs to maintain backwards
+                    # compatibility with existing ED 3.0 installations that haven't opted into the WebUI backend, and haven't
+                    # set a "use_v3_engine" flag in their config
 
             set_config_on_startup(config)
 
@@ -174,7 +185,7 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
             return default_val
 
 
-getConfig.__use_v3_engine_on_startup = None
+getConfig.__use_backend_on_startup = None
 
 
 def setConfig(config):

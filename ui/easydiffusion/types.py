@@ -19,9 +19,10 @@ class GenerateImageRequest(BaseModel):
     init_image_mask: Any = None
     control_image: Any = None
     control_alpha: Union[float, List[float]] = None
+    controlnet_filter: str = None
     prompt_strength: float = 0.8
-    preserve_init_image_color_profile = False
-    strict_mask_border = False
+    preserve_init_image_color_profile: bool = False
+    strict_mask_border: bool = False
 
     sampler_name: str = None  # "ddim", "plms", "heun", "euler", "euler_a", "dpm2", "dpm2_a", "lms"
     hypernetwork_strength: float = 0
@@ -100,7 +101,7 @@ class MergeRequest(BaseModel):
     model1: str = None
     ratio: float = None
     out_path: str = "mix"
-    use_fp16 = True
+    use_fp16: bool = True
 
 
 class Image:
@@ -213,22 +214,19 @@ def convert_legacy_render_req_to_new(old_req: dict):
     model_paths["controlnet"] = old_req.get("use_controlnet_model")
     model_paths["embeddings"] = old_req.get("use_embeddings_model")
 
-    model_paths["gfpgan"] = old_req.get("use_face_correction", "")
-    model_paths["gfpgan"] = model_paths["gfpgan"] if "gfpgan" in model_paths["gfpgan"].lower() else None
+    ## ensure that the model name is in the model path
+    for model_name in ("gfpgan", "codeformer"):
+        model_paths[model_name] = old_req.get("use_face_correction", "")
+        model_paths[model_name] = model_paths[model_name] if model_name in model_paths[model_name].lower() else None
 
-    model_paths["codeformer"] = old_req.get("use_face_correction", "")
-    model_paths["codeformer"] = model_paths["codeformer"] if "codeformer" in model_paths["codeformer"].lower() else None
+    for model_name in ("realesrgan", "latent_upscaler", "esrgan_4x", "lanczos", "nearest", "scunet", "swinir"):
+        model_paths[model_name] = old_req.get("use_upscale", "")
+        model_paths[model_name] = model_paths[model_name] if model_name in model_paths[model_name].lower() else None
 
-    model_paths["realesrgan"] = old_req.get("use_upscale", "")
-    model_paths["realesrgan"] = model_paths["realesrgan"] if "realesrgan" in model_paths["realesrgan"].lower() else None
-
-    model_paths["latent_upscaler"] = old_req.get("use_upscale", "")
-    model_paths["latent_upscaler"] = (
-        model_paths["latent_upscaler"] if "latent_upscaler" in model_paths["latent_upscaler"].lower() else None
-    )
     if "control_filter_to_apply" in old_req:
         filter_model = old_req["control_filter_to_apply"]
         model_paths[filter_model] = filter_model
+        old_req["control_filter_to_apply"] = convert_legacy_controlnet_filter_name(old_req["control_filter_to_apply"])
 
     if old_req.get("block_nsfw"):
         model_paths["nsfw_checker"] = "nsfw_checker"
@@ -244,8 +242,12 @@ def convert_legacy_render_req_to_new(old_req: dict):
         }
 
     # move the filter params
-    if model_paths["realesrgan"]:
-        filter_params["realesrgan"] = {"scale": int(old_req.get("upscale_amount", 4))}
+    for model_name in ("realesrgan", "esrgan_4x", "lanczos", "nearest", "scunet", "swinir"):
+        if model_paths[model_name]:
+            filter_params[model_name] = {
+                "upscaler": model_paths[model_name],
+                "scale": int(old_req.get("upscale_amount", 4)),
+            }
     if model_paths["latent_upscaler"]:
         filter_params["latent_upscaler"] = {
             "prompt": old_req["prompt"],
@@ -264,14 +266,31 @@ def convert_legacy_render_req_to_new(old_req: dict):
     if old_req.get("block_nsfw"):
         filters.append("nsfw_checker")
 
-    if model_paths["codeformer"]:
-        filters.append("codeformer")
-    elif model_paths["gfpgan"]:
-        filters.append("gfpgan")
+    for model_name in ("gfpgan", "codeformer"):
+        if model_paths[model_name]:
+            filters.append(model_name)
+            break
 
-    if model_paths["realesrgan"]:
-        filters.append("realesrgan")
-    elif model_paths["latent_upscaler"]:
-        filters.append("latent_upscaler")
+    for model_name in ("realesrgan", "latent_upscaler", "esrgan_4x", "lanczos", "nearest", "scunet", "swinir"):
+        if model_paths[model_name]:
+            filters.append(model_name)
+            break
 
     return new_req
+
+
+def convert_legacy_controlnet_filter_name(filter):
+    from easydiffusion.backend_manager import backend
+
+    if filter is None:
+        return None
+
+    controlnet_filter_names = backend.list_controlnet_filters()
+
+    def apply(f):
+        return f"controlnet_{f}" if f in controlnet_filter_names else f
+
+    if isinstance(filter, list):
+        return [apply(f) for f in filter]
+
+    return apply(filter)

@@ -4,6 +4,7 @@ Notes:
     Use weak_thread_data to store all other data using weak keys.
     This will allow for garbage collection after the thread dies.
 """
+
 import json
 import traceback
 
@@ -19,7 +20,6 @@ import torch
 from easydiffusion import device_manager
 from easydiffusion.tasks import Task
 from easydiffusion.utils import log
-from sdkit.utils import gc
 
 THREAD_NAME_PREFIX = ""
 ERR_LOCK_FAILED = " failed to acquire lock within timeout."
@@ -233,6 +233,7 @@ def thread_render(device):
     global current_state, current_state_error
 
     from easydiffusion import model_manager, runtime
+    from easydiffusion.backend_manager import backend
 
     try:
         runtime.init(device)
@@ -244,8 +245,17 @@ def thread_render(device):
         }
 
         current_state = ServerStates.LoadingModel
-        model_manager.load_default_models(runtime.context)
 
+        while True:
+            try:
+                if backend.ping(timeout=1):
+                    break
+
+                time.sleep(1)
+            except TimeoutError:
+                time.sleep(1)
+
+        model_manager.load_default_models(runtime.context)
         current_state = ServerStates.Online
     except Exception as e:
         log.error(traceback.format_exc())
@@ -291,7 +301,6 @@ def thread_render(device):
             task.buffer_queue.put(json.dumps(task.response))
             log.error(traceback.format_exc())
         finally:
-            gc(runtime.context)
             task.lock.release()
 
         keep_task_alive(task)
