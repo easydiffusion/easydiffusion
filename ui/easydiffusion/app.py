@@ -119,6 +119,7 @@ def init_render_threads():
 
 def getConfig(default_val=APP_CONFIG_DEFAULTS):
     config_yaml_path = os.path.join(CONFIG_DIR, "..", "config.yaml")
+    config_yaml_path = os.path.abspath(config_yaml_path)
 
     # migrate the old config yaml location
     config_legacy_yaml = os.path.join(CONFIG_DIR, "config.yaml")
