@@ -28,6 +28,10 @@ def uninstall_backend():
     pass
 
 
+def is_installed():
+    return True
+
+
 def create_sdkit_context(use_diffusers):
     c = Context()
     c.test_diffusers = use_diffusers

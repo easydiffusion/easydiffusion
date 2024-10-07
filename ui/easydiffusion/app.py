@@ -331,16 +331,31 @@ def open_browser():
 
         webbrowser.open(f"http://localhost:{port}")
 
-    Console().print(
-        Panel(
-            "\n"
-            + "[white]Easy Diffusion is ready to serve requests.\n\n"
-            + "A new browser tab should have been opened by now.\n"
-            + f"If not, please open your web browser and navigate to [bold yellow underline]http://localhost:{port}/\n",
-            title="Easy Diffusion is ready",
-            style="bold yellow on blue",
+    from easydiffusion.backend_manager import backend
+
+    if backend.is_installed():
+        Console().print(
+            Panel(
+                "\n"
+                + "[white]Easy Diffusion is ready to serve requests.\n\n"
+                + "A new browser tab should have been opened by now.\n"
+                + f"If not, please open your web browser and navigate to [bold yellow underline]http://localhost:{port}/\n",
+                title="Easy Diffusion is ready",
+                style="bold yellow on blue",
+            )
         )
-    )
+    else:
+        backend_name = config["backend"]
+        Console().print(
+            Panel(
+                "\n"
+                + f"[white]Backend: {backend_name} is still installing..\n\n"
+                + "Please wait until it finishes installing before making images.\n"
+                + f"The UI will turn green in the top-right corner once it is ready (in [bold yellow underline]http://localhost:{port}[/]).\n",
+                title=f"Backend engine is installing",
+                style="bold yellow on blue",
+            )
+        )
 
 
 def fail_and_die(fail_type: str, data: str):

@@ -3,6 +3,7 @@ from sdkit_common import (
     stop_backend,
     install_backend,
     uninstall_backend,
+    is_installed,
     create_sdkit_context,
     ping,
     load_model,

@@ -234,6 +234,7 @@ def thread_render(device):
 
     from easydiffusion import model_manager, runtime
     from easydiffusion.backend_manager import backend
+    from requests import ConnectionError
 
     try:
         runtime.init(device)
@@ -252,7 +253,7 @@ def thread_render(device):
                     break
 
                 time.sleep(1)
-            except TimeoutError:
+            except (TimeoutError, ConnectionError):
                 time.sleep(1)
 
         model_manager.load_default_models(runtime.context)
