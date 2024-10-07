@@ -268,7 +268,9 @@ def get_env():
         env_entries["GIT"] = [f"{dir}/bin/git"]
         env_entries["venv_dir"] = ["-"]
 
-    if OS_NAME in ("Windows", "Linux") and not has_discrete_graphics_card():
+    if config.get("render_devices", "auto") == "cpu" or (
+        OS_NAME in ("Windows", "Linux") and not has_discrete_graphics_card()
+    ):
         env_entries["COMMANDLINE_ARGS"][0] += " --always-cpu"
 
     if OS_NAME == "Darwin":
