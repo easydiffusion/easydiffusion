@@ -68,7 +68,10 @@ def ping(timeout=1):
     global webui_opts
 
     try:
-        webui_get("/internal/ping", timeout=timeout)
+        res = webui_get("/internal/ping", timeout=timeout)
+
+        if res.status_code != 200:
+            raise ConnectTimeout(res.text)
 
         if webui_opts is None:
             try:
@@ -85,7 +88,7 @@ def ping(timeout=1):
 
                 webui_opts = res.json()
             except Exception as e:
-                print(f"Error setting options: {e}")
+                print(f"Error getting options: {e}")
 
         return True
     except ConnectTimeout as e:
