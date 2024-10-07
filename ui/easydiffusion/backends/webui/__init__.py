@@ -268,11 +268,6 @@ def get_env():
         env_entries["GIT"] = [f"{dir}/bin/git"]
         env_entries["venv_dir"] = ["-"]
 
-    if config.get("render_devices", "auto") == "cpu" or (
-        OS_NAME in ("Windows", "Linux") and not has_discrete_graphics_card()
-    ):
-        env_entries["COMMANDLINE_ARGS"][0] += " --always-cpu"
-
     if OS_NAME == "Darwin":
         # based on https://github.com/lllyasviel/stable-diffusion-webui-forge/blob/e26abf87ecd1eefd9ab0a198eee56f9c643e4001/webui-macos-env.sh
         # hack - have to define these here, otherwise webui-macos-env.sh will overwrite COMMANDLINE_ARGS
@@ -284,6 +279,14 @@ def get_env():
             env_entries["TORCH_COMMAND"] = ["pip install torch==2.1.2 torchvision==0.16.2"]
         else:
             env_entries["TORCH_COMMAND"] = ["pip install torch==2.3.1 torchvision==0.18.1"]
+    else:
+        vram_usage_level = config.get("vram_usage_level", "balanced")
+        if config.get("render_devices", "auto") == "cpu" or not has_discrete_graphics_card():
+            env_entries["COMMANDLINE_ARGS"][0] += " --always-cpu"
+        elif vram_usage_level == "low":
+            env_entries["COMMANDLINE_ARGS"][0] += " --always-low-vram"
+        elif vram_usage_level == "high":
+            env_entries["COMMANDLINE_ARGS"][0] += " --always-high-vram"
 
     env = {}
     for key, paths in env_entries.items():

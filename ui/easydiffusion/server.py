@@ -71,6 +71,7 @@ class SetAppConfigRequest(BaseModel, extra=Extra.allow):
     use_v3_engine: bool = True
     backend: str = "ed_diffusers"
     models_dir: str = None
+    vram_usage_level: str = "balanced"
 
 
 def init():
@@ -188,6 +189,7 @@ def set_app_config_internal(req: SetAppConfigRequest):
     config["use_v3_engine"] = req.backend == "ed_diffusers"
     config["backend"] = req.backend
     config["models_dir"] = req.models_dir
+    config["vram_usage_level"] = req.vram_usage_level
 
     for property, property_value in req.dict().items():
         if property_value is not None and property not in req.__fields__ and property not in PROTECTED_CONFIG_KEYS:

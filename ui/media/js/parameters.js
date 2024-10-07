@@ -161,6 +161,7 @@ var PARAMETERS = [
             "<b>Low:</b> slowest, recommended for GPUs with 3 to 4 GB memory",
         icon: "fa-forward",
         default: "balanced",
+        saveInAppConfig: true,
         options: [
             { value: "balanced", label: "Balanced" },
             { value: "high", label: "High" },
