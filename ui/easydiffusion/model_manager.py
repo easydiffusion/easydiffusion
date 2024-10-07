@@ -51,6 +51,16 @@ DEFAULT_MODELS = {
     ],
 }
 MODELS_TO_LOAD_ON_START = ["stable-diffusion", "vae", "hypernetwork", "lora"]
+ALTERNATE_FOLDER_NAMES = {  # for WebUI compatibility
+    "stable-diffusion": "Stable-diffusion",
+    "vae": "VAE",
+    "hypernetwork": "hypernetworks",
+    "codeformer": "Codeformer",
+    "gfpgan": "GFPGAN",
+    "realesrgan": "RealESRGAN",
+    "lora": "Lora",
+    "controlnet": "ControlNet",
+}
 
 known_models = {}
 
@@ -122,33 +132,33 @@ def resolve_model_to_use_single(model_name: str = None, model_type: str = None, 
     default_models = DEFAULT_MODELS.get(model_type, [])
     config = app.getConfig()
 
-    model_dir = get_model_dir(model_type)
     if not model_name:  # When None try user configured model.
         # config = getConfig()
         if "model" in config and model_type in config["model"]:
             model_name = config["model"][model_type]
 
-    if model_name:
-        # Check models directory
-        model_path = os.path.join(model_dir, model_name)
-        if os.path.exists(model_path):
-            return model_path
-        for model_extension in model_extensions:
-            if os.path.exists(model_path + model_extension):
-                return model_path + model_extension
-            if os.path.exists(model_name + model_extension):
-                return os.path.abspath(model_name + model_extension)
+    for model_dir in get_model_dirs(model_type):
+        if model_name:
+            # Check models directory
+            model_path = os.path.join(model_dir, model_name)
+            if os.path.exists(model_path):
+                return model_path
+            for model_extension in model_extensions:
+                if os.path.exists(model_path + model_extension):
+                    return model_path + model_extension
+                if os.path.exists(model_name + model_extension):
+                    return os.path.abspath(model_name + model_extension)
 
-    # Can't find requested model, check the default paths.
-    if model_type == "stable-diffusion" and not fail_if_not_found:
-        for default_model in default_models:
-            default_model_path = os.path.join(model_dir, default_model["file_name"])
-            if os.path.exists(default_model_path):
-                if model_name is not None:
-                    log.warn(
-                        f"Could not find the configured custom model {model_name}. Using the default one: {default_model_path}"
-                    )
-                return default_model_path
+        # Can't find requested model, check the default paths.
+        if model_type == "stable-diffusion" and not fail_if_not_found:
+            for default_model in default_models:
+                default_model_path = os.path.join(model_dir, default_model["file_name"])
+                if os.path.exists(default_model_path):
+                    if model_name is not None:
+                        log.warn(
+                            f"Could not find the configured custom model {model_name}. Using the default one: {default_model_path}"
+                        )
+                    return default_model_path
 
     if model_name and fail_if_not_found:
         raise FileNotFoundError(
@@ -239,7 +249,7 @@ def download_default_models_if_necessary():
 
 
 def download_if_necessary(model_type: str, file_name: str, model_id: str, skip_if_others_exist=True):
-    model_dir = get_model_dir(model_type)
+    model_dir = get_model_dirs(model_type)[0]
     model_path = os.path.join(model_dir, file_name)
     expected_hash = get_model_info_from_db(model_type=model_type, model_id=model_id)["quick_hash"]
 
@@ -260,23 +270,23 @@ def migrate_legacy_model_location():
             file_name = model["file_name"]
             legacy_path = os.path.join(app.SD_DIR, file_name)
             if os.path.exists(legacy_path):
-                model_dir = get_model_dir(model_type)
+                model_dir = get_model_dirs(model_type)[0]
                 shutil.move(legacy_path, os.path.join(model_dir, file_name))
 
 
 def any_model_exists(model_type: str) -> bool:
     extensions = MODEL_EXTENSIONS.get(model_type, [])
-    model_dir = get_model_dir(model_type)
-    for ext in extensions:
-        if any(glob(f"{model_dir}/**/*{ext}", recursive=True)):
-            return True
+    for model_dir in get_model_dirs(model_type):
+        for ext in extensions:
+            if any(glob(f"{model_dir}/**/*{ext}", recursive=True)):
+                return True
 
     return False
 
 
 def make_model_folders():
     for model_type in KNOWN_MODEL_TYPES:
-        model_dir_path = get_model_dir(model_type)
+        model_dir_path = get_model_dirs(model_type)[0]
 
         try:
             os.makedirs(model_dir_path, exist_ok=True)
@@ -377,6 +387,9 @@ def getModels(scan_for_malicious: bool = True):
 
         tree = list(default_entries)
 
+        if not os.path.exists(directory):
+            return tree
+
         for entry in sorted(
             os.scandir(directory),
             key=lambda entry: (entry.is_file() == directoriesFirst, entry.name.lower()),
@@ -421,17 +434,23 @@ def getModels(scan_for_malicious: bool = True):
         nonlocal models_scanned
 
         model_extensions = MODEL_EXTENSIONS.get(model_type, [])
-        models_dir = get_model_dir(model_type)
-        if not os.path.exists(models_dir):
-            os.makedirs(models_dir)
+        models_dirs = get_model_dirs(model_type)
+        if not os.path.exists(models_dirs[0]):
+            os.makedirs(models_dirs[0])
 
-        try:
-            default_tree = models["options"].get(model_type, [])
-            models["options"][model_type] = scan_directory(
-                models_dir, model_extensions, default_entries=default_tree, nameFilter=nameFilter
-            )
-        except MaliciousModelException as e:
-            models["scan-error"] = str(e)
+        models["options"][model_type] = []
+        default_tree = models["options"].get(model_type, [])
+
+        for model_dir in models_dirs:
+            try:
+                scanned_models = scan_directory(
+                    model_dir, model_extensions, default_entries=default_tree, nameFilter=nameFilter
+                )
+                for m in scanned_models:
+                    if m not in models["options"][model_type]:
+                        models["options"][model_type].append(m)
+            except MaliciousModelException as e:
+                models["scan-error"] = str(e)
 
     if scan_for_malicious:
         log.info(f"[green]Scanning all model folders for models...[/]")
@@ -450,17 +469,21 @@ def getModels(scan_for_malicious: bool = True):
     return models
 
 
-def get_model_dir(model_type: str, base_dir=None):
-    "Returns the case-insensitive model directory path, or the given model folder (if the model sub-dir wasn't found)"
+def get_model_dirs(model_type: str, base_dir=None):
+    "Returns the possible model directory paths for the given model type. Mainly used for WebUI compatibility"
 
     if base_dir is None:
         base_dir = app.MODELS_DIR
 
-    for dir in os.listdir(base_dir):
-        if dir.lower() == model_type.lower() and os.path.isdir(os.path.join(base_dir, dir)):
-            return os.path.join(base_dir, dir)
+    dirs = [os.path.join(base_dir, model_type)]
 
-    return os.path.join(base_dir, model_type)
+    if model_type in ALTERNATE_FOLDER_NAMES:
+        alt_dir = ALTERNATE_FOLDER_NAMES[model_type]
+        alt_dir = os.path.join(base_dir, alt_dir)
+        if os.path.exists(alt_dir) and os.path.isdir(alt_dir):
+            dirs.append(alt_dir)
+
+    return dirs
 
 
 # patch sdkit
@@ -468,7 +491,7 @@ def __patched__get_actual_base_dir(model_type, download_base_dir, subdir_for_mod
     "Patched version that works with case-insensitive model sub-dirs"
 
     download_base_dir = os.path.join("~", ".cache", "sdkit") if download_base_dir is None else download_base_dir
-    download_base_dir = get_model_dir(model_type, download_base_dir) if subdir_for_model_type else download_base_dir
+    download_base_dir = get_model_dirs(model_type, download_base_dir)[0] if subdir_for_model_type else download_base_dir
     return os.path.abspath(download_base_dir)
 
 

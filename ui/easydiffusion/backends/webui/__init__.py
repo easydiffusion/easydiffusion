@@ -7,7 +7,7 @@ import psutil
 import shutil
 
 from easydiffusion.app import ROOT_DIR, getConfig
-from easydiffusion.model_manager import get_model_dir
+from easydiffusion.model_manager import get_model_dirs
 
 from . import impl
 from .impl import (
@@ -73,6 +73,8 @@ def install_backend():
 
     # create the conda env
     run([conda, "create", "-y", "--prefix", SYSTEM_DIR], cwd=ROOT_DIR)
+
+    print("Installing packages..")
 
     # install python 3.10 and git in the conda env
     run([conda, "install", "-y", "--prefix", SYSTEM_DIR, "-c", "conda-forge", "python=3.10", "git"], cwd=ROOT_DIR)
@@ -336,7 +338,7 @@ def kill(proc_pid):
 def get_model_path_args():
     args = []
     for model_type, flag in MODELS_TO_OVERRIDE.items():
-        model_dir = get_model_dir(model_type)
+        model_dir = get_model_dirs(model_type)[0]
         args.append(f'{flag} "{model_dir}"')
 
     return " ".join(args)
