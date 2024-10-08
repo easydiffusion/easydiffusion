@@ -132,6 +132,54 @@ def start_backend():
     backend_thread = threading.Thread(target=target)
     backend_thread.start()
 
+    start_proxy()
+
+
+def start_proxy():
+    # proxy
+    from easydiffusion.server import server_api
+    from fastapi import FastAPI, Request
+    from fastapi.responses import Response
+    import json
+
+    URI_PREFIX = "/webui"
+
+    webui_proxy = FastAPI(root_path=f"{URI_PREFIX}", docs_url="/swagger")
+
+    @webui_proxy.get("{uri:path}")
+    def proxy_get(uri: str, req: Request):
+        if uri == "/openapi-proxy.json":
+            uri = "/openapi.json"
+
+        res = impl.webui_get(uri, headers=req.headers)
+
+        content = res.content
+        headers = dict(res.headers)
+
+        if uri == "/docs":
+            content = res.text.replace("url: '/openapi.json'", f"url: '{URI_PREFIX}/openapi-proxy.json'")
+        elif uri == "/openapi.json":
+            content = res.json()
+            content["paths"] = {f"{URI_PREFIX}{k}": v for k, v in content["paths"].items()}
+            content = json.dumps(content)
+
+        if isinstance(content, str):
+            content = bytes(content, encoding="utf-8")
+            headers["content-length"] = str(len(content))
+
+        # Return the same response back to the client
+        return Response(content=content, status_code=res.status_code, headers=headers)
+
+    @webui_proxy.post("{uri:path}")
+    async def proxy_post(uri: str, req: Request):
+        body = await req.body()
+        res = impl.webui_post(uri, data=body, headers=req.headers)
+
+        # Return the same response back to the client
+        return Response(content=res.content, status_code=res.status_code, headers=dict(res.headers))
+
+    server_api.mount(f"{URI_PREFIX}", webui_proxy)
+
 
 def stop_backend():
     global backend_process
