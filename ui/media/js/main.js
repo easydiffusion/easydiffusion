@@ -1858,6 +1858,32 @@ controlImagePreview.addEventListener("load", onControlnetModelChange)
 controlImagePreview.addEventListener("unload", onControlnetModelChange)
 onControlnetModelChange()
 
+// tip for Flux
+let sdModelField = document.querySelector("#stable_diffusion_model")
+function checkGuidanceValue() {
+    let guidance = parseFloat(guidanceScaleField.value)
+    let guidanceWarning = document.querySelector("#guidanceWarning")
+    let guidanceWarningText = document.querySelector("#guidanceWarningText")
+    if (sdModelField.value.toLowerCase().includes("flux")) {
+        if (guidance > 1.5) {
+            guidanceWarningText.innerText = "Flux recommends a guidance scale of 1"
+            guidanceWarning.classList.remove("displayNone")
+        } else {
+            guidanceWarning.classList.add("displayNone")
+        }
+    } else {
+        if (guidance < 2) {
+            guidanceWarningText.innerText = "A higher Guidance Scale is recommended!"
+            guidanceWarning.classList.remove("displayNone")
+        } else {
+            guidanceWarning.classList.add("displayNone")
+        }
+    }
+}
+sdModelField.addEventListener("change", checkGuidanceValue)
+guidanceScaleField.addEventListener("change", checkGuidanceValue)
+guidanceScaleSlider.addEventListener("change", checkGuidanceValue)
+
 // function onControlImageFilterChange() {
 //     let filterId = controlImageFilterField.value
 //     if (filterId.includes("openpose")) {

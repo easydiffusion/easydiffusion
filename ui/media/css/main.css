@@ -670,6 +670,11 @@ div.img-preview img {
     display: none;
 }
 
+#guidanceWarningText {
+    color: var(--status-orange);
+    font-size: 9pt;
+}
+
 .display-settings {
     float: right;
     position: relative;
