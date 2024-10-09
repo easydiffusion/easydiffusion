@@ -479,17 +479,3 @@ def get_model_dirs(model_type: str, base_dir=None):
             dirs.append(alt_dir)
 
     return dirs
-
-
-# patch sdkit
-def __patched__get_actual_base_dir(model_type, download_base_dir, subdir_for_model_type):
-    "Patched version that works with case-insensitive model sub-dirs"
-
-    download_base_dir = os.path.join("~", ".cache", "sdkit") if download_base_dir is None else download_base_dir
-    download_base_dir = get_model_dirs(model_type, download_base_dir)[0] if subdir_for_model_type else download_base_dir
-    return os.path.abspath(download_base_dir)
-
-
-from sdkit.models import model_downloader
-
-model_downloader.get_actual_base_dir = __patched__get_actual_base_dir
