@@ -81,6 +81,7 @@ def generate_images(
     context: Context,
     callback=None,
     controlnet_filter=None,
+    distilled_guidance_scale: float = 3.5,
     output_type="pil",
     **req,
 ):

@@ -670,9 +670,9 @@ div.img-preview img {
     display: none;
 }
 
-#guidanceWarningText {
+.warning-label {
+    font-size: smaller;
     color: var(--status-orange);
-    font-size: 9pt;
 }
 
 .display-settings {
@@ -1475,11 +1475,6 @@ div.top-right {
 
 .task-fs-initimage .top-right button {
     margin-top: 6px;
-}
-
-#small_image_warning {
-    font-size: smaller;
-    color: var(--status-orange);
 }
 
 button#save-system-settings-btn {

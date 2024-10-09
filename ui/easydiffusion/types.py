@@ -14,6 +14,7 @@ class GenerateImageRequest(BaseModel):
     num_outputs: int = 1
     num_inference_steps: int = 50
     guidance_scale: float = 7.5
+    distilled_guidance_scale: float = 3.5
 
     init_image: Any = None
     init_image_mask: Any = None
