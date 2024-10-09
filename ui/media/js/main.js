@@ -12,6 +12,10 @@ const taskConfigSetup = {
         seed: { value: ({ seed }) => seed, label: "Seed" },
         dimensions: { value: ({ reqBody }) => `${reqBody?.width}x${reqBody?.height}`, label: "Dimensions" },
         sampler_name: "Sampler",
+        scheduler_name: {
+            label: "Scheduler",
+            visible: ({ reqBody }) => reqBody?.scheduler_name,
+        },
         num_inference_steps: "Inference Steps",
         guidance_scale: "Guidance Scale",
         distilled_guidance_scale: {
@@ -119,6 +123,8 @@ let promptStrengthSlider = document.querySelector("#prompt_strength_slider")
 let promptStrengthField = document.querySelector("#prompt_strength")
 let samplerField = document.querySelector("#sampler_name")
 let samplerSelectionContainer = document.querySelector("#samplerSelection")
+let schedulerField = document.querySelector("#scheduler_name")
+let schedulerSelectionContainer = document.querySelector("#schedulerSelection")
 let useFaceCorrectionField = document.querySelector("#use_face_correction")
 let gfpganModelField = new ModelDropdown(document.querySelector("#gfpgan_model"), ["gfpgan", "codeformer"], "", false)
 let useUpscalingField = document.querySelector("#use_upscale")
@@ -1430,6 +1436,9 @@ function getCurrentUserRequest() {
     }
     if (stableDiffusionModelField.value.toLowerCase().includes("flux")) {
         newTask.reqBody.distilled_guidance_scale = parseFloat(distilledGuidanceScaleField.value)
+    }
+    if (schedulerSelectionContainer.style.display !== "none") {
+        newTask.reqBody.scheduler_name = schedulerField.value
     }
 
     return newTask

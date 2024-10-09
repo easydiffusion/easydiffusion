@@ -26,6 +26,7 @@ class GenerateImageRequest(BaseModel):
     strict_mask_border: bool = False
 
     sampler_name: str = None  # "ddim", "plms", "heun", "euler", "euler_a", "dpm2", "dpm2_a", "lms"
+    scheduler_name: str = None
     hypernetwork_strength: float = 0
     lora_alpha: Union[float, List[float]] = 0
     tiling: str = None  # None, "x", "y", "xy"

@@ -131,6 +131,15 @@ const TASK_MAPPING = {
         readUI: () => parseFloat(guidanceScaleField.value),
         parse: (val) => parseFloat(val),
     },
+    distilled_guidance_scale: {
+        name: "Distilled Guidance",
+        setUI: (distilled_guidance_scale) => {
+            distilledGuidanceScaleField.value = distilled_guidance_scale
+            updateDistilledGuidanceScaleSlider()
+        },
+        readUI: () => parseFloat(distilledGuidanceScaleField.value),
+        parse: (val) => parseFloat(val),
+    },
     prompt_strength: {
         name: "Prompt Strength",
         setUI: (prompt_strength) => {
@@ -590,11 +599,13 @@ const TASK_TEXT_MAPPING = {
     seed: "Seed",
     num_inference_steps: "Steps",
     guidance_scale: "Guidance Scale",
+    distilled_guidance_scale: "Distilled Guidance",
     prompt_strength: "Prompt Strength",
     use_face_correction: "Use Face Correction",
     use_upscale: "Use Upscaling",
     upscale_amount: "Upscale By",
     sampler_name: "Sampler",
+    scheduler_name: "Scheduler",
     negative_prompt: "Negative Prompt",
     use_stable_diffusion_model: "Stable Diffusion model",
     use_hypernetwork_model: "Hypernetwork model",

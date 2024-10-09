@@ -82,6 +82,7 @@ def generate_images(
     callback=None,
     controlnet_filter=None,
     distilled_guidance_scale: float = 3.5,
+    scheduler_name: str = "simple",
     output_type="pil",
     **req,
 ):

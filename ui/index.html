@@ -337,6 +337,26 @@
                         <a href="https://github.com/easydiffusion/easydiffusion/wiki/How-to-Use#samplers" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about samplers</span></i></a>
                     </td></tr>
                     <tr class="pl-5 warning-label displayNone" id="fluxSamplerWarning"><td></td><td>Please avoid 'Euler Ancestral' with Flux!</td></tr>
+                    <tr id="schedulerSelection" class="pl-5 gated-feature" data-feature-keys="backend_webui"><td><label for="scheduler_name">Scheduler:</label></td><td>
+                        <select id="scheduler_name" name="scheduler_name">
+                            <option value="automatic">Automatic</option>
+                            <option value="uniform">Uniform</option>
+                            <option value="karras">Karras</option>
+                            <option value="exponential">Exponential</option>
+                            <option value="polyexponential">Polyexponential</option>
+                            <option value="sgm_uniform">SGM Uniform</option>
+                            <option value="kl_optimal">KL Optimal</option>
+                            <option value="align_your_steps">Align Your Steps</option>
+                            <option value="simple" selected>Simple</option>
+                            <option value="normal">Normal</option>
+                            <option value="ddim">DDIM</option>
+                            <option value="beta">Beta</option>
+                            <option value="turbo">Turbo</option>
+                            <option value="align_your_steps_GITS">Align Your Steps GITS</option>
+                            <option value="align_your_steps_11">Align Your Steps 11</option>
+                            <option value="align_your_steps_32">Align Your Steps 32</option>
+                        </select>
+                    </td></tr>
                     <tr class="pl-5"><td><label>Image Size: </label></td><td id="image-size-options">
                         <select id="width" name="width" value="512">
                             <option value="128">128</option>
