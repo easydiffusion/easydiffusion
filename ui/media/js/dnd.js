@@ -251,6 +251,14 @@ const TASK_MAPPING = {
         readUI: () => samplerField.value,
         parse: (val) => val,
     },
+    scheduler_name: {
+        name: "Scheduler",
+        setUI: (scheduler_name) => {
+            schedulerField.value = scheduler_name
+        },
+        readUI: () => schedulerField.value,
+        parse: (val) => val,
+    },
     use_stable_diffusion_model: {
         name: "Stable Diffusion model",
         setUI: (use_stable_diffusion_model) => {
