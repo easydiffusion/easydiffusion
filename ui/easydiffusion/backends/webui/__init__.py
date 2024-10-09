@@ -143,7 +143,7 @@ def start_backend():
         cmd = "webui.bat" if OS_NAME == "Windows" else "./webui.sh"
 
         print("starting", cmd, WEBUI_DIR)
-        backend_process = run_in_conda([cmd], cwd=WEBUI_DIR, env=env, wait=False, output_prefix="[WEBUI] ")
+        backend_process = run_in_conda([cmd], cwd=WEBUI_DIR, env=env, wait=False, output_prefix="[WebUI] ")
 
         restart_if_dead_thread = threading.Thread(target=restart_if_webui_dies_after_starting)
         restart_if_dead_thread.start()
