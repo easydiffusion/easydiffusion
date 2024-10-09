@@ -137,7 +137,9 @@ def load_model(context, model_type, **kwargs):
 
 
 def unload_model(context, model_type, **kwargs):
-    pass
+    if model_type == "vae":
+        context.model_paths[model_type] = None
+        load_model(context, model_type)
 
 
 def generate_images(
