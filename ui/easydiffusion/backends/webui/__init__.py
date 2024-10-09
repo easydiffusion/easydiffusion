@@ -4,6 +4,7 @@ import subprocess
 import threading
 from threading import local
 import psutil
+import time
 import shutil
 
 from easydiffusion.app import ROOT_DIR, getConfig
@@ -117,17 +118,37 @@ def start_backend():
     env = dict(os.environ)
     env.update(get_env())
 
+    def restart_if_webui_dies_after_starting():
+        has_started = False
+
+        while True:
+            try:
+                impl.ping(timeout=1)
+                has_started = True
+            except (TimeoutError, ConnectionError):
+                if has_started:  # process probably died
+                    print("######################## WebUI probably died. Restarting...")
+                    stop_backend()
+                    backend_thread = threading.Thread(target=target)
+                    backend_thread.start()
+                    break
+            except Exception:
+                pass
+
+            time.sleep(1)
+
     def target():
         global backend_process
 
         cmd = "webui.bat" if OS_NAME == "Windows" else "./webui.sh"
 
-        while True:
-            print("starting", cmd, WEBUI_DIR)
-            backend_process = run_in_conda([cmd], cwd=WEBUI_DIR, env=env, wait=False)
-            backend_process.wait()
+        print("starting", cmd, WEBUI_DIR)
+        backend_process = run_in_conda([cmd], cwd=WEBUI_DIR, env=env, wait=False, output_prefix="[WEBUI] ")
 
-            stop_backend()
+        restart_if_dead_thread = threading.Thread(target=restart_if_webui_dies_after_starting)
+        restart_if_dead_thread.start()
+
+        backend_process.wait()
 
     backend_thread = threading.Thread(target=target)
     backend_thread.start()
@@ -213,17 +234,20 @@ def is_installed():
     return False
 
 
-def run(cmds: list, cwd=None, env=None, stream_output=True, wait=True):
-    p = subprocess.Popen(cmds, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+def read_output(pipe, prefix=""):
+    while True:
+        output = pipe.readline()
+        if output:
+            print(f"{prefix}{output.decode('utf-8')}", end="")
+        else:
+            break  # Pipe is closed, subprocess has likely exited
 
+
+def run(cmds: list, cwd=None, env=None, stream_output=True, wait=True, output_prefix=""):
+    p = subprocess.Popen(cmds, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     if stream_output:
-        while True:
-            output = p.stdout.readline()
-            output = output.decode()
-            if output == "" and p.poll() is not None:
-                break
-            if output:
-                print(output, end="")
+        output_thread = threading.Thread(target=read_output, args=(p.stdout, output_prefix))
+        output_thread.start()
 
     if wait:
         p.wait()
