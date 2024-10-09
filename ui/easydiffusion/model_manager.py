@@ -438,17 +438,12 @@ def getModels(scan_for_malicious: bool = True):
         if not os.path.exists(models_dirs[0]):
             os.makedirs(models_dirs[0])
 
-        models["options"][model_type] = []
-        default_tree = models["options"].get(model_type, [])
-
         for model_dir in models_dirs:
             try:
-                scanned_models = scan_directory(
+                default_tree = models["options"].get(model_type, [])
+                models["options"][model_type] = scan_directory(
                     model_dir, model_extensions, default_entries=default_tree, nameFilter=nameFilter
                 )
-                for m in scanned_models:
-                    if m not in models["options"][model_type]:
-                        models["options"][model_type].append(m)
             except MaliciousModelException as e:
                 models["scan-error"] = str(e)
 
