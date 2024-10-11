@@ -6,7 +6,7 @@
 - **LyCORIS** - including `LoCon`, `Hada`, `IA3` and `Lokr`.
 - **11 new samplers** - `DDIM CFG++`, `DPM Fast`, `DPM++ 2m SDE Heun`, `DPM++ 3M SDE`, `Restart`, `Heun PP2`, `IPNDM`, `IPNDM_V`, `LCM`, `[Forge] Flux Realistic`, `[Forge] Flux Realistic (Slow)`.
 - **15 new schedulers** - `Uniform`, `Karras`, `Exponential`, `Polyexponential`, `SGM Uniform`, `KL Optimal`, `Align Your Steps`, `Normal`, `DDIM`, `Beta`, `Turbo`, `Align Your Steps GITS`, `Align Your Steps 11`, `Align Your Steps 32`.
-- **42 new Controlnet filters, and lots of new ControlNet models supported** (including QR ControlNets).
+- **42 new Controlnet filters, and support for lots of new ControlNet models** (including QR ControlNets).
 - **5 upscalers** - `SwinIR`, `ScuNET`, `Nearest`, `Lanczos`, `ESRGAN`.
 - **Faster than v3.0**
 - **Major rewrite of the code** - We've switched to `Forge WebUI` under the hood, which brings a lot of new features, faster image generation, and support for all the extensions in the Forge/Automatic1111 community. This allows Easy Diffusion to stay up-to-date with the latest features, and focus on making the UI and installation experience even easier.
