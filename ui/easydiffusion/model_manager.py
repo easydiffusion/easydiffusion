@@ -107,7 +107,7 @@ def unload_all(context: Context):
 
     for model_type in KNOWN_MODEL_TYPES:
         backend.unload_model(context, model_type)
-        if model_type in context.model_load_errors:
+        if hasattr(context, "model_load_errors") and model_type in context.model_load_errors:
             del context.model_load_errors[model_type]
 
 
