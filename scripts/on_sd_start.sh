@@ -12,7 +12,7 @@ cp sd-ui-files/scripts/webui_console.py scripts/
 source ./scripts/functions.sh
 
 # activate the installer env
-CONDA_BASEPATH=$(conda info --base)
+export CONDA_BASEPATH=$(conda info --base)
 source "$CONDA_BASEPATH/etc/profile.d/conda.sh" # avoids the 'shell not initialized' error
 
 conda activate || fail "Failed to activate conda"
