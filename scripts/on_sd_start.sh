@@ -17,6 +17,9 @@ source "$CONDA_BASEPATH/etc/profile.d/conda.sh" # avoids the 'shell not initiali
 
 conda activate || fail "Failed to activate conda"
 
+# hack to fix conda 4.14 on older installations
+cp $CONDA_BASEPATH/condabin/conda $CONDA_BASEPATH/bin/conda
+
 # remove the old version of the dev console script, if it's still present
 if [ -e "open_dev_console.sh" ]; then
     rm "open_dev_console.sh"
