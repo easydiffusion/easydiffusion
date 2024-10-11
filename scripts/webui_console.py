@@ -54,6 +54,18 @@ def configure_env(dir):
 def print_env_info():
     which_cmd = "where" if platform.system() == "Windows" else "which"
 
+    python = "python"
+
+    def locate_python():
+        nonlocal python
+
+        python = subprocess.getoutput(f"{which_cmd} python")
+        python = python.split("\n")
+        python = python[0].strip()
+        print("python: ", python)
+
+    locate_python()
+
     def run(cmd):
         with subprocess.Popen(cmd) as p:
             p.wait()
@@ -61,7 +73,7 @@ def print_env_info():
     run([which_cmd, "git"])
     run(["git", "--version"])
     run([which_cmd, "python"])
-    run(["python", "--version"])
+    run([python, "--version"])
 
     print(f"PATH={os.environ['PATH']}")
 
