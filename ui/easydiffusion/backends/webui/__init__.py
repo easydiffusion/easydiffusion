@@ -102,8 +102,6 @@ def start_backend():
         install_backend()
 
     was_still_installing = not is_installed()
-    print(f"was_still_installing = {was_still_installing}")
-    was_still_installing = True
 
     if backend_config.get("auto_update", True):
         run_in_conda(["git", "add", "-A", "."], cwd=WEBUI_DIR)
