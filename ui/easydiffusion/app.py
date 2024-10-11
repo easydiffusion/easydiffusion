@@ -350,8 +350,8 @@ def open_browser():
             Panel(
                 "\n"
                 + f"[white]Backend: {backend_name} is still installing..\n\n"
-                + "Please wait until it finishes installing before making images.\n"
-                + f"The UI will turn green in the top-right corner once it is ready (in [bold yellow underline]http://localhost:{port}[/]).\n",
+                + "A new browser tab will open automatically after it finishes.\n"
+                + f"If it does not, please open your web browser and navigate to [bold yellow underline]http://localhost:{port}/\n",
                 title=f"Backend engine is installing",
                 style="bold yellow on blue",
             )
