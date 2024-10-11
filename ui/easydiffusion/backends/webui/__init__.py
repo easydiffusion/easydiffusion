@@ -66,8 +66,8 @@ def locate_conda():
         conda = conda[0].strip()
     else:
         if "CONDA_BASEPATH" in os.environ:
-            base_path = os.environ.get["CONDA_BASEPATH"]
-            print("basepath", base_path)
+            base_path = os.environ["CONDA_BASEPATH"]
+            print(f"conda basepath: {base_path}")
         else:
             base_path = subprocess.getoutput("conda info --base")
 
