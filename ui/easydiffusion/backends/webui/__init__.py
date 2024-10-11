@@ -102,6 +102,8 @@ def start_backend():
         install_backend()
 
     was_still_installing = not is_installed()
+    print(f"was_still_installing = {was_still_installing}")
+    was_still_installing = True
 
     if backend_config.get("auto_update", True):
         run_in_conda(["git", "add", "-A", "."], cwd=WEBUI_DIR)
@@ -128,7 +130,10 @@ def start_backend():
             try:
                 impl.ping(timeout=1)
 
-                if was_still_installing and not has_started:  # first start
+                is_first_start = not has_started
+                has_started = True
+
+                if was_still_installing and is_first_start:
                     ui = config.get("ui", {})
 
                     if ui.get("open_browser_on_start", True):
@@ -137,8 +142,6 @@ def start_backend():
                         log.info("Opening browser..")
 
                         webbrowser.open(f"http://localhost:{port}")
-
-                has_started = True
             except (TimeoutError, ConnectionError):
                 if has_started:  # process probably died
                     print("######################## WebUI probably died. Restarting...")
@@ -147,7 +150,9 @@ def start_backend():
                     backend_thread.start()
                     break
             except Exception:
-                pass
+                import traceback
+
+                log.exception(traceback.format_exc())
 
             time.sleep(1)
 
