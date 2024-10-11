@@ -135,6 +135,8 @@ def start_backend():
 
                 if was_still_installing and is_first_start:
                     ui = config.get("ui", {})
+                    net = config.get("net", {})
+                    port = net.get("listen_port", 9000)
 
                     if ui.get("open_browser_on_start", True):
                         import webbrowser
