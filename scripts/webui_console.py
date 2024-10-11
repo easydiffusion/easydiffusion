@@ -55,7 +55,7 @@ def print_env_info():
     which_cmd = "where" if platform.system() == "Windows" else "which"
 
     def run(cmd):
-        with subprocess.Popen(cmd, shell=True) as p:
+        with subprocess.Popen(cmd) as p:
             p.wait()
 
     run([which_cmd, "git"])
@@ -76,9 +76,9 @@ def print_env_info():
 
 def open_dev_shell():
     if platform.system() == "Windows":
-        subprocess.Popen("cmd", shell=True).communicate()
+        subprocess.Popen("cmd").communicate()
     else:
-        subprocess.Popen("bash", shell=True).communicate()
+        subprocess.Popen("bash").communicate()
 
 
 if __name__ == "__main__":
