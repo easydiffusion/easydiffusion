@@ -60,10 +60,14 @@ conda = "conda"
 def locate_conda():
     global conda
 
-    which = "where" if OS_NAME == "Windows" else "which"
-    conda = subprocess.getoutput(f"{which} conda")
-    conda = conda.split("\n")
-    conda = conda[0].strip()
+    if OS_NAME == "Windows":
+        conda = subprocess.getoutput("where conda")
+        conda = conda.split("\n")
+        conda = conda[0].strip()
+    else:
+        base_path = subprocess.getoutput("conda info --base")
+        conda = f"{base_path}/condabin/conda"
+
     print("conda: ", conda)
 
 
