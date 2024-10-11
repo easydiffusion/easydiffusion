@@ -272,6 +272,7 @@ def read_output(pipe, prefix=""):
 
 
 def run(cmds: list, cwd=None, env=None, stream_output=True, wait=True, output_prefix=""):
+    print("running:", " ".join(cmds))
     p = subprocess.Popen(cmds, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     if stream_output:
         output_thread = threading.Thread(target=read_output, args=(p.stdout, output_prefix))
