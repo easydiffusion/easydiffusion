@@ -60,19 +60,10 @@ conda = "conda"
 def locate_conda():
     global conda
 
-    if OS_NAME == "Windows":
-        conda = subprocess.getoutput("where conda")
-        conda = conda.split("\n")
-        conda = conda[0].strip()
-    else:
-        if "CONDA_BASEPATH" in os.environ:
-            base_path = os.environ["CONDA_BASEPATH"]
-            print(f"conda basepath: {base_path}")
-        else:
-            base_path = subprocess.getoutput("conda info --base")
-
-        conda = f"{base_path}/condabin/conda"
-
+    which = "where" if OS_NAME == "Windows" else "which"
+    conda = subprocess.getoutput(f"{which} conda")
+    conda = conda.split("\n")
+    conda = conda[0].strip()
     print("conda: ", conda)
 
 
@@ -272,7 +263,6 @@ def read_output(pipe, prefix=""):
 
 
 def run(cmds: list, cwd=None, env=None, stream_output=True, wait=True, output_prefix=""):
-    print("running:", " ".join(cmds))
     p = subprocess.Popen(cmds, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     if stream_output:
         output_thread = threading.Thread(target=read_output, args=(p.stdout, output_prefix))
