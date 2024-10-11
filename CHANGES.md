@@ -2,8 +2,7 @@
 
 ## v3.5 (preview)
 ### Major Changes
-- **Flux**
-- **Stable Diffusion 3**
+- **Flux** - full support for the Flux model, including quantized bnb and nf4 models.
 - **LyCORIS** - including `LoCon`, `Hada`, `IA3` and `Lokr`.
 - **11 new samplers** - `DDIM CFG++`, `DPM Fast`, `DPM++ 2m SDE Heun`, `DPM++ 3M SDE`, `Restart`, `Heun PP2`, `IPNDM`, `IPNDM_V`, `LCM`, `[Forge] Flux Realistic`, `[Forge] Flux Realistic (Slow)`.
 - **15 new schedulers** - `Uniform`, `Karras`, `Exponential`, `Polyexponential`, `SGM Uniform`, `KL Optimal`, `Align Your Steps`, `Normal`, `DDIM`, `Beta`, `Turbo`, `Align Your Steps GITS`, `Align Your Steps 11`, `Align Your Steps 32`.
