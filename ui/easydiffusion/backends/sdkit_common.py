@@ -133,6 +133,9 @@ def filter_images(context: Context, images, filters, filter_params={}, input_typ
     if "nsfw_checker" in filters:
         filters.remove("nsfw_checker")  # handled by ED directly
 
+    if len(filters) == 0:
+        return images
+
     images = _filter_images(context, images, filters, filter_params)
 
     if input_type == "base64":
