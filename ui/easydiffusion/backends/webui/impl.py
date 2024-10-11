@@ -1,6 +1,6 @@
 import os
 import requests
-from requests.exceptions import ConnectTimeout
+from requests.exceptions import ConnectTimeout, ConnectionError
 from typing import Union, List
 from threading import local as Context
 from threading import Thread
@@ -91,7 +91,7 @@ def ping(timeout=1):
                 print(f"Error getting options: {e}")
 
         return True
-    except ConnectTimeout as e:
+    except (ConnectTimeout, ConnectionError) as e:
         raise TimeoutError(e)
 
 
