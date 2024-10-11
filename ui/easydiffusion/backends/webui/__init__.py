@@ -9,6 +9,7 @@ import shutil
 
 from easydiffusion.app import ROOT_DIR, getConfig
 from easydiffusion.model_manager import get_model_dirs
+from easydiffusion.utils import log
 
 from . import impl
 from .impl import (
@@ -100,6 +101,8 @@ def start_backend():
     if not os.path.exists(BACKEND_DIR):
         install_backend()
 
+    was_still_installing = not is_installed()
+
     if backend_config.get("auto_update", True):
         run_in_conda(["git", "add", "-A", "."], cwd=WEBUI_DIR)
         run_in_conda(["git", "stash"], cwd=WEBUI_DIR)
@@ -124,6 +127,17 @@ def start_backend():
         while True:
             try:
                 impl.ping(timeout=1)
+
+                if was_still_installing and not has_started:  # first start
+                    ui = config.get("ui", {})
+
+                    if ui.get("open_browser_on_start", True):
+                        import webbrowser
+
+                        log.info("Opening browser..")
+
+                        webbrowser.open(f"http://localhost:{port}")
+
                 has_started = True
             except (TimeoutError, ConnectionError):
                 if has_started:  # process probably died

@@ -319,21 +319,21 @@ def getIPConfig():
 
 
 def open_browser():
+    from easydiffusion.backend_manager import backend
+
     config = getConfig()
     ui = config.get("ui", {})
     net = config.get("net", {})
     port = net.get("listen_port", 9000)
 
-    if ui.get("open_browser_on_start", True):
-        import webbrowser
-
-        log.info("Opening browser..")
-
-        webbrowser.open(f"http://localhost:{port}")
-
-    from easydiffusion.backend_manager import backend
-
     if backend.is_installed():
+        if ui.get("open_browser_on_start", True):
+            import webbrowser
+
+            log.info("Opening browser..")
+
+            webbrowser.open(f"http://localhost:{port}")
+
         Console().print(
             Panel(
                 "\n"
