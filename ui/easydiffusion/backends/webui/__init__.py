@@ -379,6 +379,16 @@ def get_env():
         elif vram_usage_level == "high":
             env_entries["COMMANDLINE_ARGS"][0] += " --always-high-vram"
 
+    # check and force full-precision on NVIDIA 16xx graphics cards
+    import torch
+    from easydiffusion.device_manager import needs_to_force_full_precision
+
+    c = local()
+    c.device_name = torch.cuda.get_device_name()
+
+    if needs_to_force_full_precision(c):
+        env_entries["COMMANDLINE_ARGS"][0] += " --no-half --precision full"
+
     env = {}
     for key, paths in env_entries.items():
         paths = [p.replace("/", os.path.sep) for p in paths]
