@@ -6,15 +6,19 @@ cp sd-ui-files/scripts/bootstrap.sh scripts/
 cp sd-ui-files/scripts/check_modules.py scripts/
 cp sd-ui-files/scripts/get_config.py scripts/
 cp sd-ui-files/scripts/config.yaml.sample scripts/
+cp sd-ui-files/scripts/webui_console.py scripts/
      
 
 source ./scripts/functions.sh
 
 # activate the installer env
-CONDA_BASEPATH=$(conda info --base)
+export CONDA_BASEPATH=$(conda info --base)
 source "$CONDA_BASEPATH/etc/profile.d/conda.sh" # avoids the 'shell not initialized' error
 
 conda activate || fail "Failed to activate conda"
+
+# hack to fix conda 4.14 on older installations
+cp $CONDA_BASEPATH/condabin/conda $CONDA_BASEPATH/bin/conda
 
 # remove the old version of the dev console script, if it's still present
 if [ -e "open_dev_console.sh" ]; then

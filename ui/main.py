@@ -9,6 +9,3 @@ server.init()
 model_manager.init()
 app.init_render_threads()
 bucket_manager.init()
-
-# start the browser ui
-app.open_browser()
