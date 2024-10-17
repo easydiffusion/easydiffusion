@@ -31,6 +31,8 @@ const SETTINGS_IDS_LIST = [
     "stream_image_progress",
     "use_face_correction",
     "gfpgan_model",
+    "codeformer_fidelity",
+    "codeformer_upscale_faces",
     "use_upscale",
     "upscale_amount",
     "latent_upscaler_steps",

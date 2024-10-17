@@ -1879,6 +1879,11 @@ controlImagePreview.addEventListener("load", onControlnetModelChange)
 controlImagePreview.addEventListener("unload", onControlnetModelChange)
 onControlnetModelChange()
 
+document.addEventListener("refreshModels", function() {
+    onFixFaceModelChange()
+    onControlnetModelChange()
+})
+
 // tip for Flux
 let sdModelField = document.querySelector("#stable_diffusion_model")
 function checkGuidanceValue() {
