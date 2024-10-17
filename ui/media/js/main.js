@@ -1932,13 +1932,52 @@ function checkFluxSampler() {
         samplerWarning.classList.add("displayNone")
     }
 }
+
+function checkFluxScheduler() {
+    const badSchedulers = ["automatic", "uniform", "turbo", "align_your_steps", "align_your_steps_GITS", "align_your_steps_11", "align_your_steps_32"]
+
+    let schedulerWarning = document.querySelector("#fluxSchedulerWarning")
+    if (sdModelField.value.toLowerCase().includes("flux")) {
+        if (badSchedulers.includes(schedulerField.value)) {
+            schedulerWarning.classList.remove("displayNone")
+        } else {
+            schedulerWarning.classList.add("displayNone")
+        }
+    } else {
+        schedulerWarning.classList.add("displayNone")
+    }
+}
+
+function checkFluxSchedulerSteps() {
+    const problematicSchedulers = ["karras", "exponential", "polyexponential"]
+
+    let schedulerWarning = document.querySelector("#fluxSchedulerStepsWarning")
+    if (sdModelField.value.toLowerCase().includes("flux") && parseInt(numInferenceStepsField.value) < 15) {
+        if (problematicSchedulers.includes(schedulerField.value)) {
+            schedulerWarning.classList.remove("displayNone")
+        } else {
+            schedulerWarning.classList.add("displayNone")
+        }
+    } else {
+        schedulerWarning.classList.add("displayNone")
+    }
+}
 sdModelField.addEventListener("change", checkFluxSampler)
 samplerField.addEventListener("change", checkFluxSampler)
+
+sdModelField.addEventListener("change", checkFluxScheduler)
+schedulerField.addEventListener("change", checkFluxScheduler)
+
+sdModelField.addEventListener("change", checkFluxSchedulerSteps)
+schedulerField.addEventListener("change", checkFluxSchedulerSteps)
+numInferenceStepsField.addEventListener("change", checkFluxSchedulerSteps)
 
 document.addEventListener("refreshModels", function() {
     checkGuidanceValue()
     checkGuidanceScaleVisibility()
     checkFluxSampler()
+    checkFluxScheduler()
+    checkFluxSchedulerSteps()
 })
 
 // function onControlImageFilterChange() {

@@ -339,7 +339,7 @@
                         </select>
                         <a href="https://github.com/easydiffusion/easydiffusion/wiki/How-to-Use#samplers" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about samplers</span></i></a>
                     </td></tr>
-                    <tr class="pl-5 warning-label displayNone" id="fluxSamplerWarning"><td></td><td>Please avoid 'Euler Ancestral' with Flux!</td></tr>
+                    <tr class="pl-5 warning-label displayNone" id="fluxSamplerWarning"><td>Tip:</td><td>This sampler does not work well with Flux!</td></tr>
                     <tr id="schedulerSelection" class="pl-5 gated-feature" data-feature-keys="backend_webui"><td><label for="scheduler_name">Scheduler:</label></td><td>
                         <select id="scheduler_name" name="scheduler_name">
                             <option value="automatic">Automatic</option>
@@ -349,17 +349,18 @@
                             <option value="polyexponential">Polyexponential</option>
                             <option value="sgm_uniform">SGM Uniform</option>
                             <option value="kl_optimal">KL Optimal</option>
-                            <option value="align_your_steps">Align Your Steps</option>
                             <option value="simple" selected>Simple</option>
                             <option value="normal">Normal</option>
                             <option value="ddim">DDIM</option>
                             <option value="beta">Beta</option>
                             <option value="turbo">Turbo</option>
+                            <option value="align_your_steps">Align Your Steps</option>
                             <option value="align_your_steps_GITS">Align Your Steps GITS</option>
                             <option value="align_your_steps_11">Align Your Steps 11</option>
                             <option value="align_your_steps_32">Align Your Steps 32</option>
                         </select>
                     </td></tr>
+                    <tr class="pl-5 warning-label displayNone" id="fluxSchedulerWarning"><td>Tip:</td><td>This scheduler does not work well with Flux!</td></tr>
                     <tr class="pl-5"><td><label>Image Size: </label></td><td id="image-size-options">
                         <select id="width" name="width" value="512">
                             <option value="128">128</option>
@@ -437,6 +438,7 @@
                         <div id="small_image_warning" class="displayNone warning-label">Small image sizes can cause bad image quality</div>
                     </td></tr>
                     <tr class="pl-5"><td><label for="num_inference_steps">Inference Steps:</label></td><td> <input id="num_inference_steps" name="num_inference_steps" type="number" min="1" step="1" style="width: 42pt" value="25" onkeypress="preventNonNumericalInput(event)" inputmode="numeric"></td></tr>
+                    <tr class="pl-5 warning-label displayNone" id="fluxSchedulerStepsWarning"><td>Tip:</td><td>This scheduler needs 15 steps or more</td></tr>
                     <tr class="pl-5"><td><label for="guidance_scale_slider">Guidance Scale:</label></td><td> <input id="guidance_scale_slider" name="guidance_scale_slider" class="editor-slider" value="75" type="range" min="11" max="500"> <input id="guidance_scale" name="guidance_scale" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" inputmode="decimal"></td></tr>
                     <tr class="pl-5 displayNone warning-label" id="guidanceWarning"><td></td><td id="guidanceWarningText"></td></tr>
                     <tr id="prompt_strength_container" class="pl-5"><td><label for="prompt_strength_slider">Prompt Strength:</label></td><td> <input id="prompt_strength_slider" name="prompt_strength_slider" class="editor-slider" value="80" type="range" min="0" max="99"> <input id="prompt_strength" name="prompt_strength" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" inputmode="decimal"><br/></td></tr>
