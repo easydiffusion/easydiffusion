@@ -9,7 +9,6 @@ from easydiffusion.types import ModelsData
 from easydiffusion.utils import log
 from sdkit import Context
 from sdkit.models import scan_model, download_model, get_model_info_from_db
-from sdkit.models.model_loader.controlnet_filters import filters as cn_filters
 from sdkit.utils import hash_file_quick
 from sdkit.models.model_loader.embeddings import get_embedding_token
 
@@ -203,6 +202,10 @@ def reload_models_if_necessary(context: Context, models_data: ModelsData, models
 
 
 def resolve_model_paths(models_data: ModelsData):
+    from easydiffusion.backend_manager import backend
+
+    cn_filters = backend.list_controlnet_filters()
+
     model_paths = models_data.model_paths
     skip_models = cn_filters + [
         "latent_upscaler",
