@@ -38,7 +38,7 @@ def set_vram_optimizations(context):
     config = getConfig()
     vram_usage_level = config.get("vram_usage_level", "balanced")
 
-    if vram_usage_level != context.vram_usage_level:
+    if hasattr(context, "vram_usage_level") and vram_usage_level != context.vram_usage_level:
         context.vram_usage_level = vram_usage_level
         return True
 
