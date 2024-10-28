@@ -126,7 +126,7 @@ def start_backend():
 
         while True:
             try:
-                impl.ping(timeout=1)
+                impl.ping(timeout=30)
 
                 is_first_start = not has_started
                 has_started = True

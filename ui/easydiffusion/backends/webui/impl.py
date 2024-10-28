@@ -1,6 +1,6 @@
 import os
 import requests
-from requests.exceptions import ConnectTimeout, ConnectionError
+from requests.exceptions import ConnectTimeout, ConnectionError, ReadTimeout
 from typing import Union, List
 from threading import local as Context
 from threading import Thread
@@ -8,7 +8,7 @@ import uuid
 import time
 from copy import deepcopy
 
-from sdkit.utils import base64_str_to_img, img_to_base64_str
+from sdkit.utils import base64_str_to_img, img_to_base64_str, log
 
 WEBUI_HOST = "localhost"
 WEBUI_PORT = "7860"
@@ -91,7 +91,7 @@ def ping(timeout=1):
                 print(f"Error getting options: {e}")
 
         return True
-    except (ConnectTimeout, ConnectionError) as e:
+    except (ConnectTimeout, ConnectionError, ReadTimeout) as e:
         raise TimeoutError(e)
 
 
