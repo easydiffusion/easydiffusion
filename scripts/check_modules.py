@@ -35,7 +35,7 @@ modules_to_check = {
     "python-multipart": "0.0.6",
     # "xformers": "0.0.16",
     "onnxruntime": "1.19.2",
-    "huggingface-hub": "0.23.2",
+    "huggingface-hub": "0.21.4",
 }
 modules_to_log = ["torch", "torchvision", "sdkit", "stable-diffusion-sdkit", "diffusers"]
 
