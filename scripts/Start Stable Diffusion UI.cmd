@@ -3,7 +3,7 @@
 cd /d %~dp0
 echo Install dir: %~dp0
 
-set PATH=C:\Windows\System32;%PATH%
+set PATH=C:\Windows\System32;C:\Windows\System32\wbem;%PATH%
 set PYTHONHOME=
 
 if exist "on_sd_start.bat" (

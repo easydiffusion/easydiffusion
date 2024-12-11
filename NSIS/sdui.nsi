@@ -235,8 +235,8 @@ Section "MainSection" SEC01
   CreateDirectory "$SMPROGRAMS\Easy Diffusion"
   CreateShortCut "$SMPROGRAMS\Easy Diffusion\Easy Diffusion.lnk" "$INSTDIR\Start Stable Diffusion UI.cmd" "" "$INSTDIR\installer_files\cyborg_flower_girl.ico"
 
-  DetailPrint 'Downloading the Stable Diffusion 1.5 model...'
-  NScurl::http get "https://github.com/easydiffusion/sdkit-test-data/releases/download/assets/sd-v1-5.safetensors" "$INSTDIR\models\stable-diffusion\sd-v1-5.safetensors" /CANCEL /INSIST /END
+  DetailPrint 'Downloading the Stable Diffusion 1.4 model...'
+  NScurl::http get "https://github.com/easydiffusion/sdkit-test-data/releases/download/assets/sd-v1-4.safetensors" "$INSTDIR\models\stable-diffusion\sd-v1-4.safetensors" /CANCEL /INSIST /END
 
   DetailPrint 'Downloading the GFPGAN model...'
   NScurl::http get "https://github.com/TencentARC/GFPGAN/releases/download/v1.3.4/GFPGANv1.4.pth" "$INSTDIR\models\gfpgan\GFPGANv1.4.pth" /CANCEL /INSIST /END

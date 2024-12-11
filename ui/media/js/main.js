@@ -12,8 +12,16 @@ const taskConfigSetup = {
         seed: { value: ({ seed }) => seed, label: "Seed" },
         dimensions: { value: ({ reqBody }) => `${reqBody?.width}x${reqBody?.height}`, label: "Dimensions" },
         sampler_name: "Sampler",
+        scheduler_name: {
+            label: "Scheduler",
+            visible: ({ reqBody }) => reqBody?.scheduler_name,
+        },
         num_inference_steps: "Inference Steps",
         guidance_scale: "Guidance Scale",
+        distilled_guidance_scale: {
+            label: "Distilled Guidance Scale",
+            visible: ({ reqBody }) => reqBody?.distilled_guidance_scale,
+        },
         use_stable_diffusion_model: "Model",
         clip_skip: {
             label: "Clip Skip",
@@ -76,6 +84,8 @@ let numOutputsParallelField = document.querySelector("#num_outputs_parallel")
 let numInferenceStepsField = document.querySelector("#num_inference_steps")
 let guidanceScaleSlider = document.querySelector("#guidance_scale_slider")
 let guidanceScaleField = document.querySelector("#guidance_scale")
+let distilledGuidanceScaleSlider = document.querySelector("#distilled_guidance_scale_slider")
+let distilledGuidanceScaleField = document.querySelector("#distilled_guidance_scale")
 let outputQualitySlider = document.querySelector("#output_quality_slider")
 let outputQualityField = document.querySelector("#output_quality")
 let outputQualityRow = document.querySelector("#output_quality_row")
@@ -113,6 +123,8 @@ let promptStrengthSlider = document.querySelector("#prompt_strength_slider")
 let promptStrengthField = document.querySelector("#prompt_strength")
 let samplerField = document.querySelector("#sampler_name")
 let samplerSelectionContainer = document.querySelector("#samplerSelection")
+let schedulerField = document.querySelector("#scheduler_name")
+let schedulerSelectionContainer = document.querySelector("#schedulerSelection")
 let useFaceCorrectionField = document.querySelector("#use_face_correction")
 let gfpganModelField = new ModelDropdown(document.querySelector("#gfpgan_model"), ["gfpgan", "codeformer"], "", false)
 let useUpscalingField = document.querySelector("#use_upscale")
@@ -981,7 +993,20 @@ function onRedoFilter(req, img, e, tools) {
 function onUpscaleClick(req, img, e, tools) {
     let path = upscaleModelField.value
     let scale = parseInt(upscaleAmountField.value)
-    let filterName = path.toLowerCase().includes("realesrgan") ? "realesrgan" : "latent_upscaler"
+
+    let filterName = null
+    const FILTERS = ["realesrgan", "latent_upscaler", "esrgan_4x", "lanczos", "nearest", "scunet", "swinir"]
+    for (let idx in FILTERS) {
+        let f = FILTERS[idx]
+        if (path.toLowerCase().includes(f)) {
+            filterName = f
+            break
+        }
+    }
+
+    if (!filterName) {
+        return
+    }
     let statusText = "Upscaling by " + scale + "x using " + filterName
     applyInlineFilter(filterName, path, { scale: scale }, img, statusText, tools)
 }
@@ -1037,6 +1062,9 @@ function makeImage() {
     }
     if (guidanceScaleField.value == "") {
         guidanceScaleField.value = guidanceScaleSlider.value / 10
+    }
+    if (distilledGuidanceScaleField.value == "") {
+        distilledGuidanceScaleField.value = distilledGuidanceScaleSlider.value / 10
     }
     if (hypernetworkStrengthField.value == "") {
         hypernetworkStrengthField.value = hypernetworkStrengthSlider.value / 100
@@ -1405,6 +1433,12 @@ function getCurrentUserRequest() {
         if (controlImageFilterField.value !== "") {
             newTask.reqBody.control_filter_to_apply = controlImageFilterField.value
         }
+    }
+    if (stableDiffusionModelField.value.toLowerCase().includes("flux")) {
+        newTask.reqBody.distilled_guidance_scale = parseFloat(distilledGuidanceScaleField.value)
+    }
+    if (schedulerSelectionContainer.style.display !== "none") {
+        newTask.reqBody.scheduler_name = schedulerField.value
     }
 
     return newTask
@@ -1845,36 +1879,137 @@ controlImagePreview.addEventListener("load", onControlnetModelChange)
 controlImagePreview.addEventListener("unload", onControlnetModelChange)
 onControlnetModelChange()
 
-function onControlImageFilterChange() {
-    let filterId = controlImageFilterField.value
-    if (filterId.includes("openpose")) {
-        controlnetModelField.value = "control_v11p_sd15_openpose"
-    } else if (filterId === "canny") {
-        controlnetModelField.value = "control_v11p_sd15_canny"
-    } else if (filterId === "mlsd") {
-        controlnetModelField.value = "control_v11p_sd15_mlsd"
-    } else if (filterId === "mlsd") {
-        controlnetModelField.value = "control_v11p_sd15_mlsd"
-    } else if (filterId.includes("scribble")) {
-        controlnetModelField.value = "control_v11p_sd15_scribble"
-    } else if (filterId.includes("softedge")) {
-        controlnetModelField.value = "control_v11p_sd15_softedge"
-    } else if (filterId === "normal_bae") {
-        controlnetModelField.value = "control_v11p_sd15_normalbae"
-    } else if (filterId.includes("depth")) {
-        controlnetModelField.value = "control_v11f1p_sd15_depth"
-    } else if (filterId === "lineart_anime") {
-        controlnetModelField.value = "control_v11p_sd15s2_lineart_anime"
-    } else if (filterId.includes("lineart")) {
-        controlnetModelField.value = "control_v11p_sd15_lineart"
-    } else if (filterId === "shuffle") {
-        controlnetModelField.value = "control_v11e_sd15_shuffle"
-    } else if (filterId === "segment") {
-        controlnetModelField.value = "control_v11p_sd15_seg"
+document.addEventListener("refreshModels", function() {
+    onFixFaceModelChange()
+    onControlnetModelChange()
+})
+
+// tip for Flux
+let sdModelField = document.querySelector("#stable_diffusion_model")
+function checkGuidanceValue() {
+    let guidance = parseFloat(guidanceScaleField.value)
+    let guidanceWarning = document.querySelector("#guidanceWarning")
+    let guidanceWarningText = document.querySelector("#guidanceWarningText")
+    if (sdModelField.value.toLowerCase().includes("flux")) {
+        if (guidance > 1.5) {
+            guidanceWarningText.innerText = "Flux recommends a 'Guidance Scale' of 1"
+            guidanceWarning.classList.remove("displayNone")
+        } else {
+            guidanceWarning.classList.add("displayNone")
+        }
+    } else {
+        if (guidance < 2) {
+            guidanceWarningText.innerText = "A higher 'Guidance Scale' is recommended!"
+            guidanceWarning.classList.remove("displayNone")
+        } else {
+            guidanceWarning.classList.add("displayNone")
+        }
     }
 }
-controlImageFilterField.addEventListener("change", onControlImageFilterChange)
-onControlImageFilterChange()
+sdModelField.addEventListener("change", checkGuidanceValue)
+guidanceScaleField.addEventListener("change", checkGuidanceValue)
+guidanceScaleSlider.addEventListener("change", checkGuidanceValue)
+
+function checkGuidanceScaleVisibility() {
+    let guidanceScaleContainer = document.querySelector("#distilled_guidance_scale_container")
+    if (sdModelField.value.toLowerCase().includes("flux")) {
+        guidanceScaleContainer.classList.remove("displayNone")
+    } else {
+        guidanceScaleContainer.classList.add("displayNone")
+    }
+}
+sdModelField.addEventListener("change", checkGuidanceScaleVisibility)
+
+function checkFluxSampler() {
+    let samplerWarning = document.querySelector("#fluxSamplerWarning")
+    if (sdModelField.value.toLowerCase().includes("flux")) {
+        if (samplerField.value == "euler_a") {
+            samplerWarning.classList.remove("displayNone")
+        } else {
+            samplerWarning.classList.add("displayNone")
+        }
+    } else {
+        samplerWarning.classList.add("displayNone")
+    }
+}
+
+function checkFluxScheduler() {
+    const badSchedulers = ["automatic", "uniform", "turbo", "align_your_steps", "align_your_steps_GITS", "align_your_steps_11", "align_your_steps_32"]
+
+    let schedulerWarning = document.querySelector("#fluxSchedulerWarning")
+    if (sdModelField.value.toLowerCase().includes("flux")) {
+        if (badSchedulers.includes(schedulerField.value)) {
+            schedulerWarning.classList.remove("displayNone")
+        } else {
+            schedulerWarning.classList.add("displayNone")
+        }
+    } else {
+        schedulerWarning.classList.add("displayNone")
+    }
+}
+
+function checkFluxSchedulerSteps() {
+    const problematicSchedulers = ["karras", "exponential", "polyexponential"]
+
+    let schedulerWarning = document.querySelector("#fluxSchedulerStepsWarning")
+    if (sdModelField.value.toLowerCase().includes("flux") && parseInt(numInferenceStepsField.value) < 15) {
+        if (problematicSchedulers.includes(schedulerField.value)) {
+            schedulerWarning.classList.remove("displayNone")
+        } else {
+            schedulerWarning.classList.add("displayNone")
+        }
+    } else {
+        schedulerWarning.classList.add("displayNone")
+    }
+}
+sdModelField.addEventListener("change", checkFluxSampler)
+samplerField.addEventListener("change", checkFluxSampler)
+
+sdModelField.addEventListener("change", checkFluxScheduler)
+schedulerField.addEventListener("change", checkFluxScheduler)
+
+sdModelField.addEventListener("change", checkFluxSchedulerSteps)
+schedulerField.addEventListener("change", checkFluxSchedulerSteps)
+numInferenceStepsField.addEventListener("change", checkFluxSchedulerSteps)
+
+document.addEventListener("refreshModels", function() {
+    checkGuidanceValue()
+    checkGuidanceScaleVisibility()
+    checkFluxSampler()
+    checkFluxScheduler()
+    checkFluxSchedulerSteps()
+})
+
+// function onControlImageFilterChange() {
+//     let filterId = controlImageFilterField.value
+//     if (filterId.includes("openpose")) {
+//         controlnetModelField.value = "control_v11p_sd15_openpose"
+//     } else if (filterId === "canny") {
+//         controlnetModelField.value = "control_v11p_sd15_canny"
+//     } else if (filterId === "mlsd") {
+//         controlnetModelField.value = "control_v11p_sd15_mlsd"
+//     } else if (filterId === "mlsd") {
+//         controlnetModelField.value = "control_v11p_sd15_mlsd"
+//     } else if (filterId.includes("scribble")) {
+//         controlnetModelField.value = "control_v11p_sd15_scribble"
+//     } else if (filterId.includes("softedge")) {
+//         controlnetModelField.value = "control_v11p_sd15_softedge"
+//     } else if (filterId === "normal_bae") {
+//         controlnetModelField.value = "control_v11p_sd15_normalbae"
+//     } else if (filterId.includes("depth")) {
+//         controlnetModelField.value = "control_v11f1p_sd15_depth"
+//     } else if (filterId === "lineart_anime") {
+//         controlnetModelField.value = "control_v11p_sd15s2_lineart_anime"
+//     } else if (filterId.includes("lineart")) {
+//         controlnetModelField.value = "control_v11p_sd15_lineart"
+//     } else if (filterId === "shuffle") {
+//         controlnetModelField.value = "control_v11e_sd15_shuffle"
+//     } else if (filterId === "segment") {
+//         controlnetModelField.value = "control_v11p_sd15_seg"
+//     }
+// }
+// controlImageFilterField.addEventListener("change", onControlImageFilterChange)
+// onControlImageFilterChange()
 
 upscaleModelField.disabled = !useUpscalingField.checked
 upscaleAmountField.disabled = !useUpscalingField.checked
@@ -1972,6 +2107,27 @@ function updateGuidanceScaleSlider() {
 guidanceScaleSlider.addEventListener("input", updateGuidanceScale)
 guidanceScaleField.addEventListener("input", updateGuidanceScaleSlider)
 updateGuidanceScale()
+
+/********************* Distilled Guidance **************************/
+function updateDistilledGuidanceScale() {
+    distilledGuidanceScaleField.value = distilledGuidanceScaleSlider.value / 10
+    distilledGuidanceScaleField.dispatchEvent(new Event("change"))
+}
+
+function updateDistilledGuidanceScaleSlider() {
+    if (distilledGuidanceScaleField.value < 0) {
+        distilledGuidanceScaleField.value = 0
+    } else if (distilledGuidanceScaleField.value > 50) {
+        distilledGuidanceScaleField.value = 50
+    }
+
+    distilledGuidanceScaleSlider.value = distilledGuidanceScaleField.value * 10
+    distilledGuidanceScaleSlider.dispatchEvent(new Event("change"))
+}
+
+distilledGuidanceScaleSlider.addEventListener("input", updateDistilledGuidanceScale)
+distilledGuidanceScaleField.addEventListener("input", updateDistilledGuidanceScaleSlider)
+updateDistilledGuidanceScale()
 
 /********************* Prompt Strength *******************/
 function updatePromptStrength() {
