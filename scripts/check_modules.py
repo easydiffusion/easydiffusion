@@ -35,6 +35,7 @@ modules_to_check = {
     "python-multipart": "0.0.6",
     # "xformers": "0.0.16",
     "huggingface-hub": "0.21.4",
+    "wandb": "0.13.7",
 }
 modules_to_log = ["torch", "torchvision", "sdkit", "stable-diffusion-sdkit", "diffusers"]
 
