@@ -28,7 +28,7 @@ modules_to_check = {
     "stable-diffusion-sdkit": "2.1.5",
     "rich": "12.6.0",
     "uvicorn": "0.19.0",
-    "fastapi": "0.85.1",
+    "fastapi": "0.115.6",
     "pycloudflared": "0.2.0",
     "ruamel.yaml": "0.17.21",
     "sqlalchemy": "2.0.19",
@@ -101,8 +101,8 @@ def update_modules():
                 allowed_versions = ("59.8.0",)
                 latest_version = "59.8.0"
             else:
-                allowed_versions = ("69.0.0",)
-                latest_version = "69.0.0"
+                allowed_versions = ("69.5.1",)
+                latest_version = "69.5.1"
 
         requires_install = False
         if module_name in ("torch", "torchvision"):
