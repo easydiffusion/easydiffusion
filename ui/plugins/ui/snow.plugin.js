@@ -17,6 +17,7 @@
     document.head.appendChild(styleSheet)
 
     const snowflakes = document.createElement("div")
+    snowflakes.id = "snowflakes-container"
     snowflakes.innerHTML = `
         <div class="snowflakes" aria-hidden="true">
             <div class="snowflake">
@@ -63,7 +64,7 @@
     script.innerHTML = `
         $(document).ready(function() {
             setTimeout(function() {
-                $(".snowflakes").fadeOut("slow")
+                $("#snowflakes-container").fadeOut("slow", function() {$(this).remove()})
             }, 10 * 1000)
         })
     `
