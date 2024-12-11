@@ -20,8 +20,8 @@ class GenerateImageRequest(BaseModel):
     control_image: Any = None
     control_alpha: Union[float, List[float]] = None
     prompt_strength: float = 0.8
-    preserve_init_image_color_profile = False
-    strict_mask_border = False
+    preserve_init_image_color_profile: bool = False
+    strict_mask_border: bool = False
 
     sampler_name: str = None  # "ddim", "plms", "heun", "euler", "euler_a", "dpm2", "dpm2_a", "lms"
     hypernetwork_strength: float = 0
@@ -100,7 +100,7 @@ class MergeRequest(BaseModel):
     model1: str = None
     ratio: float = None
     out_path: str = "mix"
-    use_fp16 = True
+    use_fp16: bool = True
 
 
 class Image:
