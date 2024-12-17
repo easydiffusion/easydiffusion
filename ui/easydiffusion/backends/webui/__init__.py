@@ -404,8 +404,15 @@ def has_discrete_graphics_card():
 
     if system == "Windows":
         try:
+            env = dict(os.environ)
+            env["PATH"] += (
+                os.pathsep
+                + "C:/Windows/System32".replace("/", os.path.sep)
+                + os.pathsep
+                + "C:/Windows/System32/wbem".replace("/", os.path.sep)
+            )
             output = subprocess.check_output(
-                ["wmic", "path", "win32_videocontroller", "get", "name"], stderr=subprocess.STDOUT
+                ["wmic", "path", "win32_videocontroller", "get", "name"], stderr=subprocess.STDOUT, env=env
             )
             # Filter for discrete graphics cards (NVIDIA, AMD, etc.)
             discrete_gpus = ["NVIDIA", "AMD", "ATI"]
