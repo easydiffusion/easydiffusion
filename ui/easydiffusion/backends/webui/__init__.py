@@ -33,7 +33,7 @@ ed_info = {
 }
 
 WEBUI_REPO = "https://github.com/lllyasviel/stable-diffusion-webui-forge.git"
-WEBUI_COMMIT = "b592142f3b46852263747a4efd0d244ad17b5bb3"
+WEBUI_COMMIT = "37301b2219cd7c38bc466b1d1acd6725bc8c9947"
 
 BACKEND_DIR = os.path.abspath(os.path.join(ROOT_DIR, "webui"))
 SYSTEM_DIR = os.path.join(BACKEND_DIR, "system")
