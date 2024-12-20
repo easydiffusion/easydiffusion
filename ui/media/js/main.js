@@ -1163,7 +1163,7 @@ function createTask(task) {
     }
 
     taskConfig += `<div class="taskConfigData">${createTaskConfig(task)}</span></div></div>`
-
+    let imgCount = task.numOutputsTotal
     let taskEntry = document.createElement("div")
     taskEntry.id = `imageTaskContainer-${Date.now()}`
     taskEntry.className = "imageTaskContainer"
@@ -1172,6 +1172,8 @@ function createTask(task) {
                                 <div class="taskStatusLabel">Enqueued</div>
                                 <button class="secondaryButton stopTask"><i class="fa-solid fa-xmark"></i> Cancel</button>
                                 <button class="tertiaryButton useSettings"><i class="fa-solid fa-redo"></i> Use these settings</button>
+                                <label for="count">Count:</label>
+                                <input class="imgCount" type="number" id="imgCount" name="count" min="1" inputmode="numeric" value=${imgCount}>
                                 <div class="preview-prompt"></div>
                                 <div class="taskConfig">${taskConfig}</div>
                                 <div class="outputMsg"></div>
@@ -1234,6 +1236,16 @@ function createTask(task) {
     task["previewPrompt"] = taskEntry.querySelector(".preview-prompt")
     task["progressBar"] = taskEntry.querySelector(".progress-bar")
     task["stopTask"] = taskEntry.querySelector(".stopTask")
+    task["imgCount"] = taskEntry.querySelector(".imgCount")
+
+    task["imgCount"].addEventListener("change", (e) => {
+        e.stopPropagation()
+        task.batchCount = e.target.value / (task.numOutputsTotal / task.batchCount)
+        task.numOutputsTotal = e.target.value
+    })
+    task["imgCount"].addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent propagation of the click event to the parent
+    });
 
     task["stopTask"].addEventListener("click", (e) => {
         e.stopPropagation()
