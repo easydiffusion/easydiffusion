@@ -559,12 +559,12 @@ class ImageEditor {
         }
 
         if (width > height) {
-            var max_size = Math.min(parseInt(window.innerWidth * 0.9), width, 768)
+            var max_size = Math.min(parseInt(window.innerWidth * 0.9), width)
             var multiplier = max_size / width
             width = (multiplier * width).toFixed()
             height = (multiplier * height).toFixed()
         } else {
-            var max_size = Math.min(parseInt(window.innerHeight * 0.9), height, 768)
+            var max_size = Math.min(parseInt(window.innerHeight * 0.9), height)
             var multiplier = max_size / height
             width = (multiplier * width).toFixed()
             height = (multiplier * height).toFixed()
