@@ -626,8 +626,15 @@ function onUseAsInputClick(req, img) {
 
     //Force the image settings size to match the input, as inpaint currently only works correctly
     //if input image and generate sizes match.
+    var tempWidth = widthField.value;
+    var tempHeight = heightField.value;
     widthField.value = img.naturalWidth;
     heightField.value = img.naturalHeight;
+    //If it's unhappy with the new values, restore the original values.
+    if (widthField.value=="" || heightField.value=="") {
+        widthField.value = tempWidth;
+        heightField.value = tempHeight;
+    }
 }
 
 function onUseForControlnetClick(req, img) {
