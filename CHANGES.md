@@ -14,6 +14,7 @@
 v3.5 is currently an optional upgrade, and you can switch between the v3.0 (diffusers) engine and the v3.5 (webui) engine using the `Settings` tab in the UI.
 
 ### Detailed changelog
+* 3.5.2 - 4 Jan 2025 - Replace the use of WMIC (deprecated) with a powershell call.
 * 3.5.1 - 17 Dec 2024 - Update Forge to the latest commit.
 * 3.5.0 - 11 Oct 2024 - **Preview release** of the new v3.5 engine, powered by Forge WebUI (a fork of Automatic1111). This enables Flux, SD3, LyCORIS and lots of new features, while using the same familiar Easy Diffusion interface.
 
@@ -34,6 +35,7 @@ v3.5 is currently an optional upgrade, and you can switch between the v3.0 (diff
 - **Major rewrite of the code** - We've switched to using diffusers under-the-hood, which allows us to release new features faster, and focus on making the UI and installer even easier to use.
 
 ### Detailed changelog
+* 3.0.11 - 4 Jan 2025 - Replace the use of WMIC (deprecated) with a powershell call.
 * 3.0.10 - 11 Oct 2024 - **Major Update** - An option to upgrade to v3.5, which enables Flux, Stable Diffusion 3, LyCORIS models and lots more.
 * 3.0.9 - 28 May 2024 - Slider for controlling the strength of controlnets.
 * 3.0.8 - 27 May 2024 - SDXL ControlNets for Img2Img and Inpainting.
