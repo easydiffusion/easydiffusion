@@ -4,7 +4,7 @@ echo "Opening Stable Diffusion UI - Developer Console.." & echo.
 
 cd /d %~dp0
 
-set PATH=C:\Windows\System32;%PATH%
+set PATH=C:\Windows\System32;C:\Windows\System32\WindowsPowerShell\v1.0;%PATH%
 
 @rem set legacy and new installer's PATH, if they exist
 if exist "installer" set PATH=%cd%\installer;%cd%\installer\Library\bin;%cd%\installer\Scripts;%cd%\installer\Library\usr\bin;%PATH%
@@ -26,6 +26,7 @@ call conda --version
 echo.
 echo COMSPEC=%COMSPEC%
 echo.
+powershell -Command "(Get-WmiObject Win32_VideoController | Select-Object Name, AdapterRAM, DriverDate, DriverVersion)"
 
 @rem activate the legacy environment (if present) and set PYTHONPATH
 if exist "installer_files\env" (
