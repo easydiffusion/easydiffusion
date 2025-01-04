@@ -405,18 +405,19 @@ def has_discrete_graphics_card():
     if system == "Windows":
         try:
             env = dict(os.environ)
-            env["PATH"] += (
-                os.pathsep
-                + "C:/Windows/System32".replace("/", os.path.sep)
-                + os.pathsep
-                + "C:/Windows/System32/wbem".replace("/", os.path.sep)
-            )
-            output = subprocess.check_output(
-                ["wmic", "path", "win32_videocontroller", "get", "name"], stderr=subprocess.STDOUT, env=env
-            )
+            env["PATH"] += os.pathsep + "C:/Windows/System32/WindowsPowerShell/v1.0".replace("/", os.path.sep)
+
+            # PowerShell command to get the names of graphics cards
+            command = [
+                "powershell",
+                "-Command",
+                "(Get-WmiObject Win32_VideoController).Name",
+            ]
+            # Run the command and decode the output
+            output = subprocess.check_output(command, universal_newlines=True, stderr=subprocess.STDOUT, env=env)
             # Filter for discrete graphics cards (NVIDIA, AMD, etc.)
             discrete_gpus = ["NVIDIA", "AMD", "ATI"]
-            return any(gpu in output.decode() for gpu in discrete_gpus)
+            return any(gpu in output for gpu in discrete_gpus)
         except subprocess.CalledProcessError:
             return False
 

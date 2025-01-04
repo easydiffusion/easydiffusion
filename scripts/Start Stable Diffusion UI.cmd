@@ -3,7 +3,7 @@
 cd /d %~dp0
 echo Install dir: %~dp0
 
-set PATH=C:\Windows\System32;C:\Windows\System32\wbem;%PATH%
+set PATH=C:\Windows\System32;C:\Windows\System32\WindowsPowerShell\v1.0;%PATH%
 set PYTHONHOME=
 
 if exist "on_sd_start.bat" (
@@ -39,7 +39,7 @@ call where conda
 call conda --version
 echo .
 echo COMSPEC=%COMSPEC%
-wmic path win32_VideoController get name,AdapterRAM,DriverDate,DriverVersion
+powershell -Command "(Get-WmiObject Win32_VideoController | Select-Object Name, AdapterRAM, DriverDate, DriverVersion)"
 
 @rem Download the rest of the installer and UI
 call scripts\on_env_start.bat
