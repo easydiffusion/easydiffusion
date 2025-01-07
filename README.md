@@ -29,7 +29,7 @@ Click the download button for your operating system:
 
 ¹) [CUDA Compute capability](https://en.wikipedia.org/wiki/CUDA#GPUs_supported) level of 3.7 or higher required.
 
-²) ROCm 5.2 support required.
+²) ROCm 5.2 (or newer) support required.
 
 The installer will take care of whatever is needed. If you face any problems, you can join the friendly [Discord community](https://discord.com/invite/u9yhsFmEkB) and ask for assistance.
 
