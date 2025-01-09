@@ -301,6 +301,11 @@ def include_cuda_versions(module_versions: tuple) -> tuple:
     allowed_versions += tuple(f"{v}+cu121" for v in module_versions)
     allowed_versions += tuple(f"{v}+cu124" for v in module_versions)
     allowed_versions += tuple(f"{v}+cu126" for v in module_versions)
+
+    allowed_versions += tuple(f"{v}+rocm4.3.1" for v in module_versions)
+    allowed_versions += tuple(f"{v}+rocm4.5.2" for v in module_versions)
+    allowed_versions += tuple(f"{v}+rocm5.0" for v in module_versions)
+    allowed_versions += tuple(f"{v}+rocm5.1.1" for v in module_versions)
     allowed_versions += tuple(f"{v}+rocm5.2" for v in module_versions)
     allowed_versions += tuple(f"{v}+rocm5.3" for v in module_versions)
     allowed_versions += tuple(f"{v}+rocm5.4.2" for v in module_versions)
