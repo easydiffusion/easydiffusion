@@ -21,6 +21,8 @@ os_name = platform.system()
 
 modules_to_check = {
     "torch": (  # really need a better way to check the versions. kinda reinventing the wheel here
+        "1.10.1",
+        "1.10.2",
         "1.11.0",
         "1.13.1",
         "2.0.0",
@@ -38,6 +40,8 @@ modules_to_check = {
         "2.5.1",
     ),
     "torchvision": (
+        "0.11.2",
+        "0.11.3",
         "0.12.0",
         "0.14.1",
         "0.15.1",
@@ -302,6 +306,7 @@ def include_cuda_versions(module_versions: tuple) -> tuple:
     allowed_versions += tuple(f"{v}+cu124" for v in module_versions)
     allowed_versions += tuple(f"{v}+cu126" for v in module_versions)
 
+    allowed_versions += tuple(f"{v}+rocm4.2" for v in module_versions)
     allowed_versions += tuple(f"{v}+rocm4.3.1" for v in module_versions)
     allowed_versions += tuple(f"{v}+rocm4.5.2" for v in module_versions)
     allowed_versions += tuple(f"{v}+rocm5.0" for v in module_versions)
