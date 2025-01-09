@@ -77,10 +77,10 @@ def print_env_info():
 
     print(f"PATH={os.environ['PATH']}")
 
-    if platform.system() == "Windows":
-        print(f"COMSPEC={os.environ['COMSPEC']}")
-        print("")
-        run("wmic path win32_VideoController get name,AdapterRAM,DriverDate,DriverVersion".split(" "))
+    # if platform.system() == "Windows":
+    #     print(f"COMSPEC={os.environ['COMSPEC']}")
+    #     print("")
+    #     run("wmic path win32_VideoController get name,AdapterRAM,DriverDate,DriverVersion".split(" "))
 
     print(f"PYTHONPATH={os.environ['PYTHONPATH']}")
     print("")
