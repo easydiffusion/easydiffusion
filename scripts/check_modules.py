@@ -258,6 +258,10 @@ def _install(module_name, module_version=None):
 
 
 def install_pkg_if_necessary(pkg_name, required_version):
+    if os.path.exists(f"src/{pkg_name}"):
+        print(f"Skipping {pkg_name} update, since it's in developer/editable mode")
+        return
+
     pkg_version = version(pkg_name)
     if pkg_version != required_version:
         _install(pkg_name, required_version)
