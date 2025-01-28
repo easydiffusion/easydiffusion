@@ -17,6 +17,7 @@
 - **Major rewrite of the code** - We've switched to using diffusers under-the-hood, which allows us to release new features faster, and focus on making the UI and installer even easier to use.
 
 ### Detailed changelog
+* 3.0.9b - 28 Jan 2025 - Fix a bug affecting older versions of Easy Diffusion, which tried to upgrade to an incompatible version of PyTorch.
 * 3.0.9b - 4 Jan 2025 - Replace the use of WMIC (deprecated) with a powershell call.
 * 3.0.9 - 28 May 2024 - Slider for controlling the strength of controlnets.
 * 3.0.8 - 27 May 2024 - SDXL ControlNets for Img2Img and Inpainting.
