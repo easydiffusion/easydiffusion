@@ -101,13 +101,13 @@ def start_backend():
     config = getConfig()
     backend_config = config.get("backend_config", {})
 
-    env = dict(os.environ)
-    env.update(get_env())
-
-    log.info(f"WebUI backend dir: {BACKEND_DIR}")
+    log.info(f"Expected WebUI backend dir: {BACKEND_DIR}")
 
     if not os.path.exists(BACKEND_DIR):
         install_backend()
+
+    env = dict(os.environ)
+    env.update(get_env())
 
     was_still_installing = not is_installed()
 
