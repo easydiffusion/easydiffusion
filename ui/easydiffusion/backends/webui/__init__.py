@@ -104,6 +104,8 @@ def start_backend():
     env = dict(os.environ)
     env.update(get_env())
 
+    log.info(f"WebUI backend dir: {BACKEND_DIR}")
+
     if not os.path.exists(BACKEND_DIR):
         install_backend()
 
