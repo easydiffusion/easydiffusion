@@ -658,7 +658,7 @@ function setDeviceInfo(devices) {
 
     function ID_TO_TEXT(d) {
         let info = devices.all[d]
-        if ("mem_free" in info && "mem_total" in info) {
+        if ("mem_free" in info && "mem_total" in info && info["mem_total"] > 0) {
             return `${info.name} <small>(${d}) (${info.mem_free.toFixed(1)}Gb free / ${info.mem_total.toFixed(
                 1
             )} Gb total)</small>`
