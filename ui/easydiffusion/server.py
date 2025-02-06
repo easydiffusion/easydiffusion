@@ -196,11 +196,13 @@ def set_app_config_internal(req: SetAppConfigRequest):
 
 
 def update_render_devices_in_config(config, render_devices):
-    if render_devices not in ("cpu", "auto") and not render_devices.startswith("cuda:"):
-        raise HTTPException(status_code=400, detail=f"Invalid render device requested: {render_devices}")
+    from easydiffusion.device_manager import validate_render_devices
 
-    if render_devices.startswith("cuda:"):
+    try:
         render_devices = render_devices.split(",")
+        validate_render_devices(render_devices)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     config["render_devices"] = render_devices
 

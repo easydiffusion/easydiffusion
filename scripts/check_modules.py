@@ -73,6 +73,7 @@ modules_to_check = {
     # "xformers": "0.0.16",
     "huggingface-hub": "0.21.4",
     "wandb": "0.13.7",
+    "torchruntime": "1.8.0",
 }
 modules_to_log = ["torch", "torchvision", "sdkit", "stable-diffusion-sdkit", "diffusers"]
 
@@ -168,10 +169,10 @@ def update_modules():
     #  if sdkit is 2.0.15.x (or lower), then diffusers should be restricted to 0.21.4 (see below for the reason)
     #  otherwise use the current sdkit version (with the corresponding diffusers version)
 
-    expected_sdkit_version_str = "2.0.22.3"
+    expected_sdkit_version_str = "2.0.22.4"
     expected_diffusers_version_str = "0.28.2"
 
-    legacy_sdkit_version_str = "2.0.15.12"
+    legacy_sdkit_version_str = "2.0.15.13"
     legacy_diffusers_version_str = "0.21.4"
 
     sdkit_version_str = version("sdkit")
