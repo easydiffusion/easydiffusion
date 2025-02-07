@@ -623,13 +623,6 @@ function onUseAsInputClick(req, img) {
     initImagePreview.src = imgData
 
     maskSetting.checked = false
-
-    //Force the image settings size to match the input, as inpaint currently only works correctly
-    //if input image and generate sizes match.
-    addImageSizeOption(img.naturalWidth);
-    addImageSizeOption(img.naturalHeight);
-    widthField.value = img.naturalWidth;
-    heightField.value = img.naturalHeight;
 }
 
 function onUseForControlnetClick(req, img) {

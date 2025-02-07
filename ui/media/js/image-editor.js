@@ -557,17 +557,14 @@ class ImageEditor {
         if (width == this.width && height == this.height) {
             return
         }
-        //The below code tries to limit the size of the image to fit within the editor window.
-        //However, at this time, this causes problems with a mis-match between the mask size and
-        //the requested image size.  For now, allow the drawing/inpaint window to be as large
-        //as necessary.
+
         if (width > height) {
-            var max_size = width; //Math.min(parseInt(window.innerWidth * 0.9), width)
+            var max_size = Math.min(parseInt(window.innerWidth * 0.9), width, 768)
             var multiplier = max_size / width
             width = (multiplier * width).toFixed()
             height = (multiplier * height).toFixed()
         } else {
-            var max_size = height; //Math.min(parseInt(window.innerHeight * 0.9), height)
+            var max_size = Math.min(parseInt(window.innerHeight * 0.9), height, 768)
             var multiplier = max_size / height
             width = (multiplier * width).toFixed()
             height = (multiplier * height).toFixed()
