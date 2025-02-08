@@ -14,6 +14,7 @@
 v3.5 is currently an optional upgrade, and you can switch between the v3.0 (diffusers) engine and the v3.5 (webui) engine using the `Settings` tab in the UI.
 
 ### Detailed changelog
+* 3.5.4 - 8 Feb 2025 - Fix a bug where the inpainting mask wasn't resized to the image size when using the WebUI/v3.5 backend. Thanks @AvidGameFan for their help in investigating and fixing this!
 * 3.5.3 - 6 Feb 2025 - (Internal code change) Remove hardcoded references to `torch.cuda`, and replace with torchruntime's device utilities.
 * 3.5.2 - 28 Jan 2025 - Fix for accidental jailbreak when using conda with WebUI - fixes the `type not subscriptable` error when using WebUI.
 * 3.5.2 - 28 Jan 2025 - Fix a bug affecting older versions of Easy Diffusion, which tried to upgrade to an incompatible version of PyTorch.
