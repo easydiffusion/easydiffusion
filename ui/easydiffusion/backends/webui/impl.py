@@ -195,7 +195,7 @@ def generate_images(
         cmd["init_images"] = [init_image]
         cmd["denoising_strength"] = prompt_strength
     if init_image_mask:
-        cmd["mask"] = init_image_mask
+        cmd["mask"] = init_image_mask if isinstance(init_image_mask, str) else img_to_base64_str(init_image_mask)
         cmd["include_init_images"] = True
         cmd["inpainting_fill"] = 1
         cmd["initial_noise_multiplier"] = 1

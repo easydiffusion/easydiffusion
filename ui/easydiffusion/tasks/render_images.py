@@ -240,6 +240,10 @@ def generate_images_internal(
     if req.init_image is not None and int(req.num_inference_steps * req.prompt_strength) == 0:
         req.prompt_strength = 1 / req.num_inference_steps if req.num_inference_steps > 0 else 1
 
+    if req.init_image_mask:
+        req.init_image_mask = get_image(req.init_image_mask)
+        req.init_image_mask = resize_img(req.init_image_mask.convert("RGB"), req.width, req.height, clamp_to_8=True)
+
     backend.set_options(
         context,
         output_format=output_format.output_format,
