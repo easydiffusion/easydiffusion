@@ -14,6 +14,7 @@
 v3.5 is currently an optional upgrade, and you can switch between the v3.0 (diffusers) engine and the v3.5 (webui) engine using the `Settings` tab in the UI.
 
 ### Detailed changelog
+* 3.5.5 - 10 Feb 2025 - (Internal code change) Use `torchruntime` for installing torch/torchvision, instead of custom logic. This supports a lot more GPUs on various platforms, and was built using Easy Diffusion's torch-installation code.
 * 3.5.4 - 8 Feb 2025 - Fix a bug where the inpainting mask wasn't resized to the image size when using the WebUI/v3.5 backend. Thanks @AvidGameFan for their help in investigating and fixing this!
 * 3.5.3 - 6 Feb 2025 - (Internal code change) Remove hardcoded references to `torch.cuda`, and replace with torchruntime's device utilities.
 * 3.5.2 - 28 Jan 2025 - Fix for accidental jailbreak when using conda with WebUI - fixes the `type not subscriptable` error when using WebUI.
@@ -39,6 +40,7 @@ v3.5 is currently an optional upgrade, and you can switch between the v3.0 (diff
 - **Major rewrite of the code** - We've switched to using diffusers under-the-hood, which allows us to release new features faster, and focus on making the UI and installer even easier to use.
 
 ### Detailed changelog
+* 3.0.13 - 10 Feb 2025 - (Internal code change) Use `torchruntime` for installing torch/torchvision, instead of custom logic. This supports a lot more GPUs on various platforms, and was built using Easy Diffusion's torch-installation code.
 * 3.0.12 - 6 Feb 2025 - (Internal code change) Remove hardcoded references to `torch.cuda`, and replace with torchruntime's device utilities.
 * 3.0.11 - 4 Jan 2025 - Replace the use of WMIC (deprecated) with a powershell call.
 * 3.0.10 - 11 Oct 2024 - **Major Update** - An option to upgrade to v3.5, which enables Flux, Stable Diffusion 3, LyCORIS models and lots more.
