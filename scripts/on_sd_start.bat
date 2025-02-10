@@ -70,6 +70,8 @@ echo PYTHONPATH=%PYTHONPATH%
 call where python
 call python --version
 
+call python -m pip install -q torchruntime
+
 call python scripts\check_modules.py --launch-uvicorn
 pause
 exit /b
