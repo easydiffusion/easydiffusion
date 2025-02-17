@@ -368,7 +368,7 @@ def model_merge_internal(req: dict):
 
         mergeReq: MergeRequest = MergeRequest.parse_obj(req)
 
-        sd_model_dir = model_manager.get_model_dir("stable-diffusion")[0]
+        sd_model_dir = model_manager.get_model_dirs("stable-diffusion")[0]
 
         merge_models(
             model_manager.resolve_model_to_use(mergeReq.model0, "stable-diffusion"),
