@@ -36,6 +36,7 @@ modules_to_check = {
     "huggingface-hub": "0.21.4",
     "wandb": "0.13.7",
     "torchruntime": "1.13.0",
+    "torchsde": "0.2.6",
 }
 modules_to_log = ["torchruntime", "torch", "torchvision", "sdkit", "stable-diffusion-sdkit", "diffusers"]
 
