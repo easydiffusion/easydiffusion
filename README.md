@@ -21,9 +21,9 @@ Click the download button for your operating system:
 </p>
 
 **Hardware requirements:**
-- **Windows:** NVIDIA graphics card¹ (minimum 2 GB RAM), or run on your CPU.
+- **Windows:** NVIDIA¹ or AMD graphics card (minimum 2 GB RAM), or run on your CPU.
 - **Linux:** NVIDIA¹ or AMD² graphics card (minimum 2 GB RAM), or run on your CPU.
-- **Mac:** M1 or M2, or run on your CPU.
+- **Mac:** M1/M2/M3/M4 or AMD graphics card (Intel Mac), or run on your CPU.
 - Minimum 8 GB of system RAM.
 - Atleast 25 GB of space on the hard disk.
 
