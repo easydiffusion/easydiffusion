@@ -46,6 +46,8 @@ fi
 if [ -e "src" ]; then mv src src-old; fi
 if [ -e "ldm" ]; then mv ldm ldm-old; fi
 
+python -m pip install -q torchruntime
+
 cd ..
 # Download the required packages
 python scripts/check_modules.py --launch-uvicorn

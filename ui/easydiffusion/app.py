@@ -54,8 +54,7 @@ OUTPUT_DIRNAME = "Stable Diffusion UI"  # in the user's home folder
 PRESERVE_CONFIG_VARS = ["FORCE_FULL_PRECISION"]
 TASK_TTL = 15 * 60  # Discard last session's task timeout
 APP_CONFIG_DEFAULTS = {
-    # auto: selects the cuda device with the most free memory, cuda: use the currently active cuda device.
-    "render_devices": "auto",  # valid entries: 'auto', 'cpu' or 'cuda:N' (where N is a GPU index)
+    "render_devices": "auto",
     "update_branch": "main",
     "ui": {
         "open_browser_on_start": True,

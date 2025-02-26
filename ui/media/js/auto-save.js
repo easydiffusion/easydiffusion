@@ -178,23 +178,6 @@ function loadSettings() {
             }
         })
         CURRENTLY_LOADING_SETTINGS = false
-    } else if (localStorage.length < 2) {
-        // localStorage is too short for OldSettings
-        // So this is likely the first time Easy Diffusion is running.
-        // Initialize vram_usage_level based on the available VRAM
-        function initGPUProfile(event) {
-            if (
-                "detail" in event &&
-                "active" in event.detail &&
-                "cuda:0" in event.detail.active &&
-                event.detail.active["cuda:0"].mem_total < 4.5
-            ) {
-                vramUsageLevelField.value = "low"
-                vramUsageLevelField.dispatchEvent(new Event("change"))
-            }
-            document.removeEventListener("system_info_update", initGPUProfile)
-        }
-        document.addEventListener("system_info_update", initGPUProfile)
     } else {
         CURRENTLY_LOADING_SETTINGS = true
         tryLoadOldSettings()

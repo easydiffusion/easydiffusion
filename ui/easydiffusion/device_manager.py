@@ -6,6 +6,15 @@ import traceback
 import torch
 from easydiffusion.utils import log
 
+from torchruntime.utils import (
+    get_installed_torch_platform,
+    get_device,
+    get_device_count,
+    get_device_name,
+    SUPPORTED_BACKENDS,
+)
+from sdkit.utils import mem_get_info, is_cpu_device, has_half_precision_bug
+
 """
 Set `FORCE_FULL_PRECISION` in the environment variables, or in `config.bat`/`config.sh` to set full precision (i.e. float32).
 Otherwise the models will load at half-precision (i.e. float16).
@@ -22,33 +31,15 @@ mem_free_threshold = 0
 
 def get_device_delta(render_devices, active_devices):
     """
-    render_devices: 'cpu', or 'auto', or 'mps' or ['cuda:N'...]
-    active_devices: ['cpu', 'mps', 'cuda:N'...]
+    render_devices: 'auto' or backends listed in `torchruntime.utils.SUPPORTED_BACKENDS`
+    active_devices: [backends listed in `torchruntime.utils.SUPPORTED_BACKENDS`]
     """
 
-    if render_devices in ("cpu", "auto", "mps"):
-        render_devices = [render_devices]
-    elif render_devices is not None:
-        if isinstance(render_devices, str):
-            render_devices = [render_devices]
-        if isinstance(render_devices, list) and len(render_devices) > 0:
-            render_devices = list(filter(lambda x: x.startswith("cuda:") or x == "mps", render_devices))
-            if len(render_devices) == 0:
-                raise Exception(
-                    'Invalid render_devices value in config.json. Valid: {"render_devices": ["cuda:0", "cuda:1"...]}, or {"render_devices": "cpu"} or {"render_devices": "mps"} or {"render_devices": "auto"}'
-                )
+    render_devices = render_devices or "auto"
+    render_devices = [render_devices] if isinstance(render_devices, str) else render_devices
 
-            render_devices = list(filter(lambda x: is_device_compatible(x), render_devices))
-            if len(render_devices) == 0:
-                raise Exception(
-                    "Sorry, none of the render_devices configured in config.json are compatible with Stable Diffusion"
-                )
-        else:
-            raise Exception(
-                'Invalid render_devices value in config.json. Valid: {"render_devices": ["cuda:0", "cuda:1"...]}, or {"render_devices": "cpu"} or {"render_devices": "auto"}'
-            )
-    else:
-        render_devices = ["auto"]
+    # check for backend support
+    validate_render_devices(render_devices)
 
     if "auto" in render_devices:
         render_devices = auto_pick_devices(active_devices)
@@ -64,47 +55,39 @@ def get_device_delta(render_devices, active_devices):
     return devices_to_start, devices_to_stop
 
 
-def is_mps_available():
-    return (
-        platform.system() == "Darwin"
-        and hasattr(torch.backends, "mps")
-        and torch.backends.mps.is_available()
-        and torch.backends.mps.is_built()
-    )
+def validate_render_devices(render_devices):
+    supported_backends = ("auto",) + SUPPORTED_BACKENDS
+    unsupported_render_devices = [d for d in render_devices if not d.lower().startswith(supported_backends)]
 
-
-def is_cuda_available():
-    return torch.cuda.is_available()
+    if unsupported_render_devices:
+        raise ValueError(
+            f"Invalid render devices in config: {unsupported_render_devices}. Valid render devices: {supported_backends}"
+        )
 
 
 def auto_pick_devices(currently_active_devices):
     global mem_free_threshold
 
-    if is_mps_available():
-        return ["mps"]
+    torch_platform_name = get_installed_torch_platform()[0]
 
-    if not is_cuda_available():
-        return ["cpu"]
+    if is_cpu_device(torch_platform_name):
+        return [torch_platform_name]
 
-    device_count = torch.cuda.device_count()
-    if device_count == 1:
-        return ["cuda:0"] if is_device_compatible("cuda:0") else ["cpu"]
-
+    device_count = get_device_count()
     log.debug("Autoselecting GPU. Using most free memory.")
     devices = []
-    for device in range(device_count):
-        device = f"cuda:{device}"
-        if not is_device_compatible(device):
-            continue
+    for device_id in range(device_count):
+        device_id = f"{torch_platform_name}:{device_id}" if device_count > 1 else torch_platform_name
+        device = get_device(device_id)
 
-        mem_free, mem_total = torch.cuda.mem_get_info(device)
+        mem_free, mem_total = mem_get_info(device)
         mem_free /= float(10**9)
         mem_total /= float(10**9)
-        device_name = torch.cuda.get_device_name(device)
+        device_name = get_device_name(device)
         log.debug(
-            f"{device} detected: {device_name} - Memory (free/total): {round(mem_free, 2)}Gb / {round(mem_total, 2)}Gb"
+            f"{device_id} detected: {device_name} - Memory (free/total): {round(mem_free, 2)}Gb / {round(mem_total, 2)}Gb"
         )
-        devices.append({"device": device, "device_name": device_name, "mem_free": mem_free})
+        devices.append({"device": device_id, "device_name": device_name, "mem_free": mem_free})
 
     devices.sort(key=lambda x: x["mem_free"], reverse=True)
     max_mem_free = devices[0]["mem_free"]
@@ -117,69 +100,45 @@ def auto_pick_devices(currently_active_devices):
     #    always be very low (since their VRAM contains the model).
     #    These already-running devices probably aren't terrible, since they were picked in the past.
     #    Worst case, the user can restart the program and that'll get rid of them.
-    devices = list(
-        filter(
-            (lambda x: x["mem_free"] > mem_free_threshold or x["device"] in currently_active_devices),
-            devices,
-        )
-    )
-    devices = list(map(lambda x: x["device"], devices))
+    devices = [
+        x["device"] for x in devices if x["mem_free"] >= mem_free_threshold or x["device"] in currently_active_devices
+    ]
     return devices
 
 
-def device_init(context, device):
-    """
-    This function assumes the 'device' has already been verified to be compatible.
-    `get_device_delta()` has already filtered out incompatible devices.
-    """
+def device_init(context, device_id):
+    context.device = device_id
 
-    validate_device_id(device, log_prefix="device_init")
-
-    if "cuda" not in device:
-        context.device = device
+    if is_cpu_device(context.torch_device):
         context.device_name = get_processor_name()
         context.half_precision = False
-        log.debug(f"Render device available as {context.device_name}")
-        return
+    else:
+        context.device_name = get_device_name(context.torch_device)
 
-    context.device_name = torch.cuda.get_device_name(device)
-    context.device = device
+        # Some graphics cards have bugs in their firmware that prevent image generation at half precision
+        if needs_to_force_full_precision(context.device_name):
+            log.warn(f"forcing full precision on this GPU, to avoid corrupted images. GPU: {context.device_name}")
+            context.half_precision = False
 
-    # Force full precision on 1660 and 1650 NVIDIA cards to avoid creating green images
-    if needs_to_force_full_precision(context):
-        log.warn(f"forcing full precision on this GPU, to avoid green images. GPU detected: {context.device_name}")
-        # Apply force_full_precision now before models are loaded.
-        context.half_precision = False
-
-    log.info(f'Setting {device} as active, with precision: {"half" if context.half_precision else "full"}')
-    torch.cuda.device(device)
+    log.info(f'Setting {device_id} as active, with precision: {"half" if context.half_precision else "full"}')
 
 
-def needs_to_force_full_precision(context):
+def needs_to_force_full_precision(device_name):
     if "FORCE_FULL_PRECISION" in os.environ:
         return True
 
-    device_name = context.device_name.lower()
-    return (
-        ("nvidia" in device_name or "geforce" in device_name or "quadro" in device_name)
-        and (
-            " 1660" in device_name
-            or " 1650" in device_name
-            or " 1630" in device_name
-            or " t400" in device_name
-            or " t550" in device_name
-            or " t600" in device_name
-            or " t1000" in device_name
-            or " t1200" in device_name
-            or " t2000" in device_name
-        )
-    ) or ("tesla k40m" in device_name)
+    return has_half_precision_bug(device_name.lower())
 
 
 def get_max_vram_usage_level(device):
-    if "cuda" in device:
-        _, mem_total = torch.cuda.mem_get_info(device)
-    else:
+    "Expects a torch.device as the argument"
+
+    if is_cpu_device(device):
+        return "high"
+
+    _, mem_total = mem_get_info(device)
+
+    if mem_total < 0.001:  # probably a torch platform without a mem_get_info() implementation
         return "high"
 
     mem_total /= float(10**9)
@@ -191,51 +150,6 @@ def get_max_vram_usage_level(device):
     return "high"
 
 
-def validate_device_id(device, log_prefix=""):
-    def is_valid():
-        if not isinstance(device, str):
-            return False
-        if device == "cpu" or device == "mps":
-            return True
-        if not device.startswith("cuda:") or not device[5:].isnumeric():
-            return False
-        return True
-
-    if not is_valid():
-        raise EnvironmentError(
-            f"{log_prefix}: device id should be 'cpu', 'mps', or 'cuda:N' (where N is an integer index for the GPU). Got: {device}"
-        )
-
-
-def is_device_compatible(device):
-    """
-    Returns True/False, and prints any compatibility errors
-    """
-    # static variable "history".
-    is_device_compatible.history = getattr(is_device_compatible, "history", {})
-    try:
-        validate_device_id(device, log_prefix="is_device_compatible")
-    except:
-        log.error(str(e))
-        return False
-
-    if device in ("cpu", "mps"):
-        return True
-    # Memory check
-    try:
-        _, mem_total = torch.cuda.mem_get_info(device)
-        mem_total /= float(10**9)
-        if mem_total < 1.9:
-            if is_device_compatible.history.get(device) == None:
-                log.warn(f"GPU {device} with less than 2 GB of VRAM is not compatible with Stable Diffusion")
-                is_device_compatible.history[device] = 1
-            return False
-    except RuntimeError as e:
-        log.error(str(e))
-        return False
-    return True
-
-
 def get_processor_name():
     try:
         import subprocess
@@ -243,7 +157,8 @@ def get_processor_name():
         if platform.system() == "Windows":
             return platform.processor()
         elif platform.system() == "Darwin":
-            os.environ["PATH"] = os.environ["PATH"] + os.pathsep + "/usr/sbin"
+            if "/usr/sbin" not in os.environ["PATH"].split(os.pathsep):
+                os.environ["PATH"] = os.environ["PATH"] + os.pathsep + "/usr/sbin"
             command = "sysctl -n machdep.cpu.brand_string"
             return subprocess.check_output(command, shell=True).decode().strip()
         elif platform.system() == "Linux":
