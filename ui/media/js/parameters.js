@@ -102,7 +102,7 @@ var PARAMETERS = [
         type: ParameterType.custom,
         icon: "fa-folder-tree",
         label: "Models Folder",
-        note: "Path to the 'models' folder. Please save and refresh the page after changing this.",
+        note: "Path to the 'models' folder. Please save and restart Easy Diffusion after changing this.",
         saveInAppConfig: true,
         render: (parameter) => {
             return `<input id="${parameter.id}" name="${parameter.id}" size="30">`
@@ -161,6 +161,7 @@ var PARAMETERS = [
             "<b>Low:</b> slowest, recommended for GPUs with 3 to 4 GB memory",
         icon: "fa-forward",
         default: "balanced",
+        saveInAppConfig: true,
         options: [
             { value: "balanced", label: "Balanced" },
             { value: "high", label: "High" },
@@ -249,14 +250,19 @@ var PARAMETERS = [
         default: false,
     },
     {
-        id: "use_v3_engine",
-        type: ParameterType.checkbox,
-        label: "Use the new v3 engine (diffusers)",
+        id: "backend",
+        type: ParameterType.select,
+        label: "Engine to use",
         note:
-            "Use our new v3 engine, with additional features like LoRA, ControlNet, SDXL, Embeddings, Tiling and lots more! Please press Save, then restart the program after changing this.",
-        icon: "fa-bolt",
-        default: true,
+            "Use our new v3.5 engine (Forge), with additional features like Flux, SD3, Lycoris and lots more! Please press Save, then restart the program after changing this.",
+        icon: "fa-robot",
         saveInAppConfig: true,
+        default: "ed_diffusers",
+        options: [
+            { value: "webui", label: "v3.5 (latest)" },
+            { value: "ed_diffusers", label: "v3.0" },
+            { value: "ed_classic", label: "v2.0" },
+        ],
     },
     {
         id: "cloudflare",
@@ -432,6 +438,7 @@ let useBetaChannelField = document.querySelector("#use_beta_channel")
 let uiOpenBrowserOnStartField = document.querySelector("#ui_open_browser_on_start")
 let confirmDangerousActionsField = document.querySelector("#confirm_dangerous_actions")
 let testDiffusers = document.querySelector("#use_v3_engine")
+let backendEngine = document.querySelector("#backend")
 let profileNameField = document.querySelector("#profileName")
 let modelsDirField = document.querySelector("#models_dir")
 
@@ -452,6 +459,23 @@ async function changeAppConfig(configDelta) {
     } catch (e) {
         console.log("set config status error", e)
     }
+}
+
+function getDefaultDisplay(element) {
+    const tag = element.tagName.toLowerCase();
+    const defaultDisplays = {
+        div: 'block',
+        span: 'inline',
+        p: 'block',
+        tr: 'table-row',
+        table: 'table',
+        li: 'list-item',
+        ul: 'block',
+        ol: 'block',
+        button: 'inline',
+        // Add more if needed
+    };
+    return defaultDisplays[tag] || 'block'; // Default to 'block' if not listed
 }
 
 async function getAppConfig() {
@@ -478,14 +502,16 @@ async function getAppConfig() {
         modelsDirField.value = config.models_dir
 
         let testDiffusersEnabled = true
-        if (config.use_v3_engine === false) {
+        if (config.backend === "ed_classic") {
             testDiffusersEnabled = false
         }
         testDiffusers.checked = testDiffusersEnabled
+        backendEngine.value = config.backend
         document.querySelector("#test_diffusers").checked = testDiffusers.checked // don't break plugins
+        document.querySelector("#use_v3_engine").checked = testDiffusers.checked // don't break plugins
 
         if (config.config_on_startup) {
-            if (config.config_on_startup?.use_v3_engine) {
+            if (config.config_on_startup?.backend !== "ed_classic") {
                 document.body.classList.add("diffusers-enabled-on-startup")
                 document.body.classList.remove("diffusers-disabled-on-startup")
             } else {
@@ -494,36 +520,26 @@ async function getAppConfig() {
             }
         }
 
-        if (!testDiffusersEnabled) {
-            document.querySelector("#lora_model_container").style.display = "none"
-            document.querySelector("#tiling_container").style.display = "none"
-            document.querySelector("#controlnet_model_container").style.display = "none"
-            document.querySelector("#hypernetwork_model_container").style.display = ""
-            document.querySelector("#hypernetwork_strength_container").style.display = ""
-            document.querySelector("#negative-embeddings-button").style.display = "none"
-
-            document.querySelectorAll("#sampler_name option.diffusers-only").forEach((option) => {
-                option.style.display = "none"
-            })
+        if (config.backend === "ed_classic") {
             IMAGE_STEP_SIZE = 64
-            customWidthField.step = IMAGE_STEP_SIZE
-            customHeightField.step = IMAGE_STEP_SIZE
         } else {
-            document.querySelector("#lora_model_container").style.display = ""
-            document.querySelector("#tiling_container").style.display = ""
-            document.querySelector("#controlnet_model_container").style.display = ""
-            document.querySelector("#hypernetwork_model_container").style.display = "none"
-            document.querySelector("#hypernetwork_strength_container").style.display = "none"
-
-            document.querySelectorAll("#sampler_name option.k_diffusion-only").forEach((option) => {
-                option.style.display = "none"
-            })
-            document.querySelector("#clip_skip_config").classList.remove("displayNone")
-            document.querySelector("#embeddings-button").classList.remove("displayNone")
             IMAGE_STEP_SIZE = 8
-            customWidthField.step = IMAGE_STEP_SIZE
-            customHeightField.step = IMAGE_STEP_SIZE
         }
+
+        customWidthField.step = IMAGE_STEP_SIZE
+        customHeightField.step = IMAGE_STEP_SIZE
+
+        const currentBackendKey = "backend_" + config.backend
+
+        document.querySelectorAll('.gated-feature').forEach((element) => {
+            const featureKeys = element.getAttribute('data-feature-keys').split(' ')
+
+            if (featureKeys.includes(currentBackendKey)) {
+                element.style.display = getDefaultDisplay(element)
+            } else {
+                element.style.display = 'none'
+            }
+        });
 
         if (config.force_save_metadata) {
             metadataOutputFormatField.value = config.force_save_metadata
@@ -749,6 +765,11 @@ async function getSystemInfo() {
             metadataOutputFormatField.disabled = !saveToDiskField.checked
         }
         setDiskPath(res["default_output_dir"], force)
+
+        // backend info
+        if (res["backend_url"]) {
+            document.querySelector("#backend-url").setAttribute("href", res["backend_url"])
+        }
     } catch (e) {
         console.log("error fetching devices", e)
     }

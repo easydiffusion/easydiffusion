@@ -6,6 +6,7 @@ import shutil
 # The config file is in the same directory as this script
 config_directory = os.path.dirname(__file__)
 config_yaml = os.path.join(config_directory, "..", "config.yaml")
+config_yaml = os.path.abspath(config_yaml)
 config_json = os.path.join(config_directory, "config.json")
 
 parser = argparse.ArgumentParser(description='Get values from config file')

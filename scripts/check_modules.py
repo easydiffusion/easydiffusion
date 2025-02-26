@@ -32,7 +32,7 @@ modules_to_check = {
     "ruamel.yaml": "0.17.21",
     "sqlalchemy": "2.0.19",
     "python-multipart": "0.0.6",
-    # "xformers": "0.0.16",
+    "onnxruntime": "1.19.2",
     "huggingface-hub": "0.21.4",
     "wandb": "0.13.7",
     "torchruntime": "1.13.0",
@@ -227,7 +227,7 @@ Thanks!"""
 
 def get_config():
     config_directory = os.path.dirname(__file__)  # this will be "scripts"
-    config_yaml = os.path.join(config_directory, "..", "config.yaml")
+    config_yaml = os.path.abspath(os.path.join(config_directory, "..", "config.yaml"))
     config_json = os.path.join(config_directory, "config.json")
 
     config = None

@@ -79,6 +79,7 @@
 }
 
 .parameters-table .fa-fire,
-.parameters-table .fa-bolt {
+.parameters-table .fa-bolt,
+.parameters-table .fa-robot {
     color: #F7630C;
 }
