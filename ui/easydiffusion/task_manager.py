@@ -24,9 +24,6 @@ from easydiffusion.utils import log
 from torchruntime.utils import get_device_count, get_device, get_device_name, get_installed_torch_platform
 from sdkit.utils import is_cpu_device, mem_get_info
 
-from torchruntime.utils import get_device_count, get_device, get_device_name, get_installed_torch_platform
-from sdkit.utils import is_cpu_device, mem_get_info
-
 THREAD_NAME_PREFIX = ""
 ERR_LOCK_FAILED = " failed to acquire lock within timeout."
 LOCK_TIMEOUT = 15  # Maximum locking time in seconds before failing a task.
