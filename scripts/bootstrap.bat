@@ -24,7 +24,7 @@ set USERPROFILE=%cd%\profile
 @rem figure out whether git and conda needs to be installed
 if exist "%INSTALL_ENV_DIR%" set PATH=%INSTALL_ENV_DIR%;%INSTALL_ENV_DIR%\Library\bin;%INSTALL_ENV_DIR%\Scripts;%INSTALL_ENV_DIR%\Library\usr\bin;%PATH%
 
-set PACKAGES_TO_INSTALL=git python=3.8.5
+set PACKAGES_TO_INSTALL=git python=3.9
 
 if not exist "%LEGACY_INSTALL_ENV_DIR%\etc\profile.d\conda.sh" (
     if not exist "%INSTALL_ENV_DIR%\etc\profile.d\conda.sh" set PACKAGES_TO_INSTALL=%PACKAGES_TO_INSTALL% conda
