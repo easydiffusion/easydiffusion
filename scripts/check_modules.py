@@ -35,7 +35,7 @@ modules_to_check = {
     "onnxruntime": "1.19.2",
     "huggingface-hub": "0.21.4",
     "wandb": "0.17.2",
-    "torchruntime": "1.14.1",
+    "torchruntime": "1.14.2",
     "torchsde": "0.2.6",
 }
 modules_to_log = ["torchruntime", "torch", "torchvision", "sdkit", "stable-diffusion-sdkit", "diffusers"]
