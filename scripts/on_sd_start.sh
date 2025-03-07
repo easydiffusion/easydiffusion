@@ -48,11 +48,13 @@ if [ -e "ldm" ]; then mv ldm ldm-old; fi
 
 python -m pip install -q torchruntime
 
+cd ..
 # Skip the package download and prompt if INSTALL_ONLY=1 is set
 if [ "$INSTALL_ONLY" != "1" ]; then
-    cd ..
+    # Download the required packages
+    python scripts/check_modules.py
+else
     # Download the required packages
     python scripts/check_modules.py --launch-uvicorn
-
     read -p "Press any key to continue"
 fi
