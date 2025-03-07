@@ -52,9 +52,9 @@ cd ..
 # Skip the package download and prompt if INSTALL_ONLY=1 is set
 if [ "$INSTALL_ONLY" != "1" ]; then
     # Download the required packages
-    python scripts/check_modules.py
-else
-    # Download the required packages
     python scripts/check_modules.py --launch-uvicorn
     read -p "Press any key to continue"
+else
+    # Download the required packages only
+    python scripts/check_modules.py
 fi
