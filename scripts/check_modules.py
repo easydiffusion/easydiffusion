@@ -35,7 +35,7 @@ modules_to_check = {
     # "xformers": "0.0.16",
     "huggingface-hub": "0.21.4",
     "wandb": "0.17.2",
-    "torchruntime": "1.14.2",
+    "torchruntime": "1.15.0",
     "torchsde": "0.2.6",
 }
 modules_to_log = ["torchruntime", "torch", "torchvision", "sdkit", "stable-diffusion-sdkit", "diffusers"]
