@@ -52,6 +52,10 @@ cd ..
 # Skip the package download and prompt if INSTALL_ONLY=1 is set
 if [ "$INSTALL_ONLY" != "1" ]; then
     # Download the required packages
+
+    # see https://github.com/easydiffusion/easydiffusion/issues/1911
+    export TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1
+    
     python scripts/check_modules.py --launch-uvicorn
     read -p "Press any key to continue"
 else
