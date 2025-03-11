@@ -61,4 +61,6 @@ if [ "$INSTALL_ONLY" != "1" ]; then
 else
     # Download the required packages only
     python scripts/check_modules.py
+    # Download the models
+    python -c "from easydiffusion.model_manager import init; init()"
 fi
