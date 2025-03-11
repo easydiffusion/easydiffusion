@@ -62,5 +62,6 @@ else
     # Download the required packages only
     python scripts/check_modules.py
     # Download the models
-    python -c "from easydiffusion.model_manager import init; init()"
+    script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    PYTHONPATH="$script_dir/../ui" python -c "from easydiffusion.model_manager import init; init()"
 fi
