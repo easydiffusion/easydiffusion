@@ -63,5 +63,6 @@ else
     python scripts/check_modules.py
     # Download the models
     script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-    PYTHONPATH="$script_dir/../ui" python -c "from easydiffusion.model_manager import init; init()"
+    ui_absolute_path=$(readlink -f "$script_dir/../ui")
+    PYTHONPATH="$ui_absolute_path" SD_UI_DIR="$ui_absolute_path" python -c "from easydiffusion.model_manager import init; init()"
 fi
