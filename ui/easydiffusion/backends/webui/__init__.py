@@ -93,12 +93,9 @@ def install_backend():
     # clone webui
     run_in_conda(["git", "clone", WEBUI_REPO, WEBUI_DIR], cwd=ROOT_DIR, env=env)
 
-    # install cpu-only torch if the PC doesn't have a graphics card (for Windows and Linux).
-    # this avoids WebUI installing a CUDA version and trying to activate it
-
-    torch_platform_name = get_installed_torch_platform()[0]
-    if OS_NAME in ("Windows", "Linux") and is_cpu_device(torch_platform_name):
-        run_in_conda(["python", "-m", "pip", "install", "torch", "torchvision"], cwd=WEBUI_DIR, env=env)
+    # install the appropriate version of torch using torchruntime
+    run_in_conda(["python", "-m", "pip", "install", "torchruntime"], cwd=WEBUI_DIR, env=env)
+    run_in_conda(["python", "-m", "torchruntime", "install", "torch", "torchvision"], cwd=WEBUI_DIR, env=env)
 
 
 def start_backend():
