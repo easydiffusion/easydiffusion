@@ -59,6 +59,7 @@ if [ "$INSTALL_ONLY" != "1" ]; then
     python scripts/check_modules.py --launch-uvicorn
     read -p "Press any key to continue"
 else
+    echo "Install only mode"
     # Download the required packages only
     python scripts/check_modules.py
     # Download the models
