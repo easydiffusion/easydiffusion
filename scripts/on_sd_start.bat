@@ -71,7 +71,8 @@ echo PYTHONPATH=%PYTHONPATH%
 call where python
 call python --version
 
-call python -m pip install -q torchruntime
+@rem this is outside check_modules.py to ensure that the required version of torchruntime is present
+call python -m pip install -q torchruntime>=1.15.1
 
 call python scripts\check_modules.py --launch-uvicorn
 pause
