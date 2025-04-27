@@ -74,8 +74,17 @@ def update_modules():
             gpu_infos = get_gpus()
             device_names = set(gpu.device_name for gpu in gpu_infos)
             if any(BLACKWELL_DEVICES.search(device_name) for device_name in device_names):
-                print("Upgrading torch to support NVIDIA 50xx series of graphics cards")
-                torchruntime.install(["--force", "--upgrade", "torch", "torchvision"])
+                if sys.version_info < (3, 9):
+                    print(
+                        "\n###################################\n"
+                        "NVIDIA 50xx series of graphics cards detected!\n\n"
+                        "To use this graphics card, please install the latest version of Easy Diffusion from: https://github.com/easydiffusion/easydiffusion#installation"
+                        "\n###################################\n"
+                    )
+                    sys.exit()
+                else:
+                    print("Upgrading torch to support NVIDIA 50xx series of graphics cards")
+                    torchruntime.install(["--force", "--upgrade", "torch", "torchvision"])
 
     for module_name, allowed_versions in modules_to_check.items():
         if os.path.exists(f"src/{module_name}"):
