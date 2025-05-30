@@ -72,7 +72,7 @@ call where python
 call python --version
 
 @rem this is outside check_modules.py to ensure that the required version of torchruntime is present
-call python -m pip install -q "torchruntime>=1.17.3"
+call python -m pip install -q "torchruntime>=1.18.0"
 
 call python scripts\check_modules.py --launch-uvicorn
 pause
