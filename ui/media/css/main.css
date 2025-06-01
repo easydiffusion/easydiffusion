@@ -2053,3 +2053,7 @@ div#enlarge-buttons {
     padding-top: 6pt;
     color: var(--small-label-color);
 }
+
+.imgCount {
+    width: 42pt;
+}
