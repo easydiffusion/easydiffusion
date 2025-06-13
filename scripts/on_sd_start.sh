@@ -51,7 +51,7 @@ if [ -e "src" ]; then mv src src-old; fi
 if [ -e "ldm" ]; then mv ldm ldm-old; fi
 
 # this is outside check_modules.py to ensure that the required version of torchruntime is present
-python -m pip install -q "torchruntime>=1.18.1"
+python -m pip install -q "torchruntime>=1.19.1"
 
 cd ..
 # Download the required packages
