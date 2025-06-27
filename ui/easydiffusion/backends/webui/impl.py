@@ -253,7 +253,7 @@ def generate_images(
         res = res.json()
     else:
         raise Exception(
-            "The engine failed while generating this image. Please check the logs in the command-line window for more details."
+            f"HTTP Status {res.status_code}. The engine failed while generating this image. Please check the logs in the command-line window for more details."
         )
 
     import json

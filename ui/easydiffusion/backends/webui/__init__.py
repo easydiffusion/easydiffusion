@@ -349,7 +349,9 @@ def get_env():
         "PIP_INSTALLER_LOCATION": [],  # [f"{dir}/python/get-pip.py"],
         "TRANSFORMERS_CACHE": [f"{dir}/transformers-cache"],
         "HF_HUB_DISABLE_SYMLINKS_WARNING": ["true"],
-        "COMMANDLINE_ARGS": [f'--api --models-dir "{models_dir}" {model_path_args} --skip-torch-cuda-test'],
+        "COMMANDLINE_ARGS": [
+            f'--api --models-dir "{models_dir}" {model_path_args} --skip-torch-cuda-test --disable-gpu-warning'
+        ],
         "SKIP_VENV": ["1"],
         "SD_WEBUI_RESTARTING": ["1"],
     }
