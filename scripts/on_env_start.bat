@@ -26,7 +26,7 @@ if "%update_branch%"=="" (
     set update_branch=main
 )
 
-@>nul findstr /m "conda_sd_ui_deps_installed" scripts\install_status.txt
+@>nul findstr /m "sd_install_complete" scripts\install_status.txt
 @if "%ERRORLEVEL%" NEQ "0" (
     for /f "tokens=*" %%a in ('python -c "import os; parts = os.getcwd().split(os.path.sep); print(len(parts))"') do if "%%a" NEQ "2" (
         echo. & echo "!!!! WARNING !!!!" & echo.
