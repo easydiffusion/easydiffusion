@@ -38,6 +38,8 @@ modules_to_check = {
     "wandb": "0.17.2",
     # "torchruntime": "1.16.2",
     "torchsde": "0.2.6",
+    "basicsr": "1.4.2",
+    "gfpgan": "1.3.8",
 }
 modules_to_log = ["torchruntime", "torch", "torchvision", "sdkit", "stable-diffusion-sdkit", "diffusers"]
 
@@ -58,6 +60,8 @@ def install(module_name: str, module_version: str, index_url=None):
         install_cmd += f" --index-url {index_url}"
     if module_name == "sdkit" and version("sdkit") is not None:
         install_cmd += " -q"
+    if module_name in ("basicsr", "gfpgan"):
+        install_cmd += " --use-pep517"  # potential fix for https://github.com/easydiffusion/easydiffusion/issues/1942
 
     print(">", install_cmd)
     os.system(install_cmd)
