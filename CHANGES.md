@@ -2,6 +2,7 @@
 
 ## v3.5 (preview)
 ### Major Changes
+- **Chroma** - support for the Chroma model, including quantized bnb and nf4 models.
 - **Flux** - full support for the Flux model, including quantized bnb and nf4 models.
 - **LyCORIS** - including `LoCon`, `Hada`, `IA3` and `Lokr`.
 - **11 new samplers** - `DDIM CFG++`, `DPM Fast`, `DPM++ 2m SDE Heun`, `DPM++ 3M SDE`, `Restart`, `Heun PP2`, `IPNDM`, `IPNDM_V`, `LCM`, `[Forge] Flux Realistic`, `[Forge] Flux Realistic (Slow)`.
@@ -14,6 +15,7 @@
 v3.5 is currently an optional upgrade, and you can switch between the v3.0 (diffusers) engine and the v3.5 (webui) engine using the `Settings` tab in the UI.
 
 ### Detailed changelog
+* 3.5.7 - 27 Jun 2025 - Support for the Chroma model. Update Forge to the latest commit.
 * 3.5.6 - 17 Feb 2025 - Fix broken model merging.
 * 3.5.5 - 10 Feb 2025 - (Internal code change) Use `torchruntime` for installing torch/torchvision, instead of custom logic. This supports a lot more GPUs on various platforms, and was built using Easy Diffusion's torch-installation code.
 * 3.5.4 - 8 Feb 2025 - Fix a bug where the inpainting mask wasn't resized to the image size when using the WebUI/v3.5 backend. Thanks @AvidGameFan for their help in investigating and fixing this!
