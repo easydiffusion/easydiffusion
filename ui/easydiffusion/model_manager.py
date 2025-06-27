@@ -325,7 +325,7 @@ def make_model_folders():
 
 def is_malicious_model(file_path):
     try:
-        if file_path.endswith(".safetensors"):
+        if file_path.endswith((".safetensors", ".sft", ".gguf")):
             return False
         scan_result = scan_model(file_path)
         if scan_result.issues_count > 0 or scan_result.infected_files > 0:
