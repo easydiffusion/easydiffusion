@@ -54,6 +54,7 @@ const taskConfigSetup = {
             label: "Hypernetwork Strength",
             visible: ({ reqBody }) => !!reqBody?.use_hypernetwork_model,
         },
+        use_text_encoder_model: { label: "Text Encoder", visible: ({ reqBody }) => !!reqBody?.use_text_encoder_model },
         use_lora_model: { label: "Lora Model", visible: ({ reqBody }) => !!reqBody?.use_lora_model },
         lora_alpha: { label: "Lora Strength", visible: ({ reqBody }) => !!reqBody?.use_lora_model },
         preserve_init_image_color_profile: "Preserve Color Profile",
@@ -141,6 +142,7 @@ let tilingField = document.querySelector("#tiling")
 let controlnetModelField = new ModelDropdown(document.querySelector("#controlnet_model"), "controlnet", "None", false)
 let vaeModelField = new ModelDropdown(document.querySelector("#vae_model"), "vae", "None")
 let loraModelField = new MultiModelSelector(document.querySelector("#lora_model"), "lora", "LoRA", 0.5, 0.02)
+let textEncoderModelField = new MultiModelSelector(document.querySelector("#text_encoder_model"), "text-encoder", "Text Encoder", 0.5, 0.02, false)
 let hypernetworkModelField = new ModelDropdown(document.querySelector("#hypernetwork_model"), "hypernetwork", "None")
 let hypernetworkStrengthSlider = document.querySelector("#hypernetwork_strength_slider")
 let hypernetworkStrengthField = document.querySelector("#hypernetwork_strength")
@@ -1396,6 +1398,7 @@ function getCurrentUserRequest() {
         newTask.reqBody.hypernetwork_strength = parseFloat(hypernetworkStrengthField.value)
     }
     if (testDiffusers.checked) {
+        // lora
         let loraModelData = loraModelField.value
         let modelNames = loraModelData["modelNames"]
         let modelStrengths = loraModelData["modelWeights"]
@@ -1408,6 +1411,16 @@ function getCurrentUserRequest() {
             newTask.reqBody.lora_alpha = modelStrengths
         }
 
+        // text encoder
+        let textEncoderModelNames = textEncoderModelField.modelNames
+
+        if (textEncoderModelNames.length > 0) {
+            textEncoderModelNames = textEncoderModelNames.length == 1 ? textEncoderModelNames[0] : textEncoderModelNames
+
+            newTask.reqBody.use_text_encoder_model = textEncoderModelNames
+        }
+
+        // vae tiling
         if (tilingField.value !== "none") {
             newTask.reqBody.tiling = tilingField.value
         }
@@ -1891,8 +1904,31 @@ document.addEventListener("refreshModels", function() {
     onControlnetModelChange()
 })
 
-// tip for Flux
+// utilities for Flux and Chroma
 let sdModelField = document.querySelector("#stable_diffusion_model")
+
+// function checkAndSetDependentModels() {
+//     let sdModel = sdModelField.value.toLowerCase()
+//     let isFlux = sdModel.includes("flux")
+//     let isChroma = sdModel.includes("chroma")
+
+//     if (isFlux || isChroma) {
+//         vaeModelField.value = "ae"
+
+//         if (isFlux) {
+//             textEncoderModelField.modelNames = ["t5xxl_fp16", "clip_l"]
+//         } else {
+//             textEncoderModelField.modelNames = ["t5xxl_fp16"]
+//         }
+//     } else {
+//         if (vaeModelField.value == "ae") {
+//             vaeModelField.value = ""
+//         }
+//         textEncoderModelField.modelNames = []
+//     }
+// }
+// sdModelField.addEventListener("change", checkAndSetDependentModels)
+
 function checkGuidanceValue() {
     let guidance = parseFloat(guidanceScaleField.value)
     let guidanceWarning = document.querySelector("#guidanceWarning")
@@ -1917,15 +1953,16 @@ sdModelField.addEventListener("change", checkGuidanceValue)
 guidanceScaleField.addEventListener("change", checkGuidanceValue)
 guidanceScaleSlider.addEventListener("change", checkGuidanceValue)
 
-function checkGuidanceScaleVisibility() {
-    let guidanceScaleContainer = document.querySelector("#distilled_guidance_scale_container")
-    if (sdModelField.value.toLowerCase().includes("flux")) {
-        guidanceScaleContainer.classList.remove("displayNone")
-    } else {
-        guidanceScaleContainer.classList.add("displayNone")
-    }
-}
-sdModelField.addEventListener("change", checkGuidanceScaleVisibility)
+// disabling until we can detect flux models more reliably
+// function checkGuidanceScaleVisibility() {
+//     let guidanceScaleContainer = document.querySelector("#distilled_guidance_scale_container")
+//     if (sdModelField.value.toLowerCase().includes("flux")) {
+//         guidanceScaleContainer.classList.remove("displayNone")
+//     } else {
+//         guidanceScaleContainer.classList.add("displayNone")
+//     }
+// }
+// sdModelField.addEventListener("change", checkGuidanceScaleVisibility)
 
 function checkFluxSampler() {
     let samplerWarning = document.querySelector("#fluxSamplerWarning")
@@ -1980,8 +2017,9 @@ schedulerField.addEventListener("change", checkFluxSchedulerSteps)
 numInferenceStepsField.addEventListener("change", checkFluxSchedulerSteps)
 
 document.addEventListener("refreshModels", function() {
+    // checkAndSetDependentModels()
     checkGuidanceValue()
-    checkGuidanceScaleVisibility()
+    // checkGuidanceScaleVisibility()
     checkFluxSampler()
     checkFluxScheduler()
     checkFluxSchedulerSteps()

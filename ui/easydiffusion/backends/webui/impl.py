@@ -27,6 +27,7 @@ webui_opts: dict = None
 curr_models = {
     "stable-diffusion": None,
     "vae": None,
+    "text-encoder": None,
 }
 
 
@@ -96,50 +97,51 @@ def ping(timeout=1):
 
 
 def load_model(context, model_type, **kwargs):
+    from easydiffusion.app import ROOT_DIR, getConfig
+
+    config = getConfig()
+    models_dir = config.get("models_dir", os.path.join(ROOT_DIR, "models"))
+
     model_path = context.model_paths[model_type]
 
+    if model_type == "stable-diffusion":
+        base_dir = os.path.join(models_dir, model_type)
+        model_path = os.path.relpath(model_path, base_dir)
+
+    # print(f"load model: {model_type=} {model_path=} {curr_models=}")
+    curr_models[model_type] = model_path
+
+
+def unload_model(context, model_type, **kwargs):
+    # print(f"unload model: {model_type=} {curr_models=}")
+    curr_models[model_type] = None
+
+
+def flush_model_changes(context):
     if webui_opts is None:
         print("Server not ready, can't set the model")
         return
 
-    if model_type == "stable-diffusion":
-        model_name = os.path.basename(model_path)
-        model_name = os.path.splitext(model_name)[0]
-        print(f"setting sd model: {model_name}")
-        if curr_models[model_type] != model_name:
-            try:
-                res = webui_post("/sdapi/v1/options", json={"sd_model_checkpoint": model_name})
-                if res.status_code != 200:
-                    raise Exception(res.text)
-            except Exception as e:
-                raise RuntimeError(
-                    f"The engine failed to set the required options. Please check the logs in the command line window for more details."
-                )
+    modules = []
+    for model_type in ("vae", "text-encoder"):
+        if curr_models[model_type]:
+            model_paths = curr_models[model_type]
+            model_paths = [model_paths] if not isinstance(model_paths, list) else model_paths
+            modules += model_paths
 
-            curr_models[model_type] = model_name
-    elif model_type == "vae":
-        if curr_models[model_type] != model_path:
-            vae_model = [model_path] if model_path else []
+    opts = {"sd_model_checkpoint": curr_models["stable-diffusion"], "forge_additional_modules": modules}
 
-            opts = {"sd_model_checkpoint": curr_models["stable-diffusion"], "forge_additional_modules": vae_model}
-            print("setting opts 2", opts)
+    print("Setting backend models", opts)
 
-            try:
-                res = webui_post("/sdapi/v1/options", json=opts)
-                if res.status_code != 200:
-                    raise Exception(res.text)
-            except Exception as e:
-                raise RuntimeError(
-                    f"The engine failed to set the required options. Please check the logs in the command line window for more details."
-                )
-
-            curr_models[model_type] = model_path
-
-
-def unload_model(context, model_type, **kwargs):
-    if model_type == "vae":
-        context.model_paths[model_type] = None
-        load_model(context, model_type)
+    try:
+        res = webui_post("/sdapi/v1/options", json=opts)
+        print("got res", res.status_code)
+        if res.status_code != 200:
+            raise Exception(res.text)
+    except Exception as e:
+        raise RuntimeError(
+            f"The engine failed to set the required options. Please check the logs in the command line window for more details."
+        )
 
 
 def generate_images(
@@ -346,7 +348,7 @@ def refresh_models():
             pass
 
     try:
-        for type in ("checkpoints", "vae"):
+        for type in ("checkpoints", "vae-and-text-encoders"):
             t = Thread(target=make_refresh_call, args=(type,))
             t.start()
     except Exception as e:

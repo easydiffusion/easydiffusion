@@ -3,6 +3,7 @@ import shutil
 from glob import glob
 import traceback
 from typing import Union
+from os import path
 
 from easydiffusion import app
 from easydiffusion.types import ModelsData
@@ -22,6 +23,7 @@ KNOWN_MODEL_TYPES = [
     "codeformer",
     "embeddings",
     "controlnet",
+    "text-encoder",
 ]
 MODEL_EXTENSIONS = {
     "stable-diffusion": [".ckpt", ".safetensors", ".sft", ".gguf"],
@@ -33,6 +35,7 @@ MODEL_EXTENSIONS = {
     "codeformer": [".pth"],
     "embeddings": [".pt", ".bin", ".safetensors", ".sft"],
     "controlnet": [".pth", ".safetensors", ".sft"],
+    "text-encoder": [".safetensors", ".sft"],
 }
 DEFAULT_MODELS = {
     "stable-diffusion": [
@@ -59,6 +62,7 @@ ALTERNATE_FOLDER_NAMES = {  # for WebUI compatibility
     "realesrgan": "RealESRGAN",
     "lora": "Lora",
     "controlnet": "ControlNet",
+    "text-encoder": "text_encoder",
 }
 
 known_models = {}
@@ -204,6 +208,9 @@ def reload_models_if_necessary(context: Context, models_data: ModelsData, models
                     context.model_load_errors = {}
                 context.model_load_errors[model_type] = str(e)  # storing the entire Exception can lead to memory leaks
 
+    if hasattr(backend, "flush_model_changes"):
+        backend.flush_model_changes(context)
+
 
 def resolve_model_paths(models_data: ModelsData):
     from easydiffusion.backend_manager import backend
@@ -224,14 +231,25 @@ def resolve_model_paths(models_data: ModelsData):
     for model_type in model_paths:
         if model_type in skip_models:  # doesn't use model paths
             continue
-        if model_type == "codeformer" and model_paths[model_type]:
-            download_if_necessary("codeformer", "codeformer.pth", "codeformer-0.1.0")
-        elif model_type == "controlnet" and model_paths[model_type]:
-            model_id = model_paths[model_type]
-            model_info = get_model_info_from_db(model_type=model_type, model_id=model_id)
-            if model_info:
-                filename = model_info.get("url", "").split("/")[-1]
-                download_if_necessary("controlnet", filename, model_id, skip_if_others_exist=False)
+
+        if model_type in ("vae", "codeformer", "controlnet", "text-encoder") and model_paths[model_type]:
+            model_ids = model_paths[model_type]
+            model_ids = model_ids if isinstance(model_ids, list) else [model_ids]
+
+            new_model_paths = []
+
+            for model_id in model_ids:
+                log.info(f"Checking for {model_id=}")
+                model_info = get_model_info_from_db(model_type=model_type, model_id=model_id)
+                if model_info:
+                    filename = model_info.get("url", "").split("/")[-1]
+                    download_if_necessary(model_type, filename, model_id, skip_if_others_exist=False)
+
+                    new_model_paths.append(path.splitext(filename)[0])
+                else:  # not in the model db, probably a regular file
+                    new_model_paths.append(model_id)
+
+            model_paths[model_type] = new_model_paths
 
         model_paths[model_type] = resolve_model_to_use(model_paths[model_type], model_type=model_type)
 
@@ -256,17 +274,31 @@ def download_default_models_if_necessary():
 
 
 def download_if_necessary(model_type: str, file_name: str, model_id: str, skip_if_others_exist=True):
-    model_dir = get_model_dirs(model_type)[0]
-    model_path = os.path.join(model_dir, file_name)
+    from easydiffusion.backend_manager import backend
+
     expected_hash = get_model_info_from_db(model_type=model_type, model_id=model_id)["quick_hash"]
-
     other_models_exist = any_model_exists(model_type) and skip_if_others_exist
-    known_model_exists = os.path.exists(model_path)
-    known_model_is_corrupt = known_model_exists and hash_file_quick(model_path) != expected_hash
 
-    if known_model_is_corrupt or (not other_models_exist and not known_model_exists):
-        print("> download", model_type, model_id)
-        download_model(model_type, model_id, download_base_dir=app.MODELS_DIR, download_config_if_available=False)
+    for model_dir in get_model_dirs(model_type):
+        model_path = os.path.join(model_dir, file_name)
+
+        known_model_exists = os.path.exists(model_path)
+        known_model_is_corrupt = known_model_exists and hash_file_quick(model_path) != expected_hash
+
+        needs_download = known_model_is_corrupt or (not other_models_exist and not known_model_exists)
+
+        log.info(f"{model_path=} {needs_download=}")
+        if known_model_exists:
+            log.info(f"{expected_hash=} {hash_file_quick(model_path)=}")
+        log.info(f"{known_model_is_corrupt=} {other_models_exist=} {known_model_exists=}")
+
+        if not needs_download:
+            return
+
+    print("> download", model_type, model_id)
+    download_model(model_type, model_id, download_base_dir=app.MODELS_DIR, download_config_if_available=False)
+
+    backend.refresh_models()
 
 
 def migrate_legacy_model_location():
@@ -363,7 +395,7 @@ def getModels(scan_for_malicious: bool = True):
     models = {
         "options": {
             "stable-diffusion": [],
-            "vae": [],
+            "vae": [{"ae": "ae (Flux VAE fp16)"}],
             "hypernetwork": [],
             "lora": [],
             "codeformer": [{"codeformer": "CodeFormer"}],
@@ -382,6 +414,11 @@ def getModels(scan_for_malicious: bool = True):
                 # {"control_v11p_sd15_seg": "Segment"},
                 # {"control_v11e_sd15_shuffle": "Shuffle"},
                 # {"control_v11f1e_sd15_tile": "Tile"},
+            ],
+            "text-encoder": [
+                {"t5xxl_fp16": "T5 XXL fp16"},
+                {"clip_l": "CLIP L"},
+                {"clip_g": "CLIP G"},
             ],
         },
     }
@@ -466,6 +503,7 @@ def getModels(scan_for_malicious: bool = True):
     listModels(model_type="lora")
     listModels(model_type="embeddings", nameFilter=get_embedding_token)
     listModels(model_type="controlnet")
+    listModels(model_type="text-encoder")
 
     if scan_for_malicious and models_scanned > 0:
         log.info(f"[green]Scanned {models_scanned} models. Nothing infected[/]")

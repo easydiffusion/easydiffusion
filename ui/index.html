@@ -302,6 +302,14 @@
                         <input id="vae_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
                         <a href="https://github.com/easydiffusion/easydiffusion/wiki/VAE-Variational-Auto-Encoder" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about VAEs</span></i></a>
                     </td></tr>
+                    <tr id="text_encoder_model_container" class="pl-5 gated-feature" data-feature-keys="backend_webui">
+                        <td>
+                            <label for="text_encoder_model">Text Encoder:</label>
+                        </td>
+                        <td>
+                            <div id="text_encoder_model" data-path=""></div>
+                        </td>
+                    </tr>
                     <tr id="samplerSelection" class="pl-5"><td><label for="sampler_name">Sampler:</label></td><td>
                         <select id="sampler_name" name="sampler_name">
                             <option value="plms">PLMS</option>
@@ -442,7 +450,7 @@
                     <tr class="pl-5"><td><label for="guidance_scale_slider">Guidance Scale:</label></td><td> <input id="guidance_scale_slider" name="guidance_scale_slider" class="editor-slider" value="75" type="range" min="11" max="500"> <input id="guidance_scale" name="guidance_scale" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" inputmode="decimal"></td></tr>
                     <tr class="pl-5 displayNone warning-label" id="guidanceWarning"><td></td><td id="guidanceWarningText"></td></tr>
                     <tr id="prompt_strength_container" class="pl-5"><td><label for="prompt_strength_slider">Prompt Strength:</label></td><td> <input id="prompt_strength_slider" name="prompt_strength_slider" class="editor-slider" value="80" type="range" min="0" max="99"> <input id="prompt_strength" name="prompt_strength" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" inputmode="decimal"><br/></td></tr>
-                    <tr id="distilled_guidance_scale_container" class="pl-5 displayNone"><td><label for="distilled_guidance_scale_slider">Distilled Guidance:</label></td><td> <input id="distilled_guidance_scale_slider" name="distilled_guidance_scale_slider" class="editor-slider" value="35" type="range" min="11" max="500"> <input id="distilled_guidance_scale" name="distilled_guidance_scale" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" inputmode="decimal"></td></tr>
+                    <tr id="distilled_guidance_scale_container" class="pl-5 gated-feature" data-feature-keys="backend_webui"><td><label for="distilled_guidance_scale_slider">Distilled Guidance:</label></td><td> <input id="distilled_guidance_scale_slider" name="distilled_guidance_scale_slider" class="editor-slider" value="35" type="range" min="11" max="500"> <input id="distilled_guidance_scale" name="distilled_guidance_scale" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" inputmode="decimal"></td></tr>
                     <tr id="lora_model_container" class="pl-5 gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">
                         <td>
                             <label for="lora_model">LoRA:</label>

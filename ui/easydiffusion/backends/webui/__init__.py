@@ -18,6 +18,7 @@ from .impl import (
     ping,
     load_model,
     unload_model,
+    flush_model_changes,
     set_options,
     generate_images,
     filter_images,
@@ -53,6 +54,7 @@ MODELS_TO_OVERRIDE = {
     "codeformer": "--codeformer-models-path",
     "embeddings": "--embeddings-dir",
     "controlnet": "--controlnet-dir",
+    "text-encoder": "--text-encoder-dir",
 }
 
 WEBUI_PATCHES = [

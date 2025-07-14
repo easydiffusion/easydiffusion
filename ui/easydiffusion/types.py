@@ -80,6 +80,7 @@ class RenderTaskData(TaskData):
     latent_upscaler_steps: int = 10
     use_stable_diffusion_model: Union[str, List[str]] = "sd-v1-4"
     use_vae_model: Union[str, List[str]] = None
+    use_text_encoder_model: Union[str, List[str]] = None
     use_hypernetwork_model: Union[str, List[str]] = None
     use_lora_model: Union[str, List[str]] = None
     use_controlnet_model: Union[str, List[str]] = None
@@ -211,6 +212,7 @@ def convert_legacy_render_req_to_new(old_req: dict):
     # move the model info
     model_paths["stable-diffusion"] = old_req.get("use_stable_diffusion_model")
     model_paths["vae"] = old_req.get("use_vae_model")
+    model_paths["text-encoder"] = old_req.get("use_text_encoder_model")
     model_paths["hypernetwork"] = old_req.get("use_hypernetwork_model")
     model_paths["lora"] = old_req.get("use_lora_model")
     model_paths["controlnet"] = old_req.get("use_controlnet_model")
