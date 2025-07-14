@@ -256,6 +256,7 @@ def generate_images(
     else:
         if res.status_code == 500:
             res = res.json()
+            log.error(f"Server error: {res['message']}")
             raise Exception(f"{res['message']}. Please check the logs in the command-line window for more details.")
 
         raise Exception(
