@@ -27,7 +27,7 @@ KNOWN_MODEL_TYPES = [
 ]
 MODEL_EXTENSIONS = {
     "stable-diffusion": [".ckpt", ".safetensors", ".sft", ".gguf"],
-    "vae": [".vae.pt", ".ckpt", ".safetensors", ".sft"],
+    "vae": [".vae.pt", ".ckpt", ".safetensors", ".sft", ".gguf"],
     "hypernetwork": [".pt", ".safetensors", ".sft"],
     "gfpgan": [".pth"],
     "realesrgan": [".pth"],
@@ -35,7 +35,7 @@ MODEL_EXTENSIONS = {
     "codeformer": [".pth"],
     "embeddings": [".pt", ".bin", ".safetensors", ".sft"],
     "controlnet": [".pth", ".safetensors", ".sft"],
-    "text-encoder": [".safetensors", ".sft"],
+    "text-encoder": [".safetensors", ".sft", ".gguf"],
 }
 DEFAULT_MODELS = {
     "stable-diffusion": [
