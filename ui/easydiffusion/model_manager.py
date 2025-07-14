@@ -239,7 +239,7 @@ def resolve_model_paths(models_data: ModelsData):
             new_model_paths = []
 
             for model_id in model_ids:
-                log.info(f"Checking for {model_id=}")
+                # log.info(f"Checking for {model_id=}")
                 model_info = get_model_info_from_db(model_type=model_type, model_id=model_id)
                 if model_info:
                     filename = model_info.get("url", "").split("/")[-1]
@@ -287,10 +287,10 @@ def download_if_necessary(model_type: str, file_name: str, model_id: str, skip_i
 
         needs_download = known_model_is_corrupt or (not other_models_exist and not known_model_exists)
 
-        log.info(f"{model_path=} {needs_download=}")
-        if known_model_exists:
-            log.info(f"{expected_hash=} {hash_file_quick(model_path)=}")
-        log.info(f"{known_model_is_corrupt=} {other_models_exist=} {known_model_exists=}")
+        # log.info(f"{model_path=} {needs_download=}")
+        # if known_model_exists:
+        #     log.info(f"{expected_hash=} {hash_file_quick(model_path)=}")
+        # log.info(f"{known_model_is_corrupt=} {other_models_exist=} {known_model_exists=}")
 
         if not needs_download:
             return
