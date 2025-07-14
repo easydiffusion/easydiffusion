@@ -15,6 +15,7 @@
 v3.5 is currently an optional upgrade, and you can switch between the v3.0 (diffusers) engine and the v3.5 (webui) engine using the `Settings` tab in the UI.
 
 ### Detailed changelog
+* 3.5.8 - 14 Jul 2025 - Support custom Text Encoders and Flux VAEs in the UI.
 * 3.5.7 - 27 Jun 2025 - Support for the Chroma model. Update Forge to the latest commit.
 * 3.5.6 - 17 Feb 2025 - Fix broken model merging.
 * 3.5.5 - 10 Feb 2025 - (Internal code change) Use `torchruntime` for installing torch/torchvision, instead of custom logic. This supports a lot more GPUs on various platforms, and was built using Easy Diffusion's torch-installation code.
