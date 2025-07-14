@@ -55,6 +55,12 @@ MODELS_TO_OVERRIDE = {
     "controlnet": "--controlnet-dir",
 }
 
+WEBUI_PATCHES = [
+    "forge_exception_leak_patch.patch",
+    "forge_model_crash_recovery.patch",
+    "forge_api_refresh_text_encoders.patch",
+]
+
 backend_process = None
 conda = "conda"
 
@@ -118,6 +124,12 @@ def start_backend():
         run_in_conda(["git", "reset", "--hard"], cwd=WEBUI_DIR, env=env)
         run_in_conda(["git", "fetch"], cwd=WEBUI_DIR, env=env)
         run_in_conda(["git", "-c", "advice.detachedHead=false", "checkout", WEBUI_COMMIT], cwd=WEBUI_DIR, env=env)
+
+        # patch forge for various stability-related fixes
+        for patch in WEBUI_PATCHES:
+            patch_path = os.path.join(os.path.dirname(__file__), patch)
+            log.info(f"Applying WebUI patch: {patch_path}")
+            run_in_conda(["git", "apply", patch_path], cwd=WEBUI_DIR, env=env)
 
     # workaround for the installations that broke out of conda and used ED's python 3.8 instead of WebUI conda's Py 3.10
     run_in_conda(["python", "-m", "pip", "install", "-q", "--upgrade", "urllib3==2.2.3"], cwd=WEBUI_DIR, env=env)
