@@ -61,6 +61,7 @@ WEBUI_PATCHES = [
     "forge_exception_leak_patch.patch",
     "forge_model_crash_recovery.patch",
     "forge_api_refresh_text_encoders.patch",
+    "forge_loader_force_gc.patch",
 ]
 
 backend_process = None
