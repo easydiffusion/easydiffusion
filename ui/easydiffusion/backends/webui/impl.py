@@ -254,6 +254,10 @@ def generate_images(
     if res.status_code == 200:
         res = res.json()
     else:
+        if res.status_code == 500:
+            res = res.json()
+            raise Exception(f"{res['message']}. Please check the logs in the command-line window for more details.")
+
         raise Exception(
             f"HTTP Status {res.status_code}. The engine failed while generating this image. Please check the logs in the command-line window for more details."
         )
