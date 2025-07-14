@@ -336,6 +336,7 @@ def get_env():
         raise RuntimeError("The system folder is missing!")
 
     config = getConfig()
+    backend_config = config.get("backend_config", {})
     models_dir = config.get("models_dir", os.path.join(ROOT_DIR, "models"))
 
     model_path_args = get_model_path_args()
@@ -414,6 +415,10 @@ def get_env():
                 env_entries["COMMANDLINE_ARGS"][0] += " --always-low-vram"
             elif vram_usage_level == "high":
                 env_entries["COMMANDLINE_ARGS"][0] += " --always-high-vram"
+
+    cli_args = backend_config.get("COMMANDLINE_ARGS")
+    if cli_args:
+        env_entries["COMMANDLINE_ARGS"][0] += " " + cli_args
 
     env = {}
     for key, paths in env_entries.items():
