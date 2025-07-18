@@ -412,10 +412,10 @@ const TASK_MAPPING = {
                 m = getModelPath(m, [".safetensors", ".sft"])
                 modelPaths.push(m)
             })
-            text_encoderModelField.modelNames = modelPaths
+            textEncoderModelField.modelNames = modelPaths
         },
         readUI: () => {
-            return text_encoderModelField.modelNames
+            return textEncoderModelField.modelNames
         },
         parse: (val) => {
             val = !val || val === "None" ? "" : val
