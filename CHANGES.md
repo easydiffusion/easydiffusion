@@ -15,6 +15,7 @@
 v3.5 is currently an optional upgrade, and you can switch between the v3.0 (diffusers) engine and the v3.5 (webui) engine using the `Settings` tab in the UI.
 
 ### Detailed changelog
+* 3.5.9 - 18 Jul 2025 - Stability fix for the Forge backend. Prevents unused Forge processes from hanging around even after closing Easy Diffusion.
 * 3.5.8 - 14 Jul 2025 - Support custom Text Encoders and Flux VAEs in the UI.
 * 3.5.7 - 27 Jun 2025 - Support for the Chroma model. Update Forge to the latest commit.
 * 3.5.6 - 17 Feb 2025 - Fix broken model merging.
