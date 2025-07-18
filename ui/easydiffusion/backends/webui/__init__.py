@@ -366,7 +366,7 @@ def get_env():
         "TRANSFORMERS_CACHE": [f"{dir}/transformers-cache"],
         "HF_HUB_DISABLE_SYMLINKS_WARNING": ["true"],
         "COMMANDLINE_ARGS": [
-            f'--api --models-dir "{models_dir}" {model_path_args} --skip-torch-cuda-test --disable-gpu-warning'
+            f'--api --models-dir "{models_dir}" {model_path_args} --skip-torch-cuda-test --disable-gpu-warning --port {impl.WEBUI_PORT}'
         ],
         "SKIP_VENV": ["1"],
         "SD_WEBUI_RESTARTING": ["1"],
