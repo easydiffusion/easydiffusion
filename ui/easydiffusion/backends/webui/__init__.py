@@ -6,6 +6,7 @@ from threading import local
 import psutil
 import time
 import shutil
+import atexit
 
 from easydiffusion.app import ROOT_DIR, getConfig
 from easydiffusion.model_manager import get_model_dirs
@@ -62,6 +63,7 @@ WEBUI_PATCHES = [
     "forge_model_crash_recovery.patch",
     "forge_api_refresh_text_encoders.patch",
     "forge_loader_force_gc.patch",
+    "forge_monitor_parent_process.patch",
 ]
 
 backend_process = None
@@ -187,6 +189,10 @@ def start_backend():
 
         print("starting", cmd, WEBUI_DIR)
         backend_process = run_in_conda([cmd], cwd=WEBUI_DIR, env=env, wait=False, output_prefix="[WebUI] ")
+
+        # atexit.register isn't 100% reliable, that's why we also use `forge_monitor_parent_process.patch`
+        # which causes Forge to kill itself if the parent pid passed to it is no longer valid.
+        atexit.register(backend_process.terminate)
 
         restart_if_dead_thread = threading.Thread(target=restart_if_webui_dies_after_starting)
         restart_if_dead_thread.start()
@@ -366,7 +372,7 @@ def get_env():
         "TRANSFORMERS_CACHE": [f"{dir}/transformers-cache"],
         "HF_HUB_DISABLE_SYMLINKS_WARNING": ["true"],
         "COMMANDLINE_ARGS": [
-            f'--api --models-dir "{models_dir}" {model_path_args} --skip-torch-cuda-test --disable-gpu-warning --port {impl.WEBUI_PORT}'
+            f'--parent-pid {os.getpid()} --api --models-dir "{models_dir}" {model_path_args} --skip-torch-cuda-test --disable-gpu-warning --port {impl.WEBUI_PORT}'
         ],
         "SKIP_VENV": ["1"],
         "SD_WEBUI_RESTARTING": ["1"],
