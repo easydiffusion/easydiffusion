@@ -1418,6 +1418,8 @@ function getCurrentUserRequest() {
             textEncoderModelNames = textEncoderModelNames.length == 1 ? textEncoderModelNames[0] : textEncoderModelNames
 
             newTask.reqBody.use_text_encoder_model = textEncoderModelNames
+        } else {
+            newTask.reqBody.use_text_encoder_model = ""
         }
 
         // vae tiling
