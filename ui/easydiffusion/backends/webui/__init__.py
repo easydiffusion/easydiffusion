@@ -372,7 +372,7 @@ def get_env():
         "TRANSFORMERS_CACHE": [f"{dir}/transformers-cache"],
         "HF_HUB_DISABLE_SYMLINKS_WARNING": ["true"],
         "COMMANDLINE_ARGS": [
-            f'--parent-pid {os.getpid()} --api --models-dir "{models_dir}" {model_path_args} --skip-torch-cuda-test --disable-gpu-warning --port {impl.WEBUI_PORT}'
+            f'--api --models-dir "{models_dir}" {model_path_args} --skip-torch-cuda-test --disable-gpu-warning --port {impl.WEBUI_PORT}'
         ],
         "SKIP_VENV": ["1"],
         "SD_WEBUI_RESTARTING": ["1"],
@@ -384,6 +384,7 @@ def get_env():
         env_entries["PYTHONNOUSERSITE"] = ["1"]
         env_entries["PYTHON"] = [f"{dir}/python"]
         env_entries["GIT"] = [f"{dir}/Library/bin/git"]
+        env_entries["COMMANDLINE_ARGS"][0] += f" --parent-pid {os.getpid()}"
     else:
         env_entries["PATH"].append("/bin")
         env_entries["PATH"].append("/usr/bin")
