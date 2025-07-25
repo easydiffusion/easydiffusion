@@ -12,6 +12,9 @@ if exist "installer_files\env" set PATH=%cd%\installer_files\env;%cd%\installer_
 
 set PYTHONPATH=%cd%\installer;%cd%\installer_files\env
 
+set PYTHON=%cd%\installer_files\env\python.exe
+echo PYTHON=%PYTHON%
+
 @rem activate the installer env
 call conda activate
 
@@ -37,8 +40,8 @@ if exist "stable-diffusion\env" (
     set PYTHONPATH=%cd%\stable-diffusion\env\lib\site-packages
 )
 
-call where python
-call python --version
+@REM call where python
+call "%PYTHON%" --version
 
 echo PYTHONPATH=%PYTHONPATH%
 
