@@ -12,9 +12,6 @@ if exist "installer_files\env" set PATH=%cd%\installer_files\env;%cd%\installer_
 
 set PYTHONPATH=%cd%\installer;%cd%\installer_files\env
 
-set PYTHON=%cd%\installer_files\env\python.exe
-echo PYTHON=%PYTHON%
-
 @rem activate the installer env
 call conda activate
 
@@ -34,10 +31,14 @@ powershell -Command "(Get-WmiObject Win32_VideoController | Select-Object Name, 
 @rem activate the legacy environment (if present) and set PYTHONPATH
 if exist "installer_files\env" (
     set PYTHONPATH=%cd%\installer_files\env\lib\site-packages
+    set PYTHON=%cd%\installer_files\env\python.exe
+    echo PYTHON=%PYTHON%
 )
 if exist "stable-diffusion\env" (
     call conda activate .\stable-diffusion\env
     set PYTHONPATH=%cd%\stable-diffusion\env\lib\site-packages
+    set PYTHON=%cd%\stable-diffusion\env\python.exe
+    echo PYTHON=%PYTHON%
 )
 
 @REM call where python
