@@ -54,7 +54,7 @@ def version(module_name: str) -> str:
 
 
 def install(module_name: str, module_version: str, index_url=None):
-    install_cmd = f"python -m pip install --upgrade {module_name}=={module_version}"
+    install_cmd = f'"{sys.executable}" -m pip install --upgrade {module_name}=={module_version}'
 
     if index_url:
         install_cmd += f" --index-url {index_url}"
@@ -204,9 +204,9 @@ def update_modules():
 
 def _install(module_name, module_version=None):
     if module_version is None:
-        install_cmd = f"python -m pip install {module_name}"
+        install_cmd = f'"{sys.executable}" -m pip install {module_name}'
     else:
-        install_cmd = f"python -m pip install --upgrade {module_name}=={module_version}"
+        install_cmd = f'"{sys.executable}" -m pip install --upgrade {module_name}=={module_version}'
 
     print(">", install_cmd)
     os.system(install_cmd)

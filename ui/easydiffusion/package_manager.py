@@ -5,7 +5,8 @@ from importlib.metadata import version as pkg_version
 
 from easydiffusion import app
 
-# future home of scripts/check_modules.py
+# was meant to be a rewrite of scripts/check_modules.py
+# but probably dead for now
 
 manifest = {
     "tensorrt": {
