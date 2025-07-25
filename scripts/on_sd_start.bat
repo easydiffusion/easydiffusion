@@ -66,14 +66,17 @@ set PYTHONNOUSERSITE=1
 set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 echo PYTHONPATH=%PYTHONPATH%
 
+set PYTHON=%INSTALL_ENV_DIR%\python.exe
+echo PYTHON=%PYTHON%
+
 @rem Download the required packages
-call where python
-call python --version
+@REM call where python
+call "%PYTHON%" --version
 
 @rem this is outside check_modules.py to ensure that the required version of torchruntime is present
-call python -m pip install -q "torchruntime>=1.19.1"
+call "%PYTHON%" -m pip install -q "torchruntime>=1.19.1"
 
-call python scripts\check_modules.py --launch-uvicorn
+call "%PYTHON%" scripts\check_modules.py --launch-uvicorn
 pause
 exit /b
 
