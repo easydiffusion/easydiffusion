@@ -64,6 +64,7 @@ WEBUI_PATCHES = [
     "forge_api_refresh_text_encoders.patch",
     "forge_loader_force_gc.patch",
     "forge_monitor_parent_process.patch",
+    "forge_disable_corrupted_model_renaming.patch",
 ]
 
 backend_process = None
