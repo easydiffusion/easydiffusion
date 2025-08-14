@@ -188,7 +188,9 @@ def start_backend():
 
         cmd = "webui.bat" if OS_NAME == "Windows" else "./webui.sh"
 
-        print("starting", cmd, WEBUI_DIR)
+        log.info(f"starting: {cmd} in {WEBUI_DIR}")
+        log.info(f"COMMANDLINE_ARGS: {env['COMMANDLINE_ARGS']}")
+
         backend_process = run_in_conda([cmd], cwd=WEBUI_DIR, env=env, wait=False, output_prefix="[WebUI] ")
 
         # atexit.register isn't 100% reliable, that's why we also use `forge_monitor_parent_process.patch`
