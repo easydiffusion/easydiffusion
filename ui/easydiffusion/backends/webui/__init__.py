@@ -347,6 +347,7 @@ def get_env():
     config = getConfig()
     backend_config = config.get("backend_config", {})
     models_dir = config.get("models_dir", os.path.join(ROOT_DIR, "models"))
+    models_dir = models_dir.rstrip("/\\")
 
     model_path_args = get_model_path_args()
 
