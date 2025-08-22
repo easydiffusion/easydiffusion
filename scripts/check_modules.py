@@ -302,6 +302,16 @@ def launch_uvicorn():
     if hasattr(torchruntime, "info"):
         torchruntime.info()
 
+    # allow a user to override the HSA_OVERRIDE_GFX_VERSION and HIP_VISIBLE_DEVICES variables
+    # until ED gets process-based multi-GPU support (which will allow different processes to use different GPUs)
+    backend_config = config.get("backend_config", {})
+    if "HSA_OVERRIDE_GFX_VERSION" in backend_config:
+        os.environ["HSA_OVERRIDE_GFX_VERSION"] = str(backend_config["HSA_OVERRIDE_GFX_VERSION"])
+        print(f"backend_config overrode HSA_OVERRIDE_GFX_VERSION to {os.environ['HSA_OVERRIDE_GFX_VERSION']}")
+    if "HIP_VISIBLE_DEVICES" in backend_config:
+        os.environ["HIP_VISIBLE_DEVICES"] = str(backend_config["HIP_VISIBLE_DEVICES"])
+        print(f"backend_config overrode HIP_VISIBLE_DEVICES to {os.environ['HIP_VISIBLE_DEVICES']}")
+
     if os_name == "Windows":
         os.environ["PYTHONPATH"] = str(Path(os.environ["INSTALL_ENV_DIR"], "lib", "site-packages"))
     else:
