@@ -75,7 +75,7 @@ echo PYTHON=%PYTHON%
 call "%PYTHON%" --version
 
 @rem this is outside check_modules.py to ensure that the required version of torchruntime is present
-call "%PYTHON%" -m pip install -q "torchruntime>=1.19.1"
+call "%PYTHON%" -m pip install -q "torchruntime>=1.23.0"
 
 call "%PYTHON%" scripts\check_modules.py --launch-uvicorn
 pause
