@@ -417,6 +417,8 @@ def get_env():
         vram_usage_level = config.get("vram_usage_level", "balanced")
         if config.get("render_devices", "auto") == "cpu" or is_cpu_device(torch_platform_name):
             env_entries["COMMANDLINE_ARGS"][0] += " --always-cpu"
+        elif torch_platform_name == "directml":
+            env_entries["COMMANDLINE_ARGS"][0] += " --directml"
         else:
             device = get_device(0)
             if needs_to_force_full_precision(get_device_name(device)):
