@@ -34,14 +34,13 @@ index fcd8a50f..7f684bec 100644
 +parser.add_argument("--parent-pid", type=int, default=-1, help='parent process id, if running webui as a sub-process')
 diff --git a/modules/parent_process_monitor.py b/modules/parent_process_monitor.py
 new file mode 100644
-index 00000000..cc3e2049
+index 00000000..49d6a76b
 --- /dev/null
 +++ b/modules/parent_process_monitor.py
-@@ -0,0 +1,45 @@
+@@ -0,0 +1,47 @@
 +# monitors and kills itself when the parent process dies. required when running Forge as a sub-process.
 +# modified version of https://stackoverflow.com/a/23587108
 +
-+import sys
 +import os
 +import threading
 +import platform
@@ -49,9 +48,12 @@ index 00000000..cc3e2049
 +
 +
 +def _monitor_parent_posix(parent_pid):
++    import psutil
++
 +    print(f"Monitoring parent pid: {parent_pid}")
 +    while True:
-+        if os.getppid() != parent_pid:
++        if not psutil.pid_exists(parent_pid):
++            print(f"Parent pid {parent_pid} died. Exiting.")
 +            os._exit(0)
 +        time.sleep(1)
 +
