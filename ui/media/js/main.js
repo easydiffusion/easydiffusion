@@ -1079,6 +1079,7 @@ function makeImage() {
         hypernetworkStrengthField.value = hypernetworkStrengthSlider.value / 100
     }
     const taskTemplate = getCurrentUserRequest()
+    seedField.value = taskTemplate.reqBody.seed;
     const newTaskRequests = getPrompts().map((prompt) =>
         Object.assign({}, taskTemplate, {
             reqBody: Object.assign({ prompt: prompt }, taskTemplate.reqBody),
