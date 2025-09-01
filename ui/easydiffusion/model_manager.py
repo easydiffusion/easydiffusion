@@ -64,6 +64,10 @@ ALTERNATE_FOLDER_NAMES = {  # for WebUI compatibility
     "controlnet": "ControlNet",
     "text-encoder": "text_encoder",
 }
+NAME_FILTERS = {
+    "gfpgan": lambda x: (x if "gfpgan" in x.lower() else None),
+    "embeddings": get_embedding_token,
+}
 
 known_models = {}
 
@@ -495,15 +499,9 @@ def getModels(scan_for_malicious: bool = True):
 
     if scan_for_malicious:
         log.info(f"[green]Scanning all model folders for models...[/]")
-    # custom models
-    listModels(model_type="stable-diffusion")
-    listModels(model_type="vae")
-    listModels(model_type="hypernetwork")
-    listModels(model_type="gfpgan", nameFilter=lambda x: (x if "gfpgan" in x.lower() else None))
-    listModels(model_type="lora")
-    listModels(model_type="embeddings", nameFilter=get_embedding_token)
-    listModels(model_type="controlnet")
-    listModels(model_type="text-encoder")
+
+    for model_type in KNOWN_MODEL_TYPES:
+        listModels(model_type=model_type, nameFilter=NAME_FILTERS.get(model_type))
 
     if scan_for_malicious and models_scanned > 0:
         log.info(f"[green]Scanned {models_scanned} models. Nothing infected[/]")
