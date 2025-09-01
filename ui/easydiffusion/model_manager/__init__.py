@@ -471,6 +471,7 @@ def getModels(scan_for_malicious: bool = True):
                         model_exists = True
                         break
                 if not model_exists:
+                    print("Dingus", model_id)
                     tree.append(model_id)
 
             elif entry.is_dir():
