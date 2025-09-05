@@ -124,7 +124,7 @@ def update_modules():
     #  if sdkit is 2.0.15.x (or lower), then diffusers should be restricted to 0.21.4 (see below for the reason)
     #  otherwise use the current sdkit version (with the corresponding diffusers version)
 
-    expected_sdkit_version_str = "2.0.22.9"
+    expected_sdkit_version_str = "2.1.0"
     expected_diffusers_version_str = "0.28.2"
 
     legacy_sdkit_version_str = "2.0.15.18"
