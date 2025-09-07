@@ -304,7 +304,7 @@ def launch_uvicorn():
 
     # allow a user to override the HSA_OVERRIDE_GFX_VERSION and HIP_VISIBLE_DEVICES variables
     # until ED gets process-based multi-GPU support (which will allow different processes to use different GPUs)
-    backend_config = config.get("backend_config", {})
+    backend_config = config.get("backend_config") or {}
     if "HSA_OVERRIDE_GFX_VERSION" in backend_config:
         os.environ["HSA_OVERRIDE_GFX_VERSION"] = str(backend_config["HSA_OVERRIDE_GFX_VERSION"])
         print(f"backend_config overrode HSA_OVERRIDE_GFX_VERSION to {os.environ['HSA_OVERRIDE_GFX_VERSION']}")
