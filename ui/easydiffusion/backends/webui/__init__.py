@@ -112,7 +112,7 @@ def install_backend():
 
 def start_backend():
     config = getConfig()
-    backend_config = config.get("backend_config", {})
+    backend_config = config.get("backend_config") or {}
 
     log.info(f"Expected WebUI backend dir: {BACKEND_DIR}")
 
@@ -345,7 +345,7 @@ def get_env():
         raise RuntimeError("The system folder is missing!")
 
     config = getConfig()
-    backend_config = config.get("backend_config", {})
+    backend_config = config.get("backend_config") or {}
     models_dir = config.get("models_dir", os.path.join(ROOT_DIR, "models"))
     models_dir = models_dir.rstrip("/\\")
 
