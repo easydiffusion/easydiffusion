@@ -1925,6 +1925,10 @@ function isChromaModel() {
 }
 
 function checkAndSetDependentModels() {
+    if (!modelsDB) {
+        return
+    }
+
     let isFlux = isFluxModel()
     let isChroma = isChromaModel()
 
@@ -1946,6 +1950,10 @@ function checkAndSetDependentModels() {
 sdModelField.addEventListener("change", checkAndSetDependentModels)
 
 function checkGuidanceValue() {
+    if (!modelsDB) {
+        return
+    }
+
     let guidance = parseFloat(guidanceScaleField.value)
     let guidanceWarning = document.querySelector("#guidanceWarning")
     let guidanceWarningText = document.querySelector("#guidanceWarningText")
@@ -1970,6 +1978,10 @@ guidanceScaleField.addEventListener("change", checkGuidanceValue)
 guidanceScaleSlider.addEventListener("change", checkGuidanceValue)
 
 function checkGuidanceScaleVisibility() {
+    if (!modelsDB) {
+        return
+    }
+
     let guidanceScaleContainer = document.querySelector("#distilled_guidance_scale_container")
     if (isFluxModel() || isChromaModel()) {
         guidanceScaleContainer.classList.remove("displayNone")
@@ -1980,6 +1992,10 @@ function checkGuidanceScaleVisibility() {
 sdModelField.addEventListener("change", checkGuidanceScaleVisibility)
 
 function checkFluxSampler() {
+    if (!modelsDB) {
+        return
+    }
+
     let samplerWarning = document.querySelector("#fluxSamplerWarning")
     if (isFluxModel() || isChromaModel()) {
         if (samplerField.value == "euler_a") {
@@ -1993,6 +2009,10 @@ function checkFluxSampler() {
 }
 
 function checkFluxScheduler() {
+    if (!modelsDB) {
+        return
+    }
+
     const badSchedulers = ["automatic", "uniform", "turbo", "align_your_steps", "align_your_steps_GITS", "align_your_steps_11", "align_your_steps_32"]
 
     let schedulerWarning = document.querySelector("#fluxSchedulerWarning")
@@ -2008,6 +2028,10 @@ function checkFluxScheduler() {
 }
 
 function checkFluxSchedulerSteps() {
+    if (!modelsDB) {
+        return
+    }
+
     const problematicSchedulers = ["karras", "exponential", "polyexponential"]
 
     let schedulerWarning = document.querySelector("#fluxSchedulerStepsWarning")
