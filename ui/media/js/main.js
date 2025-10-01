@@ -1910,33 +1910,46 @@ document.addEventListener("refreshModels", function() {
 // utilities for Flux and Chroma
 let sdModelField = document.querySelector("#stable_diffusion_model")
 
-// function checkAndSetDependentModels() {
-//     let sdModel = sdModelField.value.toLowerCase()
-//     let isFlux = sdModel.includes("flux")
-//     let isChroma = sdModel.includes("chroma")
+function isFluxModel() {
+    let sdModel = stableDiffusionModelField.value
+    let tags = modelsDB["stable-diffusion"][sdModel]?.tags || []
+    let isFlux = tags.includes("flux_dev") || tags.includes("flux_schnell")
+    return isFlux
+}
 
-//     if (isFlux || isChroma) {
-//         vaeModelField.value = "ae"
+function isChromaModel() {
+    let sdModel = stableDiffusionModelField.value
+    let tags = modelsDB["stable-diffusion"][sdModel]?.tags || []
+    let isChroma = tags.includes("chroma")
+    return isChroma
+}
 
-//         if (isFlux) {
-//             textEncoderModelField.modelNames = ["t5xxl_fp16", "clip_l"]
-//         } else {
-//             textEncoderModelField.modelNames = ["t5xxl_fp16"]
-//         }
-//     } else {
-//         if (vaeModelField.value == "ae") {
-//             vaeModelField.value = ""
-//         }
-//         textEncoderModelField.modelNames = []
-//     }
-// }
-// sdModelField.addEventListener("change", checkAndSetDependentModels)
+function checkAndSetDependentModels() {
+    let isFlux = isFluxModel()
+    let isChroma = isChromaModel()
+
+    if (isFlux || isChroma) {
+        vaeModelField.value = "ae"
+
+        if (isFlux) {
+            textEncoderModelField.modelNames = ["t5xxl_fp16", "clip_l"]
+        } else {
+            textEncoderModelField.modelNames = ["t5xxl_fp16"]
+        }
+    } else {
+        if (vaeModelField.value == "ae") {
+            vaeModelField.value = ""
+        }
+        textEncoderModelField.modelNames = []
+    }
+}
+sdModelField.addEventListener("change", checkAndSetDependentModels)
 
 function checkGuidanceValue() {
     let guidance = parseFloat(guidanceScaleField.value)
     let guidanceWarning = document.querySelector("#guidanceWarning")
     let guidanceWarningText = document.querySelector("#guidanceWarningText")
-    if (sdModelField.value.toLowerCase().includes("flux")) {
+    if (isFluxModel() || isChromaModel()) {
         if (guidance > 1.5) {
             guidanceWarningText.innerText = "Flux recommends a 'Guidance Scale' of 1"
             guidanceWarning.classList.remove("displayNone")
@@ -1956,20 +1969,19 @@ sdModelField.addEventListener("change", checkGuidanceValue)
 guidanceScaleField.addEventListener("change", checkGuidanceValue)
 guidanceScaleSlider.addEventListener("change", checkGuidanceValue)
 
-// disabling until we can detect flux models more reliably
-// function checkGuidanceScaleVisibility() {
-//     let guidanceScaleContainer = document.querySelector("#distilled_guidance_scale_container")
-//     if (sdModelField.value.toLowerCase().includes("flux")) {
-//         guidanceScaleContainer.classList.remove("displayNone")
-//     } else {
-//         guidanceScaleContainer.classList.add("displayNone")
-//     }
-// }
-// sdModelField.addEventListener("change", checkGuidanceScaleVisibility)
+function checkGuidanceScaleVisibility() {
+    let guidanceScaleContainer = document.querySelector("#distilled_guidance_scale_container")
+    if (isFluxModel() || isChromaModel()) {
+        guidanceScaleContainer.classList.remove("displayNone")
+    } else {
+        guidanceScaleContainer.classList.add("displayNone")
+    }
+}
+sdModelField.addEventListener("change", checkGuidanceScaleVisibility)
 
 function checkFluxSampler() {
     let samplerWarning = document.querySelector("#fluxSamplerWarning")
-    if (sdModelField.value.toLowerCase().includes("flux")) {
+    if (isFluxModel() || isChromaModel()) {
         if (samplerField.value == "euler_a") {
             samplerWarning.classList.remove("displayNone")
         } else {
@@ -1984,7 +1996,7 @@ function checkFluxScheduler() {
     const badSchedulers = ["automatic", "uniform", "turbo", "align_your_steps", "align_your_steps_GITS", "align_your_steps_11", "align_your_steps_32"]
 
     let schedulerWarning = document.querySelector("#fluxSchedulerWarning")
-    if (sdModelField.value.toLowerCase().includes("flux")) {
+    if (isFluxModel() || isChromaModel()) {
         if (badSchedulers.includes(schedulerField.value)) {
             schedulerWarning.classList.remove("displayNone")
         } else {
@@ -1999,7 +2011,7 @@ function checkFluxSchedulerSteps() {
     const problematicSchedulers = ["karras", "exponential", "polyexponential"]
 
     let schedulerWarning = document.querySelector("#fluxSchedulerStepsWarning")
-    if (sdModelField.value.toLowerCase().includes("flux") && parseInt(numInferenceStepsField.value) < 15) {
+    if ((isFluxModel() || isChromaModel()) && parseInt(numInferenceStepsField.value) < 15) {
         if (problematicSchedulers.includes(schedulerField.value)) {
             schedulerWarning.classList.remove("displayNone")
         } else {
@@ -2020,9 +2032,9 @@ schedulerField.addEventListener("change", checkFluxSchedulerSteps)
 numInferenceStepsField.addEventListener("change", checkFluxSchedulerSteps)
 
 document.addEventListener("refreshModels", function() {
-    // checkAndSetDependentModels()
+    checkAndSetDependentModels()
     checkGuidanceValue()
-    // checkGuidanceScaleVisibility()
+    checkGuidanceScaleVisibility()
     checkFluxSampler()
     checkFluxScheduler()
     checkFluxSchedulerSteps()
