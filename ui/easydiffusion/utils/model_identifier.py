@@ -294,6 +294,9 @@ def infer_diffusers_model_type(header):
             return "animatediff_v3"
 
     elif has_any_key(header, CHECKPOINT_KEY_NAMES["flux"]):
+        if "distilled_guidance_layer.layers.0.in_layer.bias" in header:
+            return "chroma"
+
         g_in = "model.diffusion_model.guidance_in.in_layer.bias"
         if g_in in header or "guidance_in.in_layer.bias" in header:
             k = (
