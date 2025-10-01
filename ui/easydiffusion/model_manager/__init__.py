@@ -11,7 +11,7 @@ from easydiffusion.utils import log
 from sdkit import Context
 from sdkit.models import scan_model, download_model, get_model_info_from_db
 from sdkit.utils import hash_file_quick
-from sdkit.models.model_loader.embeddings import get_embedding_token
+from .list_models import list_models
 
 KNOWN_MODEL_TYPES = [
     "stable-diffusion",
@@ -63,10 +63,6 @@ ALTERNATE_FOLDER_NAMES = {  # for WebUI compatibility
     "lora": "Lora",
     "controlnet": "ControlNet",
     "text-encoder": "text_encoder",
-}
-NAME_FILTERS = {
-    "gfpgan": lambda x: (x if "gfpgan" in x.lower() else None),
-    "embeddings": get_embedding_token,
 }
 
 known_models = {}
@@ -389,124 +385,6 @@ def is_malicious_model(file_path):
     except Exception as e:
         log.error(f"error while scanning: {file_path}, error: {e}")
     return False
-
-
-def getModels(scan_for_malicious: bool = True):
-    from easydiffusion.backend_manager import backend
-
-    backend.refresh_models()
-
-    models = {
-        "options": {
-            "stable-diffusion": [],
-            "vae": [{"ae": "ae (Flux VAE fp16)"}],
-            "hypernetwork": [],
-            "lora": [],
-            "codeformer": [{"codeformer": "CodeFormer"}],
-            "embeddings": [],
-            "controlnet": [
-                # {"control_v11p_sd15_canny": "Canny (*)"},
-                # {"control_v11p_sd15_openpose": "OpenPose (*)"},
-                # {"control_v11p_sd15_normalbae": "Normal BAE (*)"},
-                # {"control_v11f1p_sd15_depth": "Depth (*)"},
-                # {"control_v11p_sd15_scribble": "Scribble"},
-                # {"control_v11p_sd15_softedge": "Soft Edge"},
-                # {"control_v11p_sd15_inpaint": "Inpaint"},
-                # {"control_v11p_sd15_lineart": "Line Art"},
-                # {"control_v11p_sd15s2_lineart_anime": "Line Art Anime"},
-                # {"control_v11p_sd15_mlsd": "Straight Lines"},
-                # {"control_v11p_sd15_seg": "Segment"},
-                # {"control_v11e_sd15_shuffle": "Shuffle"},
-                # {"control_v11f1e_sd15_tile": "Tile"},
-            ],
-            "text-encoder": [
-                {"t5xxl_fp16": "T5 XXL fp16"},
-                {"clip_l": "CLIP L"},
-                {"clip_g": "CLIP G"},
-            ],
-        },
-    }
-
-    models_scanned = 0
-
-    class MaliciousModelException(Exception):
-        "Raised when picklescan reports a problem with a model"
-
-    def scan_directory(directory, suffixes, directoriesFirst: bool = True, default_entries=[], nameFilter=None):
-        nonlocal models_scanned
-
-        tree = list(default_entries)
-
-        if not os.path.exists(directory):
-            return tree
-
-        for entry in sorted(
-            os.scandir(directory),
-            key=lambda entry: (entry.is_file() == directoriesFirst, entry.name.lower()),
-        ):
-            if entry.is_file():
-                matching_suffix = list(filter(lambda s: entry.name.endswith(s), suffixes))
-                if len(matching_suffix) == 0:
-                    continue
-                matching_suffix = matching_suffix[0]
-
-                mtime = entry.stat().st_mtime
-                mod_time = known_models[entry.path] if entry.path in known_models else -1
-                if mod_time != mtime:
-                    models_scanned += 1
-                    if scan_for_malicious and is_malicious_model(entry.path):
-                        raise MaliciousModelException(entry.path)
-                if scan_for_malicious:
-                    known_models[entry.path] = mtime
-
-                model_id = entry.name[: -len(matching_suffix)]
-                if callable(nameFilter):
-                    model_id = nameFilter(model_id)
-                    if model_id is None:
-                        continue
-
-                model_exists = False
-                for m in tree:  # allows default "named" models, like CodeFormer and known ControlNet models
-                    if (isinstance(m, str) and model_id == m) or (isinstance(m, dict) and model_id in m):
-                        model_exists = True
-                        break
-                if not model_exists:
-                    tree.append(model_id)
-
-            elif entry.is_dir():
-                scan = scan_directory(entry.path, suffixes, directoriesFirst=False, nameFilter=nameFilter)
-
-                if len(scan) != 0:
-                    tree.append((entry.name, scan))
-        return tree
-
-    def listModels(model_type, nameFilter=None):
-        nonlocal models_scanned
-
-        model_extensions = MODEL_EXTENSIONS.get(model_type, [])
-        models_dirs = get_model_dirs(model_type)
-        if not os.path.exists(models_dirs[0]):
-            os.makedirs(models_dirs[0])
-
-        for model_dir in models_dirs:
-            try:
-                default_tree = models["options"].get(model_type, [])
-                models["options"][model_type] = scan_directory(
-                    model_dir, model_extensions, default_entries=default_tree, nameFilter=nameFilter
-                )
-            except MaliciousModelException as e:
-                models["scan-error"] = str(e)
-
-    if scan_for_malicious:
-        log.info(f"[green]Scanning all model folders for models...[/]")
-
-    for model_type in KNOWN_MODEL_TYPES:
-        listModels(model_type=model_type, nameFilter=NAME_FILTERS.get(model_type))
-
-    if scan_for_malicious and models_scanned > 0:
-        log.info(f"[green]Scanned {models_scanned} models. Nothing infected[/]")
-
-    return models
 
 
 def get_model_dirs(model_type: str, base_dir=None):
