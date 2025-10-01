@@ -84,7 +84,8 @@ def set_model_metadata(model_type, models):
         m["tags"] = [model_type]
         if model_type == "stable-diffusion":
             sd_model_class = identify_model_type(m["abs_path"])
-            m["tags"].append(sd_model_class)
+            if sd_model_class:
+                m["tags"].append(sd_model_class)
 
 
 def strip_null_models(models):

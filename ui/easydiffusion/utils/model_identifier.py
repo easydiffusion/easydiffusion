@@ -403,7 +403,8 @@ def identify_model_type(path):
     elif path.lower().endswith(".gguf"):
         header = read_gguf_header(path)
     else:
-        raise ValueError("Unsupported file type")
+        print(f"Unsupported file type: {path}")
+        return
     return infer_diffusers_model_type(header)
 
 
