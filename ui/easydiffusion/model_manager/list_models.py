@@ -76,7 +76,9 @@ def set_model_metadata(model_type, models):
         m["name"] = m["model"]
 
         if model_type == "embeddings":
-            m["model"] = get_embedding_token(m["model"])
+            dir_name, file_name = os.path.dirname(m["model"]), os.path.basename(m["model"])
+            file_name = get_embedding_token(file_name)
+            m["model"] = os.path.join(dir_name, file_name).replace("\\", "/")
 
         if model_type == "gfpgan" and "gfpgan" not in m["model"].lower():
             m["model"] = None  # will get filtered out later
