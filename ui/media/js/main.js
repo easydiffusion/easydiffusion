@@ -1947,7 +1947,9 @@ function checkAndSetDependentModels() {
         textEncoderModelField.modelNames = []
     }
 }
-sdModelField.addEventListener("change", checkAndSetDependentModels)
+// disabling this until we can identify dependencies better
+// e.g. distinguish between flux models that need a text encoder vs flux models with built-in text encoders
+// sdModelField.addEventListener("change", checkAndSetDependentModels)
 
 function checkGuidanceValue() {
     if (!modelsDB) {
@@ -2056,7 +2058,7 @@ schedulerField.addEventListener("change", checkFluxSchedulerSteps)
 numInferenceStepsField.addEventListener("change", checkFluxSchedulerSteps)
 
 document.addEventListener("refreshModels", function() {
-    checkAndSetDependentModels()
+    // checkAndSetDependentModels()
     checkGuidanceValue()
     checkGuidanceScaleVisibility()
     checkFluxSampler()
