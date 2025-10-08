@@ -403,12 +403,8 @@ def identify_model_type(path):
         header = read_safetensors_header(path)
     elif p.endswith(".gguf"):
         header = read_gguf_header(path)
-    elif p.endswith(".ckpt") or p.endswith(".pt") or p.endswith(".pth"):
-        # print("Model type detection has not yet been implemented for checkpoint files (.ckpt, .pt, .pth).")
-        return
     else:
-        print(f"Unsupported file type: {path}")
-        return
+        raise ValueError(f"Unsupported file type: {path}")
     return infer_diffusers_model_type(header)
 
 

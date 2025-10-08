@@ -1,6 +1,7 @@
 import os
 
 from sdkit.models.model_loader.embeddings import get_embedding_token
+from easydiffusion.utils import log
 from easydiffusion.utils.model_identifier import identify_model_type
 
 PREFILLED_MODELS = {
@@ -85,7 +86,11 @@ def set_model_metadata(model_type, models):
 
         m["tags"] = [model_type]
         if model_type == "stable-diffusion":
-            sd_model_class = identify_model_type(m["abs_path"])
+            try:
+                sd_model_class = identify_model_type(m["abs_path"])
+            except Exception as e:
+                sd_model_class = None
+                log.info(f"Could not identify model type for {m['abs_path']}: {e}")
             if sd_model_class:
                 m["tags"].append(sd_model_class)
 
