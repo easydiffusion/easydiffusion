@@ -90,7 +90,7 @@ def set_model_metadata(model_type, models):
                 sd_model_class = identify_model_type(m["abs_path"])
             except Exception as e:
                 sd_model_class = None
-                log.info(f"Could not identify model type for {m['abs_path']}: {e}")
+                # log.info(f"Could not identify model type for {m['abs_path']}: {e}")
             if sd_model_class:
                 m["tags"].append(sd_model_class)
 
