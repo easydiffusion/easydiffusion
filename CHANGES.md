@@ -15,6 +15,7 @@
 v3.5 is currently an optional upgrade, and you can switch between the v3.0 (diffusers) engine and the v3.5 (webui) engine using the `Settings` tab in the UI.
 
 ### Detailed changelog
+* 3.5.11 - 28 Oct 2025 - Fix regression where newly added models wouldn't work, even after refreshing the models list.
 * 3.5.10 - 1 Oct 2025 - Show the appropriate Image Settings and warnings, based on the image model (e.g. Flux, Chroma, Stable Diffusion etc). E.g. Distilled Guidance is needed only for Flux and Chroma.
 * 3.5.9 - 18 Jul 2025 - Stability fix for the Forge backend. Prevents unused Forge processes from hanging around even after closing Easy Diffusion.
 * 3.5.8 - 14 Jul 2025 - Support custom Text Encoders and Flux VAEs in the UI.
@@ -46,6 +47,7 @@ v3.5 is currently an optional upgrade, and you can switch between the v3.0 (diff
 - **Major rewrite of the code** - We've switched to using diffusers under-the-hood, which allows us to release new features faster, and focus on making the UI and installer even easier to use.
 
 ### Detailed changelog
+* 3.0.15 - 28 Oct 2025 - Fix regression where newly added models wouldn't work, even after refreshing the models list.
 * 3.0.14 - 1 Oct 2025 - (Internal code change) Model fetching API refactored. It now returns the model types (flux, SD version etc) in a cleaner data format.
 * 3.0.13 - 10 Feb 2025 - (Internal code change) Use `torchruntime` for installing torch/torchvision, instead of custom logic. This supports a lot more GPUs on various platforms, and was built using Easy Diffusion's torch-installation code.
 * 3.0.12 - 6 Feb 2025 - (Internal code change) Remove hardcoded references to `torch.cuda`, and replace with torchruntime's device utilities.
