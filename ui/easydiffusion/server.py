@@ -247,6 +247,10 @@ def read_web_data_internal(key: str = None, **kwargs):
         system_info["devices"]["config"] = config.get("render_devices", "auto")
         return JSONResponse(system_info, headers=NOCACHE_HEADERS)
     elif key == "models":
+        from easydiffusion.backend_manager import backend
+
+        backend.refresh_models()
+
         return JSONResponse({"models": model_manager.list_models()}, headers=NOCACHE_HEADERS)
     elif key == "modifiers":
         return JSONResponse(app.get_image_modifiers(), headers=NOCACHE_HEADERS)
