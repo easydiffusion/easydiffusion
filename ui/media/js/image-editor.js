@@ -554,21 +554,27 @@ class ImageEditor {
         document.removeEventListener("keyup", this.keyHandlerBound, true)
     }
     setSize(width, height) {
+        width = parseInt(width)
+        height = parseInt(height)
+
         if (width == this.width && height == this.height) {
             return
         }
 
-        if (width > height) {
-            var max_size = Math.min(parseInt(window.innerWidth * 0.9), width, 768)
-            var multiplier = max_size / width
-            width = (multiplier * width).toFixed()
-            height = (multiplier * height).toFixed()
-        } else {
-            var max_size = Math.min(parseInt(window.innerHeight * 0.9), height, 768)
-            var multiplier = max_size / height
-            width = (multiplier * width).toFixed()
-            height = (multiplier * height).toFixed()
+        let windowWidth = window.innerWidth
+        if (window.innerWidth > 700) {  // keep in sync with main.css: @media screen and (max-width: 700px) {..}
+            // the tools are on the sides, so max size is smaller
+            let controlsLeft = this.popup.querySelector(".editor-controls-left")
+            let controlsRight = this.popup.querySelector(".editor-controls-right")
+            let controlsLeftWidth = parseInt(getComputedStyle(controlsLeft).width)
+            let controlsRightWidth = parseInt(getComputedStyle(controlsRight).width)
+            windowWidth = windowWidth - controlsLeftWidth - controlsRightWidth - 80 // extra padding
         }
+
+        var max_size = Math.min(parseInt(windowWidth * 0.9), width, 768)
+        var multiplier = max_size / width
+        width = (multiplier * width).toFixed()
+        height = (multiplier * height).toFixed()
         this.width = parseInt(width)
         this.height = parseInt(height)
 
