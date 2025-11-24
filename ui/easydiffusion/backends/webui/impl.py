@@ -201,7 +201,10 @@ def generate_images(
         cmd["include_init_images"] = True
         cmd["inpainting_fill"] = 1
         cmd["initial_noise_multiplier"] = 1
-        cmd["inpaint_full_res"] = 1
+        cmd["inpaint_full_res"] = 0
+        cmd["inpaint_full_res_padding"] = 32
+        cmd["resize_mode"] = 1
+        cmd["mask_blur"] = 4
 
     if context.model_paths.get("lora"):
         lora_model = context.model_paths["lora"]
