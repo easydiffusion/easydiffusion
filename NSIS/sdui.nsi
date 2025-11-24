@@ -105,13 +105,17 @@ Function DirectoryLeave
      Abort
    ${EndIf}
    
-   ; Check for NTFS filesystem. Installations on FAT fail.
+   ; Check for NTFS or exFAT filesystem. Installations on FAT fail.
    ; -----------------------------------------------------
    StrCpy $5 $INSTDIR 3
    System::Call 'Kernel32::GetVolumeInformation(t "$5",t,i ${NSIS_MAX_STRLEN},*i,*i,*i,t.r1,i ${NSIS_MAX_STRLEN})i.r0'
    ${If} $0 <> 0
-   ${AndIf} $1 != "NTFS"
-       MessageBox mb_ok "$5 has filesystem type '$1'.$\nOnly NTFS filesystems are supported.$\nPlease choose a different drive."
+   ${AndIf} $1 == "FAT"
+       MessageBox mb_ok "$5 has filesystem type '$1'.$\nFAT filesystems are not supported. Please use NTFS or exFAT.$\nPlease choose a different drive."
+       Abort
+   ${ElseIf} $0 <> 0
+   ${AndIf} $1 == "FAT32"
+       MessageBox mb_ok "$5 has filesystem type '$1'.$\nFAT32 filesystems are not supported. Please use NTFS or exFAT.$\nPlease choose a different drive."
        Abort
    ${EndIf}
 
