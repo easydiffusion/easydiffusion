@@ -25,6 +25,11 @@ if [ -e "ui/plugins/ui/merge.plugin.js" ]; then
     rm "ui/plugins/ui/merge.plugin.js"
 fi
 
+# remove ui/easydiffusion/model_manager if it exists (since it's not supposed to be in the main branch as of now)
+if [ -e "ui/easydiffusion/model_manager" ]; then
+    rm -rf "ui/easydiffusion/model_manager"
+fi
+
 # set the correct installer path (current vs legacy)
 if [ -e "installer_files/env" ]; then
     export INSTALL_ENV_DIR="$(pwd)/installer_files/env"

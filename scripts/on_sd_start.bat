@@ -36,6 +36,9 @@ call conda activate
 if exist "Open Developer Console.cmd" del "Open Developer Console.cmd"
 if exist "ui\plugins\ui\merge.plugin.js" del "ui\plugins\ui\merge.plugin.js"
 
+@REM remove ui\easydiffusion\model_manager if it exists (since it's not supposed to be in the main branch as of now)
+if exist "ui\easydiffusion\model_manager" rmdir /S /Q "ui\easydiffusion\model_manager"
+
 @rem create the stable-diffusion folder, to work with legacy installations
 if not exist "stable-diffusion" mkdir stable-diffusion
 cd stable-diffusion
