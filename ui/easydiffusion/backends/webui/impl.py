@@ -472,6 +472,9 @@ def image_progress_thread(task_id, callback, stream_image_progress, total_images
         )
         if res.status_code == 200:
             res = res.json()
+        elif res.status_code == 404:
+            time.sleep(0.5)
+            continue
         else:
             raise RuntimeError(f"Unexpected progress response. Status code: {res.status_code}. Res: {res.text}")
 
@@ -480,7 +483,7 @@ def image_progress_thread(task_id, callback, stream_image_progress, total_images
         if res["progress"] is not None:
             step_num = int(res["progress"] * total_steps)
 
-            if res["live_preview"] is not None:
+            if res["live_preview"]:
                 img = res["live_preview"]
                 img = base64_str_to_img(img)
                 images = [EMPTY_IMAGE] * total_images
@@ -606,6 +609,7 @@ def base64_buffer_to_base64_img(img):
 def convert_ED_sampler_names(sampler_name):
     name_mapping = {
         "dpmpp_2m": "DPM++ 2M",
+        "dpmpp_2m_v2": "DPM++ 2M v2",
         "dpmpp_sde": "DPM++ SDE",
         "dpmpp_2m_sde": "DPM++ 2M SDE",
         "dpmpp_2m_sde_heun": "DPM++ 2M SDE Heun",
@@ -632,6 +636,7 @@ def convert_ED_sampler_names(sampler_name):
         "ddpm": "DDPM",
         "forge_flux_realistic": "[Forge] Flux Realistic",
         "forge_flux_realistic_slow": "[Forge] Flux Realistic (Slow)",
+        "tcd": "TCD",
         # deprecated samplers in 3.5
         "dpm_solver_stability": None,
         "unipc_snr": None,
