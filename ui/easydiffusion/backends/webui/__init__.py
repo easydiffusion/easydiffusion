@@ -126,7 +126,6 @@ def start_backend():
     was_still_installing = not is_installed()
 
     if backend_config.get("auto_update", True):
-        run_in_conda(["git", "status"], cwd=WEBUI_DIR, env=env)
         run_in_conda(["git", "add", "-A", "."], cwd=WEBUI_DIR, env=env)
         run_in_conda(["git", "stash"], cwd=WEBUI_DIR, env=env)
         run_in_conda(["git", "reset", "--hard"], cwd=WEBUI_DIR, env=env)
@@ -298,7 +297,6 @@ def read_output(pipe, prefix=""):
 
 
 def run(cmds: list, cwd=None, env=None, stream_output=True, wait=True, output_prefix=""):
-    print(f"Running command: {' '.join(cmds)} in {cwd}. stream_output={stream_output}, wait={wait}")
     p = subprocess.Popen(cmds, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     if stream_output:
         output_thread = threading.Thread(target=read_output, args=(p.stdout, output_prefix))
