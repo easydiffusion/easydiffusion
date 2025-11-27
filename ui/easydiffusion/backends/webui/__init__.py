@@ -85,29 +85,31 @@ locate_conda()
 
 
 def install_backend():
-    print("Installing the WebUI backend..")
+    if not os.path.exists(BACKEND_DIR):
+        print("Installing the WebUI backend..")
 
-    # create the conda env
-    run([conda, "create", "-y", "--prefix", SYSTEM_DIR], cwd=ROOT_DIR)
+        # create the conda env
+        run([conda, "create", "-y", "--prefix", SYSTEM_DIR], cwd=ROOT_DIR)
 
-    print("Installing packages..")
+        print("Installing packages..")
 
-    # install python 3.10 and git in the conda env
-    run([conda, "install", "-y", "--prefix", SYSTEM_DIR, "-c", "conda-forge", "python=3.10", "git"], cwd=ROOT_DIR)
+        # install python 3.10 and git in the conda env
+        run([conda, "install", "-y", "--prefix", SYSTEM_DIR, "-c", "conda-forge", "python=3.10", "git"], cwd=ROOT_DIR)
 
-    env = dict(os.environ)
-    env.update(get_env())
+        env = dict(os.environ)
+        env.update(get_env())
 
-    # print info
-    run_in_conda(["git", "--version"], cwd=ROOT_DIR, env=env)
-    run_in_conda(["python", "--version"], cwd=ROOT_DIR, env=env)
+    if not os.path.exists(WEBUI_DIR):
+        # print info
+        run_in_conda(["git", "--version"], cwd=ROOT_DIR, env=env)
+        run_in_conda(["python", "--version"], cwd=ROOT_DIR, env=env)
 
-    # clone webui
-    run_in_conda(["git", "clone", WEBUI_REPO, WEBUI_DIR], cwd=ROOT_DIR, env=env)
+        # clone webui
+        run_in_conda(["git", "clone", WEBUI_REPO, WEBUI_DIR], cwd=ROOT_DIR, env=env)
 
-    # install the appropriate version of torch using torchruntime
-    run_in_conda(["python", "-m", "pip", "install", "torchruntime"], cwd=WEBUI_DIR, env=env)
-    run_in_conda(["python", "-m", "torchruntime", "install", "torch", "torchvision"], cwd=WEBUI_DIR, env=env)
+        # install the appropriate version of torch using torchruntime
+        run_in_conda(["python", "-m", "pip", "install", "torchruntime"], cwd=WEBUI_DIR, env=env)
+        run_in_conda(["python", "-m", "torchruntime", "install", "torch", "torchvision"], cwd=WEBUI_DIR, env=env)
 
 
 def start_backend():
@@ -116,8 +118,7 @@ def start_backend():
 
     log.info(f"Expected WebUI backend dir: {BACKEND_DIR}")
 
-    if not os.path.exists(BACKEND_DIR):
-        install_backend()
+    install_backend()  # will do nothing if already installed
 
     env = dict(os.environ)
     env.update(get_env())
