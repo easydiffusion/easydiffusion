@@ -125,6 +125,7 @@ def start_backend():
     was_still_installing = not is_installed()
 
     if backend_config.get("auto_update", True):
+        run_in_conda(["git", "status"], cwd=WEBUI_DIR, env=env)
         run_in_conda(["git", "add", "-A", "."], cwd=WEBUI_DIR, env=env)
         run_in_conda(["git", "stash"], cwd=WEBUI_DIR, env=env)
         run_in_conda(["git", "reset", "--hard"], cwd=WEBUI_DIR, env=env)
