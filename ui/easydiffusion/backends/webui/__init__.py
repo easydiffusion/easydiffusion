@@ -96,10 +96,10 @@ def install_backend():
         # install python 3.10 and git in the conda env
         run([conda, "install", "-y", "--prefix", SYSTEM_DIR, "-c", "conda-forge", "python=3.10", "git"], cwd=ROOT_DIR)
 
+    if not os.path.exists(WEBUI_DIR):
         env = dict(os.environ)
         env.update(get_env())
 
-    if not os.path.exists(WEBUI_DIR):
         # print info
         run_in_conda(["git", "--version"], cwd=ROOT_DIR, env=env)
         run_in_conda(["python", "--version"], cwd=ROOT_DIR, env=env)
