@@ -3,14 +3,20 @@ import requests
 from requests.exceptions import ConnectTimeout, ConnectionError, ReadTimeout
 from typing import Union, List
 from threading import local as Context
+from threading import local
 from threading import Thread
 import uuid
 import time
 from copy import deepcopy
+import atexit
 
 from sdkit.utils import base64_str_to_img, img_to_base64_str, log
+from torchruntime.utils import get_device
 
+from easydiffusion.app import getConfig
 from easydiffusion.model_manager import get_model_dirs
+
+from common import kill
 
 WEBUI_HOST = "localhost"
 WEBUI_PORT = "7860"
@@ -35,6 +41,8 @@ MODELS_TO_OVERRIDE = {
     "controlnet": "--controlnet-dir",
     "text-encoder": "--text-encoder-dir",
 }
+
+backend_process = None
 
 webui_opts: dict = None
 
@@ -684,10 +692,122 @@ def convert_ED_controlnet_filter_name(filter):
     return cn(mapping.get(filter, filter))
 
 
-def get_model_path_args():
+def get_model_path_args(return_string=True):
     args = []
     for model_type, flag in MODELS_TO_OVERRIDE.items():
         model_dir = get_model_dirs(model_type)[0]
-        args.append(f'{flag} "{model_dir}"')
+        if return_string:
+            args.append(f'{flag} "{model_dir}"')
+        else:
+            args.append(flag)
+            args.append(model_dir)
 
-    return " ".join(args)
+    if return_string:
+        return " ".join(args)
+
+    return args
+
+
+def get_common_cli_args(return_string=True):
+    model_path_args = get_model_path_args(return_string=return_string)
+    extra_args = ["--port", str(WEBUI_PORT), "--parent-pid", str(os.getpid())]
+
+    if return_string:
+        return model_path_args + " " + " ".join(extra_args)
+
+    return model_path_args + extra_args
+
+
+def create_context():
+    context = local()
+
+    # temp hack, throws an attribute not found error otherwise
+    context.torch_device = get_device(0)
+    context.device = f"{context.torch_device.type}:{context.torch_device.index}"
+    context.half_precision = True
+    context.vram_usage_level = None
+
+    context.models = {}
+    context.model_paths = {}
+    context.model_configs = {}
+    context.device_name = None
+    context.vram_optimizations = set()
+    context.vram_usage_level = "balanced"
+    context.test_diffusers = False
+    context.enable_codeformer = False
+
+    return context
+
+
+def do_start_backend(was_still_installing, run_fn):
+    global WEBUI_HOST, WEBUI_PORT
+
+    config = getConfig()
+    backend_config = config.get("backend_config") or {}
+
+    WEBUI_HOST = backend_config.get("host", "localhost")
+    WEBUI_PORT = backend_config.get("port", "7860")
+
+    def restart_if_webui_dies_after_starting():
+        has_started = False
+
+        while True:
+            try:
+                ping(timeout=30)
+
+                is_first_start = not has_started
+                has_started = True
+
+                if was_still_installing and is_first_start:
+                    ui = config.get("ui", {})
+                    net = config.get("net", {})
+                    port = net.get("listen_port", 9000)
+
+                    if ui.get("open_browser_on_start", True):
+                        import webbrowser
+
+                        log.info("Opening browser..")
+
+                        webbrowser.open(f"http://localhost:{port}")
+            except (TimeoutError, ConnectionError):
+                if has_started:  # process probably died
+                    print("######################## Backend probably died. Restarting...")
+                    stop_backend()
+                    backend_thread = Thread(target=target)
+                    backend_thread.start()
+                    break
+            except Exception:
+                import traceback
+
+                log.exception(traceback.format_exc())
+
+            time.sleep(1)
+
+    def target():
+        global backend_process
+
+        backend_process = run_fn()
+
+        # atexit.register isn't 100% reliable, that's why we also use `forge_monitor_parent_process.patch`
+        # which causes Forge to kill itself if the parent pid passed to it is no longer valid.
+        atexit.register(backend_process.terminate)
+
+        restart_if_dead_thread = Thread(target=restart_if_webui_dies_after_starting)
+        restart_if_dead_thread.start()
+
+        backend_process.wait()
+
+    backend_thread = Thread(target=target)
+    backend_thread.start()
+
+
+def stop_backend():
+    global backend_process
+
+    if backend_process:
+        try:
+            kill(backend_process.pid)
+        except:
+            pass
+
+    backend_process = None

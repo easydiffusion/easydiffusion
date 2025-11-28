@@ -1,18 +1,14 @@
 import os
 import platform
 import subprocess
-import threading
-from threading import local
-import time
 import shutil
-import atexit
 
 from easydiffusion.app import ROOT_DIR, getConfig
 from easydiffusion.utils import log
 from torchruntime.utils import get_device, get_device_name, get_installed_torch_platform
 from sdkit.utils import is_cpu_device
 
-from common import run, kill
+from common import run
 import webui_common
 from webui_common import (
     ping,
@@ -26,7 +22,10 @@ from webui_common import (
     stop_rendering,
     refresh_models,
     list_controlnet_filters,
-    get_model_path_args,
+    get_common_cli_args,
+    create_context,
+    do_start_backend,
+    stop_backend,
 )
 
 
@@ -54,7 +53,6 @@ WEBUI_PATCHES = [
     "forge_disable_corrupted_model_renaming.patch",
 ]
 
-backend_process = None
 conda = "conda"
 
 
@@ -103,7 +101,7 @@ def start_backend():
     config = getConfig()
     backend_config = config.get("backend_config") or {}
 
-    log.info(f"Expected WebUI backend dir: {BACKEND_DIR}")
+    log.info(f"Backend dir: {BACKEND_DIR}")
 
     install_backend()  # will do nothing if already installed
 
@@ -133,66 +131,17 @@ def start_backend():
     if os.path.exists(mac_webui_file):
         os.remove(mac_webui_file)
 
-    webui_common.WEBUI_HOST = backend_config.get("host", "localhost")
-    webui_common.WEBUI_PORT = backend_config.get("port", "7860")
     webui_common.WEBUI_API_PREFIX = ""
 
-    def restart_if_webui_dies_after_starting():
-        has_started = False
-
-        while True:
-            try:
-                webui_common.ping(timeout=30)
-
-                is_first_start = not has_started
-                has_started = True
-
-                if was_still_installing and is_first_start:
-                    ui = config.get("ui", {})
-                    net = config.get("net", {})
-                    port = net.get("listen_port", 9000)
-
-                    if ui.get("open_browser_on_start", True):
-                        import webbrowser
-
-                        log.info("Opening browser..")
-
-                        webbrowser.open(f"http://localhost:{port}")
-            except (TimeoutError, ConnectionError):
-                if has_started:  # process probably died
-                    print("######################## WebUI probably died. Restarting...")
-                    stop_backend()
-                    backend_thread = threading.Thread(target=target)
-                    backend_thread.start()
-                    break
-            except Exception:
-                import traceback
-
-                log.exception(traceback.format_exc())
-
-            time.sleep(1)
-
-    def target():
-        global backend_process
-
+    def run_fn():
         cmd = "webui.bat" if OS_NAME == "Windows" else "./webui.sh"
 
         log.info(f"starting: {cmd} in {WEBUI_DIR}")
         log.info(f"COMMANDLINE_ARGS: {env['COMMANDLINE_ARGS']}")
 
-        backend_process = run_in_conda([cmd], cwd=WEBUI_DIR, env=env, wait=False, output_prefix="[WebUI] ")
+        return run_in_conda([cmd], cwd=WEBUI_DIR, env=env, wait=False, output_prefix="[WebUI] ")
 
-        # atexit.register isn't 100% reliable, that's why we also use `forge_monitor_parent_process.patch`
-        # which causes Forge to kill itself if the parent pid passed to it is no longer valid.
-        atexit.register(backend_process.terminate)
-
-        restart_if_dead_thread = threading.Thread(target=restart_if_webui_dies_after_starting)
-        restart_if_dead_thread.start()
-
-        backend_process.wait()
-
-    backend_thread = threading.Thread(target=target)
-    backend_thread.start()
+    do_start_backend(was_still_installing, run_fn)
 
     start_proxy()
 
@@ -243,18 +192,6 @@ def start_proxy():
     server_api.mount(f"{URI_PREFIX}", webui_proxy)
 
 
-def stop_backend():
-    global backend_process
-
-    if backend_process:
-        try:
-            kill(backend_process.pid)
-        except:
-            pass
-
-    backend_process = None
-
-
 def uninstall_backend():
     shutil.rmtree(BACKEND_DIR)
 
@@ -285,27 +222,6 @@ def check_output_in_conda(cmds: list, cwd=None, env=None):
     return subprocess.check_output(cmds, cwd=cwd, env=env, stderr=subprocess.PIPE)
 
 
-def create_context():
-    context = local()
-
-    # temp hack, throws an attribute not found error otherwise
-    context.torch_device = get_device(0)
-    context.device = f"{context.torch_device.type}:{context.torch_device.index}"
-    context.half_precision = True
-    context.vram_usage_level = None
-
-    context.models = {}
-    context.model_paths = {}
-    context.model_configs = {}
-    context.device_name = None
-    context.vram_optimizations = set()
-    context.vram_usage_level = "balanced"
-    context.test_diffusers = False
-    context.enable_codeformer = False
-
-    return context
-
-
 def get_env():
     dir = os.path.abspath(SYSTEM_DIR)
 
@@ -317,8 +233,7 @@ def get_env():
     models_dir = config.get("models_dir", os.path.join(ROOT_DIR, "models"))
     models_dir = models_dir.rstrip("/\\")
 
-    model_path_args = get_model_path_args()
-    port_arg = webui_common.WEBUI_PORT
+    common_cli_args = get_common_cli_args()
 
     env_entries = {
         "PATH": [
@@ -345,7 +260,7 @@ def get_env():
         "TRANSFORMERS_CACHE": [f"{dir}/transformers-cache"],
         "HF_HUB_DISABLE_SYMLINKS_WARNING": ["true"],
         "COMMANDLINE_ARGS": [
-            f'--api --models-dir "{models_dir}" {model_path_args} --skip-torch-cuda-test --disable-gpu-warning --port {port_arg} --parent-pid {os.getpid()}'
+            f'--api --models-dir "{models_dir}" --skip-torch-cuda-test --disable-gpu-warning {common_cli_args}'
         ],
         "SKIP_VENV": ["1"],
         "SD_WEBUI_RESTARTING": ["1"],
