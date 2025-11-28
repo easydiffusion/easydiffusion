@@ -10,8 +10,11 @@ from copy import deepcopy
 
 from sdkit.utils import base64_str_to_img, img_to_base64_str, log
 
+from easydiffusion.model_manager import get_model_dirs
+
 WEBUI_HOST = "localhost"
 WEBUI_PORT = "7860"
+WEBUI_API_PREFIX = ""
 
 DEFAULT_WEBUI_OPTIONS = {
     "show_progress_every_n_steps": 3,
@@ -20,6 +23,18 @@ DEFAULT_WEBUI_OPTIONS = {
     "forge_additional_modules": [],
 }
 
+MODELS_TO_OVERRIDE = {
+    "stable-diffusion": "--ckpt-dir",
+    "vae": "--vae-dir",
+    "hypernetwork": "--hypernetwork-dir",
+    "gfpgan": "--gfpgan-models-path",
+    "realesrgan": "--realesrgan-models-path",
+    "lora": "--lora-dir",
+    "codeformer": "--codeformer-models-path",
+    "embeddings": "--embeddings-dir",
+    "controlnet": "--controlnet-dir",
+    "text-encoder": "--text-encoder-dir",
+}
 
 webui_opts: dict = None
 
@@ -501,12 +516,12 @@ def image_progress_thread(task_id, callback, stream_image_progress, total_images
 
 
 def webui_get(uri, *args, **kwargs):
-    url = f"http://{WEBUI_HOST}:{WEBUI_PORT}{uri}"
+    url = f"http://{WEBUI_HOST}:{WEBUI_PORT}{WEBUI_API_PREFIX}{uri}"
     return requests.get(url, *args, **kwargs)
 
 
 def webui_post(uri, *args, **kwargs):
-    url = f"http://{WEBUI_HOST}:{WEBUI_PORT}{uri}"
+    url = f"http://{WEBUI_HOST}:{WEBUI_PORT}{WEBUI_API_PREFIX}{uri}"
     return requests.post(url, *args, **kwargs)
 
 
@@ -667,3 +682,12 @@ def convert_ED_controlnet_filter_name(filter):
     if isinstance(filter, list):
         return [cn(mapping.get(f, f)) for f in filter]
     return cn(mapping.get(filter, filter))
+
+
+def get_model_path_args():
+    args = []
+    for model_type, flag in MODELS_TO_OVERRIDE.items():
+        model_dir = get_model_dirs(model_type)[0]
+        args.append(f'{flag} "{model_dir}"')
+
+    return " ".join(args)

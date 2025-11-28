@@ -3,19 +3,18 @@ import platform
 import subprocess
 import threading
 from threading import local
-import psutil
 import time
 import shutil
 import atexit
 
 from easydiffusion.app import ROOT_DIR, getConfig
-from easydiffusion.model_manager import get_model_dirs
 from easydiffusion.utils import log
 from torchruntime.utils import get_device, get_device_name, get_installed_torch_platform
 from sdkit.utils import is_cpu_device
 
-from . import impl
-from .impl import (
+from common import run, kill
+import webui_common
+from webui_common import (
     ping,
     load_model,
     unload_model,
@@ -27,6 +26,7 @@ from .impl import (
     stop_rendering,
     refresh_models,
     list_controlnet_filters,
+    get_model_path_args,
 )
 
 
@@ -44,19 +44,6 @@ SYSTEM_DIR = os.path.join(BACKEND_DIR, "system")
 WEBUI_DIR = os.path.join(BACKEND_DIR, "webui")
 
 OS_NAME = platform.system()
-
-MODELS_TO_OVERRIDE = {
-    "stable-diffusion": "--ckpt-dir",
-    "vae": "--vae-dir",
-    "hypernetwork": "--hypernetwork-dir",
-    "gfpgan": "--gfpgan-models-path",
-    "realesrgan": "--realesrgan-models-path",
-    "lora": "--lora-dir",
-    "codeformer": "--codeformer-models-path",
-    "embeddings": "--embeddings-dir",
-    "controlnet": "--controlnet-dir",
-    "text-encoder": "--text-encoder-dir",
-}
 
 WEBUI_PATCHES = [
     "forge_exception_leak_patch.patch",
@@ -134,7 +121,7 @@ def start_backend():
 
         # patch forge for various stability-related fixes
         for patch in WEBUI_PATCHES:
-            patch_path = os.path.join(os.path.dirname(__file__), patch)
+            patch_path = os.path.join(os.path.dirname(__file__), "webui_patches", patch)
             log.info(f"Applying WebUI patch: {patch_path}")
             run_in_conda(["git", "apply", patch_path], cwd=WEBUI_DIR, env=env)
 
@@ -146,15 +133,16 @@ def start_backend():
     if os.path.exists(mac_webui_file):
         os.remove(mac_webui_file)
 
-    impl.WEBUI_HOST = backend_config.get("host", "localhost")
-    impl.WEBUI_PORT = backend_config.get("port", "7860")
+    webui_common.WEBUI_HOST = backend_config.get("host", "localhost")
+    webui_common.WEBUI_PORT = backend_config.get("port", "7860")
+    webui_common.WEBUI_API_PREFIX = ""
 
     def restart_if_webui_dies_after_starting():
         has_started = False
 
         while True:
             try:
-                impl.ping(timeout=30)
+                webui_common.ping(timeout=30)
 
                 is_first_start = not has_started
                 has_started = True
@@ -225,7 +213,7 @@ def start_proxy():
         if uri == "/openapi-proxy.json":
             uri = "/openapi.json"
 
-        res = impl.webui_get(uri, headers=req.headers)
+        res = webui_common.webui_get(uri, headers=req.headers)
 
         content = res.content
         headers = dict(res.headers)
@@ -247,7 +235,7 @@ def start_proxy():
     @webui_proxy.post("{uri:path}")
     async def proxy_post(uri: str, req: Request):
         body = await req.body()
-        res = impl.webui_post(uri, data=body, headers=req.headers)
+        res = webui_common.webui_post(uri, data=body, headers=req.headers)
 
         # Return the same response back to the client
         return Response(content=res.content, status_code=res.status_code, headers=dict(res.headers))
@@ -285,27 +273,6 @@ def is_installed():
         pass
 
     return False
-
-
-def read_output(pipe, prefix=""):
-    while True:
-        output = pipe.readline()
-        if output:
-            print(f"{prefix}{output.decode('utf-8')}", end="")
-        else:
-            break  # Pipe is closed, subprocess has likely exited
-
-
-def run(cmds: list, cwd=None, env=None, stream_output=True, wait=True, output_prefix=""):
-    p = subprocess.Popen(cmds, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    if stream_output:
-        output_thread = threading.Thread(target=read_output, args=(p.stdout, output_prefix))
-        output_thread.start()
-
-    if wait:
-        p.wait()
-
-    return p
 
 
 def run_in_conda(cmds: list, *args, **kwargs):
@@ -351,6 +318,7 @@ def get_env():
     models_dir = models_dir.rstrip("/\\")
 
     model_path_args = get_model_path_args()
+    port_arg = webui_common.WEBUI_PORT
 
     env_entries = {
         "PATH": [
@@ -377,7 +345,7 @@ def get_env():
         "TRANSFORMERS_CACHE": [f"{dir}/transformers-cache"],
         "HF_HUB_DISABLE_SYMLINKS_WARNING": ["true"],
         "COMMANDLINE_ARGS": [
-            f'--api --models-dir "{models_dir}" {model_path_args} --skip-torch-cuda-test --disable-gpu-warning --port {impl.WEBUI_PORT} --parent-pid {os.getpid()}'
+            f'--api --models-dir "{models_dir}" {model_path_args} --skip-torch-cuda-test --disable-gpu-warning --port {port_arg} --parent-pid {os.getpid()}'
         ],
         "SKIP_VENV": ["1"],
         "SD_WEBUI_RESTARTING": ["1"],
@@ -441,20 +409,3 @@ def get_env():
         env[key] = paths
 
     return env
-
-
-# https://stackoverflow.com/a/25134985
-def kill(proc_pid):
-    process = psutil.Process(proc_pid)
-    for proc in process.children(recursive=True):
-        proc.kill()
-    process.kill()
-
-
-def get_model_path_args():
-    args = []
-    for model_type, flag in MODELS_TO_OVERRIDE.items():
-        model_dir = get_model_dirs(model_type)[0]
-        args.append(f'{flag} "{model_dir}"')
-
-    return " ".join(args)
