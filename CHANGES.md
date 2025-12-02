@@ -1,6 +1,6 @@
 # What's new?
 
-## v3.5 (preview)
+## v3.5 (beta)
 ### Major Changes
 - **Chroma** - support for the Chroma model, including quantized bnb and nf4 models.
 - **Flux** - full support for the Flux model, including quantized bnb and nf4 models.
@@ -15,6 +15,7 @@
 v3.5 is currently an optional upgrade, and you can switch between the v3.0 (diffusers) engine and the v3.5 (webui) engine using the `Settings` tab in the UI.
 
 ### Detailed changelog
+* 3.5.13 - 2 Dec 2025 - Add the v4 engine (i.e. sdkit3) as an experimental backend.
 * 3.5.12 - 24 Nov 2025 - Adjust inpainting image editor size for various screen sizes (to avoid overflowing out of the screen).
 * 3.5.12 - 24 Nov 2025 - Fix a bug where inpainted images would ignore the output image size, and use the size of the input image instead.
 * 3.5.11 - 28 Oct 2025 - Fix regression where newly added models wouldn't work, even after refreshing the models list.
