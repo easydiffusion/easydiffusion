@@ -228,7 +228,7 @@ def get_variant_name(platform_name):
         gpus = get_gpus()
         for gpu in gpus:
             if gpu.vendor_id == NVIDIA and gpu.is_discrete:
-                arch = get_nvidia_arch(gpu.device_name)  # 7.5, 12 etc
+                arch = get_nvidia_arch([gpu.device_name])  # 7.5, 12 etc
                 arch = int(arch * 10)
                 return f"sm{arch}"
 
