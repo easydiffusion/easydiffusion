@@ -75,7 +75,9 @@ def update_backend():
         response.raise_for_status()
     except requests.exceptions.HTTPError as e:
         if response.status_code == 404:
-            raise ValueError(f"Target platform {target} does not exist.")
+            raise ValueError(
+                f"Target platform {target} does not exist. Please post a message on our Discord server ( https://discord.com/invite/u9yhsFmEkB ) or create a new issue at https://github.com/easydiffusion/sdkit/issues to request this platform build."
+            )
         else:
             raise
     manifest = response.json()
