@@ -212,8 +212,8 @@ def get_platform_name():
     if torch_platform == "cpu":
         return "cpu"
 
-    # if torch_platform.startswith("cu") and OS_NAME == "Windows":  # Linux doesn't yet have CUDA builds
-    #     return "cuda"
+    if torch_platform.startswith("cu") and OS_NAME == "Windows":  # Linux doesn't yet have CUDA builds
+        return "cuda"
 
     return "vulkan"
 
