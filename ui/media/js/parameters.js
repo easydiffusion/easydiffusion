@@ -259,7 +259,8 @@ var PARAMETERS = [
         saveInAppConfig: true,
         default: "ed_diffusers",
         options: [
-            { value: "webui", label: "v3.5 (latest)" },
+            { value: "sdkit3", label: "v4 (very experimental)" },
+            { value: "webui", label: "v3.5 (recommended)" },
             { value: "ed_diffusers", label: "v3.0" },
             { value: "ed_classic", label: "v2.0" },
         ],

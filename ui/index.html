@@ -39,6 +39,7 @@
                     <span id="version">
                         <span class="gated-feature" data-feature-keys="backend_ed_classic backend_ed_diffusers">v3.0.15</span>
                         <span class="gated-feature" data-feature-keys="backend_webui">v3.5.12</span>
+                        <span class="gated-feature" data-feature-keys="backend_sdkit3">v4.0.0</span>
                     </span> <span id="updateBranchLabel"></span>
                     <div id="engine-logo" class="gated-feature" data-feature-keys="backend_webui">(Powered by <a id="backend-url" href="https://github.com/lllyasviel/stable-diffusion-webui-forge" target="_blank">Stable Diffusion WebUI Forge</a>)</div>
                 </small>
@@ -79,7 +80,7 @@
                         </div>
                         <div id="prompt-toolbar-right" class="toolbar-right">
                             <button id="image-modifier-dropdown" class="tertiaryButton smallButton">+ Image Modifiers</button>
-                            <button id="embeddings-button" class="tertiaryButton smallButton gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">+ Embedding</button>
+                            <button id="embeddings-button" class="tertiaryButton smallButton gated-feature" data-feature-keys="backend_ed_diffusers backend_webui backend_sdkit3">+ Embedding</button>
                         </div>
                     </div>
                     <textarea id="prompt" class="col-free">a photograph of an astronaut riding a horse</textarea>
@@ -89,7 +90,7 @@
                         <a href="https://github.com/easydiffusion/easydiffusion/wiki/Writing-prompts#negative-prompts" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top">Click to learn more about Negative Prompts</span></i></a>
                         <small>(optional)</small>
                     </label>
-                    <button id="negative-embeddings-button" class="tertiaryButton smallButton gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">+ Negative Embedding</button>
+                    <button id="negative-embeddings-button" class="tertiaryButton smallButton gated-feature" data-feature-keys="backend_ed_diffusers backend_webui backend_sdkit3">+ Negative Embedding</button>
                     <div class="collapsible-content">
                         <textarea id="negative_prompt" name="negative_prompt" placeholder="list the things to remove from the image (e.g. fog, green)"></textarea>
                     </div>
@@ -180,14 +181,14 @@
                             <!-- <label><small>Takes upto 20 mins the first time</small></label> -->
                         </td>
                     </tr>
-                    <tr class="pl-5 gated-feature" id="clip_skip_config" data-feature-keys="backend_ed_diffusers backend_webui">
+                    <tr class="pl-5 gated-feature" id="clip_skip_config" data-feature-keys="backend_ed_diffusers backend_webui backend_sdkit3">
                         <td><label for="clip_skip">Clip Skip:</label></td>
                         <td class="diffusers-restart-needed">
                             <input id="clip_skip" name="clip_skip" type="checkbox">
                             <a href="https://github.com/easydiffusion/easydiffusion/wiki/Clip-Skip" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about Clip Skip</span></i></a>
                         </td>
                     </tr>
-                    <tr id="controlnet_model_container" class="pl-5 gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">
+                    <tr id="controlnet_model_container" class="pl-5 gated-feature" data-feature-keys="backend_ed_diffusers backend_webui backend_sdkit3">
                         <td><label for="controlnet_model">ControlNet Image:</label></td>
                         <td class="diffusers-restart-needed">
                             <div id="control_image_wrapper" class="preview_image_wrapper">
@@ -201,7 +202,7 @@
                                 <label><small>Filter to apply:</small></label>
                                 <select id="control_image_filter">
                                     <option value="">None</option>
-                                    <optgroup label="Pose">
+                                    <optgroup label="Pose" class="gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">
                                         <option value="openpose">OpenPose (*)</option>
                                         <option value="openpose_face">OpenPose face</option>
                                         <option value="openpose_faceonly">OpenPose face-only</option>
@@ -218,19 +219,19 @@
                                     </optgroup>
                                     <optgroup label="Outline">
                                         <option value="canny">Canny (*)</option>
-                                        <option value="mlsd">Straight lines</option>
-                                        <option value="scribble_hed">Scribble hed (*)</option>
+                                        <option value="mlsd" class="gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">Straight lines</option>
+                                        <option value="scribble_hed" class="gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">Scribble hed (*)</option>
                                         <option value="scribble_hedsafe" class="gated-feature" data-feature-keys="backend_diffusers">Scribble hedsafe</option>
-                                        <option value="scribble_pidinet">Scribble pidinet</option>
+                                        <option value="scribble_pidinet" class="gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">Scribble pidinet</option>
                                         <option value="scribble_pidsafe" class="gated-feature" data-feature-keys="backend_diffusers">Scribble pidsafe</option>
                                         <option value="scribble_xdog" class="gated-feature" data-feature-keys="backend_webui">scribble_xdog</option>
-                                        <option value="softedge_hed">Softedge hed</option>
-                                        <option value="softedge_hedsafe">Softedge hedsafe</option>
-                                        <option value="softedge_pidinet">Softedge pidinet</option>
-                                        <option value="softedge_pidsafe">Softedge pidsafe</option>
+                                        <option value="softedge_hed" class="gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">Softedge hed</option>
+                                        <option value="softedge_hedsafe" class="gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">Softedge hedsafe</option>
+                                        <option value="softedge_pidinet" class="gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">Softedge pidinet</option>
+                                        <option value="softedge_pidsafe" class="gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">Softedge pidsafe</option>
                                         <option value="softedge_teed" class="gated-feature" data-feature-keys="backend_webui">softedge_teed</option>
                                     </optgroup>
-                                    <optgroup label="Depth">
+                                    <optgroup label="Depth" class="gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">
                                         <option value="normal_bae">Normal bae (*)</option>
                                         <option value="depth_midas">Depth midas</option>
                                         <option value="normal_midas" class="gated-feature" data-feature-keys="backend_webui">normal_midas</option>
@@ -242,7 +243,7 @@
                                         <option value="depth_hand_refiner" class="gated-feature" data-feature-keys="backend_webui">depth_hand_refiner</option>
                                         <option value="depth_marigold" class="gated-feature" data-feature-keys="backend_webui">depth_marigold</option>
                                     </optgroup>
-                                    <optgroup label="Line art">
+                                    <optgroup label="Line art" class="gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">
                                         <option value="lineart_coarse">Lineart coarse</option>
                                         <option value="lineart_realistic">Lineart realistic</option>
                                         <option value="lineart_anime">Lineart anime</option>
@@ -277,7 +278,7 @@
                                         <option value="seg_anime_face">seg_anime_face</option>
                                         <option value="seg_ofcoco">seg_ofcoco</option>
                                     </optgroup>
-                                    <optgroup label="Misc">
+                                    <optgroup label="Misc" class="gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">
                                         <option value="shuffle">Shuffle</option>
                                         <option value="segment" class="gated-feature" data-feature-keys="backend_diffusers">Segment</option>
                                         <option value="invert (from white bg & black line)" class="gated-feature" data-feature-keys="backend_webui">invert (from white bg & black line)</option>
@@ -302,7 +303,7 @@
                         <input id="vae_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
                         <a href="https://github.com/easydiffusion/easydiffusion/wiki/VAE-Variational-Auto-Encoder" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about VAEs</span></i></a>
                     </td></tr>
-                    <tr id="text_encoder_model_container" class="pl-5 gated-feature" data-feature-keys="backend_webui">
+                    <tr id="text_encoder_model_container" class="pl-5 gated-feature" data-feature-keys="backend_webui backend_sdkit3">
                         <td>
                             <label for="text_encoder_model">Text Encoder:</label>
                         </td>
@@ -312,31 +313,32 @@
                     </tr>
                     <tr id="samplerSelection" class="pl-5"><td><label for="sampler_name">Sampler:</label></td><td>
                         <select id="sampler_name" name="sampler_name">
-                            <option value="plms">PLMS</option>
+                            <option value="plms" class="gated-feature" data-feature-keys="backend_ed_classic backend_ed_diffusers backend_webui">PLMS</option>
                             <option value="ddim">DDIM</option>
                             <option value="ddim_cfgpp" class="gated-feature" data-feature-keys="backend_webui">DDIM CFG++</option>
                             <option value="heun">Heun</option>
                             <option value="euler">Euler</option>
                             <option value="euler_a" selected>Euler Ancestral</option>
                             <option value="dpm2">DPM2</option>
-                            <option value="dpm2_a">DPM2 Ancestral</option>
+                            <option value="dpm2_a" class="gated-feature" data-feature-keys="backend_ed_classic backend_ed_diffusers backend_webui">DPM2 Ancestral</option>
                             <option value="dpm_fast" class="gated-feature" data-feature-keys="backend_webui">DPM Fast</option>
                             <option value="dpm_adaptive" class="gated-feature" data-feature-keys="backend_ed_classic backend_webui">DPM Adaptive</option>
-                            <option value="lms">LMS</option>
+                            <option value="lms" class="gated-feature" data-feature-keys="backend_ed_classic backend_ed_diffusers backend_webui">LMS</option>
                             <option value="dpm_solver_stability" class="gated-feature" data-feature-keys="backend_ed_classic backend_ed_diffusers">DPM Solver (Stability AI)</option>
                             <option value="dpmpp_2s_a">DPM++ 2s Ancestral (Karras)</option>
                             <option value="dpmpp_2m">DPM++ 2m (Karras)</option>
+                            <option value="dpmpp_2m_v2" class="gated-feature" data-feature-keys="backend_sdkit3">DPM++ 2m (v2)</option>
                             <option value="dpmpp_2m_sde" class="gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">DPM++ 2m SDE</option>
                             <option value="dpmpp_2m_sde_heun" class="gated-feature" data-feature-keys="backend_webui">DPM++ 2m SDE Heun</option>
                             <option value="dpmpp_3m_sde" class="gated-feature" data-feature-keys="backend_webui">DPM++ 3M SDE</option>
-                            <option value="dpmpp_sde">DPM++ SDE (Karras)</option>
+                            <option value="dpmpp_sde" class="gated-feature" data-feature-keys="backend_ed_classic backend_ed_diffusers backend_webui">DPM++ SDE (Karras)</option>
                             <option value="restart" class="gated-feature" data-feature-keys="backend_webui">Restart</option>
                             <option value="heun_pp2" class="gated-feature" data-feature-keys="backend_webui">Heun PP2</option>
-                            <option value="ipndm" class="gated-feature" data-feature-keys="backend_webui">IPNDM</option>
-                            <option value="ipndm_v" class="gated-feature" data-feature-keys="backend_webui">IPNDM_V</option>
+                            <option value="ipndm" class="gated-feature" data-feature-keys="backend_webui backend_sdkit3">IPNDM</option>
+                            <option value="ipndm_v" class="gated-feature" data-feature-keys="backend_webui backend_sdkit3">IPNDM_V</option>
                             <option value="ddpm" class="gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">DDPM</option>
                             <option value="deis" class="gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">DEIS</option>
-                            <option value="lcm" class="gated-feature" data-feature-keys="backend_webui">LCM</option>
+                            <option value="lcm" class="gated-feature" data-feature-keys="backend_webui backend_sdkit3">LCM</option>
                             <option value="forge_flux_realistic" class="gated-feature" data-feature-keys="backend_webui">[Forge] Flux Realistic</option>
                             <option value="forge_flux_realistic_slow" class="gated-feature" data-feature-keys="backend_webui">[Forge] Flux Realistic (Slow)</option>
                             <option value="unipc_snr" class="gated-feature" data-feature-keys="backend_ed_classic">UniPC SNR</option>
@@ -344,28 +346,29 @@
                             <option value="unipc_snr_2" class="gated-feature" data-feature-keys="backend_ed_classic">UniPC SNR 2</option>
                             <option value="unipc_tu_2" class="gated-feature" data-feature-keys="backend_ed_classic">UniPC TU 2</option>
                             <option value="unipc_tq" class="gated-feature" data-feature-keys="backend_ed_classic">UniPC TQ</option>
+                            <option value="tcd" class="gated-feature" data-feature-keys="backend_sdkit3">TCD</option>
                         </select>
                         <a href="https://github.com/easydiffusion/easydiffusion/wiki/How-to-Use#samplers" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about samplers</span></i></a>
                     </td></tr>
                     <tr class="pl-5 warning-label displayNone" id="fluxSamplerWarning"><td>Tip:</td><td>This sampler does not work well with Flux!</td></tr>
-                    <tr id="schedulerSelection" class="pl-5 gated-feature" data-feature-keys="backend_webui"><td><label for="scheduler_name">Scheduler:</label></td><td>
+                    <tr id="schedulerSelection" class="pl-5 gated-feature" data-feature-keys="backend_webui backend_sdkit3"><td><label for="scheduler_name">Scheduler:</label></td><td>
                         <select id="scheduler_name" name="scheduler_name">
                             <option value="automatic">Automatic</option>
                             <option value="uniform">Uniform</option>
                             <option value="karras">Karras</option>
                             <option value="exponential">Exponential</option>
-                            <option value="polyexponential">Polyexponential</option>
+                            <option value="polyexponential" class="gated-feature" data-feature-keys="backend_webui">Polyexponential</option>
                             <option value="sgm_uniform">SGM Uniform</option>
-                            <option value="kl_optimal">KL Optimal</option>
+                            <option value="kl_optimal" class="gated-feature" data-feature-keys="backend_webui">KL Optimal</option>
                             <option value="simple" selected>Simple</option>
-                            <option value="normal">Normal</option>
-                            <option value="ddim">DDIM</option>
-                            <option value="beta">Beta</option>
-                            <option value="turbo">Turbo</option>
+                            <option value="normal" class="gated-feature" data-feature-keys="backend_webui">Normal</option>
+                            <option value="ddim" class="gated-feature" data-feature-keys="backend_webui">DDIM</option>
+                            <option value="beta" class="gated-feature" data-feature-keys="backend_webui">Beta</option>
+                            <option value="turbo" class="gated-feature" data-feature-keys="backend_webui">Turbo</option>
                             <option value="align_your_steps">Align Your Steps</option>
                             <option value="align_your_steps_GITS">Align Your Steps GITS</option>
-                            <option value="align_your_steps_11">Align Your Steps 11</option>
-                            <option value="align_your_steps_32">Align Your Steps 32</option>
+                            <option value="align_your_steps_11" class="gated-feature" data-feature-keys="backend_webui">Align Your Steps 11</option>
+                            <option value="align_your_steps_32" class="gated-feature" data-feature-keys="backend_webui">Align Your Steps 32</option>
                         </select>
                     </td></tr>
                     <tr class="pl-5 warning-label displayNone" id="fluxSchedulerWarning"><td>Tip:</td><td>This scheduler does not work well with Flux!</td></tr>
@@ -450,8 +453,8 @@
                     <tr class="pl-5"><td><label for="guidance_scale_slider">Guidance Scale:</label></td><td> <input id="guidance_scale_slider" name="guidance_scale_slider" class="editor-slider" value="75" type="range" min="11" max="500"> <input id="guidance_scale" name="guidance_scale" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" inputmode="decimal"></td></tr>
                     <tr class="pl-5 displayNone warning-label" id="guidanceWarning"><td></td><td id="guidanceWarningText"></td></tr>
                     <tr id="prompt_strength_container" class="pl-5"><td><label for="prompt_strength_slider">Prompt Strength:</label></td><td> <input id="prompt_strength_slider" name="prompt_strength_slider" class="editor-slider" value="80" type="range" min="0" max="99"> <input id="prompt_strength" name="prompt_strength" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" inputmode="decimal"><br/></td></tr>
-                    <tr id="distilled_guidance_scale_container" class="pl-5 gated-feature" data-feature-keys="backend_webui"><td><label for="distilled_guidance_scale_slider">Distilled Guidance:</label></td><td> <input id="distilled_guidance_scale_slider" name="distilled_guidance_scale_slider" class="editor-slider" value="35" type="range" min="11" max="500"> <input id="distilled_guidance_scale" name="distilled_guidance_scale" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" inputmode="decimal"></td></tr>
-                    <tr id="lora_model_container" class="pl-5 gated-feature" data-feature-keys="backend_ed_diffusers backend_webui">
+                    <tr id="distilled_guidance_scale_container" class="pl-5 gated-feature" data-feature-keys="backend_webui backend_sdkit3"><td><label for="distilled_guidance_scale_slider">Distilled Guidance:</label></td><td> <input id="distilled_guidance_scale_slider" name="distilled_guidance_scale_slider" class="editor-slider" value="35" type="range" min="11" max="500"> <input id="distilled_guidance_scale" name="distilled_guidance_scale" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" inputmode="decimal"></td></tr>
+                    <tr id="lora_model_container" class="pl-5 gated-feature" data-feature-keys="backend_ed_diffusers backend_webui backend_sdkit3">
                         <td>
                             <label for="lora_model">LoRA:</label>
                         </td>
