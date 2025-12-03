@@ -97,6 +97,8 @@ def update_backend():
 
 
 def update_or_download_file(filename, info, base_url, backend_dir):
+    from sdkit.utils import download_file
+
     filepath = os.path.join(backend_dir, filename)
     expected_sha = info["sha256"]
     if os.path.exists(filepath):
@@ -113,10 +115,8 @@ def update_or_download_file(filename, info, base_url, backend_dir):
     with tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False) as tmp:
         tmp_path = tmp.name
     try:
-        response = requests.get(download_url)
-        response.raise_for_status()
-        with open(tmp_path, "wb") as f:
-            f.write(response.content)
+        download_file(download_url, tmp_path)
+
         # extract
         with tarfile.open(tmp_path, "r:gz") as tar:
             tar.extractall(backend_dir)
