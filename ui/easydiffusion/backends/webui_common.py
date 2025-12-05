@@ -752,34 +752,47 @@ def do_start_backend(was_still_installing, run_fn):
         has_started = False
 
         while True:
-            try:
-                ping(timeout=30)
+            if backend_process is None:
+                return
 
-                is_first_start = not has_started
-                has_started = True
+            # Check if the process is actually dead
+            return_code = backend_process.poll()
 
-                if was_still_installing and is_first_start:
-                    ui = config.get("ui", {})
-                    net = config.get("net", {})
-                    port = net.get("listen_port", 9000)
-
-                    if ui.get("open_browser_on_start", True):
-                        import webbrowser
-
-                        log.info("Opening browser..")
-
-                        webbrowser.open(f"http://localhost:{port}")
-            except (TimeoutError, ConnectionError):
-                if has_started:  # process probably died
-                    print("######################## Backend probably died. Restarting...")
+            if return_code is not None:
+                # Process has terminated
+                if has_started:
+                    print(f"######################## Backend process died with code {return_code}. Restarting...")
                     stop_backend()
                     backend_thread = Thread(target=target)
                     backend_thread.start()
                     break
-            except Exception:
-                import traceback
+                else:
+                    # Process died before starting successfully
+                    print(f"######################## Backend process failed to start (exit code {return_code})")
+                    break
+            elif not has_started:
+                # Process is running, check if it has started successfully via ping
+                try:
+                    ping(timeout=5)
+                    has_started = True
 
-                log.exception(traceback.format_exc())
+                    if was_still_installing:
+                        ui = config.get("ui", {})
+                        net = config.get("net", {})
+                        port = net.get("listen_port", 9000)
+
+                        if ui.get("open_browser_on_start", True):
+                            import webbrowser
+
+                            log.info("Opening browser..")
+
+                            webbrowser.open(f"http://localhost:{port}")
+                except (TimeoutError, ConnectionError):
+                    pass  # Still starting up
+                except Exception:
+                    import traceback
+
+                    log.exception(traceback.format_exc())
 
             time.sleep(1)
 
