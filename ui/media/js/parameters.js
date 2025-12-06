@@ -109,6 +109,13 @@ var PARAMETERS = [
         },
     },
     {
+        id: "use_gallery",
+        type: ParameterType.checkbox,
+        label: "Save images to the gallery",
+        note: "Stores metadata of all images into a database so that they show up on the gallery tab.",
+        default: false,
+    },
+    {
         id: "block_nsfw",
         type: ParameterType.checkbox,
         label: "Block NSFW images",
@@ -442,6 +449,7 @@ let testDiffusers = document.querySelector("#use_v3_engine")
 let backendEngine = document.querySelector("#backend")
 let profileNameField = document.querySelector("#profileName")
 let modelsDirField = document.querySelector("#models_dir")
+let useGalleryField = document.querySelector("#use_gallery")
 
 let saveSettingsBtn = document.querySelector("#save-system-settings-btn")
 
@@ -594,6 +602,7 @@ function applySettingsFromConfig(config) {
 saveToDiskField.addEventListener("change", function(e) {
     diskPathField.disabled = !this.checked
     metadataOutputFormatField.disabled = !this.checked
+    useGalleryField.disabled = !this.checked
 })
 
 function getCurrentRenderDeviceSelection() {
