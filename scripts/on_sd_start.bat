@@ -7,6 +7,7 @@
 @copy sd-ui-files\scripts\check_modules.py scripts\ /Y
 @copy sd-ui-files\scripts\get_config.py scripts\ /Y
 @copy sd-ui-files\scripts\config.yaml.sample scripts\ /Y
+@copy sd-ui-files\scripts\webui_console.py scripts\ /Y
 
 if exist "%cd%\profile" (
     set HF_HOME=%cd%\profile\.cache\huggingface
@@ -66,11 +67,17 @@ set PYTHONNOUSERSITE=1
 set PYTHONPATH=%INSTALL_ENV_DIR%\lib\site-packages
 echo PYTHONPATH=%PYTHONPATH%
 
-@rem Download the required packages
-call where python
-call python --version
+set PYTHON=%INSTALL_ENV_DIR%\python.exe
+echo PYTHON=%PYTHON%
 
-call python scripts\check_modules.py --launch-uvicorn
+@rem Download the required packages
+@REM call where python
+call "%PYTHON%" --version
+
+@rem this is outside check_modules.py to ensure that the required version of torchruntime is present
+call "%PYTHON%" -m pip install -q "torchruntime>=1.28.0"
+
+call "%PYTHON%" scripts\check_modules.py --launch-uvicorn
 pause
 exit /b
 

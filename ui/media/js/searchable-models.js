@@ -2,6 +2,7 @@
 
 let modelsCache
 let modelsOptions
+let modelsDB
 
 /*
 *** SEARCHABLE MODELS ***
@@ -635,11 +636,87 @@ class ModelDropdown {
     }
 }
 
+function buildTree(models) {
+    // Parse paths into a nested object
+    const root = {};
+
+    for (const model of models) {
+        const parts = model.model.split("/");
+        let node = root;
+        for (let i = 0; i < parts.length; i++) {
+            const part = parts[i];
+            if (!node[part]) node[part] = {};
+            node = node[part];
+        }
+    }
+
+    // Convert object into the nested list format
+    function toNestedList(node) {
+        const keys = Object.keys(node).sort((a, b) => {
+            const aIsDir = Object.keys(node[a]).length > 0;
+            const bIsDir = Object.keys(node[b]).length > 0;
+            if (aIsDir && !bIsDir) return -1; // dirs first
+            if (!aIsDir && bIsDir) return 1;
+            return a.localeCompare(b);
+        });
+
+        return keys.map(k => {
+            const child = node[k];
+            if (Object.keys(child).length === 0) {
+                return k; // file
+            } else {
+                return [k, toNestedList(child)]; // folder
+            }
+        });
+    }
+
+    return toNestedList(root);
+}
+
+function convertToLegacyModelOptions(models) {
+    const legacyModelOptions = {
+        "stable-diffusion": [],
+        "vae": [],
+        "hypernetwork": [],
+        "gfpgan": [],
+        "realesrgan": [],
+        "lora": [],
+        "codeformer": [],
+        "embeddings": [],
+        "controlnet": [],
+        "text-encoder": [],
+    }
+
+    for (const model of models) {
+        const modelType = model.tags[0]
+        legacyModelOptions[modelType].push(model)
+    }
+
+    for (const modelType in legacyModelOptions) {
+        legacyModelOptions[modelType] = buildTree(legacyModelOptions[modelType])
+    }
+
+    return legacyModelOptions
+}
+
+function buildModelsDB(models) {
+    const db = {}
+    for (const model of models) {
+        const modelId = model.model
+        const modelType = model.tags[0]
+        db[modelType] = db[modelType] || {}
+        db[modelType][modelId] = model
+    }
+    return db
+}
+
 /* (RE)LOAD THE MODELS */
 async function getModels(scanForMalicious = true) {
     try {
         modelsCache = await SD.getModels(scanForMalicious)
+        modelsCache["options"] = convertToLegacyModelOptions(modelsCache["models"])
         modelsOptions = modelsCache["options"]
+        modelsDB = buildModelsDB(modelsCache["models"])
         if ("scan-error" in modelsCache) {
             // let previewPane = document.getElementById('tab-content-wrapper')
             let previewPane = document.getElementById("preview")

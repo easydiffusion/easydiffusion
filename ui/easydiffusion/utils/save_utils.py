@@ -34,10 +34,12 @@ TASK_TEXT_MAPPING = {
     "control_alpha": "ControlNet Strength",
     "use_vae_model": "VAE model",
     "sampler_name": "Sampler",
+    "scheduler_name": "Scheduler",
     "width": "Width",
     "height": "Height",
     "num_inference_steps": "Steps",
     "guidance_scale": "Guidance Scale",
+    "distilled_guidance_scale": "Distilled Guidance",
     "prompt_strength": "Prompt Strength",
     "use_lora_model": "LoRA model",
     "lora_alpha": "LoRA Strength",
@@ -290,7 +292,7 @@ def get_printable_request(
     task_data_metadata.update(save_data.dict())
 
     app_config = app.getConfig()
-    using_diffusers = app_config.get("use_v3_engine", True)
+    using_diffusers = app_config.get("backend", "ed_diffusers") in ("ed_diffusers", "webui")
 
     # Save the metadata in the order defined in TASK_TEXT_MAPPING
     metadata = {}

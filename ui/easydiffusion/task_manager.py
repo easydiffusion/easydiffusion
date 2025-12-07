@@ -4,6 +4,7 @@ Notes:
     Use weak_thread_data to store all other data using weak keys.
     This will allow for garbage collection after the thread dies.
 """
+
 import json
 import traceback
 
@@ -19,7 +20,9 @@ import torch
 from easydiffusion import device_manager
 from easydiffusion.tasks import Task
 from easydiffusion.utils import log
-from sdkit.utils import gc
+
+from torchruntime.utils import get_device_count, get_device, get_device_name, get_installed_torch_platform
+from sdkit.utils import is_cpu_device, mem_get_info
 
 THREAD_NAME_PREFIX = ""
 ERR_LOCK_FAILED = " failed to acquire lock within timeout."
@@ -233,6 +236,8 @@ def thread_render(device):
     global current_state, current_state_error
 
     from easydiffusion import model_manager, runtime
+    from easydiffusion.backend_manager import backend
+    from requests import ConnectionError
 
     try:
         runtime.init(device)
@@ -244,8 +249,17 @@ def thread_render(device):
         }
 
         current_state = ServerStates.LoadingModel
-        model_manager.load_default_models(runtime.context)
 
+        while True:
+            try:
+                if backend.ping(timeout=1):
+                    break
+
+                time.sleep(1)
+            except (TimeoutError, ConnectionError):
+                time.sleep(1)
+
+        model_manager.load_default_models(runtime.context)
         current_state = ServerStates.Online
     except Exception as e:
         log.error(traceback.format_exc())
@@ -291,7 +305,6 @@ def thread_render(device):
             task.buffer_queue.put(json.dumps(task.response))
             log.error(traceback.format_exc())
         finally:
-            gc(runtime.context)
             task.lock.release()
 
         keep_task_alive(task)
@@ -329,34 +342,33 @@ def get_devices():
         "active": {},
     }
 
-    def get_device_info(device):
-        if device in ("cpu", "mps"):
+    def get_device_info(device_id):
+        if is_cpu_device(device_id):
             return {"name": device_manager.get_processor_name()}
 
-        mem_free, mem_total = torch.cuda.mem_get_info(device)
+        device = get_device(device_id)
+
+        mem_free, mem_total = mem_get_info(device)
         mem_free /= float(10**9)
         mem_total /= float(10**9)
 
         return {
-            "name": torch.cuda.get_device_name(device),
+            "name": get_device_name(device),
             "mem_free": mem_free,
             "mem_total": mem_total,
             "max_vram_usage_level": device_manager.get_max_vram_usage_level(device),
         }
 
     # list the compatible devices
-    cuda_count = torch.cuda.device_count()
-    for device in range(cuda_count):
-        device = f"cuda:{device}"
-        if not device_manager.is_device_compatible(device):
-            continue
+    torch_platform_name = get_installed_torch_platform()[0]
+    device_count = get_device_count()
+    for device_id in range(device_count):
+        device_id = f"{torch_platform_name}:{device_id}" if device_count > 1 else torch_platform_name
 
-        devices["all"].update({device: get_device_info(device)})
+        devices["all"].update({device_id: get_device_info(device_id)})
 
-    if device_manager.is_mps_available():
-        devices["all"].update({"mps": get_device_info("mps")})
-
-    devices["all"].update({"cpu": get_device_info("cpu")})
+    if torch_platform_name != "cpu":
+        devices["all"].update({"cpu": get_device_info("cpu")})
 
     # list the activated devices
     if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT):
@@ -368,8 +380,8 @@ def get_devices():
             weak_data = weak_thread_data.get(rthread)
             if not weak_data or not "device" in weak_data or not "device_name" in weak_data:
                 continue
-            device = weak_data["device"]
-            devices["active"].update({device: get_device_info(device)})
+            device_id = weak_data["device"]
+            devices["active"].update({device_id: get_device_info(device_id)})
     finally:
         manager_lock.release()
 
@@ -427,12 +439,6 @@ def start_render_thread(device):
 
 
 def stop_render_thread(device):
-    try:
-        device_manager.validate_device_id(device, log_prefix="stop_render_thread")
-    except:
-        log.error(traceback.format_exc())
-        return False
-
     if not manager_lock.acquire(blocking=True, timeout=LOCK_TIMEOUT):
         raise Exception("stop_render_thread" + ERR_LOCK_FAILED)
     log.info(f"Stopping Rendering Thread on device: {device}")

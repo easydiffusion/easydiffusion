@@ -5,9 +5,7 @@ import time
 
 from numpy import base_repr
 
-from sdkit.filter import apply_filters
-from sdkit.models import load_model
-from sdkit.utils import img_to_base64_str, get_image, log, save_images
+from sdkit.utils import img_to_base64_str, log, save_images, base64_str_to_img
 
 from easydiffusion import model_manager, runtime
 from easydiffusion.types import (
@@ -19,6 +17,7 @@ from easydiffusion.types import (
     TaskData,
     GenerateImageRequest,
 )
+from easydiffusion.utils import filter_nsfw
 from easydiffusion.utils.save_utils import format_folder_name
 
 from .task import Task
@@ -47,7 +46,9 @@ class FilterTask(Task):
 
         # convert to multi-filter format, if necessary
         if isinstance(req.filter, str):
-            req.filter_params = {req.filter: req.filter_params}
+            if req.filter not in req.filter_params:
+                req.filter_params = {req.filter: req.filter_params}
+
             req.filter = [req.filter]
 
         if not isinstance(req.image, list):
@@ -57,6 +58,7 @@ class FilterTask(Task):
         "Runs the image filtering task on the assigned thread"
 
         from easydiffusion import app
+        from easydiffusion.backend_manager import backend
 
         context = runtime.context
 
@@ -66,14 +68,23 @@ class FilterTask(Task):
 
         print_task_info(self.request, self.models_data, self.output_format, self.save_data)
 
-        if isinstance(self.request.image, list):
-            images = [get_image(img) for img in self.request.image]
-        else:
-            images = get_image(self.request.image)
-
-        images = filter_images(context, images, self.request.filter, self.request.filter_params)
+        has_nsfw_filter = "nsfw_filter" in self.request.filter
 
         output_format = self.output_format
+
+        backend.set_options(
+            context,
+            output_format=output_format.output_format,
+            output_quality=output_format.output_quality,
+            output_lossless=output_format.output_lossless,
+        )
+
+        images = backend.filter_images(
+            context, self.request.image, self.request.filter, self.request.filter_params, input_type="base64"
+        )
+
+        if has_nsfw_filter:
+            images = filter_nsfw(images)
 
         if self.save_data.save_to_disk_path is not None:
             app_config = app.getConfig()
@@ -85,21 +96,15 @@ class FilterTask(Task):
             save_dir_path = os.path.join(
                 self.save_data.save_to_disk_path, format_folder_name(folder_format, dummy_req, self.task_data)
             )
+            images_pil = [base64_str_to_img(img) for img in images]
             save_images(
-                images,
+                images_pil,
                 save_dir_path,
                 file_name=img_id,
                 output_format=output_format.output_format,
                 output_quality=output_format.output_quality,
                 output_lossless=output_format.output_lossless,
             )
-
-        images = [
-            img_to_base64_str(
-                img, output_format.output_format, output_format.output_quality, output_format.output_lossless
-            )
-            for img in images
-        ]
 
         res = FilterImageResponse(self.request, self.models_data, images=images)
         res = res.json()
@@ -108,46 +113,6 @@ class FilterTask(Task):
         log.info("Filter task completed")
 
         self.response = res
-
-
-def filter_images(context, images, filters, filter_params={}):
-    filters = filters if isinstance(filters, list) else [filters]
-
-    for filter_name in filters:
-        params = filter_params.get(filter_name, {})
-
-        previous_state = before_filter(context, filter_name, params)
-
-        try:
-            images = apply_filters(context, filter_name, images, **params)
-        finally:
-            after_filter(context, filter_name, params, previous_state)
-
-    return images
-
-
-def before_filter(context, filter_name, filter_params):
-    if filter_name == "codeformer":
-        from easydiffusion.model_manager import DEFAULT_MODELS, resolve_model_to_use
-
-        default_realesrgan = DEFAULT_MODELS["realesrgan"][0]["file_name"]
-        prev_realesrgan_path = None
-
-        upscale_faces = filter_params.get("upscale_faces", False)
-        if upscale_faces and default_realesrgan not in context.model_paths["realesrgan"]:
-            prev_realesrgan_path = context.model_paths.get("realesrgan")
-            context.model_paths["realesrgan"] = resolve_model_to_use(default_realesrgan, "realesrgan")
-            load_model(context, "realesrgan")
-
-        return prev_realesrgan_path
-
-
-def after_filter(context, filter_name, filter_params, previous_state):
-    if filter_name == "codeformer":
-        prev_realesrgan_path = previous_state
-        if prev_realesrgan_path:
-            context.model_paths["realesrgan"] = prev_realesrgan_path
-            load_model(context, "realesrgan")
 
 
 def print_task_info(

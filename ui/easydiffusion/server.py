@@ -2,6 +2,7 @@
 Notes:
     async endpoints always run on the main thread. Without they run on the thread pool.
 """
+
 import datetime
 import mimetypes
 import os
@@ -20,6 +21,7 @@ from easydiffusion.types import (
     OutputFormatData,
     SaveToDiskData,
     convert_legacy_render_req_to_new,
+    convert_legacy_controlnet_filter_name,
 )
 from easydiffusion.utils import log
 from fastapi import FastAPI, HTTPException
@@ -67,7 +69,9 @@ class SetAppConfigRequest(BaseModel, extra=Extra.allow):
     listen_to_network: bool = None
     listen_port: int = None
     use_v3_engine: bool = True
+    backend: str = "ed_diffusers"
     models_dir: str = None
+    vram_usage_level: str = "balanced"
 
 
 def init():
@@ -159,6 +163,12 @@ def init():
     def shutdown_event():  # Signal render thread to close on shutdown
         task_manager.current_state_error = SystemExit("Application shutting down.")
 
+    @server_api.on_event("startup")
+    def start_event():
+        from easydiffusion.app import open_browser
+
+        open_browser()
+
 
 # API implementations
 def set_app_config_internal(req: SetAppConfigRequest):
@@ -180,8 +190,10 @@ def set_app_config_internal(req: SetAppConfigRequest):
             config["net"] = {}
         config["net"]["listen_port"] = int(req.listen_port)
 
-    config["use_v3_engine"] = req.use_v3_engine
+    config["use_v3_engine"] = req.backend == "ed_diffusers"
+    config["backend"] = req.backend
     config["models_dir"] = req.models_dir
+    config["vram_usage_level"] = req.vram_usage_level
 
     for property, property_value in req.dict().items():
         if property_value is not None and property not in req.__fields__ and property not in PROTECTED_CONFIG_KEYS:
@@ -200,11 +212,13 @@ def set_app_config_internal(req: SetAppConfigRequest):
 
 
 def update_render_devices_in_config(config, render_devices):
-    if render_devices not in ("cpu", "auto") and not render_devices.startswith("cuda:"):
-        raise HTTPException(status_code=400, detail=f"Invalid render device requested: {render_devices}")
+    from easydiffusion.device_manager import validate_render_devices
 
-    if render_devices.startswith("cuda:"):
+    try:
         render_devices = render_devices.split(",")
+        validate_render_devices(render_devices)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     config["render_devices"] = render_devices
 
@@ -220,6 +234,8 @@ def read_web_data_internal(key: str = None, **kwargs):
 
         return JSONResponse(config, headers=NOCACHE_HEADERS)
     elif key == "system_info":
+        from easydiffusion.backend_manager import backend
+
         config = app.getConfig()
 
         output_dir = config.get("force_save_path", os.path.join(os.path.expanduser("~"), app.OUTPUT_DIRNAME))
@@ -230,12 +246,16 @@ def read_web_data_internal(key: str = None, **kwargs):
             "default_output_dir": output_dir,
             "enforce_output_dir": ("force_save_path" in config),
             "enforce_output_metadata": ("force_save_metadata" in config),
+            "backend_url": backend.get_url(),
         }
         system_info["devices"]["config"] = config.get("render_devices", "auto")
         return JSONResponse(system_info, headers=NOCACHE_HEADERS)
     elif key == "models":
-        scan_for_malicious = kwargs.get("scan_for_malicious", True)
-        return JSONResponse(model_manager.getModels(scan_for_malicious), headers=NOCACHE_HEADERS)
+        from easydiffusion.backend_manager import backend
+
+        backend.refresh_models()
+
+        return JSONResponse({"models": model_manager.list_models()}, headers=NOCACHE_HEADERS)
     elif key == "modifiers":
         return JSONResponse(app.get_image_modifiers(), headers=NOCACHE_HEADERS)
     elif key == "ui_plugins":
@@ -313,6 +333,15 @@ def filter_internal(req: dict):
         output_format: OutputFormatData = OutputFormatData.parse_obj(req)
         save_data: SaveToDiskData = SaveToDiskData.parse_obj(req)
 
+        filter_req.filter = convert_legacy_controlnet_filter_name(filter_req.filter)
+
+        for model_name in ("realesrgan", "esrgan_4x", "lanczos", "nearest", "scunet", "swinir"):
+            if models_data.model_paths.get(model_name):
+                if model_name not in filter_req.filter_params:
+                    filter_req.filter_params[model_name] = {}
+
+                filter_req.filter_params[model_name]["upscaler"] = models_data.model_paths[model_name]
+
         # enqueue the task
         task = FilterTask(filter_req, task_data, models_data, output_format, save_data)
         return enqueue_task(task)
@@ -346,15 +375,13 @@ def model_merge_internal(req: dict):
 
         mergeReq: MergeRequest = MergeRequest.parse_obj(req)
 
+        sd_model_dir = model_manager.get_model_dirs("stable-diffusion")[0]
+
         merge_models(
             model_manager.resolve_model_to_use(mergeReq.model0, "stable-diffusion"),
             model_manager.resolve_model_to_use(mergeReq.model1, "stable-diffusion"),
             mergeReq.ratio,
-            os.path.join(
-                app.MODELS_DIR,
-                "stable-diffusion",
-                filename_regex.sub("_", mergeReq.out_path),
-            ),
+            os.path.join(sd_model_dir, filename_regex.sub("_", mergeReq.out_path)),
             mergeReq.use_fp16,
         )
         return JSONResponse({"status": "OK"}, headers=NOCACHE_HEADERS)

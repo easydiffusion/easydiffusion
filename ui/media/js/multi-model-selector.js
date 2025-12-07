@@ -10,6 +10,7 @@ class MultiModelSelector {
     root
     modelType
     modelNameFriendly
+    showWeights
     defaultWeight
     weightStep
 
@@ -35,13 +36,13 @@ class MultiModelSelector {
         if (typeof modelData !== "object") {
             throw new Error("Multi-model selector expects an object containing modelNames and modelWeights as keys!")
         }
-        if (!("modelNames" in modelData) || !("modelWeights" in modelData)) {
+        if (!("modelNames" in modelData) || (this.showWeights && !("modelWeights" in modelData))) {
             throw new Error("modelNames or modelWeights not present in the data passed to the multi-model selector")
         }
 
         let newModelNames = modelData["modelNames"]
         let newModelWeights = modelData["modelWeights"]
-        if (newModelNames.length !== newModelWeights.length) {
+        if (newModelWeights && newModelNames.length !== newModelWeights.length) {
             throw new Error("Need to pass an equal number of modelNames and modelWeights!")
         }
 
@@ -50,7 +51,7 @@ class MultiModelSelector {
         // the root of all this unholiness is because searchable-models automatically dispatches an update event
         // as soon as the value is updated via JS, which is against the DOM pattern of not dispatching an event automatically
         // unless the caller explicitly dispatches the event.
-        this.modelWeights = newModelWeights
+        this.modelWeights = newModelWeights || []
         this.modelNames = newModelNames
     }
     get disabled() {
@@ -91,10 +92,11 @@ class MultiModelSelector {
         }
     }
 
-    constructor(root, modelType, modelNameFriendly = undefined, defaultWeight = 0.5, weightStep = 0.02) {
+    constructor(root, modelType, modelNameFriendly = undefined, defaultWeight = 0.5, weightStep = 0.02, showWeights = true) {
         this.root = root
         this.modelType = modelType
         this.modelNameFriendly = modelNameFriendly || modelType
+        this.showWeights = showWeights
         this.defaultWeight = defaultWeight
         this.weightStep = weightStep
 
@@ -135,10 +137,13 @@ class MultiModelSelector {
 
         const modelElement = document.createElement("div")
         modelElement.className = "model_entry"
-        modelElement.innerHTML = `
-            <input id="${this.modelType}_${idx}" class="model_name model-filter" type="text" spellcheck="false" autocomplete="off" data-path="" />
-            <input class="model_weight" type="number" step="${this.weightStep}" value="${this.defaultWeight}" pattern="^-?[0-9]*\.?[0-9]*$" onkeypress="preventNonNumericalInput(event)">
-        `
+        let html = `<input id="${this.modelType}_${idx}" class="model_name model-filter" type="text" spellcheck="false" autocomplete="off" data-path="" />`
+
+        if (this.showWeights) {
+            html += `<input class="model_weight" type="number" step="${this.weightStep}" value="${this.defaultWeight}" pattern="^-?[0-9]*\.?[0-9]*$" onkeypress="preventNonNumericalInput(event)">`
+        }
+        modelElement.innerHTML = html
+
         this.modelContainer.appendChild(modelElement)
 
         let modelNameEl = modelElement.querySelector(".model_name")
@@ -160,8 +165,8 @@ class MultiModelSelector {
 
         modelNameEl.addEventListener("change", makeUpdateEvent("change"))
         modelNameEl.addEventListener("input", makeUpdateEvent("input"))
-        modelWeightEl.addEventListener("change", makeUpdateEvent("change"))
-        modelWeightEl.addEventListener("input", makeUpdateEvent("input"))
+        modelWeightEl?.addEventListener("change", makeUpdateEvent("change"))
+        modelWeightEl?.addEventListener("input", makeUpdateEvent("input"))
 
         let removeBtn = document.createElement("button")
         removeBtn.className = "remove_model_btn"
@@ -218,10 +223,14 @@ class MultiModelSelector {
     }
 
     get modelWeights() {
-        return this.getModelElements(true).map((e) => e.weight.value)
+        return this.getModelElements(true).map((e) => e.weight?.value)
     }
 
     set modelWeights(newModelWeights) {
+        if (!this.showWeights) {
+            return
+        }
+
         this.resizeEntryList(newModelWeights.length)
 
         if (newModelWeights.length === 0) {

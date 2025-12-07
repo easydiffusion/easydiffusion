@@ -1,0 +1,87 @@
+diff --git a/launch.py b/launch.py
+index c0568c7b..3919f7dd 100644
+--- a/launch.py
++++ b/launch.py
+@@ -2,6 +2,7 @@
+ # faulthandler.enable()
+ 
+ from modules import launch_utils
++from modules import parent_process_monitor
+ 
+ args = launch_utils.args
+ python = launch_utils.python
+@@ -28,6 +29,10 @@ start = launch_utils.start
+ 
+ 
+ def main():
++    if args.parent_pid != -1:
++        print(f"Monitoring parent process for termination. Parent PID: {args.parent_pid}")
++        parent_process_monitor.start_monitor_thread(args.parent_pid)
++
+     if args.dump_sysinfo:
+         filename = launch_utils.dump_sysinfo()
+ 
+diff --git a/modules/cmd_args.py b/modules/cmd_args.py
+index fcd8a50f..7f684bec 100644
+--- a/modules/cmd_args.py
++++ b/modules/cmd_args.py
+@@ -148,3 +148,6 @@ parser.add_argument(
+     help="Path to directory with annotator model directories",
+     default=None,
+ )
++
++# Easy Diffusion arguments
++parser.add_argument("--parent-pid", type=int, default=-1, help='parent process id, if running webui as a sub-process')
+diff --git a/modules/parent_process_monitor.py b/modules/parent_process_monitor.py
+new file mode 100644
+index 00000000..49d6a76b
+--- /dev/null
++++ b/modules/parent_process_monitor.py
+@@ -0,0 +1,47 @@
++# monitors and kills itself when the parent process dies. required when running Forge as a sub-process.
++# modified version of https://stackoverflow.com/a/23587108
++
++import os
++import threading
++import platform
++import time
++
++
++def _monitor_parent_posix(parent_pid):
++    import psutil
++
++    print(f"Monitoring parent pid: {parent_pid}")
++    while True:
++        if not psutil.pid_exists(parent_pid):
++            print(f"Parent pid {parent_pid} died. Exiting.")
++            os._exit(0)
++        time.sleep(1)
++
++
++def _monitor_parent_windows(parent_pid):
++    from ctypes import WinDLL, WinError
++    from ctypes.wintypes import DWORD, BOOL, HANDLE
++
++    SYNCHRONIZE = 0x00100000  # Magic value from http://msdn.microsoft.com/en-us/library/ms684880.aspx
++    kernel32 = WinDLL("kernel32.dll")
++    kernel32.OpenProcess.argtypes = (DWORD, BOOL, DWORD)
++    kernel32.OpenProcess.restype = HANDLE
++
++    handle = kernel32.OpenProcess(SYNCHRONIZE, False, parent_pid)
++    if not handle:
++        raise WinError()
++
++    # Wait until parent exits
++    from ctypes import windll
++
++    print(f"Monitoring parent pid: {parent_pid}")
++    windll.kernel32.WaitForSingleObject(handle, -1)
++    os._exit(0)
++
++
++def start_monitor_thread(parent_pid):
++    if platform.system() == "Windows":
++        t = threading.Thread(target=_monitor_parent_windows, args=(parent_pid,), daemon=True)
++    else:
++        t = threading.Thread(target=_monitor_parent_posix, args=(parent_pid,), daemon=True)
++    t.start()

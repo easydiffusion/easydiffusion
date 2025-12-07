@@ -131,6 +131,15 @@ const TASK_MAPPING = {
         readUI: () => parseFloat(guidanceScaleField.value),
         parse: (val) => parseFloat(val),
     },
+    distilled_guidance_scale: {
+        name: "Distilled Guidance",
+        setUI: (distilled_guidance_scale) => {
+            distilledGuidanceScaleField.value = distilled_guidance_scale
+            updateDistilledGuidanceScaleSlider()
+        },
+        readUI: () => parseFloat(distilledGuidanceScaleField.value),
+        parse: (val) => parseFloat(val),
+    },
     prompt_strength: {
         name: "Prompt Strength",
         setUI: (prompt_strength) => {
@@ -240,6 +249,14 @@ const TASK_MAPPING = {
             samplerField.value = sampler_name
         },
         readUI: () => samplerField.value,
+        parse: (val) => val,
+    },
+    scheduler_name: {
+        name: "Scheduler",
+        setUI: (scheduler_name) => {
+            schedulerField.value = scheduler_name
+        },
+        readUI: () => schedulerField.value,
         parse: (val) => val,
     },
     use_stable_diffusion_model: {
@@ -374,6 +391,45 @@ const TASK_MAPPING = {
             }
             val = Array.isArray(val) ? val : [val]
             val = val.map((e) => parseFloat(e))
+            return val
+        },
+    },
+    use_text_encoder_model: {
+        name: "Text Encoder model",
+        setUI: (use_text_encoder_model) => {
+            let modelPaths = []
+            use_text_encoder_model = use_text_encoder_model === null ? "" : use_text_encoder_model
+            use_text_encoder_model = Array.isArray(use_text_encoder_model) ? use_text_encoder_model : [use_text_encoder_model]
+            use_text_encoder_model.forEach((m) => {
+                if (m.includes("models\\text-encoder\\")) {
+                    m = m.split("models\\text-encoder\\")[1]
+                } else if (m.includes("models\\\\text-encoder\\\\")) {
+                    m = m.split("models\\\\text-encoder\\\\")[1]
+                } else if (m.includes("models/text-encoder/")) {
+                    m = m.split("models/text-encoder/")[1]
+                }
+                m = m.replaceAll("\\\\", "/")
+                m = getModelPath(m, [".safetensors", ".sft"])
+                modelPaths.push(m)
+            })
+            textEncoderModelField.modelNames = modelPaths
+        },
+        readUI: () => {
+            return textEncoderModelField.modelNames
+        },
+        parse: (val) => {
+            val = !val || val === "None" ? "" : val
+            if (typeof val === "string" && val.includes(",")) {
+                val = val.split(",")
+                val = val.map((v) => v.trim())
+                val = val.map((v) => v.replaceAll("\\", "\\\\"))
+                val = val.map((v) => v.replaceAll('"', ""))
+                val = val.map((v) => v.replaceAll("'", ""))
+                val = val.map((v) => '"' + v + '"')
+                val = "[" + val + "]"
+                val = JSON.parse(val)
+            }
+            val = Array.isArray(val) ? val : [val]
             return val
         },
     },
@@ -590,17 +646,20 @@ const TASK_TEXT_MAPPING = {
     seed: "Seed",
     num_inference_steps: "Steps",
     guidance_scale: "Guidance Scale",
+    distilled_guidance_scale: "Distilled Guidance",
     prompt_strength: "Prompt Strength",
     use_face_correction: "Use Face Correction",
     use_upscale: "Use Upscaling",
     upscale_amount: "Upscale By",
     sampler_name: "Sampler",
+    scheduler_name: "Scheduler",
     negative_prompt: "Negative Prompt",
     use_stable_diffusion_model: "Stable Diffusion model",
     use_hypernetwork_model: "Hypernetwork model",
     hypernetwork_strength: "Hypernetwork Strength",
     use_lora_model: "LoRA model",
     lora_alpha: "LoRA Strength",
+    use_text_encoder_model: "Text Encoder model",
     use_controlnet_model: "ControlNet model",
     control_filter_to_apply: "ControlNet Filter",
     control_alpha: "ControlNet Strength",

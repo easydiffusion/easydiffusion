@@ -451,6 +451,7 @@ class ImageEditor {
                 ctx: canvas.getContext("2d"),
             }
         })
+        this.containerScale = 1.0
 
         // add mouse handlers
         this.container.addEventListener("mousedown", this.mouseHandler.bind(this))
@@ -554,26 +555,32 @@ class ImageEditor {
         document.removeEventListener("keyup", this.keyHandlerBound, true)
     }
     setSize(width, height) {
+        width = parseInt(width)
+        height = parseInt(height)
+
         if (width == this.width && height == this.height) {
             return
         }
 
-        if (width > height) {
-            var max_size = Math.min(parseInt(window.innerWidth * 0.9), width, 768)
-            var multiplier = max_size / width
-            width = (multiplier * width).toFixed()
-            height = (multiplier * height).toFixed()
-        } else {
-            var max_size = Math.min(parseInt(window.innerHeight * 0.9), height, 768)
-            var multiplier = max_size / height
-            width = (multiplier * width).toFixed()
-            height = (multiplier * height).toFixed()
+        let windowWidth = window.innerWidth
+        if (window.innerWidth > 700) {  // keep in sync with main.css: @media screen and (max-width: 700px) {..}
+            // the tools are on the sides, so max size is smaller
+            let controlsLeft = this.popup.querySelector(".editor-controls-left")
+            let controlsRight = this.popup.querySelector(".editor-controls-right")
+            let controlsLeftWidth = parseInt(getComputedStyle(controlsLeft).width)
+            let controlsRightWidth = parseInt(getComputedStyle(controlsRight).width)
+            windowWidth = windowWidth - controlsLeftWidth - controlsRightWidth - 80 // extra padding
         }
+
+        var max_size = Math.min(parseInt(windowWidth * 0.9), width, 768)
+        this.containerScale = max_size / width
+        let containerWidth = (this.containerScale * width).toFixed()
+        let containerHeight = (this.containerScale * height).toFixed()
         this.width = parseInt(width)
         this.height = parseInt(height)
 
-        this.container.style.width = width + "px"
-        this.container.style.height = height + "px"
+        this.container.style.width = containerWidth + "px"
+        this.container.style.height = containerHeight + "px"
 
         Object.values(this.layers).forEach((layer) => {
             layer.canvas.width = width
@@ -662,7 +669,7 @@ class ImageEditor {
         if (layer) {
             layer.ctx.lineCap = "round"
             layer.ctx.lineJoin = "round"
-            layer.ctx.lineWidth = options.brush_size
+            layer.ctx.lineWidth = options.brush_size / this.containerScale
             layer.ctx.fillStyle = options.color
             layer.ctx.strokeStyle = options.color
             var sharpness = parseInt(options.sharpness * options.brush_size)
@@ -764,6 +771,10 @@ class ImageEditor {
                 var y = (touch.clientY || 0) - bbox.top
             }
         }
+
+        x = x / this.containerScale
+        y = y / this.containerScale
+
         event.preventDefault()
         // do drawing-related stuff
         if (type == "mousedown" || (type == "mouseenter" && event.buttons == 1)) {

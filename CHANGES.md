@@ -1,5 +1,38 @@
 # What's new?
 
+## v3.5 (beta)
+### Major Changes
+- **Chroma** - support for the Chroma model, including quantized bnb and nf4 models.
+- **Flux** - full support for the Flux model, including quantized bnb and nf4 models.
+- **LyCORIS** - including `LoCon`, `Hada`, `IA3` and `Lokr`.
+- **11 new samplers** - `DDIM CFG++`, `DPM Fast`, `DPM++ 2m SDE Heun`, `DPM++ 3M SDE`, `Restart`, `Heun PP2`, `IPNDM`, `IPNDM_V`, `LCM`, `[Forge] Flux Realistic`, `[Forge] Flux Realistic (Slow)`.
+- **15 new schedulers** - `Uniform`, `Karras`, `Exponential`, `Polyexponential`, `SGM Uniform`, `KL Optimal`, `Align Your Steps`, `Normal`, `DDIM`, `Beta`, `Turbo`, `Align Your Steps GITS`, `Align Your Steps 11`, `Align Your Steps 32`.
+- **42 new Controlnet filters, and support for lots of new ControlNet models** (including QR ControlNets).
+- **5 upscalers** - `SwinIR`, `ScuNET`, `Nearest`, `Lanczos`, `ESRGAN`.
+- **Faster than v3.0**
+- **Major rewrite of the code** - We've switched to `Forge WebUI` under the hood, which brings a lot of new features, faster image generation, and support for all the extensions in the Forge/Automatic1111 community. This allows Easy Diffusion to stay up-to-date with the latest features, and focus on making the UI and installation experience even easier.
+
+v3.5 is currently an optional upgrade, and you can switch between the v3.0 (diffusers) engine and the v3.5 (webui) engine using the `Settings` tab in the UI.
+
+### Detailed changelog
+* 3.5.13 - 2 Dec 2025 - Add the v4 engine (i.e. sdkit3) as an experimental backend.
+* 3.5.12 - 24 Nov 2025 - Adjust inpainting image editor size for various screen sizes (to avoid overflowing out of the screen).
+* 3.5.12 - 24 Nov 2025 - Fix a bug where inpainted images would ignore the output image size, and use the size of the input image instead.
+* 3.5.11 - 28 Oct 2025 - Fix regression where newly added models wouldn't work, even after refreshing the models list.
+* 3.5.10 - 1 Oct 2025 - Show the appropriate Image Settings and warnings, based on the image model (e.g. Flux, Chroma, Stable Diffusion etc). E.g. Distilled Guidance is needed only for Flux and Chroma.
+* 3.5.9 - 18 Jul 2025 - Stability fix for the Forge backend. Prevents unused Forge processes from hanging around even after closing Easy Diffusion.
+* 3.5.8 - 14 Jul 2025 - Support custom Text Encoders and Flux VAEs in the UI.
+* 3.5.7 - 27 Jun 2025 - Support for the Chroma model. Update Forge to the latest commit.
+* 3.5.6 - 17 Feb 2025 - Fix broken model merging.
+* 3.5.5 - 10 Feb 2025 - (Internal code change) Use `torchruntime` for installing torch/torchvision, instead of custom logic. This supports a lot more GPUs on various platforms, and was built using Easy Diffusion's torch-installation code.
+* 3.5.4 - 8 Feb 2025 - Fix a bug where the inpainting mask wasn't resized to the image size when using the WebUI/v3.5 backend. Thanks @AvidGameFan for their help in investigating and fixing this!
+* 3.5.3 - 6 Feb 2025 - (Internal code change) Remove hardcoded references to `torch.cuda`, and replace with torchruntime's device utilities.
+* 3.5.2 - 28 Jan 2025 - Fix for accidental jailbreak when using conda with WebUI - fixes the `type not subscriptable` error when using WebUI.
+* 3.5.2 - 28 Jan 2025 - Fix a bug affecting older versions of Easy Diffusion, which tried to upgrade to an incompatible version of PyTorch.
+* 3.5.2 - 4 Jan 2025 - Replace the use of WMIC (deprecated) with a powershell call.
+* 3.5.1 - 17 Dec 2024 - Update Forge to the latest commit.
+* 3.5.0 - 11 Oct 2024 - **Preview release** of the new v3.5 engine, powered by Forge WebUI (a fork of Automatic1111). This enables Flux, SD3, LyCORIS and lots of new features, while using the same familiar Easy Diffusion interface.
+
 ## v3.0
 ### Major Changes
 - **ControlNet** - Full support for ControlNet, with native integration of the common ControlNet models. Just select a control image, then choose the ControlNet filter/model and run. No additional configuration or download necessary. Supports custom ControlNets as well.
@@ -17,6 +50,12 @@
 - **Major rewrite of the code** - We've switched to using diffusers under-the-hood, which allows us to release new features faster, and focus on making the UI and installer even easier to use.
 
 ### Detailed changelog
+* 3.0.15 - 28 Oct 2025 - Fix regression where newly added models wouldn't work, even after refreshing the models list.
+* 3.0.14 - 1 Oct 2025 - (Internal code change) Model fetching API refactored. It now returns the model types (flux, SD version etc) in a cleaner data format.
+* 3.0.13 - 10 Feb 2025 - (Internal code change) Use `torchruntime` for installing torch/torchvision, instead of custom logic. This supports a lot more GPUs on various platforms, and was built using Easy Diffusion's torch-installation code.
+* 3.0.12 - 6 Feb 2025 - (Internal code change) Remove hardcoded references to `torch.cuda`, and replace with torchruntime's device utilities.
+* 3.0.11 - 4 Jan 2025 - Replace the use of WMIC (deprecated) with a powershell call.
+* 3.0.10 - 11 Oct 2024 - **Major Update** - An option to upgrade to v3.5, which enables Flux, Stable Diffusion 3, LyCORIS models and lots more.
 * 3.0.9 - 28 May 2024 - Slider for controlling the strength of controlnets.
 * 3.0.8 - 27 May 2024 - SDXL ControlNets for Img2Img and Inpainting.
 * 3.0.7 - 11 Dec 2023 - Setting to enable/disable VAE tiling (in the Image Settings panel). Sometimes VAE tiling reduces the quality of the image, so this setting will help control that.
