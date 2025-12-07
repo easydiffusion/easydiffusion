@@ -1712,7 +1712,7 @@ function getCurrentUserRequest() {
             output_quality: parseInt(outputQualityField.value),
             output_lossless: outputLosslessField.checked,
             metadata_output_format: metadataOutputFormatField.value,
-            use_gallery: useGalleryField.checked?GALLERY_NAME:null,
+            use_gallery: useGalleryField.checked ? GALLERY_NAME : "disabled",
             original_prompt: promptField.value,
             active_tags: activeTags.map((x) => x.name),
             inactive_tags: activeTags.filter((tag) => tag.inactive === true).map((x) => x.name),
