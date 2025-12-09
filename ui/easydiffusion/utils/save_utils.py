@@ -169,39 +169,45 @@ def save_images_to_disk(
                 elif isinstance(metadata_entries[i]["LoRA model"], list):
                     loraString = ""
                     for j in range(len(metadata_entries[i]["LoRA model"])):
-                        loraString += metadata_entries[i]["LoRA model"][j] + ":" + str(metadata_entries[i]["lora_alpha"][j]) + " "
+                        loraString += metadata_entries[i]["LoRA model"][j] + ":" + str(metadata_entries[i]["LoRA Strength"][j]) + " "
                     return loraString.strip()
                 else:
-                    return metadata_entries[i]["LoRA model"] + ":" + str(metadata_entries[i]["lora_alpha"])
+                    return metadata_entries[i]["LoRA model"] + ":" + str(metadata_entries[i]["LoRA Strength"])
 
             from easydiffusion.easydb.mappings import GalleryImage
             from easydiffusion.easydb.database import SessionLocal
 
             if task_data.use_gallery != None:
-                if i < len(metadata_entries):
-                    session = SessionLocal()
-                    session.add(GalleryImage(
-                        path = path_i,
-                        seed = metadata_entries[i]["Seed"],
-                        use_stable_diffusion_model = metadata_entries[i]["Stable Diffusion model"],
-                        clip_skip = metadata_entries[i]["Clip Skip"],
-                        use_vae_model = metadata_entries[i]["VAE model"],
-                        sampler_name = metadata_entries[i]["Sampler"],
-                        width = metadata_entries[i]["Width"],
-                        height = metadata_entries[i]["Height"],
-                        num_inference_steps = metadata_entries[i]["Steps"],
-                        guidance_scale = metadata_entries[i]["Guidance Scale"],
-                        lora = createLoraString(metadata_entries, i),
-                        use_hypernetwork_model = metadata_entries[i]["use_hypernetwork_model"] if "use_hypernetwork_model" in metadata_entries[i] else None,
-                        tiling = metadata_entries[i]["Seamless Tiling"],
-                        use_face_correction = metadata_entries[i]["Use Face Correction"],
-                        use_upscale = metadata_entries[i]["Use Upscaling"],
-                        prompt = metadata_entries[i]["Prompt"],
-                        negative_prompt = metadata_entries[i]["Negative Prompt"],
-                        workspace = task_data.use_gallery
-                    ))
-                    session.commit()
-                    session.close()
+                try:
+                    if i < len(metadata_entries):
+                        print(task_data)
+                        session = SessionLocal()
+                        session.add(GalleryImage(
+                            path = path_i,
+                            seed = metadata_entries[i]["Seed"],
+                            use_stable_diffusion_model = metadata_entries[i]["Stable Diffusion model"],
+                            clip_skip = metadata_entries[i]["Clip Skip"],
+                            use_vae_model = metadata_entries[i]["VAE model"],
+                            sampler_name = metadata_entries[i]["Sampler"],
+                            width = metadata_entries[i]["Width"],
+                            height = metadata_entries[i]["Height"],
+                            num_inference_steps = metadata_entries[i]["Steps"],
+                            guidance_scale = metadata_entries[i]["Guidance Scale"],
+                            lora = createLoraString(metadata_entries, i),
+                            use_hypernetwork_model = metadata_entries[i]["use_hypernetwork_model"] if "use_hypernetwork_model" in metadata_entries[i] else None,
+                            tiling = metadata_entries[i]["Seamless Tiling"],
+                            use_face_correction = metadata_entries[i]["Use Face Correction"],
+                            use_upscale = metadata_entries[i]["Use Upscaling"],
+                            prompt = metadata_entries[i]["Prompt"],
+                            negative_prompt = metadata_entries[i]["Negative Prompt"],
+                            workspace = task_data.use_gallery
+                        ))
+                        session.commit()
+                        session.close()
+                except:
+                    print("Error saving images to gallery")
+                    print(f"Index: {i}")
+                    print(metadata_entries)
         
         if save_data.metadata_output_format:
             for metadata_output_format in save_data.metadata_output_format.split(","):
