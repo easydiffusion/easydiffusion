@@ -1,12 +1,14 @@
 from typing import List
 
 from fastapi import Depends, FastAPI, HTTPException, Response, File
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from easydiffusion.easydb import crud, models, schemas
 from easydiffusion.easydb.database import SessionLocal, engine
 
 from requests.compat import urlparse
+from os.path import abspath
 
 import base64, json
 
@@ -92,7 +94,29 @@ def init():
         result.data = base64.encodestring(result.data)
         return result
 
+    @server_api.get("/image/{image_path:path}")
+    def get_image(image_path: str, db: Session = Depends(get_db)):
+        from easydiffusion.easydb.mappings import GalleryImage
+        image_path = str(abspath(image_path))
+        try:
+            image = db.query(GalleryImage).filter(GalleryImage.path == image_path).first()
+            return FileResponse(image.path)
+        except Exception as e:
+            print(f"Image not found, attempted path: {image_path}")
+            raise HTTPException(status_code=404, detail="Image not found")
+    
+    @server_api.get("/all_images")
+    def get_all_images(prompt: str = "", model: str = "", page: int = 0, images_per_page: int = 50, workspace : str = "default", db: Session = Depends(get_db)):
+        from easydiffusion.easydb.mappings import GalleryImage
+        images = db.query(GalleryImage).filter(GalleryImage.workspace == workspace).order_by(GalleryImage.time_created.desc())
+        if prompt != "":
+            images = images.filter(GalleryImage.prompt.like("%"+prompt+"%"))
+        if model != "":
+            images = images.filter(GalleryImage.use_stable_diffusion_model.like("%"+model+"%"))
+        images = images.offset(page*images_per_page).limit(images_per_page)
+        return images.all()
 
+    
 def get_filename_from_url(url):
     path = urlparse(url).path
     name = path[path.rfind('/')+1:]

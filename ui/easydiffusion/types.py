@@ -97,6 +97,7 @@ class RenderTaskData(TaskData):
     clip_skip: bool = False
     codeformer_upscale_faces: bool = False
     codeformer_fidelity: float = 0.5
+    use_gallery: str = None
 
 
 class MergeRequest(BaseModel):
