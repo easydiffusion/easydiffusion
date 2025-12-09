@@ -102,6 +102,7 @@ def init():
             image = db.query(GalleryImage).filter(GalleryImage.path == image_path).first()
             return FileResponse(image.path)
         except Exception as e:
+            print(f"Image not found, attempted path: {image_path}")
             raise HTTPException(status_code=404, detail="Image not found")
     
     @server_api.get("/all_images")
