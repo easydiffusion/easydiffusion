@@ -164,15 +164,17 @@ def save_images_to_disk(
             path_i = f"{os.path.join(save_dir_path, make_filename(i))}.{output_format.output_format.lower()}"
 
             def createLoraString(metadata_entries, i):
-                if metadata_entries[i]["LoRA model"] is None:
+                key = "LoRA model" if "LoRA model" in metadata_entries[i] else "use_lora_model"
+                keystrength = "LoRA Strength" if "LoRA Strength" in metadata_entries[i] else "lora_alpha"
+                if metadata_entries[i][key] is None:
                     return "None"
-                elif isinstance(metadata_entries[i]["LoRA model"], list):
+                elif isinstance(metadata_entries[i][key], list):
                     loraString = ""
-                    for j in range(len(metadata_entries[i]["LoRA model"])):
-                        loraString += metadata_entries[i]["LoRA model"][j] + ":" + str(metadata_entries[i]["LoRA Strength"][j]) + " "
+                    for j in range(len(metadata_entries[i][key])):
+                        loraString += metadata_entries[i][key][j] + ":" + str(metadata_entries[i][keystrength][j]) + " "
                     return loraString.strip()
                 else:
-                    return metadata_entries[i]["LoRA model"] + ":" + str(metadata_entries[i]["LoRA Strength"])
+                    return metadata_entries[i][key] + ":" + str(metadata_entries[i][keystrength])
 
             from easydiffusion.easydb.mappings import GalleryImage
             from easydiffusion.easydb.database import SessionLocal
@@ -184,27 +186,28 @@ def save_images_to_disk(
                         session = SessionLocal()
                         session.add(GalleryImage(
                             path = path_i,
-                            seed = metadata_entries[i]["Seed"],
-                            use_stable_diffusion_model = metadata_entries[i]["Stable Diffusion model"],
-                            clip_skip = metadata_entries[i]["Clip Skip"],
-                            use_vae_model = metadata_entries[i]["VAE model"],
-                            sampler_name = metadata_entries[i]["Sampler"],
-                            width = metadata_entries[i]["Width"],
-                            height = metadata_entries[i]["Height"],
-                            num_inference_steps = metadata_entries[i]["Steps"],
-                            guidance_scale = metadata_entries[i]["Guidance Scale"],
+                            seed = metadata_entries[i]["Seed"] if "Seed" in metadata_entries[i] else metadata_entries[i]["seed"],
+                            use_stable_diffusion_model = metadata_entries[i]["Stable Diffusion model"] if "Stable Diffusion model" in metadata_entries[i] else metadata_entries[i]["use_stable_diffusion_model"],
+                            clip_skip = metadata_entries[i]["Clip Skip"] if "Clip Skip" in metadata_entries[i] else metadata_entries[i]["clip_skip"],
+                            use_vae_model = metadata_entries[i]["VAE model"] if "VAE model" in metadata_entries[i] else metadata_entries[i]["use_vae_model"],
+                            sampler_name = metadata_entries[i]["Sampler"] if "Sampler" in metadata_entries[i] else metadata_entries[i]["sampler_name"],
+                            width = metadata_entries[i]["Width"] if "Width" in metadata_entries[i] else metadata_entries[i]["width"],
+                            height = metadata_entries[i]["Height"] if "Height" in metadata_entries[i] else metadata_entries[i]["height"],
+                            num_inference_steps = metadata_entries[i]["Steps"] if "Steps" in metadata_entries[i] else metadata_entries[i]["num_inference_steps"],
+                            guidance_scale = metadata_entries[i]["Guidance Scale"] if "Guidance Scale" in metadata_entries[i] else metadata_entries[i]["guidance_scale"],
                             lora = createLoraString(metadata_entries, i),
                             use_hypernetwork_model = metadata_entries[i]["use_hypernetwork_model"] if "use_hypernetwork_model" in metadata_entries[i] else None,
-                            tiling = metadata_entries[i]["Seamless Tiling"],
-                            use_face_correction = metadata_entries[i]["Use Face Correction"],
-                            use_upscale = metadata_entries[i]["Use Upscaling"],
-                            prompt = metadata_entries[i]["Prompt"],
-                            negative_prompt = metadata_entries[i]["Negative Prompt"],
+                            tiling = metadata_entries[i]["Seamless Tiling"] if "Seamless Tiling" in metadata_entries[i] else metadata_entries[i]["tiling"],
+                            use_face_correction = metadata_entries[i]["Use Face Correction"] if "Use Face Correction" in metadata_entries[i] else metadata_entries[i]["use_face_correction"],
+                            use_upscale = metadata_entries[i]["Use Upscaling"] if "Use Upscaling" in metadata_entries[i] else metadata_entries[i]["use_upscale"],
+                            prompt = metadata_entries[i]["Prompt"] if "Prompt" in metadata_entries[i] else metadata_entries[i]["prompt"],
+                            negative_prompt = metadata_entries[i]["Negative Prompt"] if "Negative Prompt" in metadata_entries[i] else metadata_entries[i]["negative_prompt"],
                             workspace = task_data.use_gallery
                         ))
                         session.commit()
                         session.close()
-                except:
+                except Exception as exception:
+                    print(exception)
                     print("Error saving images to gallery")
                     print(f"Index: {i}")
                     print(metadata_entries)
