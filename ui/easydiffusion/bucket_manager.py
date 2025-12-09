@@ -94,15 +94,14 @@ def init():
         result.data = base64.encodestring(result.data)
         return result
 
-    @server_api.get("/image/{image_path:path}")
-    def get_image(image_path: str, db: Session = Depends(get_db)):
+    @server_api.get("/image/{seed}")
+    def get_image(seed: int, db: Session = Depends(get_db)):
         from easydiffusion.easydb.mappings import GalleryImage
-        image_path = str(abspath(image_path))
         try:
-            image = db.query(GalleryImage).filter(GalleryImage.path == image_path).first()
+            image = db.query(GalleryImage).filter(GalleryImage.seed == seed).first()
             return FileResponse(image.path)
         except Exception as e:
-            print(f"Image not found, attempted path: {image_path}")
+            print(f"Image not found, attempted path: {seed}")
             raise HTTPException(status_code=404, detail="Image not found")
     
     @server_api.get("/all_images")
