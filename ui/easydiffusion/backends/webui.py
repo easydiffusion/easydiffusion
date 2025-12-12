@@ -36,6 +36,7 @@ ed_info = {
 }
 
 WEBUI_REPO = "https://github.com/easydiffusion/stable-diffusion-webui-forge.git"
+WEBUI_COMMIT = "9ac8796cc66ee31b3a7e41bfccf1a829879d1a44"
 
 BACKEND_DIR = os.path.abspath(os.path.join(ROOT_DIR, "webui"))
 SYSTEM_DIR = os.path.join(BACKEND_DIR, "system")
@@ -117,8 +118,8 @@ def start_backend():
         run_in_conda(["git", "add", "-A", "."], cwd=WEBUI_DIR, env=env)
         run_in_conda(["git", "stash"], cwd=WEBUI_DIR, env=env)
         run_in_conda(["git", "reset", "--hard"], cwd=WEBUI_DIR, env=env)
-        run_in_conda(["git", "checkout", "main"], cwd=WEBUI_DIR, env=env)
-        run_in_conda(["git", "pull", "--rebase"], cwd=WEBUI_DIR, env=env)
+        run_in_conda(["git", "fetch"], cwd=WEBUI_DIR, env=env)
+        run_in_conda(["git", "-c", "advice.detachedHead=false", "checkout", WEBUI_COMMIT], cwd=WEBUI_DIR, env=env)
 
     # workaround for the installations that broke out of conda and used ED's python 3.8 instead of WebUI conda's Py 3.10
     run_in_conda(["python", "-m", "pip", "install", "-q", "--upgrade", "urllib3==2.2.3"], cwd=WEBUI_DIR, env=env)
