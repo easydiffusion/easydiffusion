@@ -35,23 +35,13 @@ ed_info = {
     "type": "backend",
 }
 
-WEBUI_REPO = "https://github.com/lllyasviel/stable-diffusion-webui-forge.git"
-WEBUI_COMMIT = "dfdcbab685e57677014f05a3309b48cc87383167"
+WEBUI_REPO = "https://github.com/easydiffusion/stable-diffusion-webui-forge.git"
 
 BACKEND_DIR = os.path.abspath(os.path.join(ROOT_DIR, "webui"))
 SYSTEM_DIR = os.path.join(BACKEND_DIR, "system")
 WEBUI_DIR = os.path.join(BACKEND_DIR, "webui")
 
 OS_NAME = platform.system()
-
-WEBUI_PATCHES = [
-    "forge_exception_leak_patch.patch",
-    "forge_model_crash_recovery.patch",
-    "forge_api_refresh_text_encoders.patch",
-    "forge_loader_force_gc.patch",
-    "forge_monitor_parent_process.patch",
-    "forge_disable_corrupted_model_renaming.patch",
-]
 
 conda = "conda"
 
@@ -111,17 +101,24 @@ def start_backend():
     was_still_installing = not is_installed()
 
     if backend_config.get("auto_update", True):
+        # Ensure the remote origin points to the correct repository
+        try:
+            current_remote = (
+                check_output_in_conda(["git", "remote", "get-url", "origin"], cwd=WEBUI_DIR, env=env)
+                .decode("utf-8")
+                .strip()
+            )
+            if current_remote != WEBUI_REPO:
+                log.info(f"Updating remote origin from {current_remote} to {WEBUI_REPO}")
+                run_in_conda(["git", "remote", "set-url", "origin", WEBUI_REPO], cwd=WEBUI_DIR, env=env)
+        except Exception as e:
+            log.warning(f"Failed to check/update git remote: {e}")
+
         run_in_conda(["git", "add", "-A", "."], cwd=WEBUI_DIR, env=env)
         run_in_conda(["git", "stash"], cwd=WEBUI_DIR, env=env)
         run_in_conda(["git", "reset", "--hard"], cwd=WEBUI_DIR, env=env)
-        run_in_conda(["git", "fetch"], cwd=WEBUI_DIR, env=env)
-        run_in_conda(["git", "-c", "advice.detachedHead=false", "checkout", WEBUI_COMMIT], cwd=WEBUI_DIR, env=env)
-
-        # patch forge for various stability-related fixes
-        for patch in WEBUI_PATCHES:
-            patch_path = os.path.join(os.path.dirname(__file__), "webui_patches", patch)
-            log.info(f"Applying WebUI patch: {patch_path}")
-            run_in_conda(["git", "apply", patch_path], cwd=WEBUI_DIR, env=env)
+        run_in_conda(["git", "checkout", "main"], cwd=WEBUI_DIR, env=env)
+        run_in_conda(["git", "pull", "--rebase"], cwd=WEBUI_DIR, env=env)
 
     # workaround for the installations that broke out of conda and used ED's python 3.8 instead of WebUI conda's Py 3.10
     run_in_conda(["python", "-m", "pip", "install", "-q", "--upgrade", "urllib3==2.2.3"], cwd=WEBUI_DIR, env=env)
