@@ -36,7 +36,7 @@ ed_info = {
 }
 
 WEBUI_REPO = "https://github.com/easydiffusion/stable-diffusion-webui-forge.git"
-WEBUI_COMMIT = "9ac8796cc66ee31b3a7e41bfccf1a829879d1a44"
+WEBUI_COMMIT = "eb44f7b23774d284b767456788489eac51def1f3"
 
 BACKEND_DIR = os.path.abspath(os.path.join(ROOT_DIR, "webui"))
 SYSTEM_DIR = os.path.join(BACKEND_DIR, "system")
@@ -123,11 +123,6 @@ def start_backend():
 
     # workaround for the installations that broke out of conda and used ED's python 3.8 instead of WebUI conda's Py 3.10
     run_in_conda(["python", "-m", "pip", "install", "-q", "--upgrade", "urllib3==2.2.3"], cwd=WEBUI_DIR, env=env)
-
-    # hack to prevent webui-macos-env.sh from overwriting the COMMANDLINE_ARGS env variable
-    mac_webui_file = os.path.join(WEBUI_DIR, "webui-macos-env.sh")
-    if os.path.exists(mac_webui_file):
-        os.remove(mac_webui_file)
 
     webui_common.WEBUI_API_PREFIX = ""
 
