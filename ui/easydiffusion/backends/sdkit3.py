@@ -139,15 +139,15 @@ def start_backend():
 
     extra_args = ["--log-level", "debug"]
 
-    vram_usage_level = config.get("vram_usage_level", "balanced")
-    if vram_usage_level == "low":
-        extra_args.append("--control-net-cpu")
-        extra_args.append("--clip-on-cpu")
-        extra_args.append("--vae-on-cpu")
+    # vram_usage_level = config.get("vram_usage_level", "balanced")
+    # if vram_usage_level == "low":
+    #     extra_args.append("--control-net-cpu")
+    #     extra_args.append("--clip-on-cpu")
+    #     extra_args.append("--vae-on-cpu")
 
-    if vram_usage_level != "high":
-        extra_args.append("--offload-to-cpu")
-        extra_args.append("--vae-tiling")
+    # if vram_usage_level != "high":
+    #     extra_args.append("--offload-to-cpu")
+    #     extra_args.append("--vae-tiling")
 
     user_args = backend_config.get("COMMANDLINE_ARGS")
     user_args = user_args.split(" ") if user_args else []
