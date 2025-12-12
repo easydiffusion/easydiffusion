@@ -227,8 +227,8 @@ def get_platform_name():
     if torch_platform == "cpu":
         return "cpu"
 
-    # if torch_platform.startswith("cu"):
-    #     return "cuda"
+    if torch_platform.startswith("cu"):
+        return "cuda"
 
     return "vulkan"
 
