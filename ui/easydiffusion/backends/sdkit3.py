@@ -137,12 +137,27 @@ def start_backend():
     if backend_config.get("auto_update", True) or not is_installed():
         update_backend()
 
+    extra_args = ["--log-level", "debug"]
+
+    vram_usage_level = config.get("vram_usage_level", "balanced")
+    if vram_usage_level == "low":
+        extra_args.append("--control-net-cpu")
+        extra_args.append("--clip-on-cpu")
+        extra_args.append("--vae-on-cpu")
+
+    if vram_usage_level != "high":
+        extra_args.append("--offload-to-cpu")
+        extra_args.append("--vae-tiling")
+
+    user_args = backend_config.get("COMMANDLINE_ARGS")
+    user_args = user_args.split(" ") if user_args else []
+
     webui_common.WEBUI_API_PREFIX = "/v1"
 
     def run_fn():
         exe_name = "sdkit.exe" if OS_NAME == "Windows" else "sdkit"
         common_cli_args = get_common_cli_args(return_string=False)
-        cmd = [os.path.join(backend_dir, exe_name)] + common_cli_args + ["--log-level", "debug"]
+        cmd = [os.path.join(backend_dir, exe_name)] + common_cli_args + extra_args + user_args
 
         log.info(f"starting: {cmd}")
 
