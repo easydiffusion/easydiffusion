@@ -145,6 +145,9 @@ def start_backend():
     #     extra_args.append("--clip-on-cpu")
     #     extra_args.append("--vae-on-cpu")
 
+    extra_args.append("--diffusion-fa")
+    extra_args.append("--offload-to-cpu")
+
     # if vram_usage_level != "high":
     #     extra_args.append("--offload-to-cpu")
     #     extra_args.append("--vae-tiling")
@@ -227,8 +230,8 @@ def get_platform_name():
     if torch_platform == "cpu":
         return "cpu"
 
-    # if torch_platform.startswith("cu"):
-    #     return "cuda"
+    if torch_platform.startswith("cu"):
+        return "cuda"
 
     return "vulkan"
 
