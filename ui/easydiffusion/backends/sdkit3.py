@@ -139,18 +139,20 @@ def start_backend():
 
     extra_args = ["--log-level", "debug"]
 
-    # vram_usage_level = config.get("vram_usage_level", "balanced")
+    vram_usage_level = config.get("vram_usage_level", "balanced")
     # if vram_usage_level == "low":
     #     extra_args.append("--control-net-cpu")
     #     extra_args.append("--clip-on-cpu")
     #     extra_args.append("--vae-on-cpu")
 
     extra_args.append("--diffusion-fa")
-    extra_args.append("--offload-to-cpu")
 
-    # if vram_usage_level != "high":
-    #     extra_args.append("--offload-to-cpu")
-    #     extra_args.append("--vae-tiling")
+    if vram_usage_level in ("low", "balanced"):
+        extra_args.append("--offload-to-cpu")
+        extra_args.append("--vae-tiling")  # defaults to tile size 256x256
+
+    if vram_usage_level == "balanced":
+        extra_args += ["--vae-tile-size", "512x512"]
 
     user_args = backend_config.get("COMMANDLINE_ARGS")
     user_args = user_args.split(" ") if user_args else []
