@@ -16,8 +16,6 @@ import shutil
 from pathlib import Path
 from pprint import pprint
 import re
-import torchruntime
-from torchruntime.device_db import get_gpus
 
 os_name = platform.system()
 
@@ -45,6 +43,39 @@ modules_to_log = ["torchruntime", "torch", "torchvision", "sdkit", "stable-diffu
 
 BLACKWELL_DEVICES = re.compile(r"\b(?:5060|5070|5080|5090)\b")
 
+def apply_backend_config_env_overrides(backend_config: dict, env=None) -> None:
+    """
+    Apply (a small allowlist of) backend_config keys from config.yaml to environment variables.
+
+    Keeping an explicit allowlist helps prevent accidental or unsafe env overrides.
+    """
+
+    if not backend_config:
+        return
+
+    if env is None:
+        env = os.environ
+
+    def _set(key: str, value) -> None:
+        if value is None:
+            return
+        env[key] = str(value)
+        print(f"backend_config overrode {key} to {env[key]}")
+
+    if "HSA_OVERRIDE_GFX_VERSION" in backend_config:
+        _set("HSA_OVERRIDE_GFX_VERSION", backend_config["HSA_OVERRIDE_GFX_VERSION"])
+    if "HIP_VISIBLE_DEVICES" in backend_config:
+        _set("HIP_VISIBLE_DEVICES", backend_config["HIP_VISIBLE_DEVICES"])
+
+    if "COMMANDLINE_ARGS" in backend_config:
+        cmdline_args = backend_config["COMMANDLINE_ARGS"]
+        if isinstance(cmdline_args, (list, tuple)):
+            cmdline_args = " ".join(map(str, cmdline_args))
+        _set("COMMANDLINE_ARGS", cmdline_args)
+
+    if "FORCE_FULL_PRECISION" in backend_config:
+        _set("FORCE_FULL_PRECISION", backend_config["FORCE_FULL_PRECISION"])
+
 
 def version(module_name: str) -> str:
     try:
@@ -68,6 +99,8 @@ def install(module_name: str, module_version: str, index_url=None):
 
 
 def update_modules():
+    import torchruntime
+
     if version("torch") is None:
         torchruntime.install(["torch", "torchvision"])
     else:
@@ -76,6 +109,8 @@ def update_modules():
         is_cpu_torch = "+" not in torch_version_str
         print(f"Current torch version: {torch_version} ({torch_version_str})")
         if torch_version < (2, 7) or is_cpu_torch:
+            from torchruntime.device_db import get_gpus
+
             gpu_infos = get_gpus()
             device_names = set(gpu.device_name for gpu in gpu_infos)
             if any(BLACKWELL_DEVICES.search(device_name) for device_name in device_names):
@@ -298,19 +333,15 @@ def launch_uvicorn():
 
     print("\n\nEasy Diffusion installation complete, starting the server!\n\n")
 
+    import torchruntime
+
     torchruntime.configure()
     if hasattr(torchruntime, "info"):
         torchruntime.info()
 
     # allow a user to override the HSA_OVERRIDE_GFX_VERSION and HIP_VISIBLE_DEVICES variables
     # until ED gets process-based multi-GPU support (which will allow different processes to use different GPUs)
-    backend_config = config.get("backend_config", {})
-    if "HSA_OVERRIDE_GFX_VERSION" in backend_config:
-        os.environ["HSA_OVERRIDE_GFX_VERSION"] = str(backend_config["HSA_OVERRIDE_GFX_VERSION"])
-        print(f"backend_config overrode HSA_OVERRIDE_GFX_VERSION to {os.environ['HSA_OVERRIDE_GFX_VERSION']}")
-    if "HIP_VISIBLE_DEVICES" in backend_config:
-        os.environ["HIP_VISIBLE_DEVICES"] = str(backend_config["HIP_VISIBLE_DEVICES"])
-        print(f"backend_config overrode HIP_VISIBLE_DEVICES to {os.environ['HIP_VISIBLE_DEVICES']}")
+    apply_backend_config_env_overrides(config.get("backend_config", {}))
 
     if os_name == "Windows":
         os.environ["PYTHONPATH"] = str(Path(os.environ["INSTALL_ENV_DIR"], "lib", "site-packages"))
@@ -352,7 +383,12 @@ def launch_uvicorn():
     )
 
 
-update_modules()
+def main():
+    update_modules()
 
-if len(sys.argv) > 1 and sys.argv[1] == "--launch-uvicorn":
-    launch_uvicorn()
+    if len(sys.argv) > 1 and sys.argv[1] == "--launch-uvicorn":
+        launch_uvicorn()
+
+
+if __name__ == "__main__":
+    main()
