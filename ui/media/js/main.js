@@ -3619,7 +3619,7 @@ function galleryImage(reqData) {
     let div = document.createElement("div")
     div.classList.add("gallery-image")
 
-    let img = createElement("img", { style: "cursor: zoom-in;", src: "/image/" + reqData.seed}, undefined, undefined)
+    let img = createElement("img", { style: "cursor: zoom-in;", src: "/image/" + reqData.seed + "/" + reqData.time_created}, undefined, undefined)
     img.dataset["request"] = JSON.stringify(reqData)
 
     img.addEventListener("click", function() {
