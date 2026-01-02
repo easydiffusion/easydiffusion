@@ -15,6 +15,15 @@ ui:
 # beta version.
 update_branch: main
 
+# Advanced backend overrides (optional)
+# These are applied at startup by `scripts/check_modules.py` and exported as environment variables.
+#
+# backend_config:
+#   # Extra backend flags (example: cross-attention optimizations)
+#   COMMANDLINE_ARGS: "--opt-split-attention"
+#   # Force full precision (float32). Can help if you see corrupted/black outputs on some GPUs/backends.
+#   FORCE_FULL_PRECISION: "1"
+#
 # Set force_save_path to enforce an auto save path. Clients will not be able to change or
 # disable auto save when this option is set. Please adapt the path in the examples to your
 # needs.
