@@ -13,7 +13,7 @@ const taskConfigSetup = {
         dimensions: { value: ({ reqBody }) => `${reqBody?.width}x${reqBody?.height}`, label: "Dimensions" },
         sampler_name: "Sampler",
         num_inference_steps: "Inference Steps",
-        guidance_scale: "Guidance Scale",
+        guidance_scale: '<abbr title="Classifier-Free Guidance">CFG</abbr> Scale <small>(Guidance Scale)</small>',
         use_stable_diffusion_model: "Model",
         clip_skip: {
             label: "Clip Skip",
@@ -34,7 +34,7 @@ const taskConfigSetup = {
             label: "Negative Prompt",
             visible: ({ reqBody }) => reqBody?.negative_prompt !== undefined && reqBody?.negative_prompt.trim() !== "",
         },
-        prompt_strength: "Prompt Strength",
+        prompt_strength: "Denoising Strength <small>(Prompt Strength)</small>",
         use_face_correction: "Fix Faces",
         upscale: {
             value: ({ reqBody }) => `${reqBody?.use_upscale} (${reqBody?.upscale_amount || 4}x)`,
