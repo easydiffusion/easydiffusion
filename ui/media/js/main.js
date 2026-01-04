@@ -3577,6 +3577,24 @@ const IMAGE_INFO = {
 
 const IGNORE_TOKENS = ["None", "none", "Null", "null", "false", "False", null]
 
+function deleteImage(src, dom) {
+    fetch(src, {
+        "method": "DELETE"
+    }).then(data => {
+        if (data.status === 200) {
+            showToast("Deleted Image", 5000, false, dom);
+        } else if (data.status === 409) {
+            showToast("Conflicting Images found, none deleted", 10000, false, dom);
+        } else {
+            showToast("Error deleting image", 10000, false, dom);
+            console.error(data);
+        }
+    }, (data) => {
+        showToast("Error deleting image", 10000, false, dom);
+        console.error(data);
+    });
+}
+
 function openImageInNewTab(img, reqData) {
     let w = window.open("/gallery-image.html")
     w.addEventListener("DOMContentLoaded", () => {
@@ -3595,6 +3613,9 @@ function openImageInNewTab(img, reqData) {
             onUseURLasInput(img.src)
             showToast("Loaded image as EasyDiffusion input image", 5000, false, w.document)
         })
+        w.document.getElementById("delete").addEventListener("click", () => {
+            deleteImage(img.src, w.document);
+        });
         let table = w.document.createElement("table")
         galleryDetailTable(table, reqData)
         w.document.getElementById("focusbox").replaceChildren(table)
@@ -3670,6 +3691,13 @@ function galleryImage(reqData) {
         openImageInNewTab(img, reqData)
     })
     hover.appendChild(openInNewTabBtn)
+
+    let deleteBtn = createElement("button", {style: "margin-left: 0.2em;"}, ["secondaryButton"], htmlToElement('<i class="fa-solid fa-trash-can"></i>'));
+    deleteBtn.addEventListener("click", () => {
+        deleteImage(img.src, document);
+        div.remove();
+    });
+    hover.appendChild(deleteBtn);
 
     hover.appendChild(document.createElement("br"))
 
