@@ -1,0 +1,11 @@
+# EasyDiffusion Configuration File
+
+# Update branch to use for software updates
+update_branch: main
+
+# Backend to use for rendering
+backend: sdkit3
+
+# Render devices configuration
+# Options: 'auto', 'cpu', or a list like ['cuda:0', 'cuda:1']
+render_devices: auto
