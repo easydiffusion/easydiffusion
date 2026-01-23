@@ -67,14 +67,15 @@ security:
 # Users only need to specify the settings they want to change - unspecified settings
 # will fall back to default values.
 
-# List of user names. Leave empty for single-user mode.
+# List of user names. This needs to have atleast one user.
 # Add user names to enable multi-user support with separate settings.
 # Example:
 # users:
 #   - alice
 #   - bob
 #   - charlie
-users: []
+users:
+  - easydiffusion
 
 # User-specific settings
 #
