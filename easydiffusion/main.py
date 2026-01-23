@@ -67,3 +67,14 @@ def init():
 
 # Initialize on import
 init()
+
+if __name__ == "__main__":
+    import uvicorn
+
+    config = server_api.state.config_manager.get_all()
+    port = config.get("network", {}).get("port", 9000)
+    external_access = config.get("network", {}).get("external_access", False)
+    host = "0.0.0.0" if external_access else "127.0.0.1"
+
+    logger.info(f"Starting server on {host}:{port}")
+    uvicorn.run("easydiffusion.server:server_api", host=host, port=port)
