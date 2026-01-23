@@ -217,8 +217,15 @@ class TestModelsEndpoint:
         models_dir = temp_dir / "models"
         models_dir.mkdir()
 
-        (models_dir / "model1.safetensors").touch()
-        (models_dir / "model2.ckpt").touch()
+        # Create subdirs and files for different types
+        sd_dir = models_dir / "stable-diffusion"
+        sd_dir.mkdir()
+        (sd_dir / "model1.safetensors").touch()
+        (sd_dir / "model2.ckpt").touch()
+
+        vae_dir = models_dir / "vae"
+        vae_dir.mkdir()
+        (vae_dir / "vae1.safetensors").touch()
 
         config = config_manager.get_all()
         config["rendering"]["models_dir"] = str(models_dir)
@@ -228,11 +235,22 @@ class TestModelsEndpoint:
         assert response.status_code == 200
 
         data = response.json()
-        assert len(data["models"]) == 2
+        assert len(data["models"]) == 3
 
-        model_names = [m["name"] for m in data["models"]]
-        assert "model1" in model_names
-        assert "model2" in model_names
+        # Check model names
+        model_ids = [m["model"] for m in data["models"]]
+        assert "model1" in model_ids
+        assert "model2" in model_ids
+        assert "vae1" in model_ids
+
+        # Check names and tags
+        models_by_model = {m["model"]: m for m in data["models"]}
+        assert models_by_model["model1"]["name"] == "model1"
+        assert models_by_model["model1"]["tags"] == ["stable-diffusion"]
+        assert models_by_model["model2"]["name"] == "model2"
+        assert models_by_model["model2"]["tags"] == ["stable-diffusion"]
+        assert models_by_model["vae1"]["name"] == "vae1"
+        assert models_by_model["vae1"]["tags"] == ["vae"]
 
 
 class TestGenerateEndpoint:

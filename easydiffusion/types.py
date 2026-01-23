@@ -145,9 +145,9 @@ class DevicesResponse(BaseModel):
 
 
 class ModelInfo(BaseModel):
+    model: str
     name: str
-    type: str
-    path: str
+    tags: List[str]
 
 
 class ModelsResponse(BaseModel):

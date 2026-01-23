@@ -184,29 +184,21 @@ async def get_devices():
 async def get_models():
     """List available models."""
     try:
+        from easydiffusion.local_models import enumerate_all_models
+
         config_manager = server_api.state.config_manager
         config = config_manager.get_all()
-        models_dir = Path(config.get("rendering", {}).get("models_dir", "models"))
+        models_dir = config.get("rendering", {}).get("models_dir", "models")
 
-        models = []
-
-        if models_dir.exists():
-            for model_path in models_dir.rglob("*.safetensors"):
-                models.append(
-                    ModelInfo(
-                        name=model_path.stem,
-                        type="stable_diffusion",
-                        path=str(model_path),
-                    )
-                )
-            for model_path in models_dir.rglob("*.ckpt"):
-                models.append(
-                    ModelInfo(
-                        name=model_path.stem,
-                        type="stable_diffusion",
-                        path=str(model_path),
-                    )
-                )
+        all_models = enumerate_all_models(models_dir)
+        models = [
+            ModelInfo(
+                model=m["model"],
+                name=m["name"],
+                tags=m["tags"],
+            )
+            for m in all_models
+        ]
 
         return JSONResponse(
             ModelsResponse(models=models).model_dump(),
