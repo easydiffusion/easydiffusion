@@ -70,47 +70,107 @@ class TestConfigEndpoints:
 
     def test_get_config(self, client):
         """Test getting configuration."""
-        response = client.get("/v1/config")
+        response = client.get("/v1/config?username=easydiffusion")
         assert response.status_code == 200
 
         data = response.json()
-        assert "render_devices" in data
-        assert "models_dir" in data
-        assert "vram_usage_level" in data
-        assert "backend" in data
-
-        assert isinstance(data["render_devices"], list)
-        assert data["backend"] == "sdkit3"
+        assert "network" in data
+        assert "updates" in data
+        assert "rendering" in data
+        assert "users" not in data  # Ensure users are not returned
+        assert "security" not in data  # Ensure security is not returned
+        assert "user_settings" in data
+        assert "save" in data["user_settings"]
+        assert "ui" in data["user_settings"]
+        assert data["rendering"]["backend"] == "sdkit3"
 
     def test_update_config(self, client, config_manager):
         """Test updating configuration."""
         response = client.put(
-            "/v1/config",
-            json={
-                "render_devices": ["cpu"],
-                "vram_usage_level": "high",
-            },
+            "/v1/config?username=default",
+            json={"save": {"save_path": "/new/path"}, "ui": {"theme": "theme-dark"}},
         )
         assert response.status_code == 200
 
         data = response.json()
         assert data["status"] == "updated"
 
-        config = config_manager.get_all()
-        assert config["render_devices"] == ["cpu"]
-        assert config["vram_usage_level"] == "high"
+        user_config = config_manager.get_user_config("easydiffusion")
+        assert user_config["save"]["save_path"] == "/new/path"
+        assert user_config["ui"]["theme"] == "theme-dark"
 
-    def test_update_config_partial(self, client, config_manager):
-        """Test partial configuration update."""
+    def test_update_config_forbidden_keys(self, client, config_manager):
+        """Test that forbidden keys like 'users' and 'security' are not set via config update."""
+        # Try to update with forbidden keys
         response = client.put(
-            "/v1/config",
-            json={"models_dir": "/custom/models"},
+            "/v1/config?username=default",
+            json={"save": {"save_path": "/new/path"}, "users": ["new_user"], "security": {"foo": "bar"}},
         )
         assert response.status_code == 200
 
-        config = config_manager.get_all()
-        assert config["models_dir"] == "/custom/models"
-        assert config["backend"] == "sdkit3"
+        data = response.json()
+        assert data["status"] == "updated"
+
+        user_config = config_manager.get_user_config("default")
+        assert user_config["save"]["save_path"] == "/new/path"
+        # Ensure forbidden keys are not set
+        assert "users" not in user_config
+        assert "security" not in user_config
+
+
+class TestUserEndpoints:
+    """Tests for user management endpoints."""
+
+    def test_get_users(self, client, config_manager):
+        """Test listing users."""
+        response = client.get("/v1/users")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert "users" in data
+        assert "easydiffusion" in data["users"]
+
+    def test_create_user(self, client, config_manager):
+        """Test creating a new user."""
+        response = client.post(
+            "/v1/users",
+            json={"username": "alice"},
+        )
+        assert response.status_code == 201
+
+        data = response.json()
+        assert data["status"] == "created"
+        assert data["username"] == "alice"
+
+        users = config_manager.get_users()
+        assert "alice" in users
+
+    def test_create_default_user_fails(self, client):
+        """Test creating 'default' user fails."""
+        response = client.post(
+            "/v1/users",
+            json={"username": "default"},
+        )
+        assert response.status_code == 400
+
+    def test_delete_user(self, client, config_manager):
+        """Test deleting a user."""
+        # First create a user
+        config_manager.add_user("bob")
+
+        response = client.delete("/v1/users/bob")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["status"] == "deleted"
+
+        users = config_manager.get_users()
+        assert "bob" not in users
+
+    def test_delete_default_user_fails(self, client):
+        """Test deleting 'default' user fails."""
+        response = client.delete("/v1/users/default")
+        assert response.status_code == 400
 
 
 class TestDevicesEndpoint:
@@ -141,7 +201,7 @@ class TestModelsEndpoint:
         models_dir.mkdir()
 
         config = config_manager.get_all()
-        config["models_dir"] = str(models_dir)
+        config["rendering"]["models_dir"] = str(models_dir)
         config_manager.update(config)
 
         response = client.get("/v1/models")
@@ -161,7 +221,7 @@ class TestModelsEndpoint:
         (models_dir / "model2.ckpt").touch()
 
         config = config_manager.get_all()
-        config["models_dir"] = str(models_dir)
+        config["rendering"]["models_dir"] = str(models_dir)
         config_manager.update(config)
 
         response = client.get("/v1/models")
@@ -183,6 +243,7 @@ class TestGenerateEndpoint:
         response = client.post(
             "/v1/generate",
             json={
+                "username": "easydiffusion",
                 "prompt": "A beautiful landscape",
                 "model": "test-model",
                 "width": 512,
@@ -201,6 +262,7 @@ class TestGenerateEndpoint:
         response = client.post(
             "/v1/generate",
             json={
+                "username": "easydiffusion",
                 "prompt": "A cat",
                 "model": "test-model",
             },
@@ -215,6 +277,7 @@ class TestGenerateEndpoint:
         response = client.post(
             "/v1/generate",
             json={
+                "username": "easydiffusion",
                 "prompt": "A dog",
                 "negative_prompt": "blurry",
                 "seed": 123,
@@ -239,6 +302,7 @@ class TestFilterEndpoint:
         response = client.post(
             "/v1/filter",
             json={
+                "username": "easydiffusion",
                 "image": "base64_encoded_image_data",
                 "filter": "blur",
                 "filter_params": {"strength": 0.5},
@@ -255,6 +319,7 @@ class TestFilterEndpoint:
         response = client.post(
             "/v1/filter",
             json={
+                "username": "easydiffusion",
                 "image": "image_data",
                 "filter": "sharpen",
             },
@@ -278,11 +343,11 @@ class TestTasksEndpoints:
         """Test getting tasks list."""
         response1 = client.post(
             "/v1/generate",
-            json={"prompt": "Test 1", "model": "test"},
+            json={"username": "easydiffusion", "prompt": "Test 1", "model": "test"},
         )
         response2 = client.post(
             "/v1/generate",
-            json={"prompt": "Test 2", "model": "test"},
+            json={"username": "easydiffusion", "prompt": "Test 2", "model": "test"},
         )
 
         response = client.get("/v1/tasks")
@@ -290,12 +355,15 @@ class TestTasksEndpoints:
 
         data = response.json()
         assert len(data["tasks"]) == 2
+        for task in data["tasks"]:
+            assert "username" in task
+            assert task["username"] == "easydiffusion"
 
     def test_get_task_detail(self, client):
         """Test getting task details."""
         create_response = client.post(
             "/v1/generate",
-            json={"prompt": "Test", "model": "test"},
+            json={"username": "easydiffusion", "prompt": "Test", "model": "test"},
         )
         task_id = create_response.json()["task_id"]
 
@@ -312,7 +380,7 @@ class TestTasksEndpoints:
         """Test getting task details with request data."""
         create_response = client.post(
             "/v1/generate",
-            json={"prompt": "Test prompt", "model": "test", "seed": 42},
+            json={"username": "easydiffusion", "prompt": "Test prompt", "model": "test", "seed": 42},
         )
         task_id = create_response.json()["task_id"]
 
@@ -333,7 +401,7 @@ class TestTasksEndpoints:
         """Test stopping a task."""
         create_response = client.post(
             "/v1/generate",
-            json={"prompt": "Test", "model": "test"},
+            json={"username": "easydiffusion", "prompt": "Test", "model": "test"},
         )
         task_id = create_response.json()["task_id"]
 
@@ -347,7 +415,7 @@ class TestTasksEndpoints:
         """Test stopping an already stopped task."""
         create_response = client.post(
             "/v1/generate",
-            json={"prompt": "Test", "model": "test"},
+            json={"username": "easydiffusion", "prompt": "Test", "model": "test"},
         )
         task_id = create_response.json()["task_id"]
 
@@ -363,10 +431,10 @@ class TestTasksEndpoints:
 
     def test_stop_all_tasks(self, client):
         """Test stopping all tasks."""
-        client.post("/v1/generate", json={"prompt": "Test 1", "model": "test"})
-        client.post("/v1/generate", json={"prompt": "Test 2", "model": "test"})
+        client.post("/v1/generate", json={"username": "easydiffusion", "prompt": "Test 1", "model": "test"})
+        client.post("/v1/generate", json={"username": "easydiffusion", "prompt": "Test 2", "model": "test"})
 
-        response = client.delete("/v1/tasks")
+        response = client.delete("/v1/tasks?username=easydiffusion")
         assert response.status_code == 200
 
         data = response.json()
@@ -374,7 +442,7 @@ class TestTasksEndpoints:
 
     def test_stop_all_tasks_empty(self, client):
         """Test stopping all tasks when none exist."""
-        response = client.delete("/v1/tasks")
+        response = client.delete("/v1/tasks?username=easydiffusion")
         assert response.status_code == 200
 
 
@@ -385,7 +453,7 @@ class TestImageEndpoint:
         """Test retrieving a task image."""
         create_response = client.post(
             "/v1/generate",
-            json={"prompt": "Test", "model": "test"},
+            json={"username": "easydiffusion", "prompt": "Test", "model": "test"},
         )
         task_id = create_response.json()["task_id"]
 
@@ -402,7 +470,7 @@ class TestImageEndpoint:
         """Test retrieving non-existent image."""
         create_response = client.post(
             "/v1/generate",
-            json={"prompt": "Test", "model": "test"},
+            json={"username": "easydiffusion", "prompt": "Test", "model": "test"},
         )
         task_id = create_response.json()["task_id"]
 
@@ -450,7 +518,7 @@ class TestCacheHeaders:
 
     def test_config_no_cache(self, client):
         """Test config endpoint has no-cache headers."""
-        response = client.get("/v1/config")
+        response = client.get("/v1/config?username=easydiffusion")
         assert "cache-control" in response.headers
         assert "no-cache" in response.headers["cache-control"]
 

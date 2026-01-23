@@ -35,6 +35,10 @@ def init():
     config_manager = ConfigManager(config_path)
     config_manager.load()
 
+    # Check that users are configured
+    if not config_manager.get_users():
+        raise ValueError("No users configured in config.yaml. Please add at least one user to the 'users' list.")
+
     # Log current configuration
     config = config_manager.get_all()
     logger.info(f"Configuration loaded: {config}")
@@ -45,11 +49,11 @@ def init():
 
     # Initialize worker manager
     logger.info("Initializing worker manager")
-    backend_name = config.get("backend", "sdkit3")
+    backend_name = config.get("rendering", {}).get("backend", "sdkit3")
     worker_manager = WorkerManager(task_queue, backend_name)
 
     # Start workers for configured devices
-    render_devices = config.get("render_devices", "auto")
+    render_devices = config.get("rendering", {}).get("devices", "auto")
     logger.info(f"Starting workers for devices: {render_devices}")
     worker_manager.update_workers(render_devices)
 

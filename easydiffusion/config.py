@@ -6,9 +6,10 @@ from a YAML file with support for preserving comments and formatting.
 """
 
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, List
 from ruamel.yaml import YAML
 import threading
+import shutil
 
 
 class ConfigManager:
@@ -94,29 +95,14 @@ class ConfigManager:
         Args:
             updates: Dictionary of configuration updates
         """
+        for restricted_key in ("users", "security"):
+            if restricted_key in updates:
+                del updates[restricted_key]
+
         with self._lock:
             self._config.update(updates)
 
         self.save()
-
-    def set(self, key: str, value: Any):
-        """
-        Set a single configuration value and save to file.
-
-        Args:
-            key: The configuration key
-            value: The value to set
-        """
-        self.update({key: value})
-
-    def reload(self) -> Dict[str, Any]:
-        """
-        Reload configuration from file.
-
-        Returns:
-            The reloaded configuration dictionary
-        """
-        return self.load()
 
     def get_all(self) -> Dict[str, Any]:
         """
@@ -128,9 +114,79 @@ class ConfigManager:
         with self._lock:
             return dict(self._config)
 
+    def get_user_config(self, username: str) -> Dict[str, Any]:
+        """
+        Get user-specific configuration, merged with defaults.
 
-# Default configuration values
-DEFAULT_CONFIG = {"update_branch": "main", "backend": "sdkit3", "render_devices": "auto"}
+        Args:
+            username: The username
+
+        Returns:
+            Merged user settings
+        """
+        with self._lock:
+            user_settings = self._config.get("user_settings", {})
+            default_settings = user_settings.get("default", {})
+            user_specific = user_settings.get(username, {})
+            # Merge default with user overrides
+            merged = dict(default_settings)
+            merged.update(user_specific)
+            return merged
+
+    def update_user_config(self, username: str, updates: Dict[str, Any]):
+        """
+        Update user-specific configuration.
+
+        Args:
+            username: The username
+            updates: The updates to apply
+        """
+        with self._lock:
+            if "user_settings" not in self._config:
+                self._config["user_settings"] = {}
+            if username not in self._config["user_settings"]:
+                self._config["user_settings"][username] = {}
+            self._config["user_settings"][username].update(updates)
+        self.save()
+
+    def get_users(self) -> List[str]:
+        """
+        Get list of users.
+
+        Returns:
+            List of usernames
+        """
+        with self._lock:
+            users = self._config.get("users", [])
+            return users
+
+    def add_user(self, username: str):
+        """
+        Add a new user.
+
+        Args:
+            username: The username to add
+        """
+        with self._lock:
+            if "users" not in self._config:
+                self._config["users"] = []
+            if username not in self._config["users"] and username.lower() != "default":
+                self._config["users"].append(username)
+        self.save()
+
+    def delete_user(self, username: str):
+        """
+        Delete a user.
+
+        Args:
+            username: The username to delete
+        """
+        with self._lock:
+            if "users" in self._config and username in self._config["users"] and username.lower() != "default":
+                self._config["users"].remove(username)
+                if "user_settings" in self._config and username in self._config["user_settings"]:
+                    del self._config["user_settings"][username]
+        self.save()
 
 
 def create_default_config(config_path: Union[str, Path]):
@@ -143,9 +199,5 @@ def create_default_config(config_path: Union[str, Path]):
     config_path = Path(config_path)
     config_path.parent.mkdir(parents=True, exist_ok=True)
 
-    yaml = YAML()
-    yaml.preserve_quotes = True
-    yaml.default_flow_style = False
-
-    with open(config_path, "w") as f:
-        yaml.dump(DEFAULT_CONFIG, f)
+    sample_path = Path(__file__).parent / "config.yaml.sample"
+    shutil.copy(sample_path, config_path)

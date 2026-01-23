@@ -11,11 +11,17 @@ class Task:
     """Represents a render task with intermediate results storage."""
 
     def __init__(
-        self, task_id: Optional[str] = None, session_id: Optional[str] = None, task_type: str = "generate", **kwargs
+        self,
+        username: str,
+        task_id: Optional[str] = None,
+        session_id: Optional[str] = None,
+        task_type: str = "generate",
+        **kwargs,
     ):
         self.task_id = task_id or str(uuid.uuid4())
         self.id = id(self)
         self.session_id = session_id or "default"
+        self.username = username
         self.task_type = task_type
         self.params = kwargs
 
@@ -71,17 +77,60 @@ class HealthResponse(BaseModel):
     version: str
 
 
-class ConfigResponse(BaseModel):
-    render_devices: List[str]
+class NetworkConfig(BaseModel):
+    port: int
+    external_access: bool
+
+
+class UpdatesConfig(BaseModel):
+    branch: str
+
+
+class BackendConfig(BaseModel):
+    commandline_args: str
+    force_full_precision: bool
+
+
+class RenderingConfig(BaseModel):
+    devices: str
     models_dir: str
     vram_usage_level: str
+    block_nsfw: bool
     backend: str
+    backend_config: BackendConfig
 
 
-class ConfigUpdate(BaseModel):
-    render_devices: Optional[List[str]] = None
-    models_dir: Optional[str] = None
-    vram_usage_level: Optional[str] = None
+class SaveConfig(BaseModel):
+    auto_save_images: Optional[bool] = None
+    save_path: Optional[str] = None
+    metadata_format: Optional[str] = None
+    filename_format: Optional[str] = None
+
+
+class UiConfig(BaseModel):
+    theme: Optional[str] = None
+    open_browser_on_start: Optional[bool] = None
+    sound_enabled: Optional[bool] = None
+    process_newest_first: Optional[bool] = None
+    confirm_dangerous_actions: Optional[bool] = None
+    auto_save_image_settings: Optional[bool] = None
+    image_settings_auto_save_overrides: Optional[Dict[str, bool]] = None
+
+
+class UserSettingsConfig(BaseModel):
+    save: Optional[SaveConfig] = None
+    ui: Optional[UiConfig] = None
+
+
+class ConfigResponse(BaseModel):
+    network: NetworkConfig
+    updates: UpdatesConfig
+    rendering: RenderingConfig
+    user_settings: UserSettingsConfig
+
+
+class ConfigUpdate(UserSettingsConfig):
+    pass
 
 
 class DeviceInfo(BaseModel):
@@ -106,6 +155,7 @@ class ModelsResponse(BaseModel):
 
 
 class GenerateRequest(BaseModel):
+    username: str
     prompt: str
     negative_prompt: Optional[str] = ""
     seed: int = 42
@@ -120,6 +170,7 @@ class GenerateRequest(BaseModel):
 
 
 class FilterRequest(BaseModel):
+    username: str
     image: str
     filter: str
     filter_params: Optional[Dict[str, Any]] = Field(default_factory=dict)
@@ -136,6 +187,7 @@ class TaskQueuedResponse(BaseModel):
 
 class TaskInfo(BaseModel):
     task_id: str
+    username: str
     status: str
     progress: int
     type: str
@@ -147,6 +199,7 @@ class TasksResponse(BaseModel):
 
 class TaskDetail(BaseModel):
     task_id: str
+    username: str
     status: str
     progress: int
     images: List[str]
@@ -154,4 +207,21 @@ class TaskDetail(BaseModel):
 
 
 class StatusResponse(BaseModel):
+    status: str
+
+
+class UserListResponse(BaseModel):
+    users: List[str]
+
+
+class CreateUserRequest(BaseModel):
+    username: str
+
+
+class CreateUserResponse(BaseModel):
+    status: str
+    username: str
+
+
+class DeleteUserResponse(BaseModel):
     status: str

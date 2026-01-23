@@ -6,8 +6,9 @@ import pytest
 from pathlib import Path
 import tempfile
 import shutil
+from ruamel.yaml import YAML
 
-from easydiffusion.config import ConfigManager, create_default_config, DEFAULT_CONFIG
+from easydiffusion.config import ConfigManager, create_default_config
 
 
 @pytest.fixture
@@ -37,9 +38,13 @@ def test_create_default_config(temp_dir):
     manager = ConfigManager(config_path)
     config = manager.load()
 
-    assert config["update_branch"] == DEFAULT_CONFIG["update_branch"]
-    assert config["backend"] == DEFAULT_CONFIG["backend"]
-    assert config["render_devices"] == DEFAULT_CONFIG["render_devices"]
+    # Load expected config from sample
+    yaml = YAML()
+    sample_path = Path(__file__).parent.parent / "easydiffusion" / "config.yaml.sample"
+    with open(sample_path, "r") as f:
+        expected_config = yaml.load(f)
+
+    assert config == expected_config
 
 
 def test_load_config(config_file):
@@ -48,9 +53,9 @@ def test_load_config(config_file):
     config = manager.load()
 
     assert isinstance(config, dict)
-    assert "update_branch" in config
-    assert "backend" in config
-    assert "render_devices" in config
+    assert "updates" in config
+    assert "rendering" in config
+    assert "network" in config
 
 
 def test_get_config_value(config_file):
@@ -58,9 +63,9 @@ def test_get_config_value(config_file):
     manager = ConfigManager(config_file)
     manager.load()
 
-    assert manager.get("update_branch") == "main"
-    assert manager.get("backend") == "sdkit3"
-    assert manager.get("render_devices") == "auto"
+    assert manager.get("updates", {}).get("branch") == "main"
+    assert manager.get("rendering", {}).get("backend") == "sdkit3"
+    assert manager.get("rendering", {}).get("devices") == "auto"
     assert manager.get("nonexistent", "default") == "default"
 
 
@@ -69,14 +74,10 @@ def test_update_config(config_file):
     manager = ConfigManager(config_file)
     manager.load()
 
-    manager.update({"update_branch": "develop"})
+    manager.update({"updates": {"branch": "beta"}})
 
-    assert manager.get("update_branch") == "develop"
-    assert manager.get("backend") == "sdkit3"  # unchanged
-
-    # Reload and verify persistence
-    manager.reload()
-    assert manager.get("update_branch") == "develop"
+    assert manager.get("updates", {}).get("branch") == "beta"
+    assert manager.get("rendering", {}).get("backend") == "sdkit3"  # unchanged
 
 
 def test_set_config_value(config_file):
@@ -84,13 +85,9 @@ def test_set_config_value(config_file):
     manager = ConfigManager(config_file)
     manager.load()
 
-    manager.set("backend", "custom")
+    manager.update({"rendering": {"backend": "custom"}})
 
-    assert manager.get("backend") == "custom"
-
-    # Reload and verify
-    manager.reload()
-    assert manager.get("backend") == "custom"
+    assert manager.get("rendering", {}).get("backend") == "custom"
 
 
 def test_partial_update(config_file):
@@ -114,9 +111,9 @@ def test_get_all(config_file):
     all_config = manager.get_all()
 
     assert isinstance(all_config, dict)
-    assert "update_branch" in all_config
-    assert "backend" in all_config
-    assert "render_devices" in all_config
+    assert "updates" in all_config
+    assert "rendering" in all_config
+    assert "network" in all_config
 
 
 def test_render_devices_types(config_file):
@@ -125,13 +122,13 @@ def test_render_devices_types(config_file):
     manager.load()
 
     # Test auto
-    manager.set("render_devices", "auto")
-    assert manager.get("render_devices") == "auto"
+    manager.update({"rendering": {"devices": "auto"}})
+    assert manager.get("rendering", {}).get("devices") == "auto"
 
     # Test cpu
-    manager.set("render_devices", "cpu")
-    assert manager.get("render_devices") == "cpu"
+    manager.update({"rendering": {"devices": "cpu"}})
+    assert manager.get("rendering", {}).get("devices") == "cpu"
 
     # Test list
-    manager.set("render_devices", ["cuda:0", "cuda:1"])
-    assert manager.get("render_devices") == ["cuda:0", "cuda:1"]
+    manager.update({"rendering": {"devices": ["cuda:0", "cuda:1"]}})
+    assert manager.get("rendering", {}).get("devices") == ["cuda:0", "cuda:1"]

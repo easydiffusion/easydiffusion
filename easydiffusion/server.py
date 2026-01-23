@@ -12,6 +12,7 @@ from pathlib import Path
 import io
 import os
 import mimetypes
+from typing import Optional
 
 from easydiffusion.types import (
     HealthResponse,
@@ -28,6 +29,10 @@ from easydiffusion.types import (
     TaskInfo,
     TaskDetail,
     StatusResponse,
+    UserListResponse,
+    CreateUserRequest,
+    CreateUserResponse,
+    DeleteUserResponse,
     Task,
 )
 
@@ -90,6 +95,9 @@ def init():
     v1_router.add_api_route("/tasks/{task_id}/images/{image_id}", get_task_image, methods=["GET"])
     v1_router.add_api_route("/tasks/{task_id}", stop_task, methods=["DELETE"], response_model=StatusResponse)
     v1_router.add_api_route("/tasks", stop_all_tasks, methods=["DELETE"], response_model=StatusResponse)
+    v1_router.add_api_route("/users", get_users, methods=["GET"], response_model=UserListResponse)
+    v1_router.add_api_route("/users", create_user, methods=["POST"], response_model=CreateUserResponse, status_code=201)
+    v1_router.add_api_route("/users/{username}", delete_user, methods=["DELETE"], response_model=DeleteUserResponse)
 
     server_api.include_router(v1_router)
 
@@ -105,56 +113,38 @@ async def get_health():
     return Response(content=content, media_type="application/json", headers=NOCACHE_HEADERS)
 
 
-async def get_config():
-    """Retrieve application configuration."""
+async def get_config(username: str = Query(..., description="Username for user-specific config")):
+    """Retrieve application configuration for the specified user."""
     try:
         config_manager = server_api.state.config_manager
         config = config_manager.get_all()
+        user_config = config_manager.get_user_config(username)
 
-        render_devices = config.get("render_devices", "auto")
-        if isinstance(render_devices, str):
-            render_devices = [render_devices]
+        # Build the response
+        response_data = {
+            "network": config.get("network", {}),
+            "updates": config.get("updates", {}),
+            "rendering": config.get("rendering", {}),
+            "user_settings": user_config,
+        }
 
         return JSONResponse(
-            ConfigResponse(
-                render_devices=render_devices,
-                models_dir=config.get("models_dir", "models"),
-                vram_usage_level=config.get("vram_usage_level", "balanced"),
-                backend=config.get("backend", "sdkit3"),
-            ).model_dump(),
+            ConfigResponse(**response_data).model_dump(),
             headers=NOCACHE_HEADERS,
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-async def update_config(req: ConfigUpdate):
-    """Update configuration."""
+async def update_config(req: ConfigUpdate, username: str = Query(..., description="Username for user-specific config")):
+    """Update configuration for the specified user."""
     try:
         config_manager = server_api.state.config_manager
-        config = config_manager.get_all()
-
-        updates = {}
-        devices_changed = False
-
-        if req.render_devices is not None:
-            old_devices = config.get("render_devices", "auto")
-            if old_devices != req.render_devices:
-                devices_changed = True
-            updates["render_devices"] = req.render_devices
-
-        if req.models_dir is not None:
-            updates["models_dir"] = req.models_dir
-
-        if req.vram_usage_level is not None:
-            updates["vram_usage_level"] = req.vram_usage_level
-
-        if updates:
-            config.update(updates)
-            config_manager.update(config)
-
-            if devices_changed:
-                server_api.state.worker_manager.update_workers(req.render_devices)
+        update_data = req.model_dump()
+        # Filter out sensitive keys that should not be set via API
+        forbidden_keys = {"users", "security"}
+        filtered_data = {k: v for k, v in update_data.items() if k not in forbidden_keys}
+        config_manager.update_user_config(username, filtered_data)
 
         return JSONResponse(
             StatusResponse(status="updated").model_dump(),
@@ -196,7 +186,7 @@ async def get_models():
     try:
         config_manager = server_api.state.config_manager
         config = config_manager.get_all()
-        models_dir = Path(config.get("models_dir", "models"))
+        models_dir = Path(config.get("rendering", {}).get("models_dir", "models"))
 
         models = []
 
@@ -280,22 +270,24 @@ async def create_filter_task(req: FilterRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-async def get_tasks():
-    """List all tasks."""
+async def get_tasks(username: Optional[str] = Query(None, description="Username to filter tasks by user")):
+    """List all tasks. If username is provided, returns tasks for that user only; otherwise, returns tasks for all users."""
     try:
         if not hasattr(server_api.state, "task_cache"):
             server_api.state.task_cache = {}
 
         tasks = []
         for task in server_api.state.task_cache.values():
-            tasks.append(
-                TaskInfo(
-                    task_id=task.task_id,
-                    status=task.status,
-                    progress=task.progress,
-                    type=task.task_type,
+            if username is None or task.username == username:
+                tasks.append(
+                    TaskInfo(
+                        task_id=task.task_id,
+                        username=task.username,
+                        status=task.status,
+                        progress=task.progress,
+                        type=task.task_type,
+                    )
                 )
-            )
 
         return JSONResponse(
             TasksResponse(tasks=tasks).model_dump(),
@@ -324,6 +316,7 @@ async def get_task(task_id: str, include_request: bool = Query(False)):
         return JSONResponse(
             TaskDetail(
                 task_id=task.task_id,
+                username=task.username,
                 status=task.status,
                 progress=task.progress,
                 images=images,
@@ -397,8 +390,8 @@ async def stop_task(task_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-async def stop_all_tasks():
-    """Stop all tasks."""
+async def stop_all_tasks(username: str = Query(..., description="Username for user-specific tasks")):
+    """Stop all tasks for the specified user."""
     try:
         if not hasattr(server_api.state, "task_cache"):
             return JSONResponse(
@@ -407,13 +400,63 @@ async def stop_all_tasks():
             )
 
         for task in server_api.state.task_cache.values():
-            if task.status not in ["completed", "stopped", "error"]:
+            if task.username == username and task.status not in ["completed", "stopped", "error"]:
                 task.error = StopAsyncIteration("All tasks stop requested")
 
         return JSONResponse(
             StatusResponse(status="all_stopped").model_dump(),
             headers=NOCACHE_HEADERS,
         )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def get_users():
+    """List all configured users."""
+    try:
+        config_manager = server_api.state.config_manager
+        users = config_manager.get_users()
+        return JSONResponse(
+            UserListResponse(users=users).model_dump(),
+            headers=NOCACHE_HEADERS,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def create_user(req: CreateUserRequest):
+    """Create a new user."""
+    try:
+        if req.username.lower() == "default":
+            raise HTTPException(status_code=400, detail="Cannot create user 'default'")
+
+        config_manager = server_api.state.config_manager
+        config_manager.add_user(req.username)
+        return JSONResponse(
+            CreateUserResponse(status="created", username=req.username).model_dump(),
+            headers=NOCACHE_HEADERS,
+            status_code=201,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def delete_user(username: str):
+    """Delete a user and their settings."""
+    try:
+        if username.lower() == "default":
+            raise HTTPException(status_code=400, detail="Cannot delete user 'default'")
+
+        config_manager = server_api.state.config_manager
+        config_manager.delete_user(username)
+        return JSONResponse(
+            DeleteUserResponse(status="deleted").model_dump(),
+            headers=NOCACHE_HEADERS,
+        )
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
