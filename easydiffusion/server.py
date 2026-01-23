@@ -166,7 +166,7 @@ async def get_devices():
         for idx, gpu in enumerate(gpus):
             devices.append(
                 DeviceInfo(
-                    id=f"cuda:{idx}",
+                    id=str(idx),
                     name=gpu.device_name or f"GPU {idx}",
                     available=True,
                     vram_free=None,

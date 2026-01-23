@@ -1,8 +1,9 @@
 from .base import Backend
+from torchruntime.device_db import GPU
 
 
 class EDClassicBackend(Backend):
-    def __init__(self, device: str):
+    def __init__(self, device: GPU):
         super().__init__(device)
         self.context = None
         self._started = False

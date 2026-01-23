@@ -7,6 +7,7 @@ must implement. This ensures consistent behavior across different backends.
 
 from abc import ABC, abstractmethod
 from typing import Any
+from torchruntime.device_db import GPU
 
 
 class Backend(ABC):
@@ -17,12 +18,12 @@ class Backend(ABC):
     consistent behavior with the worker manager.
     """
 
-    def __init__(self, device: str):
+    def __init__(self, device: GPU):
         """
         Initialize the backend.
 
         Args:
-            device: The device name to use (e.g., "cuda:0", "cpu")
+            device: The GPU object to use
         """
         self.device = device
 

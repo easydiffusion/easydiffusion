@@ -104,18 +104,21 @@ class WorkerManager:
         from .utils.device_utils import resolve_devices
 
         # Resolve 'auto' to actual devices
-        new_devices = resolve_devices(desired_devices)
+        new_devices = resolve_devices(desired_devices)  # List[GPU]
 
         with self._lock:
-            # Get current active devices
-            active_devices = self.get_active_devices()
+            # Get current active device names
+            active_device_names = self.get_active_devices()  # List[str]
+
+            # Desired device names
+            desired_device_names = set(gpu.device_name for gpu in new_devices)
 
             # Calculate delta
-            devices_to_add = set(new_devices) - set(active_devices)
-            devices_to_remove = set(active_devices) - set(new_devices)
+            devices_to_add_names = desired_device_names - set(active_device_names)
+            devices_to_remove_names = set(active_device_names) - desired_device_names
 
             # Remove workers first
-            for device_name in devices_to_remove:
+            for device_name in devices_to_remove_names:
                 try:
                     worker = self.task_queue.get_worker(device_name)
                     if isinstance(worker, BackendWorker):
@@ -126,15 +129,16 @@ class WorkerManager:
                     pass
 
             # Add new workers
-            for device_name in devices_to_add:
-                # Check if worker already exists
-                if self.task_queue.get_worker(device_name) is not None:
-                    continue
+            for gpu in new_devices:
+                if gpu.device_name in devices_to_add_names:
+                    # Check if worker already exists
+                    if self.task_queue.get_worker(gpu.device_name) is not None:
+                        continue
 
-                # Create backend instance and worker
-                backend = self.backend_class(device_name)
-                worker = BackendWorker(device_name, backend)
-                self.task_queue.add_worker(worker)
+                    # Create backend instance and worker
+                    backend = self.backend_class(gpu)
+                    worker = BackendWorker(gpu.device_name, backend)
+                    self.task_queue.add_worker(worker)
 
     def get_active_devices(self) -> List[str]:
         """

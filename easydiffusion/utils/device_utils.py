@@ -8,6 +8,9 @@ device arrays, etc.) to actual device IDs that can be used by the system.
 from typing import Union, List
 from torchruntime.device_db import get_gpus, GPU
 
+# CPU GPU object
+CPU = GPU(vendor_id="cpu", vendor_name="CPU", device_id="cpu", device_name="cpu", is_discrete=False)
+
 
 def _get_discrete_gpus(gpus: List[GPU]) -> List[GPU]:
     """
@@ -35,9 +38,9 @@ def _get_integrated_gpus(gpus: List[GPU]) -> List[GPU]:
     return [gpu for gpu in gpus if not gpu.is_discrete]
 
 
-def _resolve_auto_devices() -> List[str]:
+def _resolve_auto_devices() -> List[GPU]:
     """
-    Resolve 'auto' to the appropriate list of device IDs.
+    Resolve 'auto' to the appropriate list of GPU objects.
 
     Logic:
     1. If discrete GPUs are available, use all of them (ignore integrated)
@@ -45,93 +48,98 @@ def _resolve_auto_devices() -> List[str]:
     3. Otherwise, fall back to CPU
 
     Returns:
-        List of device ID strings (e.g., ['0', '1'] or ['cpu'])
+        List of GPU objects
     """
     gpus = get_gpus()
 
     # Get discrete GPUs
     discrete_gpus = _get_discrete_gpus(gpus)
     if discrete_gpus:
-        # Use all discrete GPUs, identified by their index in the list
-        return [str(i) for i in range(len(discrete_gpus))]
+        return discrete_gpus
 
     # Get integrated GPUs
     integrated_gpus = _get_integrated_gpus(gpus)
     if integrated_gpus:
-        # Use all integrated GPUs
-        return [str(i) for i in range(len(integrated_gpus))]
+        return integrated_gpus
 
     # No GPUs found, use CPU
-    return ["cpu"]
+    return [CPU]
 
 
-def _parse_device_string(device_str: str) -> str:
+def _parse_device_string(device_str: str) -> GPU:
     """
-    Parse a device string and extract the device ID.
+    Parse a device string and return the corresponding GPU object.
 
     Handles formats like:
-    - 'cpu' -> 'cpu'
-    - 'cuda:0' -> '0'
-    - 'cuda:1' -> '1'
-    - 'dml:0' -> '0'
-    - '0' -> '0'
+    - 'cpu' -> CPU_GPU
+    - 'cuda:0' -> GPU at index 0
+    - '0' -> GPU at index 0
 
     Args:
         device_str: Device string to parse
 
     Returns:
-        Device ID string
+        GPU object
+
+    Raises:
+        ValueError: If the device ID is out of bounds or invalid
     """
     if device_str == "cpu":
-        return "cpu"
+        return CPU
 
     # Handle formats like 'cuda:0', 'dml:1', etc.
     if ":" in device_str:
         _, device_id = device_str.split(":", 1)
-        return device_id
+    else:
+        device_id = device_str
 
-    # Already a device ID
-    return device_str
+    # Parse device_id as integer index
+    try:
+        idx = int(device_id)
+    except ValueError:
+        raise ValueError(f"Invalid device ID: {device_id}")
+
+    gpus = get_gpus()
+    if idx < 0 or idx >= len(gpus):
+        raise ValueError(f"Device ID {idx} is out of bounds for available GPUs (0-{len(gpus)-1})")
+
+    return gpus[idx]
 
 
-def resolve_devices(devices: Union[str, List[str]]) -> List[str]:
+def resolve_devices(devices: Union[str, List[str]]) -> List[GPU]:
     """
-    Resolve device names to a list of device IDs.
+    Resolve device names to a list of GPU objects.
 
     This function translates various device specifications into a standardized
-    list of device IDs. It handles:
+    list of GPU objects. It handles:
     - 'auto': Automatically selects devices based on available hardware
-    - 'cpu': Maps to ['cpu']
-    - Named devices like 'cuda:0', 'dml:1': Extracts device IDs
+    - 'cpu': Maps to [CPU_GPU]
+    - Named devices like 'cuda:0', 'dml:1': Extracts device IDs and gets GPU objects
     - Arrays of devices: Processes each device in the array
-    - Direct device IDs: Uses them as-is
-
-    The goal is to identify GPU devices without specifying the graphics API,
-    allowing the system to work with device IDs like '0', '1', etc. instead
-    of 'cuda:0', 'dml:0', etc.
+    - Direct device IDs: Gets the corresponding GPU object
 
     Args:
         devices: Either a string ('auto', 'cpu', 'cuda:0', etc.) or a list
                 of device strings
 
     Returns:
-        List of device ID strings (e.g., ['0', '1'] or ['cpu'])
+        List of GPU objects
 
     Examples:
         >>> resolve_devices('auto')
-        ['0', '1']  # If two discrete GPUs are available
+        [GPU(...), GPU(...)]  # If two discrete GPUs are available
 
         >>> resolve_devices('cpu')
-        ['cpu']
+        [CPU_GPU]
 
         >>> resolve_devices('cuda:0')
-        ['0']
+        [GPU at index 0]
 
         >>> resolve_devices(['cuda:0', 'cuda:1'])
-        ['0', '1']
+        [GPU at index 0, GPU at index 1]
 
         >>> resolve_devices(['dml:0', 'cpu'])
-        ['0', 'cpu']
+        [GPU at index 0, CPU_GPU]
     """
     # Handle string input
     if isinstance(devices, str):
@@ -151,4 +159,4 @@ def resolve_devices(devices: Union[str, List[str]]) -> List[str]:
         return result
 
     # Fallback to CPU for unexpected input
-    return ["cpu"]
+    return [CPU]

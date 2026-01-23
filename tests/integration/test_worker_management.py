@@ -18,12 +18,13 @@ from easydiffusion.task_queue import TaskQueue
 from easydiffusion.worker_manager import WorkerManager
 from easydiffusion.backends import Backend
 from easydiffusion.utils.device_utils import resolve_devices
+from torchruntime.device_db import GPU
 
 
 class MockBackend(Backend):
     """A mock backend for integration testing."""
 
-    def __init__(self, device: str):
+    def __init__(self, device: GPU):
         """Initialize the mock backend."""
         super().__init__(device)
         self.initialized = True
