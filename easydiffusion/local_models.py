@@ -2,6 +2,8 @@ import os
 from glob import glob
 from typing import List, Dict, Optional
 
+from easydiffusion.utils.model_identifier import identify_model_type
+
 KNOWN_MODEL_TYPES = [
     "stable-diffusion",
     "vae",
@@ -76,14 +78,20 @@ def list_models(model_type: str, models_dir: str) -> List[Dict[str, str]]:
             for file_path in files:
                 rel_path = os.path.relpath(file_path, model_dir)
                 model_name = os.path.splitext(rel_path)[0]  # Remove extension
-                models.append(
-                    {
-                        "model": model_name,
-                        "name": model_name,
-                        "path": file_path,
-                        "tags": [model_type],
-                    }
-                )
+                model = {
+                    "model": model_name,
+                    "name": model_name,
+                    "path": file_path,
+                    "tags": [model_type],
+                }
+                if model_type == "stable-diffusion":
+                    try:
+                        sd_model_class = identify_model_type(file_path)
+                        if sd_model_class:
+                            model["tags"].append(sd_model_class)
+                    except Exception:
+                        pass  # Silently ignore if identification fails
+                models.append(model)
 
     return models
 
