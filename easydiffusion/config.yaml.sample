@@ -1,0 +1,140 @@
+# EasyDiffusion Configuration File
+# This file contains all the settings for EasyDiffusion.
+# Edit the values below to customize your setup.
+# Lines starting with # are considered as comments and ignored.
+
+# Network settings
+network:
+  # Port number for the web server (default: 9000)
+  port: 9000
+
+  # Allow access from other devices on the network (default: false)
+  external_access: false
+
+
+# Update settings
+updates:
+  # Branch or release tag to use for updates (main for stable, beta for experimental)
+  branch: main
+
+
+# Rendering settings
+rendering:
+  # Devices to use for rendering (auto, cpu, 0, 1, etc.)
+  devices: auto
+
+  # Directory where models are stored. Relative to installation path or absolute path.
+  models_dir: models
+
+  # VRAM usage level (balanced, low, high)
+  vram_usage_level: balanced
+
+  # Block NSFW images (blurs out NSFW content)
+  block_nsfw: false
+
+  # Backend to use for rendering (sdkit3, etc.)
+  backend: sdkit3
+
+  # Advanced backend overrides applied at startup
+  backend_config:
+    # Extra command-line arguments for the backend
+    commandline_args: ""
+
+    # Force full precision (float32) to avoid corrupted outputs on some GPUs
+    force_full_precision: false
+
+
+# Security settings (these won't be changeable from the UI)
+security:
+  # Force block NSFW images at a server level (overrides user setting)
+  force_block_nsfw: false
+
+  # Force all outputs to be saved to this path (optional)
+  # If set, users cannot change or disable auto-save
+  # Examples:
+  # Windows: C:\\Easy Diffusion Images\\
+  # Linux: /data/easy-diffusion-images/
+  force_save_path: ""
+
+  # Force saving metadata with images
+  force_save_metadata: false
+
+
+# User management settings
+#
+# EasyDiffusion supports multiple users with separate settings and preferences.
+# Each user can have their own save paths, UI themes, and other personalized configurations.
+# Users only need to specify the settings they want to change - unspecified settings
+# will fall back to default values.
+
+# List of user names. Leave empty for single-user mode.
+# Add user names to enable multi-user support with separate settings.
+# Example:
+# users:
+#   - alice
+#   - bob
+#   - charlie
+users: []
+
+# User-specific settings
+#
+# Each user listed above can have their own configuration here.
+# Users only need to specify the settings they want to override from defaults.
+# Any setting not specified for a user will use the default value.
+#
+# Example partial user configuration:
+# alice:
+#   save:
+#     save_path: "/home/alice/images"
+#   ui:
+#     theme: "theme-dark"
+user_settings:
+  default:
+    # Save settings
+    save:
+      # Auto-save images to disk
+      auto_save_images: false
+
+      # Save location path
+      save_path: ""
+
+      # Metadata format for saved images (none, txt, json, embed)
+      metadata_format: txt
+
+      # Format for file names when saving images.
+      # These images will be created inside the save_path directory (defined above).
+      #
+      # Available placeholders:
+      # Time: $yyyy, $MM, $dd, $HH, $mm, $ss
+      # Content: $u - Username, $id - Session ID, $p - Prompt (first 50 characters), $s - Seed
+      # Numbering: $n - Sequential image number (5 digits)
+      # Timestamps: $ts - Unix timestamp in milliseconds, $tsb64 - Base64 timestamp
+      # Use forward slashes (/) to create subdirectories. Example: "$u/$yyyy-$MM-$dd/$p_$n"
+      filename_format: "$id/$p_$tsb64"
+
+
+    # User interface settings
+    ui:
+      # UI theme
+      theme: theme-default
+
+      # Automatically open browser when starting the server
+      open_browser_on_start: true
+
+      # Enable sound on task completion
+      sound_enabled: true
+
+      # Process newest jobs first
+      process_newest_first: false
+
+      # Confirm dangerous actions
+      confirm_dangerous_actions: true
+
+      # Auto-save image settings (across browser refreshes)
+      auto_save_image_settings: true
+
+      # Image settings auto-save overrides (setting_name: true/false)
+      # By default, all image settings are auto-saved
+      # Use this to override specific settings: true to save, false to not save
+      image_settings_auto_save_overrides:
+        prompt: false
