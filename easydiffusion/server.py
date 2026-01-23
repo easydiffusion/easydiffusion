@@ -1,327 +1,421 @@
 """
 FastAPI server for EasyDiffusion.
 
-Provides REST API endpoints for configuration management and task submission.
+Provides the REST API for image generation and configuration management.
 """
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
-from typing import Optional
+from fastapi import FastAPI, APIRouter, HTTPException, Query, Response
+from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
+from starlette.responses import FileResponse
+from pathlib import Path
+import io
+import os
+import mimetypes
 
-from easydiffusion.types import Task, ConfigUpdate, RenderRequest
+from easydiffusion.types import (
+    HealthResponse,
+    ConfigResponse,
+    ConfigUpdate,
+    DevicesResponse,
+    DeviceInfo,
+    ModelsResponse,
+    ModelInfo,
+    GenerateRequest,
+    FilterRequest,
+    TaskQueuedResponse,
+    TasksResponse,
+    TaskInfo,
+    TaskDetail,
+    StatusResponse,
+    Task,
+)
 
-# HTTP Headers for no-cache responses
+# Create the FastAPI application
+server_api = FastAPI(title="EasyDiffusion API", version="1.0.0")
+
+v1_router = APIRouter(prefix="/v1")
+
 NOCACHE_HEADERS = {
     "Cache-Control": "no-cache, no-store, must-revalidate",
     "Pragma": "no-cache",
     "Expires": "0",
 }
 
-# Create the FastAPI application
-server_api = FastAPI(title="EasyDiffusion API", version="1.0.0")
+
+class NoCacheStaticFiles(StaticFiles):
+    def __init__(self, directory: str):
+        # follow_symlink is only available on fastapi >= 0.92.0
+        if os.path.islink(directory):
+            super().__init__(directory=os.path.realpath(directory))
+        else:
+            super().__init__(directory=directory)
+
+    def is_not_modified(self, response_headers, request_headers) -> bool:
+        if "content-type" in response_headers and (
+            "javascript" in response_headers["content-type"] or "css" in response_headers["content-type"]
+        ):
+            response_headers.update(NOCACHE_HEADERS)
+            return False
+
+        return super().is_not_modified(response_headers, request_headers)
 
 
 def init():
-    """Bind HTTP routes to internal handler functions.
+    """Initialize the server and bind all v1 API routes."""
+    mimetypes.init()
+    mimetypes.add_type("text/css", ".css")
 
-    This mirrors the old server.py pattern so the API surface is easy to scan.
-    """
-    server_api.add_api_route("/", root, methods=["GET"], response_class=HTMLResponse)
-    server_api.add_api_route("/ping", ping, methods=["GET"])
-    server_api.add_api_route("/app_config", set_app_config, methods=["POST"])
-    server_api.add_api_route("/get/{key:path}", read_web_data, methods=["GET"])
-    server_api.add_api_route("/render", create_render_task, methods=["POST"])
-    server_api.add_api_route("/image/stream/{task_id:int}", stream_task, methods=["GET"])
-    server_api.add_api_route("/image/tmp/{task_id:int}/{img_id:int}", get_temp_image, methods=["GET"])
-    server_api.add_api_route("/image/stop", stop_task, methods=["GET"])
+    ui_dir = Path(__file__).parent.parent / "ui"
 
+    server_api.mount(
+        "/media",
+        NoCacheStaticFiles(directory=str(ui_dir / "media")),
+        name="media",
+    )
 
-async def root():
-    """
-    Serve a simple HTML page.
+    v1_router.add_api_route("/health", get_health, methods=["GET"])
+    v1_router.add_api_route("/config", get_config, methods=["GET"], response_model=ConfigResponse)
+    v1_router.add_api_route("/config", update_config, methods=["PUT"], response_model=StatusResponse)
+    v1_router.add_api_route("/devices", get_devices, methods=["GET"], response_model=DevicesResponse)
+    v1_router.add_api_route("/models", get_models, methods=["GET"], response_model=ModelsResponse)
+    v1_router.add_api_route(
+        "/generate", create_generate_task, methods=["POST"], response_model=TaskQueuedResponse, status_code=202
+    )
+    v1_router.add_api_route(
+        "/filter", create_filter_task, methods=["POST"], response_model=TaskQueuedResponse, status_code=202
+    )
+    v1_router.add_api_route("/tasks", get_tasks, methods=["GET"], response_model=TasksResponse)
+    v1_router.add_api_route("/tasks/{task_id}", get_task, methods=["GET"], response_model=TaskDetail)
+    v1_router.add_api_route("/tasks/{task_id}/images/{image_id}", get_task_image, methods=["GET"])
+    v1_router.add_api_route("/tasks/{task_id}", stop_task, methods=["DELETE"], response_model=StatusResponse)
+    v1_router.add_api_route("/tasks", stop_all_tasks, methods=["DELETE"], response_model=StatusResponse)
 
-    Returns:
-        Static HTML content
-    """
-    return """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>EasyDiffusion</title>
-    </head>
-    <body>
-        <h1>EasyDiffusion Server</h1>
-        <p>Server is running.</p>
-        <ul>
-            <li><a href="/ping">Ping</a></li>
-            <li><a href="/get/app_config">Configuration</a></li>
-            <li><a href="/get/system_info">System Info</a></li>
-            <li><a href="/get/models">Models</a></li>
-            <li><a href="/get/modifiers">Modifiers</a></li>
-            <li><a href="/get/ui_plugins">UI Plugins</a></li>
-        </ul>
-    </body>
-    </html>
-    """
+    server_api.include_router(v1_router)
+
+    @server_api.get("/")
+    def read_root():
+        ui_dir = Path(__file__).parent.parent / "ui"
+        return FileResponse(str(ui_dir / "index.html"), headers=NOCACHE_HEADERS)
 
 
-async def ping():
-    """
-    Health check endpoint.
-
-    Returns:
-        Simple OK response
-    """
-    return {"status": "OK"}
+async def get_health():
+    """Check server health."""
+    content = HealthResponse(status="healthy", version="1.0.0").model_dump_json()
+    return Response(content=content, media_type="application/json", headers=NOCACHE_HEADERS)
 
 
-async def set_app_config(req: ConfigUpdate):
-    """
-    Update application configuration (old API: /app_config).
-
-    Args:
-        req: Configuration updates
-
-    Returns:
-        Status OK response
-    """
+async def get_config():
+    """Retrieve application configuration."""
     try:
         config_manager = server_api.state.config_manager
         config = config_manager.get_all()
 
-        # Track if render_devices changed
-        devices_changed = False
-        old_devices = config.get("render_devices", "auto")
-        backend_changed = False
+        render_devices = config.get("render_devices", "auto")
+        if isinstance(render_devices, str):
+            render_devices = [render_devices]
 
-        # Update configuration fields
-        if req.update_branch is not None:
-            config["update_branch"] = req.update_branch
-        if req.backend is not None:
-            if config.get("backend") != req.backend:
-                backend_changed = True
-            config["backend"] = req.backend
-            config["use_v3_engine"] = req.backend == "ed_diffusers"
-        if req.render_devices is not None:
-            if old_devices != req.render_devices:
-                devices_changed = True
-            config["render_devices"] = req.render_devices
-        if req.model_vae is not None:
-            config["model_vae"] = req.model_vae
-        if req.ui_open_browser_on_start is not None:
-            if "ui" not in config:
-                config["ui"] = {}
-            config["ui"]["open_browser_on_start"] = req.ui_open_browser_on_start
-        if req.listen_to_network is not None:
-            if "net" not in config:
-                config["net"] = {}
-            config["net"]["listen_to_network"] = bool(req.listen_to_network)
-        if req.listen_port is not None:
-            if "net" not in config:
-                config["net"] = {}
-            config["net"]["listen_port"] = int(req.listen_port)
-        if req.use_v3_engine is not None:
-            config["use_v3_engine"] = req.use_v3_engine
-        if req.models_dir is not None:
-            config["models_dir"] = req.models_dir
-        if req.vram_usage_level is not None:
-            config["vram_usage_level"] = req.vram_usage_level
-
-        # Handle additional fields (extra="allow")
-        req_dict = req.model_dump()
-        defined_fields = set(ConfigUpdate.model_fields.keys())
-        for key, value in req_dict.items():
-            if value is not None and key not in defined_fields:
-                config[key] = value
-
-        config_manager.update(config)
-
-        # Update workers if devices or backend changed
-        if backend_changed:
-            # Backend change - update backend and recreate workers
-            server_api.state.worker_manager.set_backend(config["backend"], config.get("render_devices", "auto"))
-        elif devices_changed:
-            # Just update workers for device changes
-            server_api.state.worker_manager.update_workers(config.get("render_devices", "auto"))
-
-        return JSONResponse({"status": "OK"}, headers=NOCACHE_HEADERS)
+        return JSONResponse(
+            ConfigResponse(
+                render_devices=render_devices,
+                models_dir=config.get("models_dir", "models"),
+                vram_usage_level=config.get("vram_usage_level", "balanced"),
+                backend=config.get("backend", "sdkit3"),
+            ).model_dump(),
+            headers=NOCACHE_HEADERS,
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-async def read_web_data(key: str):
-    """
-    Get configuration and system data (old API: /get/{key}).
+async def update_config(req: ConfigUpdate):
+    """Update configuration."""
+    try:
+        config_manager = server_api.state.config_manager
+        config = config_manager.get_all()
 
-    Supported keys:
-    - app_config: Application configuration
-    - system_info: System information (placeholder)
-    - models: Available models (placeholder)
-    - modifiers: Image modifiers (placeholder)
-    - ui_plugins: UI plugins (placeholder)
+        updates = {}
+        devices_changed = False
 
-    Args:
-        key: Data key to retrieve
+        if req.render_devices is not None:
+            old_devices = config.get("render_devices", "auto")
+            if old_devices != req.render_devices:
+                devices_changed = True
+            updates["render_devices"] = req.render_devices
 
-    Returns:
-        Requested data
-    """
-    if not key:
-        # Easter egg from old implementation
-        raise HTTPException(status_code=418, detail="StableDiffusion is drawing a teapot!")
+        if req.models_dir is not None:
+            updates["models_dir"] = req.models_dir
 
-    if key == "app_config":
-        try:
-            config_manager = server_api.state.config_manager
-            config = config_manager.get_all()
-            return JSONResponse(config, headers=NOCACHE_HEADERS)
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
-    elif key == "system_info":
-        # Placeholder - would need actual device/system info
-        system_info = {
-            "devices": {"all": {}, "active": {}, "config": "auto"},
-            "hosts": [],
-            "default_output_dir": ".",
-            "enforce_output_dir": False,
-            "enforce_output_metadata": False,
-        }
-        return JSONResponse(system_info, headers=NOCACHE_HEADERS)
-    elif key == "models":
-        # Placeholder - would need actual model list
-        return JSONResponse({"models": {}}, headers=NOCACHE_HEADERS)
-    elif key == "modifiers":
-        # Placeholder - would need actual modifiers
-        return JSONResponse([], headers=NOCACHE_HEADERS)
-    elif key == "ui_plugins":
-        # Placeholder - would need actual UI plugins
-        return JSONResponse([], headers=NOCACHE_HEADERS)
-    else:
-        raise HTTPException(status_code=404, detail=f"Request for unknown {key}")
+        if req.vram_usage_level is not None:
+            updates["vram_usage_level"] = req.vram_usage_level
+
+        if updates:
+            config.update(updates)
+            config_manager.update(config)
+
+            if devices_changed:
+                server_api.state.worker_manager.update_workers(req.render_devices)
+
+        return JSONResponse(
+            StatusResponse(status="updated").model_dump(),
+            headers=NOCACHE_HEADERS,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-async def create_render_task(render_request: RenderRequest):
-    """
-    Create a new render task.
+async def get_devices():
+    """List render devices."""
+    try:
+        from torchruntime.device_db import get_gpus
 
-    Args:
-        render_request: Render task parameters
+        devices = []
+        devices.append(DeviceInfo(id="cpu", name="CPU", available=True))
 
-    Returns:
-        Task ID, status, queue position, and stream URL
-    """
+        gpus = get_gpus()
+        for idx, gpu in enumerate(gpus):
+            devices.append(
+                DeviceInfo(
+                    id=f"cuda:{idx}",
+                    name=gpu.device_name or f"GPU {idx}",
+                    available=True,
+                    vram_free=None,
+                )
+            )
+
+        return JSONResponse(
+            DevicesResponse(devices=devices).model_dump(),
+            headers=NOCACHE_HEADERS,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def get_models():
+    """List available models."""
+    try:
+        config_manager = server_api.state.config_manager
+        config = config_manager.get_all()
+        models_dir = Path(config.get("models_dir", "models"))
+
+        models = []
+
+        if models_dir.exists():
+            for model_path in models_dir.rglob("*.safetensors"):
+                models.append(
+                    ModelInfo(
+                        name=model_path.stem,
+                        type="stable_diffusion",
+                        path=str(model_path),
+                    )
+                )
+            for model_path in models_dir.rglob("*.ckpt"):
+                models.append(
+                    ModelInfo(
+                        name=model_path.stem,
+                        type="stable_diffusion",
+                        path=str(model_path),
+                    )
+                )
+
+        return JSONResponse(
+            ModelsResponse(models=models).model_dump(),
+            headers=NOCACHE_HEADERS,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def create_generate_task(req: GenerateRequest):
+    """Enqueue image generation."""
     try:
         task_queue = server_api.state.task_queue
 
-        # Create a task with a unique ID
-        task = Task(**render_request.model_dump())
+        task = Task(task_type="generate", **req.model_dump())
+        task.request_data = req.model_dump()
 
-        # Add to task queue
         task_queue.add_task(task)
 
-        # Store task in cache for later retrieval
         if not hasattr(server_api.state, "task_cache"):
             server_api.state.task_cache = {}
-        server_api.state.task_cache[task.id] = task
+        server_api.state.task_cache[task.task_id] = task
 
-        # Return API-consistent response
-        return {
-            "task": task.id,  # Integer ID for compatibility
-            "status": "queued",
-            "queue": task_queue._queue.qsize(),
-            "stream": f"/image/stream/{task.id}",
-        }
+        return JSONResponse(
+            TaskQueuedResponse(
+                task_id=task.task_id,
+                status="queued",
+                queue_position=task_queue.qsize(),
+            ).model_dump(),
+            headers=NOCACHE_HEADERS,
+            status_code=202,
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-async def stream_task(task_id: int):
-    """
-    Stream intermediate results from a task.
-
-    Args:
-        task_id: Integer task ID
-
-    Returns:
-        Streaming response with JSON progress updates
-    """
-    # Get task from cache
-    if not hasattr(server_api.state, "task_cache"):
-        raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
-
-    task = server_api.state.task_cache.get(task_id)
-    if not task:
-        raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
-
-    # If task is complete and buffer is empty, return cached response
-    if task.buffer_queue.empty() and not task.lock.locked():
-        if task.response:
-            return JSONResponse(task.response)
-        raise HTTPException(status_code=425, detail="Too Early, task not started yet.")
-
-    # Stream the buffer queue
-    return StreamingResponse(task.read_buffer_generator(), media_type="application/json")
-
-
-async def get_temp_image(task_id: int, img_id: int):
-    """
-    Get a temporary intermediate image from a task.
-
-    Args:
-        task_id: Integer task ID
-        img_id: Image index in temp_images list
-
-    Returns:
-        Streaming response with image data
-    """
-    # Get task from cache
-    if not hasattr(server_api.state, "task_cache"):
-        raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
-
-    task = server_api.state.task_cache.get(task_id)
-    if not task:
-        raise HTTPException(status_code=410, detail=f"Task {task_id} could not be found.")
-
-    # Check if image exists
-    if img_id >= len(task.temp_images) or not task.temp_images[img_id]:
-        raise HTTPException(status_code=425, detail="Too Early, task data is not available yet.")
-
+async def create_filter_task(req: FilterRequest):
+    """Enqueue image filtering."""
     try:
-        img_data = task.temp_images[img_id]
-        img_data.seek(0)
-        return StreamingResponse(img_data, media_type="image/jpeg")
+        task_queue = server_api.state.task_queue
+
+        task = Task(task_type="filter", **req.model_dump())
+        task.request_data = req.model_dump()
+
+        task_queue.add_task(task)
+
+        if not hasattr(server_api.state, "task_cache"):
+            server_api.state.task_cache = {}
+        server_api.state.task_cache[task.task_id] = task
+
+        return JSONResponse(
+            TaskQueuedResponse(
+                task_id=task.task_id,
+                status="queued",
+                queue_position=task_queue.qsize(),
+            ).model_dump(),
+            headers=NOCACHE_HEADERS,
+            status_code=202,
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-async def stop_task(task: Optional[int] = None):
-    """
-    Stop a running task or all tasks.
+async def get_tasks():
+    """List all tasks."""
+    try:
+        if not hasattr(server_api.state, "task_cache"):
+            server_api.state.task_cache = {}
 
-    Args:
-        task: Integer task ID to stop, or None to stop all
+        tasks = []
+        for task in server_api.state.task_cache.values():
+            tasks.append(
+                TaskInfo(
+                    task_id=task.task_id,
+                    status=task.status,
+                    progress=task.progress,
+                    type=task.task_type,
+                )
+            )
 
-    Returns:
-        Success response
-    """
-    if not hasattr(server_api.state, "task_cache"):
-        return {"OK": True}
-
-    if task is None:
-        # Stop all tasks - would need global state management
-        return {"OK": True}
-
-    # Stop specific task
-    task_obj = server_api.state.task_cache.get(task)
-    if not task_obj:
-        raise HTTPException(status_code=404, detail=f"Task {task} was not found.")
-
-    if isinstance(task_obj.error, StopAsyncIteration):
-        raise HTTPException(status_code=409, detail=f"Task {task} is already stopped.")
-
-    task_obj.error = StopAsyncIteration(f"Task {task} stop requested.")
-    return {"OK": True}
+        return JSONResponse(
+            TasksResponse(tasks=tasks).model_dump(),
+            headers=NOCACHE_HEADERS,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-# Register routes at import time so the server API is ready.
+async def get_task(task_id: str, include_request: bool = Query(False)):
+    """Get task status/results."""
+    try:
+        if not hasattr(server_api.state, "task_cache"):
+            raise HTTPException(status_code=404, detail="Task not found")
+
+        task = server_api.state.task_cache.get(task_id)
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found")
+
+        images = [f"/v1/tasks/{task_id}/images/{i}" for i in range(len(task.output_images))]
+
+        request_data = None
+        if include_request and task.request_data:
+            request_data = task.request_data
+
+        return JSONResponse(
+            TaskDetail(
+                task_id=task.task_id,
+                status=task.status,
+                progress=task.progress,
+                images=images,
+                request=request_data,
+            ).model_dump(),
+            headers=NOCACHE_HEADERS,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def get_task_image(task_id: str, image_id: int):
+    """Retrieve image from task."""
+    try:
+        if not hasattr(server_api.state, "task_cache"):
+            raise HTTPException(status_code=404, detail="Task not found")
+
+        task = server_api.state.task_cache.get(task_id)
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found")
+
+        if image_id >= len(task.output_images):
+            raise HTTPException(status_code=404, detail="Image not found")
+
+        image_path_or_data = task.output_images[image_id]
+
+        if isinstance(image_path_or_data, (str, Path)):
+            image_path = Path(image_path_or_data)
+            if not image_path.exists():
+                raise HTTPException(status_code=404, detail="Image file not found")
+
+            with open(image_path, "rb") as f:
+                image_data = io.BytesIO(f.read())
+        elif isinstance(image_path_or_data, io.BytesIO):
+            image_data = image_path_or_data
+            image_data.seek(0)
+        else:
+            raise HTTPException(status_code=500, detail="Invalid image data")
+
+        return StreamingResponse(image_data, media_type="image/jpeg")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def stop_task(task_id: str):
+    """Stop a task."""
+    try:
+        if not hasattr(server_api.state, "task_cache"):
+            raise HTTPException(status_code=404, detail="Task not found")
+
+        task = server_api.state.task_cache.get(task_id)
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found")
+
+        if task.status == "stopped":
+            raise HTTPException(status_code=409, detail="Task already stopped")
+
+        task.error = StopAsyncIteration(f"Task {task_id} stop requested")
+
+        return JSONResponse(
+            StatusResponse(status="stopped").model_dump(),
+            headers=NOCACHE_HEADERS,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def stop_all_tasks():
+    """Stop all tasks."""
+    try:
+        if not hasattr(server_api.state, "task_cache"):
+            return JSONResponse(
+                StatusResponse(status="all_stopped").model_dump(),
+                headers=NOCACHE_HEADERS,
+            )
+
+        for task in server_api.state.task_cache.values():
+            if task.status not in ["completed", "stopped", "error"]:
+                task.error = StopAsyncIteration("All tasks stop requested")
+
+        return JSONResponse(
+            StatusResponse(status="all_stopped").model_dump(),
+            headers=NOCACHE_HEADERS,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 init()
