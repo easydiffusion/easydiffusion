@@ -123,7 +123,7 @@ const TASK_MAPPING = {
         parse: (val) => parseInt(val),
     },
     guidance_scale: {
-        name: "CFG Scale",
+        name: "Guidance Scale",
         setUI: (guidance_scale) => {
             guidanceScaleField.value = guidance_scale
             updateGuidanceScaleSlider()
@@ -132,7 +132,7 @@ const TASK_MAPPING = {
         parse: (val) => parseFloat(val),
     },
     prompt_strength: {
-        name: "Denoising Strength",
+        name: "Prompt Strength",
         setUI: (prompt_strength) => {
             promptStrengthField.value = prompt_strength
             updatePromptStrengthSlider()
@@ -589,8 +589,8 @@ const TASK_TEXT_MAPPING = {
     height: "Height",
     seed: "Seed",
     num_inference_steps: "Steps",
-    guidance_scale: ["CFG Scale", "Guidance Scale"],
-    prompt_strength: ["Denoising Strength", "Prompt Strength"],
+    guidance_scale: ["Guidance Scale", "CFG Scale"],
+    prompt_strength: ["Prompt Strength", "Denoising Strength"],
     use_face_correction: "Use Face Correction",
     use_upscale: "Use Upscaling",
     upscale_amount: "Upscale By",
