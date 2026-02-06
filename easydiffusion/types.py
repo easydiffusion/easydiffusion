@@ -2,6 +2,7 @@
 
 from pydantic import BaseModel, Field
 from typing import Any, Optional, List, Dict
+from abc import abstractmethod
 import uuid
 import queue
 import threading
@@ -67,6 +68,22 @@ class Task:
 
     def __repr__(self):
         return f"Task(task_id={self.task_id}, id={self.id}, status={self.status})"
+
+    @abstractmethod
+    def run(self, backend: Any) -> Any:
+        """
+        Run the task using the provided backend.
+
+        This method should be implemented by subclasses to define how the task
+        interacts with the backend to perform its work.
+
+        Args:
+            backend: The backend instance to use for processing the task
+
+        Returns:
+            The result of processing the task
+        """
+        pass
 
 
 # V1 API Models

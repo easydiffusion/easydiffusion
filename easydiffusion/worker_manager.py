@@ -9,6 +9,7 @@ instance and processes tasks from the task queue.
 import queue
 import threading
 from typing import Type, Any, List, Union
+from .types import Task
 from .task_queue import Worker, TaskQueue
 from .backends import Backend
 
@@ -49,7 +50,7 @@ class BackendWorker(Worker):
         # Run the standard worker loop
         super()._worker_loop(task_queue)
 
-    def run(self, task: Any) -> Any:
+    def run(self, task: Task) -> Any:
         """
         Process a task by calling task.run(backend).
 

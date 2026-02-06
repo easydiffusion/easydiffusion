@@ -33,8 +33,8 @@ from easydiffusion.types import (
     CreateUserRequest,
     CreateUserResponse,
     DeleteUserResponse,
-    Task,
 )
+from easydiffusion.tasks import RenderTask, FilterTask
 
 # Create the FastAPI application
 server_api = FastAPI(title="EasyDiffusion API", version="1.0.0")
@@ -213,7 +213,7 @@ async def create_generate_task(req: GenerateRequest):
     try:
         task_queue = server_api.state.task_queue
 
-        task = Task(task_type="generate", **req.model_dump())
+        task = RenderTask(**req.model_dump())
         task.request_data = req.model_dump()
 
         task_queue.add_task(task)
@@ -240,7 +240,7 @@ async def create_filter_task(req: FilterRequest):
     try:
         task_queue = server_api.state.task_queue
 
-        task = Task(task_type="filter", **req.model_dump())
+        task = FilterTask(**req.model_dump())
         task.request_data = req.model_dump()
 
         task_queue.add_task(task)
@@ -277,7 +277,7 @@ async def get_tasks(username: Optional[str] = Query(None, description="Username 
                         username=task.username,
                         status=task.status,
                         progress=task.progress,
-                        type=task.task_type,
+                        type=task.__class__.__name__.replace("Task", "").lower(),  # e.g. RenderTask -> "render"
                     )
                 )
 

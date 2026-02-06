@@ -5,6 +5,7 @@ Tests for the worker manager system.
 import time
 import threading
 from unittest.mock import patch
+from easydiffusion.types import Task
 from easydiffusion.task_queue import TaskQueue
 from easydiffusion.worker_manager import BackendWorker, WorkerManager
 from easydiffusion.backends import Backend, BACKEND_REGISTRY
@@ -56,7 +57,7 @@ class MockBackend(Backend):
         return f"Processed: {data}"
 
 
-class MockTask:
+class MockTask(Task):
     """A mock task for testing."""
 
     def __init__(self, data, callback=None):
