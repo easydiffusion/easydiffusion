@@ -36,7 +36,7 @@ ed_info = {
 }
 
 WEBUI_REPO = "https://github.com/easydiffusion/stable-diffusion-webui-forge.git"
-WEBUI_COMMIT = "eb44f7b23774d284b767456788489eac51def1f3"
+WEBUI_COMMIT = "b6665e24ef4d548e7ab7718eba7fc1b597ee4f3b"
 
 BACKEND_DIR = os.path.abspath(os.path.join(ROOT_DIR, "webui"))
 SYSTEM_DIR = os.path.join(BACKEND_DIR, "system")
@@ -123,9 +123,6 @@ def start_backend():
 
     # workaround for the installations that broke out of conda and used ED's python 3.8 instead of WebUI conda's Py 3.10
     run_in_conda(["python", "-m", "pip", "install", "-q", "--upgrade", "urllib3==2.2.3"], cwd=WEBUI_DIR, env=env)
-
-    # workaround to force setuptools<82 to avoid 'pkg_resources' module not found errors
-    run_in_conda(["python", "-m", "pip", "install", "-q", "--upgrade", "setuptools<82"], cwd=WEBUI_DIR, env=env)
 
     webui_common.WEBUI_API_PREFIX = ""
 
