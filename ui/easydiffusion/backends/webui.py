@@ -124,6 +124,9 @@ def start_backend():
     # workaround for the installations that broke out of conda and used ED's python 3.8 instead of WebUI conda's Py 3.10
     run_in_conda(["python", "-m", "pip", "install", "-q", "--upgrade", "urllib3==2.2.3"], cwd=WEBUI_DIR, env=env)
 
+    # workaround to force setuptools<82 to avoid 'pkg_resources' module not found errors
+    run_in_conda(["python", "-m", "pip", "install", "-q", "--upgrade", "setuptools<82"], cwd=WEBUI_DIR, env=env)
+
     webui_common.WEBUI_API_PREFIX = ""
 
     def run_fn():
