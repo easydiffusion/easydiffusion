@@ -1,5 +1,9 @@
 # What's new?
 
+## v4 (preview)
+* 4.1.0 - 13 Feb 2026 - Add support for Flux2-Klein.
+* 4.0.0 - 2 Dec 2025 - Add the v4 engine (i.e. sdkit3) as an experimental backend, which supports Z-Image, Flux 1 etc in a lightweight new backend engine.
+
 ## v3.5 (beta)
 ### Major Changes
 - **Chroma** - support for the Chroma model, including quantized bnb and nf4 models.
