@@ -819,35 +819,42 @@ div.img-preview img {
     display: none;
 }
 
-#init_image_preview_container {
+/* Shared image input section */
+.image-input-section {
     display: flex;
     margin-top: 6px;
     margin-bottom: 8px;
 }
 
-#init_image_preview_container:not(.has-image) .preview_image_wrapper,
-#init_image_preview_container:not(.has-image) #inpaint_button_container  {
+.image-input-section--single:not(.has-image) .image-input-wrapper,
+.image-input-section--single:not(.has-image) #inpaint_button_container {
     display: none;
 }
 
-
-#init_image_buttons {
+.image-input-buttons {
     display: flex;
     gap: 8px;
 }
 
-#init_image_preview_container.has-image #init_image_buttons {
+.image-input-section--single.has-image .image-input-buttons {
     flex-direction: column;
     padding-left: 8px;
 }
 
-#init_image_buttons .button {
+.image-input-buttons .button {
     position: relative;
-    height: 32px;
+    display: flex;
+    height: 24px;
     width: 150px;
+    padding: 6px;
+    box-shadow: 2px 2px 1px 1px #00000088;
 }
 
-#init_image_buttons .button > input {
+.image-input-buttons .button:hover {
+    background: var(--background-color4);
+}
+
+.image-input-buttons .button > input {
     position: absolute;
     left: 0;
     top: 0;
@@ -862,18 +869,42 @@ div.img-preview img {
     gap: 8px;
 }
 
-.preview_image_wrapper {
-    grid-row: span 3;
+/* Shared image input wrapper */
+.image-input-wrapper {
     position: relative;
     width: fit-content;
+}
+
+.image-input-section--single .image-input-wrapper {
+    grid-row: span 3;
     max-height: 150px;
 }
 
+/* Preview image base */
+.input-image-preview {
+    object-fit: contain;
+    border-radius: 6px;
+}
+
+.image-input-section--single .input-image-preview {
+    max-height: 150px;
+    height: 100%;
+    width: 100%;
+    transition: all 1s ease-in-out;
+}
+
+/* Backward-compat aliases for existing code not yet migrated (e.g. ControlNet image) */
+.preview_image_wrapper {
+    position: relative;
+    width: fit-content;
+    grid-row: span 3;
+    max-height: 150px;
+}
 .image_preview {
     max-height: 150px;
     height: 100%;
     width: 100%;
-	object-fit: contain;
+    object-fit: contain;
     border-radius: 6px;
     transition: all 1s ease-in-out;
 }
@@ -889,85 +920,52 @@ div.img-preview img {
     border-radius: 6px 0px;
 }
 
-/* Reference images */
-#ref_images_preview_container {
-    display: flex;
+/* Multi-image input section */
+.image-input-section--multi {
     flex-direction: column;
-    margin-top: 6px;
-    margin-bottom: 8px;
 }
 
-#ref_images_list {
+.image-input-list {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     margin-bottom: 8px;
 }
 
-#ref_images_list:empty {
+.image-input-list:empty {
     display: none;
 }
 
-#ref_images_buttons {
-    display: flex;
-    gap: 8px;
+.image-input-section--multi .image-input-buttons {
     align-items: center;
 }
 
-#ref_images_buttons .button {
-    position: relative;
-    height: 32px;
-    width: 150px;
-}
-
-#ref_images_buttons .button > input {
-    position: absolute;
-    left: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    opacity: 0;
-}
-
-.ref-image-wrapper {
-    position: relative;
-    width: fit-content;
-}
-
-.ref-image-preview {
+/* Smaller thumbnails for multi-image sections */
+.image-input-section--multi .input-image-preview {
     max-height: 80px;
     max-width: 120px;
     height: auto;
     width: auto;
-    object-fit: contain;
-    border-radius: 6px;
     display: block;
 }
 
-.ref-image-clear {
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    background: rgba(0,0,0,0.6);
+/* Clear button override for multi-image sections */
+.image-input-section--multi .image_clear_btn {
+    transform: translate(40%, -40%);
+    background: rgba(0, 0, 0, 0.6);
     border: none;
     border-radius: 50%;
-    color: white;
     width: 18px;
     height: 18px;
     font-size: 10px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    line-height: 1;
 }
 
-.ref-image-clear:hover {
-    background: rgba(200,50,50,0.8);
+.image-input-section--multi .image_clear_btn:hover {
+    background: rgba(200, 50, 50, 0.8);
 }
 
-.ref-image-index {
+/* Index label for multi-image thumbnails */
+.image-input-index {
     position: absolute;
     left: 0px;
     bottom: 0px;

@@ -104,13 +104,13 @@
                         You may also reload the metadata embedded in a PNG, WEBP or JPEG image (enable embedding from the Settings).
                     </span></i>
 
-                    <div id="init_image_preview_container" class="image_preview_container">
-                        <div id="init_image_wrapper" class="preview_image_wrapper">
-                            <img id="init_image_preview" class="image_preview" src="" crossorigin="anonymous" />
+                    <div id="init_image_preview_container" class="image-input-section image-input-section--single">
+                        <div id="init_image_wrapper" class="image-input-wrapper">
+                            <img id="init_image_preview" class="input-image-preview" src="" crossorigin="anonymous" />
                             <span id="init_image_size_box" class="img_bottom_label"></span>
                             <button class="init_image_clear image_clear_btn"><i class="fa-solid fa-xmark"></i></button>
                         </div>
-                        <div id="init_image_buttons">
+                        <div id="init_image_buttons" class="image-input-buttons">
                             <div class="button">
                                 <i class="fa-regular fa-folder-open"></i>
                                 Browse
@@ -143,12 +143,12 @@
                         Reference images guide the model's visual understanding during generation.
                     </span></i>
 
-                    <div id="ref_images_preview_container">
-                        <div id="ref_images_list"></div>
-                        <div id="ref_images_buttons">
+                    <div id="ref_images_preview_container" class="image-input-section image-input-section--multi">
+                        <div id="ref_images_list" class="image-input-list"></div>
+                        <div id="ref_images_buttons" class="image-input-buttons">
                             <div class="button">
                                 <i class="fa-regular fa-folder-open"></i>
-                                Add Image
+                                Browse
                                 <input id="ref_image_input" name="ref_image_input" type="file" accept="image/*" multiple />
                             </div>
                             <button id="ref_images_clear_all" class="tertiaryButton smallButton displayNone">Clear All</button>

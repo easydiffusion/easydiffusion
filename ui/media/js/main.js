@@ -2484,15 +2484,15 @@ function renderRefImagesList() {
     refImagesList.innerHTML = ""
     refImages.forEach((src, idx) => {
         const wrapper = document.createElement("div")
-        wrapper.className = "ref-image-wrapper"
+        wrapper.className = "image-input-wrapper"
         const img = document.createElement("img")
-        img.className = "ref-image-preview"
+        img.className = "input-image-preview"
         img.src = src
         const indexLabel = document.createElement("span")
-        indexLabel.className = "ref-image-index"
+        indexLabel.className = "image-input-index"
         indexLabel.textContent = idx + 1
         const clearBtn = document.createElement("button")
-        clearBtn.className = "ref-image-clear"
+        clearBtn.className = "image_clear_btn"
         clearBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>'
         clearBtn.title = "Remove reference image " + (idx + 1)
         clearBtn.addEventListener("click", () => removeRefImage(idx))
