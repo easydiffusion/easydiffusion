@@ -589,8 +589,8 @@ const TASK_TEXT_MAPPING = {
     height: "Height",
     seed: "Seed",
     num_inference_steps: "Steps",
-    guidance_scale: "Guidance Scale",
-    prompt_strength: "Prompt Strength",
+    guidance_scale: ["Guidance Scale", "CFG Scale"],
+    prompt_strength: ["Prompt Strength", "Denoising Strength"],
     use_face_correction: "Use Face Correction",
     use_upscale: "Use Upscaling",
     upscale_amount: "Upscale By",
@@ -606,6 +606,13 @@ const TASK_TEXT_MAPPING = {
     control_alpha: "ControlNet Strength",
     tiling: "Seamless Tiling",
 }
+function escapeRegExp(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+}
+function getTaskTextLabels(key) {
+    const val = TASK_TEXT_MAPPING[key]
+    return Array.isArray(val) ? val : [val]
+}
 function parseTaskFromText(str) {
     const taskReqBody = {}
 
@@ -617,10 +624,13 @@ function parseTaskFromText(str) {
     // Prompt
     let knownKeyOnFirstLine = false
     for (let key in TASK_TEXT_MAPPING) {
-        if (lines[0].startsWith(TASK_TEXT_MAPPING[key] + ":")) {
-            knownKeyOnFirstLine = true
-            break
+        for (const name of getTaskTextLabels(key)) {
+            if (lines[0].startsWith(name + ":")) {
+                knownKeyOnFirstLine = true
+                break
+            }
         }
+        if (knownKeyOnFirstLine) break
     }
     if (!knownKeyOnFirstLine) {
         taskReqBody.prompt = lines[0]
@@ -632,14 +642,16 @@ function parseTaskFromText(str) {
             continue
         }
 
-        const name = TASK_TEXT_MAPPING[key]
         let val = undefined
 
-        const reName = new RegExp(`${name}\\ *:\\ *(.*)(?:\\r\\n|\\r|\\n)*`, "igm")
-        const match = reName.exec(str)
-        if (match) {
-            str = str.slice(0, match.index) + str.slice(match.index + match[0].length)
-            val = match[1]
+        for (const name of getTaskTextLabels(key)) {
+            const reName = new RegExp(`${escapeRegExp(name)}\\ *:\\ *(.*)(?:\\r\\n|\\r|\\n)*`, "igm")
+            const match = reName.exec(str)
+            if (match) {
+                str = str.slice(0, match.index) + str.slice(match.index + match[0].length)
+                val = match[1]
+                break
+            }
         }
         if (val !== undefined) {
             taskReqBody[key] = TASK_MAPPING[key].parse(val.trim())
