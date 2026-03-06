@@ -68,7 +68,7 @@ function createModifierCard(name, previews, removeBy) {
 
     modifierCard.dataset.fullName = name // preserve the full name
     regularLabel.dataset.fullName = name // preserve the full name, legacy support for older plugins
-    
+
     longLabel.innerText = getFormattedLabel(maxLabelLength * 2)
     regularLabel.innerText = getFormattedLabel(maxLabelLength)
 
@@ -79,7 +79,7 @@ function createModifierCard(name, previews, removeBy) {
             modifierCard.title = `"${name}"`
         }
     }
-    
+
     return modifierCard
 }
 
@@ -168,7 +168,7 @@ async function loadModifiers() {
                 const isInitiallyOpen = false // idx === res.length - 1
                 const removeBy = modifierGroup === "Artist" ? true : false // only remove "By " for artists
 
-                createModifierGroup(modifierGroup, isInitiallyOpen, removeBy) 
+                createModifierGroup(modifierGroup, isInitiallyOpen, removeBy)
             })
 
             createCollapsibles(editorModifierEntries)
@@ -282,7 +282,7 @@ function refreshTagsList(inactiveTags) {
         editorTagsContainer.style.display = "block"
     }
 
-    if(activeTags.length > 15) {
+    if (activeTags.length > 15) {
         editorModifierTagsList.style["overflow-y"] = "auto"
     } else {
         editorModifierTagsList.style["overflow-y"] = "unset"
@@ -327,7 +327,7 @@ function toggleCardState(modifierName, makeActive) {
 
     if (cardExists) {
         const card = cards[0]
-    
+
         if (makeActive) {
             card.classList.add(activeCardClass)
             card.querySelector(".modifier-card-image-overlay").innerText = "-"
@@ -416,7 +416,7 @@ function hideModifierContainer() {
 function checkIfClickedOutsideDropdownElem(e) {
     const clickedElement = e.target
 
-    const clickedInsideSpecificElems = [modifierDropdown, editorModifiersContainer, modifierSettingsDialog].some((div) => 
+    const clickedInsideSpecificElems = [modifierDropdown, editorModifiersContainer, modifierSettingsDialog].some((div) =>
         div && (div.contains(clickedElement) || div === clickedElement))
 
     if (!clickedInsideSpecificElems && !modifierPanelFreezed) {
@@ -437,7 +437,7 @@ customModifiersTextBox.addEventListener("change", saveCustomModifiers)
 modifierCardSizeSlider.onchange = () => resizeModifierCards(modifierCardSizeSlider.value)
 previewImageField.onchange = () => changePreviewImages(previewImageField.value)
 
-modifierSettingsDialog.addEventListener("keydown", function(e) {
+modifierSettingsDialog.addEventListener("keydown", function (e) {
     switch (e.key) {
         case "Escape": // Escape to cancel
             customModifiersTextBox.value = customModifiersInitialContent // undo the changes
@@ -458,7 +458,7 @@ modifierDropdown.addEventListener("click", e => {
     const targetElem = e.target
     const isDropdownActive = targetElem.dataset.active == "true" ? true : false
 
-    if (!isDropdownActive) 
+    if (!isDropdownActive)
         showModifierContainer()
     else
         hideModifierContainer()
@@ -509,7 +509,7 @@ modifiersContainerSizeBtn.addEventListener("click", (e) => {
 
     modifiersMainContainer.classList.toggle("modifiers-maximized")
 
-    if(containerSizeBtnState) {
+    if (containerSizeBtnState) {
         revertIconClasses.forEach((c) => btnElem.classList.remove(c))
         maximizeIconClasses.forEach((c) => btnElem.classList.add(c))
 
@@ -517,7 +517,7 @@ modifiersContainerSizeBtn.addEventListener("click", (e) => {
     } else {
         maximizeIconClasses.forEach((c) => btnElem.classList.remove(c))
         revertIconClasses.forEach((c) => btnElem.classList.add(c))
-        
+
         containerSizeBtnState = true
     }
 })
@@ -546,7 +546,7 @@ new MutationObserver(() => {
 }).observe(modifierSettingsDialog, { attributes: true })
 
 modifierSettingsCloseBtn.addEventListener("click", (e) => {
-    modifierSettingsDialog.close()    
+    modifierSettingsDialog.close()
 })
 
 modalDialogCloseOnBackdropClick(modifierSettingsDialog)

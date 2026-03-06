@@ -10,7 +10,7 @@
 /**
  * @type {(() => (string | ImageModalRequest) | string | ImageModalRequest) => {}}
  */
-const imageModal = (function() {
+const imageModal = (function () {
     const backElem = createElement("i", undefined, ["fa-solid", "fa-arrow-left", "tertiaryButton"])
 
     const forwardElem = createElement("i", undefined, ["fa-solid", "fa-arrow-right", "tertiaryButton"])
@@ -82,7 +82,7 @@ const imageModal = (function() {
 
     // Allow grabbing the image to scroll
     const stopGrabbing = (e) => {
-        if(imageContainer.classList.contains("grabbing")) {
+        if (imageContainer.classList.contains("grabbing")) {
             imageContainer.classList.remove("grabbing")
             e?.preventDefault()
             console.log(`stopGrabbing()`, e)
@@ -107,7 +107,7 @@ const imageModal = (function() {
         image?.addEventListener('mouseup', stopGrabbing)
         image?.addEventListener('mouseleave', stopGrabbing)
         image?.addEventListener('mousemove', (e) => {
-            if(imageContainer.classList.contains("grabbing")) {
+            if (imageContainer.classList.contains("grabbing")) {
                 e.stopPropagation()
                 e.stopImmediatePropagation()
                 e.preventDefault()

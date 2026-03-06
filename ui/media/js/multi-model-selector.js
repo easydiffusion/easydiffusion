@@ -87,7 +87,7 @@ class MultiModelSelector {
 
     // remember 'this' - http://blog.niftysnippets.org/2008/04/you-must-remember-this.html
     bind(f, obj) {
-        return function() {
+        return function () {
             return f.apply(obj, arguments)
         }
     }
@@ -101,7 +101,7 @@ class MultiModelSelector {
         this.weightStep = weightStep
 
         let self = this
-        document.addEventListener("refreshModels", function() {
+        document.addEventListener("refreshModels", function () {
             setTimeout(self.bind(self.populateModels, self), 1)
         })
 
@@ -153,7 +153,7 @@ class MultiModelSelector {
         let self = this
 
         function makeUpdateEvent(type) {
-            return function(e) {
+            return function (e) {
                 e.stopPropagation()
 
                 let modelData = self.value
@@ -179,7 +179,7 @@ class MultiModelSelector {
 
         removeBtn.addEventListener(
             "click",
-            this.bind(function(e) {
+            this.bind(function (e) {
                 this.modelContainer.removeChild(modelElement)
 
                 makeUpdateEvent("change")(e)

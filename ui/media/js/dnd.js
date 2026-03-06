@@ -454,8 +454,8 @@ const TASK_MAPPING = {
             const oldVal = hypernetworkModelField.value
             use_hypernetwork_model =
                 use_hypernetwork_model === undefined ||
-                use_hypernetwork_model === null ||
-                use_hypernetwork_model === "None"
+                    use_hypernetwork_model === null ||
+                    use_hypernetwork_model === "None"
                     ? ""
                     : use_hypernetwork_model
 
@@ -592,7 +592,7 @@ function restoreTaskToUI(task, fieldsToSkip) {
         // listen for inpainter loading event, which happens AFTER the main image loads (which reloads the inpainter)
         initImagePreview.addEventListener(
             "load",
-            function() {
+            function () {
                 if (Boolean(task.reqBody.mask)) {
                     imageInpainter.setImg(task.reqBody.mask)
                     maskSetting.checked = true
