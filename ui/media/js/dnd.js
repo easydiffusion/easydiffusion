@@ -74,12 +74,13 @@ const TASK_MAPPING = {
     width: {
         name: "Width",
         setUI: (width) => {
-            const oldVal = widthField.value
-            widthField.value = width
-            if (!widthField.value) {
-                widthField.value = oldVal
+            try {
+                addImageSizeOption(width)
+                widthField.value = width
+                widthField.dispatchEvent(new Event("change"))
+            } catch (e) {
+                console.log("Invalid width value", width)
             }
-            widthField.dispatchEvent(new Event("change"))
         },
         readUI: () => parseInt(widthField.value),
         parse: (val) => parseInt(val),
@@ -87,12 +88,13 @@ const TASK_MAPPING = {
     height: {
         name: "Height",
         setUI: (height) => {
-            const oldVal = heightField.value
-            heightField.value = height
-            if (!heightField.value) {
-                heightField.value = oldVal
+            try {
+                addImageSizeOption(height)
+                heightField.value = height
+                heightField.dispatchEvent(new Event("change"))
+            } catch (e) {
+                console.log("Invalid height value", height)
             }
-            heightField.dispatchEvent(new Event("change"))
         },
         readUI: () => parseInt(heightField.value),
         parse: (val) => parseInt(val),
