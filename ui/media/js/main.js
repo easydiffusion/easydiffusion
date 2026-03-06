@@ -120,6 +120,10 @@ let applyColorCorrectionField = document.querySelector("#apply_color_correction"
 let strictMaskBorderField = document.querySelector("#strict_mask_border")
 let colorCorrectionSetting = document.querySelector("#apply_color_correction_setting")
 let strictMaskBorderSetting = document.querySelector("#strict_mask_border_setting")
+let refImageSelector = document.querySelector("#ref_image_input")
+let refImagesList = document.querySelector("#ref_images_list")
+let refImagesClearAllBtn = document.querySelector("#ref_images_clear_all")
+let refImages = []  // Array of base64 data URLs for reference images
 let promptStrengthSlider = document.querySelector("#prompt_strength_slider")
 let promptStrengthField = document.querySelector("#prompt_strength")
 let samplerField = document.querySelector("#sampler_name")
@@ -1199,6 +1203,12 @@ function createTask(task) {
         let w = ((task.reqBody.width * h) / task.reqBody.height) >> 0
         taskConfig += `<div class="task-initimg controlnet-img-preview" style="float:left;"><img style="width:${w}px;height:${h}px;" src="${task.reqBody.control_image}"><div class="task-fs-initimage"></div></div>`
     }
+    if (task.reqBody.ref_images !== undefined && task.reqBody.ref_images.length > 0) {
+        let h = 80
+        task.reqBody.ref_images.forEach((refImg, idx) => {
+            taskConfig += `<div class="task-initimg ref-img-preview" style="float:left;" title="Reference Image ${idx + 1}"><img style="max-width:${h}px;height:${h}px;object-fit:contain;" src="${refImg}"><div class="task-fs-initimage"></div></div>`
+        })
+    }
 
     taskConfig += `<div class="taskConfigData">${createTaskConfig(task)}</span></div></div>`
 
@@ -1374,6 +1384,9 @@ function getCurrentUserRequest() {
         if (!testDiffusers.checked) {
             newTask.reqBody.sampler_name = "ddim"
         }
+    }
+    if (refImages.length > 0) {
+        newTask.reqBody.ref_images = refImages.slice()
     }
     if (saveToDiskField.checked && diskPathField.value.trim() !== "") {
         newTask.reqBody.save_to_disk_path = diskPathField.value.trim()
@@ -2447,6 +2460,70 @@ function loadControlnetImageFromFile() {
     }
 }
 controlImageSelector.addEventListener("change", loadControlnetImageFromFile)
+
+// Reference Images functions
+function renderRefImagesList() {
+    refImagesList.innerHTML = ""
+    refImages.forEach((src, idx) => {
+        const wrapper = document.createElement("div")
+        wrapper.className = "ref-image-wrapper"
+        const img = document.createElement("img")
+        img.className = "ref-image-preview"
+        img.src = src
+        const indexLabel = document.createElement("span")
+        indexLabel.className = "ref-image-index"
+        indexLabel.textContent = idx + 1
+        const clearBtn = document.createElement("button")
+        clearBtn.className = "ref-image-clear"
+        clearBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>'
+        clearBtn.title = "Remove reference image " + (idx + 1)
+        clearBtn.addEventListener("click", () => removeRefImage(idx))
+        wrapper.appendChild(img)
+        wrapper.appendChild(indexLabel)
+        wrapper.appendChild(clearBtn)
+        refImagesList.appendChild(wrapper)
+    })
+    if (refImages.length > 0) {
+        refImagesClearAllBtn.classList.remove("displayNone")
+    } else {
+        refImagesClearAllBtn.classList.add("displayNone")
+    }
+}
+
+function addRefImage(dataUrl) {
+    refImages.push(dataUrl)
+    renderRefImagesList()
+}
+
+function removeRefImage(idx) {
+    refImages.splice(idx, 1)
+    renderRefImagesList()
+}
+
+function clearAllRefImages() {
+    refImages = []
+    renderRefImagesList()
+}
+
+function loadRefImagesFromFile() {
+    if (!refImageSelector || refImageSelector.files.length === 0) {
+        return
+    }
+    Array.from(refImageSelector.files).forEach((file) => {
+        const reader = new FileReader()
+        reader.addEventListener("load", function() {
+            addRefImage(reader.result)
+        })
+        reader.readAsDataURL(file)
+    })
+    refImageSelector.value = null
+}
+if (refImageSelector) {
+    refImageSelector.addEventListener("change", loadRefImagesFromFile)
+}
+if (refImagesClearAllBtn) {
+    refImagesClearAllBtn.addEventListener("click", clearAllRefImages)
+}
 
 function controlImageLoad() {
     let w = controlImagePreview.naturalWidth
