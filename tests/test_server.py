@@ -7,7 +7,6 @@ from fastapi.testclient import TestClient
 from pathlib import Path
 import tempfile
 import shutil
-import io
 
 from easydiffusion.config import ConfigManager, create_default_config
 from easydiffusion.server import server_api
@@ -65,29 +64,77 @@ class TestHealthEndpoint:
         assert data["version"] == "1.0.0"
 
 
-class TestConfigEndpoints:
+class TestSystemConfigEndpoints:
     """Tests for /v1/config endpoints."""
 
     def test_get_config(self, client):
         """Test getting configuration."""
-        response = client.get("/v1/config?username=easydiffusion")
+        response = client.get("/v1/config")
         assert response.status_code == 200
 
         data = response.json()
         assert "network" in data
         assert "updates" in data
-        assert "rendering" in data
+        assert "models" in data
+        assert "backend" in data
         assert "users" not in data  # Ensure users are not returned
         assert "security" not in data  # Ensure security is not returned
-        assert "user_settings" in data
-        assert "save" in data["user_settings"]
-        assert "ui" in data["user_settings"]
-        assert data["rendering"]["backend"] == "sdkit3"
+        assert "user_settings" not in data
+        assert data["backend"]["backend_name"] == "sdkit3"
 
     def test_update_config(self, client, config_manager):
         """Test updating configuration."""
         response = client.put(
-            "/v1/config?username=default",
+            "/v1/config",
+            json={"models": {"models_dir": "/new/models"}, "backend": {"devices": "cpu"}},
+        )
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["status"] == "updated"
+
+        system_config = config_manager.get_system_config()
+        assert system_config["models"]["models_dir"] == "/new/models"
+        assert system_config["backend"]["devices"] == "cpu"
+        assert system_config["backend"]["backend_name"] == "sdkit3"
+
+    def test_update_config_forbidden_keys(self, client, config_manager):
+        """Test that forbidden keys like 'users' and 'security' are not set via config update."""
+        # Try to update with forbidden keys
+        response = client.put(
+            "/v1/config",
+            json={"models": {"models_dir": "/new/path"}, "users": ["new_user"], "security": {"foo": "bar"}},
+        )
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["status"] == "updated"
+
+        system_config = config_manager.get_system_config()
+        assert system_config["models"]["models_dir"] == "/new/path"
+        # Ensure forbidden keys are not set
+        assert config_manager.get_all()["users"] == ["easydiffusion"]
+        assert "foo" not in config_manager.get_all().get("security", {})
+
+
+class TestUserConfigEndpoints:
+    """Tests for /v1/users/{username}/config endpoints."""
+
+    def test_get_user_config(self, client):
+        """Test getting the effective user configuration."""
+        response = client.get("/v1/users/easydiffusion/config")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert "save" in data
+        assert "ui" in data
+        assert data["ui"]["block_nsfw"] is False
+        assert "network" not in data
+
+    def test_update_user_config(self, client, config_manager):
+        """Test updating user-specific overrides."""
+        response = client.put(
+            "/v1/users/easydiffusion/config",
             json={"save": {"save_path": "/new/path"}, "ui": {"theme": "theme-dark"}},
         )
         assert response.status_code == 200
@@ -97,25 +144,20 @@ class TestConfigEndpoints:
 
         user_config = config_manager.get_user_config("easydiffusion")
         assert user_config["save"]["save_path"] == "/new/path"
+        assert user_config["save"]["auto_save_images"] is False
         assert user_config["ui"]["theme"] == "theme-dark"
+        assert user_config["ui"]["open_browser_on_start"] is True
 
-    def test_update_config_forbidden_keys(self, client, config_manager):
-        """Test that forbidden keys like 'users' and 'security' are not set via config update."""
-        # Try to update with forbidden keys
-        response = client.put(
-            "/v1/config?username=default",
-            json={"save": {"save_path": "/new/path"}, "users": ["new_user"], "security": {"foo": "bar"}},
-        )
+    def test_get_user_config_honors_force_block_nsfw(self, client, config_manager):
+        """Test security.force_block_nsfw overrides the user config response."""
+        config = config_manager.get_all()
+        config["security"]["force_block_nsfw"] = True
+        config_manager.save(config)
+        config_manager.load()
+
+        response = client.get("/v1/users/easydiffusion/config")
         assert response.status_code == 200
-
-        data = response.json()
-        assert data["status"] == "updated"
-
-        user_config = config_manager.get_user_config("default")
-        assert user_config["save"]["save_path"] == "/new/path"
-        # Ensure forbidden keys are not set
-        assert "users" not in user_config
-        assert "security" not in user_config
+        assert response.json()["ui"]["block_nsfw"] is True
 
 
 class TestUserEndpoints:
@@ -201,7 +243,7 @@ class TestModelsEndpoint:
         models_dir.mkdir()
 
         config = config_manager.get_all()
-        config["rendering"]["models_dir"] = str(models_dir)
+        config["models"]["models_dir"] = str(models_dir)
         config_manager.update(config)
 
         response = client.get("/v1/models")
@@ -228,7 +270,7 @@ class TestModelsEndpoint:
         (vae_dir / "vae1.safetensors").touch()
 
         config = config_manager.get_all()
-        config["rendering"]["models_dir"] = str(models_dir)
+        config["models"]["models_dir"] = str(models_dir)
         config_manager.update(config)
 
         response = client.get("/v1/models")
@@ -392,7 +434,7 @@ class TestTasksEndpoints:
         assert data["task_id"] == task_id
         assert "status" in data
         assert "progress" in data
-        assert "images" in data
+        assert "outputs" in data
 
     def test_get_task_detail_with_request(self, client):
         """Test getting task details with request data."""
@@ -464,11 +506,11 @@ class TestTasksEndpoints:
         assert response.status_code == 200
 
 
-class TestImageEndpoint:
-    """Tests for image retrieval endpoint."""
+class TestOutputEndpoint:
+    """Tests for task output retrieval endpoint."""
 
-    def test_get_task_image(self, client):
-        """Test retrieving a task image."""
+    def test_get_task_output(self, client):
+        """Test retrieving a task output."""
         create_response = client.post(
             "/v1/generate",
             json={"username": "easydiffusion", "prompt": "Test", "model": "test"},
@@ -477,27 +519,27 @@ class TestImageEndpoint:
 
         task = server_api.state.task_cache[task_id]
 
-        test_image = io.BytesIO(b"fake_image_data")
-        task.output_images.append(test_image)
+        test_output = b"\x89PNG\r\n\x1a\nfake_png_data"
+        task.outputs.append(test_output)
 
-        response = client.get(f"/v1/tasks/{task_id}/images/0")
+        response = client.get(f"/v1/tasks/{task_id}/outputs/0")
         assert response.status_code == 200
-        assert response.headers["content-type"] == "image/jpeg"
+        assert response.headers["content-type"] == "image/png"
 
-    def test_get_task_image_not_found(self, client):
-        """Test retrieving non-existent image."""
+    def test_get_task_output_not_found(self, client):
+        """Test retrieving non-existent output."""
         create_response = client.post(
             "/v1/generate",
             json={"username": "easydiffusion", "prompt": "Test", "model": "test"},
         )
         task_id = create_response.json()["task_id"]
 
-        response = client.get(f"/v1/tasks/{task_id}/images/0")
+        response = client.get(f"/v1/tasks/{task_id}/outputs/0")
         assert response.status_code == 404
 
-    def test_get_task_image_invalid_task(self, client):
-        """Test retrieving image from non-existent task."""
-        response = client.get("/v1/tasks/invalid-task/images/0")
+    def test_get_task_output_invalid_task(self, client):
+        """Test retrieving output from non-existent task."""
+        response = client.get("/v1/tasks/invalid-task/outputs/0")
         assert response.status_code == 404
 
 
@@ -536,7 +578,7 @@ class TestCacheHeaders:
 
     def test_config_no_cache(self, client):
         """Test config endpoint has no-cache headers."""
-        response = client.get("/v1/config?username=easydiffusion")
+        response = client.get("/v1/config")
         assert "cache-control" in response.headers
         assert "no-cache" in response.headers["cache-control"]
 

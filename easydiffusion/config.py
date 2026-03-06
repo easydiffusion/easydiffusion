@@ -7,9 +7,14 @@ from a YAML file with support for preserving comments and formatting.
 
 from pathlib import Path
 from typing import Any, Dict, Optional, Union, List
+from collections.abc import Mapping
 from ruamel.yaml import YAML
 import threading
 import shutil
+from copy import deepcopy
+
+
+SYSTEM_CONFIG_KEYS = ("network", "updates", "models", "backend")
 
 
 class ConfigManager:
@@ -95,12 +100,9 @@ class ConfigManager:
         Args:
             updates: Dictionary of configuration updates
         """
-        for restricted_key in ("users", "security"):
-            if restricted_key in updates:
-                del updates[restricted_key]
-
         with self._lock:
-            self._config.update(updates)
+            filtered_updates = {key: value for key, value in updates.items() if key in SYSTEM_CONFIG_KEYS}
+            self._deep_merge(self._config, filtered_updates)
 
         self.save()
 
@@ -126,11 +128,20 @@ class ConfigManager:
         """
         with self._lock:
             user_settings = self._config.get("user_settings", {})
-            default_settings = user_settings.get("default", {})
-            user_specific = user_settings.get(username, {})
-            # Merge default with user overrides
-            merged = dict(default_settings)
-            merged.update(user_specific)
+            default_settings = deepcopy(user_settings.get("default", {}))
+            user_specific = deepcopy(user_settings.get(username, {}))
+            merged = default_settings
+            self._deep_merge(merged, user_specific)
+
+            # ensure that certain keys always exist in the merged config
+            merged.setdefault("save", {})
+            merged.setdefault("ui", {})
+            merged["ui"].setdefault("block_nsfw", False)
+
+            # enforce global NSFW blocking if configured
+            if self._config.get("security", {}).get("force_block_nsfw", False):
+                merged["ui"]["block_nsfw"] = True
+
             return merged
 
     def update_user_config(self, username: str, updates: Dict[str, Any]):
@@ -146,8 +157,15 @@ class ConfigManager:
                 self._config["user_settings"] = {}
             if username not in self._config["user_settings"]:
                 self._config["user_settings"][username] = {}
-            self._config["user_settings"][username].update(updates)
+
+            filtered_updates = {key: value for key, value in updates.items() if key in ("save", "ui")}
+            self._deep_merge(self._config["user_settings"][username], filtered_updates)
         self.save()
+
+    def get_system_config(self) -> Dict[str, Any]:
+        """Get the public system-wide configuration."""
+        with self._lock:
+            return {key: deepcopy(self._config.get(key, {})) for key in SYSTEM_CONFIG_KEYS}
 
     def get_users(self) -> List[str]:
         """
@@ -187,6 +205,19 @@ class ConfigManager:
                 if "user_settings" in self._config and username in self._config["user_settings"]:
                     del self._config["user_settings"][username]
         self.save()
+
+    def _deep_merge(self, current: Dict[str, Any], updates: Dict[str, Any]):
+        """
+        Recursively merge updates into the current configuration.
+
+        dict.update() doesn't merge nested dictionaries but replaces them, so we need
+        to do this recursively to allow partial updates.
+        """
+        for key, value in updates.items():
+            if isinstance(value, Mapping) and isinstance(current.get(key), Mapping):
+                self._deep_merge(current[key], value)
+            else:
+                current[key] = value
 
 
 def create_default_config(config_path: Union[str, Path]):

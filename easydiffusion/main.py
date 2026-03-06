@@ -49,13 +49,13 @@ def init():
 
     # Initialize worker manager
     logger.info("Initializing worker manager")
-    backend_name = config.get("rendering", {}).get("backend", "sdkit3")
+    backend_name = config.get("backend", {}).get("backend_name", "sdkit3")
     worker_manager = WorkerManager(task_queue, backend_name)
 
     # Start workers for configured devices
-    render_devices = config.get("rendering", {}).get("devices", "auto")
-    logger.info(f"Starting workers for devices: {render_devices}")
-    worker_manager.update_workers(render_devices)
+    devices = config.get("backend", {}).get("devices", "auto")
+    logger.info(f"Starting workers for devices: {devices}")
+    worker_manager.update_workers(devices)
 
     # Store in app state (will be set when app is created)
     server_api.state.config_manager = config_manager

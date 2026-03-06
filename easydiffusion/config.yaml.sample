@@ -3,6 +3,12 @@
 # Edit the values below to customize your setup.
 # Lines starting with # are considered as comments and ignored.
 
+# Model settings
+models:
+  # Directory where models are stored. Relative to installation path or absolute path.
+  models_dir: models
+
+
 # Network settings
 network:
   # Port number for the web server (default: 9000)
@@ -18,22 +24,16 @@ updates:
   branch: main
 
 
-# Rendering settings
-rendering:
-  # Devices to use for rendering (auto, cpu, 0, 1, etc.)
+# Backend settings
+backend:
+  # Devices to use for processing (auto, cpu, 0, 1, etc.)
   devices: auto
-
-  # Directory where models are stored. Relative to installation path or absolute path.
-  models_dir: models
 
   # VRAM usage level (balanced, low, high)
   vram_usage_level: balanced
 
-  # Block NSFW images (blurs out NSFW content)
-  block_nsfw: false
-
-  # Backend to use for rendering (sdkit3, etc.)
-  backend: sdkit3
+  # Backend implementation to use (sdkit3, etc.)
+  backend_name: sdkit3
 
   # Advanced backend overrides applied at startup
   backend_config:
@@ -118,6 +118,9 @@ user_settings:
     ui:
       # UI theme
       theme: theme-default
+
+      # Block NSFW images for this user
+      block_nsfw: false
 
       # Automatically open browser when starting the server
       open_browser_on_start: true

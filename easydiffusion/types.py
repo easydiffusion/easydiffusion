@@ -1,7 +1,7 @@
 """Shared data types for the EasyDiffusion API."""
 
 from pydantic import BaseModel, Field
-from typing import Any, Optional, List, Dict
+from typing import Any, Optional, List, Dict, Union
 from abc import abstractmethod
 import uuid
 import queue
@@ -9,7 +9,9 @@ import threading
 
 
 class Task:
-    """Represents a render task with intermediate results storage."""
+    """Represents a task with output storage."""
+
+    task_type = "task"
 
     def __init__(
         self,
@@ -25,13 +27,12 @@ class Task:
         self.params = kwargs
 
         self.buffer_queue: queue.Queue = queue.Queue()
-        self.temp_images: list = []
         self.lock: threading.Lock = threading.Lock()
         self.response: Optional[Any] = None
         self.error: Optional[Exception] = None
-        self.render_device: Optional[str] = None
+        self.device: Optional[str] = None
         self.progress: int = 0
-        self.output_images: List[str] = []
+        self.outputs: List[bytes] = []
         self.request_data: Optional[Dict[str, Any]] = None
 
     async def read_buffer_generator(self):
@@ -93,26 +94,28 @@ class HealthResponse(BaseModel):
 
 
 class NetworkConfig(BaseModel):
-    port: int
-    external_access: bool
+    port: Optional[int] = None
+    external_access: Optional[bool] = None
 
 
 class UpdatesConfig(BaseModel):
-    branch: str
+    branch: Optional[str] = None
 
 
-class BackendConfig(BaseModel):
-    commandline_args: str
-    force_full_precision: bool
+class BackendOverridesConfig(BaseModel):
+    commandline_args: Optional[str] = None
+    force_full_precision: Optional[bool] = None
 
 
-class RenderingConfig(BaseModel):
-    devices: str
-    models_dir: str
-    vram_usage_level: str
-    block_nsfw: bool
-    backend: str
-    backend_config: BackendConfig
+class ModelsConfig(BaseModel):
+    models_dir: Optional[str] = None
+
+
+class BackendSettingsConfig(BaseModel):
+    devices: Optional[Union[str, List[str]]] = None
+    vram_usage_level: Optional[str] = None
+    backend_name: Optional[str] = None
+    backend_config: Optional[BackendOverridesConfig] = None
 
 
 class SaveConfig(BaseModel):
@@ -130,6 +133,7 @@ class UiConfig(BaseModel):
     confirm_dangerous_actions: Optional[bool] = None
     auto_save_image_settings: Optional[bool] = None
     image_settings_auto_save_overrides: Optional[Dict[str, bool]] = None
+    block_nsfw: Optional[bool] = None
 
 
 class UserSettingsConfig(BaseModel):
@@ -138,13 +142,13 @@ class UserSettingsConfig(BaseModel):
 
 
 class ConfigResponse(BaseModel):
-    network: NetworkConfig
-    updates: UpdatesConfig
-    rendering: RenderingConfig
-    user_settings: UserSettingsConfig
+    network: Optional[NetworkConfig] = None
+    updates: Optional[UpdatesConfig] = None
+    models: Optional[ModelsConfig] = None
+    backend: Optional[BackendSettingsConfig] = None
 
 
-class ConfigUpdate(UserSettingsConfig):
+class UserConfigResponse(UserSettingsConfig):
     pass
 
 
@@ -217,7 +221,7 @@ class TaskDetail(BaseModel):
     username: str
     status: str
     progress: int
-    images: List[str]
+    outputs: List[str]
     request: Optional[Dict[str, Any]] = None
 
 

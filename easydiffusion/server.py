@@ -5,11 +5,10 @@ Provides the REST API for image generation and configuration management.
 """
 
 from fastapi import FastAPI, APIRouter, HTTPException, Query, Response
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse
 from pathlib import Path
-import io
 import os
 import mimetypes
 from typing import Optional
@@ -17,7 +16,8 @@ from typing import Optional
 from easydiffusion.types import (
     HealthResponse,
     ConfigResponse,
-    ConfigUpdate,
+    UserConfigResponse,
+    UserSettingsConfig,
     DevicesResponse,
     DeviceInfo,
     ModelsResponse,
@@ -34,7 +34,7 @@ from easydiffusion.types import (
     CreateUserResponse,
     DeleteUserResponse,
 )
-from easydiffusion.tasks import RenderTask, FilterTask
+from easydiffusion.tasks import GenerateTask, FilterTask
 
 # Create the FastAPI application
 server_api = FastAPI(title="EasyDiffusion API", version="1.0.0")
@@ -92,11 +92,17 @@ def init():
     )
     v1_router.add_api_route("/tasks", get_tasks, methods=["GET"], response_model=TasksResponse)
     v1_router.add_api_route("/tasks/{task_id}", get_task, methods=["GET"], response_model=TaskDetail)
-    v1_router.add_api_route("/tasks/{task_id}/images/{image_id}", get_task_image, methods=["GET"])
+    v1_router.add_api_route("/tasks/{task_id}/outputs/{output_id}", get_task_output, methods=["GET"])
     v1_router.add_api_route("/tasks/{task_id}", stop_task, methods=["DELETE"], response_model=StatusResponse)
     v1_router.add_api_route("/tasks", stop_all_tasks, methods=["DELETE"], response_model=StatusResponse)
     v1_router.add_api_route("/users", get_users, methods=["GET"], response_model=UserListResponse)
     v1_router.add_api_route("/users", create_user, methods=["POST"], response_model=CreateUserResponse, status_code=201)
+    v1_router.add_api_route(
+        "/users/{username}/config", get_user_config, methods=["GET"], response_model=UserConfigResponse
+    )
+    v1_router.add_api_route(
+        "/users/{username}/config", update_user_config, methods=["PUT"], response_model=StatusResponse
+    )
     v1_router.add_api_route("/users/{username}", delete_user, methods=["DELETE"], response_model=DeleteUserResponse)
 
     server_api.include_router(v1_router)
@@ -113,20 +119,41 @@ async def get_health():
     return Response(content=content, media_type="application/json", headers=NOCACHE_HEADERS)
 
 
-async def get_config(username: str = Query(..., description="Username for user-specific config")):
-    """Retrieve application configuration for the specified user."""
+def _detect_media_type_from_bytes(data: bytes) -> Optional[str]:
+    signatures = (
+        (b"\x89PNG\r\n\x1a\n", "image/png"),
+        (b"\xff\xd8\xff", "image/jpeg"),
+        (b"GIF87a", "image/gif"),
+        (b"GIF89a", "image/gif"),
+        (b"BM", "image/bmp"),
+        (b"II*\x00", "image/tiff"),
+        (b"MM\x00*", "image/tiff"),
+    )
+
+    for prefix, media_type in signatures:
+        if data.startswith(prefix):
+            return media_type
+
+    if len(data) >= 12 and data.startswith(b"RIFF") and data[8:12] == b"WEBP":
+        return "image/webp"
+
+    return None
+
+
+def _read_output_payload(output_artifact: bytes) -> tuple[bytes, str]:
+    """Return task output bytes and the inferred response MIME type."""
+    if not isinstance(output_artifact, (bytes, bytearray)):
+        raise HTTPException(status_code=500, detail="Invalid output data")
+
+    data = bytes(output_artifact)
+    return data, _detect_media_type_from_bytes(data) or "application/octet-stream"
+
+
+async def get_config():
+    """Retrieve the public system-wide configuration."""
     try:
         config_manager = server_api.state.config_manager
-        config = config_manager.get_all()
-        user_config = config_manager.get_user_config(username)
-
-        # Build the response
-        response_data = {
-            "network": config.get("network", {}),
-            "updates": config.get("updates", {}),
-            "rendering": config.get("rendering", {}),
-            "user_settings": user_config,
-        }
+        response_data = config_manager.get_system_config()
 
         return JSONResponse(
             ConfigResponse(**response_data).model_dump(),
@@ -136,15 +163,38 @@ async def get_config(username: str = Query(..., description="Username for user-s
         raise HTTPException(status_code=500, detail=str(e))
 
 
-async def update_config(req: ConfigUpdate, username: str = Query(..., description="Username for user-specific config")):
-    """Update configuration for the specified user."""
+async def update_config(req: ConfigResponse):
+    """Update the public system-wide configuration."""
     try:
         config_manager = server_api.state.config_manager
-        update_data = req.model_dump()
-        # Filter out sensitive keys that should not be set via API
-        forbidden_keys = {"users", "security"}
-        filtered_data = {k: v for k, v in update_data.items() if k not in forbidden_keys}
-        config_manager.update_user_config(username, filtered_data)
+        config_manager.update(req.model_dump(exclude_none=True))
+
+        return JSONResponse(
+            StatusResponse(status="updated").model_dump(),
+            headers=NOCACHE_HEADERS,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def get_user_config(username: str):
+    """Retrieve the effective user-specific configuration."""
+    try:
+        config_manager = server_api.state.config_manager
+
+        return JSONResponse(
+            UserConfigResponse(**config_manager.get_user_config(username)).model_dump(),
+            headers=NOCACHE_HEADERS,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def update_user_config(req: UserSettingsConfig, username: str):
+    """Update user-specific configuration overrides."""
+    try:
+        config_manager = server_api.state.config_manager
+        config_manager.update_user_config(username, req.model_dump(exclude_none=True))
 
         return JSONResponse(
             StatusResponse(status="updated").model_dump(),
@@ -155,7 +205,7 @@ async def update_config(req: ConfigUpdate, username: str = Query(..., descriptio
 
 
 async def get_devices():
-    """List render devices."""
+    """List available devices."""
     try:
         from torchruntime.device_db import get_gpus
 
@@ -187,8 +237,8 @@ async def get_models():
         from easydiffusion.local_models import enumerate_all_models
 
         config_manager = server_api.state.config_manager
-        config = config_manager.get_all()
-        models_dir = config.get("rendering", {}).get("models_dir", "models")
+        config = config_manager.get_system_config()
+        models_dir = config.get("models", {}).get("models_dir", "models")
 
         all_models = enumerate_all_models(models_dir)
         models = [
@@ -213,7 +263,7 @@ async def create_generate_task(req: GenerateRequest):
     try:
         task_queue = server_api.state.task_queue
 
-        task = RenderTask(**req.model_dump())
+        task = GenerateTask(**req.model_dump())
         task.request_data = req.model_dump()
 
         task_queue.add_task(task)
@@ -277,7 +327,7 @@ async def get_tasks(username: Optional[str] = Query(None, description="Username 
                         username=task.username,
                         status=task.status,
                         progress=task.progress,
-                        type=task.__class__.__name__.replace("Task", "").lower(),  # e.g. RenderTask -> "render"
+                        type=task.task_type,
                     )
                 )
 
@@ -299,7 +349,7 @@ async def get_task(task_id: str, include_request: bool = Query(False)):
         if not task:
             raise HTTPException(status_code=404, detail="Task not found")
 
-        images = [f"/v1/tasks/{task_id}/images/{i}" for i in range(len(task.output_images))]
+        outputs = [f"/v1/tasks/{task_id}/outputs/{i}" for i in range(len(task.outputs))]
 
         request_data = None
         if include_request and task.request_data:
@@ -311,7 +361,7 @@ async def get_task(task_id: str, include_request: bool = Query(False)):
                 username=task.username,
                 status=task.status,
                 progress=task.progress,
-                images=images,
+                outputs=outputs,
                 request=request_data,
             ).model_dump(),
             headers=NOCACHE_HEADERS,
@@ -322,8 +372,8 @@ async def get_task(task_id: str, include_request: bool = Query(False)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-async def get_task_image(task_id: str, image_id: int):
-    """Retrieve image from task."""
+async def get_task_output(task_id: str, output_id: int):
+    """Retrieve an output artifact from a task."""
     try:
         if not hasattr(server_api.state, "task_cache"):
             raise HTTPException(status_code=404, detail="Task not found")
@@ -332,25 +382,11 @@ async def get_task_image(task_id: str, image_id: int):
         if not task:
             raise HTTPException(status_code=404, detail="Task not found")
 
-        if image_id >= len(task.output_images):
-            raise HTTPException(status_code=404, detail="Image not found")
+        if output_id >= len(task.outputs):
+            raise HTTPException(status_code=404, detail="Output not found")
 
-        image_path_or_data = task.output_images[image_id]
-
-        if isinstance(image_path_or_data, (str, Path)):
-            image_path = Path(image_path_or_data)
-            if not image_path.exists():
-                raise HTTPException(status_code=404, detail="Image file not found")
-
-            with open(image_path, "rb") as f:
-                image_data = io.BytesIO(f.read())
-        elif isinstance(image_path_or_data, io.BytesIO):
-            image_data = image_path_or_data
-            image_data.seek(0)
-        else:
-            raise HTTPException(status_code=500, detail="Invalid image data")
-
-        return StreamingResponse(image_data, media_type="image/jpeg")
+        output_data, media_type = _read_output_payload(task.outputs[output_id])
+        return Response(content=output_data, media_type=media_type, headers=NOCACHE_HEADERS)
     except HTTPException:
         raise
     except Exception as e:
