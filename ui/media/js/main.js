@@ -120,6 +120,7 @@ let applyColorCorrectionField = document.querySelector("#apply_color_correction"
 let strictMaskBorderField = document.querySelector("#strict_mask_border")
 let colorCorrectionSetting = document.querySelector("#apply_color_correction_setting")
 let strictMaskBorderSetting = document.querySelector("#strict_mask_border_setting")
+let refImageContainer = document.querySelector("#editor-inputs-ref-images")
 let refImageSelector = document.querySelector("#ref_image_input")
 let refImagesList = document.querySelector("#ref_images_list")
 let refImagesClearAllBtn = document.querySelector("#ref_images_clear_all")
@@ -1964,6 +1965,22 @@ function checkAndSetDependentModels() {
 // e.g. distinguish between flux models that need a text encoder vs flux models with built-in text encoders
 // sdModelField.addEventListener("change", checkAndSetDependentModels)
 
+function checkReferenceImageField() {
+    console.log("Checking reference image field for flux/chroma model")
+    if (!modelsDB) {
+        return
+    }
+
+    console.log("Current SD model:", stableDiffusionModelField.value, "isFlux:", isFluxModel())
+
+    if (isFluxModel()) {
+        refImageContainer.classList.remove("displayNone")
+    } else {
+        refImageContainer.classList.add("displayNone")
+    }
+}
+sdModelField.addEventListener("change", checkReferenceImageField)
+
 function checkGuidanceValue() {
     if (!modelsDB) {
         return
@@ -2072,6 +2089,7 @@ numInferenceStepsField.addEventListener("change", checkFluxSchedulerSteps)
 
 document.addEventListener("refreshModels", function() {
     // checkAndSetDependentModels()
+    checkReferenceImageField()
     checkGuidanceValue()
     checkGuidanceScaleVisibility()
     checkFluxSampler()
