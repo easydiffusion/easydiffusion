@@ -18,6 +18,7 @@ class GenerateImageRequest(BaseModel):
 
     init_image: Any = None
     init_image_mask: Any = None
+    ref_images: Any = None  # list of base64-encoded reference images for vision-based models
     control_image: Any = None
     control_alpha: Union[float, List[float]] = None
     controlnet_filter: str = None
@@ -150,6 +151,7 @@ class GenerateImageResponse:
     def json(self):
         del self.render_request.init_image
         del self.render_request.init_image_mask
+        del self.render_request.ref_images
         del self.render_request.control_image
 
         task_data = self.task_data.dict()

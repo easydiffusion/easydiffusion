@@ -158,6 +158,19 @@ const TASK_MAPPING = {
         readUI: () => initImagePreview.src,
         parse: (val) => val,
     },
+    ref_images: {
+        name: "Reference Images",
+        setUI: (ref_images) => {
+            if (Array.isArray(ref_images) && ref_images.length > 0) {
+                refImages = ref_images.slice()
+                renderRefImagesList()
+            } else {
+                clearAllRefImages()
+            }
+        },
+        readUI: () => (refImages.length > 0 ? refImages.slice() : undefined),
+        parse: (val) => (Array.isArray(val) ? val : undefined),
+    },
     mask: {
         name: "Mask",
         setUI: (mask) => {
@@ -595,6 +608,14 @@ function restoreTaskToUI(task, fieldsToSkip) {
     } else if (task.reqBody.control_image !== undefined) {
         // listen for inpainter loading event, which happens AFTER the main image loads (which reloads the inpai
         controlImagePreview.src = task.reqBody.control_image
+    }
+
+    // restore ref images
+    if (task.reqBody.ref_images !== undefined && Array.isArray(task.reqBody.ref_images) && task.reqBody.ref_images.length > 0) {
+        refImages = task.reqBody.ref_images.slice()
+        renderRefImagesList()
+    } else if (refImages.length > 0) {
+        clearAllRefImages()
     }
 
     if ("use_controlnet_model" in task.reqBody && task.reqBody.use_controlnet_model && !("control_alpha" in task.reqBody)) {

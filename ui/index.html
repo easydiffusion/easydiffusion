@@ -135,6 +135,27 @@
 
                 </div>
 
+                <div id="editor-inputs-ref-images" class="row gated-feature" data-feature-keys="backend_sdkit3">
+                    <label>Reference Images <small>(optional)</small></label>
+                    <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top">
+                        Add reference images for vision-based models (e.g. Qwen image editing). You can add one or more
+                        reference images using the Browse button or by drag &amp; drop.<br /><br />
+                        Reference images guide the model's visual understanding during generation.
+                    </span></i>
+
+                    <div id="ref_images_preview_container">
+                        <div id="ref_images_list"></div>
+                        <div id="ref_images_buttons">
+                            <div class="button">
+                                <i class="fa-regular fa-folder-open"></i>
+                                Add Image
+                                <input id="ref_image_input" name="ref_image_input" type="file" accept="image/*" multiple />
+                            </div>
+                            <button id="ref_images_clear_all" class="tertiaryButton smallButton displayNone">Clear All</button>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="editor-inputs-tags-container" class="row">
                     <label>Image Modifiers <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip right">Click an Image Modifier to remove it, right-click to temporarily disable it, use Ctrl+Mouse Wheel to adjust its weight</span></i></label>
                     <div id="editor-inputs-tags-list"></div>
