@@ -1470,7 +1470,7 @@ function getCurrentUserRequest() {
             newTask.reqBody.control_filter_to_apply = controlImageFilterField.value
         }
     }
-    if (stableDiffusionModelField.value.toLowerCase().includes("flux")) {
+    if (isFluxModel()) {
         newTask.reqBody.distilled_guidance_scale = parseFloat(distilledGuidanceScaleField.value)
     }
     if (schedulerSelectionContainer.style.display !== "none") {
