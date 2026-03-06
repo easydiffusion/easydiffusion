@@ -16,14 +16,12 @@ class Task:
         username: str,
         task_id: Optional[str] = None,
         session_id: Optional[str] = None,
-        task_type: str = "generate",
         **kwargs,
     ):
         self.task_id = task_id or str(uuid.uuid4())
         self.id = id(self)
         self.session_id = session_id or "default"
         self.username = username
-        self.task_type = task_type
         self.params = kwargs
 
         self.buffer_queue: queue.Queue = queue.Queue()
