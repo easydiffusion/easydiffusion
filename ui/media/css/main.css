@@ -25,6 +25,10 @@ a:visited {
 label {
     font-size: 10pt;
 }
+abbr[title] {
+    text-decoration: underline dotted;
+    cursor: help;
+}
 code {
     background: var(--background-color4);
     padding: 2px 4px;

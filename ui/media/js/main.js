@@ -17,7 +17,7 @@ const taskConfigSetup = {
             visible: ({ reqBody }) => reqBody?.scheduler_name,
         },
         num_inference_steps: "Inference Steps",
-        guidance_scale: "Guidance Scale",
+        guidance_scale: 'Guidance Scale <small>(<abbr title="Classifier-Free Guidance">CFG</abbr> Scale)</small>',
         distilled_guidance_scale: {
             label: "Distilled Guidance Scale",
             visible: ({ reqBody }) => reqBody?.distilled_guidance_scale,
@@ -42,7 +42,7 @@ const taskConfigSetup = {
             label: "Negative Prompt",
             visible: ({ reqBody }) => reqBody?.negative_prompt !== undefined && reqBody?.negative_prompt.trim() !== "",
         },
-        prompt_strength: "Prompt Strength",
+        prompt_strength: 'Prompt Strength <small>(<abbr title="Common name in other UIs">Denoising Strength</abbr>)</small>',
         use_face_correction: "Fix Faces",
         upscale: {
             value: ({ reqBody }) => `${reqBody?.use_upscale} (${reqBody?.upscale_amount || 4}x)`,
