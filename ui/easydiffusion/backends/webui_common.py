@@ -320,7 +320,8 @@ def filter_images(context: Context, images, filters, filter_params={}, input_typ
     if "nsfw_checker" in filters:
         filters.remove("nsfw_checker")  # handled by ED directly
 
-    args = {}
+    # Face filters also use the extras API, so start from a no-upscale payload.
+    args = {"upscaling_resize": 1, "upscaler_1": "None"}
     controlnet_filters = []
 
     print(filter_params)
