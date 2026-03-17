@@ -104,6 +104,16 @@ class TestWebuiFaceFilterPayloads(unittest.TestCase):
     def setUp(self):
         self.webui_common.webui_opts = {}
 
+    def _set_fake_post(self, payloads, response_image, simulate_bug=False):
+        def fake_post(uri, json=None, **kwargs):
+            self.assertEqual(uri, "/sdapi/v1/extra-batch-images")
+            payloads.append(json)
+            if simulate_bug and json["upscaler_1"] == "None" and json["upscaling_resize"] > 1:
+                return _FakeResponse(500, {"detail": "None.pth"})
+            return _FakeResponse(200, {"images": [response_image]})
+
+        self.webui_common.webui_post = fake_post
+
     def test_face_only_filters_do_not_trigger_implicit_upscale(self):
         test_cases = (
             ("gfpgan", ["gfpgan"], {"gfpgan": {}}, {"gfpgan_visibility": 1}),
@@ -118,15 +128,7 @@ class TestWebuiFaceFilterPayloads(unittest.TestCase):
         for name, filters, filter_params, expected_payload in test_cases:
             with self.subTest(filter_name=name):
                 payloads = []
-
-                def fake_post(uri, json=None, **kwargs):
-                    self.assertEqual(uri, "/sdapi/v1/extra-batch-images")
-                    payloads.append(json)
-                    if json["upscaler_1"] == "None" and json["upscaling_resize"] > 1:
-                        return _FakeResponse(500, {"detail": "None.pth"})
-                    return _FakeResponse(200, {"images": ["filtered-face"]})
-
-                self.webui_common.webui_post = fake_post
+                self._set_fake_post(payloads, "filtered-face", simulate_bug=True)
 
                 images = self.webui_common.filter_images(
                     None,
@@ -145,13 +147,7 @@ class TestWebuiFaceFilterPayloads(unittest.TestCase):
 
     def test_explicit_upscale_settings_are_still_forwarded(self):
         payloads = []
-
-        def fake_post(uri, json=None, **kwargs):
-            self.assertEqual(uri, "/sdapi/v1/extra-batch-images")
-            payloads.append(json)
-            return _FakeResponse(200, {"images": ["upscaled-image"]})
-
-        self.webui_common.webui_post = fake_post
+        self._set_fake_post(payloads, "upscaled-image")
 
         images = self.webui_common.filter_images(
             None,
