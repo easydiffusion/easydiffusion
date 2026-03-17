@@ -5,9 +5,20 @@ import types
 import unittest
 
 
-def _load_webui_common():
-    repo_root = pathlib.Path(__file__).resolve().parent.parent
-    module_path = repo_root / "ui" / "easydiffusion" / "backends" / "webui_common.py"
+_MOCKED_MODULES = (
+    "sdkit",
+    "sdkit.utils",
+    "torchruntime",
+    "torchruntime.utils",
+    "easydiffusion",
+    "easydiffusion.app",
+    "easydiffusion.model_manager",
+    "common",
+)
+
+
+def _install_mock_dependencies():
+    original_modules = {name: sys.modules.get(name) for name in _MOCKED_MODULES}
 
     sdkit = types.ModuleType("sdkit")
     sdkit_utils = types.ModuleType("sdkit.utils")
@@ -44,6 +55,20 @@ def _load_webui_common():
             "common": common,
         }
     )
+    return original_modules
+
+
+def _restore_mock_dependencies(original_modules):
+    for name, module in original_modules.items():
+        if module is None:
+            sys.modules.pop(name, None)
+        else:
+            sys.modules[name] = module
+
+
+def _load_webui_common():
+    repo_root = pathlib.Path(__file__).resolve().parent.parent
+    module_path = repo_root / "ui" / "easydiffusion" / "backends" / "webui_common.py"
 
     spec = importlib.util.spec_from_file_location("issue1992_webui_common", module_path)
     if spec is None or spec.loader is None:
@@ -66,6 +91,19 @@ class _FakeResponse:
 
 
 class TestWebuiFaceFilterPayloads(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls._original_modules = _install_mock_dependencies()
+        cls.webui_common = _load_webui_common()
+
+    @classmethod
+    def tearDownClass(cls):
+        _restore_mock_dependencies(cls._original_modules)
+        sys.modules.pop("issue1992_webui_common", None)
+
+    def setUp(self):
+        self.webui_common.webui_opts = {}
+
     def test_face_only_filters_do_not_trigger_implicit_upscale(self):
         test_cases = (
             ("gfpgan", ["gfpgan"], {"gfpgan": {}}, {"gfpgan_visibility": 1}),
@@ -79,7 +117,6 @@ class TestWebuiFaceFilterPayloads(unittest.TestCase):
 
         for name, filters, filter_params, expected_payload in test_cases:
             with self.subTest(filter_name=name):
-                webui_common = _load_webui_common()
                 payloads = []
 
                 def fake_post(uri, json=None, **kwargs):
@@ -89,9 +126,9 @@ class TestWebuiFaceFilterPayloads(unittest.TestCase):
                         return _FakeResponse(500, {"detail": "None.pth"})
                     return _FakeResponse(200, {"images": ["filtered-face"]})
 
-                webui_common.webui_post = fake_post
+                self.webui_common.webui_post = fake_post
 
-                images = webui_common.filter_images(
+                images = self.webui_common.filter_images(
                     None,
                     ["input-image"],
                     filters,
@@ -107,7 +144,6 @@ class TestWebuiFaceFilterPayloads(unittest.TestCase):
                     self.assertEqual(payloads[0][key], value)
 
     def test_explicit_upscale_settings_are_still_forwarded(self):
-        webui_common = _load_webui_common()
         payloads = []
 
         def fake_post(uri, json=None, **kwargs):
@@ -115,9 +151,9 @@ class TestWebuiFaceFilterPayloads(unittest.TestCase):
             payloads.append(json)
             return _FakeResponse(200, {"images": ["upscaled-image"]})
 
-        webui_common.webui_post = fake_post
+        self.webui_common.webui_post = fake_post
 
-        images = webui_common.filter_images(
+        images = self.webui_common.filter_images(
             None,
             ["input-image"],
             ["gfpgan", "realesrgan"],
