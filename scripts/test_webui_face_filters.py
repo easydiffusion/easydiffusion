@@ -66,56 +66,45 @@ class _FakeResponse:
 
 
 class TestWebuiFaceFilterPayloads(unittest.TestCase):
-    def test_gfpgan_only_filter_does_not_trigger_implicit_upscale(self):
-        webui_common = _load_webui_common()
-        payloads = []
-
-        def fake_post(uri, json=None, **kwargs):
-            self.assertEqual(uri, "/sdapi/v1/extra-batch-images")
-            payloads.append(json)
-            if json["upscaler_1"] == "None" and json["upscaling_resize"] > 1:
-                return _FakeResponse(500, {"detail": "None.pth"})
-            return _FakeResponse(200, {"images": ["filtered-face"]})
-
-        webui_common.webui_post = fake_post
-
-        images = webui_common.filter_images(
-            None, ["input-image"], ["gfpgan"], {"gfpgan": {}}, input_type="base64"
+    def test_face_only_filters_do_not_trigger_implicit_upscale(self):
+        test_cases = (
+            ("gfpgan", ["gfpgan"], {"gfpgan": {}}, {"gfpgan_visibility": 1}),
+            (
+                "codeformer",
+                ["codeformer"],
+                {"codeformer": {"codeformer_fidelity": 0.35}},
+                {"codeformer_visibility": 1, "codeformer_weight": 0.35},
+            ),
         )
 
-        self.assertEqual(images, ["data:image/jpeg;base64,filtered-face"])
-        self.assertEqual(len(payloads), 1)
-        self.assertEqual(payloads[0]["gfpgan_visibility"], 1)
-        self.assertEqual(payloads[0]["upscaling_resize"], 1)
-        self.assertEqual(payloads[0]["upscaler_1"], "None")
+        for name, filters, filter_params, expected_payload in test_cases:
+            with self.subTest(filter_name=name):
+                webui_common = _load_webui_common()
+                payloads = []
 
-    def test_codeformer_only_filter_does_not_trigger_implicit_upscale(self):
-        webui_common = _load_webui_common()
-        payloads = []
+                def fake_post(uri, json=None, **kwargs):
+                    self.assertEqual(uri, "/sdapi/v1/extra-batch-images")
+                    payloads.append(json)
+                    if json["upscaler_1"] == "None" and json["upscaling_resize"] > 1:
+                        return _FakeResponse(500, {"detail": "None.pth"})
+                    return _FakeResponse(200, {"images": ["filtered-face"]})
 
-        def fake_post(uri, json=None, **kwargs):
-            self.assertEqual(uri, "/sdapi/v1/extra-batch-images")
-            payloads.append(json)
-            if json["upscaler_1"] == "None" and json["upscaling_resize"] > 1:
-                return _FakeResponse(500, {"detail": "None.pth"})
-            return _FakeResponse(200, {"images": ["filtered-face"]})
+                webui_common.webui_post = fake_post
 
-        webui_common.webui_post = fake_post
+                images = webui_common.filter_images(
+                    None,
+                    ["input-image"],
+                    filters,
+                    filter_params,
+                    input_type="base64",
+                )
 
-        images = webui_common.filter_images(
-            None,
-            ["input-image"],
-            ["codeformer"],
-            {"codeformer": {"codeformer_fidelity": 0.35}},
-            input_type="base64",
-        )
-
-        self.assertEqual(images, ["data:image/jpeg;base64,filtered-face"])
-        self.assertEqual(len(payloads), 1)
-        self.assertEqual(payloads[0]["codeformer_visibility"], 1)
-        self.assertEqual(payloads[0]["codeformer_weight"], 0.35)
-        self.assertEqual(payloads[0]["upscaling_resize"], 1)
-        self.assertEqual(payloads[0]["upscaler_1"], "None")
+                self.assertEqual(images, ["data:image/jpeg;base64,filtered-face"])
+                self.assertEqual(len(payloads), 1)
+                self.assertEqual(payloads[0]["upscaling_resize"], 1)
+                self.assertEqual(payloads[0]["upscaler_1"], "None")
+                for key, value in expected_payload.items():
+                    self.assertEqual(payloads[0][key], value)
 
     def test_explicit_upscale_settings_are_still_forwarded(self):
         webui_common = _load_webui_common()
