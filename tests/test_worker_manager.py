@@ -5,75 +5,11 @@ Tests for the worker manager system.
 import time
 import threading
 from unittest.mock import patch
-from easydiffusion.types import Task
 from easydiffusion.task_queue import TaskQueue
 from easydiffusion.worker_manager import BackendWorker, WorkerManager
-from easydiffusion.backends import Backend, BACKEND_REGISTRY
+from easydiffusion.backends import BACKEND_REGISTRY
 from torchruntime.device_db import GPU
-
-
-class MockBackend(Backend):
-    """A mock backend for testing."""
-
-    def __init__(self, device: GPU):
-        """Initialize the mock backend."""
-        super().__init__(device)
-        self.initialized = True
-        self.stop_called = False
-        self.start_called = False
-        self.start_thread_id = None
-        self.tasks_processed = []
-        self.lock = threading.Lock()
-
-    def install(self) -> None:
-        """Install the backend (no-op for mock)."""
-        pass
-
-    def uninstall(self) -> None:
-        """Uninstall the backend (no-op for mock)."""
-        pass
-
-    def start(self):
-        """Start the backend (called from worker thread)."""
-        self.start_called = True
-        self.start_thread_id = threading.current_thread().ident
-
-    def stop(self):
-        """Stop the backend."""
-        self.stop_called = True
-
-    def ping(self, timeout: float = 1.0) -> bool:
-        """Ping the backend."""
-        return True
-
-    def render_image(self, context, **kwargs):
-        """Render an image (mock implementation)."""
-        return None
-
-    def process(self, data):
-        """Process some data."""
-        with self.lock:
-            self.tasks_processed.append(data)
-        return f"Processed: {data}"
-
-
-class MockTask(Task):
-    """A mock task for testing."""
-
-    def __init__(self, data, callback=None):
-        """Initialize the task."""
-        self.data = data
-        self.callback = callback
-        self.result = None
-        self.backend_used = None
-
-    def run(self, backend):
-        """Run the task with the given backend."""
-        self.backend_used = backend
-        self.result = backend.process(self.data)
-        if self.callback:
-            self.callback(self)
-        return self.result
+from support import DummyBackend, DummyBackendTask
 
 
 class TestBackendWorker:
@@ -82,7 +18,7 @@ class TestBackendWorker:
     def test_initialization(self):
         """Test that a BackendWorker can be initialized."""
         gpu = GPU("10de", "NVIDIA", "2684", "RTX 4090", True)
-        backend = MockBackend(device=gpu)
+        backend = DummyBackend(device=gpu)
         worker = BackendWorker(gpu.device_name, backend)
         assert worker.name == gpu.device_name
         assert worker.backend is not None
@@ -91,9 +27,9 @@ class TestBackendWorker:
     def test_task_execution(self):
         """Test that tasks are executed with the backend."""
         gpu = GPU("10de", "NVIDIA", "2684", "RTX 4090", True)
-        backend = MockBackend(device=gpu)
+        backend = DummyBackend(device=gpu)
         worker = BackendWorker(gpu.device_name, backend)
-        task = MockTask("test-data")
+        task = DummyBackendTask("test-data")
 
         result = worker.run(task)
 
@@ -105,11 +41,11 @@ class TestBackendWorker:
     def test_multiple_tasks_same_backend(self):
         """Test that multiple tasks use the same backend instance."""
         gpu = GPU("10de", "NVIDIA", "2684", "RTX 4090", True)
-        backend = MockBackend(device=gpu)
+        backend = DummyBackend(device=gpu)
         worker = BackendWorker(gpu.device_name, backend)
 
-        task1 = MockTask("data-1")
-        task2 = MockTask("data-2")
+        task1 = DummyBackendTask("data-1")
+        task2 = DummyBackendTask("data-2")
 
         worker.run(task1)
         worker.run(task2)
@@ -121,9 +57,9 @@ class TestBackendWorker:
     def test_shutdown(self):
         """Test that shutdown cleans up the backend."""
         gpu = GPU("10de", "NVIDIA", "2684", "RTX 4090", True)
-        backend = MockBackend(device=gpu)
+        backend = DummyBackend(device=gpu)
         worker = BackendWorker(gpu.device_name, backend)
-        task = MockTask("test-data")
+        task = DummyBackendTask("test-data")
         worker.run(task)
 
         assert not backend.stop_called
@@ -137,7 +73,7 @@ class TestBackendWorker:
         """Test that backend.start() is called in the worker thread."""
         task_queue = TaskQueue()
         gpu = GPU("10de", "NVIDIA", "2684", "RTX 4090", True)
-        backend = MockBackend(device=gpu)
+        backend = DummyBackend(device=gpu)
         worker = BackendWorker(gpu.device_name, backend)
 
         # Start the worker
@@ -163,19 +99,17 @@ class TestWorkerManager:
 
     def setup_method(self):
         """Set up test fixtures."""
-        # Register the mock backend
-        BACKEND_REGISTRY["mock"] = MockBackend
+        BACKEND_REGISTRY["dummy"] = DummyBackend
 
         self.task_queue = TaskQueue()
-        self.worker_manager = WorkerManager(self.task_queue, "mock")
+        self.worker_manager = WorkerManager(self.task_queue, "dummy")
 
     def teardown_method(self):
         """Clean up after tests."""
         self.worker_manager.shutdown_all(timeout=2.0)
 
-        # Unregister the mock backend
-        if "mock" in BACKEND_REGISTRY:
-            del BACKEND_REGISTRY["mock"]
+        if "dummy" in BACKEND_REGISTRY:
+            del BACKEND_REGISTRY["dummy"]
 
     def test_initialization(self):
         """Test that a WorkerManager can be initialized."""
@@ -304,7 +238,7 @@ class TestWorkerManager:
 
         tasks = []
         for i in range(10):
-            task = MockTask(f"data-{i}", callback=on_complete)
+            task = DummyBackendTask(f"data-{i}", callback=on_complete)
             tasks.append(task)
             self.task_queue.add_task(task)
 
@@ -373,8 +307,7 @@ class TestWorkerManager:
         mock_get_gpus.return_value = [
             GPU("10de", "NVIDIA", "2684", "0", True),
         ]
-        # Use the mock backend registered in setup_method
-        worker_manager = WorkerManager(self.task_queue, "mock")
+        worker_manager = WorkerManager(self.task_queue, "dummy")
 
         worker_manager.update_workers(["cuda:0"])
         time.sleep(0.1)
@@ -392,14 +325,12 @@ class TestIntegration:
 
     def setup_method(self):
         """Set up test fixtures."""
-        # Register the mock backend
-        BACKEND_REGISTRY["mock"] = MockBackend
+        BACKEND_REGISTRY["dummy"] = DummyBackend
 
     def teardown_method(self):
         """Clean up after tests."""
-        # Unregister the mock backend
-        if "mock" in BACKEND_REGISTRY:
-            del BACKEND_REGISTRY["mock"]
+        if "dummy" in BACKEND_REGISTRY:
+            del BACKEND_REGISTRY["dummy"]
 
     @patch("easydiffusion.utils.device_utils.get_gpus")
     def test_concurrent_task_processing(self, mock_get_gpus):
@@ -409,7 +340,7 @@ class TestIntegration:
             GPU("10de", "NVIDIA", "2704", "1", True),
         ]
         task_queue = TaskQueue()
-        worker_manager = WorkerManager(task_queue, "mock")
+        worker_manager = WorkerManager(task_queue, "dummy")
 
         # Add multiple workers
         worker_manager.update_workers(["cuda:0", "cuda:1", "cpu"])
@@ -425,7 +356,7 @@ class TestIntegration:
                 completed_tasks.append(task)
 
         for i in range(num_tasks):
-            task = MockTask(f"data-{i}", callback=on_complete)
+            task = DummyBackendTask(f"data-{i}", callback=on_complete)
             task_queue.add_task(task)
 
         # Wait for all tasks to complete
@@ -444,7 +375,7 @@ class TestIntegration:
             GPU("10de", "NVIDIA", "2704", "1", True),
         ]
         task_queue = TaskQueue()
-        worker_manager = WorkerManager(task_queue, "mock")
+        worker_manager = WorkerManager(task_queue, "dummy")
 
         # Start with one worker
         worker_manager.update_workers(["cuda:0"])
@@ -453,7 +384,7 @@ class TestIntegration:
         # Add tasks
         num_tasks = 20
         for i in range(num_tasks):
-            task_queue.add_task(MockTask(f"data-{i}"))
+            task_queue.add_task(DummyBackendTask(f"data-{i}"))
 
         # Scale up
         time.sleep(0.2)
@@ -461,7 +392,7 @@ class TestIntegration:
 
         # Add more tasks
         for i in range(num_tasks, num_tasks * 2):
-            task_queue.add_task(MockTask(f"data-{i}"))
+            task_queue.add_task(DummyBackendTask(f"data-{i}"))
 
         # Scale down
         time.sleep(0.2)

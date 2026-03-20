@@ -6,7 +6,7 @@ must implement. This ensures consistent behavior across different backends.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Dict
 from torchruntime.device_db import GPU
 
 
@@ -28,6 +28,16 @@ class Backend(ABC):
         self.device = device
 
     @abstractmethod
+    def is_installed(self) -> bool:
+        """Return whether the backend is installed and ready to start."""
+        pass
+
+    @classmethod
+    def list_controlnet_filters(cls) -> list[str]:
+        """Return backend-supported legacy ControlNet filter names."""
+        return []
+
+    @abstractmethod
     def install(self) -> None:
         """
         Install the backend and its dependencies.
@@ -45,6 +55,16 @@ class Backend(ABC):
         This should remove any files, packages, or dependencies that were
         installed by the install() method.
         """
+        pass
+
+    @abstractmethod
+    def get_config(self) -> Dict[str, Any]:
+        """Return backend-specific runtime configuration."""
+        pass
+
+    @abstractmethod
+    def set_config(self, config: Dict[str, Any]) -> None:
+        """Update backend-specific runtime configuration."""
         pass
 
     @abstractmethod
@@ -84,15 +104,25 @@ class Backend(ABC):
         pass
 
     @abstractmethod
+    def generate_images(self, task_input: Dict[str, Any]) -> list[bytes]:
+        """Generate output images for a queued generation task."""
+        pass
+
+    @abstractmethod
+    def filter_images(self, task_input: Dict[str, Any]) -> list[bytes]:
+        """Generate output images for a queued filter task."""
+        pass
+
+    @abstractmethod
+    def get_progress(self, task: Any) -> float:
+        """Return normalized progress in the range [0, 1] for the given task."""
+        pass
+
+    @abstractmethod
+    def stop_task(self, task: Any) -> None:
+        """Request backend-specific cancellation for the given task."""
+        pass
+
     def render_image(self, context: Any, **kwargs) -> Any:
-        """
-        Render an image using the backend.
-
-        Args:
-            context: The context object for this render operation
-            **kwargs: Additional rendering parameters
-
-        Returns:
-            The rendered image(s) or result
-        """
+        """Legacy compatibility shim."""
         pass

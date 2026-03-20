@@ -33,15 +33,25 @@ def config_manager(temp_dir):
 
 
 @pytest.fixture
-def client(config_manager):
+def client(config_manager, dummy_backend_registry):
     """Create a test client with v1 API."""
+    backend_name, backend_class = dummy_backend_registry
     task_queue = TaskQueue()
-    worker_manager = WorkerManager(task_queue, "sdkit3")
+    worker_manager = WorkerManager(task_queue, backend_name)
+
+    config = config_manager.get_all()
+    config["backend"]["backend_name"] = backend_name
+    config["backend"]["devices"] = "cpu"
+    config_manager.save(config)
+    config_manager.load()
+    backend_class.reset_mock_state()
 
     server_api.state.config_manager = config_manager
     server_api.state.task_queue = task_queue
     server_api.state.worker_manager = worker_manager
     server_api.state.task_cache = {}
+
+    worker_manager.update_workers("cpu")
 
     client = TestClient(server_api)
 
@@ -80,7 +90,7 @@ class TestSystemConfigEndpoints:
         assert "users" not in data  # Ensure users are not returned
         assert "security" not in data  # Ensure security is not returned
         assert "user_settings" not in data
-        assert data["backend"]["backend_name"] == "sdkit3"
+        assert data["backend"]["backend_name"] == "dummy"
 
     def test_update_config(self, client, config_manager):
         """Test updating configuration."""
@@ -96,7 +106,7 @@ class TestSystemConfigEndpoints:
         system_config = config_manager.get_system_config()
         assert system_config["models"]["models_dir"] == "/new/models"
         assert system_config["backend"]["devices"] == "cpu"
-        assert system_config["backend"]["backend_name"] == "sdkit3"
+        assert system_config["backend"]["backend_name"] == "dummy"
 
     def test_update_config_forbidden_keys(self, client, config_manager):
         """Test that forbidden keys like 'users' and 'security' are not set via config update."""
@@ -296,16 +306,16 @@ class TestModelsEndpoint:
 
 
 class TestGenerateEndpoint:
-    """Tests for /v1/generate endpoint."""
+    """Tests for generation payloads posted to /v1/tasks."""
 
     def test_create_generate_task(self, client):
         """Test creating a generation task."""
         response = client.post(
-            "/v1/generate",
+            "/v1/tasks",
             json={
                 "username": "easydiffusion",
                 "prompt": "A beautiful landscape",
-                "model": "test-model",
+                "model_paths": {"stable-diffusion": "test-model"},
                 "width": 512,
                 "height": 512,
             },
@@ -320,11 +330,11 @@ class TestGenerateEndpoint:
     def test_create_generate_task_with_defaults(self, client):
         """Test creating task with minimal parameters."""
         response = client.post(
-            "/v1/generate",
+            "/v1/tasks",
             json={
                 "username": "easydiffusion",
                 "prompt": "A cat",
-                "model": "test-model",
+                "model_paths": {"stable-diffusion": "test-model"},
             },
         )
         assert response.status_code == 202
@@ -335,7 +345,7 @@ class TestGenerateEndpoint:
     def test_create_generate_task_full_params(self, client):
         """Test creating task with all parameters."""
         response = client.post(
-            "/v1/generate",
+            "/v1/tasks",
             json={
                 "username": "easydiffusion",
                 "prompt": "A dog",
@@ -346,21 +356,80 @@ class TestGenerateEndpoint:
                 "num_outputs": 2,
                 "num_inference_steps": 30,
                 "guidance_scale": 8.5,
-                "model": "test-model",
+                "distilled_guidance_scale": 4.0,
+                "model_paths": {"stable-diffusion": "test-model", "vae": "test-vae"},
+                "model_params": {"stable-diffusion": {"clip_skip": True}},
                 "output_format": "png",
-                "save_path": "/tmp/output",
+                "output_quality": 90,
+                "output_lossless": True,
+                "save_to_disk_path": "/tmp/output",
+                "metadata_output_format": "json",
+                "session_id": "browser-session",
+                "task_id": "client-supplied-id",
+                "filters": ["nsfw_checker", "realesrgan"],
+                "filter_params": {"realesrgan": {"scale": 4, "upscaler": "4x"}},
+                "stream_image_progress": True,
+                "stream_image_progress_interval": 2,
+                "show_only_filtered_image": True,
+                "block_nsfw": True,
+                "clip_skip": True,
             },
         )
         assert response.status_code == 202
 
+        task_id = response.json()["task_id"]
+        task = server_api.state.task_cache[task_id]
+
+        assert task.username == "easydiffusion"
+        assert task.input["request"]["prompt"] == "A dog"
+        assert task.input["request"]["filters"] == ["nsfw_checker", "realesrgan"]
+        assert task.input["request"]["filter_params"]["realesrgan"]["scale"] == 4
+        assert task.input["models"]["model_paths"]["stable-diffusion"] == "test-model"
+        assert task.input["save"]["save_to_disk_path"] == "/tmp/output"
+        assert task.input["task"]["task_id"] == task_id
+        assert task.input["task"]["session_id"] == "browser-session"
+        assert task.input["task"]["username"] == "easydiffusion"
+        assert task.input["task"]["block_nsfw"] is True
+
+    def test_create_generate_task_requires_body_username(self, client):
+        """Test username is required in the request body."""
+        response = client.post(
+            "/v1/tasks",
+            json={
+                "prompt": "A fox",
+                "model_paths": {"stable-diffusion": "test-model"},
+            },
+        )
+
+        assert response.status_code == 422
+
+    def test_create_generate_task_accepts_body_username(self, client):
+        """Test username can be supplied in the body and is stored with the queued task."""
+        response = client.post(
+            "/v1/tasks",
+            json={
+                "username": "body-user",
+                "prompt": "A fox",
+                "model_paths": {"stable-diffusion": "test-model"},
+            },
+        )
+
+        assert response.status_code == 202
+
+        task_id = response.json()["task_id"]
+        task = server_api.state.task_cache[task_id]
+
+        assert task.username == "body-user"
+        assert task.input["task"]["username"] == "body-user"
+
 
 class TestFilterEndpoint:
-    """Tests for /v1/filter endpoint."""
+    """Tests for filter payloads posted to /v1/tasks."""
 
     def test_create_filter_task(self, client):
         """Test creating a filter task."""
         response = client.post(
-            "/v1/filter",
+            "/v1/tasks",
             json={
                 "username": "easydiffusion",
                 "image": "base64_encoded_image_data",
@@ -377,7 +446,7 @@ class TestFilterEndpoint:
     def test_create_filter_task_minimal(self, client):
         """Test creating filter task with minimal parameters."""
         response = client.post(
-            "/v1/filter",
+            "/v1/tasks",
             json={
                 "username": "easydiffusion",
                 "image": "image_data",
@@ -385,6 +454,144 @@ class TestFilterEndpoint:
             },
         )
         assert response.status_code == 202
+
+    def test_create_filter_task_captures_split_input(self, client):
+        """Test filter input is split into task.input sections."""
+        response = client.post(
+            "/v1/tasks",
+            json={
+                "username": "easydiffusion",
+                "image": ["image_data"],
+                "filter": ["sharpen", "contrast"],
+                "filter_params": {"sharpen": {"amount": 1.2}},
+                "model_paths": {"realesrgan": "4x"},
+                "output_format": "webp",
+                "output_quality": 80,
+                "save_to_disk_path": "/tmp/filtered",
+                "session_id": "filter-session",
+                "task_id": "ignore-me",
+            },
+        )
+
+        assert response.status_code == 202
+
+        task_id = response.json()["task_id"]
+        task = server_api.state.task_cache[task_id]
+
+        assert task.input["request"]["filter"] == ["sharpen", "contrast"]
+        assert task.input["models"]["model_paths"]["realesrgan"] == "4x"
+        assert task.input["output"]["output_format"] == "webp"
+        assert task.input["save"]["save_to_disk_path"] == "/tmp/filtered"
+        assert task.input["task"]["task_id"] == task_id
+        assert task.input["task"]["session_id"] == "filter-session"
+        assert task.input["task"]["username"] == "easydiffusion"
+
+    def test_create_filter_task_requires_body_username(self, client):
+        """Test filter tasks require username in the request body."""
+        response = client.post(
+            "/v1/tasks",
+            json={
+                "image": "image_data",
+                "filter": "sharpen",
+            },
+        )
+
+        assert response.status_code == 422
+
+    def test_create_filter_task_accepts_body_username(self, client):
+        """Test filter tasks also accept username in the request body."""
+        response = client.post(
+            "/v1/tasks",
+            json={
+                "username": "body-user",
+                "image": "image_data",
+                "filter": "sharpen",
+            },
+        )
+
+        assert response.status_code == 202
+
+        task_id = response.json()["task_id"]
+        task = server_api.state.task_cache[task_id]
+
+        assert task.username == "body-user"
+        assert task.input["task"]["username"] == "body-user"
+
+
+class TestLegacyTaskEndpoints:
+    """Tests for legacy /render and /filter endpoint compatibility."""
+
+    def test_legacy_render_path_returns_legacy_response_and_maps_request(self, client):
+        """Test /render keeps the old response body while queueing translated task input."""
+        response = client.post(
+            "/render",
+            json={
+                "prompt": "A lighthouse",
+                "negative_prompt": "fog",
+                "use_stable_diffusion_model": "legacy-model",
+                "use_face_correction": "codeformer",
+                "use_upscale": "realesrgan",
+                "upscale_amount": 2,
+                "session_id": "legacy-session",
+                "request_id": "legacy-client-id",
+                "mask": "mask-data",
+                "control_image": "control-image-data",
+                "control_filter_to_apply": "controlnet_canny",
+                "block_nsfw": True,
+            },
+        )
+
+        assert response.status_code == 202
+
+        data = response.json()
+        assert set(data) == {"task_id", "status", "queue_position"}
+        assert data["status"] == "queued"
+        assert data["queue_position"] == 1
+
+        task = next(iter(server_api.state.task_cache.values()))
+
+        assert task.username == "default"
+        assert task.input["request"]["prompt"] == "A lighthouse"
+        assert task.input["request"]["filters"] == ["nsfw_checker", "codeformer", "realesrgan"]
+        assert task.input["request"]["filter_params"]["realesrgan"]["scale"] == 2
+        assert task.input["request"]["filter_params"]["codeformer"]["codeformer_fidelity"] == 0.5
+        assert task.input["request"]["init_image_mask"] == "mask-data"
+        assert task.input["request"]["controlnet_filter"] == "controlnet_canny"
+        assert task.input["models"]["model_paths"]["stable-diffusion"] == "legacy-model"
+        assert task.input["models"]["model_paths"]["nsfw_checker"] == "nsfw_checker"
+        assert task.input["task"]["session_id"] == "legacy-session"
+        assert task.input["task"]["task_id"] == task.task_id
+        assert task.input["task"]["username"] == "default"
+
+    def test_legacy_filter_path_returns_legacy_response_and_maps_request(self, client):
+        """Test /filter keeps the old response body while queueing translated task input."""
+        response = client.post(
+            "/filter",
+            json={
+                "image": "image-data",
+                "filter": "realesrgan",
+                "request_id": "legacy-filter-id",
+                "model_paths": {"realesrgan": "4x-ultrasharp"},
+                "session_id": "legacy-filter-session",
+            },
+        )
+
+        assert response.status_code == 202
+
+        data = response.json()
+        assert set(data) == {"task_id", "status", "queue_position"}
+        assert data["status"] == "queued"
+        assert data["queue_position"] == 1
+
+        task = next(iter(server_api.state.task_cache.values()))
+
+        assert task.username == "default"
+        assert task.input["request"]["filter"] == "realesrgan"
+        assert task.input["models"]["model_paths"]["realesrgan"] == "4x-ultrasharp"
+        assert task.input["request"]["filter_params"]["realesrgan"]["upscaler"] == "4x-ultrasharp"
+        assert task.input["task"]["session_id"] == "legacy-filter-session"
+        assert task.input["task"]["task_id"] == task.task_id
+        assert task.input["task"]["username"] == "default"
 
 
 class TestTasksEndpoints:
@@ -402,12 +609,12 @@ class TestTasksEndpoints:
     def test_get_tasks_with_tasks(self, client):
         """Test getting tasks list."""
         response1 = client.post(
-            "/v1/generate",
-            json={"username": "easydiffusion", "prompt": "Test 1", "model": "test"},
+            "/v1/tasks",
+            json={"username": "easydiffusion", "prompt": "Test 1", "model_paths": {"stable-diffusion": "test"}},
         )
         response2 = client.post(
-            "/v1/generate",
-            json={"username": "easydiffusion", "prompt": "Test 2", "model": "test"},
+            "/v1/tasks",
+            json={"username": "easydiffusion", "prompt": "Test 2", "model_paths": {"stable-diffusion": "test"}},
         )
 
         response = client.get("/v1/tasks")
@@ -422,8 +629,8 @@ class TestTasksEndpoints:
     def test_get_task_detail(self, client):
         """Test getting task details."""
         create_response = client.post(
-            "/v1/generate",
-            json={"username": "easydiffusion", "prompt": "Test", "model": "test"},
+            "/v1/tasks",
+            json={"username": "easydiffusion", "prompt": "Test", "model_paths": {"stable-diffusion": "test"}},
         )
         task_id = create_response.json()["task_id"]
 
@@ -439,8 +646,13 @@ class TestTasksEndpoints:
     def test_get_task_detail_with_request(self, client):
         """Test getting task details with request data."""
         create_response = client.post(
-            "/v1/generate",
-            json={"username": "easydiffusion", "prompt": "Test prompt", "model": "test", "seed": 42},
+            "/v1/tasks",
+            json={
+                "username": "easydiffusion",
+                "prompt": "Test prompt",
+                "model_paths": {"stable-diffusion": "test"},
+                "seed": 42,
+            },
         )
         task_id = create_response.json()["task_id"]
 
@@ -449,8 +661,9 @@ class TestTasksEndpoints:
 
         data = response.json()
         assert data["request"] is not None
-        assert data["request"]["prompt"] == "Test prompt"
-        assert data["request"]["seed"] == 42
+        assert data["request"]["request"]["prompt"] == "Test prompt"
+        assert data["request"]["request"]["seed"] == 42
+        assert data["request"]["task"]["task_id"] == task_id
 
     def test_get_task_not_found(self, client):
         """Test getting non-existent task."""
@@ -460,8 +673,8 @@ class TestTasksEndpoints:
     def test_stop_task(self, client):
         """Test stopping a task."""
         create_response = client.post(
-            "/v1/generate",
-            json={"username": "easydiffusion", "prompt": "Test", "model": "test"},
+            "/v1/tasks",
+            json={"username": "easydiffusion", "prompt": "Test", "model_paths": {"stable-diffusion": "test"}},
         )
         task_id = create_response.json()["task_id"]
 
@@ -474,8 +687,8 @@ class TestTasksEndpoints:
     def test_stop_task_twice(self, client):
         """Test stopping an already stopped task."""
         create_response = client.post(
-            "/v1/generate",
-            json={"username": "easydiffusion", "prompt": "Test", "model": "test"},
+            "/v1/tasks",
+            json={"username": "easydiffusion", "prompt": "Test", "model_paths": {"stable-diffusion": "test"}},
         )
         task_id = create_response.json()["task_id"]
 
@@ -491,8 +704,14 @@ class TestTasksEndpoints:
 
     def test_stop_all_tasks(self, client):
         """Test stopping all tasks."""
-        client.post("/v1/generate", json={"username": "easydiffusion", "prompt": "Test 1", "model": "test"})
-        client.post("/v1/generate", json={"username": "easydiffusion", "prompt": "Test 2", "model": "test"})
+        client.post(
+            "/v1/tasks",
+            json={"username": "easydiffusion", "prompt": "Test 1", "model_paths": {"stable-diffusion": "test"}},
+        )
+        client.post(
+            "/v1/tasks",
+            json={"username": "easydiffusion", "prompt": "Test 2", "model_paths": {"stable-diffusion": "test"}},
+        )
 
         response = client.delete("/v1/tasks?username=easydiffusion")
         assert response.status_code == 200
@@ -509,18 +728,37 @@ class TestTasksEndpoints:
 class TestOutputEndpoint:
     """Tests for task output retrieval endpoint."""
 
-    def test_get_task_output(self, client):
+    def test_get_task_output(self, client, dummy_backend_registry):
         """Test retrieving a task output."""
+        _, backend_class = dummy_backend_registry
+        test_output = b"\x89PNG\r\n\x1a\nfake_png_data"
+        backend_class.set_generate_outputs([test_output])
+
         create_response = client.post(
-            "/v1/generate",
-            json={"username": "easydiffusion", "prompt": "Test", "model": "test"},
+            "/v1/tasks",
+            json={"username": "easydiffusion", "prompt": "Test", "model_paths": {"stable-diffusion": "test"}},
         )
         task_id = create_response.json()["task_id"]
 
-        task = server_api.state.task_cache[task_id]
+        assert server_api.state.task_queue.wait_completion(timeout=2.0)
 
-        test_output = b"\x89PNG\r\n\x1a\nfake_png_data"
-        task.outputs.append(test_output)
+        response = client.get(f"/v1/tasks/{task_id}/outputs/0")
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "image/png"
+
+    def test_get_filter_task_output(self, client, dummy_backend_registry):
+        """Test retrieving a filtered task output."""
+        _, backend_class = dummy_backend_registry
+        test_output = b"\x89PNG\r\n\x1a\nfiltered_png_data"
+        backend_class.set_filter_outputs([test_output])
+
+        create_response = client.post(
+            "/v1/tasks",
+            json={"username": "easydiffusion", "image": "image-data", "filter": "blur"},
+        )
+        task_id = create_response.json()["task_id"]
+
+        assert server_api.state.task_queue.wait_completion(timeout=2.0)
 
         response = client.get(f"/v1/tasks/{task_id}/outputs/0")
         assert response.status_code == 200
@@ -529,8 +767,8 @@ class TestOutputEndpoint:
     def test_get_task_output_not_found(self, client):
         """Test retrieving non-existent output."""
         create_response = client.post(
-            "/v1/generate",
-            json={"username": "easydiffusion", "prompt": "Test", "model": "test"},
+            "/v1/tasks",
+            json={"username": "easydiffusion", "prompt": "Test", "model_paths": {"stable-diffusion": "test"}},
         )
         task_id = create_response.json()["task_id"]
 

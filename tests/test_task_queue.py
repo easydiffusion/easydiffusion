@@ -5,6 +5,19 @@ Tests for the task queue system.
 import time
 import threading
 from easydiffusion.task_queue import Worker, TaskQueue
+from easydiffusion.types import Task
+
+
+class QueueTask(Task):
+    def __init__(self, value, callback=None):
+        super().__init__(username="test-user")
+        self.value = value
+        self.callback = callback
+
+    def run(self, backend):
+        if self.callback:
+            self.callback()
+        return self.value
 
 
 class SimpleWorker(Worker):
@@ -17,8 +30,8 @@ class SimpleWorker(Worker):
     def run(self, task):
         """Execute the task and record it."""
         self.processed_tasks.append(task)
-        if callable(task):
-            task()
+        if task.callback:
+            task.callback()
 
 
 class CounterWorker(Worker):
@@ -33,8 +46,8 @@ class CounterWorker(Worker):
         """Increment counter for each task."""
         with self.lock:
             self.count += 1
-        if callable(task):
-            task()
+        if task.callback:
+            task.callback()
 
 
 class TestWorker:
@@ -172,10 +185,11 @@ class TestTaskQueue:
         worker = SimpleWorker("worker-1")
         self.task_queue.add_worker(worker)
 
-        self.task_queue.add_task("task-1")
+        task = QueueTask("task-1")
+        self.task_queue.add_task(task)
         self.task_queue.wait_completion(timeout=1.0)
 
-        assert "task-1" in worker.processed_tasks
+        assert task in worker.processed_tasks
 
     def test_multiple_tasks(self):
         """Test processing multiple tasks."""
@@ -184,7 +198,7 @@ class TestTaskQueue:
 
         num_tasks = 10
         for i in range(num_tasks):
-            self.task_queue.add_task(f"task-{i}")
+            self.task_queue.add_task(QueueTask(f"task-{i}"))
 
         self.task_queue.wait_completion(timeout=2.0)
 
@@ -200,7 +214,7 @@ class TestTaskQueue:
 
         num_tasks = 30
         for i in range(num_tasks):
-            self.task_queue.add_task(f"task-{i}")
+            self.task_queue.add_task(QueueTask(f"task-{i}"))
 
         self.task_queue.wait_completion(timeout=2.0)
 
@@ -232,11 +246,11 @@ class TestTaskQueue:
         lock = threading.Lock()
 
         def make_task(value):
-            def task():
+            def callback():
                 with lock:
                     results.append(value)
 
-            return task
+            return QueueTask(value, callback=callback)
 
         for i in range(5):
             self.task_queue.add_task(make_task(i))
@@ -253,7 +267,7 @@ class TestTaskQueue:
 
         # Add some tasks
         for i in range(5):
-            self.task_queue.add_task(f"task-{i}")
+            self.task_queue.add_task(QueueTask(f"task-{i}"))
 
         # Add another worker mid-processing
         worker2 = CounterWorker("worker-2")
@@ -261,7 +275,7 @@ class TestTaskQueue:
 
         # Add more tasks
         for i in range(5, 10):
-            self.task_queue.add_task(f"task-{i}")
+            self.task_queue.add_task(QueueTask(f"task-{i}"))
 
         self.task_queue.wait_completion(timeout=2.0)
 
@@ -276,7 +290,7 @@ class TestTaskQueue:
         # Add more tasks (only worker2 should process them)
         worker2_count_before = worker2.count
         for i in range(5):
-            self.task_queue.add_task(f"task-extra-{i}")
+            self.task_queue.add_task(QueueTask(f"task-extra-{i}"))
 
         self.task_queue.wait_completion(timeout=2.0)
 
@@ -291,7 +305,7 @@ class TestTaskQueue:
         def slow_task():
             time.sleep(2.0)
 
-        self.task_queue.add_task(slow_task)
+        self.task_queue.add_task(QueueTask("slow", callback=slow_task))
 
         # Wait with a short timeout
         result = self.task_queue.wait_completion(timeout=0.1)
@@ -310,7 +324,7 @@ class TestTaskQueue:
                 self.lock = threading.Lock()
 
             def run(self, task):
-                result = task * self.multiplier
+                result = task.value * self.multiplier
                 with self.lock:
                     self.results.append(result)
 
@@ -318,7 +332,7 @@ class TestTaskQueue:
         self.task_queue.add_worker(worker)
 
         for i in range(5):
-            self.task_queue.add_task(i)
+            self.task_queue.add_task(QueueTask(i))
 
         self.task_queue.wait_completion(timeout=1.0)
 
@@ -337,19 +351,19 @@ class TestTaskQueue:
             time.sleep(0.5)
 
         # Fill the queue
-        limited_queue.add_task(slow_task)
-        limited_queue.add_task(slow_task)
+        limited_queue.add_task(QueueTask("slow-1", callback=slow_task))
+        limited_queue.add_task(QueueTask("slow-2", callback=slow_task))
 
         # Give worker time to start processing first task
         time.sleep(0.1)
 
         # Queue should still have room (one was taken by worker)
-        limited_queue.add_task("quick", block=False)
+        limited_queue.add_task(QueueTask("quick"), block=False)
 
         # Now try to add another - should fail as queue is full
         import pytest
 
         with pytest.raises(queue_module.Full):
-            limited_queue.add_task("will-fail", block=False)
+            limited_queue.add_task(QueueTask("will-fail"), block=False)
 
         limited_queue.shutdown(timeout=2.0)

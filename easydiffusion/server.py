@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 FastAPI server for EasyDiffusion.
 
@@ -11,7 +13,7 @@ from starlette.responses import FileResponse
 from pathlib import Path
 import os
 import mimetypes
-from typing import Optional
+from typing import Any, Optional, Union
 
 from easydiffusion.types import (
     HealthResponse,
@@ -22,12 +24,14 @@ from easydiffusion.types import (
     DeviceInfo,
     ModelsResponse,
     ModelInfo,
-    GenerateRequest,
-    FilterRequest,
+    GenerateTaskRequest,
+    GenerateTaskInput,
+    FilterTaskRequest,
+    FilterTaskInput,
     TaskQueuedResponse,
     TasksResponse,
     TaskInfo,
-    TaskDetail,
+    TaskInfoDetailed,
     StatusResponse,
     UserListResponse,
     CreateUserRequest,
@@ -35,9 +39,11 @@ from easydiffusion.types import (
     DeleteUserResponse,
 )
 from easydiffusion.tasks import GenerateTask, FilterTask
+from easydiffusion.legacy_server import support_legacy_paths
 
 # Create the FastAPI application
 server_api = FastAPI(title="EasyDiffusion API", version="1.0.0")
+server_api.state.task_cache = {}
 
 v1_router = APIRouter(prefix="/v1")
 
@@ -84,14 +90,9 @@ def init():
     v1_router.add_api_route("/config", update_config, methods=["PUT"], response_model=StatusResponse)
     v1_router.add_api_route("/devices", get_devices, methods=["GET"], response_model=DevicesResponse)
     v1_router.add_api_route("/models", get_models, methods=["GET"], response_model=ModelsResponse)
-    v1_router.add_api_route(
-        "/generate", create_generate_task, methods=["POST"], response_model=TaskQueuedResponse, status_code=202
-    )
-    v1_router.add_api_route(
-        "/filter", create_filter_task, methods=["POST"], response_model=TaskQueuedResponse, status_code=202
-    )
+    v1_router.add_api_route("/tasks", create_task, methods=["POST"], response_model=TaskQueuedResponse, status_code=202)
     v1_router.add_api_route("/tasks", get_tasks, methods=["GET"], response_model=TasksResponse)
-    v1_router.add_api_route("/tasks/{task_id}", get_task, methods=["GET"], response_model=TaskDetail)
+    v1_router.add_api_route("/tasks/{task_id}", get_task, methods=["GET"], response_model=TaskInfoDetailed)
     v1_router.add_api_route("/tasks/{task_id}/outputs/{output_id}", get_task_output, methods=["GET"])
     v1_router.add_api_route("/tasks/{task_id}", stop_task, methods=["DELETE"], response_model=StatusResponse)
     v1_router.add_api_route("/tasks", stop_all_tasks, methods=["DELETE"], response_model=StatusResponse)
@@ -106,6 +107,7 @@ def init():
     v1_router.add_api_route("/users/{username}", delete_user, methods=["DELETE"], response_model=DeleteUserResponse)
 
     server_api.include_router(v1_router)
+    support_legacy_paths(server_api, enqueue_task=_enqueue_task)
 
     @server_api.get("/")
     def read_root():
@@ -234,13 +236,13 @@ async def get_devices():
 async def get_models():
     """List available models."""
     try:
-        from easydiffusion.local_models import enumerate_all_models
+        from easydiffusion.models import list_all_models
 
         config_manager = server_api.state.config_manager
         config = config_manager.get_system_config()
         models_dir = config.get("models", {}).get("models_dir", "models")
 
-        all_models = enumerate_all_models(models_dir)
+        all_models = list_all_models(models_dir)
         models = [
             ModelInfo(
                 model=m["model"],
@@ -258,56 +260,57 @@ async def get_models():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-async def create_generate_task(req: GenerateRequest):
-    """Enqueue image generation."""
+def _cache_task(task) -> None:
+    server_api.state.task_cache[task.task_id] = task
+
+
+def _get_task_or_404(task_id: str):
+    task = server_api.state.task_cache.get(task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return task
+
+
+def _create_task(req: Union[GenerateTaskRequest, FilterTaskRequest]) -> Union[GenerateTask, FilterTask]:
+    if not req.username:
+        raise HTTPException(status_code=422, detail="username is required in the request body")
+
+    if isinstance(req, GenerateTaskRequest):
+        task = GenerateTask(username=req.username, session_id=req.session_id)
+        task.input = GenerateTaskInput.from_flat_request(req, task.task_id, req.username).model_dump()
+        return task
+
+    if isinstance(req, FilterTaskRequest):
+        task = FilterTask(username=req.username, session_id=req.session_id)
+        task.input = FilterTaskInput.from_flat_request(req, task.task_id, req.username).model_dump()
+        return task
+
+    raise TypeError(f"Unsupported task request type: {type(req)!r}")
+
+
+def _enqueue_task(req: Union[GenerateTaskRequest, FilterTaskRequest]) -> JSONResponse:
+    task_queue = server_api.state.task_queue
+    task = _create_task(req)
+    task_queue.add_task(task)
+    _cache_task(task)
+
+    return JSONResponse(
+        TaskQueuedResponse(
+            task_id=task.task_id,
+            status="queued",
+            queue_position=task_queue.qsize(),
+        ).model_dump(),
+        headers=NOCACHE_HEADERS,
+        status_code=202,
+    )
+
+
+async def create_task(req: Union[GenerateTaskRequest, FilterTaskRequest]):
+    """Enqueue an image generation or filtering task."""
     try:
-        task_queue = server_api.state.task_queue
-
-        task = GenerateTask(**req.model_dump())
-        task.request_data = req.model_dump()
-
-        task_queue.add_task(task)
-
-        if not hasattr(server_api.state, "task_cache"):
-            server_api.state.task_cache = {}
-        server_api.state.task_cache[task.task_id] = task
-
-        return JSONResponse(
-            TaskQueuedResponse(
-                task_id=task.task_id,
-                status="queued",
-                queue_position=task_queue.qsize(),
-            ).model_dump(),
-            headers=NOCACHE_HEADERS,
-            status_code=202,
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-async def create_filter_task(req: FilterRequest):
-    """Enqueue image filtering."""
-    try:
-        task_queue = server_api.state.task_queue
-
-        task = FilterTask(**req.model_dump())
-        task.request_data = req.model_dump()
-
-        task_queue.add_task(task)
-
-        if not hasattr(server_api.state, "task_cache"):
-            server_api.state.task_cache = {}
-        server_api.state.task_cache[task.task_id] = task
-
-        return JSONResponse(
-            TaskQueuedResponse(
-                task_id=task.task_id,
-                status="queued",
-                queue_position=task_queue.qsize(),
-            ).model_dump(),
-            headers=NOCACHE_HEADERS,
-            status_code=202,
-        )
+        return _enqueue_task(req)
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -315,9 +318,6 @@ async def create_filter_task(req: FilterRequest):
 async def get_tasks(username: Optional[str] = Query(None, description="Username to filter tasks by user")):
     """List all tasks. If username is provided, returns tasks for that user only; otherwise, returns tasks for all users."""
     try:
-        if not hasattr(server_api.state, "task_cache"):
-            server_api.state.task_cache = {}
-
         tasks = []
         for task in server_api.state.task_cache.values():
             if username is None or task.username == username:
@@ -342,26 +342,23 @@ async def get_tasks(username: Optional[str] = Query(None, description="Username 
 async def get_task(task_id: str, include_request: bool = Query(False)):
     """Get task status/results."""
     try:
-        if not hasattr(server_api.state, "task_cache"):
-            raise HTTPException(status_code=404, detail="Task not found")
-
-        task = server_api.state.task_cache.get(task_id)
-        if not task:
-            raise HTTPException(status_code=404, detail="Task not found")
+        task = _get_task_or_404(task_id)
 
         outputs = [f"/v1/tasks/{task_id}/outputs/{i}" for i in range(len(task.outputs))]
 
         request_data = None
-        if include_request and task.request_data:
-            request_data = task.request_data
+        if include_request and task.input:
+            request_data = task.input
 
         return JSONResponse(
-            TaskDetail(
+            TaskInfoDetailed(
                 task_id=task.task_id,
                 username=task.username,
                 status=task.status,
                 progress=task.progress,
+                type=task.task_type,
                 outputs=outputs,
+                detail=task.error,
                 request=request_data,
             ).model_dump(),
             headers=NOCACHE_HEADERS,
@@ -375,12 +372,7 @@ async def get_task(task_id: str, include_request: bool = Query(False)):
 async def get_task_output(task_id: str, output_id: int):
     """Retrieve an output artifact from a task."""
     try:
-        if not hasattr(server_api.state, "task_cache"):
-            raise HTTPException(status_code=404, detail="Task not found")
-
-        task = server_api.state.task_cache.get(task_id)
-        if not task:
-            raise HTTPException(status_code=404, detail="Task not found")
+        task = _get_task_or_404(task_id)
 
         if output_id >= len(task.outputs):
             raise HTTPException(status_code=404, detail="Output not found")
@@ -396,17 +388,12 @@ async def get_task_output(task_id: str, output_id: int):
 async def stop_task(task_id: str):
     """Stop a task."""
     try:
-        if not hasattr(server_api.state, "task_cache"):
-            raise HTTPException(status_code=404, detail="Task not found")
-
-        task = server_api.state.task_cache.get(task_id)
-        if not task:
-            raise HTTPException(status_code=404, detail="Task not found")
+        task = _get_task_or_404(task_id)
 
         if task.status == "stopped":
             raise HTTPException(status_code=409, detail="Task already stopped")
 
-        task.error = StopAsyncIteration(f"Task {task_id} stop requested")
+        task.request_stop(f"Task {task_id} stop requested")
 
         return JSONResponse(
             StatusResponse(status="stopped").model_dump(),
@@ -421,15 +408,9 @@ async def stop_task(task_id: str):
 async def stop_all_tasks(username: str = Query(..., description="Username for user-specific tasks")):
     """Stop all tasks for the specified user."""
     try:
-        if not hasattr(server_api.state, "task_cache"):
-            return JSONResponse(
-                StatusResponse(status="all_stopped").model_dump(),
-                headers=NOCACHE_HEADERS,
-            )
-
         for task in server_api.state.task_cache.values():
             if task.username == username and task.status not in ["completed", "stopped", "error"]:
-                task.error = StopAsyncIteration("All tasks stop requested")
+                task.request_stop("All tasks stop requested")
 
         return JSONResponse(
             StatusResponse(status="all_stopped").model_dump(),

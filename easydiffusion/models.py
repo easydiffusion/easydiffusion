@@ -1,6 +1,6 @@
 import os
 from glob import glob
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
 from easydiffusion.utils.model_identifier import identify_model_type
 
@@ -30,7 +30,7 @@ MODEL_EXTENSIONS = {
     "text-encoder": [".safetensors", ".sft", ".gguf"],
 }
 
-ALTERNATE_FOLDER_NAMES = {  # for WebUI compatibility
+ALTERNATE_FOLDER_NAMES = {
     "stable-diffusion": "Stable-diffusion",
     "vae": "VAE",
     "hypernetwork": "hypernetworks",
@@ -51,12 +51,10 @@ def get_model_dirs(model_type: str, models_dir: str) -> List[str]:
         alt_dir = ALTERNATE_FOLDER_NAMES[model_type]
         alt_dir_path = os.path.join(models_dir, alt_dir)
         if os.path.exists(alt_dir_path):
-            # Check if it's different from the standard dir (to avoid duplicates on case-insensitive filesystems)
             try:
                 if not os.path.samefile(dirs[0], alt_dir_path):
                     dirs.append(alt_dir_path)
             except OSError:
-                # If samefile fails, assume they are different
                 dirs.append(alt_dir_path)
 
     return dirs
@@ -77,7 +75,7 @@ def list_models(model_type: str, models_dir: str) -> List[Dict[str, str]]:
             files = glob(pattern, recursive=True)
             for file_path in files:
                 rel_path = os.path.relpath(file_path, model_dir)
-                model_name = os.path.splitext(rel_path)[0]  # Remove extension
+                model_name = os.path.splitext(rel_path)[0]
                 model = {
                     "model": model_name,
                     "name": model_name,
@@ -90,14 +88,14 @@ def list_models(model_type: str, models_dir: str) -> List[Dict[str, str]]:
                         if sd_model_class:
                             model["tags"].append(sd_model_class)
                     except Exception:
-                        pass  # Silently ignore if identification fails
+                        pass
                 models.append(model)
 
     return models
 
 
-def enumerate_all_models(models_dir: str) -> List[Dict[str, str]]:
-    """Enumerate all models across all known model types, including alternates."""
+def list_all_models(models_dir: str) -> List[Dict[str, str]]:
+    """List all models across all known model types, including alternates."""
     all_models = []
     for model_type in KNOWN_MODEL_TYPES:
         all_models.extend(list_models(model_type, models_dir))
@@ -113,15 +111,13 @@ def resolve_model_path(model_name: str, model_type: str, models_dir: str) -> Opt
         if not os.path.exists(model_dir):
             continue
 
-        # First, check if model_name already includes an extension
         for ext in extensions:
             if model_name.endswith(ext):
                 full_path = os.path.join(model_dir, model_name)
                 if os.path.exists(full_path):
                     return full_path
-                break  # If it has an extension but doesn't match, don't add another
+                break
 
-        # Otherwise, try adding extensions
         for ext in extensions:
             full_path = os.path.join(model_dir, model_name + ext)
             if os.path.exists(full_path):

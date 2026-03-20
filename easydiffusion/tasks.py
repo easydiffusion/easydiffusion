@@ -1,3 +1,5 @@
+from typing import Any, Dict, Optional
+
 from .types import Task
 
 
@@ -6,13 +8,13 @@ class GenerateTask(Task):
 
     task_type = "generate"
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, username: str, session_id: Optional[str] = None, input: Optional[Dict[str, Any]] = None):
+        super().__init__(username=username, session_id=session_id, input=input)
 
     def run(self, backend):
         """Run the generation task using the provided backend."""
-        # This method should be implemented by specific task types
-        raise NotImplementedError("Subclasses must implement the run method.")
+        self.outputs = list(backend.generate_images(self.input))
+        return self.outputs
 
 
 class FilterTask(Task):
@@ -20,10 +22,10 @@ class FilterTask(Task):
 
     task_type = "filter"
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, username: str, session_id: Optional[str] = None, input: Optional[Dict[str, Any]] = None):
+        super().__init__(username=username, session_id=session_id, input=input)
 
     def run(self, backend):
         """Run the filter task using the provided backend."""
-        # This method should be implemented by specific task types
-        raise NotImplementedError("Subclasses must implement the run method.")
+        self.outputs = list(backend.filter_images(self.input))
+        return self.outputs

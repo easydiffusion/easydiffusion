@@ -3,11 +3,11 @@ import tempfile
 import pytest
 import shutil
 
-from easydiffusion.local_models import (
+from easydiffusion.models import (
     MODEL_EXTENSIONS,
     get_model_dirs,
     list_models,
-    enumerate_all_models,
+    list_all_models,
     resolve_model_path,
 )
 
@@ -92,7 +92,7 @@ def test_list_models_with_alternate(temp_dir):
     assert "alt_model" in models
 
 
-def test_enumerate_all_models(temp_dir):
+def test_list_all_models(temp_dir):
     # Create dirs and files for two types
     for model_type in ["stable-diffusion", "vae"]:
         model_dir = os.path.join(temp_dir, model_type)
@@ -101,7 +101,7 @@ def test_enumerate_all_models(temp_dir):
         with open(os.path.join(model_dir, f"test{ext}"), "w") as f:
             f.write("dummy")
 
-    result = enumerate_all_models(temp_dir)
+    result = list_all_models(temp_dir)
     assert len(result) == 2
     tags = {m["tags"][0] for m in result}
     assert tags == {"stable-diffusion", "vae"}

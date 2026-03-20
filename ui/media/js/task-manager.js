@@ -29,7 +29,7 @@ async function onIdle() {
 function getUncompletedTaskEntries() {
     const taskEntries = Array.from(document.querySelectorAll("#preview .imageTaskContainer .taskStatusLabel"))
         .filter((taskLabel) => taskLabel.style.display !== "none")
-        .map(function(taskLabel) {
+        .map(function (taskLabel) {
             let imageTaskContainer = taskLabel.parentNode
             while (!imageTaskContainer.classList.contains("imageTaskContainer") && imageTaskContainer.parentNode) {
                 imageTaskContainer = imageTaskContainer.parentNode
@@ -63,7 +63,7 @@ async function onTaskStart(task) {
         try {
             let result = await SD.filter(task.previewTaskReq)
 
-            controlImagePreview.src = result.output[0]
+            controlImagePreview.src = result.outputs[0]
             let controlImageLargePreview = task.taskConfig.querySelector(
                 ".controlnet-img-preview .task-fs-initimage img"
             )
@@ -153,7 +153,7 @@ function getTaskUpdater(task, reqBody, outputContainer) {
 
     const batchCount = task.batchCount
     let lastStatus = undefined
-    return async function(event) {
+    return async function (event) {
         if (this.status !== lastStatus) {
             lastStatus = this.status
             switch (this.status) {
@@ -204,35 +204,21 @@ function getTaskUpdater(task, reqBody, outputContainer) {
         }
         if ("update" in event) {
             const stepUpdate = event.update
-            if (!("step" in stepUpdate)) {
+            if (!("progress" in stepUpdate)) {
                 return
             }
-            // task.instances can be a mix of different tasks with uneven number of steps (Render Vs Filter Tasks)
-            const instancesWithProgressUpdates = task.instances.filter((instance) => instance.step !== undefined)
-            const overallStepCount =
-                instancesWithProgressUpdates.reduce(
-                    (sum, instance) =>
-                        sum +
-                        (instance.isPending
-                            ? Math.max(0, instance.step || stepUpdate.step) /
-                              (instance.total_steps || stepUpdate.total_steps)
-                            : 1),
-                    0 // Initial value
-                ) * stepUpdate.total_steps // Scale to current number of steps.
-            const totalSteps = instancesWithProgressUpdates.reduce(
-                (sum, instance) => sum + (instance.total_steps || stepUpdate.total_steps),
-                stepUpdate.total_steps * (batchCount - task.batchesDone) // Initial value at (unstarted task count * Nbr of steps)
+            const stepProgress = Math.min(1, Math.max(0, Number(stepUpdate.progress || 0)))
+            const totalProgress = (task.instances || []).reduce(
+                (sum, instance) => sum + (instance.isPending ? Math.min(1, Math.max(0, Number(instance.progress ?? stepProgress))) : 1),
+                0
             )
-            const percent = Math.min(100, 100 * (overallStepCount / totalSteps)).toFixed(0)
+            const percent = Math.min(100, (100 * totalProgress) / Math.max(1, batchCount)).toFixed(0)
 
-            const timeTaken = stepUpdate.step_time // sec
-            const stepsRemaining = Math.max(0, totalSteps - overallStepCount)
-            const timeRemaining = timeTaken < 0 ? "" : millisecondsToStr(stepsRemaining * timeTaken * 1000)
-            outputMsg.innerHTML = `Batch ${task.batchesDone} of ${batchCount}. Generating image(s): ${percent}%. Time remaining (approx): ${timeRemaining}`
+            outputMsg.innerHTML = `Batch ${task.batchesDone} of ${batchCount}. Generating image(s): ${percent}%`
             outputMsg.style.display = "block"
             progressBarInner.style.width = `${percent}%`
 
-            if (stepUpdate.output) {
+            if (Array.isArray(stepUpdate.outputs) && stepUpdate.outputs.length > 0) {
                 document.dispatchEvent(
                     new CustomEvent("on_task_step", {
                         detail: {
@@ -250,7 +236,7 @@ function getTaskUpdater(task, reqBody, outputContainer) {
 
 function onRenderTaskCompleted(task, reqBody, instance, outputContainer, stepUpdate) {
     if (typeof stepUpdate === "object") {
-        if (stepUpdate.status === "succeeded") {
+        if (stepUpdate.status === "completed") {
             document.dispatchEvent(
                 new CustomEvent("on_render_task_success", {
                     detail: {
@@ -332,7 +318,7 @@ function resumeClient() {
         document.body.classList.add("pause")
     }
     return new Promise((resolve) => {
-        let playbuttonclick = function() {
+        let playbuttonclick = function () {
             resumeBtn.removeEventListener("click", playbuttonclick)
             resolve("resolved")
         }
@@ -383,24 +369,24 @@ function onTaskErrorHandler(task, reqBody, instance, reason) {
     const outputMsg = task["outputMsg"]
     logError(
         "Stable Diffusion had an error. Please check the logs in the command-line window. <br/><br/>" +
-            reason +
-            "<br/><pre>" +
-            reason.stack +
-            "</pre>",
+        reason +
+        "<br/><pre>" +
+        reason.stack +
+        "</pre>",
         task,
         outputMsg
     )
     // setStatus("request", "error", "error")
 }
 
-pauseBtn.addEventListener("click", function() {
+pauseBtn.addEventListener("click", function () {
     pauseClient = true
     pauseBtn.style.display = "none"
     resumeBtn.style.display = "inline"
     document.body.classList.add("wait-pause")
 })
 
-resumeBtn.addEventListener("click", function() {
+resumeBtn.addEventListener("click", function () {
     pauseClient = false
     resumeBtn.style.display = "none"
     pauseBtn.style.display = "inline"

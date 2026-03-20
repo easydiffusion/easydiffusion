@@ -404,10 +404,12 @@ document.addEventListener("keydown", function(e) {
 function showImages(reqBody, res, outputContainer, livePreview) {
     let imageItemElements = outputContainer.querySelectorAll(".imgItem")
     if (typeof res != "object") return
-    res.output.reverse()
-    res.output.forEach((result, index) => {
-        const imageData = result?.data || result?.path + "?t=" + Date.now(),
-            imageSeed = result?.seed,
+    const outputList = Array.isArray(res.outputs) ? [...res.outputs] : []
+    outputList.reverse()
+    outputList.forEach((result, index) => {
+        const imagePath = typeof result === "string" ? result : "",
+            imageData = imagePath ? imagePath + "?t=" + Date.now() : "",
+            imageSeed = typeof reqBody.seed === "number" ? reqBody.seed + index : reqBody.seed,
             imagePrompt = reqBody.prompt,
             imageInferenceSteps = reqBody.num_inference_steps,
             imageGuidanceScale = reqBody.guidance_scale,
@@ -473,7 +475,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         const imageInfo = imageItemElem.querySelector(".imgItemInfo")
         imageInfo.style.visibility = livePreview ? "hidden" : "visible"
 
-        if ("seed" in result && !imageElem.hasAttribute("data-seed")) {
+        if (!imageElem.hasAttribute("data-seed")) {
             const imageExpandBtn = imageItemElem.querySelector(".imgExpandBtn")
             imageExpandBtn.addEventListener("click", function() {
                 function previousImage(img) {
@@ -503,7 +505,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
             })
 
             const req = Object.assign({}, reqBody, {
-                seed: result?.seed || reqBody.seed,
+                seed: imageSeed,
             })
             imageElem.setAttribute("data-seed", req.seed)
             imageElem.setAttribute("data-imagecounter", ++imageCounter)
@@ -952,9 +954,9 @@ function applyInlineFilter(filterName, path, filterParams, img, statusText, tool
     tools.spinner.classList.remove("displayNone")
 
     SD.filter(filterReq, (e) => {
-        if (e.status === "succeeded") {
+        if (e.status === "completed") {
             let prevImg = img.src
-            img.src = e.output[0]
+            img.src = e.outputs[0]
             tools.spinner.classList.add("displayNone")
 
             if (prevImg.length > 0) {
@@ -969,7 +971,7 @@ function applyInlineFilter(filterName, path, filterParams, img, statusText, tool
                 tools.undoButton.classList.remove("displayNone")
                 tools.redoButton.classList.add("displayNone")
             }
-        } else if (e.status == "failed") {
+        } else if (e.status == "error") {
             alert("Error running upscale: " + e.detail)
             tools.spinner.classList.add("displayNone")
         }

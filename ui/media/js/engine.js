@@ -1,6 +1,6 @@
 /** SD-UI Backend control and classes.
  */
-;(function() {
+; (function () {
     "use strict"
     const RETRY_DELAY_IF_BUFFER_IS_EMPTY = 1000 // ms
     const RETRY_DELAY_IF_SERVER_IS_BUSY = 30 * 1000 // ms, status_code 503, already a task running
@@ -10,6 +10,7 @@
     const HEALTH_PING_INTERVAL = 5000 // ms
     const IDLE_COOLDOWN = 2500 // ms
     const CONCURRENT_TASK_INTERVAL = 100 // ms
+    const TERMINAL_TASK_RESPONSE_STATUSES = new Set(["completed", "error", "stopped"])
 
     /** Connects to an endpoint and resumes connection after reaching end of stream until all data is received.
      * Allows closing the connection while the server buffers more data.
@@ -111,7 +112,7 @@
                     value = this.parse(readState.value)
                     if (value) {
                         for (let sVal of value) {
-                            ;({ value: sVal, done } = await Promise.resolve(
+                            ; ({ value: sVal, done } = await Promise.resolve(
                                 this.onNext({ value: sVal, done: readState.done })
                             ))
                             yield sVal
@@ -336,7 +337,7 @@
         processing: "processing",
         stopped: "stopped",
         completed: "completed",
-        failed: "failed",
+        failed: "error",
     }
     Object.freeze(TaskStatus)
 
@@ -352,6 +353,64 @@
     const concurrent_generators = new Map()
     const weak_results = new WeakMap()
 
+    function getTaskStatusDetail(taskDetail) {
+        if (!taskDetail || typeof taskDetail !== "object") {
+            return undefined
+        }
+        return typeof taskDetail.detail === "string" && taskDetail.detail.length > 0 ? taskDetail.detail : undefined
+    }
+
+    class TaskStatusReader {
+        #url
+        #fetchOptions
+
+        constructor(url, options = {}) {
+            this.#url = url
+            this.#fetchOptions = Object.assign(
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                },
+                options
+            )
+        }
+
+        onComplete(value) {
+            return value
+        }
+        onError(response) {
+            throw new Error(response.statusText)
+        }
+        onNext({ value, done }, response) {
+            return { value, done }
+        }
+
+        async *open() {
+            for (; ;) {
+                const response = await fetch(this.#url, this.#fetchOptions)
+                if (!response.ok) {
+                    const value = await Promise.resolve(this.onError(response))
+                    if (typeof value === "boolean" && value) {
+                        await asyncDelay(TASK_STATE_SERVER_UPDATE_DELAY)
+                        continue
+                    }
+                    return value
+                }
+
+                let value = await response.json()
+                let done = TERMINAL_TASK_RESPONSE_STATUSES.has(value?.status)
+                    ; ({ value, done } = await Promise.resolve(this.onNext({ value, done }, response)))
+                yield value
+
+                if (done) {
+                    return this.onComplete(value)
+                }
+                await asyncDelay(TASK_STATE_SERVER_UPDATE_DELAY)
+            }
+        }
+    }
+
     class Task {
         // Private properties...
         _reqBody = {} // request body of this task.
@@ -362,6 +421,7 @@
 
         constructor(options = {}) {
             this._reqBody = Object.assign({}, options)
+            this.progress = 0
             if (typeof this._reqBody.session_id === "undefined") {
                 this._reqBody.session_id = sessionId
             } else if (
@@ -401,8 +461,8 @@
                     throw new Error("exception is not an Error or a string.")
                 }
             }
-            const res = await fetch("/image/stop?task=" + this.id)
-            if (!res.ok) {
+            const res = await fetch(`/v1/tasks/${encodeURIComponent(this.id)}`, { method: "DELETE" })
+            if (!res.ok && res.status !== 409 && res.status !== 404) {
                 console.log("Stop response:", res)
                 throw new Error(res.statusText)
             }
@@ -489,25 +549,6 @@
             return await res.json()
         }
 
-        static getReader(url) {
-            const reader = new ChunkedStreamReader(url)
-            const parseToString = reader.parse
-            reader.parse = function(value) {
-                value = parseToString.call(this, value)
-                if (!value || value.length <= 0) {
-                    return
-                }
-                return reader.readStreamAsJSON(value.join(""))
-            }
-            reader.onNext = function({ done, value }) {
-                // By default is completed when the return value has a status defined.
-                if (typeof value === "object" && "status" in value) {
-                    done = true
-                }
-                return { done, value }
-            }
-            return reader
-        }
         _setReader(reader) {
             if (typeof this.#reader !== "undefined") {
                 throw new Error("The task reader can only be set once.")
@@ -518,36 +559,54 @@
             if (this.#reader) {
                 return this.#reader
             }
-            if (!this.streamUrl) {
-                throw new Error("The task has no stream Url defined.")
+            if (!this.taskUrl) {
+                throw new Error("The task has no task Url defined.")
             }
-            this.#reader = Task.getReader(this.streamUrl)
+            this.#reader = new TaskStatusReader(this.taskUrl)
             const task = this
             const onNext = this.#reader.onNext
-            this.#reader.onNext = function({ done, value }) {
+            this.#reader.onNext = function ({ done, value }) {
                 if (value && typeof value === "object") {
-                    if (
-                        task.status === TaskStatus.init ||
-                        task.status === TaskStatus.pending ||
-                        task.status === TaskStatus.waiting
-                    ) {
-                        task._setStatus(TaskStatus.processing)
+                    switch (value.status) {
+                        case "pending":
+                            if (task.status === TaskStatus.init || task.status === TaskStatus.pending) {
+                                task._setStatus(TaskStatus.waiting)
+                            }
+                            break
+                        case "running":
+                        case "completed":
+                            if (
+                                task.status === TaskStatus.init ||
+                                task.status === TaskStatus.pending ||
+                                task.status === TaskStatus.waiting
+                            ) {
+                                task._setStatus(TaskStatus.processing)
+                            }
+                            break
+                        case "error":
+                            task.#exception = new Error(getTaskStatusDetail(value) || "Task failed")
+                            task.#status = TaskStatus.failed
+                            break
+                        case "stopped":
+                            task.#exception = new Error(getTaskStatusDetail(value) || "Task stopped")
+                            task.#status = TaskStatus.stopped
+                            break
                     }
-                    if ("step" in value && "total_steps" in value) {
-                        task.step = value.step
-                        task.total_steps = value.total_steps
+                    if ("progress" in value) {
+                        task.progress = Math.min(1, Math.max(0, Number(value.progress || 0)))
                     }
                 }
                 return onNext.call(this, { done, value })
             }
-            this.#reader.onComplete = function(value) {
+            this.#reader.onComplete = function (value) {
                 task.result = value
+                task.progress = 1
                 if (task.isPending) {
                     task._setStatus(TaskStatus.completed)
                 }
                 return value
             }
-            this.#reader.onError = function(response) {
+            this.#reader.onError = function (response) {
                 const err = new Error(response.statusText)
                 task.abort(err)
                 throw err
@@ -622,7 +681,7 @@
                     )
                     const state =
                         typeof serverState.tasks === "object" ? serverState.tasks[String(task.#id)] : undefined
-                    if (state === "running" || state === "buffer" || state === "completed") {
+                    if (state === "running" || state === "completed") {
                         this._setStatus(TaskStatus.processing)
                     }
                     if ((await Promise.resolve(callback?.call(task))) || signal?.aborted) {
@@ -707,12 +766,12 @@
             }
             timeout = Date.now() + timeout
             do {
-                ;({ value, done } = await Promise.resolve(promiseGenerator.next(value)))
+                ; ({ value, done } = await Promise.resolve(promiseGenerator.next(value)))
                 if (value instanceof Promise) {
                     value = await value
                 }
                 if (callback) {
-                    ;({ value, done } = await Promise.resolve(callback.call(promiseGenerator, { value, done })))
+                    ; ({ value, done } = await Promise.resolve(callback.call(promiseGenerator, { value, done })))
                 }
                 if (value instanceof Promise) {
                     value = await value
@@ -728,12 +787,12 @@
             }
             timeout = Date.now() + timeout
             do {
-                ;({ value, done } = await Promise.resolve(generator.next(value)))
+                ; ({ value, done } = await Promise.resolve(generator.next(value)))
                 if (value instanceof Promise) {
                     value = await value
                 }
                 if (callback) {
-                    ;({ value, done } = await Promise.resolve(callback.call(generator, { value, done })))
+                    ; ({ value, done } = await Promise.resolve(callback.call(generator, { value, done })))
                     if (value instanceof Promise) {
                         value = await value
                     }
@@ -873,7 +932,7 @@
                     if (typeof this._reqBody[key] !== TASK_OPTIONAL[key]) {
                         throw new Error(
                             `${key} need to be of type ${TASK_OPTIONAL[key]} but ${typeof this._reqBody[
-                                key
+                            key
                             ]} was found.`
                         )
                     }
@@ -897,23 +956,21 @@
             }
 
             let jsonResponse = await super.post("/render", timeout)
-            if (typeof jsonResponse?.task !== "number") {
+            if (typeof jsonResponse?.task_id !== "string") {
                 console.warn("Endpoint error response: ", jsonResponse)
                 const event = Object.assign({ task: this }, jsonResponse)
                 await eventSource.fireEvent(EVENT_UNEXPECTED_RESPONSE, event)
                 if ("continueWith" in event) {
                     jsonResponse = await Promise.resolve(event.continueWith)
                 }
-                if (typeof jsonResponse?.task !== "number") {
+                if (typeof jsonResponse?.task_id !== "string") {
                     const err = new Error(jsonResponse?.detail || "Endpoint response does not contains a task ID.")
                     this.abort(err)
                     throw err
                 }
             }
-            this._setId(jsonResponse.task)
-            if (jsonResponse.stream) {
-                this.streamUrl = jsonResponse.stream
-            }
+            this._setId(jsonResponse.task_id)
+            this.taskUrl = `/v1/tasks/${encodeURIComponent(this.id)}`
             this._setStatus(TaskStatus.waiting)
             return jsonResponse
         }
@@ -942,70 +999,11 @@
                 yield progressCallback?.call(this, { detail: e.message })
                 throw e
             }
-            try {
-                // Wait for task to start on server.
-                yield this.waitUntil({
-                    callback: function() {
-                        return progressCallback?.call(this, {})
-                    },
-                    status: TaskStatus.processing,
-                })
-            } catch (e) {
-                this.abort(err)
-                throw e
-            }
-            // Update class status and callback.
-            const taskState = typeof serverState.tasks === "object" ? serverState.tasks[String(this.id)] : undefined
-            switch (taskState) {
-                case "pending": // Session has pending tasks.
-                    console.error("Server %o render request %o is still waiting.", serverState, renderRequest)
-                    //Only update status if not already set by waitUntil
-                    if (this.status === TaskStatus.init || this.status === TaskStatus.pending) {
-                        // Set status as Waiting in backend.
-                        this._setStatus(TaskStatus.waiting)
-                    }
-                    break
-                case "running":
-                case "buffer":
-                    // Normal expected messages.
-                    this._setStatus(TaskStatus.processing)
-                    break
-                case "completed":
-                    if (this.isPending) {
-                        // Set state to processing until we read the reply
-                        this._setStatus(TaskStatus.processing)
-                    }
-                    console.warn("Server %o render request %o completed unexpectedly", serverState, renderRequest)
-                    break // Continue anyway to try to read cached result.
-                case "error":
-                    this._setStatus(TaskStatus.failed)
-                    console.error("Server %o render request %o has failed", serverState, renderRequest)
-                    break // Still valid, Update UI with error message
-                case "stopped":
-                    this._setStatus(TaskStatus.stopped)
-                    console.log("Server %o render request %o was stopped", serverState, renderRequest)
-                    return false
-                default:
-                    if (!progressCallback) {
-                        const err = new Error("Unexpected server task state: " + taskState || "Undefined")
-                        this.abort(err)
-                        throw err
-                    }
-                    const response = yield progressCallback.call(this, {})
-                    if (response instanceof Error) {
-                        this.abort(response)
-                        throw response
-                    }
-                    if (!response) {
-                        return false
-                    }
-            }
-
             // Task started!
             // Open the reader.
             const reader = this.reader
             const task = this
-            reader.onError = function(response) {
+            reader.onError = function (response) {
                 if (progressCallback) {
                     task.abort(new Error(response.statusText))
                     return progressCallback.call(task, { response, reader })
@@ -1020,7 +1018,7 @@
             let done = undefined
             yield progressCallback?.call(this, { stream: streamGenerator })
             do {
-                ;({ value, done } = yield streamGenerator.next())
+                ; ({ value, done } = yield streamGenerator.next())
                 if (typeof value !== "object") {
                     continue
                 }
@@ -1057,27 +1055,23 @@
          */
         async post(timeout = -1) {
             let jsonResponse = await super.post("/filter", timeout)
-            if (typeof jsonResponse?.task !== "number") {
+            if (typeof jsonResponse?.task_id !== "string") {
                 console.warn("Endpoint error response: ", jsonResponse)
                 const event = Object.assign({ task: this }, jsonResponse)
                 await eventSource.fireEvent(EVENT_UNEXPECTED_RESPONSE, event)
                 if ("continueWith" in event) {
                     jsonResponse = await Promise.resolve(event.continueWith)
                 }
-                if (typeof jsonResponse?.task !== "number") {
-                    const err = new Error(jsonResponse?.detail || "Endpoint response does not contains a task ID.")
-                    this.abort(err)
-                    throw err
-                }
+                const err = new Error(jsonResponse?.detail || "Endpoint response does not contains a task ID.")
+                this.abort(err)
+                throw err
             }
-            this._setId(jsonResponse.task)
-            if (jsonResponse.stream) {
-                this.streamUrl = jsonResponse.stream
-            }
+            this._setId(jsonResponse.task_id)
+            this.taskUrl = `/v1/tasks/${encodeURIComponent(this.id)}`
             this._setStatus(TaskStatus.waiting)
             return jsonResponse
         }
-        checkReqBody() {}
+        checkReqBody() { }
         enqueue(progressCallback) {
             return Task.enqueueNew(this, FilterTask, progressCallback)
         }
@@ -1103,24 +1097,11 @@
                 throw e
             }
 
-            try {
-                // Wait for task to start on server.
-                yield this.waitUntil({
-                    callback: function() {
-                        return progressCallback?.call(this, {})
-                    },
-                    status: TaskStatus.processing,
-                })
-            } catch (e) {
-                this.abort(err)
-                throw e
-            }
-
             // Task started!
             // Open the reader.
             const reader = this.reader
             const task = this
-            reader.onError = function(response) {
+            reader.onError = function (response) {
                 if (progressCallback) {
                     task.abort(new Error(response.statusText))
                     return progressCallback.call(task, { response, reader })
@@ -1135,13 +1116,13 @@
             let done = undefined
             yield progressCallback?.call(this, { stream: streamGenerator })
             do {
-                ;({ value, done } = yield streamGenerator.next())
+                ; ({ value, done } = yield streamGenerator.next())
                 if (typeof value !== "object") {
                     continue
                 }
                 if (value.status !== undefined) {
                     yield progressCallback?.call(this, value)
-                    if (value.status === "succeeded" || value.status === "failed") {
+                    if (TERMINAL_TASK_RESPONSE_STATUSES.has(value.status)) {
                         done = true
                     }
                 }
@@ -1168,7 +1149,7 @@
     }
 
     const getSystemInfo = debounce(
-        async function() {
+        async function () {
             let systemInfo = {
                 devices: {
                     all: {},
@@ -1352,7 +1333,7 @@
             if (typeof navigator?.scheduling?.isInputPending === "function" && navigator.scheduling.isInputPending()) {
                 return
             }
-            const continuePromise = continueTasks().catch(async function(err) {
+            const continuePromise = continueTasks().catch(async function (err) {
                 console.error(err)
                 await eventSource.fireEvent(EVENT_UNHANDLED_REJECTION, { reason: err })
                 await asyncDelay(RETRY_DELAY_ON_ERROR)
@@ -1370,7 +1351,7 @@
         FilterTask,
 
         Events: EVENTS_TYPES,
-        init: async function(options = {}) {
+        init: async function (options = {}) {
             if ("events" in options) {
                 for (const key in options.events) {
                     eventSource.addEventListener(key, options.events[key])

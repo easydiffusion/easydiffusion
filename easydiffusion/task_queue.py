@@ -10,6 +10,8 @@ import queue
 from abc import ABC, abstractmethod
 from typing import Dict, Optional, Any
 
+from .types import Task
+
 
 class Worker(ABC):
     """
@@ -30,7 +32,7 @@ class Worker(ABC):
         self._thread: Optional[threading.Thread] = None
 
     @abstractmethod
-    def run(self, task: Any) -> Any:
+    def run(self, task: Task) -> Any:
         """
         Process a task. Must be implemented by subclasses.
 
@@ -51,10 +53,21 @@ class Worker(ABC):
         """
         while not self._stop_event.is_set():
             try:
-                # Use timeout to periodically check stop event
                 task = task_queue.get(timeout=0.1)
                 try:
+                    if task.status == "stopped":
+                        continue
+
+                    task.mark_running()
+
                     self.run(task)
+
+                    if task.status not in ("completed", "error", "stopped"):
+                        task.mark_completed()
+                except StopAsyncIteration as e:
+                    task.request_stop(str(e))
+                except Exception as e:
+                    task.mark_failed(e)
                 finally:
                     task_queue.task_done()
             except queue.Empty:
@@ -147,7 +160,7 @@ class TaskQueue:
 
         worker.stop(timeout=timeout)
 
-    def add_task(self, task: Any, block: bool = True, timeout: Optional[float] = None):
+    def add_task(self, task: Task, block: bool = True, timeout: Optional[float] = None):
         """
         Add a task to the queue.
 
