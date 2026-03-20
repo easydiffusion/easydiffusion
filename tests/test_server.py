@@ -10,8 +10,7 @@ import shutil
 
 from easydiffusion.config import ConfigManager, create_default_config
 from easydiffusion.server import server_api
-from easydiffusion.task_queue import TaskQueue
-from easydiffusion.worker_manager import WorkerManager
+from easydiffusion.workers import Workers
 
 
 @pytest.fixture
@@ -36,8 +35,7 @@ def config_manager(temp_dir):
 def client(config_manager, dummy_backend_registry):
     """Create a test client with v1 API."""
     backend_name, backend_class = dummy_backend_registry
-    task_queue = TaskQueue()
-    worker_manager = WorkerManager(task_queue, backend_name)
+    workers = Workers(backend_class, backend_name=backend_name)
 
     config = config_manager.get_all()
     config["backend"]["backend_name"] = backend_name
@@ -47,17 +45,16 @@ def client(config_manager, dummy_backend_registry):
     backend_class.reset_mock_state()
 
     server_api.state.config_manager = config_manager
-    server_api.state.task_queue = task_queue
-    server_api.state.worker_manager = worker_manager
+    server_api.state.workers = workers
     server_api.state.task_cache = {}
 
-    worker_manager.update_workers("cpu")
+    workers.update_devices("cpu")
 
     client = TestClient(server_api)
 
     yield client
 
-    worker_manager.shutdown_all(timeout=1.0)
+    workers.shutdown()
     server_api.state.task_cache = {}
 
 
@@ -740,7 +737,7 @@ class TestOutputEndpoint:
         )
         task_id = create_response.json()["task_id"]
 
-        assert server_api.state.task_queue.wait_completion(timeout=2.0)
+        assert server_api.state.workers.wait(timeout=2.0)
 
         response = client.get(f"/v1/tasks/{task_id}/outputs/0")
         assert response.status_code == 200
@@ -758,7 +755,7 @@ class TestOutputEndpoint:
         )
         task_id = create_response.json()["task_id"]
 
-        assert server_api.state.task_queue.wait_completion(timeout=2.0)
+        assert server_api.state.workers.wait(timeout=2.0)
 
         response = client.get(f"/v1/tasks/{task_id}/outputs/0")
         assert response.status_code == 200

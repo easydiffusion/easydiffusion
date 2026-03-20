@@ -8,9 +8,9 @@ from pathlib import Path
 import logging
 
 from easydiffusion.config import ConfigManager, create_default_config
+from easydiffusion.backends import get_backend_class
 from easydiffusion.server import server_api  # required for uvicorn
-from easydiffusion.task_queue import TaskQueue
-from easydiffusion.worker_manager import WorkerManager
+from easydiffusion.workers import Workers
 
 
 # Configure logging
@@ -43,24 +43,18 @@ def init():
     config = config_manager.get_all()
     logger.info(f"Configuration loaded: {config}")
 
-    # Initialize task queue
-    logger.info("Initializing task queue")
-    task_queue = TaskQueue()
-
-    # Initialize worker manager
-    logger.info("Initializing worker manager")
+    logger.info("Initializing workers")
     backend_name = config.get("backend", {}).get("backend_name", "sdkit3")
-    worker_manager = WorkerManager(task_queue, backend_name)
+    workers = Workers(get_backend_class(backend_name), backend_name=backend_name)
 
     # Start workers for configured devices
     devices = config.get("backend", {}).get("devices", "auto")
     logger.info(f"Starting workers for devices: {devices}")
-    worker_manager.update_workers(devices)
+    workers.update_devices(devices)
 
     # Store in app state (will be set when app is created)
     server_api.state.config_manager = config_manager
-    server_api.state.task_queue = task_queue
-    server_api.state.worker_manager = worker_manager
+    server_api.state.workers = workers
 
     logger.info("Application initialized")
 

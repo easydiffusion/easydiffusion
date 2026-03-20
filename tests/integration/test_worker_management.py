@@ -8,18 +8,15 @@ Tests the complete workflow of:
 
 import pytest
 import tempfile
-import time
 from pathlib import Path
 from unittest.mock import patch
 from fastapi.testclient import TestClient
 
 from easydiffusion.config import ConfigManager, create_default_config
 from easydiffusion.server import server_api
-from easydiffusion.task_queue import TaskQueue
-from easydiffusion.worker_manager import WorkerManager
-from easydiffusion.backends import Backend
-from easydiffusion.utils.device_utils import resolve_devices
+from easydiffusion.workers import Workers
 from torchruntime.device_db import GPU
+from support import DummyBackend, register_dummy_backend, unregister_dummy_backend
 
 
 def mock_resolve_devices(devices):
@@ -65,41 +62,6 @@ def mock_resolve_devices(devices):
     return [GPU(vendor_id="cpu", vendor_name="CPU", device_id="cpu", device_name="cpu", is_discrete=False)]
 
 
-class MockBackend(Backend):
-    """A mock backend for integration testing."""
-
-    def __init__(self, device: GPU):
-        """Initialize the mock backend."""
-        super().__init__(device)
-        self.initialized = True
-        self.stop_called = False
-        self.start_called = False
-
-    def install(self) -> None:
-        """Install the backend (no-op for mock)."""
-        pass
-
-    def uninstall(self) -> None:
-        """Uninstall the backend (no-op for mock)."""
-        pass
-
-    def start(self):
-        """Start the backend (called from worker thread)."""
-        self.start_called = True
-
-    def stop(self):
-        """Stop the backend."""
-        self.stop_called = True
-
-    def ping(self, timeout: float = 1.0) -> bool:
-        """Ping the backend."""
-        return True
-
-    def render_image(self, context, **kwargs):
-        """Render an image (mock implementation)."""
-        return None
-
-
 @pytest.fixture
 def temp_config_path():
     """Create a temporary configuration file."""
@@ -117,40 +79,37 @@ def temp_config_path():
 def app_state(temp_config_path):
     """Set up application state with mock components."""
     with patch("easydiffusion.utils.device_utils.resolve_devices", side_effect=mock_resolve_devices):
+        backend_name, backend_class, previous = register_dummy_backend()
+
         # Create config
         create_default_config(temp_config_path)
         config_manager = ConfigManager(temp_config_path)
+        config = config_manager.load()
+        config.setdefault("backend", {})
+        config["backend"]["backend_name"] = backend_name
+        config["backend"]["devices"] = "cpu"
+        config_manager.save(config)
         config_manager.load()
 
-        # Initialize task queue
-        task_queue = TaskQueue()
-
-        # Register the mock backend
-        from easydiffusion.backends import BACKEND_REGISTRY
-
-        original_registry = BACKEND_REGISTRY.copy()
-        BACKEND_REGISTRY["mock"] = MockBackend
-
-        # Initialize worker manager with mock backend name
-        worker_manager = WorkerManager(task_queue, "mock")
+        workers = Workers(backend_class, backend_name=backend_name)
+        workers.update_devices("cpu")
 
         # Set up server state for API tests
         server_api.state.config_manager = config_manager
-        server_api.state.task_queue = task_queue
-        server_api.state.worker_manager = worker_manager
+        server_api.state.workers = workers
+        server_api.state.task_cache = {}
+        client = TestClient(server_api)
 
         yield {
             "config_manager": config_manager,
-            "task_queue": task_queue,
-            "worker_manager": worker_manager,
+            "workers": workers,
+            "client": client,
         }
 
         # Cleanup
-        worker_manager.shutdown_all()
-
-        # Restore backend registry
-        BACKEND_REGISTRY.clear()
-        BACKEND_REGISTRY.update(original_registry)
+        workers.shutdown()
+        server_api.state.task_cache = {}
+        unregister_dummy_backend(backend_name, previous)
 
 
 class TestWorkerManagement:
@@ -159,169 +118,140 @@ class TestWorkerManagement:
     @patch("easydiffusion.utils.device_utils.resolve_devices", side_effect=mock_resolve_devices)
     def test_workers_start_on_initialization(self, mock_resolve, temp_config_path):
         """Test that workers are started when the application initializes."""
+        backend_name, backend_class, previous = register_dummy_backend()
+
         # Create config with specific device
         create_default_config(temp_config_path)
         config_manager = ConfigManager(temp_config_path)
         config = config_manager.load()
-        config["render_devices"] = ["cpu"]
+        config.setdefault("backend", {})
+        config["backend"]["backend_name"] = backend_name
+        config["backend"]["devices"] = ["cpu"]
         config_manager.save(config)
 
-        # Initialize components
-        task_queue = TaskQueue()
-
-        # Register mock backend
-        from easydiffusion.backends import BACKEND_REGISTRY
-
-        original_registry = BACKEND_REGISTRY.copy()
-        BACKEND_REGISTRY["mock"] = MockBackend
-
-        worker_manager = WorkerManager(task_queue, "mock")
+        workers = Workers(backend_class, backend_name=backend_name)
 
         # Start workers as would happen in main.py
-        render_devices = config.get("render_devices", "auto")
-        worker_manager.update_workers(render_devices)
-        active_devices = worker_manager.get_active_devices()
+        render_devices = config.get("backend", {}).get("devices", "auto")
+        workers.update_devices(render_devices)
+        active_devices = workers.get_active_devices()
         assert "cpu" in active_devices
         assert len(active_devices) == 1
 
         # Cleanup
-        worker_manager.shutdown_all()
-        BACKEND_REGISTRY.clear()
-        BACKEND_REGISTRY.update(original_registry)
+        workers.shutdown()
+        unregister_dummy_backend(backend_name, previous)
 
     @patch("easydiffusion.utils.device_utils.resolve_devices", side_effect=mock_resolve_devices)
     def test_workers_update_on_config_change(self, mock_resolve, app_state):
         """Test that workers are updated when configuration changes via API."""
-        worker_manager = app_state["worker_manager"]
+        workers = app_state["workers"]
+        client = app_state["client"]
 
-        # Start with cpu device
-        worker_manager.update_workers(["cpu"])
-        assert "cpu" in worker_manager.get_active_devices()
+        assert workers.get_active_devices() == ["cpu"]
 
-        # Simulate config change to add cuda:0 (resolved to device ID '0')
-        worker_manager.update_workers(["cpu", "cuda:0"])
+        response = client.put("/v1/config", json={"backend": {"devices": ["cpu", "cuda:0"]}})
+        assert response.status_code == 200
+        assert response.json() == {"status": "updated"}
 
-        # Verify workers were updated
-        active_devices = worker_manager.get_active_devices()
+        active_devices = workers.get_active_devices()
         assert "cpu" in active_devices
-        assert "0" in active_devices  # cuda:0 is resolved to '0'
+        assert "0" in active_devices
         assert len(active_devices) == 2
 
     @patch("easydiffusion.utils.device_utils.resolve_devices", side_effect=mock_resolve_devices)
     def test_workers_removed_on_config_change(self, mock_resolve, app_state):
         """Test that workers are removed when devices are removed from config."""
-        worker_manager = app_state["worker_manager"]
+        workers = app_state["workers"]
+        client = app_state["client"]
 
-        # Start with multiple devices
-        worker_manager.update_workers(["cpu", "cuda:0"])
-        assert len(worker_manager.get_active_devices()) == 2
+        response = client.put("/v1/config", json={"backend": {"devices": ["cpu", "cuda:0"]}})
+        assert response.status_code == 200
+        assert len(workers.get_active_devices()) == 2
 
-        # Remove cuda:0 (device ID '0')
-        worker_manager.update_workers(["cpu"])
+        response = client.put("/v1/config", json={"backend": {"devices": ["cpu"]}})
+        assert response.status_code == 200
 
-        # Verify worker was removed
-        active_devices = worker_manager.get_active_devices()
+        active_devices = workers.get_active_devices()
         assert "cpu" in active_devices
-        assert "0" not in active_devices  # cuda:0 is resolved to '0'
+        assert "0" not in active_devices
         assert len(active_devices) == 1
 
     @patch("easydiffusion.utils.device_utils.resolve_devices", side_effect=mock_resolve_devices)
     def test_api_endpoint_updates_workers(self, mock_resolve, app_state):
-        """Test that the /app_config API endpoint updates workers."""
-        client = TestClient(server_api)
-        worker_manager = app_state["worker_manager"]
+        """Test that the config API updates worker devices without changing backend."""
+        workers = app_state["workers"]
+        client = app_state["client"]
+        initial_thread = workers.workers["cpu"][0]
 
-        # Start with cpu device
-        worker_manager.update_workers(["cpu"])
-        assert len(worker_manager.get_active_devices()) == 1
+        response = client.put("/v1/config", json={"backend": {"devices": ["cpu", "cuda:0"]}})
 
-        # Update config via API
-        response = client.post("/app_config", json={"render_devices": ["cpu", "cuda:0"]})
-
-        # Note: May fail if config_manager is not properly initialized in server state
-        # Skip assertion if server not fully initialized
-        if response.status_code == 200:
-            assert response.json() == {"status": "OK"}
-
-            # Verify workers were updated
-            # Give a moment for async operations
-            time.sleep(0.1)
-            active_devices = worker_manager.get_active_devices()
-            assert "cpu" in active_devices
-            assert "0" in active_devices  # cuda:0 is resolved to '0'
+        assert response.status_code == 200
+        assert response.json() == {"status": "updated"}
+        assert workers.backend_name == "dummy"
+        assert workers.workers["cpu"][0] is initial_thread
+        assert set(workers.get_active_devices()) == {"cpu", "0"}
 
     @patch("easydiffusion.utils.device_utils.resolve_devices", side_effect=mock_resolve_devices)
     def test_backend_change_recreates_workers(self, mock_resolve, app_state):
         """Test that changing backend recreates all workers."""
         from easydiffusion.backends import BACKEND_REGISTRY
 
-        # Register a second mock backend for testing
-        class AltMockBackend(MockBackend):
+        class AltMockBackend(DummyBackend):
             pass
 
         original_registry = BACKEND_REGISTRY.copy()
         BACKEND_REGISTRY["alt_mock"] = AltMockBackend
 
         try:
-            client = TestClient(server_api)
-            worker_manager = app_state["worker_manager"]
+            workers = app_state["workers"]
+            client = app_state["client"]
+            original_thread = workers.workers["cpu"][0]
+            old_instances = list(DummyBackend.instances)
 
-            # Start with initial backend
-            worker_manager.update_workers(["cpu"])
-            initial_workers = worker_manager.get_active_devices()
+            response = client.put("/v1/config", json={"backend": {"backend_name": "alt_mock"}})
 
-            # Change backend via API
-            response = client.post("/app_config", json={"backend": "alt_mock"})
-
-            # Note: May fail if config_manager is not properly initialized in server state
-            if response.status_code == 200:
-                # Worker manager should be the same instance, just with new backend
-                new_worker_manager = server_api.state.worker_manager
-                assert new_worker_manager is worker_manager  # Same instance
-                assert new_worker_manager.backend_name == "alt_mock"
-
+            assert response.status_code == 200
+            assert response.json() == {"status": "updated"}
+            assert workers.backend_name == "alt_mock"
+            assert workers.backend_class is AltMockBackend
+            assert workers.get_active_devices() == ["cpu"]
+            assert workers.workers["cpu"][0] is not original_thread
+            assert all(instance.stop_called for instance in old_instances)
         finally:
-            # Restore registry
             BACKEND_REGISTRY.clear()
             BACKEND_REGISTRY.update(original_registry)
 
     @patch("easydiffusion.utils.device_utils.resolve_devices", side_effect=mock_resolve_devices)
     def test_backend_change_only_when_different(self, mock_resolve, app_state):
         """Test that workers are not recreated when backend doesn't change."""
-        worker_manager = app_state["worker_manager"]
+        workers = app_state["workers"]
+        client = app_state["client"]
 
-        # Start with initial backend
-        worker_manager.update_workers(["cpu"])
-        initial_workers = worker_manager.get_active_devices()
+        initial_workers = workers.get_active_devices()
         assert len(initial_workers) == 1
 
-        # Get reference to the worker object
-        initial_worker = worker_manager.task_queue.get_worker("cpu")
+        initial_thread = workers.workers["cpu"][0]
 
-        # Try to set the same backend again
-        worker_manager.set_backend("mock", ["cpu"])
+        response = client.put("/v1/config", json={"backend": {"backend_name": "dummy", "devices": ["cpu"]}})
 
-        # Worker should still be the same object (not recreated)
-        current_worker = worker_manager.task_queue.get_worker("cpu")
-        assert current_worker is initial_worker  # Same worker instance
-
-        # Backend name should still be the same
-        assert worker_manager.backend_name == "mock"
+        assert response.status_code == 200
+        current_thread = workers.workers["cpu"][0]
+        assert current_thread is initial_thread
+        assert workers.backend_name == "dummy"
 
     @patch("easydiffusion.utils.device_utils.resolve_devices", side_effect=mock_resolve_devices)
     def test_workers_handle_auto_device_selection(self, mock_resolve, app_state):
         """Test that 'auto' device selection is handled properly."""
-        worker_manager = app_state["worker_manager"]
+        workers = app_state["workers"]
+        client = app_state["client"]
 
-        # Update with 'auto' - should be resolved internally
-        worker_manager.update_workers("auto")
+        response = client.put("/v1/config", json={"backend": {"devices": "auto"}})
+        assert response.status_code == 200
 
-        # Should have at least one device
-        active_devices = worker_manager.get_active_devices()
+        active_devices = workers.get_active_devices()
         assert len(active_devices) >= 1
-        # Should NOT have "auto" as a literal device name - it should be resolved
         assert "auto" not in active_devices
-        # Should have either cpu or device IDs like '0', '1'
         assert "cpu" in active_devices or any(d.isdigit() for d in active_devices)
 
     @patch("easydiffusion.utils.device_utils.resolve_devices", side_effect=mock_resolve_devices)
@@ -329,14 +259,15 @@ class TestWorkerManagement:
         """Test that concurrent config updates are handled safely."""
         import threading
 
-        worker_manager = app_state["worker_manager"]
+        workers = app_state["workers"]
+        client = app_state["client"]
         results = []
 
         def update_config(devices):
             try:
-                worker_manager.update_workers(devices)
-                results.append(True)
-            except Exception as e:
+                response = client.put("/v1/config", json={"backend": {"devices": devices}})
+                results.append(response.status_code == 200)
+            except Exception:
                 results.append(False)
 
         # Start multiple threads updating config
@@ -355,29 +286,36 @@ class TestWorkerManagement:
         assert all(results)
 
         # Should have exactly one device active (the last one to update)
-        active_devices = worker_manager.get_active_devices()
+        active_devices = workers.get_active_devices()
         assert len(active_devices) == 1
 
     @patch("easydiffusion.utils.device_utils.resolve_devices", side_effect=mock_resolve_devices)
     def test_worker_task_processing_after_update(self, mock_resolve, app_state):
         """Test that workers can process tasks after device updates."""
-        task_queue = app_state["task_queue"]
-        worker_manager = app_state["worker_manager"]
+        workers = app_state["workers"]
+        client = app_state["client"]
 
-        # Start workers
-        worker_manager.update_workers(["cpu"])
+        DummyBackend.set_generate_outputs([b"\x89PNG\r\n\x1a\nworker_test_output"])
+        response = client.put("/v1/config", json={"backend": {"devices": ["cpu", "cuda:0"]}})
+        assert response.status_code == 200
 
-        # Update workers (add another device) - cuda:0 resolved to '0'
-        worker_manager.update_workers(["cpu", "cuda:0"])
-
-        # Verify both workers are active
-        active_devices = worker_manager.get_active_devices()
+        active_devices = workers.get_active_devices()
         assert len(active_devices) == 2
         assert "cpu" in active_devices
-        assert "0" in active_devices  # cuda:0 is resolved to '0'
+        assert "0" in active_devices
 
-        # Workers should be registered in task queue
-        assert set(task_queue.list_workers()) == set(active_devices)
+        response = client.post(
+            "/v1/tasks",
+            json={"username": "test-user", "prompt": "Test", "model_paths": {"stable-diffusion": "test-model"}},
+        )
+
+        assert response.status_code == 202
+        assert workers.wait(timeout=2.0)
+
+        task_id = response.json()["task_id"]
+        task = server_api.state.task_cache[task_id]
+        assert task.status == "completed"
+        assert len(task.outputs) == 1
 
 
 if __name__ == "__main__":

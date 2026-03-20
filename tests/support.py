@@ -14,6 +14,7 @@ from easydiffusion.types import Task
 class DummyBackend(Backend):
     """Lightweight backend used by unit tests."""
 
+    instances = []
     mock_generate_outputs = []
     mock_filter_outputs = []
     last_generate_input = None
@@ -27,9 +28,11 @@ class DummyBackend(Backend):
         self.start_thread_id = None
         self.tasks_processed = []
         self.lock = threading.Lock()
+        type(self).instances.append(self)
 
     @classmethod
     def reset_mock_state(cls) -> None:
+        cls.instances = []
         cls.mock_generate_outputs = []
         cls.mock_filter_outputs = []
         cls.last_generate_input = None

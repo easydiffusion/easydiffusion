@@ -171,6 +171,13 @@ async def update_config(req: ConfigResponse):
         config_manager = server_api.state.config_manager
         config_manager.update(req.model_dump(exclude_none=True))
 
+        workers = getattr(server_api.state, "workers", None)
+        if workers is not None:
+            backend_config = config_manager.get_system_config().get("backend", {})
+            backend_name = backend_config.get("backend_name") or workers.backend_name
+            devices = backend_config.get("devices", "auto")
+            workers.set_backend(backend_name, devices)
+
         return JSONResponse(
             StatusResponse(status="updated").model_dump(),
             headers=NOCACHE_HEADERS,
@@ -289,16 +296,16 @@ def _create_task(req: Union[GenerateTaskRequest, FilterTaskRequest]) -> Union[Ge
 
 
 def _enqueue_task(req: Union[GenerateTaskRequest, FilterTaskRequest]) -> JSONResponse:
-    task_queue = server_api.state.task_queue
+    workers = server_api.state.workers
     task = _create_task(req)
-    task_queue.add_task(task)
+    workers.submit(task)
     _cache_task(task)
 
     return JSONResponse(
         TaskQueuedResponse(
             task_id=task.task_id,
             status="queued",
-            queue_position=task_queue.qsize(),
+            queue_position=workers.qsize(),
         ).model_dump(),
         headers=NOCACHE_HEADERS,
         status_code=202,
