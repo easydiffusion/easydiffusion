@@ -71,6 +71,11 @@
                     loraTag.blockweights = match[3].trim()
                 }
         
+                // Skip duplicate LoRA models, keep the first occurrence
+                if (matches.some(m => m.lora_model_0 === loraTag.lora_model_0)) {
+                    showToast("Duplicate LoRA ignored: " + modelFileName, 5000, true)
+                    continue
+                }
                 // Add the loraTag object to the array of matches
                 matches.push(loraTag);
 				//console.log(JSON.stringify(matches));

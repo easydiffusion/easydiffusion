@@ -1,6 +1,9 @@
 # What's new?
 
 ## v3.0
+### Detailed changelog
+* 3.0.9d - 21 Mar 2026 - Fix duplicate LoRA models causing garbled images. Duplicate LoRAs are now automatically deduplicated with a warning toast, both in the UI dropdown and prompt parser.
+
 ### Major Changes
 - **ControlNet** - Full support for ControlNet, with native integration of the common ControlNet models. Just select a control image, then choose the ControlNet filter/model and run. No additional configuration or download necessary. Supports custom ControlNets as well.
 - **SDXL** - Full support for SDXL. No configuration necessary, just put the SDXL model in the `models/stable-diffusion` folder.
