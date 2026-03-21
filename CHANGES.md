@@ -1,6 +1,7 @@
 # What's new?
 
 ## v3.0
+
 ### Major Changes
 - **ControlNet** - Full support for ControlNet, with native integration of the common ControlNet models. Just select a control image, then choose the ControlNet filter/model and run. No additional configuration or download necessary. Supports custom ControlNets as well.
 - **SDXL** - Full support for SDXL. No configuration necessary, just put the SDXL model in the `models/stable-diffusion` folder.
@@ -17,6 +18,7 @@
 - **Major rewrite of the code** - We've switched to using diffusers under-the-hood, which allows us to release new features faster, and focus on making the UI and installer even easier to use.
 
 ### Detailed changelog
+* 3.0.9d - Fix duplicate LoRA models causing garbled images. Duplicate LoRAs are now automatically deduplicated with a warning toast, both in the UI dropdown and prompt parser.
 * 3.0.9c - 6 Feb 2025 - (Internal code change) Remove hardcoded references to `torch.cuda`, and replace with torchruntime's device utilities.
 * 3.0.9b - 28 Jan 2025 - Fix a bug affecting older versions of Easy Diffusion, which tried to upgrade to an incompatible version of PyTorch.
 * 3.0.9b - 4 Jan 2025 - Replace the use of WMIC (deprecated) with a powershell call.
