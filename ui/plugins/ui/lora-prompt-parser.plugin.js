@@ -43,6 +43,7 @@
 
         // Initialize an array to hold the matches
         let matches = []
+        let seenModels = new Set()
 
         // Iterate over the string, finding matches
         for (const match of prompt.matchAll(regex)) {
@@ -50,12 +51,22 @@
             const loraPathes = getAllModelPathes("lora", modelFileName)
             if (loraPathes.length > 0) {
                 const loraPath = loraPathes[0]
+
+                // Skip duplicate LoRA models, keep the first occurrence
+                if (seenModels.has(loraPath)) {
+                    // Note: modelFileName is regex-constrained to [^:>]+ so XSS risk is minimal,
+                    // but ideally this should use textContent. Same pattern exists at line 85.
+                    showToast("Duplicate LoRA ignored: " + modelFileName, 5000, true)
+                    continue
+                }
+                seenModels.add(loraPath)
+
                 // Initialize an object to hold a match
                 let loraTag = {
                     lora_model_0: loraPath,
                 }
 				//console.log("Model:" +  modelFileName);
-        
+
                 // If weight is provided, add it to the loraTag object
                 if (match[2] !== undefined && match[2] !== '') {
                     loraTag.lora_alpha_0 = parseFloat(match[2].trim())
@@ -64,18 +75,13 @@
                 {
                     loraTag.lora_alpha_0 = 0.5
                 }
-				
-        
+
+
                 // If blockweights are provided, add them to the loraTag object
                 if (match[3] !== undefined && match[3] !== '') {
                     loraTag.blockweights = match[3].trim()
                 }
-        
-                // Skip duplicate LoRA models, keep the first occurrence
-                if (matches.some(m => m.lora_model_0 === loraTag.lora_model_0)) {
-                    showToast("Duplicate LoRA ignored: " + modelFileName, 5000, true)
-                    continue
-                }
+
                 // Add the loraTag object to the array of matches
                 matches.push(loraTag);
 				//console.log(JSON.stringify(matches));
