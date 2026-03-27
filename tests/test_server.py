@@ -13,6 +13,7 @@ from easydiffusion.config import ConfigManager, create_default_config
 from easydiffusion.server import server_api
 from easydiffusion.tasks import Task
 from easydiffusion.workers import Workers
+from easydiffusion.backends.test_backend import TestBackend
 
 
 @pytest.fixture
@@ -45,7 +46,7 @@ def client(config_manager, dummy_backend_registry):
     config_manager.save(config)
     config_manager.load()
     backend_class.reset_mock_state()
-    backend_class.configure_mock_behavior(progress_interval_seconds=0.0)
+    backend_class.progress_interval_seconds = 0.0
 
     server_api.state.config_manager = config_manager
     server_api.state.workers = workers
@@ -643,11 +644,11 @@ class TestTasksEndpoints:
         assert "progress" in data
         assert "outputs" in data
 
-    def test_get_task_detail_progress_updates_while_running(self, client, dummy_backend_registry, monkeypatch):
+    def test_get_task_detail_progress_updates_while_running(self, client, monkeypatch):
         """Test task detail shows intermediate progress while the backend advances through steps."""
 
-        _, backend_class = dummy_backend_registry
-        backend_class.configure_mock_behavior(progress_interval_seconds=0.05, progress_steps=5)
+        TestBackend.progress_interval_seconds = 0.05
+        TestBackend.progress_steps = 5
         monkeypatch.setattr(Task, "PROGRESS_UPDATE_INTERVAL", 0.01)
 
         create_response = client.post(
@@ -768,11 +769,10 @@ class TestTasksEndpoints:
 class TestOutputEndpoint:
     """Tests for task output retrieval endpoint."""
 
-    def test_get_task_output(self, client, dummy_backend_registry):
+    def test_get_task_output(self, client):
         """Test retrieving a task output."""
-        _, backend_class = dummy_backend_registry
         test_output = b"\x89PNG\r\n\x1a\nfake_png_data"
-        backend_class.set_generate_outputs([test_output])
+        TestBackend.mock_generate_outputs = [test_output]
 
         create_response = client.post(
             "/v1/tasks",
@@ -786,11 +786,11 @@ class TestOutputEndpoint:
         assert response.status_code == 200
         assert response.headers["content-type"] == "image/png"
 
-    def test_get_filter_task_output(self, client, dummy_backend_registry):
+    def test_get_filter_task_output(self, client):
         """Test retrieving a filtered task output."""
-        _, backend_class = dummy_backend_registry
+
         test_output = b"\x89PNG\r\n\x1a\nfiltered_png_data"
-        backend_class.set_filter_outputs([test_output])
+        TestBackend.mock_filter_outputs = [test_output]
 
         create_response = client.post(
             "/v1/tasks",

@@ -25,10 +25,8 @@ class TestBackend(Backend):
     instances: list["TestBackend"] = []
     mock_generate_outputs: list[bytes] = []
     mock_filter_outputs: list[bytes] = []
-    mock_progress_interval_seconds: float = DEFAULT_PROGRESS_INTERVAL_SECONDS
-    mock_progress_steps: int = DEFAULT_PROGRESS_STEPS
-    last_generate_input: dict[str, Any] | None = None
-    last_filter_input: dict[str, Any] | None = None
+    progress_interval_seconds: float = DEFAULT_PROGRESS_INTERVAL_SECONDS
+    progress_steps: int = DEFAULT_PROGRESS_STEPS
 
     def __init__(self, device: GPU, config: dict[str, Any] | None = None):
         super().__init__(device, config=config)
@@ -48,30 +46,8 @@ class TestBackend(Backend):
         cls.instances = []
         cls.mock_generate_outputs = []
         cls.mock_filter_outputs = []
-        cls.mock_progress_interval_seconds = cls.DEFAULT_PROGRESS_INTERVAL_SECONDS
-        cls.mock_progress_steps = cls.DEFAULT_PROGRESS_STEPS
-        cls.last_generate_input = None
-        cls.last_filter_input = None
-
-    @classmethod
-    def configure_mock_behavior(
-        cls,
-        *,
-        progress_interval_seconds: float | None = None,
-        progress_steps: int | None = None,
-    ) -> None:
-        if progress_interval_seconds is not None:
-            cls.mock_progress_interval_seconds = max(0.0, float(progress_interval_seconds))
-        if progress_steps is not None:
-            cls.mock_progress_steps = max(1, int(progress_steps))
-
-    @classmethod
-    def set_generate_outputs(cls, outputs: list[bytes]) -> None:
-        cls.mock_generate_outputs = [bytes(output) for output in outputs]
-
-    @classmethod
-    def set_filter_outputs(cls, outputs: list[bytes]) -> None:
-        cls.mock_filter_outputs = [bytes(output) for output in outputs]
+        cls.progress_interval_seconds = cls.DEFAULT_PROGRESS_INTERVAL_SECONDS
+        cls.progress_steps = cls.DEFAULT_PROGRESS_STEPS
 
     @classmethod
     def list_controlnet_filters(cls) -> list[str]:
@@ -106,7 +82,6 @@ class TestBackend(Backend):
         return True
 
     def generate(self, input: dict[str, Any]) -> list[bytes]:
-        type(self).last_generate_input = deepcopy(input)
         self._record_task(input)
 
         def build_outputs() -> list[bytes]:
@@ -122,7 +97,6 @@ class TestBackend(Backend):
         return self._run_operation(build_outputs)
 
     def filter(self, input: dict[str, Any]) -> list[bytes]:
-        type(self).last_filter_input = deepcopy(input)
         self._record_task(input)
 
         def build_outputs() -> list[bytes]:
@@ -152,24 +126,24 @@ class TestBackend(Backend):
         with self.lock:
             self.tasks_processed.append(deepcopy(task_input))
 
-    def _run_operation(self, output_factory) -> list[bytes]:
+    def _run_operation(self, output_fn) -> list[bytes]:
         with self.lock:
             self._progress = 0.0
             self._stop_requested = False
 
-        for step in range(type(self).mock_progress_steps):
+        for step in range(type(self).progress_steps):
             with self.lock:
                 if self._stop_requested:
                     return []
-                self._progress = (step + 1) / type(self).mock_progress_steps
+                self._progress = (step + 1) / type(self).progress_steps
 
-            time.sleep(type(self).mock_progress_interval_seconds)
+            time.sleep(type(self).progress_interval_seconds)
 
         with self.lock:
             if self._stop_requested:
                 return []
 
-        outputs = output_factory()
+        outputs = output_fn()
         with self.lock:
             if self._stop_requested:
                 return []

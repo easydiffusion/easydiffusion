@@ -35,7 +35,7 @@ class StopTask(Task):
 class TestWorkers:
     def setup_method(self):
         TestBackend.reset_mock_state()
-        TestBackend.configure_mock_behavior(progress_interval_seconds=0.0)
+        TestBackend.progress_interval_seconds = 0.0
         self.gpu0 = GPU("10de", "NVIDIA", "2684", "0", True)
         self.gpu1 = GPU("10de", "NVIDIA", "2704", "1", True)
         self.cpu = GPU("cpu", "CPU", "cpu", "cpu", False)
