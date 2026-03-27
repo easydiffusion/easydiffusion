@@ -23,8 +23,6 @@ class TestBackend(Backend):
     CONTROLNET_FILTERS = ["canny", "depth", "openpose", "scribble"]
 
     instances: list["TestBackend"] = []
-    mock_generate_outputs: list[bytes] = []
-    mock_filter_outputs: list[bytes] = []
     progress_interval_seconds: float = DEFAULT_PROGRESS_INTERVAL_SECONDS
     progress_steps: int = DEFAULT_PROGRESS_STEPS
 
@@ -44,8 +42,6 @@ class TestBackend(Backend):
     @classmethod
     def reset_mock_state(cls) -> None:
         cls.instances = []
-        cls.mock_generate_outputs = []
-        cls.mock_filter_outputs = []
         cls.progress_interval_seconds = cls.DEFAULT_PROGRESS_INTERVAL_SECONDS
         cls.progress_steps = cls.DEFAULT_PROGRESS_STEPS
 
@@ -82,30 +78,17 @@ class TestBackend(Backend):
         return True
 
     def generate(self, input: dict[str, Any]) -> list[bytes]:
-        self._record_task(input)
-
         def build_outputs() -> list[bytes]:
-            if type(self).mock_generate_outputs:
-                return [bytes(output) for output in type(self).mock_generate_outputs]
-
-            request = dict(input.get("request") or {})
-            width = self._sanitize_dimension(request.get("width"), self.config.get("image_width"))
-            height = self._sanitize_dimension(request.get("height"), self.config.get("image_height"))
-            num_outputs = max(1, int(request.get("num_outputs") or 1))
+            width = input["request"]["width"]
+            height = input["request"]["height"]
+            num_outputs = input["request"]["num_outputs"]
             return [self._build_gradient_png(width, height, "generate", index) for index in range(num_outputs)]
 
         return self._run_operation(build_outputs)
 
     def filter(self, input: dict[str, Any]) -> list[bytes]:
-        self._record_task(input)
-
         def build_outputs() -> list[bytes]:
-            if type(self).mock_filter_outputs:
-                return [bytes(output) for output in type(self).mock_filter_outputs]
-
-            width = self._sanitize_dimension(None, self.config.get("image_width"))
-            height = self._sanitize_dimension(None, self.config.get("image_height"))
-            return [self._build_gradient_png(width, height, "filter", 0)]
+            return [self._build_gradient_png(512, 512, "filter", 0)]
 
         return self._run_operation(build_outputs)
 
@@ -116,15 +99,6 @@ class TestBackend(Backend):
     def stop_task(self) -> None:
         with self.lock:
             self._stop_requested = True
-
-    def process(self, data: Any) -> str:
-        with self.lock:
-            self.tasks_processed.append({"data": data})
-        return f"Processed: {data}"
-
-    def _record_task(self, task_input: dict[str, Any]) -> None:
-        with self.lock:
-            self.tasks_processed.append(deepcopy(task_input))
 
     def _run_operation(self, output_fn) -> list[bytes]:
         with self.lock:
@@ -150,15 +124,6 @@ class TestBackend(Backend):
             self._progress = 1.0
 
         return outputs
-
-    @classmethod
-    def _sanitize_dimension(cls, requested: Any, fallback: Any) -> int:
-        value = requested if requested is not None else fallback
-        try:
-            parsed = int(value)
-        except (TypeError, ValueError):
-            parsed = cls.DEFAULT_IMAGE_SIZE
-        return max(64, min(parsed, 2048))
 
     @classmethod
     def _build_gradient_png(cls, width: int, height: int, variant: str, image_index: int) -> bytes:

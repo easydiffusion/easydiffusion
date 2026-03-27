@@ -295,7 +295,6 @@ class TestWorkerManagement:
         workers = app_state["workers"]
         client = app_state["client"]
 
-        TestBackend.mock_generate_outputs = [b"\x89PNG\r\n\x1a\nworker_test_output"]
         response = client.put("/v1/config", json={"backend": {"devices": ["cpu", "cuda:0"]}})
         assert response.status_code == 200
 

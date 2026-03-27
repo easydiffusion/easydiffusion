@@ -131,13 +131,13 @@ class TestWorkers:
         BACKEND_REGISTRY.pop("other", None)
 
     def test_dummy_backend_stores_runtime_config(self):
-        backend = TestBackend(self.cpu, config={"image_width": 320})
+        backend = TestBackend(self.cpu, config={"foo": True})
         config = {"custom_value": "ok"}
 
         backend.set_config(config)
         config["custom_value"] = "changed"
 
-        assert backend.config == {"image_width": 320}
+        assert backend.config == {"foo": True}
         stored = backend.get_config()
         assert stored == {"custom_value": "ok"}
 

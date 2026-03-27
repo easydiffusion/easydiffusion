@@ -39,6 +39,7 @@ class Workers:
             except StopAsyncIteration as error:
                 task.stop(str(error))
             except Exception as error:
+                print("task error", task, error)
                 task.mark_failed(error)
             finally:
                 self.q.task_done()

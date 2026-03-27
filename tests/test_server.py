@@ -771,8 +771,6 @@ class TestOutputEndpoint:
 
     def test_get_task_output(self, client):
         """Test retrieving a task output."""
-        test_output = b"\x89PNG\r\n\x1a\nfake_png_data"
-        TestBackend.mock_generate_outputs = [test_output]
 
         create_response = client.post(
             "/v1/tasks",
@@ -788,9 +786,6 @@ class TestOutputEndpoint:
 
     def test_get_filter_task_output(self, client):
         """Test retrieving a filtered task output."""
-
-        test_output = b"\x89PNG\r\n\x1a\nfiltered_png_data"
-        TestBackend.mock_filter_outputs = [test_output]
 
         create_response = client.post(
             "/v1/tasks",
