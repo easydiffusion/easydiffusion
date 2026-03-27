@@ -3,8 +3,8 @@ from torchruntime.device_db import GPU
 
 
 class EDClassicBackend(Backend):
-    def __init__(self, device: GPU):
-        super().__init__(device)
+    def __init__(self, device: GPU, config=None):
+        super().__init__(device, config=config)
         self.context = None
         self._started = False
 
@@ -32,17 +32,14 @@ class EDClassicBackend(Backend):
     def ping(self, timeout=1.0):
         pass
 
-    def generate_images(self, task_input: dict) -> list[bytes]:
+    def generate(self, input: dict) -> list[bytes]:
         return []
 
-    def filter_images(self, task_input: dict) -> list[bytes]:
+    def filter(self, input: dict) -> list[bytes]:
         return []
 
-    def get_progress(self, task) -> float:
+    def progress(self) -> float:
         return 0.0
 
-    def stop_task(self, task) -> None:
+    def stop_task(self) -> None:
         return None
-
-    def render_image(self):
-        pass

@@ -38,7 +38,7 @@ from easydiffusion.types import (
     CreateUserResponse,
     DeleteUserResponse,
 )
-from easydiffusion.tasks import GenerateTask, FilterTask
+from easydiffusion.tasks import Task
 from easydiffusion.legacy_server import support_legacy_paths
 
 # Create the FastAPI application
@@ -171,12 +171,12 @@ async def update_config(req: ConfigResponse):
         config_manager = server_api.state.config_manager
         config_manager.update(req.model_dump(exclude_none=True))
 
-        workers = getattr(server_api.state, "workers", None)
-        if workers is not None:
-            backend_config = config_manager.get_system_config().get("backend", {})
-            backend_name = backend_config.get("backend_name") or workers.backend_name
-            devices = backend_config.get("devices", "auto")
-            workers.set_backend(backend_name, devices)
+        workers = server_api.state.workers
+        backend_config = config_manager.get_system_config().get("backend", {})
+        backend_name = backend_config.get("backend_name") or workers.backend_name
+        devices = backend_config.get("devices", "auto")
+        worker_backend_config = backend_config.get("backend_config") or {}
+        workers.set_backend(backend_name, devices, worker_backend_config)
 
         return JSONResponse(
             StatusResponse(status="updated").model_dump(),
@@ -278,17 +278,17 @@ def _get_task_or_404(task_id: str):
     return task
 
 
-def _create_task(req: Union[GenerateTaskRequest, FilterTaskRequest]) -> Union[GenerateTask, FilterTask]:
+def _create_task(req: Union[GenerateTaskRequest, FilterTaskRequest]) -> Task:
     if not req.username:
         raise HTTPException(status_code=422, detail="username is required in the request body")
 
     if isinstance(req, GenerateTaskRequest):
-        task = GenerateTask(username=req.username, session_id=req.session_id)
+        task = Task(username=req.username, session_id=req.session_id, task_type="generate")
         task.input = GenerateTaskInput.from_flat_request(req, task.task_id, req.username).model_dump()
         return task
 
     if isinstance(req, FilterTaskRequest):
-        task = FilterTask(username=req.username, session_id=req.session_id)
+        task = Task(username=req.username, session_id=req.session_id, task_type="filter")
         task.input = FilterTaskInput.from_flat_request(req, task.task_id, req.username).model_dump()
         return task
 
@@ -305,7 +305,7 @@ def _enqueue_task(req: Union[GenerateTaskRequest, FilterTaskRequest]) -> JSONRes
         TaskQueuedResponse(
             task_id=task.task_id,
             status="queued",
-            queue_position=workers.qsize(),
+            queue_position=workers.queue_size(),
         ).model_dump(),
         headers=NOCACHE_HEADERS,
         status_code=202,
@@ -400,7 +400,7 @@ async def stop_task(task_id: str):
         if task.status == "stopped":
             raise HTTPException(status_code=409, detail="Task already stopped")
 
-        task.request_stop(f"Task {task_id} stop requested")
+        task.stop(f"Task {task_id} stop requested")
 
         return JSONResponse(
             StatusResponse(status="stopped").model_dump(),
@@ -417,7 +417,7 @@ async def stop_all_tasks(username: str = Query(..., description="Username for us
     try:
         for task in server_api.state.task_cache.values():
             if task.username == username and task.status not in ["completed", "stopped", "error"]:
-                task.request_stop("All tasks stop requested")
+                task.stop("All tasks stop requested")
 
         return JSONResponse(
             StatusResponse(status="all_stopped").model_dump(),

@@ -57,10 +57,7 @@ def support_legacy_paths(
 
 
 def get_backend_controlnet_filters(server_state: Any) -> set[str]:
-    workers = getattr(server_state, "workers", None)
-    backend_class = getattr(workers, "backend_class", None)
-    if backend_class is None or not hasattr(backend_class, "list_controlnet_filters"):
-        return set()
+    backend_class = server_state.workers.backend_class
 
     try:
         return set(backend_class.list_controlnet_filters())

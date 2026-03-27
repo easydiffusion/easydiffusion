@@ -16,7 +16,7 @@ from easydiffusion.config import ConfigManager, create_default_config
 from easydiffusion.server import server_api
 from easydiffusion.workers import Workers
 from torchruntime.device_db import GPU
-from support import DummyBackend, register_dummy_backend, unregister_dummy_backend
+from support import TestBackend, register_dummy_backend, unregister_dummy_backend
 
 
 def mock_resolve_devices(devices):
@@ -197,7 +197,7 @@ class TestWorkerManagement:
         """Test that changing backend recreates all workers."""
         from easydiffusion.backends import BACKEND_REGISTRY
 
-        class AltMockBackend(DummyBackend):
+        class AltMockBackend(TestBackend):
             pass
 
         original_registry = BACKEND_REGISTRY.copy()
@@ -207,7 +207,7 @@ class TestWorkerManagement:
             workers = app_state["workers"]
             client = app_state["client"]
             original_thread = workers.workers["cpu"][0]
-            old_instances = list(DummyBackend.instances)
+            old_instances = list(TestBackend.instances)
 
             response = client.put("/v1/config", json={"backend": {"backend_name": "alt_mock"}})
 
@@ -295,7 +295,7 @@ class TestWorkerManagement:
         workers = app_state["workers"]
         client = app_state["client"]
 
-        DummyBackend.set_generate_outputs([b"\x89PNG\r\n\x1a\nworker_test_output"])
+        TestBackend.set_generate_outputs([b"\x89PNG\r\n\x1a\nworker_test_output"])
         response = client.put("/v1/config", json={"backend": {"devices": ["cpu", "cuda:0"]}})
         assert response.status_code == 200
 

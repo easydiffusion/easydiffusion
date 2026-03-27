@@ -44,8 +44,9 @@ def init():
     logger.info(f"Configuration loaded: {config}")
 
     logger.info("Initializing workers")
-    backend_name = config.get("backend", {}).get("backend_name", "sdkit3")
-    workers = Workers(get_backend_class(backend_name), backend_name=backend_name)
+    backend_name = config.get("backend", {}).get("backend_name", "test")
+    backend_config = config.get("backend", {}).get("backend_config") or {}
+    workers = Workers(get_backend_class(backend_name), backend_name=backend_name, backend_config=backend_config)
 
     # Start workers for configured devices
     devices = config.get("backend", {}).get("devices", "auto")

@@ -43,6 +43,7 @@ def client(config_manager, dummy_backend_registry):
     config_manager.save(config)
     config_manager.load()
     backend_class.reset_mock_state()
+    backend_class.configure_mock_behavior(progress_interval_seconds=0.0)
 
     server_api.state.config_manager = config_manager
     server_api.state.workers = workers

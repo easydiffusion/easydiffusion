@@ -12,12 +12,14 @@ from .base import Backend
 from .webui_backend import WebUIBackend
 from .ed_classic_backend import EDClassicBackend
 from .sdkit3_backend import Sdkit3Backend
+from .test_backend import TestBackend
 
 # Backend registry mapping names to implementation classes
 BACKEND_REGISTRY: Dict[str, Type[Backend]] = {
     "webui": WebUIBackend,
     "ed_classic": EDClassicBackend,
     "sdkit3": Sdkit3Backend,
+    "test": TestBackend,
 }
 
 

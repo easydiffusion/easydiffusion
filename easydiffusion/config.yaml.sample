@@ -32,7 +32,7 @@ backend:
   # VRAM usage level (balanced, low, high)
   vram_usage_level: balanced
 
-  # Backend implementation to use (sdkit3, etc.)
+  # Backend implementation to use (sdkit3, test, etc.)
   backend_name: sdkit3
 
   # Advanced backend overrides applied at startup

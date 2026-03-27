@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Abstract base class for backend implementations.
 
@@ -6,6 +8,7 @@ must implement. This ensures consistent behavior across different backends.
 """
 
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from typing import Any, Dict
 from torchruntime.device_db import GPU
 
@@ -18,14 +21,16 @@ class Backend(ABC):
     consistent behavior with the worker manager.
     """
 
-    def __init__(self, device: GPU):
+    def __init__(self, device: GPU, config: Dict[str, Any] | None = None):
         """
         Initialize the backend.
 
         Args:
             device: The GPU object to use
+            config: Optional backend-specific configuration
         """
         self.device = device
+        self.config = deepcopy(config or {})
 
     @abstractmethod
     def is_installed(self) -> bool:
@@ -104,25 +109,21 @@ class Backend(ABC):
         pass
 
     @abstractmethod
-    def generate_images(self, task_input: Dict[str, Any]) -> list[bytes]:
+    def generate(self, input: Dict[str, Any]) -> list[bytes]:
         """Generate output images for a queued generation task."""
         pass
 
     @abstractmethod
-    def filter_images(self, task_input: Dict[str, Any]) -> list[bytes]:
+    def filter(self, input: Dict[str, Any]) -> list[bytes]:
         """Generate output images for a queued filter task."""
         pass
 
     @abstractmethod
-    def get_progress(self, task: Any) -> float:
-        """Return normalized progress in the range [0, 1] for the given task."""
+    def progress(self) -> float:
+        """Return normalized progress in the range [0, 1] for the active task."""
         pass
 
     @abstractmethod
-    def stop_task(self, task: Any) -> None:
-        """Request backend-specific cancellation for the given task."""
-        pass
-
-    def render_image(self, context: Any, **kwargs) -> Any:
-        """Legacy compatibility shim."""
+    def stop_task(self) -> None:
+        """Request backend-specific cancellation for the active task."""
         pass
