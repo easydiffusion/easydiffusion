@@ -119,6 +119,7 @@ class Task:
 
     def _refresh_progress(self, backend: Any) -> None:
         try:
-            self.update_progress(backend.progress())
-        except Exception:
+            self.update_progress(backend.get_progress())
+        except Exception as e:
+            print(f"Error refreshing progress for task: {e}")
             time.sleep(0.01)

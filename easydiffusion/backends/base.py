@@ -119,7 +119,7 @@ class Backend(ABC):
         pass
 
     @abstractmethod
-    def progress(self) -> float:
+    def get_progress(self) -> float:
         """Return normalized progress in the range [0, 1] for the active task."""
         pass
 

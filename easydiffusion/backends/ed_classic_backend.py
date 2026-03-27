@@ -38,7 +38,7 @@ class EDClassicBackend(Backend):
     def filter(self, input: dict) -> list[bytes]:
         return []
 
-    def progress(self) -> float:
+    def get_progress(self) -> float:
         return 0.0
 
     def stop_task(self) -> None:

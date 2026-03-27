@@ -135,7 +135,7 @@ class TestBackend(Backend):
 
         return self._run_operation(build_outputs)
 
-    def progress(self) -> float:
+    def get_progress(self) -> float:
         with self.lock:
             return self._progress
 

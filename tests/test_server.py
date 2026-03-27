@@ -2,6 +2,7 @@
 Tests for the v1 API endpoints.
 """
 
+import time
 import pytest
 from fastapi.testclient import TestClient
 from pathlib import Path
@@ -10,6 +11,7 @@ import shutil
 
 from easydiffusion.config import ConfigManager, create_default_config
 from easydiffusion.server import server_api
+from easydiffusion.tasks import Task
 from easydiffusion.workers import Workers
 
 
@@ -640,6 +642,46 @@ class TestTasksEndpoints:
         assert "status" in data
         assert "progress" in data
         assert "outputs" in data
+
+    def test_get_task_detail_progress_updates_while_running(self, client, dummy_backend_registry, monkeypatch):
+        """Test task detail shows intermediate progress while the backend advances through steps."""
+
+        _, backend_class = dummy_backend_registry
+        backend_class.configure_mock_behavior(progress_interval_seconds=0.05, progress_steps=5)
+        monkeypatch.setattr(Task, "PROGRESS_UPDATE_INTERVAL", 0.01)
+
+        create_response = client.post(
+            "/v1/tasks",
+            json={"username": "easydiffusion", "prompt": "Test", "model_paths": {"stable-diffusion": "test"}},
+        )
+        task_id = create_response.json()["task_id"]
+
+        progresses = []
+
+        # Simple polling loop
+        for _ in range(200):
+            response = client.get(f"/v1/tasks/{task_id}")
+            assert response.status_code == 200
+
+            progress = response.json()["progress"]
+            progresses.append(progress)
+
+            if progress == pytest.approx(1.0):
+                break
+
+            time.sleep(0.01)
+
+        # Ensure we got updates
+        assert len(progresses) > 1
+
+        # Ensure non-decreasing progress
+        assert all(a <= b for a, b in zip(progresses, progresses[1:]))
+
+        # Final value must be 1.0
+        assert progresses[-1] == pytest.approx(1.0)
+
+        # Optional: ensure there was at least one intermediate value
+        assert any(0.0 < p < 1.0 for p in progresses), f"No progress values between 0 and 1 were observed: {progresses}"
 
     def test_get_task_detail_with_request(self, client):
         """Test getting task details with request data."""
