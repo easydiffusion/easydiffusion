@@ -1,9 +1,9 @@
 # Easy Diffusion 3.0
-### The easiest way to install and use [Stable Diffusion](https://github.com/CompVis/stable-diffusion) on your computer.
+### An easy way to install and use [Stable Diffusion](https://github.com/CompVis/stable-diffusion) on your computer.
 
 Does not require technical knowledge, does not require pre-installed software. 1-click install, powerful features, friendly community.
 
-️‍🔥🎉 **New!** Support for SDXL, ControlNet, multiple LoRA files, embeddings (and a lot more) have been added!
+️‍🔥🎉 **New!** Support for Z-Image, Flux 1 and 2, and quantized models have been added to v3.5 and v4 engines!
 
 [Installation guide](#installation) | [Troubleshooting guide](https://github.com/easydiffusion/easydiffusion/wiki/Troubleshooting) | [User guide](https://github.com/easydiffusion/easydiffusion/wiki) | <sub>[![Discord Server](https://img.shields.io/discord/1014774730907209781?label=Discord)](https://discord.com/invite/u9yhsFmEkB)</sub> <sup>(for support queries, and development discussions)</sup>
 
@@ -21,15 +21,15 @@ Click the download button for your operating system:
 </p>
 
 **Hardware requirements:**
-- **Windows:** NVIDIA graphics card¹ (minimum 2 GB RAM), or run on your CPU.
+- **Windows:** NVIDIA¹ or AMD graphics card (minimum 2 GB RAM), or run on your CPU.
 - **Linux:** NVIDIA¹ or AMD² graphics card (minimum 2 GB RAM), or run on your CPU.
-- **Mac:** M1 or M2, or run on your CPU.
+- **Mac:** M1/M2/M3/M4 or AMD graphics card (Intel Mac), or run on your CPU.
 - Minimum 8 GB of system RAM.
 - Atleast 25 GB of space on the hard disk.
 
 ¹) [CUDA Compute capability](https://en.wikipedia.org/wiki/CUDA#GPUs_supported) level of 3.7 or higher required.
 
-²) ROCm 5.2 support required.
+²) ROCm 5.2 (or newer) support required.
 
 The installer will take care of whatever is needed. If you face any problems, you can join the friendly [Discord community](https://discord.com/invite/u9yhsFmEkB) and ask for assistance.
 
