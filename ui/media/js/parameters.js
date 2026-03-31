@@ -260,7 +260,7 @@ var PARAMETERS = [
         default: "ed_diffusers",
         options: [
             { value: "sdkit3", label: "v4 (very experimental)" },
-            { value: "webui", label: "v3.5 (recommended)" },
+            { value: "webui", label: "v3.5" },
             { value: "ed_diffusers", label: "v3.0" },
             { value: "ed_classic", label: "v2.0" },
         ],
