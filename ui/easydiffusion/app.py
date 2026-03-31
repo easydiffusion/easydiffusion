@@ -11,7 +11,7 @@ from ruamel.yaml import YAML
 import urllib
 import warnings
 
-from easydiffusion import task_manager
+from easydiffusion import task_manager, backend_manager
 from easydiffusion.utils import log
 from rich.logging import RichHandler
 from rich.console import Console
@@ -36,10 +36,10 @@ ROOT_DIR = os.path.abspath(os.path.join(SD_DIR, ".."))
 
 SD_UI_DIR = os.getenv("SD_UI_PATH", None)
 
-CONFIG_DIR = os.path.abspath(os.path.join(SD_UI_DIR, "..", "scripts"))
-BUCKET_DIR = os.path.abspath(os.path.join(SD_DIR, "..", "bucket"))
+CONFIG_DIR = os.path.abspath(os.path.join(ROOT_DIR, "scripts"))
+BUCKET_DIR = os.path.abspath(os.path.join(ROOT_DIR, "bucket"))
 
-USER_PLUGINS_DIR = os.path.abspath(os.path.join(SD_DIR, "..", "plugins"))
+USER_PLUGINS_DIR = os.path.abspath(os.path.join(ROOT_DIR, "plugins"))
 CORE_PLUGINS_DIR = os.path.abspath(os.path.join(SD_UI_DIR, "plugins"))
 
 USER_UI_PLUGINS_DIR = os.path.join(USER_PLUGINS_DIR, "ui")
@@ -59,7 +59,7 @@ APP_CONFIG_DEFAULTS = {
     "ui": {
         "open_browser_on_start": True,
     },
-    "use_v3_engine": True,
+    "backend": "ed_diffusers",
 }
 
 IMAGE_EXTENSIONS = [
@@ -76,7 +76,7 @@ IMAGE_EXTENSIONS = [
     ".avif",
     ".svg",
 ]
-CUSTOM_MODIFIERS_DIR = os.path.abspath(os.path.join(SD_DIR, "..", "modifiers"))
+CUSTOM_MODIFIERS_DIR = os.path.abspath(os.path.join(ROOT_DIR, "modifiers"))
 CUSTOM_MODIFIERS_PORTRAIT_EXTENSIONS = [
     ".portrait",
     "_portrait",
@@ -90,7 +90,7 @@ CUSTOM_MODIFIERS_LANDSCAPE_EXTENSIONS = [
     "-landscape",
 ]
 
-MODELS_DIR = os.path.abspath(os.path.join(SD_DIR, "..", "models"))
+MODELS_DIR = os.path.abspath(os.path.join(ROOT_DIR, "models"))
 
 
 def init():
@@ -104,8 +104,10 @@ def init():
 
     config = getConfig()
     config_models_dir = config.get("models_dir", None)
-    if (config_models_dir is not None and config_models_dir != ""):
+    if config_models_dir is not None and config_models_dir != "":
         MODELS_DIR = config_models_dir
+
+    backend_manager.start_backend()
 
 
 def init_render_threads():
@@ -116,6 +118,7 @@ def init_render_threads():
 
 def getConfig(default_val=APP_CONFIG_DEFAULTS):
     config_yaml_path = os.path.join(CONFIG_DIR, "..", "config.yaml")
+    config_yaml_path = os.path.abspath(config_yaml_path)
 
     # migrate the old config yaml location
     config_legacy_yaml = os.path.join(CONFIG_DIR, "config.yaml")
@@ -123,9 +126,9 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
         shutil.move(config_legacy_yaml, config_yaml_path)
 
     def set_config_on_startup(config: dict):
-        if getConfig.__use_v3_engine_on_startup is None:
-            getConfig.__use_v3_engine_on_startup = config.get("use_v3_engine", True)
-        config["config_on_startup"] = {"use_v3_engine": getConfig.__use_v3_engine_on_startup}
+        if getConfig.__use_backend_on_startup is None:
+            getConfig.__use_backend_on_startup = config.get("backend", "ed_diffusers")
+        config["config_on_startup"] = {"backend": getConfig.__use_backend_on_startup}
 
     if os.path.isfile(config_yaml_path):
         try:
@@ -142,6 +145,15 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
                     config["net"]["listen_to_network"] = os.getenv("SD_UI_BIND_IP") == "0.0.0.0"
                 else:
                     config["net"]["listen_to_network"] = True
+
+            if "backend" not in config:
+                if "use_v3_engine" in config:
+                    config["backend"] = "ed_diffusers" if config["use_v3_engine"] else "ed_classic"
+                else:
+                    config["backend"] = "ed_diffusers"
+                    # this default will need to be smarter when WebUI becomes the main backend, but needs to maintain backwards
+                    # compatibility with existing ED 3.0 installations that haven't opted into the WebUI backend, and haven't
+                    # set a "use_v3_engine" flag in their config
 
             set_config_on_startup(config)
 
@@ -173,7 +185,7 @@ def getConfig(default_val=APP_CONFIG_DEFAULTS):
             return default_val
 
 
-getConfig.__use_v3_engine_on_startup = None
+getConfig.__use_backend_on_startup = None
 
 
 def setConfig(config):
@@ -306,28 +318,43 @@ def getIPConfig():
 
 
 def open_browser():
+    from easydiffusion.backend_manager import backend
+
     config = getConfig()
     ui = config.get("ui", {})
     net = config.get("net", {})
     port = net.get("listen_port", 9000)
 
-    if ui.get("open_browser_on_start", True):
-        import webbrowser
+    if backend.is_installed():
+        if ui.get("open_browser_on_start", True):
+            import webbrowser
 
-        log.info("Opening browser..")
+            log.info("Opening browser..")
 
-        webbrowser.open(f"http://localhost:{port}")
+            webbrowser.open(f"http://localhost:{port}")
 
-    Console().print(
-        Panel(
-            "\n"
-            + "[white]Easy Diffusion is ready to serve requests.\n\n"
-            + "A new browser tab should have been opened by now.\n"
-            + f"If not, please open your web browser and navigate to [bold yellow underline]http://localhost:{port}/\n",
-            title="Easy Diffusion is ready",
-            style="bold yellow on blue",
+        Console().print(
+            Panel(
+                "\n"
+                + "[white]Easy Diffusion is ready to serve requests.\n\n"
+                + "A new browser tab should have been opened by now.\n"
+                + f"If not, please open your web browser and navigate to [bold yellow underline]http://localhost:{port}/\n",
+                title="Easy Diffusion is ready",
+                style="bold yellow on blue",
+            )
         )
-    )
+    else:
+        backend_name = config["backend"]
+        Console().print(
+            Panel(
+                "\n"
+                + f"[white]Backend: {backend_name} is still installing..\n\n"
+                + "A new browser tab will open automatically after it finishes.\n"
+                + f"If it does not, please open your web browser and navigate to [bold yellow underline]http://localhost:{port}/\n",
+                title=f"Backend engine is installing",
+                style="bold yellow on blue",
+            )
+        )
 
 
 def fail_and_die(fail_type: str, data: str):

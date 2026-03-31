@@ -1,4 +1,4 @@
-;(function() {
+; (function () {
     "use strict"
 
     let mergeCSS = `
@@ -271,8 +271,8 @@
           </div>
         </div>`
 
-        
-    let loraUI=`
+
+    let loraUI = `
         <div class="panel-box lora-manager-grid">
             <div class="lora-manager-grid-selector">
                 <label for="#loraModel">Select Lora:</label>
@@ -309,7 +309,7 @@
             </div>
         </div>`
 
-    let tabHTML=`
+    let tabHTML = `
         <div id="model-tool-tab-bar" class="tab-container tab-centered">
             <span id="tab-model-loraUI" class="tab active">
                 <span><i class="fa-solid fa-key"></i> Lora Keywords</small></span>
@@ -509,7 +509,7 @@
 
         document.querySelector(".merge-config").addEventListener("change", updateChart)
 
-        document.querySelector("#merge-button").addEventListener("click", async function(e) {
+        document.querySelector("#merge-button").addEventListener("click", async function (e) {
             // Build request template
             let model0 = mergeModelAField.value
             let model1 = mergeModelBField.value
@@ -580,7 +580,7 @@
                 addLogMessage(`&nbsp;&nbsp;filename: ${request["out_path"]}`)
 
                 // sdkit documentation: "ratio - the ratio of the second model. 1 means only the second model will be used."
-                request["ratio"] = 1-alpha 
+                request["ratio"] = 1 - alpha
                 let res = await fetch("/model/merge", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -687,7 +687,7 @@
                 })
             Bucket.getImageAsDataURL(`${profileNameField.value}/lora/${LoraUI.modelField.value}.png`)
                 .then((data) => {
-                    LoraUI.image.src=data
+                    LoraUI.image.src = data
                     LoraUI.image.classList.remove("displayNone")
                     LoraUI.imagePlaceholder.classList.add("displayNone")
                 })
@@ -700,17 +700,17 @@
         saveInfos() {
             let info = {
                 keywords: LoraUI.keywordsField.value
-                            .split("\n")
-                            .filter((x) => (x != "")),
+                    .split("\n")
+                    .filter((x) => (x != "")),
                 notes: LoraUI.notesField.value,
-                civitai: LoraUI.civitaiSection.checkVisibility() ? LoraUI.civitaiAnchor.href : null, 
+                civitai: LoraUI.civitaiSection.checkVisibility() ? LoraUI.civitaiAnchor.href : null,
             }
             Bucket.store(`modelinfo/lora/${LoraUI.modelField.value}`, info)
         },
 
         importFromCivitai() {
             document.body.style["cursor"] = "progress"
-            fetch("/sha256/lora/"+LoraUI.modelField.value)
+            fetch("/sha256/lora/" + LoraUI.modelField.value)
                 .then((result) => result.json())
                 .then((json) => fetch("https://civitai.com/api/v1/model-versions/by-hash/" + json.digest))
                 .then((result) => result.json())
@@ -750,7 +750,7 @@
         icon: "fa-toolbox",
         label: "Model tools",
         css: mergeCSS,
-        content: tabHTML, 
+        content: tabHTML,
         onOpen: ({ firstOpen }) => {
             if (!firstOpen) {
                 return

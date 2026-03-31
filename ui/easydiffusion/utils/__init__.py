@@ -7,6 +7,8 @@ from .save_utils import (
     save_images_to_disk,
     get_printable_request,
 )
+from .nsfw_checker import filter_nsfw
+
 
 def sha256sum(filename):
     sha256 = hashlib.sha256()
@@ -18,4 +20,3 @@ def sha256sum(filename):
             sha256.update(data)
 
     return sha256.hexdigest()
-

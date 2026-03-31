@@ -7,6 +7,7 @@
 @copy sd-ui-files\scripts\check_modules.py scripts\ /Y
 @copy sd-ui-files\scripts\get_config.py scripts\ /Y
 @copy sd-ui-files\scripts\config.yaml.sample scripts\ /Y
+@copy sd-ui-files\scripts\webui_console.py scripts\ /Y
 
 if exist "%cd%\profile" (
     set HF_HOME=%cd%\profile\.cache\huggingface
@@ -35,9 +36,6 @@ call conda activate
 @REM remove the old version of the dev console script, if it's still present
 if exist "Open Developer Console.cmd" del "Open Developer Console.cmd"
 if exist "ui\plugins\ui\merge.plugin.js" del "ui\plugins\ui\merge.plugin.js"
-
-@REM remove ui\easydiffusion\model_manager if it exists (since it's not supposed to be in the main branch as of now)
-if exist "ui\easydiffusion\model_manager" rmdir /S /Q "ui\easydiffusion\model_manager"
 
 @rem create the stable-diffusion folder, to work with legacy installations
 if not exist "stable-diffusion" mkdir stable-diffusion

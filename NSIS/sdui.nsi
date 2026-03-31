@@ -3,6 +3,7 @@
 Target amd64-unicode
 Unicode True
 SetCompressor /FINAL lzma
+SetCompressorDictSize 64
 RequestExecutionLevel user
 !AddPluginDir /amd64-unicode "."
 ; HM NIS Edit Wizard helper defines

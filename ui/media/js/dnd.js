@@ -133,6 +133,15 @@ const TASK_MAPPING = {
         readUI: () => parseFloat(guidanceScaleField.value),
         parse: (val) => parseFloat(val),
     },
+    distilled_guidance_scale: {
+        name: "Distilled Guidance",
+        setUI: (distilled_guidance_scale) => {
+            distilledGuidanceScaleField.value = distilled_guidance_scale
+            updateDistilledGuidanceScaleSlider()
+        },
+        readUI: () => parseFloat(distilledGuidanceScaleField.value),
+        parse: (val) => parseFloat(val),
+    },
     prompt_strength: {
         name: "Prompt Strength",
         setUI: (prompt_strength) => {
@@ -150,6 +159,19 @@ const TASK_MAPPING = {
         },
         readUI: () => initImagePreview.src,
         parse: (val) => val,
+    },
+    ref_images: {
+        name: "Reference Images",
+        setUI: (ref_images) => {
+            if (Array.isArray(ref_images) && ref_images.length > 0) {
+                refImages = ref_images.slice()
+                renderRefImagesList()
+            } else {
+                clearAllRefImages()
+            }
+        },
+        readUI: () => (refImages.length > 0 ? refImages.slice() : undefined),
+        parse: (val) => (Array.isArray(val) ? val : undefined),
     },
     mask: {
         name: "Mask",
@@ -242,6 +264,14 @@ const TASK_MAPPING = {
             samplerField.value = sampler_name
         },
         readUI: () => samplerField.value,
+        parse: (val) => val,
+    },
+    scheduler_name: {
+        name: "Scheduler",
+        setUI: (scheduler_name) => {
+            schedulerField.value = scheduler_name
+        },
+        readUI: () => schedulerField.value,
         parse: (val) => val,
     },
     use_stable_diffusion_model: {
@@ -379,14 +409,53 @@ const TASK_MAPPING = {
             return val
         },
     },
+    use_text_encoder_model: {
+        name: "Text Encoder model",
+        setUI: (use_text_encoder_model) => {
+            let modelPaths = []
+            use_text_encoder_model = use_text_encoder_model === null ? "" : use_text_encoder_model
+            use_text_encoder_model = Array.isArray(use_text_encoder_model) ? use_text_encoder_model : [use_text_encoder_model]
+            use_text_encoder_model.forEach((m) => {
+                if (m.includes("models\\text-encoder\\")) {
+                    m = m.split("models\\text-encoder\\")[1]
+                } else if (m.includes("models\\\\text-encoder\\\\")) {
+                    m = m.split("models\\\\text-encoder\\\\")[1]
+                } else if (m.includes("models/text-encoder/")) {
+                    m = m.split("models/text-encoder/")[1]
+                }
+                m = m.replaceAll("\\\\", "/")
+                m = getModelPath(m, [".safetensors", ".sft"])
+                modelPaths.push(m)
+            })
+            textEncoderModelField.modelNames = modelPaths
+        },
+        readUI: () => {
+            return textEncoderModelField.modelNames
+        },
+        parse: (val) => {
+            val = !val || val === "None" ? "" : val
+            if (typeof val === "string" && val.includes(",")) {
+                val = val.split(",")
+                val = val.map((v) => v.trim())
+                val = val.map((v) => v.replaceAll("\\", "\\\\"))
+                val = val.map((v) => v.replaceAll('"', ""))
+                val = val.map((v) => v.replaceAll("'", ""))
+                val = val.map((v) => '"' + v + '"')
+                val = "[" + val + "]"
+                val = JSON.parse(val)
+            }
+            val = Array.isArray(val) ? val : [val]
+            return val
+        },
+    },
     use_hypernetwork_model: {
         name: "Hypernetwork model",
         setUI: (use_hypernetwork_model) => {
             const oldVal = hypernetworkModelField.value
             use_hypernetwork_model =
                 use_hypernetwork_model === undefined ||
-                use_hypernetwork_model === null ||
-                use_hypernetwork_model === "None"
+                    use_hypernetwork_model === null ||
+                    use_hypernetwork_model === "None"
                     ? ""
                     : use_hypernetwork_model
 
@@ -523,7 +592,7 @@ function restoreTaskToUI(task, fieldsToSkip) {
         // listen for inpainter loading event, which happens AFTER the main image loads (which reloads the inpainter)
         initImagePreview.addEventListener(
             "load",
-            function() {
+            function () {
                 if (Boolean(task.reqBody.mask)) {
                     imageInpainter.setImg(task.reqBody.mask)
                     maskSetting.checked = true
@@ -541,6 +610,14 @@ function restoreTaskToUI(task, fieldsToSkip) {
     } else if (task.reqBody.control_image !== undefined) {
         // listen for inpainter loading event, which happens AFTER the main image loads (which reloads the inpai
         controlImagePreview.src = task.reqBody.control_image
+    }
+
+    // restore ref images
+    if (task.reqBody.ref_images !== undefined && Array.isArray(task.reqBody.ref_images) && task.reqBody.ref_images.length > 0) {
+        refImages = task.reqBody.ref_images.slice()
+        renderRefImagesList()
+    } else if (refImages.length > 0) {
+        clearAllRefImages()
     }
 
     if ("use_controlnet_model" in task.reqBody && task.reqBody.use_controlnet_model && !("control_alpha" in task.reqBody)) {
@@ -592,17 +669,20 @@ const TASK_TEXT_MAPPING = {
     seed: "Seed",
     num_inference_steps: "Steps",
     guidance_scale: ["Guidance Scale", "CFG Scale"],
+    distilled_guidance_scale: "Distilled Guidance",
     prompt_strength: ["Prompt Strength", "Denoising Strength"],
     use_face_correction: "Use Face Correction",
     use_upscale: "Use Upscaling",
     upscale_amount: "Upscale By",
     sampler_name: "Sampler",
+    scheduler_name: "Scheduler",
     negative_prompt: "Negative Prompt",
     use_stable_diffusion_model: "Stable Diffusion model",
     use_hypernetwork_model: "Hypernetwork model",
     hypernetwork_strength: "Hypernetwork Strength",
     use_lora_model: "LoRA model",
     lora_alpha: "LoRA Strength",
+    use_text_encoder_model: "Text Encoder model",
     use_controlnet_model: "ControlNet model",
     control_filter_to_apply: "ControlNet Filter",
     control_alpha: "ControlNet Strength",

@@ -29,7 +29,7 @@ async function onIdle() {
 function getUncompletedTaskEntries() {
     const taskEntries = Array.from(document.querySelectorAll("#preview .imageTaskContainer .taskStatusLabel"))
         .filter((taskLabel) => taskLabel.style.display !== "none")
-        .map(function(taskLabel) {
+        .map(function (taskLabel) {
             let imageTaskContainer = taskLabel.parentNode
             while (!imageTaskContainer.classList.contains("imageTaskContainer") && imageTaskContainer.parentNode) {
                 imageTaskContainer = imageTaskContainer.parentNode
@@ -153,7 +153,7 @@ function getTaskUpdater(task, reqBody, outputContainer) {
 
     const batchCount = task.batchCount
     let lastStatus = undefined
-    return async function(event) {
+    return async function (event) {
         if (this.status !== lastStatus) {
             lastStatus = this.status
             switch (this.status) {
@@ -215,7 +215,7 @@ function getTaskUpdater(task, reqBody, outputContainer) {
                         sum +
                         (instance.isPending
                             ? Math.max(0, instance.step || stepUpdate.step) /
-                              (instance.total_steps || stepUpdate.total_steps)
+                            (instance.total_steps || stepUpdate.total_steps)
                             : 1),
                     0 // Initial value
                 ) * stepUpdate.total_steps // Scale to current number of steps.
@@ -332,7 +332,7 @@ function resumeClient() {
         document.body.classList.add("pause")
     }
     return new Promise((resolve) => {
-        let playbuttonclick = function() {
+        let playbuttonclick = function () {
             resumeBtn.removeEventListener("click", playbuttonclick)
             resolve("resolved")
         }
@@ -383,24 +383,24 @@ function onTaskErrorHandler(task, reqBody, instance, reason) {
     const outputMsg = task["outputMsg"]
     logError(
         "Stable Diffusion had an error. Please check the logs in the command-line window. <br/><br/>" +
-            reason +
-            "<br/><pre>" +
-            reason.stack +
-            "</pre>",
+        reason +
+        "<br/><pre>" +
+        reason.stack +
+        "</pre>",
         task,
         outputMsg
     )
     // setStatus("request", "error", "error")
 }
 
-pauseBtn.addEventListener("click", function() {
+pauseBtn.addEventListener("click", function () {
     pauseClient = true
     pauseBtn.style.display = "none"
     resumeBtn.style.display = "inline"
     document.body.classList.add("wait-pause")
 })
 
-resumeBtn.addEventListener("click", function() {
+resumeBtn.addEventListener("click", function () {
     pauseClient = false
     resumeBtn.style.display = "none"
     pauseBtn.style.display = "inline"
