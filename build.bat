@@ -58,7 +58,7 @@ start "Install Easy Diffusion" /D "%OUT_DIR%" "Start Stable Diffusion UI.cmd"
 
 echo ----
 echo Installation in progress (in a new window). Once complete, test the installation, then
-echo run this (in a Developer Console): python -m pip uninstall -y torch torchvision
+echo run this (in a Developer Console): python -m pip uninstall -y torch torchvision triton-windows
 echo Then press Enter to create an installer from these files, or close to quit.
 echo ----
 pause
