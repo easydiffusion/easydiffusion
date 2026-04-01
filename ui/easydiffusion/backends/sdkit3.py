@@ -208,7 +208,12 @@ def get_target():
 
     def get_arch():
         """Get architecture for target."""
+        processor_identifier = os.environ.get("PROCESSOR_IDENTIFIER", "").lower()
         machine = platform.machine().lower()
+
+        if processor_identifier.startswith("arm") and machine.endswith("64"):
+            return "arm64"
+
         if machine in ("x86_64", "amd64"):
             return "x64"
         elif machine in ("arm64", "aarch64"):
