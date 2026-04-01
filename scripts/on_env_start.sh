@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/env bash
 
 source ./scripts/functions.sh
 
@@ -13,8 +13,16 @@ fi
 if [ -f "scripts/user_config.sh" ]; then
     source scripts/user_config.sh
 fi
-
-export PYTHONPATH=$(pwd)/installer_files/env/lib/python3.8/site-packages:$(pwd)/stable-diffusion/env/lib/python3.8/site-packages
+#setup legacy enviroment
+if [ -e "installer_files/env" ]; then
+	export ENVFOLDER="$(pwd)/installer_files/env"
+	export PATH="${ENVFOLDER}/bin:$PATH"; 
+	# check python version und adjust PYTHONPATH
+	if [ -e "${ENVFOLDER}/bin/python"]; then
+		export PYTHONVERSION="$(${ENVFOLDER}/bin/python --version | sed -e 's/Python//;s/\.[[:digit:]]*$//')"
+		export PYTHONPATH="${ENVFOLDER}/lib/python${PATHONVERSION}/site-packages"
+	fi
+fi
 
 if [ -f "scripts/get_config.py" ]; then
    export update_branch="$( python scripts/get_config.py --default=main update_branch )"
