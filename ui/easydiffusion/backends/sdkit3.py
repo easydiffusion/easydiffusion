@@ -47,7 +47,8 @@ def get_backend_dir():
     return os.path.join(SDKIT3_BACKEND_DIR, target)
 
 
-BACKEND_BINARY_URL_BASE = "https://github.com/easydiffusion/sdkit/releases/download/v3.0.0"
+BACKEND_BINARY_URL_BASE = "https://github.com/easydiffusion/sdkit/releases/download"
+DEFAULT_BACKEND_VERSION = "v3.1.0"
 
 OS_NAME = platform.system()
 
@@ -60,6 +61,9 @@ def update_backend():
     target = get_target()
     backend_dir = os.path.join(BACKENDS_ROOT_DIR, "sdkit3", target)
 
+    config = getConfig()
+    backend_config = config.get("backend_config") or {}
+
     if os.path.exists(backend_dir):
         print("Updating sdkit3 backend..")
     else:
@@ -67,7 +71,9 @@ def update_backend():
 
     print("Looking for backend build for target:", target)
 
-    manifest_url = f"{BACKEND_BINARY_URL_BASE}/{target}-manifest.json"
+    backend_version = backend_config.get("version", DEFAULT_BACKEND_VERSION)
+    backend_binary_url = f"{BACKEND_BINARY_URL_BASE}/{backend_version}"
+    manifest_url = f"{backend_binary_url}/{target}-manifest.json"
 
     print(f"Fetching manifest from {manifest_url}")
     response = requests.get(manifest_url)
@@ -87,7 +93,7 @@ def update_backend():
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = [
-            executor.submit(update_or_download_file, filename, info, BACKEND_BINARY_URL_BASE, backend_dir)
+            executor.submit(update_or_download_file, filename, info, backend_binary_url, backend_dir)
             for filename, info in files.items()
         ]
         for future in concurrent.futures.as_completed(futures):
@@ -202,7 +208,12 @@ def get_target():
 
     def get_arch():
         """Get architecture for target."""
+        processor_identifier = os.environ.get("PROCESSOR_IDENTIFIER", "").lower()
         machine = platform.machine().lower()
+
+        if processor_identifier.startswith("arm") and machine.endswith("64"):
+            return "arm64"
+
         if machine in ("x86_64", "amd64"):
             return "x64"
         elif machine in ("arm64", "aarch64"):

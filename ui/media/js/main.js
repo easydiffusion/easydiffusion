@@ -17,7 +17,7 @@ const taskConfigSetup = {
             visible: ({ reqBody }) => reqBody?.scheduler_name,
         },
         num_inference_steps: "Inference Steps",
-        guidance_scale: "Guidance Scale",
+        guidance_scale: 'Guidance Scale <small>(<abbr title="Classifier-Free Guidance">CFG</abbr> Scale)</small>',
         distilled_guidance_scale: {
             label: "Distilled Guidance Scale",
             visible: ({ reqBody }) => reqBody?.distilled_guidance_scale,
@@ -42,7 +42,7 @@ const taskConfigSetup = {
             label: "Negative Prompt",
             visible: ({ reqBody }) => reqBody?.negative_prompt !== undefined && reqBody?.negative_prompt.trim() !== "",
         },
-        prompt_strength: "Prompt Strength",
+        prompt_strength: 'Prompt Strength <small>(<abbr title="Common name in other UIs">Denoising Strength</abbr>)</small>',
         use_face_correction: "Fix Faces",
         upscale: {
             value: ({ reqBody }) => `${reqBody?.use_upscale} (${reqBody?.upscale_amount || 4}x)`,
@@ -120,6 +120,11 @@ let applyColorCorrectionField = document.querySelector("#apply_color_correction"
 let strictMaskBorderField = document.querySelector("#strict_mask_border")
 let colorCorrectionSetting = document.querySelector("#apply_color_correction_setting")
 let strictMaskBorderSetting = document.querySelector("#strict_mask_border_setting")
+let refImageContainer = document.querySelector("#editor-inputs-ref-images")
+let refImageSelector = document.querySelector("#ref_image_input")
+let refImagesList = document.querySelector("#ref_images_list")
+let refImagesClearAllBtn = document.querySelector("#ref_images_clear_all")
+let refImages = []  // Array of base64 data URLs for reference images
 let promptStrengthSlider = document.querySelector("#prompt_strength_slider")
 let promptStrengthField = document.querySelector("#prompt_strength")
 let samplerField = document.querySelector("#sampler_name")
@@ -225,7 +230,7 @@ let IMAGE_STEP_SIZE = 64
 
 let loraModels = []
 
-imagePreview.addEventListener("drop", function(ev) {
+imagePreview.addEventListener("drop", function (ev) {
     const data = ev.dataTransfer?.getData("text/plain")
     if (!data) {
         return
@@ -285,13 +290,13 @@ function getLocalStorageBoolItem(key, fallback) {
 }
 
 function handleBoolSettingChange(key) {
-    return function(e) {
+    return function (e) {
         localStorage.setItem(key, e.target.checked.toString())
     }
 }
 
 function handleStringSettingChange(key) {
-    return function(e) {
+    return function (e) {
         localStorage.setItem(key, e.target.value.toString())
     }
 }
@@ -304,7 +309,7 @@ function getSavedDiskPath() {
     return getSetting("diskPath")
 }
 
-function setStatus(statusType, msg, msgType) {}
+function setStatus(statusType, msg, msgType) { }
 
 function setServerStatus(event) {
     switch (event.type) {
@@ -400,7 +405,7 @@ undoButton.addEventListener("click", () => {
     undoRemove()
 })
 
-document.addEventListener("keydown", function(e) {
+document.addEventListener("keydown", function (e) {
     if ((e.ctrlKey || e.metaKey) && e.key === "z" && e.target == document.body) {
         undoRemove()
     }
@@ -471,7 +476,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
         imageElem.setAttribute("data-steps", imageInferenceSteps)
         imageElem.setAttribute("data-guidance", imageGuidanceScale)
 
-        imageElem.addEventListener("load", function() {
+        imageElem.addEventListener("load", function () {
             imageItemElem.querySelector(".img_bottom_label").innerText = `${this.naturalWidth} x ${this.naturalHeight}`
         })
 
@@ -480,7 +485,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
 
         if ("seed" in result && !imageElem.hasAttribute("data-seed")) {
             const imageExpandBtn = imageItemElem.querySelector(".imgExpandBtn")
-            imageExpandBtn.addEventListener("click", function() {
+            imageExpandBtn.addEventListener("click", function () {
                 function previousImage(img) {
                     const allImages = Array.from(outputContainer.parentNode.querySelectorAll(".imgItem img"))
                     const index = allImages.indexOf(img)
@@ -541,7 +546,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                     { text: "Upscale", on_click: onUpscaleClick },
                     { text: "Fix Faces", on_click: onFixFacesClick },
                 ],
-                { 
+                {
                     text: "Use as Thumbnail",
                     on_click: onUseAsThumbnailClick,
                     filter: (req, img) => "use_embeddings_model" in req || "use_lora_model" in req
@@ -561,7 +566,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                 undoBuffer: imageUndoBuffer,
                 redoBuffer: imageRedoBuffer,
             }
-            const createButton = function(btnInfo) {
+            const createButton = function (btnInfo) {
                 if (Array.isArray(btnInfo)) {
                     const wrapper = document.createElement("div")
                     btnInfo.map(createButton).forEach((buttonElement) => wrapper.appendChild(buttonElement))
@@ -585,7 +590,7 @@ function showImages(reqBody, res, outputContainer, livePreview) {
                 }
 
                 if (btnInfo.on_click || !isLabel) {
-                    newButton.addEventListener("click", function(event) {
+                    newButton.addEventListener("click", function (event) {
                         btnInfo.on_click.bind(newButton)(req, img, event, tools)
                     })
                     if (btnInfo.on_click === onUndoFilter) {
@@ -785,7 +790,7 @@ function onUseAsThumbnailClick(req, img) {
         onUseAsThumbnailClick.croppr.setImage(img.src)
     }
 
-    useAsThumbSelect.innerHTML=""
+    useAsThumbSelect.innerHTML = ""
 
     if ("use_embeddings_model" in req) {
         let embeddings = req.use_embeddings_model.map((e) => e.split("/").pop())
@@ -893,7 +898,7 @@ useAsThumbSaveBtn.addEventListener("click", (e) => {
     cropImageDataUrl(onUseAsThumbnailClick.img.src, crop.x * scale, crop.y * scale, len, len)
         .then((thumb) => fetch(thumb))
         .then((response) => response.blob())
-        .then(async function(blob) {
+        .then(async function (blob) {
             let options = useAsThumbSelect.selectedOptions
             let promises = []
             for (let embedding of options) {
@@ -1555,6 +1560,12 @@ function createTask(task) {
         let w = ((task.reqBody.width * h) / task.reqBody.height) >> 0
         taskConfig += `<div class="task-initimg controlnet-img-preview" style="float:left;"><img style="width:${w}px;height:${h}px;" src="${task.reqBody.control_image}"><div class="task-fs-initimage"></div></div>`
     }
+    if (task.reqBody.ref_images !== undefined && task.reqBody.ref_images.length > 0) {
+        let h = 80
+        task.reqBody.ref_images.forEach((refImg, idx) => {
+            taskConfig += `<div class="task-initimg ref-img-preview" style="float:left;" title="Reference Image ${idx + 1}"><img style="max-width:${h}px;height:${h}px;object-fit:contain;" src="${refImg}"><div class="task-fs-initimage"></div></div>`
+        })
+    }
 
     taskConfig += `<div class="taskConfigData">${createTaskConfig(task)}</span></div></div>`
 
@@ -1614,7 +1625,7 @@ function createTask(task) {
         })
         imagePreview.removeEventListener("dragover", onTaskEntryDragOver)
     })
-    taskEntry.addEventListener("dragstart", function(e) {
+    taskEntry.addEventListener("dragstart", function (e) {
         imagePreview.addEventListener("dragover", onTaskEntryDragOver)
         e.dataTransfer.setData("text/plain", taskEntry.id)
         startX = e.target.closest(".imageTaskContainer").offsetLeft
@@ -1633,7 +1644,7 @@ function createTask(task) {
         e.stopPropagation()
 
         if (task["isProcessing"]) {
-            shiftOrConfirm(e, "Stop this task?", async function(e) {
+            shiftOrConfirm(e, "Stop this task?", async function (e) {
                 if (task.batchesDone <= 0 || !task.isProcessing) {
                     removeTask(taskEntry)
                 }
@@ -1645,7 +1656,7 @@ function createTask(task) {
     })
 
     task["useSettings"] = taskEntry.querySelector(".useSettings")
-    task["useSettings"].addEventListener("click", function(e) {
+    task["useSettings"].addEventListener("click", function (e) {
         e.stopPropagation()
         restoreTaskToUI(task, TASK_REQ_NO_EXPORT)
     })
@@ -1732,6 +1743,9 @@ function getCurrentUserRequest() {
             newTask.reqBody.sampler_name = "ddim"
         }
     }
+    if (refImages.length > 0) {
+        newTask.reqBody.ref_images = refImages.slice()
+    }
     if (saveToDiskField.checked && diskPathField.value.trim() !== "") {
         newTask.reqBody.save_to_disk_path = diskPathField.value.trim()
     }
@@ -1814,7 +1828,7 @@ function getCurrentUserRequest() {
             newTask.reqBody.control_filter_to_apply = controlImageFilterField.value
         }
     }
-    if (stableDiffusionModelField.value.toLowerCase().includes("flux")) {
+    if (isFluxModel()) {
         newTask.reqBody.distilled_guidance_scale = parseFloat(distilledGuidanceScaleField.value)
     }
     if (schedulerSelectionContainer.style.display !== "none") {
@@ -2063,7 +2077,7 @@ function removeTask(taskToRemove) {
 }
 
 clearAllPreviewsBtn.addEventListener("click", (e) => {
-    shiftOrConfirm(e, "Clear all the results and tasks in this window?", async function() {
+    shiftOrConfirm(e, "Clear all the results and tasks in this window?", async function () {
         await stopAllTasks()
 
         let taskEntries = document.querySelectorAll(".imageTaskContainer")
@@ -2168,7 +2182,7 @@ function downloadAllImages() {
         let now = Date.now()
             .toString(36)
             .toUpperCase()
-        zip.generateAsync({ type: "blob" }).then(function(blob) {
+        zip.generateAsync({ type: "blob" }).then(function (blob) {
             saveAs(blob, `EasyDiffusion-Images-${now}.zip`)
         })
     }
@@ -2179,7 +2193,7 @@ saveAllImagesBtn.addEventListener("click", (e) => {
 })
 
 stopImageBtn.addEventListener("click", (e) => {
-    shiftOrConfirm(e, "Stop all the tasks?", async function(e) {
+    shiftOrConfirm(e, "Stop all the tasks?", async function (e) {
         await stopAllTasks()
     })
 })
@@ -2227,7 +2241,7 @@ metadataOutputFormatField.disabled = !saveToDiskField.checked
 useGalleryField.disabled = !saveToDiskField.checked
 
 gfpganModelField.disabled = !useFaceCorrectionField.checked
-useFaceCorrectionField.addEventListener("change", function(e) {
+useFaceCorrectionField.addEventListener("change", function (e) {
     gfpganModelField.disabled = !this.checked
 
     onFixFaceModelChange()
@@ -2260,7 +2274,7 @@ controlImagePreview.addEventListener("load", onControlnetModelChange)
 controlImagePreview.addEventListener("unload", onControlnetModelChange)
 onControlnetModelChange()
 
-document.addEventListener("refreshModels", function() {
+document.addEventListener("refreshModels", function () {
     onFixFaceModelChange()
     onControlnetModelChange()
 })
@@ -2308,6 +2322,22 @@ function checkAndSetDependentModels() {
 // disabling this until we can identify dependencies better
 // e.g. distinguish between flux models that need a text encoder vs flux models with built-in text encoders
 // sdModelField.addEventListener("change", checkAndSetDependentModels)
+
+function checkReferenceImageField() {
+    console.log("Checking reference image field for flux/chroma model")
+    if (!modelsDB) {
+        return
+    }
+
+    console.log("Current SD model:", stableDiffusionModelField.value, "isFlux:", isFluxModel())
+
+    if (isFluxModel()) {
+        refImageContainer.classList.remove("displayNone")
+    } else {
+        refImageContainer.classList.add("displayNone")
+    }
+}
+sdModelField.addEventListener("change", checkReferenceImageField)
 
 function checkGuidanceValue() {
     if (!modelsDB) {
@@ -2415,8 +2445,9 @@ sdModelField.addEventListener("change", checkFluxSchedulerSteps)
 schedulerField.addEventListener("change", checkFluxSchedulerSteps)
 numInferenceStepsField.addEventListener("change", checkFluxSchedulerSteps)
 
-document.addEventListener("refreshModels", function() {
+document.addEventListener("refreshModels", function () {
     // checkAndSetDependentModels()
+    checkReferenceImageField()
     checkGuidanceValue()
     checkGuidanceScaleVisibility()
     checkFluxSampler()
@@ -2457,7 +2488,7 @@ document.addEventListener("refreshModels", function() {
 
 upscaleModelField.disabled = !useUpscalingField.checked
 upscaleAmountField.disabled = !useUpscalingField.checked
-useUpscalingField.addEventListener("change", function(e) {
+useUpscalingField.addEventListener("change", function (e) {
     upscaleModelField.disabled = !this.checked
     upscaleAmountField.disabled = !this.checked
 
@@ -2482,7 +2513,7 @@ onUpscaleModelChange()
 
 makeImageBtn.addEventListener("click", makeImage)
 
-document.onkeydown = function(e) {
+document.onkeydown = function (e) {
     if (e.ctrlKey && e.code === "Enter") {
         makeImage()
         e.preventDefault()
@@ -2685,7 +2716,7 @@ outputFormatField.addEventListener("change", updateOutputQualityVisibility)
 outputLosslessField.addEventListener("change", updateOutputQualityVisibility)
 /********************* Zoom Slider **********************/
 thumbnailSizeField.addEventListener("change", () => {
-    ;(function(s) {
+    ; (function (s) {
         for (var j = 0; j < document.styleSheets.length; j++) {
             let cssSheet = document.styleSheets[j]
             for (var i = 0; i < cssSheet.cssRules.length; i++) {
@@ -2708,7 +2739,7 @@ function onAutoScrollUpdate() {
     }
     autoscrollBtn.querySelector(".state").innerHTML = autoScroll.checked ? "ON" : "OFF"
 }
-autoscrollBtn.addEventListener("click", function() {
+autoscrollBtn.addEventListener("click", function () {
     autoScroll.checked = !autoScroll.checked
     autoScroll.dispatchEvent(new Event("change"))
     onAutoScrollUpdate()
@@ -2735,7 +2766,7 @@ function loadImg2ImgFromFile() {
     let reader = new FileReader()
     let file = initImageSelector.files[0]
 
-    reader.addEventListener("load", function(event) {
+    reader.addEventListener("load", function (event) {
         initImagePreview.src = reader.result
     })
 
@@ -2777,14 +2808,14 @@ function img2imgUnload() {
 initImagePreview.addEventListener("load", img2imgLoad)
 initImageClearBtn.addEventListener("click", img2imgUnload)
 
-maskSetting.addEventListener("click", function() {
+maskSetting.addEventListener("click", function () {
     onDimensionChange()
 })
-maskSetting.addEventListener("change", function() {
+maskSetting.addEventListener("change", function () {
     strictMaskBorderSetting.style.display = this.checked ? "" : "none"
 })
 
-promptsFromFileBtn.addEventListener("click", function() {
+promptsFromFileBtn.addEventListener("click", function () {
     promptsFromFileSelector.click()
 })
 
@@ -2796,7 +2827,7 @@ function loadControlnetImageFromFile() {
     let reader = new FileReader()
     let file = controlImageSelector.files[0]
 
-    reader.addEventListener("load", function(event) {
+    reader.addEventListener("load", function (event) {
         controlImagePreview.src = reader.result
     })
 
@@ -2805,6 +2836,70 @@ function loadControlnetImageFromFile() {
     }
 }
 controlImageSelector.addEventListener("change", loadControlnetImageFromFile)
+
+// Reference Images functions
+function renderRefImagesList() {
+    refImagesList.innerHTML = ""
+    refImages.forEach((src, idx) => {
+        const wrapper = document.createElement("div")
+        wrapper.className = "image-input-wrapper"
+        const img = document.createElement("img")
+        img.className = "input-image-preview"
+        img.src = src
+        const indexLabel = document.createElement("span")
+        indexLabel.className = "image-input-index"
+        indexLabel.textContent = idx + 1
+        const clearBtn = document.createElement("button")
+        clearBtn.className = "image_clear_btn"
+        clearBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>'
+        clearBtn.title = "Remove reference image " + (idx + 1)
+        clearBtn.addEventListener("click", () => removeRefImage(idx))
+        wrapper.appendChild(img)
+        wrapper.appendChild(indexLabel)
+        wrapper.appendChild(clearBtn)
+        refImagesList.appendChild(wrapper)
+    })
+    if (refImages.length > 0) {
+        refImagesClearAllBtn.classList.remove("displayNone")
+    } else {
+        refImagesClearAllBtn.classList.add("displayNone")
+    }
+}
+
+function addRefImage(dataUrl) {
+    refImages.push(dataUrl)
+    renderRefImagesList()
+}
+
+function removeRefImage(idx) {
+    refImages.splice(idx, 1)
+    renderRefImagesList()
+}
+
+function clearAllRefImages() {
+    refImages = []
+    renderRefImagesList()
+}
+
+function loadRefImagesFromFile() {
+    if (!refImageSelector || refImageSelector.files.length === 0) {
+        return
+    }
+    Array.from(refImageSelector.files).forEach((file) => {
+        const reader = new FileReader()
+        reader.addEventListener("load", function () {
+            addRefImage(reader.result)
+        })
+        reader.readAsDataURL(file)
+    })
+    refImageSelector.value = null
+}
+if (refImageSelector) {
+    refImageSelector.addEventListener("change", loadRefImagesFromFile)
+}
+if (refImagesClearAllBtn) {
+    refImagesClearAllBtn.addEventListener("click", clearAllRefImages)
+}
 
 function controlImageLoad() {
     let w = controlImagePreview.naturalWidth
@@ -2829,7 +2924,7 @@ function controlImageUnload() {
 }
 controlImageClearBtn.addEventListener("click", controlImageUnload)
 
-promptsFromFileSelector.addEventListener("change", async function() {
+promptsFromFileSelector.addEventListener("change", async function () {
     if (promptsFromFileSelector.files.length === 0) {
         return
     }
@@ -2837,7 +2932,7 @@ promptsFromFileSelector.addEventListener("change", async function() {
     let reader = new FileReader()
     let file = promptsFromFileSelector.files[0]
 
-    reader.addEventListener("load", async function() {
+    reader.addEventListener("load", async function () {
         await parseContent(reader.result)
     })
 
@@ -2944,7 +3039,7 @@ function packagesUpdate(event) {
     }
 }
 
-document.getElementById("toggle-cloudflare-tunnel").addEventListener("click", async function() {
+document.getElementById("toggle-cloudflare-tunnel").addEventListener("click", async function () {
     let command = "stop"
     if (document.getElementById("toggle-cloudflare-tunnel").innerHTML == "Start") {
         command = "start"
@@ -2963,7 +3058,7 @@ document.getElementById("toggle-cloudflare-tunnel").addEventListener("click", as
     console.log(`Cloudflare tunnel ${command} result:`, res)
 })
 
-document.getElementById("toggle-tensorrt-install").addEventListener("click", function(e) {
+document.getElementById("toggle-tensorrt-install").addEventListener("click", function (e) {
     if (this.disabled === true) {
         return
     }
@@ -2974,7 +3069,7 @@ document.getElementById("toggle-tensorrt-install").addEventListener("click", fun
     shiftOrConfirm(
         e,
         "Are you sure you want to " + command + " TensorRT?",
-        async function() {
+        async function () {
             showToast(`TensorRT ${command} started. Please wait.`)
 
             self.disabled = true
@@ -3033,7 +3128,7 @@ function loadThumbnailImageFromFile() {
     let reader = new FileReader()
     let file = addEmbeddingsThumbInput.files[0]
 
-    reader.addEventListener("load", function(event) {
+    reader.addEventListener("load", function (event) {
         let img = document.createElement("img")
         img.src = reader.result
         onUseAsThumbnailClick(
@@ -3161,7 +3256,7 @@ function updateEmbeddingsList(filter = "") {
                 if (icons.includes(`${loraname}.png`)) {
                     keywords.forEach((kw) => {
                         iconMap[kw.toLowerCase()] = `lora/${loraname}.png`
-                        
+
                     })
                 }
             }
@@ -3259,20 +3354,20 @@ embeddingsCollapsiblesBtn.addEventListener("click", (e) => {
 /* Pause function */
 document.querySelectorAll(".tab").forEach(linkTabContents)
 
-window.addEventListener("beforeunload", function(e) {
+window.addEventListener("beforeunload", function (e) {
     const msg = "Unsaved pictures will be lost!"
 
     let elementList = document.getElementsByClassName("imageTaskContainer")
     if (elementList.length != 0) {
         e.preventDefault()
-        ;(e || window.event).returnValue = msg
+            ; (e || window.event).returnValue = msg
         return msg
     } else {
         return true
     }
 })
 
-document.addEventListener("collapsibleClick", function(e) {
+document.addEventListener("collapsibleClick", function (e) {
     let header = e.detail
     if (header === document.querySelector("#negative_prompt_handle")) {
         if (header.classList.contains("active")) {
@@ -3339,135 +3434,135 @@ function enlargeImageSize(factor) {
 
 let recentResolutionsValues = []
 
-;(function() {
-    ///// Init resolutions dropdown
+    ; (function () {
+        ///// Init resolutions dropdown
 
-    function makeResolutionButtons(listElement, resolutionList) {
-        listElement.innerHTML = ""
-        resolutionList.forEach((el) => {
-            let button = createElement("button", { style: "width: 8em;" }, "tertiaryButton", `${el.w}×${el.h}`)
-            button.addEventListener("click", () => {
-                customWidthField.value = el.w
-                customHeightField.value = el.h
+        function makeResolutionButtons(listElement, resolutionList) {
+            listElement.innerHTML = ""
+            resolutionList.forEach((el) => {
+                let button = createElement("button", { style: "width: 8em;" }, "tertiaryButton", `${el.w}×${el.h}`)
+                button.addEventListener("click", () => {
+                    customWidthField.value = el.w
+                    customHeightField.value = el.h
+                    hidePopup()
+                })
+                listElement.appendChild(button)
+                listElement.appendChild(document.createElement("br"))
+            })
+        }
+
+        enlargeButtons.querySelectorAll("button").forEach((button) =>
+            button.addEventListener("click", (e) => {
+                enlargeImageSize(parseFloat(button.dataset["factor"]))
                 hidePopup()
             })
-            listElement.appendChild(button)
-            listElement.appendChild(document.createElement("br"))
+        )
+
+        customWidthField.addEventListener("change", () => {
+            let w = customWidthField.value
+            customWidthField.value = roundToMultiple(w, customWidthField.step)
+            if (w != customWidthField.value) {
+                showToast(`Rounded width to the closest multiple of ${customWidthField.step}.`)
+            }
         })
-    }
 
-    enlargeButtons.querySelectorAll("button").forEach((button) =>
-        button.addEventListener("click", (e) => {
-            enlargeImageSize(parseFloat(button.dataset["factor"]))
-            hidePopup()
+        customHeightField.addEventListener("change", () => {
+            let h = customHeightField.value
+            customHeightField.value = roundToMultiple(h, customHeightField.step)
+            if (h != customHeightField.value) {
+                showToast(`Rounded height to the closest multiple of ${customHeightField.step}.`)
+            }
         })
-    )
 
-    customWidthField.addEventListener("change", () => {
-        let w = customWidthField.value
-        customWidthField.value = roundToMultiple(w, customWidthField.step)
-        if (w != customWidthField.value) {
-            showToast(`Rounded width to the closest multiple of ${customWidthField.step}.`)
-        }
-    })
+        makeImageBtn.addEventListener("click", () => {
+            let w = widthField.value
+            let h = heightField.value
 
-    customHeightField.addEventListener("change", () => {
-        let h = customHeightField.value
-        customHeightField.value = roundToMultiple(h, customHeightField.step)
-        if (h != customHeightField.value) {
-            showToast(`Rounded height to the closest multiple of ${customHeightField.step}.`)
-        }
-    })
+            recentResolutionsValues = recentResolutionsValues.filter((el) => el.w != w || el.h != h)
+            recentResolutionsValues.unshift({ w: w, h: h })
+            recentResolutionsValues = recentResolutionsValues.slice(0, 8)
 
-    makeImageBtn.addEventListener("click", () => {
-        let w = widthField.value
-        let h = heightField.value
+            localStorage.recentResolutionsValues = JSON.stringify(recentResolutionsValues)
+            makeResolutionButtons(recentResolutionList, recentResolutionsValues)
+        })
 
-        recentResolutionsValues = recentResolutionsValues.filter((el) => el.w != w || el.h != h)
-        recentResolutionsValues.unshift({ w: w, h: h })
-        recentResolutionsValues = recentResolutionsValues.slice(0, 8)
-
-        localStorage.recentResolutionsValues = JSON.stringify(recentResolutionsValues)
-        makeResolutionButtons(recentResolutionList, recentResolutionsValues)
-    })
-
-    const defaultResolutionsValues = [
-        { w: 512, h: 512 },
-        { w: 448, h: 640 },
-        { w: 512, h: 768 },
-        { w: 768, h: 512 },
-        { w: 1024, h: 768 },
-        { w: 768, h: 1024 },
-        { w: 1024, h: 1024 },
-        { w: 1920, h: 1080 },
-    ]
-    let _jsonstring = localStorage.recentResolutionsValues
-    if (_jsonstring == undefined) {
-        recentResolutionsValues = defaultResolutionsValues
-        localStorage.recentResolutionsValues = JSON.stringify(recentResolutionsValues)
-    } else {
-        recentResolutionsValues = JSON.parse(localStorage.recentResolutionsValues)
-    }
-
-    makeResolutionButtons(recentResolutionList, recentResolutionsValues)
-    makeResolutionButtons(commonResolutionList, defaultResolutionsValues)
-
-    recentResolutionsValues.forEach((val) => {
-        addImageSizeOption(val.w)
-        addImageSizeOption(val.h)
-    })
-
-    function processClick(e) {
-        if (!recentResolutionsPopup.contains(e.target)) {
-            hidePopup()
-        }
-    }
-
-    function showPopup() {
-        customWidthField.value = widthField.value
-        customHeightField.value = heightField.value
-        recentResolutionsPopup.classList.remove("displayNone")
-        resizeSlider.value = 1
-        resizeSlider.dataset["w"] = widthField.value
-        resizeSlider.dataset["h"] = heightField.value
-        document.addEventListener("click", processClick)
-    }
-
-    function hidePopup() {
-        recentResolutionsPopup.classList.add("displayNone")
-        setImageWidthHeight(customWidthField.value, customHeightField.value)
-        document.removeEventListener("click", processClick)
-    }
-
-    recentResolutionsButton.addEventListener("click", (event) => {
-        if (recentResolutionsPopup.classList.contains("displayNone")) {
-            showPopup()
-            event.stopPropagation()
+        const defaultResolutionsValues = [
+            { w: 512, h: 512 },
+            { w: 448, h: 640 },
+            { w: 512, h: 768 },
+            { w: 768, h: 512 },
+            { w: 1024, h: 768 },
+            { w: 768, h: 1024 },
+            { w: 1024, h: 1024 },
+            { w: 1920, h: 1080 },
+        ]
+        let _jsonstring = localStorage.recentResolutionsValues
+        if (_jsonstring == undefined) {
+            recentResolutionsValues = defaultResolutionsValues
+            localStorage.recentResolutionsValues = JSON.stringify(recentResolutionsValues)
         } else {
-            hidePopup()
+            recentResolutionsValues = JSON.parse(localStorage.recentResolutionsValues)
         }
-    })
 
-    resizeSlider.addEventListener("input", (e) => {
-        let w = parseInt(resizeSlider.dataset["w"])
-        let h = parseInt(resizeSlider.dataset["h"])
-        let factor = parseFloat(resizeSlider.value)
-        let step = customWidthField.step
+        makeResolutionButtons(recentResolutionList, recentResolutionsValues)
+        makeResolutionButtons(commonResolutionList, defaultResolutionsValues)
 
-        customWidthField.value = roundToMultiple(w * factor * factor, step)
-        customHeightField.value = roundToMultiple(h * factor * factor, step)
-    })
+        recentResolutionsValues.forEach((val) => {
+            addImageSizeOption(val.w)
+            addImageSizeOption(val.h)
+        })
 
-    resizeSlider.addEventListener("change", (e) => {
-        hidePopup()
-    })
+        function processClick(e) {
+            if (!recentResolutionsPopup.contains(e.target)) {
+                hidePopup()
+            }
+        }
 
-    swapWidthHeightButton.addEventListener("click", (event) => {
-        let temp = widthField.value
-        widthField.value = heightField.value
-        heightField.value = temp
-    })
-})()
+        function showPopup() {
+            customWidthField.value = widthField.value
+            customHeightField.value = heightField.value
+            recentResolutionsPopup.classList.remove("displayNone")
+            resizeSlider.value = 1
+            resizeSlider.dataset["w"] = widthField.value
+            resizeSlider.dataset["h"] = heightField.value
+            document.addEventListener("click", processClick)
+        }
+
+        function hidePopup() {
+            recentResolutionsPopup.classList.add("displayNone")
+            setImageWidthHeight(customWidthField.value, customHeightField.value)
+            document.removeEventListener("click", processClick)
+        }
+
+        recentResolutionsButton.addEventListener("click", (event) => {
+            if (recentResolutionsPopup.classList.contains("displayNone")) {
+                showPopup()
+                event.stopPropagation()
+            } else {
+                hidePopup()
+            }
+        })
+
+        resizeSlider.addEventListener("input", (e) => {
+            let w = parseInt(resizeSlider.dataset["w"])
+            let h = parseInt(resizeSlider.dataset["h"])
+            let factor = parseFloat(resizeSlider.value)
+            let step = customWidthField.step
+
+            customWidthField.value = roundToMultiple(w * factor * factor, step)
+            customHeightField.value = roundToMultiple(h * factor * factor, step)
+        })
+
+        resizeSlider.addEventListener("change", (e) => {
+            hidePopup()
+        })
+
+        swapWidthHeightButton.addEventListener("click", (event) => {
+            let temp = widthField.value
+            widthField.value = heightField.value
+            heightField.value = temp
+        })
+    })()
 
 document.addEventListener("before_task_start", (e) => {
     let task = e.detail.task

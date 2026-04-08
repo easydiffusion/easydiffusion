@@ -84,6 +84,7 @@ def generate_images(
     distilled_guidance_scale: float = 3.5,
     scheduler_name: str = "simple",
     output_type="pil",
+    ref_images=None,
     **req,
 ):
     from sdkit.generate import generate_images

@@ -1,6 +1,6 @@
 // christmas hack, courtesy: https://pajasevi.github.io/CSSnowflakes/
 
-;(function(){
+; (function () {
     "use strict";
 
     function makeItSnow() {

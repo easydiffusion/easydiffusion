@@ -1,5 +1,10 @@
 # What's new?
 
+## v4 (preview)
+* 4.2.0 - 31 Mar 2026 - (Internal code changes) Merge v3.5 and v4 engine into the main branch. This brings back the streamlined release process of landing new features first in beta, and then merging into the main branch after testing.
+* 4.1.0 - 13 Feb 2026 - Add support for Flux2-Klein.
+* 4.0.0 - 2 Dec 2025 - Add the v4 engine (i.e. sdkit3) as an experimental backend, which supports Z-Image, Flux 1 etc in a lightweight new backend engine.
+
 ## v3.5 (beta)
 ### Major Changes
 - **Chroma** - support for the Chroma model, including quantized bnb and nf4 models.
@@ -15,6 +20,7 @@
 v3.5 is currently an optional upgrade, and you can switch between the v3.0 (diffusers) engine and the v3.5 (webui) engine using the `Settings` tab in the UI.
 
 ### Detailed changelog
+* 3.5.14 - 31 Mar 2026 - (Internal code changes) Merge v3.5 and v4 engine into the main branch. This brings back the streamlined release process of landing new features first in beta, and then merging into the main branch after testing.
 * 3.5.13 - 2 Dec 2025 - Add the v4 engine (i.e. sdkit3) as an experimental backend.
 * 3.5.12 - 24 Nov 2025 - Adjust inpainting image editor size for various screen sizes (to avoid overflowing out of the screen).
 * 3.5.12 - 24 Nov 2025 - Fix a bug where inpainted images would ignore the output image size, and use the size of the input image instead.
@@ -50,6 +56,7 @@ v3.5 is currently an optional upgrade, and you can switch between the v3.0 (diff
 - **Major rewrite of the code** - We've switched to using diffusers under-the-hood, which allows us to release new features faster, and focus on making the UI and installer even easier to use.
 
 ### Detailed changelog
+* 3.0.16 - 31 Mar 2026 - (Internal code changes) Merge v3.5 and v4 engine into the main branch. This brings back the streamlined release process of landing new features first in beta, and then merging into the main branch after testing.
 * 3.0.15 - 28 Oct 2025 - Fix regression where newly added models wouldn't work, even after refreshing the models list.
 * 3.0.14 - 1 Oct 2025 - (Internal code change) Model fetching API refactored. It now returns the model types (flux, SD version etc) in a cleaner data format.
 * 3.0.13 - 10 Feb 2025 - (Internal code change) Use `torchruntime` for installing torch/torchvision, instead of custom logic. This supports a lot more GPUs on various platforms, and was built using Easy Diffusion's torch-installation code.

@@ -36,7 +36,7 @@ const defaultToolEnd = (editor, ctx, x, y, is_overlay = false) => {
         ctx.clearRect(0, 0, editor.width, editor.height)
     }
 }
-const toolDoNothing = (editor, ctx, x, y, is_overlay = false) => {}
+const toolDoNothing = (editor, ctx, x, y, is_overlay = false) => { }
 
 const IMAGE_EDITOR_TOOLS = [
     {
@@ -129,7 +129,7 @@ const IMAGE_EDITOR_ACTIONS = [
         handler: (editor) => {
             let el = document.createElement("input")
             el.setAttribute("type", "file")
-            el.addEventListener("change", function() {
+            el.addEventListener("change", function () {
                 if (this.files.length === 0) {
                     return
                 }
@@ -137,7 +137,7 @@ const IMAGE_EDITOR_ACTIONS = [
                 let reader = new FileReader()
                 let file = this.files[0]
 
-                reader.addEventListener("load", function(event) {
+                reader.addEventListener("load", function (event) {
                     let maskData = reader.result
 
                     editor.layers.drawing.ctx.clearRect(0, 0, editor.width, editor.height)
@@ -214,7 +214,7 @@ var IMAGE_EDITOR_SECTIONS = [
             sub_element.appendChild(icon)
             var label_element = document.createElement("div")
             label_element.classList.add("image-editor-button-label")
-            label_element.textContent=tool_info.name
+            label_element.textContent = tool_info.name
             sub_element.appendChild(label_element)
             element.appendChild(sub_element)
         },
@@ -273,7 +273,7 @@ var IMAGE_EDITOR_SECTIONS = [
                 element.appendChild(input)
                 var span = document.createElement("span")
                 span.textContent = "Custom"
-                span.onclick = function(e) {
+                span.onclick = function (e) {
                     input.click()
                 }
                 element.appendChild(span)
@@ -727,7 +727,7 @@ class ImageEditor {
                 event.stopPropagation()
                 event.preventDefault()
             } else {
-                let toolIndex = IMAGE_EDITOR_TOOLS.findIndex( t => t.hotkey ==event.key )
+                let toolIndex = IMAGE_EDITOR_TOOLS.findIndex(t => t.hotkey == event.key)
                 if (toolIndex != -1) {
                     this.selectOption("tool", toolIndex)
                     event.stopPropagation()
@@ -848,10 +848,10 @@ function hexToRgb(hex) {
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
     return result
         ? {
-              r: parseInt(result[1], 16),
-              g: parseInt(result[2], 16),
-              b: parseInt(result[3], 16),
-          }
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16),
+        }
         : null
 }
 

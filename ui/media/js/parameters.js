@@ -267,7 +267,7 @@ var PARAMETERS = [
         default: "ed_diffusers",
         options: [
             { value: "sdkit3", label: "v4 (very experimental)" },
-            { value: "webui", label: "v3.5 (recommended)" },
+            { value: "webui", label: "v3.5" },
             { value: "ed_diffusers", label: "v3.0" },
             { value: "ed_classic", label: "v2.0" },
         ],
@@ -599,7 +599,7 @@ function applySettingsFromConfig(config) {
     })
 }
 
-saveToDiskField.addEventListener("change", function(e) {
+saveToDiskField.addEventListener("change", function (e) {
     diskPathField.disabled = !this.checked
     metadataOutputFormatField.disabled = !this.checked
     useGalleryField.disabled = !this.checked
@@ -618,7 +618,7 @@ function getCurrentRenderDeviceSelection() {
     return selectedGPUs.join(",")
 }
 
-useCPUField.addEventListener("click", function() {
+useCPUField.addEventListener("click", function () {
     let gpuSettingEntry = getParameterSettingsEntry("use_gpus")
     let autoPickGPUSettingEntry = getParameterSettingsEntry("auto_pick_gpus")
     if (this.checked) {
@@ -640,12 +640,12 @@ useCPUField.addEventListener("click", function() {
     }
 })
 
-useGPUsField.addEventListener("click", function() {
+useGPUsField.addEventListener("click", function () {
     let selectedGPUs = $("#use_gpus").val()
     autoPickGPUsField.checked = selectedGPUs.length === 0
 })
 
-autoPickGPUsField.addEventListener("click", function() {
+autoPickGPUsField.addEventListener("click", function () {
     if (this.checked) {
         $("#use_gpus").val([])
     }
@@ -732,12 +732,12 @@ async function getSystemInfo() {
             useCPUField.checked = true
             useCPUField.disabled = true // no compatible GPUs, so make the CPU mandatory
 
-            getParameterSettingsEntry("use_cpu").addEventListener("click", function() {
+            getParameterSettingsEntry("use_cpu").addEventListener("click", function () {
                 alert(
                     "Sorry, we could not find a compatible graphics card! Easy Diffusion supports graphics cards with minimum 2 GB of RAM. " +
-                        "Only NVIDIA cards are supported on Windows. NVIDIA and AMD cards are supported on Linux.<br/><br/>" +
-                        "If you have a compatible graphics card, please try updating to the latest drivers.<br/><br/>" +
-                        "Only the CPU can be used for generating images, without a compatible graphics card.",
+                    "Only NVIDIA cards are supported on Windows. NVIDIA and AMD cards are supported on Linux.<br/><br/>" +
+                    "If you have a compatible graphics card, please try updating to the latest drivers.<br/><br/>" +
+                    "Only the CPU can be used for generating images, without a compatible graphics card.",
                     "No compatible graphics card found!"
                 )
             })
@@ -785,7 +785,7 @@ async function getSystemInfo() {
     }
 }
 
-saveSettingsBtn.addEventListener("click", function() {
+saveSettingsBtn.addEventListener("click", function () {
     if (listenPortField.value == "") {
         alert("The network port field must not be empty.")
         return
@@ -857,7 +857,7 @@ listenPortField.addEventListener(
 let copyCloudflareAddressBtn = document.querySelector("#copy-cloudflare-address")
 let cloudflareAddressField = document.getElementById("cloudflare-address")
 
-navigator.permissions.query({ name: "clipboard-write" }).then(function(result) {
+navigator.permissions.query({ name: "clipboard-write" }).then(function (result) {
     if (result.state === "granted") {
         // you can read from the clipboard
         copyCloudflareAddressBtn.addEventListener("click", (e) => {

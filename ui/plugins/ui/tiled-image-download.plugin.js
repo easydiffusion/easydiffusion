@@ -1,18 +1,18 @@
-;(function(){
+; (function () {
     "use strict";
     const PAPERSIZE = [
-        {id: "a3p",  width: 297, height: 420, unit: "mm"},
-        {id: "a3l",  width: 420, height: 297, unit: "mm"},
-        {id: "a4p",  width: 210, height: 297, unit: "mm"},
-        {id: "a4l",  width: 297, height: 210, unit: "mm"},
-        {id: "ll", width: 279, height: 216, unit: "mm"},
-        {id: "lp",  width: 216, height: 279, unit: "mm"},
-        {id: "hd", width: 1920, height: 1080, unit: "pixels"},
-        {id: "4k", width: 3840, height: 2160, unit: "pixels"},
+        { id: "a3p", width: 297, height: 420, unit: "mm" },
+        { id: "a3l", width: 420, height: 297, unit: "mm" },
+        { id: "a4p", width: 210, height: 297, unit: "mm" },
+        { id: "a4l", width: 297, height: 210, unit: "mm" },
+        { id: "ll", width: 279, height: 216, unit: "mm" },
+        { id: "lp", width: 216, height: 279, unit: "mm" },
+        { id: "hd", width: 1920, height: 1080, unit: "pixels" },
+        { id: "4k", width: 3840, height: 2160, unit: "pixels" },
     ]
 
     // ---- Register plugin
-    PLUGINS['IMAGE_INFO_BUTTONS'].push({ 
+    PLUGINS['IMAGE_INFO_BUTTONS'].push({
         html: '<i class="fa-solid fa-table-cells-large"></i> Download tiled image',
         on_click: onDownloadTiledImage,
         filter: (req, img) => req.tiling != "none",
@@ -128,7 +128,7 @@
     prettifyInputs(downloadTiledImageDialog)
 
     // ---- Predefined image dimensions
-    PAPERSIZE.forEach( function(p) {
+    PAPERSIZE.forEach(function (p) {
         document.getElementById("dtim2-" + p.id).addEventListener("click", (e) => {
             dtim2_unit.value = p.unit
             dtim2_width.value = p.width
@@ -240,9 +240,9 @@
     function getPlacement() {
         return document.querySelector("#tab-content-image-placement img.active").id.substr(5)
     }
-        
+
     // ---- Make the image
-    function downloadTiledImage(image, width, height, offsetX=0, offsetY=0, new_tab=false) {
+    function downloadTiledImage(image, width, height, offsetX = 0, offsetY = 0, new_tab = false) {
 
         const canvas = document.createElement('canvas')
         canvas.width = width
@@ -263,27 +263,27 @@
         } else {
             const link = document.createElement('a')
             link.href = canvas.toDataURL()
-            link.download = image.dataset["prompt"].replace(/[^a-zA-Z0-9]+/g, "-").substr(0,22)+crypto.randomUUID()+".png"
+            link.download = image.dataset["prompt"].replace(/[^a-zA-Z0-9]+/g, "-").substr(0, 22) + crypto.randomUUID() + ".png"
             link.click()
         }
     }
 
-    function onDownloadTiledImageClick(e, newtab=false) {
+    function onDownloadTiledImageClick(e, newtab = false) {
         var width, height, offsetX, offsetY
 
         if (isTabActive(tabTiledTilesOptions)) {
             width = thisImage.width * dtim1_width.value
             height = thisImage.height * dtim1_height.value
         } else {
-            if ( dtim2_unit.value == "pixels" ) {
+            if (dtim2_unit.value == "pixels") {
                 width = dtim2_width.value
-                height= dtim2_height.value
-            } else if ( dtim2_unit.value == "mm" ) {
-                width = Math.floor( dtim2_width.value * dtim2_dpi.value / 25.4 )
-                height = Math.floor( dtim2_height.value * dtim2_dpi.value / 25.4 )
+                height = dtim2_height.value
+            } else if (dtim2_unit.value == "mm") {
+                width = Math.floor(dtim2_width.value * dtim2_dpi.value / 25.4)
+                height = Math.floor(dtim2_height.value * dtim2_dpi.value / 25.4)
             } else { // inch
-                width = Math.floor( dtim2_width.value * dtim2_dpi.value )
-                height = Math.floor( dtim2_height.value * dtim2_dpi.value )
+                width = Math.floor(dtim2_width.value * dtim2_dpi.value)
+                height = Math.floor(dtim2_height.value * dtim2_dpi.value)
             }
         }
 
@@ -292,26 +292,26 @@
             offsetX = 0
             offsetY = 0
         } else if (placement == "1tr") {
-            offsetX = width - thisImage.width * Math.ceil( width / thisImage.width )
+            offsetX = width - thisImage.width * Math.ceil(width / thisImage.width)
             offsetY = 0
         } else if (placement == "1bl") {
             offsetX = 0
-            offsetY = height - thisImage.height * Math.ceil( height / thisImage.height )
+            offsetY = height - thisImage.height * Math.ceil(height / thisImage.height)
         } else if (placement == "1br") {
-            offsetX = width - thisImage.width * Math.ceil( width / thisImage.width )
-            offsetY = height - thisImage.height * Math.ceil( height / thisImage.height )
+            offsetX = width - thisImage.width * Math.ceil(width / thisImage.width)
+            offsetY = height - thisImage.height * Math.ceil(height / thisImage.height)
         } else if (placement == "4center") {
-            offsetX = width/2 - thisImage.width * Math.ceil( width/2 / thisImage.width )
-            offsetY = height/2 - thisImage.height * Math.ceil( height/2 / thisImage.height )
+            offsetX = width / 2 - thisImage.width * Math.ceil(width / 2 / thisImage.width)
+            offsetY = height / 2 - thisImage.height * Math.ceil(height / 2 / thisImage.height)
         } else if (placement == "1center") {
-            offsetX = width/2 - thisImage.width/2 - thisImage.width * Math.ceil( (width/2 - thisImage.width/2) / thisImage.width )
-            offsetY = height/2 - thisImage.height/2 - thisImage.height * Math.ceil( (height/2 - thisImage.height/2) / thisImage.height )
+            offsetX = width / 2 - thisImage.width / 2 - thisImage.width * Math.ceil((width / 2 - thisImage.width / 2) / thisImage.width)
+            offsetY = height / 2 - thisImage.height / 2 - thisImage.height * Math.ceil((height / 2 - thisImage.height / 2) / thisImage.height)
         }
         downloadTiledImage(thisImage, width, height, offsetX, offsetY, newtab)
         downloadTiledImageDialog.close()
     }
 
     document.getElementById("dti-ok").addEventListener("click", onDownloadTiledImageClick)
-    document.getElementById("dti-newtab").addEventListener("click", (e) => onDownloadTiledImageClick(e,true))
+    document.getElementById("dti-newtab").addEventListener("click", (e) => onDownloadTiledImageClick(e, true))
 
 })()

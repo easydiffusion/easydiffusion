@@ -74,12 +74,13 @@ const TASK_MAPPING = {
     width: {
         name: "Width",
         setUI: (width) => {
-            const oldVal = widthField.value
-            widthField.value = width
-            if (!widthField.value) {
-                widthField.value = oldVal
+            try {
+                addImageSizeOption(width)
+                widthField.value = width
+                widthField.dispatchEvent(new Event("change"))
+            } catch (e) {
+                console.log("Invalid width value", width)
             }
-            widthField.dispatchEvent(new Event("change"))
         },
         readUI: () => parseInt(widthField.value),
         parse: (val) => parseInt(val),
@@ -87,12 +88,13 @@ const TASK_MAPPING = {
     height: {
         name: "Height",
         setUI: (height) => {
-            const oldVal = heightField.value
-            heightField.value = height
-            if (!heightField.value) {
-                heightField.value = oldVal
+            try {
+                addImageSizeOption(height)
+                heightField.value = height
+                heightField.dispatchEvent(new Event("change"))
+            } catch (e) {
+                console.log("Invalid height value", height)
             }
-            heightField.dispatchEvent(new Event("change"))
         },
         readUI: () => parseInt(heightField.value),
         parse: (val) => parseInt(val),
@@ -157,6 +159,19 @@ const TASK_MAPPING = {
         },
         readUI: () => initImagePreview.src,
         parse: (val) => val,
+    },
+    ref_images: {
+        name: "Reference Images",
+        setUI: (ref_images) => {
+            if (Array.isArray(ref_images) && ref_images.length > 0) {
+                refImages = ref_images.slice()
+                renderRefImagesList()
+            } else {
+                clearAllRefImages()
+            }
+        },
+        readUI: () => (refImages.length > 0 ? refImages.slice() : undefined),
+        parse: (val) => (Array.isArray(val) ? val : undefined),
     },
     mask: {
         name: "Mask",
@@ -439,8 +454,8 @@ const TASK_MAPPING = {
             const oldVal = hypernetworkModelField.value
             use_hypernetwork_model =
                 use_hypernetwork_model === undefined ||
-                use_hypernetwork_model === null ||
-                use_hypernetwork_model === "None"
+                    use_hypernetwork_model === null ||
+                    use_hypernetwork_model === "None"
                     ? ""
                     : use_hypernetwork_model
 
@@ -577,7 +592,7 @@ function restoreTaskToUI(task, fieldsToSkip) {
         // listen for inpainter loading event, which happens AFTER the main image loads (which reloads the inpainter)
         initImagePreview.addEventListener(
             "load",
-            function() {
+            function () {
                 if (Boolean(task.reqBody.mask)) {
                     imageInpainter.setImg(task.reqBody.mask)
                     maskSetting.checked = true
@@ -595,6 +610,14 @@ function restoreTaskToUI(task, fieldsToSkip) {
     } else if (task.reqBody.control_image !== undefined) {
         // listen for inpainter loading event, which happens AFTER the main image loads (which reloads the inpai
         controlImagePreview.src = task.reqBody.control_image
+    }
+
+    // restore ref images
+    if (task.reqBody.ref_images !== undefined && Array.isArray(task.reqBody.ref_images) && task.reqBody.ref_images.length > 0) {
+        refImages = task.reqBody.ref_images.slice()
+        renderRefImagesList()
+    } else if (refImages.length > 0) {
+        clearAllRefImages()
     }
 
     if ("use_controlnet_model" in task.reqBody && task.reqBody.use_controlnet_model && !("control_alpha" in task.reqBody)) {
@@ -645,9 +668,9 @@ const TASK_TEXT_MAPPING = {
     height: "Height",
     seed: "Seed",
     num_inference_steps: "Steps",
-    guidance_scale: "Guidance Scale",
+    guidance_scale: ["Guidance Scale", "CFG Scale"],
     distilled_guidance_scale: "Distilled Guidance",
-    prompt_strength: "Prompt Strength",
+    prompt_strength: ["Prompt Strength", "Denoising Strength"],
     use_face_correction: "Use Face Correction",
     use_upscale: "Use Upscaling",
     upscale_amount: "Upscale By",
@@ -665,6 +688,13 @@ const TASK_TEXT_MAPPING = {
     control_alpha: "ControlNet Strength",
     tiling: "Seamless Tiling",
 }
+function escapeRegExp(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+}
+function getTaskTextLabels(key) {
+    const val = TASK_TEXT_MAPPING[key]
+    return Array.isArray(val) ? val : [val]
+}
 function parseTaskFromText(str) {
     const taskReqBody = {}
 
@@ -676,10 +706,13 @@ function parseTaskFromText(str) {
     // Prompt
     let knownKeyOnFirstLine = false
     for (let key in TASK_TEXT_MAPPING) {
-        if (lines[0].startsWith(TASK_TEXT_MAPPING[key] + ":")) {
-            knownKeyOnFirstLine = true
-            break
+        for (const name of getTaskTextLabels(key)) {
+            if (lines[0].startsWith(name + ":")) {
+                knownKeyOnFirstLine = true
+                break
+            }
         }
+        if (knownKeyOnFirstLine) break
     }
     if (!knownKeyOnFirstLine) {
         taskReqBody.prompt = lines[0]
@@ -691,14 +724,16 @@ function parseTaskFromText(str) {
             continue
         }
 
-        const name = TASK_TEXT_MAPPING[key]
         let val = undefined
 
-        const reName = new RegExp(`${name}\\ *:\\ *(.*)(?:\\r\\n|\\r|\\n)*`, "igm")
-        const match = reName.exec(str)
-        if (match) {
-            str = str.slice(0, match.index) + str.slice(match.index + match[0].length)
-            val = match[1]
+        for (const name of getTaskTextLabels(key)) {
+            const reName = new RegExp(`${escapeRegExp(name)}\\ *:\\ *(.*)(?:\\r\\n|\\r|\\n)*`, "igm")
+            const match = reName.exec(str)
+            if (match) {
+                str = str.slice(0, match.index) + str.slice(match.index + match[0].length)
+                val = match[1]
+                break
+            }
         }
         if (val !== undefined) {
             taskReqBody[key] = TASK_MAPPING[key].parse(val.trim())

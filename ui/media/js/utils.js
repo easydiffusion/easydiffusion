@@ -69,7 +69,7 @@ function createCollapsibles(node) {
         save = true
     }
     let collapsibles = node.querySelectorAll(".collapsible")
-    collapsibles.forEach(function(c) {
+    collapsibles.forEach(function (c) {
         if (save && c.parentElement.id) {
             COLLAPSIBLE_PANELS.push(c.parentElement)
         }
@@ -83,7 +83,7 @@ function createCollapsibles(node) {
         }
         c.insertBefore(handle, c.firstChild)
 
-        c.addEventListener("click", function() {
+        c.addEventListener("click", function () {
             toggleCollapsible(c.parentElement)
         })
     })
@@ -133,9 +133,9 @@ function collapseAll(selector) {
     const collapsibleElems = document.querySelectorAll(selector); // needs to have ";"
 
     [...collapsibleElems].forEach((elem) => {
-        const isActive =  elem.classList.contains("active")
+        const isActive = elem.classList.contains("active")
 
-        if(isActive) {
+        if (isActive) {
             elem?.click()
         }
     })
@@ -145,7 +145,7 @@ function expandAll(selector) {
     const collapsibleElems = document.querySelectorAll(selector); // needs to have ";"
 
     [...collapsibleElems].forEach((elem) => {
-        const isActive =  elem.classList.contains("active")
+        const isActive = elem.classList.contains("active")
 
         if (!isActive) {
             elem?.click()
@@ -223,9 +223,9 @@ function BraceExpander() {
         return n
             ? bracePair(tkns, iPosn + 1, n, lst)
             : {
-                  close: iPosn,
-                  commas: lst,
-              }
+                close: iPosn,
+                commas: lst,
+            }
     }
 
     // Parse of a SYNTAGM subtree
@@ -233,11 +233,11 @@ function BraceExpander() {
         if (!tkns.length) return [dctSofar, []]
 
         let dctParse = dctSofar
-                ? dctSofar
-                : {
-                      fn: and,
-                      args: [],
-                  },
+            ? dctSofar
+            : {
+                fn: and,
+                args: [],
+            },
             head = tkns[0],
             tail = head ? tkns.slice(1) : [],
             dctBrace = head === "{" ? bracePair(tkns, 0, 0, []) : null,
@@ -260,12 +260,12 @@ function BraceExpander() {
         return {
             fn: or,
             args: splitsAt(lstCommas, tkns)
-                .map(function(x, i) {
+                .map(function (x, i) {
                     let ts = x.slice(1, i === iLast ? -1 : void 0)
 
                     return ts.length ? ts : [""]
                 })
-                .map(function(ts) {
+                .map(function (ts) {
                     return ts.length > 1 ? andTree(null, ts)[0] : ts[0]
                 }),
         }
@@ -274,14 +274,14 @@ function BraceExpander() {
     // List of unescaped braces and commas, and remaining strings
     function tokens(str) {
         // Filter function excludes empty splitting artefacts
-        let toS = function(x) {
+        let toS = function (x) {
             return x.toString()
         }
 
         return str
             .split(/(\\\\)/)
             .filter(toS)
-            .reduce(function(a, s) {
+            .reduce(function (a, s) {
                 return a.concat(s.charAt(0) === "\\" ? s : s.split(/(\\*[{,}])/).filter(toS))
             }, [])
     }
@@ -295,13 +295,13 @@ function BraceExpander() {
 
         return lng
             ? 1 < lng
-                ? lstHead.reduce(function(a, h) {
-                      return a.concat(
-                          and(args.slice(1)).map(function(t) {
-                              return h + t
-                          })
-                      )
-                  }, [])
+                ? lstHead.reduce(function (a, h) {
+                    return a.concat(
+                        and(args.slice(1)).map(function (t) {
+                            return h + t
+                        })
+                    )
+                }, [])
                 : lstHead
             : []
     }
@@ -309,7 +309,7 @@ function BraceExpander() {
     // PARSE TREE OPERATOR (2 of 2)
     // Each option flattened
     function or(args) {
-        return args.reduce(function(a, b) {
+        return args.reduce(function (a, b) {
             return a.concat(b)
         }, [])
     }
@@ -322,7 +322,7 @@ function BraceExpander() {
     // One list split into several (sublist lengths [n])
     function splitsAt(lstN, lst) {
         return lstN.reduceRight(
-            function(a, x) {
+            function (a, x) {
                 return splitAt(x, a[0]).concat(a.slice(1))
             },
             [lst]
@@ -338,7 +338,7 @@ function BraceExpander() {
     function pp(e) {
         return JSON.stringify(
             e,
-            function(k, v) {
+            function (k, v) {
                 return typeof v === "function" ? "[function " + v.name + "]" : v
             },
             2
@@ -348,7 +348,7 @@ function BraceExpander() {
     // ----------------------- MAIN ------------------------
 
     // s -> [s]
-    this.expand = function(s) {
+    this.expand = function (s) {
         // BRACE EXPRESSION PARSED
         let dctParse = andTree(null, tokens(s))[0]
 
@@ -364,7 +364,7 @@ function BraceExpander() {
  * @Returns a promise that will resolve after the specified timeout.
  */
 function asyncDelay(timeout) {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
         setTimeout(resolve, timeout, true)
     })
 }
@@ -396,7 +396,7 @@ function debounce(func, wait, immediate) {
     }
     let timeout = null
     let lastPromiseSrc = new PromiseSource()
-    const applyFn = function(context, args) {
+    const applyFn = function (context, args) {
         let result = undefined
         try {
             result = func.apply(context, args)
@@ -409,13 +409,13 @@ function debounce(func, wait, immediate) {
             lastPromiseSrc.resolve(result)
         }
     }
-    return function(...args) {
+    return function (...args) {
         const callNow = Boolean(immediate && !timeout)
         const context = this
         if (timeout) {
             clearTimeout(timeout)
         }
-        timeout = setTimeout(function() {
+        timeout = setTimeout(function () {
             if (!immediate) {
                 applyFn(context, args)
             }
@@ -485,13 +485,13 @@ function makeQuerablePromise(promise) {
     let isResolved = false
     let resolvedValue = undefined
     const qurPro = promise.then(
-        function(val) {
+        function (val) {
             isResolved = true
             isPending = false
             resolvedValue = val
             return val
         },
-        function(reason) {
+        function (reason) {
             rejectReason = reason
             isRejected = true
             isPending = false
@@ -712,7 +712,7 @@ function createElement(tagName, attributes, classes, textOrElements) {
         })
     }
     if (classes) {
-        ;(Array.isArray(classes) ? classes : [classes]).forEach((className) => element.classList.add(className))
+        ; (Array.isArray(classes) ? classes : [classes]).forEach((className) => element.classList.add(className))
     }
     if (textOrElements) {
         const children = Array.isArray(textOrElements) ? textOrElements : [textOrElements]
@@ -732,10 +732,10 @@ function createElement(tagName, attributes, classes, textOrElements) {
  * @param {keyof Array} method
  * @param {(args) => {}} callback
  */
-Array.prototype.addEventListener = function(method, callback) {
+Array.prototype.addEventListener = function (method, callback) {
     const originalFunction = this[method]
     if (originalFunction) {
-        this[method] = function() {
+        this[method] = function () {
             originalFunction.apply(this, arguments)
             callback.apply(this, arguments)
         }
@@ -949,7 +949,7 @@ function confirm(msg, title, fn) {
         content: msg,
         buttons: {
             yes: fn,
-            cancel: () => {},
+            cancel: () => { },
         },
     })
 }
@@ -1030,7 +1030,7 @@ function insertAtCursor(field, text) {
         var after = field.value.substring(endPos, field.value.length)
 
         if (!before.endsWith(" ")) { before += " " }
-        if (!after.startsWith(" ")) { after = " "+after }
+        if (!after.startsWith(" ")) { after = " " + after }
 
         field.value = before + text + after
     } else {
@@ -1148,8 +1148,8 @@ function modalDialogCloseOnBackdropClick(dialog) {
             return
         }
         var rect = dialog.getBoundingClientRect()
-        var isInDialog=(rect.top <= event.clientY && event.clientY <= rect.top + rect.height
-          && rect.left <= event.clientX && event.clientX <= rect.left + rect.width)
+        var isInDialog = (rect.top <= event.clientY && event.clientY <= rect.top + rect.height
+            && rect.left <= event.clientX && event.clientX <= rect.left + rect.width)
         if (!isInDialog) {
             dialog.close()
         }
@@ -1157,13 +1157,13 @@ function modalDialogCloseOnBackdropClick(dialog) {
 }
 
 function makeDialogDraggable(element) {
-    element.querySelector(".dialog-header").addEventListener('mousedown', (function() {
-        let deltaX=0
-        let deltaY=0
-        let dragStartX=0
-        let dragStartY=0
-        let oldTop=0
-        let oldLeft=0
+    element.querySelector(".dialog-header").addEventListener('mousedown', (function () {
+        let deltaX = 0
+        let deltaY = 0
+        let dragStartX = 0
+        let dragStartY = 0
+        let oldTop = 0
+        let oldLeft = 0
 
         function dlgDragStart(e) {
             e = e || window.event;
@@ -1173,8 +1173,8 @@ function makeDialogDraggable(element) {
             dragStartY = e.clientY;
             oldTop = parseInt(d.style.top)
             oldLeft = parseInt(d.style.left)
-            if (isNaN(oldTop)) { oldTop=0 }
-            if (isNaN(oldLeft)) { oldLeft=0 }
+            if (isNaN(oldTop)) { oldTop = 0 }
+            if (isNaN(oldLeft)) { oldLeft = 0 }
             document.addEventListener('mouseup', dlgDragClose);
             document.addEventListener('mousemove', dlgDrag);
         }
@@ -1190,12 +1190,12 @@ function makeDialogDraggable(element) {
             e.preventDefault();
             deltaX = dragStartX - e.clientX;
             deltaY = dragStartY - e.clientY;
-            d.style.left = `${oldLeft-2*deltaX}px`
-            d.style.top  = `${oldTop-2*deltaY}px`
+            d.style.left = `${oldLeft - 2 * deltaX}px`
+            d.style.top = `${oldTop - 2 * deltaY}px`
         }
 
         return dlgDragStart
-    })() )
+    })())
 }
 
 function logMsg(msg, level, outputMsg) {
@@ -1226,7 +1226,7 @@ function playSound() {
     var promise = audio.play()
     if (promise !== undefined) {
         promise
-            .then((_) => {})
+            .then((_) => { })
             .catch((error) => {
                 console.warn("browser blocked autoplay")
             })

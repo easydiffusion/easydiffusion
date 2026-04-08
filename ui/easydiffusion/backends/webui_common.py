@@ -180,6 +180,7 @@ def generate_images(
     distilled_guidance_scale: float = 3.5,
     init_image=None,
     init_image_mask=None,
+    ref_images=None,
     control_image=None,
     control_alpha=1.0,
     controlnet_filter=None,
@@ -228,6 +229,8 @@ def generate_images(
         cmd["inpaint_full_res_padding"] = 32
         cmd["resize_mode"] = 1
         cmd["mask_blur"] = 4
+    if ref_images:
+        cmd["ref_images"] = ref_images if isinstance(ref_images, list) else [ref_images]
 
     if context.model_paths.get("lora"):
         lora_model = context.model_paths["lora"]
@@ -317,7 +320,8 @@ def filter_images(context: Context, images, filters, filter_params={}, input_typ
     if "nsfw_checker" in filters:
         filters.remove("nsfw_checker")  # handled by ED directly
 
-    args = {}
+    # Face filters also use the extras API, so start from a no-upscale payload.
+    args = {"upscaling_resize": 1, "upscaler_1": "None"}
     controlnet_filters = []
 
     print(filter_params)

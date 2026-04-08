@@ -38,9 +38,9 @@
                 Easy Diffusion
                 <small>
                     <span id="version">
-                        <span class="gated-feature" data-feature-keys="backend_ed_classic backend_ed_diffusers">v3.0.15</span>
-                        <span class="gated-feature" data-feature-keys="backend_webui">v3.5.13</span>
-                        <span class="gated-feature" data-feature-keys="backend_sdkit3">v4.0.0</span>
+                        <span class="gated-feature" data-feature-keys="backend_ed_classic backend_ed_diffusers">v3.0.16</span>
+                        <span class="gated-feature" data-feature-keys="backend_webui">v3.5.14</span>
+                        <span class="gated-feature" data-feature-keys="backend_sdkit3">v4.2.0</span>
                     </span> <span id="updateBranchLabel"></span>
                     <div id="engine-logo" class="gated-feature" data-feature-keys="backend_webui">(Powered by <a id="backend-url" href="https://github.com/lllyasviel/stable-diffusion-webui-forge" target="_blank">Stable Diffusion WebUI Forge</a>)</div>
                 </small>
@@ -108,13 +108,13 @@
                         You may also reload the metadata embedded in a PNG, WEBP or JPEG image (enable embedding from the Settings).
                     </span></i>
 
-                    <div id="init_image_preview_container" class="image_preview_container">
-                        <div id="init_image_wrapper" class="preview_image_wrapper">
-                            <img id="init_image_preview" class="image_preview" src="" crossorigin="anonymous" />
+                    <div id="init_image_preview_container" class="image-input-section image-input-section--single">
+                        <div id="init_image_wrapper" class="image-input-wrapper">
+                            <img id="init_image_preview" class="input-image-preview" src="" crossorigin="anonymous" />
                             <span id="init_image_size_box" class="img_bottom_label"></span>
                             <button class="init_image_clear image_clear_btn"><i class="fa-solid fa-xmark"></i></button>
                         </div>
-                        <div id="init_image_buttons">
+                        <div id="init_image_buttons" class="image-input-buttons">
                             <div class="button">
                                 <i class="fa-regular fa-folder-open"></i>
                                 Browse
@@ -137,6 +137,27 @@
                     <div id="apply_color_correction_setting" class="pl-5"><input id="apply_color_correction" name="apply_color_correction" type="checkbox"> <label for="apply_color_correction">Preserve color profile <small>(helps during inpainting)</small></label></div>
                     <div id="strict_mask_border_setting" class="pl-5"><input id="strict_mask_border" name="strict_mask_border" type="checkbox"> <label for="strict_mask_border">Strict Mask Border <small>(won't modify outside the mask, but the mask border might be visible)</small></label></div>
 
+                </div>
+
+                <div id="editor-inputs-ref-images" class="row gated-feature" data-feature-keys="backend_sdkit3">
+                    <label>Reference Images <small>(optional)</small></label>
+                    <i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top">
+                        Add reference images for vision-based models (e.g. Qwen image editing). You can add one or more
+                        reference images using the Browse button or by drag &amp; drop.<br /><br />
+                        Reference images guide the model's visual understanding during generation.
+                    </span></i>
+
+                    <div id="ref_images_preview_container" class="image-input-section image-input-section--multi">
+                        <div id="ref_images_list" class="image-input-list"></div>
+                        <div id="ref_images_buttons" class="image-input-buttons">
+                            <div class="button">
+                                <i class="fa-regular fa-folder-open"></i>
+                                Browse
+                                <input id="ref_image_input" name="ref_image_input" type="file" accept="image/*" multiple />
+                            </div>
+                            <button id="ref_images_clear_all" class="tertiaryButton smallButton displayNone">Clear All</button>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="editor-inputs-tags-container" class="row">
@@ -454,9 +475,9 @@
                     </td></tr>
                     <tr class="pl-5"><td><label for="num_inference_steps">Inference Steps:</label></td><td> <input id="num_inference_steps" name="num_inference_steps" type="number" min="1" step="1" style="width: 42pt" value="25" onkeypress="preventNonNumericalInput(event)" inputmode="numeric"></td></tr>
                     <tr class="pl-5 warning-label displayNone" id="fluxSchedulerStepsWarning"><td>Tip:</td><td>This scheduler needs 15 steps or more</td></tr>
-                    <tr class="pl-5"><td><label for="guidance_scale_slider">Guidance Scale:</label></td><td> <input id="guidance_scale_slider" name="guidance_scale_slider" class="editor-slider" value="75" type="range" min="11" max="500"> <input id="guidance_scale" name="guidance_scale" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" inputmode="decimal"></td></tr>
+                    <tr class="pl-5"><td><label for="guidance_scale_slider">Guidance Scale <small>(<abbr title="Also known as CFG Scale (Classifier-Free Guidance). Controls the influence of your prompt during generation.">?</abbr>)</small>:</label></td><td> <input id="guidance_scale_slider" name="guidance_scale_slider" class="editor-slider" value="75" type="range" min="11" max="500"> <input id="guidance_scale" name="guidance_scale" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" inputmode="decimal"></td></tr>
                     <tr class="pl-5 displayNone warning-label" id="guidanceWarning"><td></td><td id="guidanceWarningText"></td></tr>
-                    <tr id="prompt_strength_container" class="pl-5"><td><label for="prompt_strength_slider">Prompt Strength:</label></td><td> <input id="prompt_strength_slider" name="prompt_strength_slider" class="editor-slider" value="80" type="range" min="0" max="99"> <input id="prompt_strength" name="prompt_strength" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" inputmode="decimal"><br/></td></tr>
+                    <tr id="prompt_strength_container" class="pl-5"><td><label for="prompt_strength_slider">Prompt Strength <small>(<abbr title="Also known as Denoising Strength. Controls the importance of your prompt (vs the initial image) during generation.">?</abbr>)</small>:</label></td><td> <input id="prompt_strength_slider" name="prompt_strength_slider" class="editor-slider" value="80" type="range" min="0" max="99"> <input id="prompt_strength" name="prompt_strength" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" inputmode="decimal"><br/></td></tr>
                     <tr id="distilled_guidance_scale_container" class="pl-5 gated-feature" data-feature-keys="backend_webui backend_sdkit3"><td><label for="distilled_guidance_scale_slider">Distilled Guidance:</label></td><td> <input id="distilled_guidance_scale_slider" name="distilled_guidance_scale_slider" class="editor-slider" value="35" type="range" min="11" max="500"> <input id="distilled_guidance_scale" name="distilled_guidance_scale" size="4" pattern="^[0-9\.]+$" onkeypress="preventNonNumericalInput(event)" inputmode="decimal"></td></tr>
                     <tr id="lora_model_container" class="pl-5 gated-feature" data-feature-keys="backend_ed_diffusers backend_webui backend_sdkit3">
                         <td>
