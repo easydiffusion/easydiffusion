@@ -106,8 +106,8 @@ def init():
                         image = i
                         break
             return FileResponse(image.path)
-        except Exception as e:
-            print(f"Image not found, attempted path: {seed}")
+        except Exception as err:
+            print(f"Image not found, attempted path: {seed}", "error", err)
             raise HTTPException(status_code=404, detail="Image not found")
     
     @server_api.delete("/image/{seed}/{time_created}")

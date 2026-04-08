@@ -1,7 +1,6 @@
 import os
 import re
 import time
-import regex
 
 from datetime import datetime
 from functools import reduce
@@ -17,7 +16,6 @@ from easydiffusion.types import (
 )
 from numpy import base_repr
 from sdkit.utils import save_dicts, save_images
-from sdkit.models.model_loader.embeddings import get_embedding_token
 
 filename_regex = re.compile("[^a-zA-Z0-9._-]")
 img_number_regex = re.compile("([0-9]{5,})")
@@ -127,6 +125,19 @@ def format_file_name(
     return filename_regex.sub("_", format)
 
 
+def createLoraString(metadata_entries, i):
+    key = "LoRA model" if "LoRA model" in metadata_entries[i] else "use_lora_model"
+    keystrength = "LoRA Strength" if "LoRA Strength" in metadata_entries[i] else "lora_alpha"
+    if metadata_entries[i][key] is None:
+        return "None"
+    elif isinstance(metadata_entries[i][key], list):
+        loraString = ""
+        for j in range(len(metadata_entries[i][key])):
+            loraString += metadata_entries[i][key][j] + ":" + str(metadata_entries[i][keystrength][j]) + " "
+        return loraString.strip()
+    else:
+        return metadata_entries[i][key] + ":" + str(metadata_entries[i][keystrength])
+
 def save_images_to_disk(
     images: list,
     filtered_images: list,
@@ -163,19 +174,6 @@ def save_images_to_disk(
         for i in range(len(filtered_images)):
             path_i = f"{os.path.join(save_dir_path, make_filename(i))}.{output_format.output_format.lower()}"
 
-            def createLoraString(metadata_entries, i):
-                key = "LoRA model" if "LoRA model" in metadata_entries[i] else "use_lora_model"
-                keystrength = "LoRA Strength" if "LoRA Strength" in metadata_entries[i] else "lora_alpha"
-                if metadata_entries[i][key] is None:
-                    return "None"
-                elif isinstance(metadata_entries[i][key], list):
-                    loraString = ""
-                    for j in range(len(metadata_entries[i][key])):
-                        loraString += metadata_entries[i][key][j] + ":" + str(metadata_entries[i][keystrength][j]) + " "
-                    return loraString.strip()
-                else:
-                    return metadata_entries[i][key] + ":" + str(metadata_entries[i][keystrength])
-
             from easydiffusion.easydb.mappings import GalleryImage
             from easydiffusion.easydb.database import SessionLocal
 
@@ -208,10 +206,7 @@ def save_images_to_disk(
                         session.commit()
                         session.close()
                 except Exception as exception:
-                    print(exception)
-                    print("Error saving images to gallery")
-                    print(f"Index: {i}")
-                    print(metadata_entries)
+                    print("Error saving images to gallery", f"index: {i}", "task data: ", task_data, "metadata entries: ", metadata_entries, "exception: ", exception)
         
         if save_data.metadata_output_format:
             for metadata_output_format in save_data.metadata_output_format.split(","):
