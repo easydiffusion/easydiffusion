@@ -182,7 +182,6 @@ def save_images_to_disk(
             if task_data.use_gallery != None:
                 try:
                     if i < len(metadata_entries):
-                        print(task_data)
                         session = SessionLocal()
                         session.add(GalleryImage(
                             path = path_i,
@@ -202,7 +201,9 @@ def save_images_to_disk(
                             use_upscale = metadata_entries[i]["Use Upscaling"] if "Use Upscaling" in metadata_entries[i] else metadata_entries[i]["use_upscale"],
                             prompt = metadata_entries[i]["Prompt"] if "Prompt" in metadata_entries[i] else metadata_entries[i]["prompt"],
                             negative_prompt = metadata_entries[i]["Negative Prompt"] if "Negative Prompt" in metadata_entries[i] else metadata_entries[i]["negative_prompt"],
-                            workspace = task_data.use_gallery
+                            workspace = task_data.use_gallery,
+                            scheduler_name = metadata_entries[i]["Scheduler"] if "Scheduler" in metadata_entries[i] else metadata_entries[i]["scheduler_name"],
+                            use_text_encoder_model = task_data.use_text_encoder_model
                         ))
                         session.commit()
                         session.close()

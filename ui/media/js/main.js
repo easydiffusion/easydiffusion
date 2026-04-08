@@ -3668,6 +3668,8 @@ const IMAGE_INFO = {
     "Upscaler": "use_upscale",
     "Face Correction": "use_face_correction",
     "Clip Skip": "clip_skip",
+    "Scheduler": "scheduler_name",
+    "Text Encoder": "use_text_encoder_model",
 }
 
 const IGNORE_TOKENS = ["None", "none", "Null", "null", "false", "False", null]
