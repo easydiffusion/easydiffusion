@@ -1,5 +1,5 @@
 #!/bin/env bash
-#setup legacy enviroment
+#setup enviroment
 if [ -e "installer_files/env" ]; then
 	export ENVFOLDER="$(pwd)/installer_files/env"
 	export PATH="${ENVFOLDER}/bin:$PATH"; 
