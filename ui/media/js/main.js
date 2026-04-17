@@ -1418,6 +1418,23 @@ function getCurrentUserRequest() {
         let modelNames = loraModelData["modelNames"]
         let modelStrengths = loraModelData["modelWeights"]
 
+        // Deduplicate LoRA models, keeping the first occurrence's weight
+        let seenNames = new Set()
+        let uniqueNames = []
+        let uniqueStrengths = []
+        for (let i = 0; i < modelNames.length; i++) {
+            if (!seenNames.has(modelNames[i])) {
+                seenNames.add(modelNames[i])
+                uniqueNames.push(modelNames[i])
+                uniqueStrengths.push(modelStrengths[i])
+            }
+        }
+        if (uniqueNames.length < modelNames.length) {
+            console.log("Duplicate LoRA models were removed. Each LoRA can only be used once.")
+        }
+        modelNames = uniqueNames
+        modelStrengths = uniqueStrengths
+
         if (modelNames.length > 0) {
             modelNames = modelNames.length == 1 ? modelNames[0] : modelNames
             modelStrengths = modelStrengths.length == 1 ? modelStrengths[0] : modelStrengths
