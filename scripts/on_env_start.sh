@@ -13,7 +13,8 @@ fi
 if [ -f "scripts/user_config.sh" ]; then
     source scripts/user_config.sh
 fi
-#setup legacy enviroment
+
+# setup enviroment
 if [ -e "installer_files/env" ]; then
 	export ENVFOLDER="$(pwd)/installer_files/env"
 	export PATH="${ENVFOLDER}/bin:$PATH"; 
@@ -23,6 +24,8 @@ if [ -e "installer_files/env" ]; then
 		export PYTHONPATH="${ENVFOLDER}/lib/python${PATHONVERSION}/site-packages"
 	fi
 fi
+
+# setup legacy environment
 if [ -e "stable-diffusion/env" ]; then
 	export PYTHONPATH="$(pwd)/stable-diffusion/env/lib/python3.8/site-packages"
 fi
