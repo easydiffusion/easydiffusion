@@ -11,7 +11,7 @@
     - Automatically sets the size of the output image to the size of the image used for img2img if its dimensions are both valid options (works with both copy/paste and drag & drop).
     - makes the brushes more visible in the image/inpainting editor.
 */
-(function() {
+(function () {
     "use strict"
 
     let imageBrushPreview
@@ -81,7 +81,7 @@
     let canvas = document.createElement('canvas')
     let context = canvas.getContext('2d')
 
-    imageObj.onload = function() {
+    imageObj.onload = function () {
         // Calculate the maximum cropped dimensions
         const step = customWidthField.step
 
@@ -110,15 +110,15 @@
 
         initImagePreview.src = canvas.toDataURL('image/png');
     };
-    
-	function handlePaste(e) {
-	    for (let i = 0 ; i < e.clipboardData.items.length ; i++) {
-	        const item = e.clipboardData.items[i]
-	        if (item.type.indexOf("image") != -1) {
+
+    function handlePaste(e) {
+        for (let i = 0; i < e.clipboardData.items.length; i++) {
+            const item = e.clipboardData.items[i]
+            if (item.type.indexOf("image") != -1) {
                 imageObj.src = URL.createObjectURL(item.getAsFile())
-	        }
-	    }
-	}
+            }
+        }
+    }
     document.addEventListener('paste', handlePaste)
 
     // replace the default file open listener
@@ -131,7 +131,7 @@
         let reader = new FileReader()
         let file = initImageSelector.files[0]
 
-        reader.addEventListener('load', function(event) {
+        reader.addEventListener('load', function (event) {
             imageObj.src = reader.result
         })
 
@@ -143,46 +143,46 @@
 
 
     /* ADD SUPPORT FOR DRAG-AND-DROPPING SOURCE IMAGE (from file or straight from UI) */
-    
+
     /* DROP AREAS */
 
     function createDropAreas(container) {
         // Create two drop areas
-        const dropAreaI2I = createElement("div", {id: "drop-area-I2I"}, ["drop-area"], "Use as Image2Image source")
+        const dropAreaI2I = createElement("div", { id: "drop-area-I2I" }, ["drop-area"], "Use as Image2Image source")
         container.appendChild(dropAreaI2I)
-        
-        const dropAreaMD = createElement("div", {id: "drop-area-MD"}, ["drop-area"], "Extract embedded metadata")
+
+        const dropAreaMD = createElement("div", { id: "drop-area-MD" }, ["drop-area"], "Extract embedded metadata")
         container.appendChild(dropAreaMD)
-        
-        const dropAreaCN = createElement("div", {id: "drop-area-CN"}, ["drop-area"], "Use as Controlnet image")
+
+        const dropAreaCN = createElement("div", { id: "drop-area-CN" }, ["drop-area"], "Use as Controlnet image")
         container.appendChild(dropAreaCN)
-        
+
         // Add event listeners to drop areas
-        dropAreaCN.addEventListener("dragenter", function(event) {
+        dropAreaCN.addEventListener("dragenter", function (event) {
             event.preventDefault()
             dropAreaCN.style.backgroundColor = 'darkGreen'
         })
-        dropAreaCN.addEventListener("dragleave", function(event) {
+        dropAreaCN.addEventListener("dragleave", function (event) {
             event.preventDefault()
             dropAreaCN.style.backgroundColor = ''
         })
-        dropAreaCN.addEventListener("drop", function(event) {
+        dropAreaCN.addEventListener("drop", function (event) {
             event.stopPropagation()
             event.preventDefault()
             hideDropAreas()
 
-            getImageFromDropEvent(event, e => controlImagePreview.src=e)
+            getImageFromDropEvent(event, e => controlImagePreview.src = e)
         })
 
-        dropAreaI2I.addEventListener("dragenter", function(event) {
+        dropAreaI2I.addEventListener("dragenter", function (event) {
             event.preventDefault()
             dropAreaI2I.style.backgroundColor = 'darkGreen'
         })
-        dropAreaI2I.addEventListener("dragleave", function(event) {
+        dropAreaI2I.addEventListener("dragleave", function (event) {
             event.preventDefault()
             dropAreaI2I.style.backgroundColor = ''
         })
-       
+
         function getImageFromDropEvent(event, callback) {
             // Find the first image file, uri, or moz-url in the items list
             let imageItem = null
@@ -193,7 +193,7 @@
                     break;
                 }
             }
-            
+
             if (!imageItem) {
                 // If no file matches, try to find a text/uri-list item
                 for (let i = 0; i < event.dataTransfer.items.length; i++) {
@@ -204,7 +204,7 @@
                     }
                 }
             }
-            
+
             if (!imageItem) {
                 // If there are no image files or uris, fallback to moz-url
                 for (let i = 0; i < event.dataTransfer.items.length; i++) {
@@ -215,15 +215,15 @@
                     }
                 }
             }
-        
+
             if (imageItem) {
                 if (imageItem.kind === 'file') {
                     // If the item is an image file, handle it as before
                     let file = imageItem.getAsFile();
-        
+
                     // Create a FileReader object to read the dropped file as a data URL
                     let reader = new FileReader();
-                    reader.onload = function(e) {
+                    reader.onload = function (e) {
                         callback(e.target.result)
                     };
                     reader.readAsDataURL(file);
@@ -234,24 +234,24 @@
             }
         }
 
-        dropAreaI2I.addEventListener("drop", function(event) {
+        dropAreaI2I.addEventListener("drop", function (event) {
             event.stopPropagation()
             event.preventDefault()
             hideDropAreas()
-            
-            getImageFromDropEvent(event, e => imageObj.src=e)
+
+            getImageFromDropEvent(event, e => imageObj.src = e)
         })
-        
-        dropAreaMD.addEventListener("dragenter", function(event) {
+
+        dropAreaMD.addEventListener("dragenter", function (event) {
             event.preventDefault()
             dropAreaMD.style.backgroundColor = 'darkGreen'
         })
-        dropAreaMD.addEventListener("dragleave", function(event) {
+        dropAreaMD.addEventListener("dragleave", function (event) {
             event.preventDefault()
             dropAreaMD.style.backgroundColor = ''
         })
-        
-        dropAreaMD.addEventListener("drop", function(event) {
+
+        dropAreaMD.addEventListener("drop", function (event) {
             let items = []
             hideDropAreas()
             if (event?.dataTransfer?.items) { // Use DataTransferItemList interface
@@ -271,13 +271,13 @@
             }
             event.preventDefault()
         })
-        
-        document.addEventListener("drop", function(event) {
+
+        document.addEventListener("drop", function (event) {
             event.preventDefault()
             hideDropAreas()
         })
-        
-        document.addEventListener("dragexit", function(event) {
+
+        document.addEventListener("dragexit", function (event) {
             event.preventDefault()
             hideDropAreas()
         })
@@ -299,12 +299,12 @@
                 }
             }
         }
-    
+
         if (imageItem) {
             showDropAreas()
         }
     }
-    
+
     function hideDropAreasDnD(event) {
         if (event.fromElement && !document.querySelector('#editor').contains(event.fromElement) && !document.querySelector('#editor').contains(event.fromElement.parentNode.host)) {
             hideDropAreas()
@@ -313,14 +313,14 @@
 
     function showDropAreas() {
         const dropAreas = document.querySelectorAll(".drop-area")
-        dropAreas.forEach(function(dropArea) {
+        dropAreas.forEach(function (dropArea) {
             dropArea.style.display = 'inline-block'
         })
     }
-    
+
     function hideDropAreas() {
         const dropAreas = document.querySelectorAll(".drop-area")
-        dropAreas.forEach(function(dropArea) {
+        dropAreas.forEach(function (dropArea) {
             dropArea.style.display = 'none'
             dropArea.style.backgroundColor = ''
         })
@@ -352,12 +352,12 @@
     }
 
     /* PNG METADATA EXTRACTION */
-    
+
     function readPNGMetadata(image) {
         const fileReader = new FileReader()
         fileReader.onload = function () {
             extractTextChunks(image).then(function (chunks) {
-                let reqBody =  {}
+                let reqBody = {}
                 for (let key in chunks) {
                     reqBody[key] = chunks[key]
                 }
@@ -370,8 +370,9 @@
                     }
                 }
             }).catch(function (error) {
-            console.error(error);
-        })}
+                console.error(error);
+            })
+        }
         fileReader.readAsArrayBuffer(image);
     }
 
@@ -381,7 +382,7 @@
             reader.onload = function () {
                 let arrayBuffer = reader.result;
                 let dataView = new DataView(arrayBuffer);
-                
+
                 // Verify that the PNG signature is present
                 let signature = new Uint8Array(arrayBuffer, 0, 8);
                 if (String.fromCharCode.apply(null, signature) !== "\x89PNG\r\n\x1a\n") {
@@ -430,7 +431,7 @@
                     try {
                         const isUnicode = (exifData.toLowerCase().startsWith('unicode'))
                         let keys = JSON.parse(isUnicode ? decodeUnicode(exifData.slice(8)) : exifData.slice(8))
-                        let reqBody =  {}
+                        let reqBody = {}
                         for (let key in keys) {
                             reqBody[key] = keys[key]
                         }
@@ -443,7 +444,7 @@
                     }
                 }
             })
-                                                         
+
         }
         fileReader.readAsDataURL(image);
     }
@@ -453,10 +454,10 @@
         const input = new Uint16Array(encoder.encode(unicodeString))
 
         let decodedString = ''
-        for (let i = 0; i < input.length; i+=2) {
-            decodedString += String.fromCharCode(input[i] << 8 | input[i+1])
+        for (let i = 0; i < input.length; i += 2) {
+            decodedString += String.fromCharCode(input[i] << 8 | input[i + 1])
         }
-        
+
         return decodedString
     }
 })()

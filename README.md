@@ -3,7 +3,7 @@
 
 Does not require technical knowledge, does not require pre-installed software. 1-click install, powerful features, friendly community.
 
-️‍🔥🎉 **New!** Support for Flux has been added in the beta branch (v3.5 engine)!
+️‍🔥🎉 **New!** Support for Z-Image, Flux 1 and 2, and quantized models have been added to v3.5 and v4 engines!
 
 [Installation guide](#installation) | [Troubleshooting guide](https://github.com/easydiffusion/easydiffusion/wiki/Troubleshooting) | [User guide](https://github.com/easydiffusion/easydiffusion/wiki) | <sub>[![Discord Server](https://img.shields.io/discord/1014774730907209781?label=Discord)](https://discord.com/invite/u9yhsFmEkB)</sub> <sup>(for support queries, and development discussions)</sup>
 
@@ -15,9 +15,9 @@ Does not require technical knowledge, does not require pre-installed software. 1
 Click the download button for your operating system:
 
 <p float="left">
-  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/latest/download/Easy-Diffusion-Linux.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-linux.png" width="200" /></a>
-  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/latest/download/Easy-Diffusion-Mac.zip"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-mac.png" width="200" /></a>
-  <a href="https://github.com/cmdr2/stable-diffusion-ui/releases/latest/download/Easy-Diffusion-Windows.exe"><img src="https://github.com/cmdr2/stable-diffusion-ui/raw/main/media/download-win.png" width="200" /></a>
+  <a href="https://github.com/easydiffusion/easydiffusion/releases/latest/download/Easy-Diffusion-Linux.zip"><img src="https://github.com/easydiffusion/easydiffusion/raw/main/media/download-linux.png" width="200" /></a>
+  <a href="https://github.com/easydiffusion/easydiffusion/releases/latest/download/Easy-Diffusion-Mac.zip"><img src="https://github.com/easydiffusion/easydiffusion/raw/main/media/download-mac.png" width="200" /></a>
+  <a href="https://github.com/easydiffusion/easydiffusion/releases/latest/download/Easy-Diffusion-Windows.exe"><img src="https://github.com/easydiffusion/easydiffusion/raw/main/media/download-win.png" width="200" /></a>
 </p>
 
 **Hardware requirements:**
@@ -133,7 +133,7 @@ If you have any code contributions in mind, please feel free to say Hi to us on 
 * GFPGAN: https://github.com/TencentARC/GFPGAN
 * RealESRGAN: https://github.com/xinntao/Real-ESRGAN
 * k-diffusion: https://github.com/crowsonkb/k-diffusion
-* Code contributors and artists on the cmdr2 UI: https://github.com/cmdr2/stable-diffusion-ui and Discord (https://discord.com/invite/u9yhsFmEkB)
+* Code contributors and artists on Easy Diffusion's repo: https://github.com/easydiffusion/easydiffusion and Discord (https://discord.com/invite/u9yhsFmEkB)
 * Lots of contributors on the internet
 
 # Disclaimer

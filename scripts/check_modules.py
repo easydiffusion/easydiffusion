@@ -31,7 +31,7 @@ modules_to_check = {
     "ruamel.yaml": "0.17.21",
     "sqlalchemy": "2.0.19",
     "python-multipart": "0.0.6",
-    # "xformers": "0.0.16",
+    "onnxruntime": "1.19.2",
     "huggingface-hub": "0.21.4",
     "wandb": "0.17.2",
     # "torchruntime": "1.16.2",
@@ -159,10 +159,10 @@ def update_modules():
     #  if sdkit is 2.0.15.x (or lower), then diffusers should be restricted to 0.21.4 (see below for the reason)
     #  otherwise use the current sdkit version (with the corresponding diffusers version)
 
-    expected_sdkit_version_str = "2.0.22.8"
+    expected_sdkit_version_str = "2.1.0"
     expected_diffusers_version_str = "0.28.2"
 
-    legacy_sdkit_version_str = "2.0.15.17"
+    legacy_sdkit_version_str = "2.0.15.18"
     legacy_diffusers_version_str = "0.21.4"
 
     sdkit_version_str = version("sdkit")
@@ -289,7 +289,7 @@ Thanks!"""
 
 def get_config():
     config_directory = os.path.dirname(__file__)  # this will be "scripts"
-    config_yaml = os.path.join(config_directory, "..", "config.yaml")
+    config_yaml = os.path.abspath(os.path.join(config_directory, "..", "config.yaml"))
     config_json = os.path.join(config_directory, "config.json")
 
     config = None

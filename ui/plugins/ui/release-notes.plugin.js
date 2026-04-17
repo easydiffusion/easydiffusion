@@ -1,8 +1,8 @@
-;(function() {
+; (function () {
     // Register selftests when loaded by jasmine.
     if (typeof PLUGINS?.SELFTEST === "object") {
-        PLUGINS.SELFTEST["release-notes"] = function() {
-            it("should be able to fetch CHANGES.md", async function() {
+        PLUGINS.SELFTEST["release-notes"] = function () {
+            it("should be able to fetch CHANGES.md", async function () {
                 let releaseNotes = await fetch(
                     `https://raw.githubusercontent.com/easydiffusion/easydiffusion/main/CHANGES.md`
                 )

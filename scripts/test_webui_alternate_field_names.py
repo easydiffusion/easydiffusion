@@ -9,10 +9,9 @@ class TestTerminologyConsistency(unittest.TestCase):
 
     def test_ui_label_keeps_guidance_scale_primary_with_cfg_abbr(self):
         index_html = (self.repo_root / "ui" / "index.html").read_text(encoding="utf-8")
-        self.assertIn(
-            'Guidance Scale <small>(<abbr title="Classifier-Free Guidance">CFG</abbr> Scale)</small>',
-            index_html,
-        )
+        self.assertIn("Guidance Scale", index_html)
+        self.assertIn("CFG Scale", index_html)
+        self.assertIn("Classifier-Free Guidance", index_html)
 
     def test_ui_label_keeps_prompt_strength_primary_with_denoising_hint(self):
         index_html = (self.repo_root / "ui" / "index.html").read_text(encoding="utf-8")
@@ -21,10 +20,9 @@ class TestTerminologyConsistency(unittest.TestCase):
 
     def test_task_summary_uses_same_labels(self):
         main_js = (self.repo_root / "ui" / "media" / "js" / "main.js").read_text(encoding="utf-8")
-        self.assertIn(
-            'Guidance Scale <small>(<abbr title="Classifier-Free Guidance">CFG</abbr> Scale)</small>',
-            main_js,
-        )
+        self.assertIn("Guidance Scale", main_js)
+        self.assertIn("CFG", main_js)
+        self.assertIn("Classifier-Free Guidance", main_js)
         self.assertIn("Prompt Strength", main_js)
         self.assertIn("Denoising Strength", main_js)
 

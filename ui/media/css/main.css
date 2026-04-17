@@ -40,6 +40,15 @@ code {
     transform: translateY(4px);
     cursor: pointer;
 }
+#engine-logo {
+    font-size: 8pt;
+    padding-left: 10pt;
+    color: var(--small-label-color);
+}
+#engine-logo a {
+    text-decoration: none;
+    /* color: var(--small-label-color); */
+}
 #prompt {
     width: 100%;
     height: 65pt;
@@ -545,7 +554,7 @@ div.img-preview img {
     position: relative;
     background: var(--background-color4);
     display: flex;
-    padding: 12px 0 0;
+    padding: 6px 0 0;
 }
 .tab .icon {
     padding-right: 4pt;
@@ -659,6 +668,15 @@ div.img-preview img {
 }
 .dropdown-content:hover {
     display: block;
+}
+
+.gated-feature {
+    display: none;
+}
+
+.warning-label {
+    font-size: smaller;
+    color: var(--status-orange);
 }
 
 .display-settings {
@@ -801,35 +819,42 @@ div.img-preview img {
     display: none;
 }
 
-#init_image_preview_container {
+/* Shared image input section */
+.image-input-section {
     display: flex;
     margin-top: 6px;
     margin-bottom: 8px;
 }
 
-#init_image_preview_container:not(.has-image) .preview_image_wrapper,
-#init_image_preview_container:not(.has-image) #inpaint_button_container  {
+.image-input-section--single:not(.has-image) .image-input-wrapper,
+.image-input-section--single:not(.has-image) #inpaint_button_container {
     display: none;
 }
 
-
-#init_image_buttons {
+.image-input-buttons {
     display: flex;
     gap: 8px;
 }
 
-#init_image_preview_container.has-image #init_image_buttons {
+.image-input-section--single.has-image .image-input-buttons {
     flex-direction: column;
     padding-left: 8px;
 }
 
-#init_image_buttons .button {
+.image-input-buttons .button {
     position: relative;
-    height: 32px;
+    display: flex;
+    height: 24px;
     width: 150px;
+    padding: 6px;
+    box-shadow: 2px 2px 1px 1px #00000088;
 }
 
-#init_image_buttons .button > input {
+.image-input-buttons .button:hover {
+    background: var(--background-color4);
+}
+
+.image-input-buttons .button > input {
     position: absolute;
     left: 0;
     top: 0;
@@ -844,18 +869,42 @@ div.img-preview img {
     gap: 8px;
 }
 
-.preview_image_wrapper {
-    grid-row: span 3;
+/* Shared image input wrapper */
+.image-input-wrapper {
     position: relative;
     width: fit-content;
+}
+
+.image-input-section--single .image-input-wrapper {
+    grid-row: span 3;
     max-height: 150px;
 }
 
+/* Preview image base */
+.input-image-preview {
+    object-fit: contain;
+    border-radius: 6px;
+}
+
+.image-input-section--single .input-image-preview {
+    max-height: 150px;
+    height: 100%;
+    width: 100%;
+    transition: all 1s ease-in-out;
+}
+
+/* Backward-compat aliases for existing code not yet migrated (e.g. ControlNet image) */
+.preview_image_wrapper {
+    position: relative;
+    width: fit-content;
+    grid-row: span 3;
+    max-height: 150px;
+}
 .image_preview {
     max-height: 150px;
     height: 100%;
     width: 100%;
-	object-fit: contain;
+    object-fit: contain;
     border-radius: 6px;
     transition: all 1s ease-in-out;
 }
@@ -870,6 +919,65 @@ div.img-preview img {
 #init_image_size_box {
     border-radius: 6px 0px;
 }
+
+/* Multi-image input section */
+.image-input-section--multi {
+    flex-direction: column;
+}
+
+.image-input-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.image-input-list:empty {
+    display: none;
+}
+
+.image-input-section--multi .image-input-buttons {
+    align-items: center;
+}
+
+/* Smaller thumbnails for multi-image sections */
+.image-input-section--multi .input-image-preview {
+    max-height: 80px;
+    max-width: 120px;
+    height: auto;
+    width: auto;
+    display: block;
+}
+
+/* Clear button override for multi-image sections */
+.image-input-section--multi .image_clear_btn {
+    transform: translate(40%, -40%);
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+}
+
+.image-input-section--multi .image_clear_btn:hover {
+    background: rgba(200, 50, 50, 0.8);
+}
+
+/* Index label for multi-image thumbnails */
+.image-input-index {
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    padding: 2px 4px;
+    background: black;
+    color: white;
+    text-shadow: 0px 0px 4px black;
+    opacity: 60%;
+    font-size: 11px;
+    border-radius: 0px 6px 0px 0px;
+}
+
 .img_bottom_label {
     position: absolute;
     right: 0px;
@@ -1461,11 +1569,6 @@ div.top-right {
 
 .task-fs-initimage .top-right button {
     margin-top: 6px;
-}
-
-#small_image_warning {
-    font-size: smaller;
-    color: var(--status-orange);
 }
 
 button#save-system-settings-btn {

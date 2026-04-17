@@ -3,8 +3,6 @@ import os
 import platform
 from importlib.metadata import version as pkg_version
 
-from sdkit.utils import log
-
 from easydiffusion import app
 
 # was meant to be a rewrite of scripts/check_modules.py
@@ -51,6 +49,8 @@ def is_installed(module_name) -> bool:
 
 
 def install(module_name):
+    from easydiffusion.utils import log
+
     if is_installed(module_name):
         log.info(f"{module_name} has already been installed!")
         return
@@ -80,6 +80,8 @@ def install(module_name):
 
 
 def uninstall(module_name):
+    from easydiffusion.utils import log
+
     if not is_installed(module_name):
         log.info(f"{module_name} hasn't been installed!")
         return
