@@ -1384,7 +1384,7 @@ function getCurrentUserRequest() {
             }
         }
         if (uniqueNames.length < modelNames.length) {
-            showToast("Duplicate LoRA models were removed. Each LoRA can only be used once.", 5000, true)
+            console.log("Duplicate LoRA models were removed. Each LoRA can only be used once.")
         }
         modelNames = uniqueNames
         modelStrengths = uniqueStrengths
