@@ -2,7 +2,6 @@
 Tests for the v1 API endpoints.
 """
 
-import time
 import pytest
 from fastapi.testclient import TestClient
 from pathlib import Path
@@ -46,7 +45,6 @@ def client(config_manager, dummy_backend_registry):
     config_manager.save(config)
     config_manager.load()
     backend_class.reset_mock_state()
-    backend_class.progress_interval_seconds = 0.0
 
     server_api.state.config_manager = config_manager
     server_api.state.workers = workers
@@ -644,45 +642,63 @@ class TestTasksEndpoints:
         assert "progress" in data
         assert "outputs" in data
 
-    def test_get_task_detail_progress_updates_while_running(self, client, monkeypatch):
-        """Test task detail shows intermediate progress while the backend advances through steps."""
+    def test_get_task_detail_progress_updates_while_running(self, client):
+        """Test task detail surfaces unique in-progress values and outputs while a task is running."""
 
-        TestBackend.progress_interval_seconds = 0.05
-        TestBackend.progress_steps = 5
-        monkeypatch.setattr(Task, "PROGRESS_UPDATE_INTERVAL", 0.01)
+        observed_progresses = []
+        observed_payloads = []
+        callback_errors = []
+        task_id = None
+
+        def capture_progress_update():
+            try:
+                task = next(iter(server_api.state.task_cache.values()))
+                backend = TestBackend.instances[0]
+                task._refresh_progress(backend)  # hack: ensure progress is updated before fetching details
+
+                detail_response = client.get(f"/v1/tasks/{task_id}")
+                output_response = client.get(f"/v1/tasks/{task_id}/outputs/0")
+
+                if detail_response.status_code != 200:
+                    return
+
+                observed_progresses.append(detail_response.json()["progress"])
+                observed_payloads.append(output_response.content)
+            except Exception as error:
+                callback_errors.append(error)
+
+        TestBackend.GENERATE_STEP_CALLBACK = capture_progress_update
 
         create_response = client.post(
             "/v1/tasks",
-            json={"username": "easydiffusion", "prompt": "Test", "model_paths": {"stable-diffusion": "test"}},
+            json={
+                "username": "easydiffusion",
+                "prompt": "Test",
+                "model_paths": {"stable-diffusion": "test"},
+                "num_inference_steps": 4,
+            },
         )
         task_id = create_response.json()["task_id"]
 
-        progresses = []
+        assert server_api.state.workers.wait(timeout=2.0)
+        assert not callback_errors
 
-        # Simple polling loop
-        for _ in range(200):
-            response = client.get(f"/v1/tasks/{task_id}")
-            assert response.status_code == 200
+        assert observed_progresses, "No in-progress values were observed"
+        assert all(0.0 < progress < 1.0 for progress in observed_progresses)
+        assert all(a < b for a, b in zip(observed_progresses, observed_progresses[1:]))
+        assert len(observed_progresses) == len(set(observed_progresses))
 
-            progress = response.json()["progress"]
-            progresses.append(progress)
+        assert observed_payloads, "No in-progress outputs were observed"
+        assert len(observed_payloads) == len(observed_progresses)
+        assert len(set(observed_payloads)) == len(observed_payloads)
 
-            if progress == pytest.approx(1.0):
-                break
+        final_detail_response = client.get(f"/v1/tasks/{task_id}")
+        assert final_detail_response.status_code == 200
+        assert final_detail_response.json()["outputs"] == [f"/v1/tasks/{task_id}/outputs/0"]
 
-            time.sleep(0.01)
-
-        # Ensure we got updates
-        assert len(progresses) > 1
-
-        # Ensure non-decreasing progress
-        assert all(a <= b for a, b in zip(progresses, progresses[1:]))
-
-        # Final value must be 1.0
-        assert progresses[-1] == pytest.approx(1.0)
-
-        # Optional: ensure there was at least one intermediate value
-        assert any(0.0 < p < 1.0 for p in progresses), f"No progress values between 0 and 1 were observed: {progresses}"
+        final_output_response = client.get(f"/v1/tasks/{task_id}/outputs/0")
+        assert final_output_response.status_code == 200
+        assert final_output_response.content not in observed_payloads
 
     def test_get_task_detail_with_request(self, client):
         """Test getting task details with request data."""
@@ -800,14 +816,16 @@ class TestOutputEndpoint:
         assert response.headers["content-type"] == "image/png"
 
     def test_get_task_output_not_found(self, client):
-        """Test retrieving non-existent output."""
+        """Test retrieving an out-of-range output index."""
         create_response = client.post(
             "/v1/tasks",
             json={"username": "easydiffusion", "prompt": "Test", "model_paths": {"stable-diffusion": "test"}},
         )
         task_id = create_response.json()["task_id"]
 
-        response = client.get(f"/v1/tasks/{task_id}/outputs/0")
+        assert server_api.state.workers.wait(timeout=2.0)
+
+        response = client.get(f"/v1/tasks/{task_id}/outputs/1")
         assert response.status_code == 404
 
     def test_get_task_output_invalid_task(self, client):

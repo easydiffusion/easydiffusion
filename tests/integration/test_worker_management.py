@@ -8,6 +8,7 @@ Tests the complete workflow of:
 
 import pytest
 import tempfile
+import time
 from pathlib import Path
 from unittest.mock import patch
 from fastapi.testclient import TestClient
@@ -305,7 +306,12 @@ class TestWorkerManagement:
 
         response = client.post(
             "/v1/tasks",
-            json={"username": "test-user", "prompt": "Test", "model_paths": {"stable-diffusion": "test-model"}},
+            json={
+                "username": "test-user",
+                "prompt": "Test",
+                "model_paths": {"stable-diffusion": "test-model"},
+                "num_inference_steps": 4,
+            },
         )
 
         assert response.status_code == 202
@@ -315,6 +321,53 @@ class TestWorkerManagement:
         task = server_api.state.task_cache[task_id]
         assert task.status == "completed"
         assert len(task.outputs) == 1
+
+    @patch("easydiffusion.utils.device_utils.resolve_devices", side_effect=mock_resolve_devices)
+    def test_progress_outputs_change_while_task_runs(self, mock_resolve, app_state):
+        """Test that the API exposes changing in-progress outputs at the backend's real step cadence."""
+        client = app_state["client"]
+
+        response = client.post(
+            "/v1/tasks",
+            json={
+                "username": "test-user",
+                "prompt": "Test",
+                "model_paths": {"stable-diffusion": "test-model"},
+                "num_inference_steps": 4,
+            },
+        )
+
+        assert response.status_code == 202
+        task_id = response.json()["task_id"]
+
+        observed_progresses = []
+        observed_outputs = []
+
+        for _ in range(20):
+            detail_response = client.get(f"/v1/tasks/{task_id}")
+            assert detail_response.status_code == 200
+
+            payload = detail_response.json()
+            progress = payload["progress"]
+
+            if 0.0 < progress < 1.0 and payload["outputs"]:
+                output_response = client.get(f"/v1/tasks/{task_id}/outputs/0")
+                assert output_response.status_code == 200
+
+                if not observed_progresses or progress != observed_progresses[-1]:
+                    observed_progresses.append(progress)
+                    observed_outputs.append(output_response.content)
+
+            if progress == pytest.approx(1.0):
+                break
+
+            time.sleep(TestBackend.GENERATE_STEP_DELAY_SECONDS)
+
+        assert observed_progresses, "No in-progress values were observed"
+        assert all(a < b for a, b in zip(observed_progresses, observed_progresses[1:]))
+        assert len(observed_progresses) == len(set(observed_progresses))
+        assert len(observed_outputs) == len(observed_progresses)
+        assert len(set(observed_outputs)) == len(observed_outputs)
 
 
 if __name__ == "__main__":

@@ -5,6 +5,7 @@ import threading
 import time
 import zlib
 from copy import deepcopy
+from collections.abc import Callable
 from typing import Any
 
 from torchruntime.device_db import GPU
@@ -17,19 +18,19 @@ class TestBackend(Backend):
 
     __test__ = False
 
-    DEFAULT_IMAGE_SIZE = 512
-    DEFAULT_PROGRESS_INTERVAL_SECONDS = 0.1
-    DEFAULT_PROGRESS_STEPS = 8
+    DEFAULT_IMAGE_SIZE = 64
+    DEFAULT_GENERATE_STEP_DELAY_SECONDS = 0.2
+    GENERATE_STEP_DELAY_SECONDS = DEFAULT_GENERATE_STEP_DELAY_SECONDS
+    GENERATE_STEP_CALLBACK: Callable[[float], None] | None = None
     CONTROLNET_FILTERS = ["canny", "depth", "openpose", "scribble"]
 
     instances: list["TestBackend"] = []
-    progress_interval_seconds: float = DEFAULT_PROGRESS_INTERVAL_SECONDS
-    progress_steps: int = DEFAULT_PROGRESS_STEPS
 
     def __init__(self, device: GPU, config: dict[str, Any] | None = None):
         super().__init__(device, config=config)
         self.runtime_config: dict[str, Any] = {}
         self._progress = 0.0
+        self._outputs: list[bytes] = []
         self._stop_requested = False
         self._started = False
         self.stop_called = False
@@ -37,13 +38,11 @@ class TestBackend(Backend):
         self.start_thread_id = None
         self.tasks_processed: list[dict[str, Any]] = []
         self.lock = threading.Lock()
-        type(self).instances.append(self)
+        TestBackend.instances.append(self)
 
     @classmethod
     def reset_mock_state(cls) -> None:
         cls.instances = []
-        cls.progress_interval_seconds = cls.DEFAULT_PROGRESS_INTERVAL_SECONDS
-        cls.progress_steps = cls.DEFAULT_PROGRESS_STEPS
 
     @classmethod
     def list_controlnet_filters(cls) -> list[str]:
@@ -78,59 +77,101 @@ class TestBackend(Backend):
         return True
 
     def generate(self, input: dict[str, Any]) -> list[bytes]:
-        def build_outputs() -> list[bytes]:
-            width = input["request"]["width"]
-            height = input["request"]["height"]
-            num_outputs = input["request"]["num_outputs"]
-            return [self._build_gradient_png(width, height, "generate", index) for index in range(num_outputs)]
+        width = input["request"]["width"]
+        height = input["request"]["height"]
+        num_outputs = input["request"]["num_outputs"]
+        num_inference_steps = int(input["request"]["num_inference_steps"])
 
-        return self._run_operation(build_outputs)
+        with self.lock:
+            self._progress = 0.0
+            self._outputs = []
+            self._stop_requested = False
+
+        for step_index in range(1, num_inference_steps):
+            progress = step_index / num_inference_steps
+            outputs = [
+                self._build_gradient_png(
+                    width,
+                    height,
+                    "generate",
+                    image_index,
+                    phase=step_index,
+                )
+                for image_index in range(num_outputs)
+            ]
+
+            with self.lock:
+                if self._stop_requested:
+                    return []
+                self._progress = progress
+                self._outputs = outputs
+
+            if TestBackend.GENERATE_STEP_CALLBACK is not None:
+                TestBackend.GENERATE_STEP_CALLBACK()
+
+            time.sleep(TestBackend.GENERATE_STEP_DELAY_SECONDS)
+
+        with self.lock:
+            if self._stop_requested:
+                return []
+            self._progress = 1.0
+            self._outputs = [
+                self._build_gradient_png(
+                    width,
+                    height,
+                    "generate",
+                    image_index,
+                    phase=num_inference_steps,
+                )
+                for image_index in range(num_outputs)
+            ]
+
+        return self._outputs
 
     def filter(self, input: dict[str, Any]) -> list[bytes]:
-        def build_outputs() -> list[bytes]:
-            return [self._build_gradient_png(512, 512, "filter", 0)]
+        with self.lock:
+            self._progress = 0.0
+            self._outputs = []
+            self._stop_requested = False
 
-        return self._run_operation(build_outputs)
+        outputs = [self._build_gradient_png(512, 512, "filter", 0)]
+
+        with self.lock:
+            if self._stop_requested:
+                return []
+            self._progress = 1.0
+            self._outputs = outputs
+
+        return self._outputs
 
     def get_progress(self) -> float:
         with self.lock:
             return self._progress
 
+    def get_progress_outputs(self) -> list[bytes]:
+        with self.lock:
+            return self._outputs
+
     def stop_task(self) -> None:
         with self.lock:
             self._stop_requested = True
 
-    def _run_operation(self, output_fn) -> list[bytes]:
-        with self.lock:
-            self._progress = 0.0
-            self._stop_requested = False
-
-        for step in range(type(self).progress_steps):
-            with self.lock:
-                if self._stop_requested:
-                    return []
-                self._progress = (step + 1) / type(self).progress_steps
-
-            time.sleep(type(self).progress_interval_seconds)
-
-        with self.lock:
-            if self._stop_requested:
-                return []
-
-        outputs = output_fn()
-        with self.lock:
-            if self._stop_requested:
-                return []
-            self._progress = 1.0
-
-        return outputs
-
     @classmethod
-    def _build_gradient_png(cls, width: int, height: int, variant: str, image_index: int) -> bytes:
+    def _build_gradient_png(
+        cls,
+        width: int,
+        height: int,
+        variant: str,
+        image_index: int,
+        phase: int = 0,
+    ) -> bytes:
+        width = min(width, cls.DEFAULT_IMAGE_SIZE)
+        height = min(height, cls.DEFAULT_IMAGE_SIZE)
+
         def pixel(x: int, y: int) -> tuple[int, int, int]:
             x_ratio = x / max(1, width - 1)
             y_ratio = y / max(1, height - 1)
-            offset = (image_index * 29) % 255
+            offset = ((image_index + 1) * 29 + phase * 47) % 255
 
             if variant == "filter":
                 red = int(255 * (1.0 - y_ratio))

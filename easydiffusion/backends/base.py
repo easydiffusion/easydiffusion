@@ -124,6 +124,11 @@ class Backend(ABC):
         pass
 
     @abstractmethod
+    def get_progress_outputs(self) -> list[bytes]:
+        """Return in-progress outputs for the active task."""
+        pass
+
+    @abstractmethod
     def stop_task(self) -> None:
         """Request backend-specific cancellation for the active task."""
         pass

@@ -41,5 +41,8 @@ class EDClassicBackend(Backend):
     def get_progress(self) -> float:
         return 0.0
 
+    def get_progress_outputs(self) -> list[bytes]:
+        return []
+
     def stop_task(self) -> None:
         return None

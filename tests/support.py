@@ -10,7 +10,6 @@ def register_dummy_backend() -> tuple[str, type[TestBackend], type[Backend] | No
     backend_name = "dummy"
     previous = BACKEND_REGISTRY.get(backend_name)
     TestBackend.reset_mock_state()
-    TestBackend.progress_interval_seconds = 0.0
     BACKEND_REGISTRY[backend_name] = TestBackend
     return backend_name, TestBackend, previous
 

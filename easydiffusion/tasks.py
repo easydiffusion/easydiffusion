@@ -51,8 +51,9 @@ class Task:
         if not self.is_terminal:
             self._status = TaskStatus.RUNNING
 
-    def update_progress(self, progress: float) -> None:
-        self.progress = min(1.0, max(0.0, float(progress)))
+    def update_progress(self, progress: float, outputs: list[bytes]) -> None:
+        self.progress = progress
+        self.outputs = outputs
         if self._status == TaskStatus.PENDING:
             self._status = TaskStatus.RUNNING
 
@@ -99,7 +100,7 @@ class Task:
             stop_progress.set()
             progress_worker.join()
 
-        self.outputs = list(result or [])
+        self.outputs = result or []
         return self.outputs
 
     def _track_progress(self, backend: Any, stop_event: threading.Event) -> None:
@@ -119,7 +120,9 @@ class Task:
 
     def _refresh_progress(self, backend: Any) -> None:
         try:
-            self.update_progress(backend.get_progress())
+            progress = backend.get_progress()
+            outputs = backend.get_progress_outputs()
+            self.update_progress(progress, outputs)
         except Exception as e:
             print(f"Error refreshing progress for task: {e}")
             time.sleep(0.01)
