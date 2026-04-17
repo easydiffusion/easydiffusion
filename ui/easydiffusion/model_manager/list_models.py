@@ -71,9 +71,19 @@ def list_models_in_dirs(dirs, exts):
     return models
 
 
-def set_model_metadata(model_type, models):
+def strip_extension(rel_path, exts):
+    # Sort by length descending to match longest extensions first
+    exts = sorted(exts, key=len, reverse=True)
+    for ext in exts:
+        if rel_path.endswith(ext):
+            return rel_path[: -len(ext)]
+    # Fallback to os.path.splitext for unknown extensions
+    return os.path.splitext(rel_path)[0]
+
+
+def set_model_metadata(model_type, models, exts):
     for m in models:
-        m["model"] = os.path.splitext(m["rel_path"])[0]
+        m["model"] = strip_extension(m["rel_path"], exts)
         m["name"] = m["model"]
 
         if model_type == "embeddings":
@@ -122,7 +132,7 @@ def list_models():
         model_extensions = MODEL_EXTENSIONS.get(model_type, [])
 
         models_in_dirs = list_models_in_dirs(models_dirs, model_extensions)
-        set_model_metadata(model_type, models_in_dirs)
+        set_model_metadata(model_type, models_in_dirs, model_extensions)
         strip_model_paths(models_in_dirs)
         models_in_dirs = strip_null_models(models_in_dirs)
         include_prefilled_models(models_in_dirs, PREFILLED_MODELS.get(model_type, []))
