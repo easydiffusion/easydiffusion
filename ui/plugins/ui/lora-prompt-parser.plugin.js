@@ -56,7 +56,7 @@
                 if (seenModels.has(loraPath)) {
                     // Note: modelFileName is regex-constrained to [^:>]+ so XSS risk is minimal,
                     // but ideally this should use textContent. Same pattern exists at line 85.
-                    showToast("Duplicate LoRA ignored: " + modelFileName, 5000, true)
+                    console.log("Duplicate LoRA ignored: " + modelFileName)
                     continue
                 }
                 seenModels.add(loraPath)
