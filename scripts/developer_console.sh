@@ -43,7 +43,7 @@ if [ "$0" == "bash" ]; then
 
     conda activate ./stable-diffusion/env
 
-    export PYTHONPATH="$(pwd)/stable-diffusion/env/lib/python${PYTHONVERSION}/site-packages"
+    export PYTHONPATH="$(pwd)/stable-diffusion/env/lib/python3.8/site-packages"
   fi
 
   export PYTHONNOUSERSITE=y
