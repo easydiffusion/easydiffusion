@@ -14,14 +14,14 @@ if [ -f "scripts/user_config.sh" ]; then
     source scripts/user_config.sh
 fi
 
-# setup enviroment
+# setup environment
 if [ -e "installer_files/env" ]; then
 	export ENVFOLDER="$(pwd)/installer_files/env"
 	export PATH="${ENVFOLDER}/bin:$PATH"; 
-	# check python version und adjust PYTHONPATH
-	if [ -e "${ENVFOLDER}/bin/python"]; then
+	# check python version and adjust PYTHONPATH
+	if [ -e "${ENVFOLDER}/bin/python" ]; then
 		export PYTHONVERSION="$(${ENVFOLDER}/bin/python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
-		export PYTHONPATH="${ENVFOLDER}/lib/python${PATHONVERSION}/site-packages"
+		export PYTHONPATH="${ENVFOLDER}/lib/python${PYTHONVERSION}/site-packages"
 	fi
 fi
 
