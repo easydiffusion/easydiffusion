@@ -5,7 +5,7 @@ if [ -e "installer_files/env" ]; then
 	export PATH="${ENVFOLDER}/bin:$PATH"; 
 	# check python version und adjust PYTHONPATH
 	if [ -e "${ENVFOLDER}/bin/python"]; then
-		export PYTHONVERSION="$(${ENVFOLDER}/bin/python --version | sed -e 's/Python//;s/\.[[:digit:]]*$//')"
+		export PYTHONVERSION="$(${ENVFOLDER}/bin/python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
 		export PYTHONPATH="${ENVFOLDER}/lib/python${PATHONVERSION}/site-packages"
 	fi
 fi
