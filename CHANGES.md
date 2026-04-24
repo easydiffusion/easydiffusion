@@ -1,6 +1,7 @@
 # What's new?
 
 ## v4 (preview)
+* 4.3.0 - 24 Apr 2026 - Support Ernie Image and Ernie Image Turbo. Fix for Lumina and Anima models. Fixed a bug in v4 where LoRAs in nested folders would fail to load.
 * 4.2.0 - 31 Mar 2026 - (Internal code changes) Merge v3.5 and v4 engine into the main branch. This brings back the streamlined release process of landing new features first in beta, and then merging into the main branch after testing.
 * 4.1.0 - 13 Feb 2026 - Add support for Flux2-Klein.
 * 4.0.0 - 2 Dec 2025 - Add the v4 engine (i.e. sdkit3) as an experimental backend, which supports Z-Image, Flux 1 etc in a lightweight new backend engine.
