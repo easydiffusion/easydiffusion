@@ -40,6 +40,7 @@ v3.5 is currently an optional upgrade, and you can switch between the v3.0 (diff
 * 3.5.0 - 11 Oct 2024 - **Preview release** of the new v3.5 engine, powered by Forge WebUI (a fork of Automatic1111). This enables Flux, SD3, LyCORIS and lots of new features, while using the same familiar Easy Diffusion interface.
 
 ## v3.0
+
 ### Major Changes
 - **ControlNet** - Full support for ControlNet, with native integration of the common ControlNet models. Just select a control image, then choose the ControlNet filter/model and run. No additional configuration or download necessary. Supports custom ControlNets as well.
 - **SDXL** - Full support for SDXL. No configuration necessary, just put the SDXL model in the `models/stable-diffusion` folder.
@@ -56,6 +57,7 @@ v3.5 is currently an optional upgrade, and you can switch between the v3.0 (diff
 - **Major rewrite of the code** - We've switched to using diffusers under-the-hood, which allows us to release new features faster, and focus on making the UI and installer even easier to use.
 
 ### Detailed changelog
+* 3.0.16 - 17 Apr 2025 - Fix duplicate LoRA models causing garbled images. Duplicate LoRAs are now automatically removed, both in the UI dropdown and prompt parser. Thanks @majiayu000.
 * 3.0.16 - 31 Mar 2026 - (Internal code changes) Merge v3.5 and v4 engine into the main branch. This brings back the streamlined release process of landing new features first in beta, and then merging into the main branch after testing.
 * 3.0.15 - 28 Oct 2025 - Fix regression where newly added models wouldn't work, even after refreshing the models list.
 * 3.0.14 - 1 Oct 2025 - (Internal code change) Model fetching API refactored. It now returns the model types (flux, SD version etc) in a cleaner data format.
