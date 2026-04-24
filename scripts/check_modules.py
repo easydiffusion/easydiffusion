@@ -43,6 +43,7 @@ modules_to_log = ["torchruntime", "torch", "torchvision", "sdkit", "stable-diffu
 
 BLACKWELL_DEVICES = re.compile(r"\b(?:5060|5070|5080|5090)\b")
 
+
 def apply_backend_config_env_overrides(backend_config: dict, env=None) -> None:
     """
     Apply (a small allowlist of) backend_config keys from config.yaml to environment variables.
@@ -159,7 +160,7 @@ def update_modules():
     #  if sdkit is 2.0.15.x (or lower), then diffusers should be restricted to 0.21.4 (see below for the reason)
     #  otherwise use the current sdkit version (with the corresponding diffusers version)
 
-    expected_sdkit_version_str = "2.1.0"
+    expected_sdkit_version_str = "2.1.1"
     expected_diffusers_version_str = "0.28.2"
 
     legacy_sdkit_version_str = "2.0.15.18"
