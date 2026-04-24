@@ -125,6 +125,7 @@ def start_backend():
     run_in_conda(["python", "-m", "pip", "install", "-q", "--upgrade", "urllib3==2.2.3"], cwd=WEBUI_DIR, env=env)
 
     webui_common.WEBUI_API_PREFIX = ""
+    webui_common.USE_SDKIT3_API = False
 
     def run_fn():
         cmd = "webui.bat" if OS_NAME == "Windows" else "./webui.sh"

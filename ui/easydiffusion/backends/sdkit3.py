@@ -48,7 +48,7 @@ def get_backend_dir():
 
 
 BACKEND_BINARY_URL_BASE = "https://github.com/easydiffusion/sdkit/releases/download"
-DEFAULT_BACKEND_VERSION = "v3.1.0"
+DEFAULT_BACKEND_VERSION = "v3.2.0"
 
 OS_NAME = platform.system()
 
@@ -164,6 +164,7 @@ def start_backend():
     user_args = user_args.split(" ") if user_args else []
 
     webui_common.WEBUI_API_PREFIX = "/v1"
+    webui_common.USE_SDKIT3_API = True
 
     def run_fn():
         exe_name = "sdkit.exe" if OS_NAME == "Windows" else "sdkit"
