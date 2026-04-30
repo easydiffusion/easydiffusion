@@ -151,7 +151,7 @@ def start_backend():
     #     extra_args.append("--clip-on-cpu")
     #     extra_args.append("--vae-on-cpu")
 
-    extra_args.append("--diffusion-fa")
+    # extra_args.append("--diffusion-fa")
 
     if vram_usage_level in ("low", "balanced"):
         extra_args.append("--offload-to-cpu")
