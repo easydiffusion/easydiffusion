@@ -119,6 +119,10 @@ def ping(timeout=1):
     except (ConnectTimeout, ConnectionError, ReadTimeout) as e:
         raise TimeoutError(e)
 
+def _is_chroma_model(model_path):
+    return model_path is not None and "chroma" in model_path.lower()
+
+
 
 def load_model(context, model_type, **kwargs):
     from easydiffusion.app import ROOT_DIR, getConfig
@@ -131,6 +135,19 @@ def load_model(context, model_type, **kwargs):
     if model_type == "stable-diffusion":
         base_dir = os.path.join(models_dir, model_type)
         model_path = os.path.relpath(model_path, base_dir)
+
+        #The following 10 lines are a workaround to allow disabling --diffusion-fa
+        prev_chroma = _is_chroma_model(curr_models["stable-diffusion"])
+        next_chroma = _is_chroma_model(model_path)
+        print(f"[webui_common] load_model: {model_path!r}, prev_chroma={prev_chroma}, next_chroma={next_chroma}", flush=True)
+
+        if prev_chroma != next_chroma:
+            print(f"[webui_common] Chroma status changed ({prev_chroma} -> {next_chroma}), restarting backend...", flush=True)
+            curr_models[model_type] = model_path
+            from easydiffusion import backend_manager
+            backend_manager.start_backend()
+            return
+
 
     # print(f"load model: {model_type=} {model_path=} {curr_models=}")
     curr_models[model_type] = model_path
