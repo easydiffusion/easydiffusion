@@ -3,7 +3,7 @@
 
 Does not require technical knowledge, does not require pre-installed software. 1-click install, powerful features, friendly community.
 
-️‍🔥🎉 **New!** Support for Z-Image, Flux 1 and 2, and quantized models have been added to v3.5 and v4 engines!
+️‍🔥🎉 **New!** Support for Ernie, Z-Image, Flux 1 and 2, Lumina, Anima and quantized models have been added to the v4 engine!
 
 [Installation guide](#installation) | [Troubleshooting guide](https://github.com/easydiffusion/easydiffusion/wiki/Troubleshooting) | [User guide](https://github.com/easydiffusion/easydiffusion/wiki) | <sub>[![Discord Server](https://img.shields.io/discord/1014774730907209781?label=Discord)](https://discord.com/invite/u9yhsFmEkB)</sub> <sup>(for support queries, and development discussions)</sup>
 

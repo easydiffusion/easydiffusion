@@ -21,6 +21,7 @@ from common import kill
 WEBUI_HOST = "localhost"
 WEBUI_PORT = "7860"
 WEBUI_API_PREFIX = ""
+USE_SDKIT3_API = False
 
 DEFAULT_WEBUI_OPTIONS = {
     "show_progress_every_n_steps": 3,
@@ -237,10 +238,17 @@ def generate_images(
         lora_model = lora_model if isinstance(lora_model, list) else [lora_model]
         lora_alpha = lora_alpha if isinstance(lora_alpha, list) else [lora_alpha]
 
-        for lora, alpha in zip(lora_model, lora_alpha):
-            lora = os.path.basename(lora)
-            lora = os.path.splitext(lora)[0]
-            cmd["prompt"] += f" <lora:{lora}:{alpha}>"
+        if len(lora_model) != len(lora_alpha):
+            raise ValueError("lora_model and lora_alpha must have the same length")
+
+        if USE_SDKIT3_API:
+            cmd["lora_paths"] = lora_model
+            cmd["lora_alphas"] = lora_alpha
+        else:
+            for lora, alpha in zip(lora_model, lora_alpha):
+                lora = os.path.basename(lora)
+                lora = os.path.splitext(lora)[0]
+                cmd["prompt"] += f" <lora:{lora}:{alpha}>"
 
     if controlnet_filter and control_image and context.model_paths.get("controlnet"):
         controlnet_model = context.model_paths["controlnet"]
