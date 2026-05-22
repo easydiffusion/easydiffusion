@@ -60,17 +60,70 @@ def client(config_manager, dummy_backend_registry):
     server_api.state.task_cache = {}
 
 
-class TestHealthEndpoint:
-    """Tests for /v1/health endpoint."""
+class TestStatusEndpoint:
+    """Tests for /v1/status endpoint."""
 
-    def test_health_check(self, client):
-        """Test health endpoint returns correct response."""
-        response = client.get("/v1/health")
+    def test_status_check_returns_starting_until_backend_is_ready(self, client):
+        """Test status endpoint returns starting while workers are still warming up."""
+        TestBackend.PING_RESPONSE = False
+
+        response = client.get("/v1/status")
         assert response.status_code == 200
 
         data = response.json()
-        assert data["status"] == "healthy"
-        assert data["version"] == "1.0.0"
+        assert data == {
+            "status": "starting",
+            "queued": 0,
+            "in_progress": 0,
+            "completed": 0,
+        }
+
+    def test_status_check_returns_ready_when_idle(self, client):
+        """Test status endpoint returns an idle server summary."""
+        response = client.get("/v1/status")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data == {
+            "status": "ready",
+            "queued": 0,
+            "in_progress": 0,
+            "completed": 0,
+        }
+
+    def test_status_check_counts_tasks(self, client):
+        """Test status endpoint summarizes queued, running, and completed tasks."""
+        queued_task = Task(username="queued-user", task_type="generate")
+        running_task = Task(username="running-user", task_type="generate")
+        running_task.mark_running()
+        completed_task = Task(username="completed-user", task_type="generate")
+        completed_task.mark_completed()
+        failed_task = Task(username="failed-user", task_type="generate")
+        failed_task.mark_failed("boom")
+        stopped_task = Task(username="stopped-user", task_type="generate")
+        stopped_task.stop("stop requested")
+
+        server_api.state.task_cache = {
+            queued_task.task_id: queued_task,
+            running_task.task_id: running_task,
+            completed_task.task_id: completed_task,
+            failed_task.task_id: failed_task,
+            stopped_task.task_id: stopped_task,
+        }
+
+        response = client.get("/v1/status")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["status"] == "rendering"
+        assert data["queued"] == 1
+        assert data["in_progress"] == 1
+        assert data["completed"] == 1
+
+    def test_health_route_is_removed(self, client):
+        """Test the old health route is no longer exposed."""
+        response = client.get("/v1/health")
+        assert response.status_code == 404
 
 
 class TestSystemConfigEndpoints:
@@ -861,9 +914,9 @@ class TestStaticEndpoints:
 class TestCacheHeaders:
     """Tests for cache control headers."""
 
-    def test_health_no_cache(self, client):
-        """Test health endpoint has no-cache headers."""
-        response = client.get("/v1/health")
+    def test_status_no_cache(self, client):
+        """Test status endpoint has no-cache headers."""
+        response = client.get("/v1/status")
         assert "cache-control" in response.headers
         assert "no-cache" in response.headers["cache-control"]
 

@@ -16,7 +16,7 @@ import mimetypes
 from typing import Any, Optional, Union
 
 from easydiffusion.types import (
-    HealthResponse,
+    ServerStatusResponse,
     ConfigResponse,
     UserConfigResponse,
     UserSettingsConfig,
@@ -85,7 +85,7 @@ def init():
         name="media",
     )
 
-    v1_router.add_api_route("/health", get_health, methods=["GET"])
+    v1_router.add_api_route("/status", get_status, methods=["GET"], response_model=ServerStatusResponse)
     v1_router.add_api_route("/config", get_config, methods=["GET"], response_model=ConfigResponse)
     v1_router.add_api_route("/config", update_config, methods=["PUT"], response_model=StatusResponse)
     v1_router.add_api_route("/devices", get_devices, methods=["GET"], response_model=DevicesResponse)
@@ -107,6 +107,8 @@ def init():
     v1_router.add_api_route("/users/{username}", delete_user, methods=["DELETE"], response_model=DeleteUserResponse)
 
     server_api.include_router(v1_router)
+
+    # add support for legacy API paths for backward compatibility with older plugins and UI
     support_legacy_paths(server_api, enqueue_task=_enqueue_task)
 
     @server_api.get("/")
@@ -115,10 +117,41 @@ def init():
         return FileResponse(str(ui_dir / "index.html"), headers=NOCACHE_HEADERS)
 
 
-async def get_health():
-    """Check server health."""
-    content = HealthResponse(status="healthy", version="1.0.0").model_dump_json()
-    return Response(content=content, media_type="application/json", headers=NOCACHE_HEADERS)
+def _get_status_payload() -> ServerStatusResponse:
+    workers = server_api.state.workers
+    queued = 0
+    in_progress = 0
+    completed = 0
+
+    for task in server_api.state.task_cache.values():
+        if task.status == "pending":
+            queued += 1
+        elif task.status == "running":
+            in_progress += 1
+        elif task.status == "completed":
+            completed += 1
+
+    if in_progress > 0:
+        status = "rendering"
+    elif workers.any_ready():
+        status = "ready"
+    else:
+        status = "starting"
+
+    return ServerStatusResponse(
+        status=status,
+        queued=queued,
+        in_progress=in_progress,
+        completed=completed,
+    )
+
+
+async def get_status():
+    """Return the current server status and task counts."""
+    return JSONResponse(
+        _get_status_payload().model_dump(),
+        headers=NOCACHE_HEADERS,
+    )
 
 
 def _detect_media_type_from_bytes(data: bytes) -> Optional[str]:

@@ -210,16 +210,57 @@
     }
 
     const ServerStates = {
-        init: "Init",
-        loadingModel: "LoadingModel",
-        online: "Online",
-        rendering: "Rendering",
-        unavailable: "Unavailable",
+        starting: "starting",
+        online: "ready",
+        rendering: "rendering",
+        unavailable: "error",
     }
     Object.freeze(ServerStates)
 
     let sessionId = Date.now()
-    let serverState = { status: ServerStates.unavailable, time: Date.now() }
+    let serverState = { status: ServerStates.starting, time: Date.now() }
+
+    async function getTaskServerStatus(task) {
+        if (!task?.taskUrl) {
+            return undefined
+        }
+
+        const response = await fetch(task.taskUrl, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+        if (response.status === 404) {
+            return undefined
+        }
+        if (!response.ok) {
+            throw new Error(response.statusText)
+        }
+
+        const payload = await response.json()
+        if (typeof payload?.status !== "string") {
+            return undefined
+        }
+
+        switch (payload.status) {
+            case "pending":
+                task._setStatus(TaskStatus.waiting)
+                break
+            case "running":
+            case "completed":
+                if (task.status === TaskStatus.pending || task.status === TaskStatus.waiting) {
+                    task._setStatus(TaskStatus.processing)
+                }
+                break
+            case "error":
+                task.abort(new Error(getTaskStatusDetail(payload) || "Task failed"))
+                break
+            case "stopped":
+                task.abort(new Error(getTaskStatusDetail(payload) || "Task stopped"))
+                break
+        }
+        return payload.status
+    }
 
     async function healthCheck() {
         if (Date.now() < serverState.time + HEALTH_PING_INTERVAL / 2 && isServerAvailable()) {
@@ -230,15 +271,25 @@
             console.warn("WARNING! SERVER_STATE_VALIDITY_DURATION has elapsed since the last Ping completed.")
         }
         try {
-            let res = undefined
-            if (typeof sessionId !== "undefined") {
-                res = await fetch("/ping?session_id=" + sessionId)
-            } else {
-                res = await fetch("/ping")
+            const res = await fetch("/v1/status")
+            if (res.status === 404) {
+                serverState = { status: ServerStates.unavailable, time: Date.now() }
+                setServerStatus("error", "unavailable")
+                return false
             }
+            if (!res.ok) {
+                throw new Error(`Status request failed with ${res.status}`)
+            }
+
             serverState = await res.json()
-            if (typeof serverState !== "object" || typeof serverState.status !== "string") {
-                console.error(`Server reply didn't contain a state value.`)
+            if (
+                typeof serverState !== "object" ||
+                typeof serverState.status !== "string" ||
+                typeof serverState.queued !== "number" ||
+                typeof serverState.in_progress !== "number" ||
+                typeof serverState.completed !== "number"
+            ) {
+                console.error(`Server reply didn't contain a valid status payload.`)
                 serverState = { status: ServerStates.unavailable, time: Date.now() }
                 setServerStatus("error", "offline")
                 return false
@@ -246,22 +297,18 @@
 
             // Set status
             switch (serverState.status) {
-                case ServerStates.init:
-                    // Wait for init to complete before updating status.
+                case ServerStates.starting:
+                    setServerStatus("starting", "starting")
                     break
                 case ServerStates.online:
                     setServerStatus("online", "ready")
                     break
-                case ServerStates.loadingModel:
-                    setServerStatus("busy", "loading..")
-                    break
                 case ServerStates.rendering:
-                    setServerStatus("busy", "rendering..")
+                    setServerStatus("busy", "rendering")
                     break
                 default:
-                    // Unavailable
-                    console.error("Ping received an unexpected server status. Status: %s", serverState.status)
-                    setServerStatus("error", serverState.status.toLowerCase())
+                    console.error("Status request received an unexpected server status. Status: %s", serverState.status)
+                    setServerStatus("error", "unavailable")
                     break
             }
             serverState.time = Date.now()
@@ -285,7 +332,7 @@
             return false
         }
         switch (serverState.status) {
-            case ServerStates.loadingModel:
+            case ServerStates.starting:
             case ServerStates.rendering:
             case ServerStates.online:
                 return true
@@ -633,14 +680,10 @@
             switch (this.#status) {
                 case TaskStatus.pending:
                 case TaskStatus.waiting:
-                    // Wait for server status to include this task.
                     await waitUntil(
                         async () => {
-                            if (
-                                task.#id &&
-                                typeof serverState.tasks === "object" &&
-                                Object.keys(serverState.tasks).includes(String(task.#id))
-                            ) {
+                            const state = await getTaskServerStatus(task)
+                            if (typeof state === "string") {
                                 return true
                             }
                             if ((await Promise.resolve(callback?.call(task))) || signal?.aborted) {
@@ -650,11 +693,7 @@
                         TASK_STATE_SERVER_UPDATE_DELAY,
                         timeout
                     )
-                    if (
-                        this.#id &&
-                        typeof serverState.tasks === "object" &&
-                        Object.keys(serverState.tasks).includes(String(task.#id))
-                    ) {
+                    if (task.status === TaskStatus.waiting) {
                         this._setStatus(TaskStatus.waiting)
                     }
                     if ((await Promise.resolve(callback?.call(this))) || signal?.aborted) {
@@ -663,13 +702,10 @@
                     if (stIdx >= 0 && stIdx <= TASK_STATUS_ORDER.indexOf(TaskStatus.waiting)) {
                         return true
                     }
-                    // Wait for task to start on server.
                     await waitUntil(
                         async () => {
-                            if (
-                                typeof serverState.tasks !== "object" ||
-                                serverState.tasks[String(task.#id)] !== "pending"
-                            ) {
+                            const state = await getTaskServerStatus(task)
+                            if (state !== "pending") {
                                 return true
                             }
                             if ((await Promise.resolve(callback?.call(task))) || signal?.aborted) {
@@ -679,8 +715,7 @@
                         TASK_STATE_SERVER_UPDATE_DELAY,
                         timeout
                     )
-                    const state =
-                        typeof serverState.tasks === "object" ? serverState.tasks[String(task.#id)] : undefined
+                    const state = await getTaskServerStatus(task)
                     if (state === "running" || state === "completed") {
                         this._setStatus(TaskStatus.processing)
                     }
@@ -693,10 +728,8 @@
                 case TaskStatus.processing:
                     await waitUntil(
                         async () => {
-                            if (
-                                typeof serverState.tasks !== "object" ||
-                                serverState.tasks[String(task.#id)] !== "running"
-                            ) {
+                            const state = await getTaskServerStatus(task)
+                            if (state !== "running") {
                                 return true
                             }
                             if ((await Promise.resolve(callback?.call(task))) || signal?.aborted) {

@@ -1,9 +1,63 @@
 import queue
 import threading
-import time
 
 from .backends import get_backend_class
 from .tasks import Task
+
+
+class Worker:
+    def __init__(self, backend_class, device, task_queue, backend_config=None):
+        self.device = device
+        self.backend_class = backend_class
+        self.backend_config = dict(backend_config or {})
+        self.task_queue = task_queue
+        self.stop_flag = threading.Event()
+        self.backend = None
+        self.thread = threading.Thread(target=self._run, daemon=True, name=device.device_name)
+
+    def _run(self):
+        self.backend = self.backend_class(self.device, config=self.backend_config)
+        self.backend.start()
+
+        while not self.stop_flag.is_set():
+            try:
+                task: Task = self.task_queue.get(timeout=0.1)
+            except queue.Empty:
+                continue
+
+            try:
+                if task.status == "stopped":
+                    continue
+
+                task.mark_running()
+                task.run(self.backend)
+
+                if task.status not in ("completed", "error", "stopped"):
+                    task.mark_completed()
+            except StopAsyncIteration as error:
+                task.stop(str(error))
+            except Exception as error:
+                print("task error", task, error)
+                task.mark_failed(error)
+            finally:
+                self.task_queue.task_done()
+
+        self.backend.stop()
+
+    def start(self):
+        self.thread.start()
+
+    def stop(self):
+        self.stop_flag.set()
+
+    def join(self):
+        self.thread.join()
+
+    def is_ready(self, timeout=0.1):
+        try:
+            return self.backend is not None and self.backend.ping(timeout=timeout)
+        except Exception:
+            return False
 
 
 class Workers:
@@ -14,37 +68,6 @@ class Workers:
         self.q = queue.Queue(maxsize=maxsize)
         self.workers = {}
         self.lock = threading.Lock()
-
-    def _worker(self, name, device, stop_flag):
-        backend = self.backend_class(device, config=self.backend_config)
-        backend.start()
-
-        while not stop_flag.is_set():
-            try:
-                task: Task = self.q.get(timeout=0.1)
-            except queue.Empty:
-                continue
-
-            try:
-                if task.status == "stopped":
-                    continue
-
-                task.mark_running()
-
-                task.run(backend)
-
-                if task.status not in ("completed", "error", "stopped"):
-                    task.mark_completed()
-
-            except StopAsyncIteration as error:
-                task.stop(str(error))
-            except Exception as error:
-                print("task error", task, error)
-                task.mark_failed(error)
-            finally:
-                self.q.task_done()
-
-        backend.stop()
 
     def update_devices(self, devices):
         from .utils.device_utils import resolve_devices
@@ -62,23 +85,17 @@ class Workers:
             current = set(self.workers.keys())
 
             for name in current - names:
-                thread, stop_flag = self.workers.pop(name)
-                stop_flag.set()
-                thread.join()
+                worker = self.workers.pop(name)
+                worker.stop()
+                worker.join()
 
             for device in devices:
                 if device.device_name in self.workers:
                     continue
 
-                stop_flag = threading.Event()
-                thread = threading.Thread(
-                    target=self._worker,
-                    args=(device.device_name, device, stop_flag),
-                    daemon=True,
-                    name=device.device_name,
-                )
-                self.workers[device.device_name] = (thread, stop_flag)
-                thread.start()
+                worker = Worker(self.backend_class, device, self.q, backend_config=self.backend_config)
+                self.workers[device.device_name] = worker
+                worker.start()
 
     def set_backend(self, backend_name, devices, backend_config=None):
         if backend_name == self.backend_name:
@@ -95,6 +112,12 @@ class Workers:
     def get_active_devices(self):
         with self.lock:
             return list(self.workers.keys())
+
+    def any_ready(self, timeout=0.1):
+        with self.lock:
+            workers = list(self.workers.values())
+
+        return any(worker.is_ready(timeout=timeout) for worker in workers)
 
     def submit(self, task):
         self.q.put(task)
@@ -120,6 +143,6 @@ class Workers:
             items = list(self.workers.items())
             self.workers.clear()
 
-        for _, (thread, stop_flag) in items:
-            stop_flag.set()
-            thread.join()
+        for _, worker in items:
+            worker.stop()
+            worker.join()

@@ -7,9 +7,11 @@ from typing import Any, Optional, List, Dict, Union
 # V1 API Models
 
 
-class HealthResponse(BaseModel):
+class ServerStatusResponse(BaseModel):
     status: str
-    version: str
+    queued: int
+    in_progress: int
+    completed: int
 
 
 class NetworkConfig(BaseModel):

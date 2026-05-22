@@ -117,6 +117,75 @@ class TestWorkerManagement:
     """Integration tests for worker management."""
 
     @patch("easydiffusion.utils.device_utils.resolve_devices", side_effect=mock_resolve_devices)
+    def test_status_endpoint_reports_starting_until_backend_is_ready(self, mock_resolve, app_state):
+        """Test /v1/status transitions from starting to ready when backend ping succeeds."""
+        client = app_state["client"]
+
+        try:
+            TestBackend.PING_RESPONSE = False
+            starting_payload = client.get("/v1/status").json()
+            assert starting_payload["status"] == "starting"
+            assert starting_payload["queued"] == 0
+            assert starting_payload["in_progress"] == 0
+            assert starting_payload["completed"] == 0
+
+            TestBackend.PING_RESPONSE = True
+            ready_payload = client.get("/v1/status").json()
+            assert ready_payload["status"] == "ready"
+            assert ready_payload["queued"] == 0
+            assert ready_payload["in_progress"] == 0
+            assert ready_payload["completed"] == 0
+        finally:
+            TestBackend.PING_RESPONSE = True
+
+    @patch("easydiffusion.utils.device_utils.resolve_devices", side_effect=mock_resolve_devices)
+    def test_status_endpoint_tracks_running_queue_and_completion(self, mock_resolve, app_state):
+        """Test /v1/status reflects queued, running, and completed tasks during execution."""
+        client = app_state["client"]
+        workers = app_state["workers"]
+        original_delay = TestBackend.GENERATE_STEP_DELAY_SECONDS
+
+        try:
+            TestBackend.GENERATE_STEP_DELAY_SECONDS = 0.3
+
+            for prompt in ("Status test 1", "Status test 2"):
+                response = client.post(
+                    "/v1/tasks",
+                    json={
+                        "username": "test-user",
+                        "prompt": prompt,
+                        "model_paths": {"stable-diffusion": "test-model"},
+                        "num_inference_steps": 5,
+                    },
+                )
+                assert response.status_code == 202
+
+            running_snapshot = None
+            deadline = time.time() + 3.0
+            while time.time() < deadline:
+                payload = client.get("/v1/status").json()
+                if payload["queued"] == 1 and payload["in_progress"] == 1:
+                    running_snapshot = payload
+                    break
+                time.sleep(0.05)
+
+            assert running_snapshot is not None
+            assert running_snapshot["status"] == "rendering"
+            assert running_snapshot["completed"] == 0
+            assert running_snapshot["queued"] == 1
+            assert running_snapshot["in_progress"] == 1
+
+            assert workers.wait(timeout=5.0)
+
+            final_payload = client.get("/v1/status").json()
+            assert final_payload["status"] == "ready"
+            assert final_payload["queued"] == 0
+            assert final_payload["in_progress"] == 0
+            assert final_payload["completed"] == 2
+        finally:
+            TestBackend.GENERATE_STEP_DELAY_SECONDS = original_delay
+
+    @patch("easydiffusion.utils.device_utils.resolve_devices", side_effect=mock_resolve_devices)
     def test_workers_start_on_initialization(self, mock_resolve, temp_config_path):
         """Test that workers are started when the application initializes."""
         backend_name, backend_class, previous = register_dummy_backend()
@@ -183,14 +252,14 @@ class TestWorkerManagement:
         """Test that the config API updates worker devices without changing backend."""
         workers = app_state["workers"]
         client = app_state["client"]
-        initial_thread = workers.workers["cpu"][0]
+        initial_worker = workers.workers["cpu"]
 
         response = client.put("/v1/config", json={"backend": {"devices": ["cpu", "cuda:0"]}})
 
         assert response.status_code == 200
         assert response.json() == {"status": "updated"}
         assert workers.backend_name == "dummy"
-        assert workers.workers["cpu"][0] is initial_thread
+        assert workers.workers["cpu"] is initial_worker
         assert set(workers.get_active_devices()) == {"cpu", "0"}
 
     @patch("easydiffusion.utils.device_utils.resolve_devices", side_effect=mock_resolve_devices)
@@ -207,7 +276,7 @@ class TestWorkerManagement:
         try:
             workers = app_state["workers"]
             client = app_state["client"]
-            original_thread = workers.workers["cpu"][0]
+            original_worker = workers.workers["cpu"]
             old_instances = list(TestBackend.instances)
 
             response = client.put("/v1/config", json={"backend": {"backend_name": "alt_mock"}})
@@ -217,7 +286,7 @@ class TestWorkerManagement:
             assert workers.backend_name == "alt_mock"
             assert workers.backend_class is AltMockBackend
             assert workers.get_active_devices() == ["cpu"]
-            assert workers.workers["cpu"][0] is not original_thread
+            assert workers.workers["cpu"] is not original_worker
             assert all(instance.stop_called for instance in old_instances)
         finally:
             BACKEND_REGISTRY.clear()
@@ -232,13 +301,13 @@ class TestWorkerManagement:
         initial_workers = workers.get_active_devices()
         assert len(initial_workers) == 1
 
-        initial_thread = workers.workers["cpu"][0]
+        initial_worker = workers.workers["cpu"]
 
         response = client.put("/v1/config", json={"backend": {"backend_name": "dummy", "devices": ["cpu"]}})
 
         assert response.status_code == 200
-        current_thread = workers.workers["cpu"][0]
-        assert current_thread is initial_thread
+        current_worker = workers.workers["cpu"]
+        assert current_worker is initial_worker
         assert workers.backend_name == "dummy"
 
     @patch("easydiffusion.utils.device_utils.resolve_devices", side_effect=mock_resolve_devices)

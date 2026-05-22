@@ -1,10 +1,10 @@
-import threading
+import time
 
 from torchruntime.device_db import GPU
 
 from easydiffusion.backends import BACKEND_REGISTRY
 from easydiffusion.tasks import Task
-from easydiffusion.workers import Workers
+from easydiffusion.workers import Worker, Workers
 from support import TestBackend
 
 
@@ -61,12 +61,12 @@ class TestWorkers:
 
     def test_update_devices_does_not_duplicate_workers(self):
         self.workers.update_devices([self.gpu0])
-        first_thread = self.workers.workers["0"][0]
+        first_worker = self.workers.workers["0"]
 
         self.workers.update_devices([self.gpu0])
 
         assert self.workers.get_active_devices() == ["0"]
-        assert self.workers.workers["0"][0] is first_thread
+        assert self.workers.workers["0"] is first_worker
 
     def test_submit_processes_tasks(self):
         self.workers.update_devices([self.gpu0])
@@ -107,13 +107,41 @@ class TestWorkers:
         assert self.workers.get_active_devices() == []
         assert all(instance.stop_called for instance in instances)
 
+    def test_is_any_backend_ready_returns_true_when_one_backend_is_ready(self):
+        class MixedReadyBackend(TestBackend):
+            def ping(self, timeout=0.1):
+                return self.device.device_name == "1"
+
+        workers = Workers(MixedReadyBackend, backend_name="mixed")
+
+        try:
+            workers.update_devices([self.gpu0, self.gpu1])
+            deadline = time.time() + 1.0
+            while time.time() < deadline:
+                if workers.any_ready():
+                    break
+                time.sleep(0.01)
+
+            assert workers.any_ready()
+        finally:
+            workers.shutdown()
+
+    def test_is_any_backend_ready_returns_false_when_no_backend_is_ready(self):
+        self.workers.update_devices([self.gpu0])
+
+        try:
+            TestBackend.PING_RESPONSE = False
+            assert self.workers.any_ready() is False
+        finally:
+            TestBackend.PING_RESPONSE = True
+
     def test_set_backend_reuses_workers_when_name_unchanged(self):
         self.workers.update_devices([self.cpu])
-        first_thread = self.workers.workers["cpu"][0]
+        first_worker = self.workers.workers["cpu"]
 
         self.workers.set_backend("dummy", [self.cpu])
 
-        assert self.workers.workers["cpu"][0] is first_thread
+        assert self.workers.workers["cpu"] is first_worker
 
     def test_set_backend_recreates_workers_when_name_changes(self):
         class OtherDummyBackend(TestBackend):
@@ -121,11 +149,12 @@ class TestWorkers:
 
         BACKEND_REGISTRY["other"] = OtherDummyBackend
         self.workers.update_devices([self.cpu])
-        first_thread = self.workers.workers["cpu"][0]
+        first_worker = self.workers.workers["cpu"]
 
         self.workers.set_backend("other", [self.cpu])
 
-        assert self.workers.workers["cpu"][0] is not first_thread
+        assert isinstance(self.workers.workers["cpu"], Worker)
+        assert self.workers.workers["cpu"] is not first_worker
 
         BACKEND_REGISTRY.pop("other", None)
 

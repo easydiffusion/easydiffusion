@@ -303,6 +303,11 @@ function setStatus(statusType, msg, msgType) { }
 
 function setServerStatus(event) {
     switch (event.type) {
+        case "starting":
+            serverStatusColor.style.color = "var(--status-orange)"
+            serverStatusMsg.style.color = "var(--status-orange)"
+            serverStatusMsg.innerText = "Stable Diffusion is " + event.message
+            break
         case "online":
             serverStatusColor.style.color = "var(--status-green)"
             serverStatusMsg.style.color = "var(--status-green)"
@@ -316,7 +321,7 @@ function setServerStatus(event) {
         case "error":
             serverStatusColor.style.color = "var(--status-red)"
             serverStatusMsg.style.color = "var(--status-red)"
-            serverStatusMsg.innerText = "Stable Diffusion has stopped"
+            serverStatusMsg.innerText = "Stable Diffusion is " + (event.message || "unavailable")
             break
     }
     if (SD.serverState.devices) {

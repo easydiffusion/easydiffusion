@@ -22,6 +22,7 @@ class TestBackend(Backend):
     DEFAULT_GENERATE_STEP_DELAY_SECONDS = 0.2
     GENERATE_STEP_DELAY_SECONDS = DEFAULT_GENERATE_STEP_DELAY_SECONDS
     GENERATE_STEP_CALLBACK: Callable[[float], None] | None = None
+    PING_RESPONSE: bool = True
     CONTROLNET_FILTERS = ["canny", "depth", "openpose", "scribble"]
 
     instances: list["TestBackend"] = []
@@ -43,6 +44,7 @@ class TestBackend(Backend):
     @classmethod
     def reset_mock_state(cls) -> None:
         cls.instances = []
+        cls.PING_RESPONSE = True
 
     @classmethod
     def list_controlnet_filters(cls) -> list[str]:
@@ -74,7 +76,7 @@ class TestBackend(Backend):
         self.stop_called = True
 
     def ping(self, timeout: float = 1.0) -> bool:
-        return True
+        return TestBackend.PING_RESPONSE
 
     def generate(self, input: dict[str, Any]) -> list[bytes]:
         width = input["request"]["width"]
