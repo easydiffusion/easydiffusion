@@ -21,6 +21,7 @@ os_name = platform.system()
 
 modules_to_check = {
     "setuptools": "69.5.1",
+    "requests": "2.32.3",
     # "sdkit": "2.0.15.6", # checked later
     # "diffusers": "0.21.4", # checked later
     "stable-diffusion-sdkit": "2.1.5",
@@ -274,14 +275,12 @@ def get_allowed_versions(module_name: str, allowed_versions: tuple):
 
 
 def fail(module_name):
-    print(
-        f"""Error installing {module_name}. Sorry about that, please try to:
+    print(f"""Error installing {module_name}. Sorry about that, please try to:
 1. Run this installer again.
 2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/easydiffusion/easydiffusion/wiki/Troubleshooting
 3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB
 4. If that doesn't solve the problem, please file an issue at https://github.com/easydiffusion/easydiffusion/issues
-Thanks!"""
-    )
+Thanks!""")
     exit(1)
 
 

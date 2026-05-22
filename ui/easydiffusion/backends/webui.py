@@ -28,7 +28,6 @@ from webui_common import (
     stop_backend,
 )
 
-
 ed_info = {
     "name": "WebUI backend for Easy Diffusion",
     "version": (1, 0, 0),
@@ -121,8 +120,9 @@ def start_backend():
         run_in_conda(["git", "fetch"], cwd=WEBUI_DIR, env=env)
         run_in_conda(["git", "-c", "advice.detachedHead=false", "checkout", WEBUI_COMMIT], cwd=WEBUI_DIR, env=env)
 
-    # workaround for the installations that broke out of conda and used ED's python 3.8 instead of WebUI conda's Py 3.10
+    # workaround for the installations that broke out of conda and used ED's python 3.9 instead of WebUI conda's Py 3.10
     run_in_conda(["python", "-m", "pip", "install", "-q", "--upgrade", "urllib3==2.2.3"], cwd=WEBUI_DIR, env=env)
+    run_in_conda(["python", "-m", "pip", "install", "-q", "--upgrade", "requests==2.32.3"], cwd=WEBUI_DIR, env=env)
 
     webui_common.WEBUI_API_PREFIX = ""
     webui_common.USE_SDKIT3_API = False
@@ -197,9 +197,12 @@ def is_installed():
     env = dict(os.environ)
     env.update(get_env())
 
+    # workaround for the installations that broke out of conda and used ED's python 3.9 instead of WebUI conda's Py 3.10
+    run_python_in_env(SYSTEM_DIR, ["-m", "pip", "install", "-q", "--upgrade", "requests==2.32.3"], env=env)
+
     try:
-        out = check_output_in_conda(["python", "-m", "pip", "show", "torch"], env=env)
-        return "Version" in out.decode()
+        out = run_python_in_env(SYSTEM_DIR, ["-m", "pip", "show", "torch"], env=env)
+        return "Version" in out
     except subprocess.CalledProcessError:
         pass
 
@@ -213,7 +216,28 @@ def run_in_conda(cmds: list, *args, **kwargs):
 
 def check_output_in_conda(cmds: list, cwd=None, env=None):
     cmds = [conda, "run", "--no-capture-output", "--prefix", SYSTEM_DIR] + cmds
-    return subprocess.check_output(cmds, cwd=cwd, env=env, stderr=subprocess.PIPE)
+    return subprocess.check_output(cmds, cwd=cwd, env=env)
+
+
+def get_env_python(system_dir):
+    if OS_NAME == "Windows":
+        return os.path.join(system_dir, "python.exe")
+
+    return os.path.join(system_dir, "bin", "python")
+
+
+def run_python_in_env(system_dir, cmds, env=None):
+    python = get_env_python(system_dir)
+
+    result = subprocess.run(
+        [python] + cmds,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        env=env,
+    )
+
+    return result.stdout
 
 
 def get_env():
