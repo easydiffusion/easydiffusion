@@ -2,17 +2,20 @@
 Tests for the v1 API endpoints.
 """
 
+import shutil
+import tempfile
+from pathlib import Path
+
 import pytest
 from fastapi.testclient import TestClient
-from pathlib import Path
-import tempfile
-import shutil
 
 from easydiffusion.config import ConfigManager, create_default_config
 from easydiffusion.server import server_api
 from easydiffusion.tasks import Task
 from easydiffusion.workers import Workers
 from easydiffusion.backends.test_backend import TestBackend
+
+from support import wait_for_status
 
 
 @pytest.fixture
@@ -67,10 +70,7 @@ class TestStatusEndpoint:
         """Test status endpoint returns starting while workers are still warming up."""
         TestBackend.PING_RESPONSE = False
 
-        response = client.get("/v1/status")
-        assert response.status_code == 200
-
-        data = response.json()
+        data = wait_for_status(client, "starting")
         assert data == {
             "status": "starting",
             "queued": 0,
@@ -80,10 +80,7 @@ class TestStatusEndpoint:
 
     def test_status_check_returns_ready_when_idle(self, client):
         """Test status endpoint returns an idle server summary."""
-        response = client.get("/v1/status")
-        assert response.status_code == 200
-
-        data = response.json()
+        data = wait_for_status(client, "ready")
         assert data == {
             "status": "ready",
             "queued": 0,

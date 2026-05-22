@@ -1,7 +1,18 @@
 import pytest
 
 from easydiffusion.backends.test_backend import TestBackend
+from easydiffusion.workers import Worker
 from support import register_dummy_backend, unregister_dummy_backend
+
+
+@pytest.fixture(autouse=True)
+def fast_backend_ping_interval():
+    previous_interval = Worker.BACKEND_PING_CHECK_INTERVAL
+    Worker.BACKEND_PING_CHECK_INTERVAL = 0.01
+    try:
+        yield
+    finally:
+        Worker.BACKEND_PING_CHECK_INTERVAL = previous_interval
 
 
 @pytest.fixture

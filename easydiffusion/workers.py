@@ -1,11 +1,14 @@
 import queue
 import threading
+import time
 
 from .backends import get_backend_class
 from .tasks import Task
 
 
 class Worker:
+    BACKEND_PING_CHECK_INTERVAL = 1.0
+
     def __init__(self, backend_class, device, task_queue, backend_config=None):
         self.device = device
         self.backend_class = backend_class
@@ -13,13 +16,34 @@ class Worker:
         self.task_queue = task_queue
         self.stop_flag = threading.Event()
         self.backend = None
+        self._backend_status = False
+        self._next_ping_time = 0.0
         self.thread = threading.Thread(target=self._run, daemon=True, name=device.device_name)
+
+    def _refresh_backend_status(self):
+        if self.backend is None:
+            self._backend_status = False
+            return
+
+        try:
+            self._backend_status = self.backend.ping(timeout=0.1)
+        except Exception:
+            self._backend_status = False
+        finally:
+            self._next_ping_time = time.monotonic() + self.BACKEND_PING_CHECK_INTERVAL
 
     def _run(self):
         self.backend = self.backend_class(self.device, config=self.backend_config)
         self.backend.start()
 
         while not self.stop_flag.is_set():
+            if time.monotonic() >= self._next_ping_time:
+                self._refresh_backend_status()
+
+            if not self._backend_status:
+                self.stop_flag.wait(timeout=0.1)
+                continue
+
             try:
                 task: Task = self.task_queue.get(timeout=0.1)
             except queue.Empty:
@@ -54,10 +78,7 @@ class Worker:
         self.thread.join()
 
     def is_ready(self, timeout=0.1):
-        try:
-            return self.backend is not None and self.backend.ping(timeout=timeout)
-        except Exception:
-            return False
+        return self.backend is not None and self._backend_status
 
 
 class Workers:

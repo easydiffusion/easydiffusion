@@ -17,7 +17,7 @@ from easydiffusion.config import ConfigManager, create_default_config
 from easydiffusion.server import server_api
 from easydiffusion.workers import Workers
 from torchruntime.device_db import GPU
-from support import TestBackend, register_dummy_backend, unregister_dummy_backend
+from support import TestBackend, register_dummy_backend, unregister_dummy_backend, wait_for_status
 
 
 def mock_resolve_devices(devices):
@@ -123,14 +123,14 @@ class TestWorkerManagement:
 
         try:
             TestBackend.PING_RESPONSE = False
-            starting_payload = client.get("/v1/status").json()
+            starting_payload = wait_for_status(client, "starting")
             assert starting_payload["status"] == "starting"
             assert starting_payload["queued"] == 0
             assert starting_payload["in_progress"] == 0
             assert starting_payload["completed"] == 0
 
             TestBackend.PING_RESPONSE = True
-            ready_payload = client.get("/v1/status").json()
+            ready_payload = wait_for_status(client, "ready")
             assert ready_payload["status"] == "ready"
             assert ready_payload["queued"] == 0
             assert ready_payload["in_progress"] == 0

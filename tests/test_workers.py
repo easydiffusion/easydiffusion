@@ -1,4 +1,5 @@
 import time
+import queue
 
 from torchruntime.device_db import GPU
 
@@ -6,6 +7,16 @@ from easydiffusion.backends import BACKEND_REGISTRY
 from easydiffusion.tasks import Task
 from easydiffusion.workers import Worker, Workers
 from support import TestBackend
+
+
+def wait_until(condition, timeout=1.0, interval=0.01):
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if condition():
+            return True
+        time.sleep(interval)
+
+    return condition()
 
 
 class SuccessfulTask(Task):
@@ -116,13 +127,7 @@ class TestWorkers:
 
         try:
             workers.update_devices([self.gpu0, self.gpu1])
-            deadline = time.time() + 1.0
-            while time.time() < deadline:
-                if workers.any_ready():
-                    break
-                time.sleep(0.01)
-
-            assert workers.any_ready()
+            assert wait_until(workers.any_ready)
         finally:
             workers.shutdown()
 
@@ -131,9 +136,56 @@ class TestWorkers:
 
         try:
             TestBackend.PING_RESPONSE = False
-            assert self.workers.any_ready() is False
+            assert wait_until(lambda: self.workers.any_ready() is False)
         finally:
             TestBackend.PING_RESPONSE = True
+
+    def test_worker_does_not_pick_up_tasks_until_backend_is_ready(self):
+        TestBackend.PING_RESPONSE = False
+        self.workers.update_devices([self.gpu0])
+        task = SuccessfulTask()
+
+        try:
+            self.workers.submit(task)
+
+            assert self.workers.wait(timeout=0.1) is False
+            assert task.status == "pending"
+            assert self.workers.queue_size() == 1
+
+            TestBackend.PING_RESPONSE = True
+
+            assert wait_until(self.workers.any_ready)
+            assert self.workers.wait(timeout=1.0)
+            assert task.status == "completed"
+        finally:
+            TestBackend.PING_RESPONSE = True
+
+    def test_worker_is_ready_uses_cached_backend_status(self):
+        class CountingBackend(TestBackend):
+            ping_calls = 0
+
+            def ping(self, timeout=0.1):
+                type(self).ping_calls += 1
+                return True
+
+        original_interval = Worker.BACKEND_PING_CHECK_INTERVAL
+        Worker.BACKEND_PING_CHECK_INTERVAL = 1.0
+        worker = Worker(CountingBackend, self.gpu0, queue.Queue())
+
+        try:
+            worker.start()
+
+            assert wait_until(lambda: CountingBackend.ping_calls > 0)
+            ping_calls = CountingBackend.ping_calls
+
+            assert worker.is_ready()
+            assert worker.is_ready()
+            assert worker.is_ready()
+            assert CountingBackend.ping_calls == ping_calls
+        finally:
+            worker.stop()
+            worker.join()
+            Worker.BACKEND_PING_CHECK_INTERVAL = original_interval
 
     def test_set_backend_reuses_workers_when_name_unchanged(self):
         self.workers.update_devices([self.cpu])
