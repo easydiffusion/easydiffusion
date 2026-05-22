@@ -6,6 +6,7 @@ import hashlib
 import concurrent.futures
 import tarfile
 import tempfile
+import traceback
 
 from easydiffusion.app import ROOT_DIR, getConfig
 from easydiffusion.utils import log
@@ -29,7 +30,6 @@ from webui_common import (
     do_start_backend,
     stop_backend,
 )
-
 
 ed_info = {
     "name": "sdkit3 backend for Easy Diffusion",
@@ -76,7 +76,13 @@ def update_backend():
     manifest_url = f"{backend_binary_url}/{target}-manifest.json"
 
     print(f"Fetching manifest from {manifest_url}")
-    response = requests.get(manifest_url)
+    try:
+        response = requests.get(manifest_url)
+    except:
+        print("Wasn't able to fetch the manifest.")
+        traceback.print_exc()
+        return
+
     try:
         response.raise_for_status()
     except requests.exceptions.HTTPError as e:
