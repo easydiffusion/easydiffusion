@@ -4,8 +4,7 @@ import queue
 from torchruntime.device_db import GPU
 
 from easydiffusion.backends import BACKEND_REGISTRY
-from easydiffusion.tasks import Task
-from easydiffusion.workers import Worker, Workers
+from easydiffusion.workers import Task, Worker, Workers
 from support import TestBackend
 
 

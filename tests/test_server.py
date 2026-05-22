@@ -11,8 +11,7 @@ from fastapi.testclient import TestClient
 
 from easydiffusion.config import ConfigManager, create_default_config
 from easydiffusion.server import server_api
-from easydiffusion.tasks import Task
-from easydiffusion.workers import Workers
+from easydiffusion.workers import Task, Workers
 from easydiffusion.backends.test_backend import TestBackend
 
 from support import wait_for_status

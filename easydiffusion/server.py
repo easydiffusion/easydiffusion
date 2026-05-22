@@ -38,7 +38,7 @@ from easydiffusion.types import (
     CreateUserResponse,
     DeleteUserResponse,
 )
-from easydiffusion.tasks import Task
+from easydiffusion.workers import Task
 from easydiffusion.legacy_server import support_legacy_paths
 
 # Create the FastAPI application
