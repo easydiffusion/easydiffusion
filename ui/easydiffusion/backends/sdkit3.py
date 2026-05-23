@@ -157,7 +157,12 @@ def start_backend():
     #     extra_args.append("--clip-on-cpu")
     #     extra_args.append("--vae-on-cpu")
 
-    # extra_args.append("--diffusion-fa")
+    # Use the live curr_models value if available (set when a model was selected), otherwise fall back to config.
+    sd_model_name = webui_common.curr_models.get("stable-diffusion") or (config.get("model") or {}).get("stable-diffusion", "") or ""
+    is_chroma = "chroma" in sd_model_name.lower()
+    print(f"[sdkit3] SD model name: {sd_model_name!r}, is_chroma: {is_chroma}", flush=True)
+    if not is_chroma:
+        extra_args.append("--diffusion-fa")
 
     if vram_usage_level in ("low", "balanced"):
         extra_args.append("--offload-to-cpu")
