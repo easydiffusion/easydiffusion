@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 #setup environment
 if [ -e "installer_files/env" ]; then
 	export ENVFOLDER="$(pwd)/installer_files/env"
