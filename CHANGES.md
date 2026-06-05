@@ -1,6 +1,7 @@
 # What's new?
 
 ## v4 (preview)
+* 4.4.0 - 5 Jun 2026 - Update to sdkit v3.3, which adds support for new models: [Lens](https://github.com/leejet/stable-diffusion.cpp/blob/master/docs/lens.md) and [PiD](https://github.com/leejet/stable-diffusion.cpp/blob/master/docs/pid.md), along with a bunch of bug fixes to rendering.
 * 4.3.0 - 24 Apr 2026 - Support Ernie Image and Ernie Image Turbo. Fixes for Anima models. Fixed a bug in v4 where LoRAs in nested folders would fail to load.
 * 4.2.0 - 31 Mar 2026 - (Internal code changes) Merge v3.5 and v4 engine into the main branch. This brings back the streamlined release process of landing new features first in beta, and then merging into the main branch after testing.
 * 4.1.0 - 13 Feb 2026 - Add support for Flux2-Klein.
