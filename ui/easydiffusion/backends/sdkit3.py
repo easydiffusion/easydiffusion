@@ -48,7 +48,7 @@ def get_backend_dir():
 
 
 BACKEND_BINARY_URL_BASE = "https://github.com/easydiffusion/sdkit/releases/download"
-DEFAULT_BACKEND_VERSION = "v3.2.0"
+DEFAULT_BACKEND_VERSION = "v3.3.0"
 
 OS_NAME = platform.system()
 
@@ -157,7 +157,8 @@ def start_backend():
     #     extra_args.append("--clip-on-cpu")
     #     extra_args.append("--vae-on-cpu")
 
-    # extra_args.append("--diffusion-fa")
+    extra_args.append("--diffusion-fa")
+    extra_args.append("--chroma-disable-dit-mask")
 
     if vram_usage_level in ("low", "balanced"):
         extra_args.append("--offload-to-cpu")
