@@ -252,7 +252,7 @@ async def get_devices():
         from torchruntime.device_db import get_gpus
 
         devices = []
-        devices.append(DeviceInfo(id="cpu", name="CPU", available=True))
+        devices.append(DeviceInfo(id="cpu", name="CPU", available=True, mem_free=0.0, mem_total=0.0))
 
         gpus = get_gpus()
         for idx, gpu in enumerate(gpus):
@@ -261,7 +261,8 @@ async def get_devices():
                     id=str(idx),
                     name=gpu.device_name or f"GPU {idx}",
                     available=True,
-                    vram_free=None,
+                    mem_free=0.0,
+                    mem_total=0.0,
                 )
             )
 

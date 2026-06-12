@@ -290,6 +290,8 @@ class TestDevicesEndpoint:
         assert cpu_device is not None
         assert cpu_device["name"] == "CPU"
         assert cpu_device["available"] is True
+        assert "mem_free" in cpu_device
+        assert "mem_total" in cpu_device
 
 
 class TestModelsEndpoint:

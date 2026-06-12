@@ -77,7 +77,8 @@ class DeviceInfo(BaseModel):
     id: str
     name: str
     available: bool
-    vram_free: Optional[str] = None
+    mem_free: float
+    mem_total: float
 
 
 class DevicesResponse(BaseModel):
