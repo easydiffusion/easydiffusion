@@ -766,11 +766,6 @@ async function getSystemInfo() {
             metadataOutputFormatField.disabled = !saveToDiskField.checked
         }
         setDiskPath(res["default_output_dir"], force)
-
-        // backend info
-        if (res["backend_url"]) {
-            document.querySelector("#backend-url").setAttribute("href", res["backend_url"])
-        }
     } catch (e) {
         console.log("error fetching devices", e)
     }
