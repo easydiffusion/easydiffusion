@@ -64,10 +64,20 @@ def support_legacy_paths(
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
+    async def get_legacy_modifiers():
+        from easydiffusion.server import NOCACHE_HEADERS
+
+        try:
+            modifiers = get_image_modifiers()
+            return JSONResponse(modifiers, headers=NOCACHE_HEADERS)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
     server_api.add_api_route("/render", create_legacy_render_task, methods=["POST"])
     server_api.add_api_route("/filter", create_legacy_filter_task, methods=["POST"])
     server_api.add_api_route("/get/models", get_models, methods=["GET"])
     server_api.add_api_route("/get/system_info", get_legacy_system_info, methods=["GET"])
+    server_api.add_api_route("/get/modifiers", get_legacy_modifiers, methods=["GET"])
 
 
 def get_system_info(config_manager):
@@ -126,6 +136,141 @@ def get_legacy_hosts():
         return ips[2]
     except Exception:
         return []
+
+
+def get_image_modifiers():
+    import os
+    import json
+    import urllib
+
+    CUSTOM_MODIFIERS_DIR = os.path.abspath("modifiers")
+    CUSTOM_MODIFIERS_PORTRAIT_EXTENSIONS = [
+        ".portrait",
+        "_portrait",
+        " portrait",
+        "-portrait",
+    ]
+    CUSTOM_MODIFIERS_LANDSCAPE_EXTENSIONS = [
+        ".landscape",
+        "_landscape",
+        " landscape",
+        "-landscape",
+    ]
+    IMAGE_EXTENSIONS = [
+        ".png",
+        ".apng",
+        ".jpg",
+        ".jpeg",
+        ".jfif",
+        ".pjpeg",
+        ".pjp",
+        ".jxl",
+        ".gif",
+        ".webp",
+        ".avif",
+        ".svg",
+    ]
+
+    modifiers_json_path = os.path.join("ui", "modifiers.json")
+
+    modifier_categories = {}
+    original_category_order = []
+    with open(modifiers_json_path, "r", encoding="utf-8") as f:
+        modifiers_file = json.load(f)
+
+        # The trailing slash is needed to support symlinks
+        if not os.path.isdir(f"{CUSTOM_MODIFIERS_DIR}/"):
+            return modifiers_file
+
+        # convert modifiers from a list of objects to a dict of dicts
+        for category_item in modifiers_file:
+            category_name = category_item["category"]
+            original_category_order.append(category_name)
+            category = {}
+            for modifier_item in category_item["modifiers"]:
+                modifier = {}
+                for preview_item in modifier_item["previews"]:
+                    modifier[preview_item["name"]] = preview_item["path"]
+                category[modifier_item["modifier"]] = modifier
+            modifier_categories[category_name] = category
+
+    def scan_directory(directory_path: str, category_name="Modifiers"):
+        for entry in os.scandir(directory_path):
+            if entry.is_file():
+                file_extension = list(filter(lambda e: entry.name.endswith(e), IMAGE_EXTENSIONS))
+                if len(file_extension) == 0:
+                    continue
+
+                modifier_name = entry.name[: -len(file_extension[0])]
+                modifier_path = f"custom/{entry.path[len(CUSTOM_MODIFIERS_DIR) + 1 :]}"
+                # URL encode path segments
+                modifier_path = "/".join(
+                    map(
+                        lambda segment: urllib.parse.quote(segment),
+                        modifier_path.split("/"),
+                    )
+                )
+                is_portrait = True
+                is_landscape = True
+
+                portrait_extension = list(
+                    filter(
+                        lambda e: modifier_name.lower().endswith(e),
+                        CUSTOM_MODIFIERS_PORTRAIT_EXTENSIONS,
+                    )
+                )
+                landscape_extension = list(
+                    filter(
+                        lambda e: modifier_name.lower().endswith(e),
+                        CUSTOM_MODIFIERS_LANDSCAPE_EXTENSIONS,
+                    )
+                )
+
+                if len(portrait_extension) > 0:
+                    is_landscape = False
+                    modifier_name = modifier_name[: -len(portrait_extension[0])]
+                elif len(landscape_extension) > 0:
+                    is_portrait = False
+                    modifier_name = modifier_name[: -len(landscape_extension[0])]
+
+                if category_name not in modifier_categories:
+                    modifier_categories[category_name] = {}
+
+                category = modifier_categories[category_name]
+
+                if modifier_name not in category:
+                    category[modifier_name] = {}
+
+                if is_portrait or "portrait" not in category[modifier_name]:
+                    category[modifier_name]["portrait"] = modifier_path
+
+                if is_landscape or "landscape" not in category[modifier_name]:
+                    category[modifier_name]["landscape"] = modifier_path
+            elif entry.is_dir():
+                scan_directory(
+                    entry.path,
+                    entry.name if directory_path == CUSTOM_MODIFIERS_DIR else f"{category_name}/{entry.name}",
+                )
+
+    scan_directory(CUSTOM_MODIFIERS_DIR)
+
+    custom_categories = sorted(
+        [cn for cn in modifier_categories.keys() if cn not in original_category_order],
+        key=str.casefold,
+    )
+
+    # convert the modifiers back into a list of objects
+    modifier_categories_list = []
+    for category_name in [*original_category_order, *custom_categories]:
+        category = {"category": category_name, "modifiers": []}
+        for modifier_name in sorted(modifier_categories[category_name].keys(), key=str.casefold):
+            modifier = {"modifier": modifier_name, "previews": []}
+            for preview_name, preview_path in modifier_categories[category_name][modifier_name].items():
+                modifier["previews"].append({"name": preview_name, "path": preview_path})
+            category["modifiers"].append(modifier)
+        modifier_categories_list.append(category)
+
+    return modifier_categories_list
 
 
 def get_backend_controlnet_filters(server_state: Any) -> set[str]:

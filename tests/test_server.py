@@ -337,6 +337,49 @@ class TestLegacySystemInfoEndpoint:
         assert data["default_output_dir"].strip() != ""
 
 
+class TestLegacyModifiersEndpoint:
+    """Tests for legacy /get/modifiers endpoint."""
+
+    def test_get_modifiers(self, client):
+        """Test modifiers."""
+
+        def assert_modifier(m):
+            assert "modifier" in m
+            assert isinstance(m["modifier"], str)
+            assert m["modifier"].strip() != ""
+
+            assert "previews" in m
+            assert isinstance(m["previews"], list)
+            assert len(m["previews"]) == 2
+
+            for i in range(2):
+                for key in ("name", "path"):
+                    assert key in m["previews"][i]
+                    assert isinstance(m["previews"][i][key], str)
+                    assert m["previews"][i][key].strip() != ""
+
+        def assert_modifier_folder(m):
+            assert "category" in m
+            assert isinstance(m["category"], str)
+            assert m["category"].strip() != ""
+
+            assert "modifiers" in m
+            assert isinstance(m["modifiers"], list)
+            assert len(m["modifiers"]) > 0
+
+            for sub_m in m["modifiers"]:
+                assert_modifier(sub_m)
+
+        response = client.get("/get/modifiers")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert isinstance(data, list)
+
+        for m in data:
+            assert_modifier_folder(m)
+
+
 class TestModelsEndpoint:
     """Tests for /v1/models endpoint."""
 
