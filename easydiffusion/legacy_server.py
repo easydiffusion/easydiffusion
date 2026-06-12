@@ -32,6 +32,8 @@ def support_legacy_paths(
     *,
     enqueue_task: Callable[[GenerateTaskRequest | FilterTaskRequest], JSONResponse],
 ) -> None:
+    from easydiffusion.server import get_models
+
     async def create_legacy_render_task(req: dict[str, Any]):
         try:
             translated = translate_legacy_render_request(req, get_backend_controlnet_filters(server_api.state))
@@ -54,6 +56,7 @@ def support_legacy_paths(
 
     server_api.add_api_route("/render", create_legacy_render_task, methods=["POST"])
     server_api.add_api_route("/filter", create_legacy_filter_task, methods=["POST"])
+    server_api.add_api_route("/get/models", get_models, methods=["GET"])
 
 
 def get_backend_controlnet_filters(server_state: Any) -> set[str]:

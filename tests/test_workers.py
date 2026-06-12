@@ -5,7 +5,7 @@ from torchruntime.device_db import GPU
 
 from easydiffusion.backends import BACKEND_REGISTRY
 from easydiffusion.workers import Task, Worker, Workers
-from support import TestBackend
+from .support import TestBackend
 
 
 def wait_until(condition, timeout=1.0, interval=0.01):

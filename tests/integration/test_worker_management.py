@@ -17,7 +17,7 @@ from easydiffusion.config import ConfigManager, create_default_config
 from easydiffusion.server import server_api
 from easydiffusion.workers import Workers
 from torchruntime.device_db import GPU
-from support import TestBackend, register_dummy_backend, unregister_dummy_backend, wait_for_status
+from ..support import TestBackend, register_dummy_backend, unregister_dummy_backend, wait_for_status
 
 
 def mock_resolve_devices(devices):

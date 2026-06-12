@@ -2,7 +2,7 @@ import pytest
 
 from easydiffusion.backends.test_backend import TestBackend
 from easydiffusion.workers import Worker
-from support import register_dummy_backend, unregister_dummy_backend
+from .support import register_dummy_backend, unregister_dummy_backend
 
 
 @pytest.fixture(autouse=True)

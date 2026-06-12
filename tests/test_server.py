@@ -14,7 +14,7 @@ from easydiffusion.server import server_api
 from easydiffusion.workers import Task, Workers
 from easydiffusion.backends.test_backend import TestBackend
 
-from support import wait_for_status
+from .support import wait_for_status
 
 
 @pytest.fixture
@@ -295,6 +295,9 @@ class TestDevicesEndpoint:
 class TestModelsEndpoint:
     """Tests for /v1/models endpoint."""
 
+    def setup_method(self):
+        self.api_path = "/v1/models"
+
     def test_get_models_empty(self, client, temp_dir, config_manager):
         """Test listing models when models directory is empty."""
         models_dir = temp_dir / "models"
@@ -304,7 +307,7 @@ class TestModelsEndpoint:
         config["models"]["models_dir"] = str(models_dir)
         config_manager.update(config)
 
-        response = client.get("/v1/models")
+        response = client.get(self.api_path)
         assert response.status_code == 200
 
         data = response.json()
@@ -323,6 +326,10 @@ class TestModelsEndpoint:
         (sd_dir / "model1.safetensors").touch()
         (sd_dir / "model2.ckpt").touch()
 
+        sd_subdir = sd_dir / "foo"
+        sd_subdir.mkdir()
+        (sd_subdir / "model3.sft").touch()
+
         vae_dir = models_dir / "vae"
         vae_dir.mkdir()
         (vae_dir / "vae1.safetensors").touch()
@@ -331,16 +338,18 @@ class TestModelsEndpoint:
         config["models"]["models_dir"] = str(models_dir)
         config_manager.update(config)
 
-        response = client.get("/v1/models")
+        response = client.get(self.api_path)
         assert response.status_code == 200
 
         data = response.json()
-        assert len(data["models"]) == 3
+        print(data)
+        assert len(data["models"]) == 4
 
         # Check model names
         model_ids = [m["model"] for m in data["models"]]
         assert "model1" in model_ids
         assert "model2" in model_ids
+        assert "foo/model3" in model_ids
         assert "vae1" in model_ids
 
         # Check names and tags
@@ -349,8 +358,17 @@ class TestModelsEndpoint:
         assert models_by_model["model1"]["tags"] == ["stable-diffusion"]
         assert models_by_model["model2"]["name"] == "model2"
         assert models_by_model["model2"]["tags"] == ["stable-diffusion"]
+        assert models_by_model["foo/model3"]["name"] == "foo/model3"
+        assert models_by_model["foo/model3"]["tags"] == ["stable-diffusion"]
         assert models_by_model["vae1"]["name"] == "vae1"
         assert models_by_model["vae1"]["tags"] == ["vae"]
+
+
+class TestLegacyModelsEndpoint(TestModelsEndpoint):
+    """Tests for legacy /get/models endpoint."""
+
+    def setup_method(self):
+        self.api_path = "/get/models?foo=bar"
 
 
 class TestGenerateEndpoint:

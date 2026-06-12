@@ -76,6 +76,7 @@ def list_models(model_type: str, models_dir: str) -> List[Dict[str, str]]:
             for file_path in files:
                 rel_path = os.path.relpath(file_path, model_dir)
                 model_name = os.path.splitext(rel_path)[0]
+                model_name = model_name.replace(os.path.sep, "/")
                 model = {
                     "model": model_name,
                     "name": model_name,
