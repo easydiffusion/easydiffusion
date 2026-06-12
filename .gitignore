@@ -6,3 +6,4 @@ dist
 node_modules/*
 .tmp1
 .tmp2
+config.yaml
