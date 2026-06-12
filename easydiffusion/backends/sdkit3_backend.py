@@ -46,3 +46,6 @@ class Sdkit3Backend(Backend):
 
     def stop_task(self) -> None:
         return None
+
+    def get_url(self) -> str:
+        return ""

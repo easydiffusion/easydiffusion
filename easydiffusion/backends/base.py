@@ -132,3 +132,8 @@ class Backend(ABC):
     def stop_task(self) -> None:
         """Request backend-specific cancellation for the active task."""
         pass
+
+    @abstractmethod
+    def get_url(self) -> str:
+        """Return the URL of the backend."""
+        pass
