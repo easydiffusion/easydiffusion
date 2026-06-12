@@ -294,6 +294,49 @@ class TestDevicesEndpoint:
         assert "mem_total" in cpu_device
 
 
+class TestLegacySystemInfoEndpoint:
+    """Tests for legacy /get/system_info endpoint."""
+
+    def test_get_system_info(self, client):
+        """Test system info."""
+        response = client.get("/get/system_info")
+        assert response.status_code == 200
+
+        data = response.json()
+        for key, t in (
+            ("devices", dict),
+            ("hosts", list),
+            ("default_output_dir", str),
+            ("enforce_output_dir", bool),
+            ("enforce_output_metadata", bool),
+        ):
+            assert key in data
+            assert isinstance(data[key], t)
+
+        # devices
+        devices = data["devices"]
+        for key in ("all", "active", "config"):
+            assert key in devices
+        assert "cpu" in devices["all"]
+
+        for device_id in devices["all"]:
+            for key in ("name", "mem_free", "mem_total"):
+                assert key in devices["all"][device_id]
+
+        assert isinstance(devices["active"], dict)
+        assert len(devices["active"]) > 0
+        for active_device_id in devices["active"]:
+            assert isinstance(devices["active"][active_device_id], dict)
+            assert len(devices["active"][active_device_id]) > 0
+
+        # hosts
+        assert len(data["hosts"]) > 0
+        assert all(isinstance(h, str) for h in data["hosts"])
+
+        # default_output_dir
+        assert data["default_output_dir"].strip() != ""
+
+
 class TestModelsEndpoint:
     """Tests for /v1/models endpoint."""
 
@@ -618,7 +661,7 @@ class TestLegacyTaskEndpoints:
 
         task = next(iter(server_api.state.task_cache.values()))
 
-        assert task.username == "default"
+        assert task.username == "easydiffusion"
         assert task.input["request"]["prompt"] == "A lighthouse"
         assert task.input["request"]["filters"] == ["nsfw_checker", "codeformer", "realesrgan"]
         assert task.input["request"]["filter_params"]["realesrgan"]["scale"] == 2
@@ -629,7 +672,7 @@ class TestLegacyTaskEndpoints:
         assert task.input["models"]["model_paths"]["nsfw_checker"] == "nsfw_checker"
         assert task.input["task"]["session_id"] == "legacy-session"
         assert task.input["task"]["task_id"] == task.task_id
-        assert task.input["task"]["username"] == "default"
+        assert task.input["task"]["username"] == "easydiffusion"
 
     def test_legacy_filter_path_returns_legacy_response_and_maps_request(self, client):
         """Test /filter keeps the old response body while queueing translated task input."""
@@ -653,13 +696,13 @@ class TestLegacyTaskEndpoints:
 
         task = next(iter(server_api.state.task_cache.values()))
 
-        assert task.username == "default"
+        assert task.username == "easydiffusion"
         assert task.input["request"]["filter"] == "realesrgan"
         assert task.input["models"]["model_paths"]["realesrgan"] == "4x-ultrasharp"
         assert task.input["request"]["filter_params"]["realesrgan"]["upscaler"] == "4x-ultrasharp"
         assert task.input["task"]["session_id"] == "legacy-filter-session"
         assert task.input["task"]["task_id"] == task.task_id
-        assert task.input["task"]["username"] == "default"
+        assert task.input["task"]["username"] == "easydiffusion"
 
 
 class TestTasksEndpoints:

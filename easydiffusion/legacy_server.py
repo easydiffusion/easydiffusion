@@ -9,7 +9,6 @@ from fastapi.responses import JSONResponse
 
 from easydiffusion.types import FilterTaskRequest, GenerateTaskRequest
 
-
 LEGACY_MODEL_FIELD_MAP = {
     "use_stable_diffusion_model": "stable-diffusion",
     "use_vae_model": "vae",
@@ -22,7 +21,8 @@ LEGACY_MODEL_FIELD_MAP = {
 LEGACY_FACE_CORRECTION_MODELS = ("gfpgan", "codeformer")
 LEGACY_UPSCALE_MODELS = ("realesrgan", "latent_upscaler", "esrgan_4x", "lanczos", "nearest", "scunet", "swinir")
 LEGACY_UPSCALE_FILTER_MODELS = ("realesrgan", "esrgan_4x", "lanczos", "nearest", "scunet", "swinir")
-LEGACY_DEFAULT_USERNAME = "default"
+LEGACY_DEFAULT_USERNAME = "easydiffusion"
+LEGACY_OUTPUT_DIR_NAME = "Stable Diffusion UI"
 _LEGACY_GENERATE_FIELDS = set(GenerateTaskRequest.model_fields)
 _LEGACY_FILTER_FIELDS = set(FilterTaskRequest.model_fields)
 
@@ -54,9 +54,78 @@ def support_legacy_paths(
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
+    async def get_legacy_system_info():
+        from easydiffusion.server import NOCACHE_HEADERS
+
+        try:
+            config_manager = server_api.state.config_manager
+            system_info = get_system_info(config_manager)
+            return JSONResponse(system_info, headers=NOCACHE_HEADERS)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
     server_api.add_api_route("/render", create_legacy_render_task, methods=["POST"])
     server_api.add_api_route("/filter", create_legacy_filter_task, methods=["POST"])
     server_api.add_api_route("/get/models", get_models, methods=["GET"])
+    server_api.add_api_route("/get/system_info", get_legacy_system_info, methods=["GET"])
+
+
+def get_system_info(config_manager):
+    import os
+
+    user_config = config_manager.get_user_config(LEGACY_DEFAULT_USERNAME)
+
+    default_save_path = os.path.join(os.path.expanduser("~"), LEGACY_OUTPUT_DIR_NAME)
+
+    force_save_path = config_manager.get("security", {}).get("force_save_path", "")
+    output_dir = force_save_path or user_config.get("save", {}).get("save_path") or default_save_path
+
+    system_info = {
+        "devices": get_legacy_devices(),
+        "hosts": get_legacy_hosts(),
+        "default_output_dir": output_dir,
+        "enforce_output_dir": (True if force_save_path else False),
+        "enforce_output_metadata": config_manager.get("security", {}).get("force_save_metadata", False),
+    }
+    system_info["devices"]["config"] = config_manager.get("backend", {}).get("devices", "auto")
+
+    return system_info
+
+
+def get_legacy_devices():
+    from easydiffusion.utils import get_devices
+
+    devices = get_devices()
+    cpu_device = next((device.model_dump() for device in devices if device.id == "cpu"))
+    gpu_devices = [device.model_dump() for device in devices if device.id != "cpu"]
+
+    res = {
+        "all": {"cpu": cpu_device},
+        "active": {},
+    }
+    if gpu_devices:
+        if len(gpu_devices) > 1:
+            gpu_entries = {f"cuda:{i}": device for i, device in enumerate(gpu_devices)}
+        else:
+            gpu_entries = {"cuda": gpu_devices[0]}
+
+        res["all"].update(gpu_entries)
+        res["active"].update(gpu_entries)
+    else:
+        res["active"] = {"cpu": cpu_device}
+
+    return res
+
+
+def get_legacy_hosts():
+    import socket
+
+    try:
+        ips = socket.gethostbyname_ex(socket.gethostname())
+        ips[2].append(ips[0])
+        return ips[2]
+    except Exception:
+        return []
 
 
 def get_backend_controlnet_filters(server_state: Any) -> set[str]:

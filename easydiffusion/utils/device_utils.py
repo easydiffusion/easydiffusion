@@ -101,7 +101,7 @@ def _parse_device_string(device_str: str) -> GPU:
 
     gpus = get_gpus()
     if idx < 0 or idx >= len(gpus):
-        raise ValueError(f"Device ID {idx} is out of bounds for available GPUs (0-{len(gpus)-1})")
+        raise ValueError(f"Device ID {idx} is out of bounds for available GPUs (0-{len(gpus) - 1})")
 
     return gpus[idx]
 
@@ -160,3 +160,24 @@ def resolve_devices(devices: Union[str, List[str]]) -> List[GPU]:
 
     # Fallback to CPU for unexpected input
     return [CPU]
+
+
+def get_devices():
+    from easydiffusion.types import DeviceInfo
+
+    devices = []
+    devices.append(DeviceInfo(id="cpu", name="CPU", available=True, mem_free=0.0, mem_total=0.0))
+
+    gpus = get_gpus()
+    for idx, gpu in enumerate(gpus):
+        devices.append(
+            DeviceInfo(
+                id=str(idx),
+                name=gpu.device_name or f"GPU {idx}",
+                available=True,
+                mem_free=0.0,
+                mem_total=0.0,
+            )
+        )
+
+    return devices

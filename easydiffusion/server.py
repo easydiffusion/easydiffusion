@@ -249,22 +249,9 @@ async def update_user_config(req: UserSettingsConfig, username: str):
 async def get_devices():
     """List available devices."""
     try:
-        from torchruntime.device_db import get_gpus
+        from easydiffusion.utils import get_devices
 
-        devices = []
-        devices.append(DeviceInfo(id="cpu", name="CPU", available=True, mem_free=0.0, mem_total=0.0))
-
-        gpus = get_gpus()
-        for idx, gpu in enumerate(gpus):
-            devices.append(
-                DeviceInfo(
-                    id=str(idx),
-                    name=gpu.device_name or f"GPU {idx}",
-                    available=True,
-                    mem_free=0.0,
-                    mem_total=0.0,
-                )
-            )
+        devices = get_devices()
 
         return JSONResponse(
             DevicesResponse(devices=devices).model_dump(),
