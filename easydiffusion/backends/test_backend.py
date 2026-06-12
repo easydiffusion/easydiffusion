@@ -158,9 +158,6 @@ class TestBackend(Backend):
         with self.lock:
             self._stop_requested = True
 
-    def get_url(self) -> str:
-        return ""
-
     @classmethod
     def _build_gradient_png(
         cls,
