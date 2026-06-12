@@ -72,4 +72,4 @@ if __name__ == "__main__":
     host = "0.0.0.0" if external_access else "127.0.0.1"
 
     logger.info(f"Starting server on {host}:{port}")
-    uvicorn.run("easydiffusion.server:server_api", host=host, port=port)
+    uvicorn.run("easydiffusion.server:server_api", host=host, port=port, access_log=False)
