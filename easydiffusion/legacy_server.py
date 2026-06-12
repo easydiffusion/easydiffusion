@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import os
 from typing import Any, Callable
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from easydiffusion.types import FilterTaskRequest, GenerateTaskRequest
 
@@ -25,6 +27,26 @@ LEGACY_DEFAULT_USERNAME = "easydiffusion"
 LEGACY_OUTPUT_DIR_NAME = "Stable Diffusion UI"
 _LEGACY_GENERATE_FIELDS = set(GenerateTaskRequest.model_fields)
 _LEGACY_FILTER_FIELDS = set(FilterTaskRequest.model_fields)
+
+
+class NoCacheStaticFiles(StaticFiles):
+    def __init__(self, directory: str):
+        # follow_symlink is only available on fastapi >= 0.92.0
+        if os.path.islink(directory):
+            super().__init__(directory=os.path.realpath(directory))
+        else:
+            super().__init__(directory=directory)
+
+    def is_not_modified(self, response_headers, request_headers) -> bool:
+        from easydiffusion.server import NOCACHE_HEADERS
+
+        if "content-type" in response_headers and (
+            "javascript" in response_headers["content-type"] or "css" in response_headers["content-type"]
+        ):
+            response_headers.update(NOCACHE_HEADERS)
+            return False
+
+        return super().is_not_modified(response_headers, request_headers)
 
 
 def support_legacy_paths(
@@ -54,35 +76,45 @@ def support_legacy_paths(
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
-    async def get_legacy_system_info():
+    def _return_json(data_fn):
         from easydiffusion.server import NOCACHE_HEADERS
 
         try:
-            config_manager = server_api.state.config_manager
-            system_info = get_system_info(config_manager)
-            return JSONResponse(system_info, headers=NOCACHE_HEADERS)
+            data = data_fn()
+            return JSONResponse(data, headers=NOCACHE_HEADERS)
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
+
+    async def get_legacy_system_info():
+        def data_fn():
+            config_manager = server_api.state.config_manager
+            return get_system_info(config_manager)
+
+        return _return_json(data_fn)
 
     async def get_legacy_modifiers():
-        from easydiffusion.server import NOCACHE_HEADERS
+        return _return_json(get_image_modifiers)
 
-        try:
-            modifiers = get_image_modifiers()
-            return JSONResponse(modifiers, headers=NOCACHE_HEADERS)
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+    async def get_legacy_ui_plugins():
+        return _return_json(get_ui_plugins)
 
     server_api.add_api_route("/render", create_legacy_render_task, methods=["POST"])
     server_api.add_api_route("/filter", create_legacy_filter_task, methods=["POST"])
     server_api.add_api_route("/get/models", get_models, methods=["GET"])
     server_api.add_api_route("/get/system_info", get_legacy_system_info, methods=["GET"])
     server_api.add_api_route("/get/modifiers", get_legacy_modifiers, methods=["GET"])
+    server_api.add_api_route("/get/ui_plugins", get_legacy_ui_plugins, methods=["GET"])
+
+    for plugins_dir, dir_prefix in get_ui_plugin_sources():
+        if os.path.exists(plugins_dir):
+            server_api.mount(
+                f"/plugins/{dir_prefix}",
+                NoCacheStaticFiles(directory=plugins_dir),
+                name=f"plugins-{dir_prefix}",
+            )
 
 
 def get_system_info(config_manager):
-    import os
-
     user_config = config_manager.get_user_config(LEGACY_DEFAULT_USERNAME)
 
     default_save_path = os.path.join(os.path.expanduser("~"), LEGACY_OUTPUT_DIR_NAME)
@@ -139,7 +171,6 @@ def get_legacy_hosts():
 
 
 def get_image_modifiers():
-    import os
     import json
     import urllib
 
@@ -271,6 +302,26 @@ def get_image_modifiers():
         modifier_categories_list.append(category)
 
     return modifier_categories_list
+
+
+def get_ui_plugin_sources():
+    USER_UI_PLUGINS_DIR = os.path.join("plugins", "ui")
+    CORE_UI_PLUGINS_DIR = os.path.join("ui", "plugins", "ui")
+    return ((CORE_UI_PLUGINS_DIR, "core"), (USER_UI_PLUGINS_DIR, "user"))
+
+
+def get_ui_plugins():
+    plugins = []
+
+    file_names = set()
+    for plugins_dir, dir_prefix in get_ui_plugin_sources():
+        if os.path.exists(plugins_dir):
+            for file in os.listdir(plugins_dir):
+                if file.endswith(".plugin.js") and file not in file_names:
+                    plugins.append(f"/plugins/{dir_prefix}/{file}")
+                    file_names.add(file)
+
+    return plugins
 
 
 def get_backend_controlnet_filters(server_state: Any) -> set[str]:

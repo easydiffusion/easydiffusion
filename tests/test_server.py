@@ -380,6 +380,24 @@ class TestLegacyModifiersEndpoint:
             assert_modifier_folder(m)
 
 
+class TestLegacyUIPluginsEndpoint:
+    """Tests for legacy /get/ui_plugins endpoint."""
+
+    def test_get_ui_plugins(self, client):
+        """Test UI plugins."""
+
+        response = client.get("/get/ui_plugins")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert isinstance(data, list)
+        assert len(data) > 0
+
+        for plugin in data:
+            assert isinstance(plugin, str)
+            assert plugin.strip() != ""
+
+
 class TestModelsEndpoint:
     """Tests for /v1/models endpoint."""
 
