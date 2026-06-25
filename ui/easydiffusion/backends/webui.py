@@ -121,8 +121,11 @@ def start_backend():
         run_in_conda(["git", "-c", "advice.detachedHead=false", "checkout", WEBUI_COMMIT], cwd=WEBUI_DIR, env=env)
 
     # workaround for the installations that broke out of conda and used ED's python 3.9 instead of WebUI conda's Py 3.10
-    run_in_conda(["python", "-m", "pip", "install", "-q", "--upgrade", "urllib3==2.2.3"], cwd=WEBUI_DIR, env=env)
-    run_in_conda(["python", "-m", "pip", "install", "-q", "--upgrade", "requests==2.32.3"], cwd=WEBUI_DIR, env=env)
+    run_in_conda(
+        ["python", "-m", "pip", "install", "-q", "--upgrade", "urllib3==2.2.3", "requests==2.32.3"],
+        cwd=WEBUI_DIR,
+        env=env,
+    )
 
     webui_common.WEBUI_API_PREFIX = ""
     webui_common.USE_SDKIT3_API = False
@@ -198,7 +201,9 @@ def is_installed():
     env.update(get_env())
 
     # workaround for the installations that broke out of conda and used ED's python 3.9 instead of WebUI conda's Py 3.10
-    run_python_in_env(SYSTEM_DIR, ["-m", "pip", "install", "-q", "--upgrade", "requests==2.32.3"], env=env)
+    run_python_in_env(
+        SYSTEM_DIR, ["-m", "pip", "install", "-q", "--upgrade", "urllib3==2.2.3", "requests==2.32.3"], env=env
+    )
 
     try:
         out = run_python_in_env(SYSTEM_DIR, ["-m", "pip", "show", "torch"], env=env)
