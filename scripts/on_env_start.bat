@@ -49,6 +49,7 @@ if "%update_branch%"=="" (
     @call git add -A .
     @call git stash
     @call git reset --hard
+    @call git branch --set-upstream-to=origin/%update_branch% "%update_branch%"
     @call git -c advice.detachedHead=false checkout "%update_branch%"
     @call git pull
 
