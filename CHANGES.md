@@ -1,6 +1,8 @@
 # What's new?
 
 ## v4 (preview)
+* 4.5.1 - 3 Jul 2026 - Option in the Settings tab to choose the Vulkan backend, if using the v4 engine with a compatible GPU.
+* 4.5.1 - 3 Jul 2026 - Improve support for older CPUs (e.g. from 2013).
 * 4.5.0 - 25 Jun 2026 - Add support for [Krea2](https://github.com/leejet/stable-diffusion.cpp/blob/master/docs/krea2.md).
 * 4.4.0 - 5 Jun 2026 - Update to sdkit v3.3, which adds support for new models: [Lens](https://github.com/leejet/stable-diffusion.cpp/blob/master/docs/lens.md) and [PiD](https://github.com/leejet/stable-diffusion.cpp/blob/master/docs/pid.md), along with a bunch of bug fixes to rendering.
 * 4.3.0 - 24 Apr 2026 - Support Ernie Image and Ernie Image Turbo. Fixes for Anima models. Fixed a bug in v4 where LoRAs in nested folders would fail to load.
