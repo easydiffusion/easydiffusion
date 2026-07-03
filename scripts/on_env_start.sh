@@ -46,6 +46,7 @@ if [ -f "scripts/install_status.txt" ] && [ `grep -c sd_ui_git_cloned scripts/in
     git add -A .
     git stash
     git reset --hard
+    git branch --set-upstream-to=origin/$update_branch "$update_branch"
     git -c advice.detachedHead=false checkout "$update_branch"
     git pull
 
