@@ -266,6 +266,19 @@ var PARAMETERS = [
         ],
     },
     {
+        id: "backend_platform",
+        type: ParameterType.select,
+        label: "Backend platform",
+        note:
+            "GPU platform to use",
+        saveInAppConfig: true,
+        default: "auto",
+        options: [
+            { value: "auto", label: "Auto" },
+            { value: "vulkan", label: "Vulkan" },
+        ],
+    },
+    {
         id: "cloudflare",
         type: ParameterType.custom,
         label: "Cloudflare tunnel",
@@ -440,6 +453,7 @@ let uiOpenBrowserOnStartField = document.querySelector("#ui_open_browser_on_star
 let confirmDangerousActionsField = document.querySelector("#confirm_dangerous_actions")
 let testDiffusers = document.querySelector("#use_v3_engine")
 let backendEngine = document.querySelector("#backend")
+let backendPlatformField = document.querySelector("#backend_platform")
 let profileNameField = document.querySelector("#profileName")
 let modelsDirField = document.querySelector("#models_dir")
 
@@ -510,6 +524,10 @@ async function getAppConfig() {
         backendEngine.value = config.backend
         document.querySelector("#test_diffusers").checked = testDiffusers.checked // don't break plugins
         document.querySelector("#use_v3_engine").checked = testDiffusers.checked // don't break plugins
+
+        if (config.backend_config?.platform) {
+            backendPlatformField.value = config.backend_config.platform
+        }
 
         if (config.config_on_startup) {
             if (config.config_on_startup?.backend !== "ed_classic") {
@@ -748,6 +766,11 @@ async function getSystemInfo() {
             gpuSettingEntry.style.display = "none"
         } else {
             $("#use_gpus").val(activeDeviceIds)
+        }
+
+        if (backendEngine.value != "sdkit3" || useCPUField.checked || activeDeviceIds.includes("mps")) {
+            let backendPlatformEntry = getParameterSettingsEntry("backend_platform")
+            backendPlatformEntry.style.display = "none"
         }
 
         document.dispatchEvent(new CustomEvent("system_info_update", { detail: devices }))
