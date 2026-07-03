@@ -48,7 +48,7 @@ def get_backend_dir():
 
 
 BACKEND_BINARY_URL_BASE = "https://github.com/easydiffusion/sdkit/releases/download"
-DEFAULT_BACKEND_VERSION = "v3.4.0"
+DEFAULT_BACKEND_VERSION = "v3.4.1"
 
 OS_NAME = platform.system()
 
