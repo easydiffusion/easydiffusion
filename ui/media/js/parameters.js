@@ -275,7 +275,7 @@ var PARAMETERS = [
         default: "auto",
         options: [
             { value: "auto", label: "Auto" },
-            { value: "vulkan", label: "Vulkan" },
+            { value: "vulkan", label: "Vulkan (experimental)" },
         ],
     },
     {
