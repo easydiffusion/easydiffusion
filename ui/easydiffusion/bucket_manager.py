@@ -1,14 +1,14 @@
-from typing import List
-
-from fastapi import Depends, FastAPI, HTTPException, Response, File
+from fastapi import Depends, HTTPException, Response, File
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from easydiffusion.easydb import crud, models, schemas
 from easydiffusion.easydb.database import SessionLocal, engine
 
+from datetime import datetime
 from requests.compat import urlparse
 
-import base64, json
+import base64
 
 MIME_TYPES = {
     "jpg":  "image/jpeg",
@@ -92,7 +92,57 @@ def init():
         result.data = base64.encodestring(result.data)
         return result
 
+    @server_api.get("/image/{seed}/{time_created}")
+    def get_image(seed: int, time_created: str, db: Session = Depends(get_db)):
+        from easydiffusion.easydb.mappings import GalleryImage
+        try:
+            time_obj = datetime.strptime(time_created, "%Y-%m-%dT%H:%M:%S")
+            images = db.query(GalleryImage).filter(GalleryImage.seed == seed).all()
+            if len(images) == 1:
+                image = images[0]
+            else:
+                for i in images:
+                    if i.time_created == time_obj:
+                        image = i
+                        break
+            return FileResponse(image.path)
+        except Exception as err:
+            print(f"Image not found, attempted path: {seed}", "error", err)
+            raise HTTPException(status_code=404, detail="Image not found")
+    
+    @server_api.delete("/image/{seed}/{time_created}")
+    def delete_image(seed: int, time_created: str, db: Session = Depends(get_db)):
+        from easydiffusion.easydb.mappings import GalleryImage
+        try:
+            time_obj = datetime.strptime(time_created, "%Y-%m-%dT%H:%M:%S")
+            images = db.query(GalleryImage).filter(GalleryImage.seed == seed).all()
+            if len(images) == 1:
+                db.delete(images[0])
+                db.commit()
+                return Response()
+            else:
+                for i in images:
+                    if i.time_created == time_obj:
+                        db.delete(i)
+                        db.commit()
+                        return Response()
+                return Response(None, 409)
+        except Exception as e:
+            print(f"Image not found, attempted path: {seed}")
+            raise HTTPException(status_code=404, detail="Image not found")
 
+    @server_api.get("/all_images")
+    def get_all_images(prompt: str = "", model: str = "", page: int = 0, images_per_page: int = 50, workspace : str = "default", db: Session = Depends(get_db)):
+        from easydiffusion.easydb.mappings import GalleryImage
+        images = db.query(GalleryImage).filter(GalleryImage.workspace == workspace).order_by(GalleryImage.time_created.desc())
+        if prompt != "":
+            images = images.filter(GalleryImage.prompt.like("%"+prompt+"%"))
+        if model != "":
+            images = images.filter(GalleryImage.use_stable_diffusion_model.like("%"+model+"%"))
+        images = images.offset(page*images_per_page).limit(images_per_page)
+        return images.all()
+
+    
 def get_filename_from_url(url):
     path = urlparse(url).path
     name = path[path.rfind('/')+1:]
