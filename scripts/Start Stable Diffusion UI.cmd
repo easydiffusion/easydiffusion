@@ -11,7 +11,7 @@ if exist "on_sd_start.bat" (
     echo.
     echo !!!! WARNING !!!!
     echo.
-    echo It looks like you're trying to run the installation script from a source code 
+    echo It looks like you're trying to run the installation script from a source code
     echo download. This will not work.
     echo.
     echo Recommended: Please close this window and download the installer from
@@ -21,7 +21,7 @@ if exist "on_sd_start.bat" (
     echo.
     pause
     exit /b
-) 
+)
 
 @rem set legacy installer's PATH, if it exists
 if exist "installer" set PATH=%cd%\installer;%cd%\installer\Library\bin;%cd%\installer\Scripts;%cd%\installer\Library\usr\bin;%PATH%
@@ -32,14 +32,14 @@ if exist "installer_files\env" set PATH=%cd%\installer_files\env;%cd%\installer_
 set PYTHONPATH=%cd%\installer;%cd%\installer_files\env
 
 @rem Test the core requirements
-call where git
-call git --version
+start /b "" cmd /c "where git"
+start /b "" cmd /c "git --version"
 
-call where conda
-call conda --version
-echo .
-echo COMSPEC=%COMSPEC%
-powershell -Command "(Get-WmiObject Win32_VideoController | Select-Object Name, AdapterRAM, DriverDate, DriverVersion)"
+start /b "" cmd /c "where conda"
+start /b "" cmd /c "conda --version"
+
+start /b "" cmd /c "echo . && echo COMSPEC=%COMSPEC%"
+start /b "" powershell -Command "(Get-WmiObject Win32_VideoController | Select-Object Name, AdapterRAM, DriverDate, DriverVersion)"
 
 @rem Download the rest of the installer and UI
 call scripts\on_env_start.bat

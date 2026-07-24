@@ -16,6 +16,7 @@ import shutil
 from pathlib import Path
 from pprint import pprint
 import re
+import threading
 
 os_name = platform.system()
 
@@ -336,8 +337,14 @@ def launch_uvicorn():
     import torchruntime
 
     torchruntime.configure()
-    if hasattr(torchruntime, "info"):
-        torchruntime.info()
+
+    # print info in a non-blocking thread
+    def print_torchruntime_info():
+        if hasattr(torchruntime, "info"):
+            torchruntime.info()
+
+    info_thread = threading.Thread(target=print_torchruntime_info)
+    info_thread.start()
 
     # allow a user to override the HSA_OVERRIDE_GFX_VERSION and HIP_VISIBLE_DEVICES variables
     # until ED gets process-based multi-GPU support (which will allow different processes to use different GPUs)
@@ -351,7 +358,7 @@ def launch_uvicorn():
 
     print(f"PYTHONPATH={os.environ['PYTHONPATH']}")
     print(f"Python:  {shutil.which('python')}")
-    print(f"Version: {platform. python_version()}")
+    print(f"Version: {platform.python_version()}")
 
     bind_ip = "127.0.0.1"
     listen_port = 9000
