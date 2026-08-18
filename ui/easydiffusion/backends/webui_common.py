@@ -119,6 +119,7 @@ def ping(timeout=1):
     except (ConnectTimeout, ConnectionError, ReadTimeout) as e:
         raise TimeoutError(e)
 
+
 def load_model(context, model_type, **kwargs):
     from easydiffusion.app import ROOT_DIR, getConfig
 
