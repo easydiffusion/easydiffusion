@@ -1386,7 +1386,11 @@ function getCurrentUserRequest() {
             newTask.reqBody.sampler_name = "ddim"
         }
     }
-    if (refImages.length > 0) {
+    const isRefImageContainerVisible =
+        refImageContainer &&
+        !refImageContainer.classList.contains("displayNone") &&
+        refImageContainer.style.display !== "none"
+    if (isRefImageContainerVisible && refImages.length > 0) {
         newTask.reqBody.ref_images = refImages.slice()
     }
     if (saveToDiskField.checked && diskPathField.value.trim() !== "") {
