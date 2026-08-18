@@ -16,7 +16,6 @@ import time
 import weakref
 from typing import Any, Hashable
 
-import torch
 from easydiffusion import device_manager
 from easydiffusion.tasks import Task
 from easydiffusion.utils import log

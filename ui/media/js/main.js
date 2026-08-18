@@ -714,7 +714,7 @@ function getAllModelNames(type) {
 
 // gets a flattened list of all models of a certain type. e.g. "path/subpath/modelname"
 // use the filter to search for all models having a certain name.
-function getAllModelPathes(type, filter = "") {
+function getAllModelPaths(type, filter = "") {
     function f(tree, prefix) {
         if (tree == undefined) {
             return []
@@ -1418,22 +1418,15 @@ function getCurrentUserRequest() {
         let modelNames = loraModelData["modelNames"]
         let modelStrengths = loraModelData["modelWeights"]
 
-        // Deduplicate LoRA models, keeping the first occurrence's weight
+        // Check and warn for duplicate LoRA models
         let seenNames = new Set()
-        let uniqueNames = []
-        let uniqueStrengths = []
         for (let i = 0; i < modelNames.length; i++) {
-            if (!seenNames.has(modelNames[i])) {
-                seenNames.add(modelNames[i])
-                uniqueNames.push(modelNames[i])
-                uniqueStrengths.push(modelStrengths[i])
+            if (seenNames.has(modelNames[i])) {
+                showToast("Duplicate LoRA models detected. Please check if that's intentional.")
+                break
             }
+            seenNames.add(modelNames[i])
         }
-        if (uniqueNames.length < modelNames.length) {
-            console.log("Duplicate LoRA models were removed. Each LoRA can only be used once.")
-        }
-        modelNames = uniqueNames
-        modelStrengths = uniqueStrengths
 
         if (modelNames.length > 0) {
             modelNames = modelNames.length == 1 ? modelNames[0] : modelNames

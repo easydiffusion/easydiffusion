@@ -16,11 +16,13 @@ import shutil
 from pathlib import Path
 from pprint import pprint
 import re
+import threading
 
 os_name = platform.system()
 
 modules_to_check = {
     "setuptools": "69.5.1",
+    "requests": "2.32.3",
     # "sdkit": "2.0.15.6", # checked later
     # "diffusers": "0.21.4", # checked later
     "stable-diffusion-sdkit": "2.1.5",
@@ -274,14 +276,12 @@ def get_allowed_versions(module_name: str, allowed_versions: tuple):
 
 
 def fail(module_name):
-    print(
-        f"""Error installing {module_name}. Sorry about that, please try to:
+    print(f"""Error installing {module_name}. Sorry about that, please try to:
 1. Run this installer again.
 2. If that doesn't fix it, please try the common troubleshooting steps at https://github.com/easydiffusion/easydiffusion/wiki/Troubleshooting
 3. If those steps don't help, please copy *all* the error messages in this window, and ask the community at https://discord.com/invite/u9yhsFmEkB
 4. If that doesn't solve the problem, please file an issue at https://github.com/easydiffusion/easydiffusion/issues
-Thanks!"""
-    )
+Thanks!""")
     exit(1)
 
 
@@ -337,8 +337,14 @@ def launch_uvicorn():
     import torchruntime
 
     torchruntime.configure()
-    if hasattr(torchruntime, "info"):
-        torchruntime.info()
+
+    # print info in a non-blocking thread
+    def print_torchruntime_info():
+        if hasattr(torchruntime, "info"):
+            torchruntime.info()
+
+    info_thread = threading.Thread(target=print_torchruntime_info)
+    info_thread.start()
 
     # allow a user to override the HSA_OVERRIDE_GFX_VERSION and HIP_VISIBLE_DEVICES variables
     # until ED gets process-based multi-GPU support (which will allow different processes to use different GPUs)
@@ -352,7 +358,7 @@ def launch_uvicorn():
 
     print(f"PYTHONPATH={os.environ['PYTHONPATH']}")
     print(f"Python:  {shutil.which('python')}")
-    print(f"Version: {platform. python_version()}")
+    print(f"Version: {platform.python_version()}")
 
     bind_ip = "127.0.0.1"
     listen_port = 9000

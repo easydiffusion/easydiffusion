@@ -1,6 +1,11 @@
 # What's new?
 
 ## v4 (preview)
+* 4.5.2 - 24 Jul 2026 - Improve Easy Diffusion's startup time by removing unnecessary steps or running them in parallel.
+* 4.5.1 - 3 Jul 2026 - Option in the Settings tab to choose the Vulkan backend, if using the v4 engine with a compatible GPU.
+* 4.5.1 - 3 Jul 2026 - Improve support for older CPUs (e.g. from 2013).
+* 4.5.0 - 25 Jun 2026 - Add support for [Krea2](https://github.com/leejet/stable-diffusion.cpp/blob/master/docs/krea2.md).
+* 4.4.0 - 5 Jun 2026 - Update to sdkit v3.3, which adds support for new models: [Lens](https://github.com/leejet/stable-diffusion.cpp/blob/master/docs/lens.md) and [PiD](https://github.com/leejet/stable-diffusion.cpp/blob/master/docs/pid.md), along with a bunch of bug fixes to rendering.
 * 4.3.0 - 24 Apr 2026 - Support Ernie Image and Ernie Image Turbo. Fixes for Anima models. Fixed a bug in v4 where LoRAs in nested folders would fail to load.
 * 4.2.0 - 31 Mar 2026 - (Internal code changes) Merge v3.5 and v4 engine into the main branch. This brings back the streamlined release process of landing new features first in beta, and then merging into the main branch after testing.
 * 4.1.0 - 13 Feb 2026 - Add support for Flux2-Klein.
@@ -21,6 +26,7 @@
 v3.5 is currently an optional upgrade, and you can switch between the v3.0 (diffusers) engine and the v3.5 (webui) engine using the `Settings` tab in the UI.
 
 ### Detailed changelog
+* 3.5.15 - 24 Jul 2026 - Improve Easy Diffusion's startup time by removing unnecessary steps or running them in parallel.
 * 3.5.14 - 31 Mar 2026 - (Internal code changes) Merge v3.5 and v4 engine into the main branch. This brings back the streamlined release process of landing new features first in beta, and then merging into the main branch after testing.
 * 3.5.13 - 2 Dec 2025 - Add the v4 engine (i.e. sdkit3) as an experimental backend.
 * 3.5.12 - 24 Nov 2025 - Adjust inpainting image editor size for various screen sizes (to avoid overflowing out of the screen).
@@ -58,7 +64,8 @@ v3.5 is currently an optional upgrade, and you can switch between the v3.0 (diff
 - **Major rewrite of the code** - We've switched to using diffusers under-the-hood, which allows us to release new features faster, and focus on making the UI and installer even easier to use.
 
 ### Detailed changelog
-* 3.0.16 - 17 Apr 2025 - Fix duplicate LoRA models causing garbled images. Duplicate LoRAs are now automatically removed, both in the UI dropdown and prompt parser. Thanks @majiayu000.
+* 3.0.17 - 24 Jul 2026 - Improve Easy Diffusion's startup time by removing unnecessary steps or running them in parallel.
+* 3.0.16 - 17 Apr 2025 - Warn when using duplicate LoRAs. Thanks @majiayu000.
 * 3.0.16 - 31 Mar 2026 - (Internal code changes) Merge v3.5 and v4 engine into the main branch. This brings back the streamlined release process of landing new features first in beta, and then merging into the main branch after testing.
 * 3.0.15 - 28 Oct 2025 - Fix regression where newly added models wouldn't work, even after refreshing the models list.
 * 3.0.14 - 1 Oct 2025 - (Internal code change) Model fetching API refactored. It now returns the model types (flux, SD version etc) in a cleaner data format.

@@ -6,6 +6,7 @@ import hashlib
 import concurrent.futures
 import tarfile
 import tempfile
+import traceback
 
 from easydiffusion.app import ROOT_DIR, getConfig
 from easydiffusion.utils import log
@@ -30,7 +31,6 @@ from webui_common import (
     stop_backend,
 )
 
-
 ed_info = {
     "name": "sdkit3 backend for Easy Diffusion",
     "version": (1, 0, 0),
@@ -48,7 +48,7 @@ def get_backend_dir():
 
 
 BACKEND_BINARY_URL_BASE = "https://github.com/easydiffusion/sdkit/releases/download"
-DEFAULT_BACKEND_VERSION = "v3.2.0"
+DEFAULT_BACKEND_VERSION = "v3.4.1"
 
 OS_NAME = platform.system()
 
@@ -76,7 +76,13 @@ def update_backend():
     manifest_url = f"{backend_binary_url}/{target}-manifest.json"
 
     print(f"Fetching manifest from {manifest_url}")
-    response = requests.get(manifest_url)
+    try:
+        response = requests.get(manifest_url)
+    except:
+        print("Wasn't able to fetch the manifest.")
+        traceback.print_exc()
+        return
+
     try:
         response.raise_for_status()
     except requests.exceptions.HTTPError as e:
@@ -151,12 +157,8 @@ def start_backend():
     #     extra_args.append("--clip-on-cpu")
     #     extra_args.append("--vae-on-cpu")
 
-    # Use the live curr_models value if available (set when a model was selected), otherwise fall back to config.
-    sd_model_name = webui_common.curr_models.get("stable-diffusion") or (config.get("model") or {}).get("stable-diffusion", "") or ""
-    is_chroma = "chroma" in sd_model_name.lower()
-    print(f"[sdkit3] SD model name: {sd_model_name!r}, is_chroma: {is_chroma}", flush=True)
-    if not is_chroma:
-        extra_args.append("--diffusion-fa")
+    extra_args.append("--diffusion-fa")
+    extra_args.append("--chroma-disable-dit-mask")
 
     if vram_usage_level in ("low", "balanced"):
         extra_args.append("--offload-to-cpu")

@@ -31,11 +31,9 @@ scripts/bootstrap.sh || exit 1
 if [ -e "installer_files/env" ]; then export PATH="$(pwd)/installer_files/env/bin:$PATH"; fi
 
 # Test the bootstrap
-which git
-git --version || exit 1
+{ which git && git --version || exit 1; } &
 
-which conda
-conda --version || exit 1
+{ which conda && conda --version || exit 1; } &
 
 # Download the rest of the installer and UI
 chmod +x scripts/*.sh

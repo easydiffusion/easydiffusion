@@ -44,22 +44,23 @@
         // Initialize an array to hold the matches
         let matches = []
         let seenModels = new Set()
+        let warnedForDuplicate = false
 
         // Iterate over the string, finding matches
         for (const match of prompt.matchAll(regex)) {
             const modelFileName = match[1].trim()
-            const loraPathes = getAllModelPathes("lora", modelFileName)
-            if (loraPathes.length > 0) {
-                const loraPath = loraPathes[0]
+            const loraPaths = getAllModelPaths("lora", modelFileName)
+            if (loraPaths.length > 0) {
+                const loraPath = loraPaths[0]
 
-                // Skip duplicate LoRA models, keep the first occurrence
-                if (seenModels.has(loraPath)) {
-                    // Note: modelFileName is regex-constrained to [^:>]+ so XSS risk is minimal,
-                    // but ideally this should use textContent. Same pattern exists at line 85.
-                    console.log("Duplicate LoRA ignored: " + modelFileName)
-                    continue
+                // Check and warn for duplicate LoRA models
+                if (!warnedForDuplicate) {
+                  if (seenModels.has(loraPath)) {
+                    showToast("Duplicate LoRA models detected. Please check if that's intentional.")
+                    warnedForDuplicate = true
+                  }
+                  seenModels.add(loraPath)
                 }
-                seenModels.add(loraPath)
 
                 // Initialize an object to hold a match
                 let loraTag = {
