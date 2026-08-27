@@ -3,7 +3,6 @@ import platform
 import re
 import traceback
 
-import torch
 from easydiffusion.utils import log
 
 from torchruntime.utils import (
