@@ -1,0 +1,42 @@
+@import url("/media/css/themes.css");
+@import url("/media/css/main.css");
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: var(--background-color1);
+}
+
+img {
+    border-radius: 5px;
+}
+
+p, h1, h2, h3, h4, h5, h6 {
+    color: var(--text-color);
+    cursor: default;
+    margin: 6px;
+}
+
+::-moz-selection {
+    /* Code for Firefox */
+    color: none;
+    background: none;
+}
+
+::selection {
+    color: none;
+    background: none;
+}
+
+button {
+    margin: 8px;
+}
+
+div {
+    margin: 16px;
+}
+
+:disabled {
+    color: gray;
+}
