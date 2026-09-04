@@ -1,3 +1,4 @@
+import sys
 import subprocess
 import threading
 import psutil
@@ -7,7 +8,12 @@ def read_output(pipe, prefix=""):
     while True:
         output = pipe.readline()
         if output:
-            print(f"{prefix}{output.decode('utf-8')}", end="")
+            text = f"{prefix}{output.decode('utf-8', 'replace')}"
+            try:
+                print(text, end="", flush=True)
+            except (UnicodeEncodeError, ValueError):
+                enc = getattr(sys.stdout, "encoding", None) or "utf-8"
+                sys.stdout.write(text.encode(enc, "replace").decode(enc, "replace"))
         else:
             break  # Pipe is closed, subprocess has likely exited
 

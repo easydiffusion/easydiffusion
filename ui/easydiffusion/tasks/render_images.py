@@ -163,6 +163,70 @@ def print_task_info(
     log.info(f"save data: {save_data}")
 
 
+ONLY_MASKED_PADDING = 32  # px on the original image scale, like A1111's inpaint_full_res_padding
+
+
+def crop_init_to_mask(req, task_data):
+    "Crop init image + mask to the mask bbox ('Only masked area' inpaint). Mutates req. Returns info for paste-back, or None to use the whole picture."
+    if not getattr(task_data, "inpaint_only_masked", False):
+        return None
+    if req.init_image is None or not req.init_image_mask:
+        return None
+    try:
+        init_pil = get_image(req.init_image)
+        mask_raw = get_image(req.init_image_mask)
+        if init_pil is None or mask_raw is None:
+            return None
+        init_pil = init_pil.convert("RGB")
+        mask_rgba = mask_raw.convert("RGBA")
+        if mask_rgba.size != init_pil.size:
+            mask_rgba = resize_img(mask_rgba, init_pil.width, init_pil.height)
+        alpha = mask_rgba.getchannel("A")
+        if alpha.getextrema() == (255, 255):
+            # fully opaque (e.g. RGB white-on-black mask): white = masked area
+            alpha = mask_rgba.convert("L").point(lambda v: 255 if v >= 16 else 0)
+        bbox = alpha.getbbox()
+        if bbox is None:
+            return None
+        x0, y0, x1, y1 = bbox
+        x0 = max(0, x0 - ONLY_MASKED_PADDING)
+        y0 = max(0, y0 - ONLY_MASKED_PADDING)
+        x1 = min(init_pil.width, x1 + ONLY_MASKED_PADDING)
+        y1 = min(init_pil.height, y1 + ONLY_MASKED_PADDING)
+        if x1 - x0 < 8 or y1 - y0 < 8:
+            return None
+        crop_init = resize_img(init_pil.crop((x0, y0, x1, y1)), req.width, req.height)
+        crop_mask = resize_img(mask_rgba.crop((x0, y0, x1, y1)), req.width, req.height)
+        req.init_image = img_to_base64_str(crop_init)
+        req.init_image_mask = crop_mask
+        log.info(
+            f"Only-masked inpaint: cropped {init_pil.width}x{init_pil.height} to bbox "
+            f"{x0},{y0},{x1},{y1}, processing at {req.width}x{req.height}"
+        )
+        return {"bbox": (x0, y0, x1, y1), "orig": init_pil}
+    except Exception as e:
+        log.error(f"Only-masked crop failed, falling back to whole picture: {e}")
+        return None
+
+
+def paste_back_to_original(images, info):
+    "Paste generated crops back into the original image. images: list of base64 strings."
+    x0, y0, x1, y1 = info["bbox"]
+    orig = info["orig"]
+    out = []
+    for img_str in images:
+        try:
+            gen = base64_str_to_img(img_str).convert("RGB")
+            gen = resize_img(gen, x1 - x0, y1 - y0)
+            full = orig.copy()
+            full.paste(gen, (x0, y0))
+            out.append(img_to_base64_str(full))
+        except Exception as e:
+            log.error(f"Only-masked paste-back failed for one image: {e}")
+            out.append(img_str)
+    return out
+
+
 def make_images_internal(
     context,
     req: GenerateImageRequest,
@@ -181,6 +245,7 @@ def make_images_internal(
     if task_data.block_nsfw:
         filter_nsfw([Image.new("RGB", (1, 1))])  # hack - ensures that the model is available
 
+    only_masked_info = crop_init_to_mask(req, task_data)
     images = generate_images_internal(
         context,
         req,
@@ -193,6 +258,8 @@ def make_images_internal(
         task_data.stream_image_progress,
         task_data.stream_image_progress_interval,
     )
+    if only_masked_info is not None:
+        images = paste_back_to_original(images, only_masked_info)
     user_stopped = isinstance(task.error, StopAsyncIteration)
 
     filters, filter_params = task_data.filters, task_data.filter_params

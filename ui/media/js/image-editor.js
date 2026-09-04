@@ -582,10 +582,29 @@ class ImageEditor {
         this.container.style.width = containerWidth + "px"
         this.container.style.height = containerHeight + "px"
 
+        // preserve the painted mask when only the canvas size changes (same image),
+        // e.g. the user edits Width/Height after painting. A new image still clears it.
+        let savedDrawing = null
+        if (this._keepDrawing && this.inpainter && this.layers.drawing) {
+            const dc = this.layers.drawing.canvas
+            if (dc.width > 0 && dc.height > 0) {
+                savedDrawing = document.createElement("canvas")
+                savedDrawing.width = dc.width
+                savedDrawing.height = dc.height
+                savedDrawing.getContext("2d").drawImage(dc, 0, 0)
+            }
+        }
+        this._keepDrawing = false
+
         Object.values(this.layers).forEach((layer) => {
             layer.canvas.width = width
             layer.canvas.height = height
         })
+
+        if (savedDrawing) {
+            this.layers.drawing.ctx.clearRect(0, 0, width, height)
+            this.layers.drawing.ctx.drawImage(savedDrawing, 0, 0, width, height)
+        }
 
         if (this.inpainter) {
             this.saveImage() // We've reset the size of the image so inpainting is different
@@ -601,10 +620,15 @@ class ImageEditor {
         this.drawing = false
         this.container.style.cursor = this.tool.cursor
     }
-    setImage(url, width, height) {
+    setImage(url, width, height, preserveDrawing = false) {
+        // Keep the painted mask only when the caller is resizing the current image.
+        // Comparing image URLs is unreliable because browsers can normalize them
+        // differently between the image element and the editor.
+        const keepDrawing = !!(url && this.inpainter && preserveDrawing)
+        this._keepDrawing = keepDrawing
         this.setSize(width, height)
         this.layers.background.ctx.clearRect(0, 0, this.width, this.height)
-        if (!(url && this.inpainter)) {
+        if (!keepDrawing) {
             this.layers.drawing.ctx.clearRect(0, 0, this.width, this.height)
         }
         if (url) {
