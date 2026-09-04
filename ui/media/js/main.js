@@ -59,6 +59,7 @@ const taskConfigSetup = {
         lora_alpha: { label: "Lora Strength", visible: ({ reqBody }) => !!reqBody?.use_lora_model },
         preserve_init_image_color_profile: "Preserve Color Profile",
         strict_mask_border: "Strict Mask Border",
+        inpaint_only_masked: "Only Masked Area",
         use_controlnet_model: "ControlNet Model",
         control_alpha: {
             label: "ControlNet Strength",
@@ -118,8 +119,10 @@ let controlAlphaSlider = document.querySelector("#controlnet_alpha_slider")
 let controlAlphaField = document.querySelector("#controlnet_alpha")
 let applyColorCorrectionField = document.querySelector("#apply_color_correction")
 let strictMaskBorderField = document.querySelector("#strict_mask_border")
+let inpaintOnlyMaskedField = document.querySelector("#inpaint_only_masked")
 let colorCorrectionSetting = document.querySelector("#apply_color_correction_setting")
 let strictMaskBorderSetting = document.querySelector("#strict_mask_border_setting")
+let inpaintOnlyMaskedSetting = document.querySelector("#inpaint_only_masked_setting")
 let refImageContainer = document.querySelector("#editor-inputs-ref-images")
 let refImageSelector = document.querySelector("#ref_image_input")
 let refImagesList = document.querySelector("#ref_images_list")
@@ -1380,6 +1383,7 @@ function getCurrentUserRequest() {
         if (maskSetting.checked) {
             newTask.reqBody.mask = imageInpainter.getImg()
             newTask.reqBody.strict_mask_border = strictMaskBorderField.checked
+            newTask.reqBody.inpaint_only_masked = inpaintOnlyMaskedField.checked
         }
         newTask.reqBody.preserve_init_image_color_profile = applyColorCorrectionField.checked
         if (!testDiffusers.checked) {
@@ -1880,7 +1884,7 @@ function onDimensionChange() {
     if (!initImagePreviewContainer.classList.contains("has-image")) {
         imageEditor.setImage(null, widthValue, heightValue)
     } else {
-        imageInpainter.setImage(initImagePreview.src, widthValue, heightValue)
+        imageInpainter.setImage(initImagePreview.src, widthValue, heightValue, true)
     }
     if (widthValue < 512 && heightValue < 512) {
         smallImageWarning.classList.remove("displayNone")
@@ -2437,6 +2441,7 @@ function img2imgLoad() {
     initImagePreviewContainer.classList.add("has-image")
     colorCorrectionSetting.style.display = ""
     strictMaskBorderSetting.style.display = maskSetting.checked ? "" : "none"
+    inpaintOnlyMaskedSetting.style.display = maskSetting.checked ? "" : "none"
 
     initImageSizeBox.textContent = initImagePreview.naturalWidth + " x " + initImagePreview.naturalHeight
     imageEditor.setImage(this.src, initImagePreview.naturalWidth, initImagePreview.naturalHeight)
@@ -2455,6 +2460,7 @@ function img2imgUnload() {
     initImagePreviewContainer.classList.remove("has-image")
     colorCorrectionSetting.style.display = "none"
     strictMaskBorderSetting.style.display = "none"
+    inpaintOnlyMaskedSetting.style.display = "none"
     imageEditor.setImage(null, parseInt(widthField.value), parseInt(heightField.value))
 }
 initImagePreview.addEventListener("load", img2imgLoad)
@@ -2465,6 +2471,7 @@ maskSetting.addEventListener("click", function () {
 })
 maskSetting.addEventListener("change", function () {
     strictMaskBorderSetting.style.display = this.checked ? "" : "none"
+    inpaintOnlyMaskedSetting.style.display = this.checked ? "" : "none"
 })
 
 promptsFromFileBtn.addEventListener("click", function () {

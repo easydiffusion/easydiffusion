@@ -98,6 +98,7 @@ class RenderTaskData(TaskData):
     clip_skip: bool = False
     codeformer_upscale_faces: bool = False
     codeformer_fidelity: float = 0.5
+    inpaint_only_masked: bool = False  # process only the masked bbox at req size, paste back
 
 
 class MergeRequest(BaseModel):
