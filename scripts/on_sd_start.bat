@@ -8,6 +8,7 @@
 @copy sd-ui-files\scripts\get_config.py scripts\ /Y
 @copy sd-ui-files\scripts\config.yaml.sample scripts\ /Y
 @copy sd-ui-files\scripts\webui_console.py scripts\ /Y
+@copy sd-ui-files\scripts\ensure_torchruntime.py scripts\ /Y
 
 if exist "%cd%\profile" (
     set HF_HOME=%cd%\profile\.cache\huggingface
