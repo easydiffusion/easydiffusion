@@ -7,6 +7,7 @@ cp sd-ui-files/scripts/check_modules.py scripts/
 cp sd-ui-files/scripts/get_config.py scripts/
 cp sd-ui-files/scripts/config.yaml.sample scripts/
 cp sd-ui-files/scripts/webui_console.py scripts/
+cp sd-ui-files/scripts/ensure_torchruntime.py scripts/
 
 
 source ./scripts/functions.sh
@@ -50,10 +51,11 @@ fi
 if [ -e "src" ]; then mv src src-old; fi
 if [ -e "ldm" ]; then mv ldm ldm-old; fi
 
+cd ..
+
 # this is outside check_modules.py to ensure that the required version of torchruntime is present (installing if necessary)
 python scripts/ensure_torchruntime.py
 
-cd ..
 # Download the required packages
 python scripts/check_modules.py --launch-uvicorn
 
