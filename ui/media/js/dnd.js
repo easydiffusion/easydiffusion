@@ -608,6 +608,21 @@ function restoreTaskToUI(task, fieldsToSkip) {
         // hide source image
         controlImageClearBtn.dispatchEvent(new Event("click"))
     } else if (task.reqBody.control_image !== undefined) {
+        if (controlImagePreview.src !== task.reqBody.control_image) {
+            // the control image load handler resizes the output to the control image, so re-apply
+            // the size of the task once it has fired
+            controlImagePreview.addEventListener(
+                "load",
+                function () {
+                    for (const key of ["width", "height"]) {
+                        if (key in task.reqBody && !fieldsToSkip.includes(key)) {
+                            TASK_MAPPING[key].setUI(task.reqBody[key])
+                        }
+                    }
+                },
+                { once: true }
+            )
+        }
         // listen for inpainter loading event, which happens AFTER the main image loads (which reloads the inpai
         controlImagePreview.src = task.reqBody.control_image
     }
