@@ -5,7 +5,7 @@ This folder has a project-wide event log: `event_log.txt` (next to this file, in
 
 It is a single, shared record of everything notable that happens in the codebase — new features,
 bugfixes, performance work, releases, and so on — across all three repos in this workspace
-(`easydiffusion`, `sdkit`, `easydiffusion.wiki`).
+(`easydiffusion`, `sdkit`, `easydiffusion.github.io`).
 
 ## What a line looks like
 
@@ -16,7 +16,7 @@ Each line has four parts:
 1. **Date** in `YYYY-MM-DD` format — taken from the git commit date or the date in `CHANGES.md`.
 2. **Severity tag** — `SEV-1` down to `SEV-5`. See below.
 3. **Category label** — one fixed word in brackets. See below.
-4. **One-line description** — plain language. Links (GitHub issues, PRs, wiki pages) go at the end.
+4. **One-line description** — plain language. Links (GitHub issues, PRs, docs pages) go at the end.
 
 ## Severity levels
 
@@ -31,7 +31,7 @@ Each line has four parts:
 ## Categories
 
 `RELEASE`, `FEATURE`, `BUGFIX`, `PERF`, `UI`, `ENGINE`, `SECURITY`, `INSTALLER`, `INTERNAL`,
-`DEPS`, `CI`, `DOCS`, `WIKI`.
+`DEPS`, `CI`, `DOCS`.
 
 Use one category per entry. If a change fits two (e.g. a UI bugfix), pick the one a reader would
 care about most.
@@ -47,7 +47,7 @@ it gets **one** entry, not three.
 1. Pick the date of the change (commit date, or today for non-code events).
 2. Pick the lowest severity that honestly describes the impact. When in doubt, go one level down.
 3. Write one line. Plain sentences, no jargon, no filler. Add a link if the change has an
-   issue, PR, or wiki page.
+   issue, PR, or docs page.
 4. Append it at the bottom of `event_log.txt`, keeping the same format.
 
 That's it — no build step, no tooling. The file is the log.

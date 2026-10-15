@@ -1,4 +1,4 @@
-# EVENT LOG — Easy Diffusion project (covers the easydiffusion, sdkit and easydiffusion.wiki repos)
+# EVENT LOG — Easy Diffusion project (covers the easydiffusion, sdkit and easydiffusion.github.io repos)
 # This file lives in the easydiffusion repo, but it is the project-wide event bus for all three repos.
 # Format:   [YYYY-MM-DD] [SEV-n] [CATEGORY] One-line description. <optional link>
 # Sev:      SEV-1 project-impacting / major ... SEV-5 minor, team-only. See event_log.md.
@@ -98,7 +98,7 @@
 [2022-11-17] [SEV-3] [BUGFIX]    Fixed Face Correction (GFPGAN) failing on cuda:N (GPUs other than cuda:0) and on CPUs with incompatible GPUs.
 [2022-11-18] [SEV-4] [BUGFIX]    The app no longer crashes when a VAE file fails to load.
 [2022-11-18] [SEV-3] [UI]        Added a "Use these settings" button to reuse settings from a previous image task.
-[2022-11-18] [SEV-2] [SECURITY]  Added Picklescan: malicious .ckpt model files are detected and the app halts with an alert. https://github.com/easydiffusion/easydiffusion/wiki/Troubleshooting
+[2022-11-18] [SEV-2] [SECURITY]  Added Picklescan: malicious .ckpt model files are detected and the app halts with an alert. https://easydiffusion.github.io/Troubleshooting
 [2022-11-18] [SEV-5] [UI]        Negative prompts moved to a dedicated textarea.
 [2022-11-18] [SEV-5] [UI]        Redesigned Settings panel with rounded toggle buttons instead of checkboxes.
 [2022-11-19] [SEV-3] [FEATURE]   New system settings for the network config: port number and listen-on-localhost only.
@@ -128,7 +128,7 @@
 [2022-12-22] [SEV-4] [UI]        Drag handle for reordering tasks; task metadata is selectable again.
 [2022-12-23] [SEV-1] [RELEASE]   sdkit v1.0 published to PyPI: the Stable Diffusion engine split out into its own pip-installable project. https://github.com/easydiffusion/sdkit
 [2022-12-23] [SEV-3] [PERF]      Removed a 4-5 second delay between clicking "Make Image" and calling the server.
-[2022-12-25] [SEV-1] [RELEASE]   v2.5.0: nearly 2x faster; full SD 2.1 support; 6 new samplers; Model Merging; fast VAE load/unload; database of known models; color correction for img2img; three GPU VRAM usage settings; JSON metadata; major code rewrite; project renamed to "Easy Diffusion". https://github.com/easydiffusion/easydiffusion/wiki/Home
+[2022-12-25] [SEV-1] [RELEASE]   v2.5.0: nearly 2x faster; full SD 2.1 support; 6 new samplers; Model Merging; fast VAE load/unload; database of known models; color correction for img2img; three GPU VRAM usage settings; JSON metadata; major code rewrite; project renamed to "Easy Diffusion". https://easydiffusion.github.io/Home
 [2022-12-25] [SEV-3] [FEATURE]   Custom config .yaml files can be placed next to a model file (same name) and are picked up automatically.
 [2022-12-25] [SEV-3] [BUGFIX]    Fixed broken rendering for SD 2.1-768 models and SD 2.0 safetensor models.
 [2022-12-26] [SEV-3] [BUGFIX]    Fixed broken inpainting when using non-square target images.
@@ -151,7 +151,7 @@
 [2023-01-19] [SEV-4] [FEATURE]   Multiple GFPGAN models can be selected from a dropdown.
 [2023-01-23] [SEV-3] [BUGFIX]    Fixed img2img producing poorer-quality images than v2.4 with the same settings.
 [2023-01-23] [SEV-3] [PERF]      Reduced VRAM usage in "balanced" mode without reducing rendering speed.
-[2023-01-25] [SEV-2] [FEATURE]   UI for Model Merging. https://github.com/easydiffusion/easydiffusion/wiki/Model-Merging
+[2023-01-25] [SEV-2] [FEATURE]   UI for Model Merging. https://easydiffusion.github.io/Model-Merging
 [2023-01-27] [SEV-3] [BUGFIX]    Fixed a memory leak that made the UI unresponsive after an out-of-memory error.
 [2023-02-01] [SEV-3] [BUGFIX]    Fixed the remaining GPU memory leaks (more comprehensive fix).
 [2023-02-03] [SEV-4] [BUGFIX]    Fixed the "Make Similar Images" button producing images that weren't similar.
@@ -177,7 +177,7 @@
 [2023-02-28] [SEV-5] [UI]        Minor styling changes to UI buttons and models dropdown; batch of UI bugfixes.
 [2023-03-07] [SEV-3] [FEATURE]   sdkit: MPS support for Apple silicon. https://github.com/easydiffusion/sdkit
 [2023-03-08] [SEV-2] [FEATURE]   Experimental Mac M1/M2 support.
-[2023-03-08] [SEV-2] [FEATURE]   Custom image modifiers with thumbnails, custom categories and category hierarchy. https://github.com/easydiffusion/easydiffusion/wiki/Custom-Modifiers
+[2023-03-08] [SEV-2] [FEATURE]   Custom image modifiers with thumbnails, custom categories and category hierarchy. https://easydiffusion.github.io/Custom-Modifiers
 [2023-03-10] [SEV-4] [FEATURE]   Button to load an image mask from a file.
 [2023-03-10] [SEV-5] [INTERNAL]  Logo change. Image credit: @lazlo_vii.
 [2023-03-14] [SEV-3] [FEATURE]   Button to download all images and metadata as a zip file (top of UI and on each image).
@@ -213,7 +213,7 @@
 [2023-05-23] [SEV-3] [FEATURE]   Latent Upscaler added as another upscaling option.
 [2023-05-24] [SEV-4] [UI]        Better error reporting; explanation shown when the "Use CPU" setting cannot be disabled.
 [2023-05-25] [SEV-3] [FEATURE]   Plugin Manager added, to manage UI plugins.
-[2023-05-25] [SEV-2] [FEATURE]   Seamless Tiling for repeatable textures (e.g. rock/grass). https://github.com/easydiffusion/easydiffusion/wiki/Seamless-Tiling
+[2023-05-25] [SEV-2] [FEATURE]   Seamless Tiling for repeatable textures (e.g. rock/grass). https://easydiffusion.github.io/Seamless-Tiling
 [2023-06-03] [SEV-2] [FEATURE]   CodeFormer added as a face/eye fixing option (often better than GFPGAN).
 [2023-06-05] [SEV-4] [BUGFIX]    Fixed "realesrgan" key error when using CodeFormer with batch size > 1.
 [2023-06-05] [SEV-4] [PERF]      Reduced VRAM usage of Latent Upscaling in "balanced" mode.
@@ -231,7 +231,7 @@
 [2023-06-28] [SEV-4] [FEATURE]   Images can be dropped from folders to use as an Initial Image.
 [2023-07-04] [SEV-5] [UI]        Keyboard shortcuts added to the Image Editor.
 [2023-07-06] [SEV-4] [PERF]      sdkit: much faster import times by lazy-loading torch and other heavy modules. https://github.com/easydiffusion/sdkit
-[2023-07-09] [SEV-2] [FEATURE]   Textual Inversion embeddings supported (Image Settings panel). https://github.com/easydiffusion/easydiffusion/wiki/Embeddings
+[2023-07-09] [SEV-2] [FEATURE]   Textual Inversion embeddings supported (Image Settings panel). https://easydiffusion.github.io/Embeddings
 [2023-07-09] [SEV-4] [PERF]      Faster UI startup time.
 [2023-07-09] [SEV-4] [FEATURE]   sdkit: DPM++ SDE and DPM++ 2M samplers, with karras sigmas. https://github.com/easydiffusion/sdkit
 [2023-07-13] [SEV-2] [FEATURE]   sdkit: official diffusers LoRA implementation, and support for multiple LoRA files with individual strengths. https://github.com/easydiffusion/sdkit
@@ -247,7 +247,7 @@
 [2023-07-29] [SEV-3] [PERF]      "Fix Faces" and "Upscale" buttons no longer regenerate the image; they process it in place (much faster).
 [2023-07-30] [SEV-4] [FEATURE]   "Strict Mask Border" option for inpainting to avoid touching areas outside the mask.
 [2023-08-01] [SEV-1] [FEATURE]   Full ControlNet support: pick a control image, a filter and a ControlNet model; known and custom models supported (OpenPose, Canny, Depth, Line Art, Scribble, Soft Edge, Shuffle, Segment etc).
-[2023-08-03] [SEV-1] [RELEASE]   v3.0.0: diffusers engine enabled for everyone by default (old v2 engine still selectable); ~40% faster than v2.5; ControlNet, SDXL, multiple LoRAs, embeddings, seamless tiling, inpainting models, WebP, undo/redo, lower VRAM. https://github.com/easydiffusion/easydiffusion/wiki/Home
+[2023-08-03] [SEV-1] [RELEASE]   v3.0.0: diffusers engine enabled for everyone by default (old v2 engine still selectable); ~40% faster than v2.5; ControlNet, SDXL, multiple LoRAs, embeddings, seamless tiling, inpainting models, WebP, undo/redo, lower VRAM. https://easydiffusion.github.io/Home
 [2023-08-14] [SEV-4] [UI]        Slider to change image dimensions proportionally in Image Settings.
 [2023-08-14] [SEV-4] [BUGFIX]    Error shown when an embedding isn't compatible with the model (instead of failing silently).
 [2023-08-14] [SEV-5] [BUGFIX]    Watermarking disabled for SDXL img2img.
@@ -294,7 +294,7 @@
 [2024-10-07] [SEV-3] [FEATURE]   Forge auto-installed into its own conda environment; both WebUI and Easy Diffusion model folder names supported; CPU-only rendering option.
 [2024-10-09] [SEV-3] [FEATURE]   Scheduler selection in the UI; Distilled Guidance Scale option (with Flux warnings); an external monitor thread kills and restarts zombie WebUI processes.
 [2024-10-11] [SEV-4] [FEATURE]   WebUI developer console script; the browser only opens after the backend actually starts up.
-[2024-10-11] [SEV-1] [RELEASE]   v3.5 (preview) engine released, powered by Forge WebUI: enables Flux, SD3, LyCORIS and many new features; offered as an optional upgrade from v3.0.10. https://github.com/easydiffusion/easydiffusion/wiki/v4
+[2024-10-11] [SEV-1] [RELEASE]   v3.5 (preview) engine released, powered by Forge WebUI: enables Flux, SD3, LyCORIS and many new features; offered as an optional upgrade from v3.0.10. https://easydiffusion.github.io/v4
 [2024-10-12] [SEV-3] [BUGFIX]    WebUI backend forces full precision on NVIDIA 16xx graphics cards.
 [2024-10-17] [SEV-4] [UI]        Face Fix / CodeFormer settings remembered; ControlNet filters fetched from the backend instead of hardcoded.
 [2024-10-28] [SEV-4] [BUGFIX]    WebUI health-check timeout raised to 30 seconds; Forge updated to the latest commit.
@@ -341,12 +341,12 @@
 [2025-11-24] [SEV-3] [BUGFIX]    Inpainted images now use the user-specified output size instead of the input image size; inpainting editor sized to fit various screens.
 [2025-11-24] [SEV-4] [INSTALLER] exFAT installations allowed on Windows.
 [2025-11-28] [SEV-4] [INTERNAL]  WebUI backend reorganized to share common code with the new sdkit3 (v4) backend.
-[2025-12-02] [SEV-1] [RELEASE]   v4 engine (sdkit3) added as an experimental backend: lightweight engine supporting Z-Image, Flux 1 etc. https://github.com/easydiffusion/easydiffusion/wiki/v4
+[2025-12-02] [SEV-1] [RELEASE]   v4 engine (sdkit3) added as an experimental backend: lightweight engine supporting Z-Image, Flux 1 etc. https://easydiffusion.github.io/v4
 [2025-12-03] [SEV-4] [DEPS]      torchruntime upgraded to 1.28.0; progress bars shown while downloading v4 artifacts.
 [2025-12-05] [SEV-3] [BUGFIX]    v4 child process restarts only if it dies (pings unreliable under heavy load).
 [2025-12-12] [SEV-3] [FEATURE]   VRAM usage modes supported in the v4 backend (CPU offloading + diffusion-fa).
 [2025-12-12] [SEV-3] [INTERNAL]  Easy Diffusion's fork of Forge is used, pinned to a specific commit.
-[2025-12-25] [SEV-4] [DOCS]      Wiki page "v4" created documenting the new v4 engine. https://github.com/easydiffusion/easydiffusion/wiki/v4
+[2025-12-25] [SEV-4] [DOCS]      Docs page "v4" created on easydiffusion.github.io, documenting the new v4 engine. https://easydiffusion.github.io/v4
 [2025-12-26] [SEV-4] [PERF]      VAE tiling enabled for "low" and "balanced" modes in v4 (tile size 512x512 balanced, 256x256 low).
 [2025-12-26] [SEV-3] [FEATURE]   Experimental Z-Image support added to the v3.5 engine.
 [2026-01-02] [SEV-4] [BUGFIX]    Fixed backend_config COMMANDLINE_ARGS override. https://github.com/easydiffusion/easydiffusion/pull/1999
@@ -367,7 +367,7 @@
 [2026-04-17] [SEV-4] [INSTALLER] References to Python 3.8 removed from Unix startup files. https://github.com/easydiffusion/easydiffusion/pull/1975
 [2026-04-24] [SEV-2] [RELEASE]   v4.3.0: support for Ernie Image and Ernie Image Turbo; fixes for Anima models; LoRAs in nested folders no longer fail to load in v4; sdkit3 upgraded to 3.2.
 [2026-04-24] [SEV-4] [BUGFIX]    sdkit v2.1.1: outdated and broken LoRA compatibility check disabled. https://github.com/easydiffusion/sdkit
-[2026-04-24] [SEV-5] [WIKI]      xFormers wiki page updated. https://github.com/easydiffusion/easydiffusion/wiki/xFormers
+[2026-04-24] [SEV-5] [DOCS]      xFormers docs page updated on easydiffusion.github.io. https://easydiffusion.github.io/xFormers
 [2026-04-30] [SEV-4] [BUGFIX]    v4: flash attention for diffusion temporarily disabled (stability); re-enabled later via --diffusion-fa.
 [2026-05-22] [SEV-3] [BUGFIX]    Fixed broken requests module (2.34.2) in the webui backend; sdkit3 can work offline.
 [2026-05-26] [SEV-4] [BUGFIX]    Fixed macOS startup shebangs. https://github.com/easydiffusion/easydiffusion/pull/2039
