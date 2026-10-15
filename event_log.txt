@@ -346,7 +346,7 @@
 [2025-12-05] [SEV-3] [BUGFIX]    v4 child process restarts only if it dies (pings unreliable under heavy load).
 [2025-12-12] [SEV-3] [FEATURE]   VRAM usage modes supported in the v4 backend (CPU offloading + diffusion-fa).
 [2025-12-12] [SEV-3] [INTERNAL]  Easy Diffusion's fork of Forge is used, pinned to a specific commit.
-[2025-12-25] [SEV-4] [DOCS]      Wiki page "v4" created documenting the new v4 engine. https://github.com/easydiffusion/easydiffusion/wiki/v4
+[2025-12-25] [SEV-4] [DOCS]      Docs page "v4" created, documenting the new v4 engine. https://github.com/easydiffusion/easydiffusion/wiki/v4
 [2025-12-26] [SEV-4] [PERF]      VAE tiling enabled for "low" and "balanced" modes in v4 (tile size 512x512 balanced, 256x256 low).
 [2025-12-26] [SEV-3] [FEATURE]   Experimental Z-Image support added to the v3.5 engine.
 [2026-01-02] [SEV-4] [BUGFIX]    Fixed backend_config COMMANDLINE_ARGS override. https://github.com/easydiffusion/easydiffusion/pull/1999
@@ -367,7 +367,7 @@
 [2026-04-17] [SEV-4] [INSTALLER] References to Python 3.8 removed from Unix startup files. https://github.com/easydiffusion/easydiffusion/pull/1975
 [2026-04-24] [SEV-2] [RELEASE]   v4.3.0: support for Ernie Image and Ernie Image Turbo; fixes for Anima models; LoRAs in nested folders no longer fail to load in v4; sdkit3 upgraded to 3.2.
 [2026-04-24] [SEV-4] [BUGFIX]    sdkit v2.1.1: outdated and broken LoRA compatibility check disabled. https://github.com/easydiffusion/sdkit
-[2026-04-24] [SEV-5] [WIKI]      xFormers wiki page updated. https://github.com/easydiffusion/easydiffusion/wiki/xFormers
+[2026-04-24] [SEV-5] [DOCS]      xFormers docs page updated. https://github.com/easydiffusion/easydiffusion/wiki/xFormers
 [2026-04-30] [SEV-4] [BUGFIX]    v4: flash attention for diffusion temporarily disabled (stability); re-enabled later via --diffusion-fa.
 [2026-05-22] [SEV-3] [BUGFIX]    Fixed broken requests module (2.34.2) in the webui backend; sdkit3 can work offline.
 [2026-05-26] [SEV-4] [BUGFIX]    Fixed macOS startup shebangs. https://github.com/easydiffusion/easydiffusion/pull/2039
