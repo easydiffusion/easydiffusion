@@ -1,6 +1,7 @@
 # What's new?
 
 ## v4 (preview)
+* 4.6.0 - 20 Oct 2026 - Add support for [Qwen-Image-2.1](https://github.com/leejet/stable-diffusion.cpp/blob/master/docs/qwen_image_2.1.md) and [FLUX.3 Image Klein / Klein Base](https://github.com/leejet/stable-diffusion.cpp/blob/master/docs/flux3.md)
 * 4.5.2 - 24 Jul 2026 - Improve Easy Diffusion's startup time by removing unnecessary steps or running them in parallel.
 * 4.5.1 - 3 Jul 2026 - Option in the Settings tab to choose the Vulkan backend, if using the v4 engine with a compatible GPU.
 * 4.5.1 - 3 Jul 2026 - Improve support for older CPUs (e.g. from 2013).
