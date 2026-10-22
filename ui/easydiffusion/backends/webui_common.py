@@ -53,6 +53,7 @@ curr_models = {
     "stable-diffusion": None,
     "vae": None,
     "text-encoder": None,
+    "tokenizer": None,
 }
 
 
