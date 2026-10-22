@@ -41,6 +41,7 @@ MODELS_TO_OVERRIDE = {
     "embeddings": "--embeddings-dir",
     "controlnet": "--controlnet-dir",
     "text-encoder": "--text-encoder-dir",
+    "tokenizer": "--tokenizer-dir",
 }
 
 backend_process = None
@@ -147,7 +148,7 @@ def flush_model_changes(context):
         return
 
     modules = []
-    for model_type in ("vae", "text-encoder"):
+    for model_type in ("vae", "text-encoder", "tokenizer"):
         if curr_models[model_type]:
             model_paths = curr_models[model_type]
             model_paths = [model_paths] if not isinstance(model_paths, list) else model_paths
