@@ -41,7 +41,7 @@ MODELS_TO_OVERRIDE = {
     "embeddings": "--embeddings-dir",
     "controlnet": "--controlnet-dir",
     "text-encoder": "--text-encoder-dir",
-    "tokenizer": "--tokenizer-dir",
+    #"tokenizer": "--tokenizer-dir",
 }
 
 backend_process = None
