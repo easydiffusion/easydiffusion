@@ -1,7 +1,7 @@
 # What's new?
 
 ## v4 (preview)
-* 4.6.1 - 28 Oct 2026 - Add support for [MOSS-Image](https://github.com/leejet/stable-diffusion.cpp/blob/master/docs/moss_image.md) and [image editing with Qwen-Image-2.1](https://github.com/leejet/stable-diffusion.cpp/blob/master/docs/qwen_image_2.1.md), via a`Tokenizer` dropdown and vision (`llm_vision`/`mmproj`) encoder files. Put vision llm models in the `text-encoder` folder, and tokenizers in a `tokenizer` folder. Requires sdkit 3.5.1 or newer.
+* 4.6.1 - 28 Oct 2026 - Add support for [MOSS-Image](https://github.com/leejet/stable-diffusion.cpp/blob/master/docs/moss_image.md) and [image editing with Qwen-Image-2.1](https://github.com/leejet/stable-diffusion.cpp/blob/master/docs/qwen_image_2.1.md), via a`Tokenizer` dropdown and vision (`llm_vision`/`mmproj`) encoder files. Put vision llm models in the `text-encoder` folder, and tokenizers in a `tokenizer` folder.
 * 4.6.1 - 28 Oct 2026 - Fix the `base64.encodestring`/`base64.decodestring` crash when saving files to the bucket database (e.g. LoRA keywords).
 * 4.6.1 - 28 Oct 2026 - Fix an error when saving JPEG images generated with models that output an alpha channel (e.g. Qwen-Image-2.1).
 * 4.6.0 - 20 Oct 2026 - Add support for [Qwen-Image-2.1](https://github.com/leejet/stable-diffusion.cpp/blob/master/docs/qwen_image_2.1.md) and [FLUX.3 Image Klein / Klein Base](https://github.com/leejet/stable-diffusion.cpp/blob/master/docs/flux3.md)
