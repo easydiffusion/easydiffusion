@@ -1,6 +1,8 @@
 # What's new?
 
 ## v4 (preview)
+* 4.6.1 - 28 Oct 2026 - Fix the `base64.encodestring`/`base64.decodestring` crash when saving files to the bucket database (e.g. LoRA keywords).
+* 4.6.1 - 28 Oct 2026 - Fix an error when saving JPEG images generated with models that output an alpha channel (e.g. Qwen-Image-2.1).
 * 4.6.0 - 20 Oct 2026 - Add support for [Qwen-Image-2.1](https://github.com/leejet/stable-diffusion.cpp/blob/master/docs/qwen_image_2.1.md) and [FLUX.3 Image Klein / Klein Base](https://github.com/leejet/stable-diffusion.cpp/blob/master/docs/flux3.md)
 * 4.5.2 - 24 Jul 2026 - Improve Easy Diffusion's startup time by removing unnecessary steps or running them in parallel.
 * 4.5.1 - 3 Jul 2026 - Option in the Settings tab to choose the Vulkan backend, if using the v4 engine with a compatible GPU.
@@ -27,6 +29,7 @@
 v3.5 is currently an optional upgrade, and you can switch between the v3.0 (diffusers) engine and the v3.5 (webui) engine using the `Settings` tab in the UI.
 
 ### Detailed changelog
+* 3.5.16 - 28 Oct 2026 - Fix the `base64.encodestring`/`base64.decodestring` crash when saving files to the bucket database (e.g. LoRA keywords).
 * 3.5.15 - 24 Jul 2026 - Improve Easy Diffusion's startup time by removing unnecessary steps or running them in parallel.
 * 3.5.14 - 31 Mar 2026 - (Internal code changes) Merge v3.5 and v4 engine into the main branch. This brings back the streamlined release process of landing new features first in beta, and then merging into the main branch after testing.
 * 3.5.13 - 2 Dec 2025 - Add the v4 engine (i.e. sdkit3) as an experimental backend.
@@ -65,6 +68,7 @@ v3.5 is currently an optional upgrade, and you can switch between the v3.0 (diff
 - **Major rewrite of the code** - We've switched to using diffusers under-the-hood, which allows us to release new features faster, and focus on making the UI and installer even easier to use.
 
 ### Detailed changelog
+* 3.0.18 - 28 Oct 2026 - Fix the `base64.encodestring`/`base64.decodestring` crash when saving files to the bucket database (e.g. LoRA keywords).
 * 3.0.17 - 24 Jul 2026 - Improve Easy Diffusion's startup time by removing unnecessary steps or running them in parallel.
 * 3.0.16 - 17 Apr 2025 - Warn when using duplicate LoRAs. Thanks @majiayu000.
 * 3.0.16 - 31 Mar 2026 - (Internal code changes) Merge v3.5 and v4 engine into the main branch. This brings back the streamlined release process of landing new features first in beta, and then merging into the main branch after testing.

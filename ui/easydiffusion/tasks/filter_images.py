@@ -18,7 +18,7 @@ from easydiffusion.types import (
     GenerateImageRequest,
 )
 from easydiffusion.utils import filter_nsfw
-from easydiffusion.utils.save_utils import format_folder_name
+from easydiffusion.utils.save_utils import format_folder_name, prepare_images_for_output_format
 
 from .task import Task
 
@@ -98,7 +98,7 @@ class FilterTask(Task):
             )
             images_pil = [base64_str_to_img(img) for img in images]
             save_images(
-                images_pil,
+                prepare_images_for_output_format(images_pil, output_format.output_format),
                 save_dir_path,
                 file_name=img_id,
                 output_format=output_format.output_format,

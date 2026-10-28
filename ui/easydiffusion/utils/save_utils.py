@@ -22,6 +22,18 @@ from sdkit.models.model_loader.embeddings import get_embedding_token
 filename_regex = re.compile("[^a-zA-Z0-9._-]")
 img_number_regex = re.compile("([0-9]{5,})")
 
+
+def prepare_images_for_output_format(images: list, output_format: str):
+    """
+    Convert images to a mode that the output format supports.
+    JPEG doesn't support images with an alpha channel (e.g. RGBA/LA/P), so those are
+    converted to RGB. Other formats (PNG, WEBP) keep their alpha channel.
+    """
+    if output_format is None or output_format.lower() not in ("jpeg", "jpg"):
+        return images
+    return [img.convert("RGB") if img.mode not in ("RGB", "L") else img for img in images]
+
+
 # keep in sync with `ui/media/js/dnd.js`
 TASK_TEXT_MAPPING = {
     "prompt": "Prompt",
@@ -152,7 +164,7 @@ def save_images_to_disk(
 
     if task_data.show_only_filtered_image or filtered_images is images:
         save_images(
-            filtered_images,
+            prepare_images_for_output_format(filtered_images, output_format.output_format),
             save_dir_path,
             file_name=make_filename,
             output_format=output_format.output_format,
@@ -180,7 +192,7 @@ def save_images_to_disk(
         )
 
         save_images(
-            images,
+            prepare_images_for_output_format(images, output_format.output_format),
             save_dir_path,
             file_name=make_filename,
             output_format=output_format.output_format,
@@ -188,7 +200,7 @@ def save_images_to_disk(
             output_lossless=output_format.output_lossless,
         )
         save_images(
-            filtered_images,
+            prepare_images_for_output_format(filtered_images, output_format.output_format),
             save_dir_path,
             file_name=make_filter_filename,
             output_format=output_format.output_format,
