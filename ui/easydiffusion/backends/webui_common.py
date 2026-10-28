@@ -41,7 +41,13 @@ MODELS_TO_OVERRIDE = {
     "embeddings": "--embeddings-dir",
     "controlnet": "--controlnet-dir",
     "text-encoder": "--text-encoder-dir",
-    #"tokenizer": "--tokenizer-dir",
+}
+
+# Model directory flags that are only understood by newer sdkit3 backends. They must
+# not be passed to the WebUI backend (or to older sdkit3 builds), otherwise the
+# backend exits on startup with an "unknown argument" error.
+SDKIT3_MODELS_TO_OVERRIDE = {
+    "tokenizer": "--tokenizer-dir",
 }
 
 backend_process = None
@@ -706,9 +712,13 @@ def convert_ED_controlnet_filter_name(filter):
     return cn(mapping.get(filter, filter))
 
 
-def get_model_path_args(return_string=True):
+def get_model_path_args(return_string=True, extra_models_to_override=None):
+    models_to_override = MODELS_TO_OVERRIDE
+    if extra_models_to_override:
+        models_to_override = {**MODELS_TO_OVERRIDE, **extra_models_to_override}
+
     args = []
-    for model_type, flag in MODELS_TO_OVERRIDE.items():
+    for model_type, flag in models_to_override.items():
         model_dir = get_model_dirs(model_type)[0]
         if return_string:
             args.append(f'{flag} "{model_dir}"')
@@ -722,8 +732,10 @@ def get_model_path_args(return_string=True):
     return args
 
 
-def get_common_cli_args(return_string=True):
-    model_path_args = get_model_path_args(return_string=return_string)
+def get_common_cli_args(return_string=True, extra_models_to_override=None):
+    model_path_args = get_model_path_args(
+        return_string=return_string, extra_models_to_override=extra_models_to_override
+    )
     extra_args = ["--port", str(WEBUI_PORT), "--parent-pid", str(os.getpid())]
 
     if return_string:

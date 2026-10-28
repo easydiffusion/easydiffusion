@@ -61,6 +61,7 @@ const SETTINGS_IDS_LIST = [
     "embedding-card-size-selector",
     "lora_model",
     "text_encoder_model",
+    "tokenizer_model",
     "enable_vae_tiling",
     "controlnet_alpha",
 ]

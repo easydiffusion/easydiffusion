@@ -424,7 +424,7 @@ const TASK_MAPPING = {
                     m = m.split("models/text-encoder/")[1]
                 }
                 m = m.replaceAll("\\\\", "/")
-                m = getModelPath(m, [".safetensors", ".sft"])
+                m = getModelPath(m, [".safetensors", ".sft", ".gguf"])
                 modelPaths.push(m)
             })
             textEncoderModelField.modelNames = modelPaths
@@ -447,6 +447,29 @@ const TASK_MAPPING = {
             val = Array.isArray(val) ? val : [val]
             return val
         },
+    },
+    use_tokenizer_model: {
+        name: "Tokenizer model",
+        setUI: (use_tokenizer_model) => {
+            let modelPath =
+                use_tokenizer_model === undefined || use_tokenizer_model === null || use_tokenizer_model === "None"
+                    ? ""
+                    : use_tokenizer_model
+
+            if (typeof modelPath === "string" && modelPath !== "") {
+                for (const folder of ["models/tokenizer/", "models\\tokenizer\\"]) {
+                    if (modelPath.includes(folder)) {
+                        modelPath = modelPath.split(folder)[1]
+                        break
+                    }
+                }
+                modelPath = modelPath.replaceAll("\\", "/")
+                modelPath = getModelPath(modelPath, [".json"])
+            }
+            tokenizerModelField.value = modelPath
+        },
+        readUI: () => tokenizerModelField.value,
+        parse: (val) => val,
     },
     use_hypernetwork_model: {
         name: "Hypernetwork model",
@@ -683,6 +706,7 @@ const TASK_TEXT_MAPPING = {
     use_lora_model: "LoRA model",
     lora_alpha: "LoRA Strength",
     use_text_encoder_model: "Text Encoder model",
+    use_tokenizer_model: "Tokenizer model",
     use_controlnet_model: "ControlNet model",
     control_filter_to_apply: "ControlNet Filter",
     control_alpha: "ControlNet Strength",

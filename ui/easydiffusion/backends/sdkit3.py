@@ -29,6 +29,7 @@ from webui_common import (
     create_context,
     do_start_backend,
     stop_backend,
+    SDKIT3_MODELS_TO_OVERRIDE,
 )
 
 ed_info = {
@@ -48,9 +49,43 @@ def get_backend_dir():
 
 
 BACKEND_BINARY_URL_BASE = "https://github.com/easydiffusion/sdkit/releases/download"
-DEFAULT_BACKEND_VERSION = "v3.5.0"
+DEFAULT_BACKEND_VERSION = "v3.5.1"
+# The --tokenizer-dir flag was added to sdkit in this version. Older sdkit builds
+# (and the WebUI backend) don't understand it and fail to start if it's passed.
+TOKENIZER_SUPPORT_VERSION = (3, 5, 1)
 
 OS_NAME = platform.system()
+
+
+def parse_backend_version(version):
+    """Parse a backend version string (e.g. 'v3.5.1') into a comparable tuple of ints."""
+
+    if version is None:
+        return (0, 0, 0)
+
+    version = str(version).strip().lstrip("vV")
+
+    parts = []
+    for part in version.split("."):
+        digits = ""
+        for char in part:
+            if char.isdigit():
+                digits += char
+            else:
+                break
+        parts.append(int(digits) if digits else 0)
+
+    while len(parts) < 3:
+        parts.append(0)
+
+    return tuple(parts[:3])
+
+
+def supports_tokenizer(backend_config):
+    """The --tokenizer-dir flag is only understood by sdkit >= 3.5.1."""
+
+    backend_version = (backend_config or {}).get("version", DEFAULT_BACKEND_VERSION)
+    return parse_backend_version(backend_version) >= TOKENIZER_SUPPORT_VERSION
 
 
 def install_backend():
@@ -173,9 +208,12 @@ def start_backend():
     webui_common.WEBUI_API_PREFIX = "/v1"
     webui_common.USE_SDKIT3_API = True
 
+    # Only pass the tokenizer directory to sdkit builds that understand the flag.
+    extra_models_to_override = SDKIT3_MODELS_TO_OVERRIDE if supports_tokenizer(backend_config) else None
+
     def run_fn():
         exe_name = "sdkit.exe" if OS_NAME == "Windows" else "sdkit"
-        common_cli_args = get_common_cli_args(return_string=False)
+        common_cli_args = get_common_cli_args(return_string=False, extra_models_to_override=extra_models_to_override)
         cmd = [os.path.join(backend_dir, exe_name)] + common_cli_args + extra_args + user_args
 
         log.info(f"starting: {cmd}")

@@ -55,6 +55,7 @@ const taskConfigSetup = {
             visible: ({ reqBody }) => !!reqBody?.use_hypernetwork_model,
         },
         use_text_encoder_model: { label: "Text Encoder", visible: ({ reqBody }) => !!reqBody?.use_text_encoder_model },
+        use_tokenizer_model: { label: "Tokenizer", visible: ({ reqBody }) => !!reqBody?.use_tokenizer_model },
         use_lora_model: { label: "Lora Model", visible: ({ reqBody }) => !!reqBody?.use_lora_model },
         lora_alpha: { label: "Lora Strength", visible: ({ reqBody }) => !!reqBody?.use_lora_model },
         preserve_init_image_color_profile: "Preserve Color Profile",
@@ -148,6 +149,7 @@ let controlnetModelField = new ModelDropdown(document.querySelector("#controlnet
 let vaeModelField = new ModelDropdown(document.querySelector("#vae_model"), "vae", "None")
 let loraModelField = new MultiModelSelector(document.querySelector("#lora_model"), "lora", "LoRA", 0.5, 0.02)
 let textEncoderModelField = new MultiModelSelector(document.querySelector("#text_encoder_model"), "text-encoder", "Text Encoder", 0.5, 0.02, false)
+let tokenizerModelField = new ModelDropdown(document.querySelector("#tokenizer_model"), "tokenizer", "None")
 let hypernetworkModelField = new ModelDropdown(document.querySelector("#hypernetwork_model"), "hypernetwork", "None")
 let hypernetworkStrengthSlider = document.querySelector("#hypernetwork_strength_slider")
 let hypernetworkStrengthField = document.querySelector("#hypernetwork_strength")
@@ -1449,6 +1451,13 @@ function getCurrentUserRequest() {
             newTask.reqBody.use_text_encoder_model = textEncoderModelNames
         } else {
             newTask.reqBody.use_text_encoder_model = ""
+        }
+
+        // tokenizer
+        if (tokenizerModelField.value) {
+            newTask.reqBody.use_tokenizer_model = tokenizerModelField.value
+        } else {
+            newTask.reqBody.use_tokenizer_model = ""
         }
 
         // vae tiling

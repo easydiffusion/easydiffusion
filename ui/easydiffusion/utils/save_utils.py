@@ -55,6 +55,8 @@ TASK_TEXT_MAPPING = {
     "prompt_strength": "Prompt Strength",
     "use_lora_model": "LoRA model",
     "lora_alpha": "LoRA Strength",
+    "use_text_encoder_model": "Text Encoder model",
+    "use_tokenizer_model": "Tokenizer model",
     "use_hypernetwork_model": "Hypernetwork model",
     "hypernetwork_strength": "Hypernetwork Strength",
     "use_embeddings_model": "Embedding models",

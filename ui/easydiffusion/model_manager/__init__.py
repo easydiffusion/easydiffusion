@@ -24,6 +24,7 @@ KNOWN_MODEL_TYPES = [
     "embeddings",
     "controlnet",
     "text-encoder",
+    "tokenizer",
 ]
 MODEL_EXTENSIONS = {
     "stable-diffusion": [".ckpt", ".safetensors", ".sft", ".gguf"],
@@ -36,6 +37,7 @@ MODEL_EXTENSIONS = {
     "embeddings": [".pt", ".bin", ".safetensors", ".sft"],
     "controlnet": [".pth", ".safetensors", ".sft"],
     "text-encoder": [".safetensors", ".sft", ".gguf"],
+    "tokenizer": [".json"],
 }
 DEFAULT_MODELS = {
     "stable-diffusion": [
