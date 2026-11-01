@@ -79,7 +79,7 @@ def init():
 
         bucketfile = schemas.BucketFileCreate(filename=filename, data=file)
         result = crud.create_bucketfile(db=db, bucketfile=bucketfile, bucket_id=bucket_id)
-        result.data = base64.encodestring(result.data)
+        result.data = base64.encodebytes(result.data)
         return result
 
 
@@ -87,9 +87,9 @@ def init():
     def create_bucketfile_in_bucket(
         bucket_id: int, bucketfile: schemas.BucketFileCreate, db: Session = Depends(get_db)
     ):
-        bucketfile.data = base64.decodestring(bucketfile.data)
+        bucketfile.data = base64.decodebytes(bucketfile.data)
         result =  crud.create_bucketfile(db=db, bucketfile=bucketfile, bucket_id=bucket_id)
-        result.data = base64.encodestring(result.data)
+        result.data = base64.encodebytes(result.data)
         return result
 
 

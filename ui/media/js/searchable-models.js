@@ -685,6 +685,7 @@ function convertToLegacyModelOptions(models) {
         "embeddings": [],
         "controlnet": [],
         "text-encoder": [],
+        "tokenizer": [],
     }
 
     for (const model of models) {

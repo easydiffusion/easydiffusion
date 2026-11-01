@@ -37,9 +37,9 @@
                 Easy Diffusion
                 <small>
                     <span id="version">
-                        <span class="gated-feature" data-feature-keys="backend_ed_classic backend_ed_diffusers">v3.0.17</span>
-                        <span class="gated-feature" data-feature-keys="backend_webui">v3.5.15</span>
-                        <span class="gated-feature" data-feature-keys="backend_sdkit3">v4.5.2</span>
+                        <span class="gated-feature" data-feature-keys="backend_ed_classic backend_ed_diffusers">v3.0.18</span>
+                        <span class="gated-feature" data-feature-keys="backend_webui">v3.5.16</span>
+                        <span class="gated-feature" data-feature-keys="backend_sdkit3">v4.6.1</span>
                     </span> <span id="updateBranchLabel"></span>
                     <div id="engine-logo" class="gated-feature" data-feature-keys="backend_webui">(Powered by <a id="backend-url" href="https://github.com/lllyasviel/stable-diffusion-webui-forge" target="_blank">Stable Diffusion WebUI Forge</a>)</div>
                 </small>
@@ -330,6 +330,15 @@
                         </td>
                         <td>
                             <div id="text_encoder_model" data-path=""></div>
+                        </td>
+                    </tr>
+                    <tr id="tokenizer_model_container" class="pl-5 gated-feature" data-feature-keys="backend_sdkit3">
+                        <td>
+                            <label for="tokenizer_model">Tokenizer:</label>
+                        </td>
+                        <td>
+                            <input id="tokenizer_model" type="text" spellcheck="false" autocomplete="off" class="model-filter" data-path="" />
+                            <a href="https://easydiffusion.github.io/docs/models/text-encoders-and-tokenizers/#tokenizers" target="_blank"><i class="fa-solid fa-circle-question help-btn"><span class="simple-tooltip top-left">Click to learn more about tokenizers</span></i></a>
                         </td>
                     </tr>
                     <tr id="samplerSelection" class="pl-5"><td><label for="sampler_name">Sampler:</label></td><td>
