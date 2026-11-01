@@ -262,13 +262,20 @@
                 items = Array.from(event.dataTransfer.files)
             }
             // check if image has embedded metadata, load task if it does
-            if (items[0].type === "image/png") {
-                readPNGMetadata(items[0])
-            } else if (items[0].type === "image/jpeg" || items[0].type === "image/webp") {
-                readJPEGMetadata(items[0]);
-            } else {
-                console.log("File must be a PNG, WEBP or JPEG image.");
-            }
+            // choose the reader from the file's actual bytes, since the extension/MIME type can lie
+            items[0].slice(0, 12).arrayBuffer().then(buf => {
+                const h = new Uint8Array(buf)
+                const isPNG = h[0] === 0x89 && h[1] === 0x50 && h[2] === 0x4E && h[3] === 0x47
+                const isJPEG = h[0] === 0xFF && h[1] === 0xD8
+                const isWEBP = h[0] === 0x52 && h[1] === 0x49 && h[2] === 0x46 && h[3] === 0x46
+                if (isPNG) {
+                    readPNGMetadata(items[0])
+                } else if (isJPEG || isWEBP) {
+                    readJPEGMetadata(items[0])
+                } else {
+                    console.log("File must be a PNG, WEBP or JPEG image. Header bytes:", Array.from(h).map(b => b.toString(16).padStart(2, "0")).join(" "))
+                }
+            })
             event.preventDefault()
         })
 
@@ -353,17 +360,51 @@
 
     /* PNG METADATA EXTRACTION */
 
+    // PNG tEXt values are written with Python's str(), so lists arrive as "['a', 'b']"
+    const LIST_KEYS = ["use_lora_model", "lora_alpha", "use_embeddings_model"]
+
+    // an empty/None LoRA must be absent so restoreTaskToUI clears the LoRA field
+    function dropEmptyLoras(reqBody) {
+        const empty = (v) => v === null || v === undefined || v === '' || v === 'None' || (Array.isArray(v) && v.every(empty))
+        if (empty(reqBody.use_lora_model)) {
+            delete reqBody.use_lora_model
+            delete reqBody.lora_alpha
+        }
+    }
+
+    function parsePythonList(value) {
+        if (typeof value !== "string") return value
+        const v = value.trim()
+        if (!v.startsWith("[") || !v.endsWith("]")) return value
+        try {
+            return JSON.parse(v)
+        } catch (e) {}
+        const items = []
+        const re = /'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|([^,\s\[\]]+)/g
+        let m
+        while ((m = re.exec(v.slice(1, -1))) !== null) {
+            if (m[3] !== undefined) {
+                items.push(m[3] === "None" ? null : isNaN(m[3]) ? m[3] : parseFloat(m[3]))
+            } else {
+                items.push((m[1] !== undefined ? m[1] : m[2]).replace(/\\\\/g, "\\").replace(/\\'/g, "'"))
+            }
+        }
+        return items
+    }
+
     function readPNGMetadata(image) {
         const fileReader = new FileReader()
         fileReader.onload = function () {
             extractTextChunks(image).then(function (chunks) {
                 let reqBody = {}
                 for (let key in chunks) {
-                    reqBody[key] = chunks[key]
+                    reqBody[key] = LIST_KEYS.includes(key) ? parsePythonList(chunks[key]) : chunks[key]
                 }
                 if (Object.keys(reqBody).length !== 0) {
                     if (reqBody["seed"] !== undefined) {
-                        let task = { numOutputsTotal: reqBody["num_outputs"], seed: reqBody["seed"] }
+                        let task = { seed: reqBody["seed"] }
+                        if (reqBody["num_outputs"] !== undefined) task.numOutputsTotal = parseInt(reqBody["num_outputs"])
+                        dropEmptyLoras(reqBody)
                         task['reqBody'] = reqBody
                         clearAllImageTagCards()
                         restoreTaskToUI(task, TASK_REQ_NO_EXPORT)
@@ -435,7 +476,9 @@
                         for (let key in keys) {
                             reqBody[key] = keys[key]
                         }
-                        let task = { numOutputsTotal: reqBody["num_outputs"], seed: reqBody["seed"] }
+                        let task = { seed: reqBody["seed"] }
+                        if (reqBody["num_outputs"] !== undefined) task.numOutputsTotal = parseInt(reqBody["num_outputs"])
+                        dropEmptyLoras(reqBody)
                         task['reqBody'] = reqBody
                         clearAllImageTagCards()
                         restoreTaskToUI(task, TASK_REQ_NO_EXPORT)
