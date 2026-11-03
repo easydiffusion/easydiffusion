@@ -553,17 +553,29 @@ def webui_post(uri, *args, **kwargs):
     return requests.post(url, *args, **kwargs)
 
 
+MAX_BASE64_LOG_LENGTH = 100
+
+# Fallback detection for image data that doesn't carry a "data:image/...;base64,"
+# prefix: matched against the magic bytes of common image formats as they appear
+# at the start of their base64 encoding (PNG, JPEG, GIF, WEBP).
+BASE64_IMAGE_STARTS = ("iVBORw0KGgo", "/9j/", "R0lGOD", "UklGR")
+
+
+def truncate_base64_images(value, max_len=MAX_BASE64_LOG_LENGTH):
+    """Return a copy of value with any base64 image data truncated to max_len characters."""
+    if isinstance(value, dict):
+        return {k: truncate_base64_images(v, max_len) for k, v in value.items()}
+    if isinstance(value, list):
+        return [truncate_base64_images(v, max_len) for v in value]
+    if isinstance(value, str) and len(value) > max_len:
+        is_image = value.startswith("data:image/") or value.startswith(BASE64_IMAGE_STARTS)
+        if is_image:
+            return value[:max_len] + "..."
+    return value
+
+
 def print_request(operation_to_apply, args):
-    args = deepcopy(args)
-    if "init_images" in args:
-        args["init_images"] = ["img" for _ in args["init_images"]]
-    if "mask" in args:
-        args["mask"] = "mask_img"
-
-    controlnet_args = args.get("alwayson_scripts", {}).get("controlnet", {}).get("args", [])
-    if controlnet_args:
-        controlnet_args[0]["image"] = "control_image"
-
+    args = truncate_base64_images(deepcopy(args))
     print(f"operation: {operation_to_apply}, args: {args}")
 
 
