@@ -1494,7 +1494,7 @@ function getCurrentUserRequest() {
             newTask.reqBody.control_filter_to_apply = controlImageFilterField.value
         }
     }
-    if (isFluxModel()) {
+    if (isFluxModel() || isFlux2Model()) {
         newTask.reqBody.distilled_guidance_scale = parseFloat(distilledGuidanceScaleField.value)
     }
     if (schedulerSelectionContainer.style.display !== "none") {
@@ -1954,6 +1954,32 @@ function isFluxModel() {
     return isFlux
 }
 
+function isFlux2Model() {
+    let sdModel = stableDiffusionModelField.value
+    let tags = modelsDB["stable-diffusion"][sdModel]?.tags || []
+    let isFlux2 = tags.includes("flux2")
+    return isFlux2
+}
+
+function isFlux3Model() {
+    let sdModel = stableDiffusionModelField.value
+    let tags = modelsDB["stable-diffusion"][sdModel]?.tags || []
+    let isFlux3 = tags.includes("flux3")
+    return isFlux3
+}
+
+function isQwenImage21Model() {
+    let sdModel = stableDiffusionModelField.value
+    let tags = modelsDB["stable-diffusion"][sdModel]?.tags || []
+    let isQwenImage21 = tags.includes("qwen_image_2_1")
+    return isQwenImage21
+}
+
+// models that support image editing by passing reference images
+function isImageEditModel() {
+    return isFluxModel() || isFlux2Model() || isFlux3Model() || isQwenImage21Model()
+}
+
 function isChromaModel() {
     let sdModel = stableDiffusionModelField.value
     let tags = modelsDB["stable-diffusion"][sdModel]?.tags || []
@@ -1989,14 +2015,19 @@ function checkAndSetDependentModels() {
 // sdModelField.addEventListener("change", checkAndSetDependentModels)
 
 function checkReferenceImageField() {
-    console.log("Checking reference image field for flux/chroma model")
+    console.log("Checking reference image field for image editing models")
     if (!modelsDB) {
         return
     }
 
-    console.log("Current SD model:", stableDiffusionModelField.value, "isFlux:", isFluxModel())
+    console.log(
+        "Current SD model:",
+        stableDiffusionModelField.value,
+        "isImageEditModel:",
+        isImageEditModel()
+    )
 
-    if (isFluxModel()) {
+    if (isImageEditModel()) {
         refImageContainer.classList.remove("displayNone")
     } else {
         refImageContainer.classList.add("displayNone")
@@ -2019,6 +2050,11 @@ function checkGuidanceValue() {
         } else {
             guidanceWarning.classList.add("displayNone")
         }
+    } else if (isImageEditModel()) {
+        // FLUX.2 / FLUX.3 / Qwen-Image-2.1: the recommended guidance differs between
+        // the distilled variants (e.g. 1) and the base variants (e.g. 3.5 to 4), which
+        // can't be told apart from the model file, so don't show a warning either way.
+        guidanceWarning.classList.add("displayNone")
     } else {
         if (guidance < 2) {
             guidanceWarningText.innerText = "A higher 'Guidance Scale' is recommended!"
@@ -2038,7 +2074,7 @@ function checkGuidanceScaleVisibility() {
     }
 
     let guidanceScaleContainer = document.querySelector("#distilled_guidance_scale_container")
-    if (isFluxModel() || isChromaModel()) {
+    if (isFluxModel() || isFlux2Model() || isChromaModel()) {
         guidanceScaleContainer.classList.remove("displayNone")
     } else {
         guidanceScaleContainer.classList.add("displayNone")
@@ -2052,7 +2088,7 @@ function checkFluxSampler() {
     }
 
     let samplerWarning = document.querySelector("#fluxSamplerWarning")
-    if (isFluxModel() || isChromaModel()) {
+    if (isFluxModel() || isFlux2Model() || isFlux3Model() || isChromaModel()) {
         if (samplerField.value == "euler_a") {
             samplerWarning.classList.remove("displayNone")
         } else {
@@ -2071,7 +2107,7 @@ function checkFluxScheduler() {
     const badSchedulers = ["automatic", "uniform", "turbo", "align_your_steps", "align_your_steps_GITS", "align_your_steps_11", "align_your_steps_32"]
 
     let schedulerWarning = document.querySelector("#fluxSchedulerWarning")
-    if (isFluxModel() || isChromaModel()) {
+    if (isFluxModel() || isFlux2Model() || isFlux3Model() || isChromaModel()) {
         if (badSchedulers.includes(schedulerField.value)) {
             schedulerWarning.classList.remove("displayNone")
         } else {
@@ -2090,7 +2126,10 @@ function checkFluxSchedulerSteps() {
     const problematicSchedulers = ["karras", "exponential", "polyexponential"]
 
     let schedulerWarning = document.querySelector("#fluxSchedulerStepsWarning")
-    if ((isFluxModel() || isChromaModel()) && parseInt(numInferenceStepsField.value) < 15) {
+    if (
+        (isFluxModel() || isFlux2Model() || isFlux3Model() || isChromaModel()) &&
+        parseInt(numInferenceStepsField.value) < 15
+    ) {
         if (problematicSchedulers.includes(schedulerField.value)) {
             schedulerWarning.classList.remove("displayNone")
         } else {

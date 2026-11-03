@@ -65,6 +65,58 @@ CHECKPOINT_KEY_NAMES = {
         "double_blocks.0.img_attn.norm.key_norm.scale",
         "model.diffusion_model.double_blocks.0.img_attn.norm.key_norm.scale",
     ],
+    "flux2": [
+        "double_stream_modulation_img.lin.weight",
+        "model.diffusion_model.double_stream_modulation_img.lin.weight",
+    ],
+    # FLUX.3 Image (Klein / Klein Base). Detection matches stable-diffusion.cpp's
+    # VERSION_FLUX3: an image embedding input plus the txt-mode blocks.
+    "flux3": [
+        "emb_in.image.weight",
+        "model.diffusion_model.emb_in.image.weight",
+    ],
+    "qwen_image": [
+        "transformer_blocks.0.img_mod.1.weight",
+        "model.diffusion_model.transformer_blocks.0.img_mod.1.weight",
+    ],
+    "qwen_image_2_1": [
+        "txt_in.text_norm.weight",
+        "model.diffusion_model.txt_in.text_norm.weight",
+    ],
+    "z_image": [
+        "cap_embedder.0.weight",
+        "model.diffusion_model.cap_embedder.0.weight",
+    ],
+    "ernie_image": [
+        "layers.0.adaLN_sa_ln.weight",
+        "model.diffusion_model.layers.0.adaLN_sa_ln.weight",
+    ],
+    "lens": [
+        "transformer_blocks.0.attn.norm_added_q.weight",
+        "model.diffusion_model.transformer_blocks.0.attn.norm_added_q.weight",
+    ],
+    "lens_img_mlp": [
+        "transformer_blocks.0.img_mlp.w1.weight",
+        "model.diffusion_model.transformer_blocks.0.img_mlp.w1.weight",
+    ],
+    "pid": [
+        "net.lq_proj.latent_proj.0.weight",
+        "model.diffusion_model.net.lq_proj.latent_proj.0.weight",
+    ],
+    "krea2": [
+        "txtfusion.projector.weight",
+        "model.diffusion_model.txtfusion.projector.weight",
+        "text_fusion.projector.weight",
+        "model.diffusion_model.text_fusion.projector.weight",
+    ],
+    "moss_image": [
+        "video_embedder.weight",
+        "model.diffusion_model.video_embedder.weight",
+    ],
+    "moss_image_shared_block": [
+        "shared_block_modulation.weight",
+        "model.diffusion_model.shared_block_modulation.weight",
+    ],
     "ltx-video": [
         "model.diffusion_model.patchify_proj.weight",
         "model.diffusion_model.transformer_blocks.27.scale_shift_table",
@@ -293,6 +345,37 @@ def infer_diffusers_model_type(header):
         else:
             return "animatediff_v3"
 
+    elif has_any_key(header, CHECKPOINT_KEY_NAMES["flux2"]):
+        return "flux2"
+
+    elif has_any_key(header, CHECKPOINT_KEY_NAMES["flux3"]) and any(
+        "txt_mode_blocks." in k and k.endswith(".q_proj.weight") for k in header
+    ):
+        return "flux3"
+
+    elif has_any_key(header, CHECKPOINT_KEY_NAMES["moss_image"]) and has_any_key(
+        header, CHECKPOINT_KEY_NAMES["moss_image_shared_block"]
+    ):
+        return "moss_image"
+
+    elif has_any_key(header, CHECKPOINT_KEY_NAMES["pid"]):
+        return "pid"
+
+    elif has_any_key(header, CHECKPOINT_KEY_NAMES["lens"]) and has_any_key(header, CHECKPOINT_KEY_NAMES["lens_img_mlp"]):
+        return "lens"
+
+    elif has_any_key(header, CHECKPOINT_KEY_NAMES["krea2"]):
+        return "krea2"
+
+    elif has_any_key(header, CHECKPOINT_KEY_NAMES["qwen_image_2_1"]):
+        return "qwen_image_2_1"
+
+    elif has_any_key(header, CHECKPOINT_KEY_NAMES["qwen_image"]):
+        return "qwen_image"
+
+    elif has_any_key(header, CHECKPOINT_KEY_NAMES["ernie_image"]):
+        return "ernie_image"
+
     elif has_any_key(header, CHECKPOINT_KEY_NAMES["flux"]):
         if "distilled_guidance_layer.layers.0.in_layer.bias" in header:
             return "chroma"
@@ -352,7 +435,9 @@ def infer_diffusers_model_type(header):
         return "instruct_pix2pix"
 
     elif has_any_key(header, CHECKPOINT_KEY_NAMES["lumina2"]):
-        return "lumina_v2"
+        # Z-Image shares the Lumina architecture (and tensor naming) with Lumina 2.
+        # stable-diffusion.cpp also loads these weights as Z-Image, so tag it as such.
+        return "z_image"
 
     elif has_any_key(header, CHECKPOINT_KEY_NAMES["sana"]):
         return "sana"

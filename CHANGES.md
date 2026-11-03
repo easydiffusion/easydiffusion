@@ -1,6 +1,7 @@
 # What's new?
 
 ## v4 (preview)
+* 4.6.2 - 3 Nov 2026 - Detect FLUX.3 Image (Klein / Klein Base), FLUX.2, Qwen-Image-2.1, MOSS-Image, Z-Image, Ernie Image, Lens, PiD and Krea2 models in the UI, and show the reference image picker for models that support image editing with reference images (FLUX.3 Image Klein / Klein Base, FLUX.2 and Klein, Qwen-Image-2.1).
 * 4.6.1 - 28 Oct 2026 - Add support for [MOSS-Image](https://github.com/leejet/stable-diffusion.cpp/blob/master/docs/moss_image.md) and [image editing with Qwen-Image-2.1](https://github.com/leejet/stable-diffusion.cpp/blob/master/docs/qwen_image_2.1.md). For Qwen Image 2.1 Edit, put the vision llm model in the `text-encoder` folder. For MOSS-Image, put the tokenizer in a `tokenizer` folder.
 * 4.6.1 - 28 Oct 2026 - Fix the `base64.encodestring`/`base64.decodestring` crash when saving files to the bucket database (e.g. LoRA keywords).
 * 4.6.1 - 28 Oct 2026 - Fix an error when saving JPEG images generated with models that output an alpha channel (e.g. Qwen-Image-2.1).
