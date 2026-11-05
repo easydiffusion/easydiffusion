@@ -49,7 +49,7 @@ def get_backend_dir():
 
 
 BACKEND_BINARY_URL_BASE = "https://github.com/easydiffusion/sdkit/releases/download"
-DEFAULT_BACKEND_VERSION = "v3.5.1"
+DEFAULT_BACKEND_VERSION = "v3.5.2"
 # The --tokenizer-dir flag was added to sdkit in this version. Older sdkit builds
 # (and the WebUI backend) don't understand it and fail to start if it's passed.
 TOKENIZER_SUPPORT_VERSION = (3, 5, 1)
