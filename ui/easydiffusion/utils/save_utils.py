@@ -263,7 +263,7 @@ def get_printable_request(
     task_data_metadata.update(save_data.dict())
 
     app_config = app.getConfig()
-    using_diffusers = app_config.get("backend", "ed_diffusers") in ("ed_diffusers", "webui")
+    using_diffusers = app_config.get("backend", "ed_diffusers") in ("ed_diffusers", "webui", "sdkit3")
 
     # Save the metadata in the order defined in TASK_TEXT_MAPPING
     metadata = {}
